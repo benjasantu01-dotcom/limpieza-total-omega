@@ -239,10 +239,11 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             
-            if not name or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
+            # Validación estricta: si no hay nombre o comando útil, descartamos la fila
+            if not name or not cmd or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
                 continue
             
-            if not cmd or any(c in cmd for c in '<>|?*'):
+            if any(c in cmd for c in '<>|?*'):
                 continue
             
             try:

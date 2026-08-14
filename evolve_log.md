@@ -1503,3 +1503,13 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-14T04:18:37` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scanner.py` implementando una validación de entrada estricta y más informativa en `scan_directory` y `scan_file`, asegurando que rutas mal formadas, nulas o inaccesibles sean gestionadas mediante excepciones específicas antes de realizar operaciones de E/S.
 - `2026-08-14T04:18:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T04:18:37` Corrida terminada. Total usado hoy: 104.
+- `2026-08-14T04:25:37` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-08-14T04:26:39` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de los validadores integrando `is_protected_path` directamente en la validación de rutas y añadiendo un chequeo explícito de tipos para los valores de configuración, previniendo errores de ejecución por datos malformados en el JSON.
+- `2026-08-14T04:27:04` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que el comando extraído tenga contenido útil, evitando procesar filas incompletas o mal formadas que antes podían pasar por alto la lógica de control.
+- `2026-08-14T04:28:01` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Documenté con type hints más precisos y docstrings enriquecidos las funciones críticas de sanitización y extracción de métricas, clarificando la intención defensiva de cada paso.
+- `2026-08-14T04:29:00` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T04:29:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-14T04:30:04` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-14T04:30:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-14T04:30:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T04:30:52` Corrida terminada. Total usado hoy: 108.

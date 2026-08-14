@@ -190,8 +190,8 @@ class Answer:
 
 def _ensure_safe_text(text: Any) -> bool:
     """
-    Valida la integridad del texto contra caracteres de control y posibles
-    inyecciones de rutas, garantizando que el asistente no procese contenido malicioso.
+    Verifica que el texto sea seguro: longitud máxima, sin caracteres de control
+    y, crucialmente, sin patrones que sugieran rutas o inyecciones de path.
     """
     if not isinstance(text, str) or not text:
         return False
@@ -205,18 +205,16 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
     """
-    Aplica una asignación segura de métricas a un objeto SystemContext.
-    Verifica que el valor sea numérico, finito y esté dentro de los rangos esperados.
+    Asigna de forma robusta un valor a un atributo de SystemContext.
+    Aplica transformación de tipo, validación de finitud y límites (clamping).
     """
     if val is None or not hasattr(obj, attr):
         return
     try:
-        # Validar tipo permitido antes de cast
         if not isinstance(val, (int, float, str)):
             return
         
         clean = cast(val)
-        # Validar finititud y tipo nuevamente tras el cast
         if isinstance(clean, (int, float)) and math.isfinite(clean):
             setattr(obj, attr, max(min_val, min(clean, max_val)))
     except (ValueError, TypeError):
@@ -224,49 +222,39 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """
-    Formatea métricas numéricas para su presentación en el UI o contexto.
-    Retorna 'N/A' si el valor es inválido o no numérico.
+    Convierte una métrica a string formateado, asegurando que el valor sea numérico válido.
+    Retorna 'N/A' en caso de datos corruptos para evitar que la UI falle.
     """
     if val is None or not isinstance(val, (int, float)) or not math.isfinite(val): return "N/A"
     return f"{val:.{decimal}f}{unit}"
 
-def _get_metric_val(source: Any, key: str, default: Any) -> Any:
+def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> Any:
     """
-    Extrae de forma defensiva un valor numérico de una fuente de datos.
-    Valida que sea numérico y no nulo antes de retornarlo para evitar errores.
+    Intenta extraer un valor de una fuente (dict o clase) de forma defensiva,
+    garantizando que el resultado sea procesable numéricamente.
     """
     if source is None:
         return default
     
-    val = None
-    if isinstance(source, dict):
-        val = source.get(key)
-    elif hasattr(source, key):
-        val = getattr(source, key)
+    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
     if val is None or not isinstance(val, (int, float, str)):
         return default
     
     try:
         num = float(val)
-        if not math.isfinite(num):
-            return default
-        return num
+        return num if math.isfinite(num) else default
     except (ValueError, TypeError):
         return default
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Construye un objeto SystemContext a partir de datos externos.
-    Realiza saneamiento estricto sobre cada campo para asegurar la inmutabilidad de la estructura.
+    Constructor centralizado para el estado del sistema. Aplica saneamiento
+    estricto a cada campo para asegurar la integridad total de la estructura.
     """
     ctx = SystemContext()
     
-    # Validar tipos de entrada para evitar excepciones durante el acceso a atributos
-    is_metrics_valid = isinstance(metrics, (dict, object))
-    is_health_valid = isinstance(health, (dict, object))
-    
-    if metrics is not None and is_metrics_valid:
+    if isinstance(metrics, (dict, object)):
         _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
         _safe_assign(ctx, "suspicious_count", _get_metric_val(metrics, "suspicious_count", 0), int)
         _safe_assign(ctx, "suspicious_warnings", _get_metric_val(metrics, "suspicious_warnings", 0), int)
@@ -279,7 +267,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         _safe_assign(ctx, "browser_cache_mb", _get_metric_val(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
-    if health is not None and is_health_valid:
+    if isinstance(health, (dict, object)):
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = _get_metric_val(health, "grade", "")
@@ -296,8 +284,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
 def context_as_text(context: SystemContext) -> str:
     """
-    Serializa SystemContext a un string plano y seguro.
-    Este texto se envía al motor Gemini, por lo que se verifica que no contenga rutas.
+    Serializa el contexto a formato texto para Gemini. Aplica una doble capa
+    de limpieza contra caracteres de control y posibles rutas disfrazadas.
     """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
@@ -314,7 +302,6 @@ def context_as_text(context: SystemContext) -> str:
             f"Inicio: {context.startup_count} items"
         )
         texto_unificado = "\n".join(lines)
-        # Limpieza defensiva final antes de enviar al asistente
         texto_limpio = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", texto_unificado))
         if not _ensure_safe_text(texto_limpio):
             return "Error de seguridad en la serialización de contexto."

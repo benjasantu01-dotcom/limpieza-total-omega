@@ -127,13 +127,10 @@ class _Validators:
     def _is_safe_path(path_obj: Path) -> bool:
         """Verifica que la ruta sea segura contra manipulaciones de sistema."""
         try:
-            # resolve(strict=False) previene errores si la ruta no existe aún
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return False
             if is_protected_path(str(resolved)): return False
-            
-            # Validar el segmento base más profundo existente para evitar el salto
             target = resolved if resolved.exists() else resolved.parent
             return is_safe_to_modify(str(target))
         except (OSError, RuntimeError, PermissionError):
@@ -142,18 +139,18 @@ class _Validators:
     @staticmethod
     def bool(val: Any) -> bool | None:
         """Valida valores booleanos aceptando variantes de texto/numéricas."""
-        if val is None: return None
         if isinstance(val, bool): return val
-        if not isinstance(val, str): return None
-        normalized = val.strip().lower()
-        if normalized in ("1", "true", "si", "sí", "yes"): return True
-        if normalized in ("0", "false", "no", "none"): return False
+        if isinstance(val, str):
+            normalized = val.strip().lower()
+            if normalized in ("1", "true", "si", "sí", "yes"): return True
+            if normalized in ("0", "false", "no", "none"): return False
         return None
 
     @staticmethod
     def int(key: ConfigKey, val: Any) -> int | None:
         """Valida enteros dentro de límites definidos para cada clave."""
-        if val is None or isinstance(val, bool): return None
+        if not isinstance(val, (int, float)) and not (isinstance(val, str) and val.isdigit()):
+            return None
         try:
             parsed_value = int(val)
             min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
@@ -164,13 +161,13 @@ class _Validators:
     @staticmethod
     def path(val: Any) -> str | None:
         """Valida rutas de sistema, asegurando que sean absolutas y seguras."""
-        if val is None or not isinstance(val, (str, Path)): return None
+        if not isinstance(val, (str, Path)) or not val: return None
         path_string = str(val).strip()
-        if not path_string: return ""
         if any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
+            if is_protected_path(str(path_obj)): return None
             return str(path_obj) if _Validators._is_safe_path(path_obj) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None
@@ -178,8 +175,8 @@ class _Validators:
     @staticmethod
     def str(key: ConfigKey, val: Any) -> str | None:
         """Valida strings asegurando limpieza de caracteres de control y límites."""
-        if val is None or not isinstance(val, (str, Path)): return None
-        text = str(val).strip()
+        if not isinstance(val, str): return None
+        text = val.strip()
         if any(ord(c) < 32 for c in text) or ".." in text: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
         if not text: return "" if key == ConfigKey.ASISTENTE_CLAVE_API else None
@@ -234,7 +231,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     if not ruta.exists(): return DEFAULTS.copy()
     
     try:
-        # Chequeo preventivo de seguridad antes de leer
         if not _Validators._is_safe_path(ruta.parent): return DEFAULTS.copy()
         
         if _cached_settings is not None and _current_path == ruta:
@@ -285,7 +281,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         _cached_settings, _current_path, _cached_hash = cleaned_settings, ruta, new_hash
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
-        # Fallback silencioso para no romper la app si la escritura falla
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
