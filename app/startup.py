@@ -128,6 +128,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
             
+            # Verificación defensiva extra de existencia antes de resolver
             if not p.exists():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
