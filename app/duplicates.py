@@ -160,9 +160,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo capturando candidatos mediante os.scandir.
-    
-    Usa el par (st_dev, st_ino) como clave de caché para evitar el procesamiento
-    de enlaces duros duplicados en la misma jerarquía.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -174,8 +171,10 @@ def _collect_candidates(
                     try:
                         if entry.is_symlink(): continue
                         
+                        # Filtrado rápido antes de stat pesado
+                        if skip_protected and is_protected_path(Path(entry.path)): continue
+                        
                         st = entry.stat(follow_symlinks=False)
-                        # Ignorar archivos con atributo de sistema
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
                         inode = (st.st_dev, st.st_ino)
@@ -184,11 +183,9 @@ def _collect_candidates(
                         if entry.is_dir():
                             visited_inodes.add(inode)
                             _scan(Path(entry.path))
-                        elif entry.is_file():
-                            if st.st_size >= min_size:
-                                if skip_protected and is_protected_path(Path(entry.path)): continue
-                                visited_inodes.add(inode)
-                                temp_groups[st.st_size].append(Path(entry.path))
+                        elif entry.is_file() and st.st_size >= min_size:
+                            visited_inodes.add(inode)
+                            temp_groups[st.st_size].append(Path(entry.path))
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 

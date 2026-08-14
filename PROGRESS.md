@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 69 | 5 | 10 | 2 | 86 |
-| 2026-08-14 | 156 | 12 | 23 | 13 | 128 |
+| 2026-08-13 | 68 | 5 | 9 | 2 | 84 |
+| 2026-08-14 | 157 | 12 | 23 | 13 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **53**
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- robustez ante casos límite: **36**
-- rendimiento: **35**
+- rendimiento: **36**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `diskreport.py`: **19**
 - `organizer.py`: **19**
-- `memory.py`: **18**
 - `scanner.py`: **18**
 - `browser.py`: **18**
 - `healthscore.py`: **17**
+- `memory.py`: **17**
+- `duplicates.py`: **16**
 - `quarantine.py`: **15**
-- `duplicates.py`: **15**
 - `safety.py`: **14**
 - `main.py`: **12**
 - `branding.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T14:08:48` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `is_protected_path` al mover la validación antes de obtener los metadatos completos, y reduciendo el uso de `Path` mediante el uso directo de `entry.path` donde es posible.
 - `2026-08-14T13:58:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` convirtiendo la lista `_CRITERIOS_SALUD` en un conjunto de tuplas pre-procesadas y eliminando la creación repetida de la lista `problemas` en cada llamada a `local_answer` y `handle_score`.
 - `2026-08-14T13:58:00` **settings.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings detallados en las funciones de la API pública y una mayor consistencia en los type hints, siguiendo el enfoque de documentación técnica exigido.
 - `2026-08-14T13:57:30` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados que especifican precondiciones, comportamientos ante errores y el propósito técnico de las heurísticas, facilitando el mantenimiento y la auditoría del motor de escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T13:17:09` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `check_recent_executable_in_downloads` y `scan_directory` añadiendo validaciones preventivas de tipos y excepciones específicas para evitar errores en tiempo de ejecución al interactuar con rutas del sistema.
 - `2026-08-14T13:16:44` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `normalize` y `ensure_safe_to_modify` para prevenir errores de tipo `None` y asegurar que la comparación de rutas maneje correctamente valores de entrada inconsistentes, siguiendo el enfoque de manejo de errores y validación de entradas.
 - `2026-08-14T13:07:40` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación explícita de `item_id` en las operaciones del manifiesto y una verificación de `None` en `purge_all` para prevenir errores de referencia, mejorando la robustez frente a datos corrompidos.
-- `2026-08-14T13:06:50` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura más estrictas sobre las rutas de destino, asegurando que `commonpath` o la jerarquía de directorios no sean vulnerables a manipulaciones de entrada inválidas antes de proceder con operaciones críticas de disco.

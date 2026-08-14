@@ -1285,3 +1285,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T13:58:51` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` convirtiendo la lista `_CRITERIOS_SALUD` en un conjunto de tuplas pre-procesadas y eliminando la creación repetida de la lista `problemas` en cada llamada a `local_answer` y `handle_score`.
 - `2026-08-14T13:58:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T13:58:51` Corrida terminada. Total usado hoy: 332.
+- `2026-08-14T14:07:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-14T14:07:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-14T14:08:13` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-14T14:08:39` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-14T14:08:48` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `is_protected_path` al mover la validación antes de obtener los metadatos completos, y reduciendo el uso de `Path` mediante el uso directo de `entry.path` donde es posible.
+- `2026-08-14T14:08:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T14:08:48` Corrida terminada. Total usado hoy: 336.
