@@ -466,3 +466,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-14T05:49:04` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y las funciones de análisis ante casos límite donde los permisos de acceso o estructuras de archivos bloquean la ejecución, envolviendo las llamadas críticas en bloques `try...except` más granulares y asegurando que `Path` no falle ante rutas inválidas o nombres de archivo extremos que podrían lanzar `ValueError` durante el procesamiento de `relative_to`.
 - `2026-08-14T05:49:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T05:49:04` Corrida terminada. Total usado hoy: 140.
+- `2026-08-14T05:57:22` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-08-14T05:57:47` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-14T05:58:12` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-14T05:59:19` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de la interfaz ante errores de inicialización de componentes visuales (widgets) en hilos asíncronos mediante el uso de verificadores de existencia (`winfo_exists`) y cierres de sesión (`_closing`), evitando que excepciones en la UI detengan el flujo de ejecución o generen estados inconsistentes.
+- `2026-08-14T05:59:35` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-14T05:59:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T05:59:35` Corrida terminada. Total usado hoy: 144.

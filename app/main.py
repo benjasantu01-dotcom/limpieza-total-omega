@@ -982,7 +982,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._last_health_state = state_key
 
         def actualizar() -> None:
-            if self._closing: return
+            if self._closing or not self.gauge.winfo_exists(): return
             self._draw_gauge(resultado.score, resultado.grade)
 
             valores = {
