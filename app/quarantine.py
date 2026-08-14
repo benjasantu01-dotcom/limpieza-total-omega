@@ -483,30 +483,24 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
-    item_map = {i.stored_name: i for i in items if i.stored_name}
+    # Usamos un set para búsqueda rápida de nombres de archivos registrados
+    manifest_names = {i.stored_name for i in items}
+    item_map = {i.stored_name: i for i in items}
     purged_count = 0
     items_to_remove = []
     
     for entry in quarantine_root.iterdir():
-        if entry.name == MANIFEST_NAME or not entry.is_file():
+        if entry.name == MANIFEST_NAME or entry.name not in manifest_names or not entry.is_file():
             continue
             
         real_entry = entry.resolve()
-        try:
-            if os.path.commonpath([str(real_entry), str(quarantine_root)]) != str(quarantine_root):
-                continue
-        except (ValueError, OSError):
-            continue
-            
         item = item_map.get(entry.name)
-        if not item:
-            continue
             
         try:
             if _is_file_locked(entry):
                 continue
             
-            if item.verify_integrity(real_entry):
+            if item and item.verify_integrity(real_entry):
                 ensure_safe_to_modify(real_entry, allow_sensitive=False)
                 if _safe_unlink(real_entry):
                     items_to_remove.append(item)

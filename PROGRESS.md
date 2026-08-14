@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 66 | 5 | 9 | 2 | 82 |
-| 2026-08-14 | 159 | 12 | 23 | 14 | 132 |
+| 2026-08-13 | 63 | 5 | 9 | 2 | 81 |
+| 2026-08-14 | 160 | 12 | 24 | 14 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
-- seguridad defensiva: **53**
 - legibilidad y documentación: **52**
+- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **49**
-- rendimiento: **38**
+- rendimiento: **39**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
-- `diskreport.py`: **19**
 - `organizer.py`: **19**
 - `settings.py`: **19**
+- `assistant.py`: **19**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
 - `scanner.py`: **18**
+- `diskreport.py`: **18**
 - `browser.py`: **18**
+- `quarantine.py`: **16**
 - `duplicates.py`: **16**
-- `quarantine.py`: **15**
 - `safety.py`: **13**
 - `main.py`: **12**
-- `branding.py`: **11**
+- `branding.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T14:28:13` **quarantine.py** (rendimiento): Optimizé `purge_all` para mejorar el rendimiento mediante el uso de un `set` para las búsquedas de archivos en el sistema de archivos, reduciendo la complejidad de las comprobaciones de integridad al iterar una sola vez sobre el directorio y evitando múltiples recorridos innecesarios de la lista de ítems.
 - `2026-08-14T14:19:38` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de `Get-CimInstance` (que es lenta y genera un proceso hijo pesado) por `Get-Process`, reduciendo el tiempo de ejecución y el uso de CPU/memoria en cada consulta.
 - `2026-08-14T14:17:59` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje y la generación de recomendaciones eliminando la creación repetitiva de diccionarios dentro de los bucles y consolidando el acceso a los datos mediante una estructura de mapeo pre-computada, reduciendo la carga de procesamiento en cada llamada a `compute_score`.
 - `2026-08-14T14:08:48` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `is_protected_path` al mover la validación antes de obtener los metadatos completos, y reduciendo el uso de `Path` mediante el uso directo de `entry.path` donde es posible.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T13:28:21` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos recursivos y de validación en `browser.py` mediante type hints específicos, docstrings detallados que explican el propósito de las guardas de seguridad y la normalización de la terminología para mejorar la mantenibilidad.
 - `2026-08-14T13:18:02` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita para evitar procesar filas malformadas o entradas de PowerShell que no contienen rutas, asegurando que `csv.DictReader` no genere errores silenciosos al iterar.
 - `2026-08-14T13:17:49` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_Validators.path` y `_Validators.int` para manejar explícitamente posibles errores durante la conversión de tipos o acceso a disco, asegurando que los validadores siempre devuelvan un valor predecible y nunca propaguen excepciones que puedan romper la carga o persistencia de la configuración.
-- `2026-08-14T13:17:09` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `check_recent_executable_in_downloads` y `scan_directory` añadiendo validaciones preventivas de tipos y excepciones específicas para evitar errores en tiempo de ejecución al interactuar con rutas del sistema.
