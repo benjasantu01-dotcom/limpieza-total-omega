@@ -215,7 +215,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not isinstance(text, str) or not text:
         return []
     
-    processes = []
+    processes: List[ProcessMemory] = []
     for line in text.splitlines():
         if p := _parse_csv_row(line):
             processes.append(p)

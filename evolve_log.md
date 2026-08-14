@@ -416,3 +416,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T05:19:01` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el renderizado del dashboard de salud implementando un `self._last_health_state` que evita cálculos de redibujo y configuraciones de widgets innecesarias si los datos de entrada (puntaje, basura, sospechosos, RAM, disco) no han cambiado entre llamadas.
 - `2026-08-14T05:19:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T05:19:01` Corrida terminada. Total usado hoy: 128.
+- `2026-08-14T05:26:42` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-14T05:27:11` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizamos `parse_windows_process_csv` para evitar la creación innecesaria de listas intermedias y reducir las llamadas a `split()` mediante un enfoque de una sola pasada sobre el texto, mejorando la eficiencia de procesamiento cuando el número de procesos es elevado.
+- `2026-08-14T05:27:36` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizamos `scan_for_junk` utilizando `os.scandir` de forma más eficiente y reduciendo llamadas redundantes a `Path` y `resolve()` dentro del bucle crítico, mejorando el rendimiento en directorios grandes.
+- `2026-08-14T05:28:10` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño total y el resumen de la cuarentena utilizando `sum` con generadores para evitar la creación de listas intermedias innecesarias, mejorando el uso de memoria en directorios con muchos ítems.
+- `2026-08-14T05:28:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-14T05:28:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T05:28:17` Corrida terminada. Total usado hoy: 132.

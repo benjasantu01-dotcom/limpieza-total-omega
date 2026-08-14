@@ -179,9 +179,6 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea rutas de disco en busca de archivos que coincidan con los criterios de limpieza.
-    
-    El proceso normaliza rutas, filtra directorios bloqueados, ignora puntos de reparse
-    y valida cada hallazgo mediante `is_safe_to_modify` antes de agregarlo al reporte.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -197,28 +194,29 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                 continue
 
     def _walk_dir(base_path: Path) -> None:
-        """Recorre directorios de forma recursiva aplicando filtros de seguridad."""
         try:
             with os.scandir(base_path) as it:
                 for entry in it:
                     if _is_junction(entry):
                         continue
-                    
                     if entry.is_dir():
                         if _is_allowed_directory(entry.name):
                             _walk_dir(Path(entry.path))
                     elif entry.is_file():
-                        path_obj = Path(entry.path)
-                        if _is_junk_path(path_obj) and is_safe_to_modify(path_obj):
-                            try:
-                                stat = entry.stat()
-                                found.append(JunkFile(
-                                    path=path_obj,
-                                    size_bytes=stat.st_size,
-                                    modified=datetime.fromtimestamp(stat.st_mtime)
-                                ))
-                            except OSError:
-                                continue
+                        # Optimización: solo procesar si la extensión coincide antes de instanciar Path
+                        ext = os.path.splitext(entry.name)[1].lower()
+                        if ext in _LOWER_JUNK_EXTS:
+                            path_obj = Path(entry.path)
+                            if is_safe_to_modify(path_obj):
+                                try:
+                                    stat = entry.stat()
+                                    found.append(JunkFile(
+                                        path=path_obj,
+                                        size_bytes=stat.st_size,
+                                        modified=datetime.fromtimestamp(stat.st_mtime)
+                                    ))
+                                except OSError:
+                                    continue
         except (PermissionError, OSError):
             pass
 

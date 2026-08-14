@@ -515,13 +515,17 @@ def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
     items = load_manifest(base)
     if not items:
         return ["La cuarentena está vacía."]
+    
     total_mb = sum(i.size_mb for i in items)
     lines = [f"{len(items)} archivo(s) en cuarentena — {round(total_mb, 2)} MB", ""]
+    
     for item in items:
-        lines.append(f"  [{item.item_id}] {Path(item.original_path).name} — {item.size_mb} MB")
-        lines.append(f"      Motivo: {item.reason}")
-        lines.append(f"      Origen: {item.original_path}")
-        lines.append(f"      Aislado: {item.quarantined_at}")
-    lines.append("")
-    lines.append("Nada de esto se borró: se puede restaurar a su ubicación original.")
+        lines.extend([
+            f"  [{item.item_id}] {Path(item.original_path).name} — {item.size_mb} MB",
+            f"      Motivo: {item.reason}",
+            f"      Origen: {item.original_path}",
+            f"      Aislado: {item.quarantined_at}"
+        ])
+        
+    lines.extend(["", "Nada de esto se borró: se puede restaurar a su ubicación original."])
     return lines
