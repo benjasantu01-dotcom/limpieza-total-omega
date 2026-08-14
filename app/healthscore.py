@@ -174,17 +174,27 @@ def grade_for_score(score: float | int) -> str:
 
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
-    if not metrics.is_finite():
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
-    vals = {"seguridad": metrics.suspicious_count, "disco": metrics.disk_free_percent, "memoria": metrics.memory_available_percent, "basura": metrics.junk_mb, "duplicados": metrics.duplicate_mb, "arranque": metrics.startup_count}
+    vals = {
+        "seguridad": metrics.suspicious_count, 
+        "disco": metrics.disk_free_percent, 
+        "memoria": metrics.memory_available_percent, 
+        "basura": metrics.junk_mb, 
+        "duplicados": metrics.duplicate_mb, 
+        "arranque": metrics.startup_count
+    }
 
     for rule in _RECOMMENDATION_RULES:
         ratio = ratios.get(rule.area, 0.0)
         if ratio < rule.threshold:
             val = vals.get(rule.area, 0.0)
-            recommendations.append(rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format)
+            try:
+                recommendations.append(rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format)
+            except (ValueError, IndexError):
+                continue
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

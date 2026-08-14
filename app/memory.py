@@ -171,22 +171,29 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
     """
-    Helper para deserializar una línea CSV proveniente de PowerShell: 'Nombre,PID,WorkingSet'.
-    Retorna un objeto ProcessMemory si la línea tiene el formato y valores válidos.
+    Helper para deserializar una línea CSV proveniente de PowerShell.
+    Maneja validaciones robustas ante entradas malformadas o PIDs inválidos.
     """
-    if not line or line.strip().lower().startswith("name"):
+    if not line or not line.strip():
         return None
+    
     parts = [p.strip().strip("'\"") for p in line.split(",")]
-    if len(parts) < 3:
+    
+    # Header check or malformed
+    if len(parts) < 3 or parts[0].lower() == "name":
         return None
+        
     try:
-        if not parts[-1] or not parts[-2]:
-            return None
-        ws, pid = int(parts[-1]), int(parts[-2])
+        # Se asume formato Name,Id,WorkingSet
+        ws_str, pid_str = parts[-1], parts[-2]
+        ws, pid = int(ws_str), int(pid_str)
+        
         if ws < 0 or pid < 0:
             return None
+            
+        # El nombre podría contener comas, reconstruir si es necesario
         name = ",".join(parts[:-2])
-        return ProcessMemory(name or "Unknown", pid, ws)
+        return ProcessMemory(name if name else "Unknown", pid, ws)
     except (ValueError, TypeError):
         return None
 
