@@ -493,7 +493,11 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             continue
             
         real_entry = entry.resolve()
-        if not _is_valid_quarantine_path(real_entry, quarantine_root):
+        # Seguridad: verificar estrictamente que el real_entry esté bajo la raíz
+        try:
+            if os.path.commonpath([str(real_entry), str(quarantine_root)]) != str(quarantine_root):
+                continue
+        except (ValueError, OSError):
             continue
             
         # SEGURIDAD: Solo purgar si el archivo figura en el manifiesto

@@ -301,11 +301,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 # Validar tipo y seguridad antes de intentar borrar
                 if item.is_file() and not item.is_symlink():
                     path_to_delete = item.resolve()
-                    # Asegurar que el archivo realmente resida dentro del directorio de revisión
-                    if dest == path_to_delete.parent and is_safe_to_modify(path_to_delete):
-                        path_to_delete.unlink()
-                        count += 1
-            except (PermissionError, OSError):
+                    # Verificación de Sandbox: asegurarse que el archivo está estrictamente bajo dest
+                    if os.path.commonpath([str(dest), str(path_to_delete)]) == str(dest):
+                        if is_safe_to_modify(path_to_delete):
+                            path_to_delete.unlink()
+                            count += 1
+            except (PermissionError, OSError, ValueError):
                 continue
     except (PermissionError, OSError):
         pass

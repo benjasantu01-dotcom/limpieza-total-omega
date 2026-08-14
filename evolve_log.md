@@ -977,3 +977,10 @@ FAILED evolve/tests/test_modules.py::test_drive_usage_reads_a_real_path - assert
 - `2026-08-14T11:05:37` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se añadió una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo sea un proceso de usuario real y no un componente del sistema, utilizando `QueryFullProcessImageNameW` para inspeccionar la ruta del ejecutable y verificarla contra `is_protected_path` antes de intentar cualquier operación de gestión de memoria.
 - `2026-08-14T11:05:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T11:05:37` Corrida terminada. Total usado hoy: 264.
+- `2026-08-14T11:13:43` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-14T11:14:35` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha implementado una validación de "escape de sandbox" en `delete_reviewed` para garantizar, mediante `os.path.commonpath`, que ningún archivo sea eliminado si, debido a una condición de carrera o manipulación externa, ya no reside estrictamente dentro de la carpeta de cuarentena, reforzando la seguridad defensiva contra posibles ataques de redirección de rutas.
+- `2026-08-14T11:15:08` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó una validación estricta de "Path Traversal" mediante `os.path.commonpath` en `purge_all` para asegurar que, al iterar sobre el directorio, solo se procesen archivos que residan físicamente bajo la raíz de cuarentena, evitando cualquier posibilidad de manipulación externa por enlaces simbólicos o rutas maliciosas.
+- `2026-08-14T11:15:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-14T11:15:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-14T11:15:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T11:15:39` Corrida terminada. Total usado hoy: 268.

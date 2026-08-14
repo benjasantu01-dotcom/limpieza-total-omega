@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 99 | 7 | 15 | 3 | 116 |
-| 2026-08-14 | 133 | 10 | 18 | 10 | 93 |
+| 2026-08-13 | 99 | 7 | 15 | 3 | 112 |
+| 2026-08-14 | 135 | 10 | 19 | 10 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
-- seguridad defensiva: **49**
+- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **42**
 - rendimiento: **38**
@@ -35,9 +35,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **19**
 - `browser.py`: **19**
 - `memory.py`: **18**
+- `organizer.py`: **18**
+- `quarantine.py`: **17**
 - `healthscore.py`: **17**
-- `organizer.py`: **17**
-- `quarantine.py`: **16**
 - `main.py`: **15**
 - `duplicates.py`: **15**
 - `branding.py`: **14**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T11:15:08` **quarantine.py** (seguridad defensiva): Se implementó una validación estricta de "Path Traversal" mediante `os.path.commonpath` en `purge_all` para asegurar que, al iterar sobre el directorio, solo se procesen archivos que residan físicamente bajo la raíz de cuarentena, evitando cualquier posibilidad de manipulación externa por enlaces simbólicos o rutas maliciosas.
+- `2026-08-14T11:14:35` **organizer.py** (seguridad defensiva): Se ha implementado una validación de "escape de sandbox" en `delete_reviewed` para garantizar, mediante `os.path.commonpath`, que ningún archivo sea eliminado si, debido a una condición de carrera o manipulación externa, ya no reside estrictamente dentro de la carpeta de cuarentena, reforzando la seguridad defensiva contra posibles ataques de redirección de rutas.
 - `2026-08-14T11:05:37` **memory.py** (seguridad defensiva): Se añadió una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo sea un proceso de usuario real y no un componente del sistema, utilizando `QueryFullProcessImageNameW` para inspeccionar la ruta del ejecutable y verificarla contra `is_protected_path` antes de intentar cualquier operación de gestión de memoria.
 - `2026-08-14T11:05:25` **main.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `_ask_folder` y `on_trim_process` utilizando `safety.ensure_safe_to_modify` y verificaciones previas de estado para prevenir posibles condiciones de carrera o inyecciones de rutas, manteniendo el enfoque defensivo requerido.
 - `2026-08-14T11:03:56` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` añadiendo un chequeo explícito `if path.is_symlink(): return None` para prevenir el seguimiento involuntario de enlaces simbólicos (junctions o reparse points), reforzando la seguridad defensiva contra posibles bucles infinitos o accesos fuera del árbol de directorios esperado.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T10:23:08` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` implementando un chequeo explícito de `is_symlink` y la validación de la existencia de `st_ino` (mediante `stat()`), evitando bloqueos o errores de ciclo infinito ante enlaces simbólicos circulares o archivos que desaparecen durante la iteración en sistemas con alta concurrencia.
 - `2026-08-14T10:17:53` **browser.py** (robustez ante casos límite): Se mejoró la robustez de `_is_system_hidden` ante rutas inexistentes o inaccesibles y se integró un manejo de errores más específico en `_sum_directory_recursive` para evitar que `PermissionError` silenciosos interrumpan la medición de carpetas parcialmente accesibles.
 - `2026-08-14T10:17:00` **assistant.py** (robustez ante casos límite): Se ha robustecido el manejo de estados de `SystemContext` en `build_context` añadiendo validaciones específicas para prevenir inyecciones o valores atípicos (NaN/Inf) que pudieran derivar de una configuración corrupta o de la manipulación externa de datos.
-- `2026-08-14T10:03:33` **scanner.py** (rendimiento): Optimizé la heurística `check_recent_executable_in_downloads` para evitar la conversión costosa de cada parte de la ruta a una lista de strings mediante el uso de una intersección de conjuntos pre-calculada, reduciendo la carga de CPU durante el escaneo recursivo.
-- `2026-08-14T10:03:04` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `_is_system_or_hidden` y `_is_reparse_point` utilizando `os.lstat` para evitar el acceso costoso al sistema de archivos mediante `ctypes.windll` en cada validación, reduciendo drásticamente las llamadas al kernel durante los escaneos recursivos.
