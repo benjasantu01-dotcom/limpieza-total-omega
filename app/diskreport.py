@@ -352,10 +352,15 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Returns:
         Tuple[int, int]: (bytes_totales, cantidad_archivos).
     """
+    if not directory:
+        return (0, 0)
     total_bytes, file_count = 0, 0
-    for _, size in walk_files(directory, skip_protected):
-        total_bytes += size
-        file_count += 1
+    try:
+        for _, size in walk_files(directory, skip_protected):
+            total_bytes += size
+            file_count += 1
+    except (OSError, PermissionError):
+        pass
     return total_bytes, file_count
 
 

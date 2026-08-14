@@ -193,7 +193,6 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
-    # Diccionario de acceso rápido para mapear área a la métrica cruda relevante
     valor_metricas: Dict[str, float | int] = {
         "seguridad": metrics.suspicious_count, 
         "disco": metrics.disk_free_percent, 
@@ -207,7 +206,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         ratio = ratios.get(rule.area)
         if ratio is not None and math.isfinite(ratio) and ratio < rule.threshold:
             val = valor_metricas.get(rule.area)
-            if val is None or not math.isfinite(float(val)):
+            if val is None or not isinstance(val, (int, float)) or not math.isfinite(float(val)):
                 continue
             try:
                 msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
