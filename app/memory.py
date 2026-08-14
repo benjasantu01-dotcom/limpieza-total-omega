@@ -354,7 +354,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             
         buf = ctypes.create_unicode_buffer(4096)
         size = ctypes.c_ulong(4096)
-        # Verifica la ruta antes de aplicar cualquier acción de memoria
+        
+        # Validación de seguridad: obtener ruta y chequear contra lista protegida
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             exe_path = os.path.normpath(buf.value)
             if is_protected_path(exe_path):

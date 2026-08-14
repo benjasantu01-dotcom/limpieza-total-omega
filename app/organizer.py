@@ -307,7 +307,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 # Verificación estricta: debe ser archivo, no enlace y estar bajo el padre
                 if item.is_file() and not item.is_symlink():
                     path_to_delete = item.resolve()
-                    if dest in path_to_delete.parents and is_safe_to_modify(path_to_delete):
+                    # Asegurar que la ruta resuelta está efectivamente contenida en la carpeta de revisión
+                    # y que cumple con las políticas de seguridad antes de ejecutar el unlink.
+                    if dest == path_to_delete.parent and is_safe_to_modify(path_to_delete):
                         path_to_delete.unlink()
                         count += 1
             except (PermissionError, OSError):

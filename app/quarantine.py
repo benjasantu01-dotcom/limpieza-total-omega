@@ -472,20 +472,21 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     for entry in quarantine_root.iterdir():
         if not _is_safe_to_purge(entry, quarantine_root):
             continue
+        
+        # SEGURIDAD: Solo purgar si el archivo figura en el manifiesto
+        item = item_map.get(entry.name)
+        if not item:
+            continue
+            
         try:
             if _is_file_locked(entry):
                 continue
             
-            item = item_map.get(entry.name)
-            if item:
-                if item.verify_integrity(entry):
-                    ensure_safe_to_modify(entry, allow_sensitive=False)
-                    if _safe_unlink(entry):
-                        items_to_remove.append(item)
-                        purged_count += 1
-            else:
+            if item.verify_integrity(entry):
                 ensure_safe_to_modify(entry, allow_sensitive=False)
-                _safe_unlink(entry)
+                if _safe_unlink(entry):
+                    items_to_remove.append(item)
+                    purged_count += 1
         except (OSError, PermissionError, UnsafePathError):
             continue
     
