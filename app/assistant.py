@@ -208,16 +208,15 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     Asigna de forma robusta un valor a un atributo de SystemContext.
     Aplica transformación de tipo, validación de finitud y límites (clamping).
     """
-    if val is None:
+    if val is None or isinstance(val, bool):
         return
     try:
-        # Solo procesar tipos que puedan ser representados como números
         if not isinstance(val, (int, float, str)):
             return
         
         clean = cast(val)
         if isinstance(clean, (int, float)) and math.isfinite(clean):
-            setattr(obj, attr, max(min_val, min(clean, max_val)))
+            setattr(obj, attr, max(min_val, min(float(clean), max_val)))
     except (ValueError, TypeError):
         pass
 
@@ -227,7 +226,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     Retorna 'N/A' en caso de datos corruptos para evitar que la UI falle.
     """
     if val is None or not isinstance(val, (int, float)) or not math.isfinite(val): return "N/A"
-    return f"{val:.{decimal}f}{unit}"
+    return f"{float(val):.{decimal}f}{unit}"
 
 def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> Any:
     """
@@ -239,10 +238,9 @@ def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> 
     
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
-    if val is None:
+    if val is None or isinstance(val, bool):
         return default
     
-    # Validar tipos aceptables antes de la conversión
     if not isinstance(val, (int, float, str)):
         return default
     

@@ -1307,3 +1307,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T14:29:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-08-14T14:29:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T14:29:08` Corrida terminada. Total usado hoy: 344.
+- `2026-08-14T14:37:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-14T14:38:24` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento del módulo implementando un mecanismo de carga diferida ("lazy loading") y caché más robusto, eliminando lecturas redundantes de disco mediante la comparación de hashes y evitando el parseo de JSON cuando la configuración no ha cambiado.
+- `2026-08-14T14:38:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T14:39:06` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se implementó un cache en `list_startup_entries` para evitar la re-ejecución innecesaria de la lógica de escaneo en cada llamada, optimizando drásticamente el rendimiento durante la navegación en la interfaz.
+- `2026-08-14T14:39:40` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_get_metric_val` y `_safe_assign` añadiendo validaciones explícitas contra el tipo `bool` (que en Python es subclase de `int` y podría ser interpretado erróneamente como métrica numérica) y se mejoró la resiliencia ante `NaN` o valores infinitos que podrían romper la interfaz gráfica.
+- `2026-08-14T14:40:01` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-14T14:40:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T14:40:01` Corrida terminada. Total usado hoy: 348.

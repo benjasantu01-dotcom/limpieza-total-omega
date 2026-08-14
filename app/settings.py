@@ -92,7 +92,7 @@ VALID_THEMES: Final[tuple[str, ...]] = ("oscuro", "claro", "sistema")
 VALID_ACCENTS: Final[tuple[str, ...]] = ("menta", "violeta", "magenta", "cian", "ambar")
 
 _cached_settings: AppSettings | None = None
-_cached_hash: str | None = None
+_cached_mtime: float = 0.0
 _current_path: Path | None = None
 
 def _get_default_config() -> AppSettings:
@@ -229,20 +229,20 @@ def validate(raw_values: Any) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """
-    Carga la configuración desde el disco o desde caché.
-    Verifica permisos y seguridad de la ruta antes de leer.
+    Carga la configuración desde el disco o desde caché basándose en el tiempo de modificación.
     """
-    global _cached_settings, _current_path, _cached_hash
+    global _cached_settings, _current_path, _cached_mtime
     ruta = settings_path(custom_base)
     
     if not ruta.exists(): return _get_default_config()
     if not os.access(ruta, os.R_OK): return _get_default_config()
     
     try:
-        if not _Validators._is_safe_path(ruta.parent): return _get_default_config()
-        
-        if _cached_settings is not None and _current_path == ruta:
+        mtime = ruta.stat().st_mtime
+        if _cached_settings is not None and _current_path == ruta and _cached_mtime == mtime:
             return _cached_settings.copy()
+            
+        if not _Validators._is_safe_path(ruta.parent): return _get_default_config()
         
         content = ruta.read_bytes()
         if 0 < len(content) <= MAX_SETTINGS_SIZE:
@@ -252,7 +252,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 for key in AppSettings.__annotations__:
                     if key not in config: config[key] = DEFAULTS[key]
                 _cached_settings = config
-                _cached_hash = hashlib.md5(content).hexdigest()
+                _cached_mtime = mtime
                 _current_path = ruta
                 return config.copy()
     except (OSError, PermissionError, json.JSONDecodeError, ValueError):
@@ -264,7 +264,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     Persiste la configuración en disco tras validación.
     Usa un archivo temporal con fsync para garantizar integridad atómica.
     """
-    global _cached_settings, _current_path, _cached_hash
+    global _cached_settings, _current_path, _cached_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
@@ -277,9 +277,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         cleaned_settings[ConfigKey.ASISTENTE_ACTIVADO.value] = False
         
     json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
-    new_hash = hashlib.md5(json_data).hexdigest()
-    
-    if _cached_hash == new_hash and _current_path == ruta: return ruta
         
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
@@ -289,7 +286,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp, ruta)
-        _cached_settings, _current_path, _cached_hash = cleaned_settings, ruta, new_hash
+        _cached_settings, _current_path = cleaned_settings, ruta
+        _cached_mtime = ruta.stat().st_mtime
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
         return None

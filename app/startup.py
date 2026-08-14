@@ -51,6 +51,7 @@ EXECUTABLE_EXTS: Set[str] = {'.exe', '.bat', '.cmd', '.scr', '.lnk'}
 # Caché global para evitar operaciones de I/O redundantes durante la sesión.
 _EXISTS_CACHE: Dict[str, bool] = {}
 _REGISTRY_CACHE: Optional[List[StartupEntry]] = None
+_FULL_SCAN_CACHE: Optional[List[StartupEntry]] = None
 
 # Mensaje estandarizado para deshabilitar programas sin tocar el registro.
 HOW_TO_DISABLE: str = (
@@ -302,6 +303,10 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 def list_startup_entries() -> List[StartupEntry]:
     """Combina fuentes de carpetas y registro, eliminando duplicados por nombre."""
+    global _FULL_SCAN_CACHE
+    if _FULL_SCAN_CACHE is not None:
+        return _FULL_SCAN_CACHE
+
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
@@ -315,6 +320,7 @@ def list_startup_entries() -> List[StartupEntry]:
             seen_names.add(name_normalized)
             unique_entries.append(entry)
             
+    _FULL_SCAN_CACHE = unique_entries
     return unique_entries
 
 
