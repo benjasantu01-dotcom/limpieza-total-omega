@@ -86,7 +86,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path)
-        if is_protected_path(file_path):
+        if is_protected_path(file_path) or file_path.is_symlink():
             return None
 
         stat_initial = file_path.stat()
@@ -116,7 +116,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         file_path = Path(path)
-        if is_protected_path(file_path):
+        if is_protected_path(file_path) or file_path.is_symlink():
             return None
             
         with open(file_path, "rb") as f:
@@ -136,7 +136,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return groups
         
     for p in paths:
-        if not isinstance(p, Path) or is_protected_path(p): continue
+        if not isinstance(p, Path) or is_protected_path(p) or p.is_symlink(): continue
         try:
             if p.is_file():
                 groups[p.stat().st_size].append(p)

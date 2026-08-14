@@ -327,6 +327,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             
         buf = ctypes.create_unicode_buffer(4096)
         size = ctypes.c_ulong(4096)
+        # Validación defensiva: verificar que la ruta del ejecutable no sea protegida
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             if is_protected_path(os.path.normpath(buf.value)):
                 return False, "Operación denegada: ruta de ejecutable protegida."

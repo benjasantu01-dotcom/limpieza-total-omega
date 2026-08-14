@@ -900,16 +900,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not folder or not isinstance(folder, str):
             return None
         
-        # Filtro de seguridad: normalizar a absoluta y remover caracteres inusuales
         try:
-            clean_path = os.path.abspath(folder)
-            clean_path = "".join(c for c in clean_path if ord(c) >= 32 and c not in ('\u202e', '\u202d', '\u202c'))
-            p = Path(clean_path).resolve(strict=True)
-            
+            p = Path(folder).resolve(strict=True)
             if not p.is_dir() or not os.access(p, os.R_OK):
                 messagebox.showwarning("Ruta inaccesible", "La ruta seleccionada no existe o no se puede leer.")
                 return None
             
+            # Verificación preventiva antes de retornar
             safety.ensure_safe_to_modify(p)
             return str(p)
         except (safety.UnsafePathError, OSError, PermissionError, FileNotFoundError):

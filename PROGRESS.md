@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 99 | 7 | 15 | 3 | 120 |
-| 2026-08-14 | 130 | 10 | 18 | 10 | 92 |
+| 2026-08-13 | 99 | 7 | 15 | 3 | 116 |
+| 2026-08-14 | 133 | 10 | 18 | 10 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **46**
 - robustez ante casos límite: **42**
 - rendimiento: **38**
 
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **19**
 - `settings.py`: **19**
 - `browser.py`: **19**
+- `memory.py`: **18**
 - `healthscore.py`: **17**
-- `memory.py`: **17**
 - `organizer.py`: **17**
 - `quarantine.py`: **16**
+- `main.py`: **15**
+- `duplicates.py`: **15**
 - `branding.py`: **14**
-- `main.py`: **14**
-- `duplicates.py`: **14**
 - `safety.py`: **13**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T11:05:37` **memory.py** (seguridad defensiva): Se añadió una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo sea un proceso de usuario real y no un componente del sistema, utilizando `QueryFullProcessImageNameW` para inspeccionar la ruta del ejecutable y verificarla contra `is_protected_path` antes de intentar cualquier operación de gestión de memoria.
+- `2026-08-14T11:05:25` **main.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `_ask_folder` y `on_trim_process` utilizando `safety.ensure_safe_to_modify` y verificaciones previas de estado para prevenir posibles condiciones de carrera o inyecciones de rutas, manteniendo el enfoque defensivo requerido.
+- `2026-08-14T11:03:56` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` añadiendo un chequeo explícito `if path.is_symlink(): return None` para prevenir el seguimiento involuntario de enlaces simbólicos (junctions o reparse points), reforzando la seguridad defensiva contra posibles bucles infinitos o accesos fuera del árbol de directorios esperado.
 - `2026-08-14T10:55:01` **browser.py** (seguridad defensiva): Se reforzó la seguridad de `_is_safe_path` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta resuelta antes de permitir cualquier operación de lectura, asegurando que ni la base ni el destino puedan escapar a los bloqueos de sistema incluso si se manipulan con nombres relativos.
 - `2026-08-14T10:54:35` **branding.py** (seguridad defensiva): Mejoré la seguridad de `save_logo_svg` al verificar explícitamente si el directorio padre es seguro antes de crearlo o escribir en él, evitando posibles ataques de recorrido de directorio en rutas mal formadas.
 - `2026-08-14T10:47:16` **startup.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipo en `_extract_quoted_path` y `_resolve_path_from_command` para prevenir fallos catastróficos ante rutas malformadas o entradas inesperadas del registro, asegurando que el proceso de inventariado sea resiliente ante caracteres prohibidos o rutas truncadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T10:17:00` **assistant.py** (robustez ante casos límite): Se ha robustecido el manejo de estados de `SystemContext` en `build_context` añadiendo validaciones específicas para prevenir inyecciones o valores atípicos (NaN/Inf) que pudieran derivar de una configuración corrupta o de la manipulación externa de datos.
 - `2026-08-14T10:03:33` **scanner.py** (rendimiento): Optimizé la heurística `check_recent_executable_in_downloads` para evitar la conversión costosa de cada parte de la ruta a una lista de strings mediante el uso de una intersección de conjuntos pre-calculada, reduciendo la carga de CPU durante el escaneo recursivo.
 - `2026-08-14T10:03:04` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `_is_system_or_hidden` y `_is_reparse_point` utilizando `os.lstat` para evitar el acceso costoso al sistema de archivos mediante `ctypes.windll` en cada validación, reduciendo drásticamente las llamadas al kernel durante los escaneos recursivos.
-- `2026-08-14T09:54:44` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_walk_dir` al reemplazar el uso de `os.path.splitext(entry.name)` (que realiza una nueva llamada y normalización en cada iteración) por la validación directa de `entry.name.lower().endswith(tuple(_LOWER_JUNK_EXTS))`, eliminando la creación innecesaria de objetos `Path` antes de confirmar que el archivo es basura.
-- `2026-08-14T09:53:45` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de procesos mediante el uso de `Set-CimInstance` (a través de `Get-CimInstance`) para evitar el parseo manual de texto CSV complejo y reducir el costo computacional del filtrado, además de reemplazar `time.time()` por `time.monotonic()` para una medición de intervalos de caché más robusta y eficiente.
-- `2026-08-14T09:43:16` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` de forma más eficiente y reduciendo el acceso a metadatos innecesarios mediante un manejo proactivo de los filtros, lo que disminuye las llamadas al sistema durante el escaneo del árbol de directorios.
