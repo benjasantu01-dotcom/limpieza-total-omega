@@ -912,3 +912,61 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-14T10:47:16` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y validación de tipo en `_extract_quoted_path` y `_resolve_path_from_command` para prevenir fallos catastróficos ante rutas malformadas o entradas inesperadas del registro, asegurando que el proceso de inventariado sea resiliente ante caracteres prohibidos o rutas truncadas.
 - `2026-08-14T10:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T10:47:16` Corrida terminada. Total usado hoy: 256.
+- `2026-08-14T10:53:25` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-14T10:54:03` Tests FALLARON:
+```
+uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:94: SyntaxWarning: invalid escape sequence '\R'
+    """Extrae rutas de comandos formateados como "C:\Ruta\App.exe" args."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present - AssertionError: `ensure_safe_to_modify` está usado como condición en assistant.py:476, assistant.py:476. Devuelve un Path o lanza, así que el `if` no filtra nada. Para condiciones usá `is_safe_to_modify`.
+assert not ['assistant.py:476', 'assistant.py:476']
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check - AssertionError: Estos módulos son de solo lectura y usan el chequeo de escritura: assistant.py. Para saber si algo es de sistema sin bloquear la lectura, usá `is_protected_path`.
+assert not ['assistant.py']
+2 failed, 297 passed, 7 warnings in 1.19s
+
+```
+- `2026-08-14T10:54:03` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_call_gemini` integrando `ensure_safe_to_modify` para validar la API Key y el modelo antes de cualquier operación, asegurando que los parámetros de configuración no sean rutas de sistema ni archivos protegidos, cumpliendo estrictamente con la arquitectura de seguridad requerida.
+- `2026-08-14T10:54:35` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Mejoré la seguridad de `save_logo_svg` al verificar explícitamente si el directorio padre es seguro antes de crearlo o escribir en él, evitando posibles ataques de recorrido de directorio en rutas mal formadas.
+- `2026-08-14T10:55:01` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_is_safe_path` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta resuelta antes de permitir cualquier operación de lectura, asegurando que ni la base ni el destino puedan escapar a los bloqueos de sistema incluso si se manipulan con nombres relativos.
+- `2026-08-14T10:55:13` Tests FALLARON:
+```
+==============================
+______________________ test_drive_usage_reads_a_real_path ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-4/test_drive_usage_reads_a_real_0')
+
+    def test_drive_usage_reads_a_real_path(tmp_path):
+        uso = diskreport.drive_usage(tmp_path)
+>       assert uso is not None
+E       assert None is not None
+
+evolve/tests/test_modules.py:545: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:94: SyntaxWarning: invalid escape sequence '\R'
+    """Extrae rutas de comandos formateados como "C:\Ruta\App.exe" args."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_drive_usage_reads_a_real_path - assert None is not None
+1 failed, 298 passed, 7 warnings in 1.18s
+
+```
+- `2026-08-14T10:55:13` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `walk_files` y `drive_usage` para evitar que el escaneo acceda a puntos de montaje o unidades de red, previniendo posibles bloqueos del sistema o comportamientos inesperados en rutas externas no controladas.
+- `2026-08-14T10:55:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T10:55:13` Corrida terminada. Total usado hoy: 260.

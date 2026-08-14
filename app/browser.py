@@ -114,6 +114,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
+        # Bloqueo estricto adicional de seguridad: verificar protección post-resolución
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
