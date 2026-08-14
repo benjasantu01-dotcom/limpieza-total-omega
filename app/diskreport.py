@@ -370,7 +370,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
                 heapq.heappush(top_files_heap, (size, str(path)))
             elif size > top_files_heap[0][0]:
                 heapq.heapreplace(top_files_heap, (size, str(path)))
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, AttributeError):
             continue
 
     lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]

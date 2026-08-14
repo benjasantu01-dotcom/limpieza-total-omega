@@ -255,13 +255,14 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística: selecciona el archivo a conservar (más antiguo, ruta más corta).
+    Valida la existencia de cada ruta para evitar excepciones en el acceso.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path):
+        if not isinstance(p, Path) or not p.exists():
             continue
         try:
             stat_info = p.stat()
@@ -276,6 +277,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 def format_group(group: DuplicateGroup) -> List[str]:
     """
     Genera representación textual de un grupo para la interfaz.
+    Maneja grupos sin archivos válidos o con keeper inexistente.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return []

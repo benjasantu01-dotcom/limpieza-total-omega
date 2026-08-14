@@ -1480,3 +1480,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-14T03:48:32` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_assign` y `_get_metric_val` agregando validaciones de tipo explícitas y manejo defensivo de valores `NaN` o `inf`, asegurando que `SystemContext` solo contenga datos numéricos válidos antes de ser procesados.
 - `2026-08-14T03:48:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T03:48:32` Corrida terminada. Total usado hoy: 92.
+- `2026-08-14T03:54:57` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-14T03:55:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-14T03:55:59` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-14T03:56:24` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` implementando una validación temprana y exhaustiva de la ruta de entrada para prevenir fallos en tiempo de ejecución, además de estandarizar el manejo de errores mediante excepciones específicas al procesar archivos individuales.
+- `2026-08-14T03:56:34` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` implementando validaciones defensivas contra entradas corruptas o incompletas, asegurando que el análisis no aborte silenciosamente ante metadatos ausentes.
+- `2026-08-14T03:56:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T03:56:34` Corrida terminada. Total usado hoy: 96.
