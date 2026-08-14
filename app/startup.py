@@ -78,20 +78,20 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Determina si un objeto Path corresponde a un archivo ejecutable permitido."""
+        """Verifica si la extensión del archivo es ejecutable y no es un enlace simbólico."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia caracteres de control (ASCII < 32) de la cadena de comando."""
+        """Elimina caracteres de control y espacios innecesarios del comando bruto."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta de un comando cuando está encapsulada entre comillas."""
+        """Extrae rutas de comandos formateados como "C:\Ruta\App.exe" args."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -111,7 +111,10 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Normaliza y valida una ruta, aplicando caché para optimizar el I/O."""
+        """
+        Normaliza una ruta, valida seguridad/existencia y guarda en _EXISTS_CACHE.
+        Retorna la ruta absoluta si es válida o la original si es incierta.
+        """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
@@ -150,7 +153,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Parsea la cadena de comando para extraer e identificar el ejecutable."""
+        """Orquesta la extracción de la ruta ejecutable según el formato del comando."""
         if not cmd:
             return ""
         # Evitar comandos complejos que contengan operadores de shell

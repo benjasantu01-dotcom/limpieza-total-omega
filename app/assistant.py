@@ -448,12 +448,12 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     encontrados = 0
     for attr, limit, op, msg in _CRITERIOS_SALUD:
         val = getattr(ctx, attr, 0)
-        condicion = (val < limit) if op == "<" else (val > limit)
-        if condicion:
+        # Evaluamos la condición lógica sin crear objetos innecesarios
+        if (op == "<" and val < limit) or (op == ">" and val > limit):
             yield msg.format(val)
             encontrados += 1
-        if encontrados >= 3:
-            break
+            if encontrados >= 3:
+                break
 
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si la configuración del sistema permite el uso del asistente en línea."""
