@@ -1133,3 +1133,56 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T00:43:14` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` dentro del bucle de iteración (`os.scandir` ya provee objetos `DirEntry` que contienen la ruta y los metadatos necesarios), reduciendo drásticamente la carga sobre el recolector de basura y mejorando la velocidad de escaneo.
 - `2026-08-14T00:43:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T00:43:14` Corrida terminada. Total usado hoy: 20.
+- `2026-08-14T00:51:18` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-14T00:51:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T00:52:00` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_collect_candidates` utilizando un generador y evitando recrear listas intermedias mediante `yield`, reduciendo el uso de memoria durante el recorrido inicial del disco.
+- `2026-08-14T00:52:28` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score evitando la creación repetitiva de diccionarios dentro de los bucles y consolidando la lógica de validación de métricas para reducir el número de llamadas a funciones auxiliares.
+- `2026-08-14T00:53:31` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento del panel de salud implementando una comparación de estado `_last_health_state` antes de actualizar la UI, evitando redibujos innecesarios del medidor y recalculo de colores cuando el sistema no ha cambiado.
+- `2026-08-14T00:53:53` Tests FALLARON:
+```
+................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_parse_process_csv_sorts_by_consumption __________________
+
+    def test_parse_process_csv_sorts_by_consumption():
+        csv = (
+            '"Name","Id","WorkingSet"\n'
+            '"chico","10","1048576"\n'
+            '"grande","11","104857600"\n'
+            '"medio","12","10485760"\n'
+        )
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert [p.name for p in procesos] == ["grande", "medio", "chico"]
+E       AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+E         
+E         At index 0 diff: 'chico' != 'grande'
+E         
+E         Full diff:
+E           [
+E         +     'chico',
+E               'grande',
+E               'medio',
+E         -     'chico',
+E           ]
+
+evolve/tests/test_modules.py:346: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+        'grande',
+        'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed in 1.16s
+
+```
+- `2026-08-14T00:53:53` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de procesos mediante `powershell` filtrando directamente por los 10 procesos con mayor uso desde el comando nativo (`Sort-Object -Descending -Property WorkingSet | Select-Object -First 10`), evitando el procesamiento innecesario de listas completas en Python y reduciendo la carga de memoria durante la ejecución del comando.
+- `2026-08-14T00:53:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T00:53:53` Corrida terminada. Total usado hoy: 24.

@@ -21,7 +21,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence
+from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence, Generator
 
 from safety import is_protected_path
 
@@ -159,58 +159,45 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad (DFS) del sistema de archivos.
-    
-    Utiliza el identificador único (dev, ino) de cada archivo y carpeta para 
-    evitar ciclos (loops infinitos por reparse points/junctions) y para ignorar 
-    archivos duplicados físicamente (hard links) en el reporte de espacio.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
     processed_files: set[Tuple[int, int]] = set()
     
-    if directories is None: return temp_groups
-    
-    def _scan(root_path: Path) -> None:
+    def _scan(root_path: Path) -> Generator[Tuple[int, Path], None, None]:
         try:
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
                         if entry.is_symlink(): continue
-                        
                         st = entry.stat(follow_symlinks=False)
-                        if getattr(st, 'st_file_attributes', 0) & 0x400:
-                            continue
+                        if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
                         entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
+                        if skip_protected and is_protected_path(entry_path): continue
                         
                         if entry.is_dir():
                             key = (st.st_dev, st.st_ino)
                             if key not in visited_inodes:
                                 visited_inodes[key] = True
-                                _scan(entry_path)
-                        
+                                yield from _scan(entry_path)
                         elif entry.is_file():
                             file_id = (st.st_dev, st.st_ino)
-                            if file_id in processed_files: continue
-                            
-                            size = st.st_size
-                            if size >= min_size:
+                            if file_id not in processed_files:
                                 processed_files.add(file_id)
-                                temp_groups[size].append(entry_path)
-                    except (OSError, PermissionError):
-                        continue
-        except (OSError, PermissionError):
-            pass
+                                if st.st_size >= min_size:
+                                    yield st.st_size, entry_path
+                    except (OSError, PermissionError): continue
+        except (OSError, PermissionError): pass
 
-    for directory in directories:
-        if not directory: continue
-        try:
-            p = Path(directory).resolve()
-            if p.is_dir() and (not skip_protected or not is_protected_path(p)):
-                _scan(p)
-        except (OSError, PermissionError, ValueError, TypeError): continue
+    if directories:
+        for directory in directories:
+            try:
+                p = Path(directory).resolve()
+                if p.is_dir() and (not skip_protected or not is_protected_path(p)):
+                    for size, path in _scan(p):
+                        temp_groups[size].append(path)
+            except (OSError, PermissionError, ValueError, TypeError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
@@ -221,9 +208,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Reduce un conjunto de archivos candidatos aplicándoles una función de hashing.
-    
-    Agrupa los archivos por el resultado de la función proveída (hash parcial o completo).
-    Solo retiene aquellos grupos que contienen más de un archivo tras la colisión.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest

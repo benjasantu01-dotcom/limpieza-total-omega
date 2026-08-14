@@ -49,7 +49,6 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # --- UMBRALES DE ADVERTENCIA (ratios de 0.0 a 1.0) ---
-# Indican qué tan "lejos" del estado óptimo (1.0) activamos recomendaciones.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -82,9 +81,7 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
 )
 
 def _validate_weights() -> bool:
-    """Verifica la consistencia matemática de la configuración de pesos."""
-    if not math.isfinite(_TOTAL_WEIGHTS) or _TOTAL_WEIGHTS <= 0: return False
-    return all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
+    return math.isfinite(_TOTAL_WEIGHTS) and _TOTAL_WEIGHTS > 0 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
 
 
 @dataclass
@@ -109,11 +106,9 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        return all(math.isfinite(v) for v in (
-            self.junk_mb, self.suspicious_count, self.suspicious_warnings,
-            self.memory_available_percent, self.disk_free_percent, 
-            self.duplicate_mb, self.startup_count, self.quarantined_count
-        ))
+        return math.isfinite(self.junk_mb + self.suspicious_count + self.suspicious_warnings + 
+                             self.memory_available_percent + self.disk_free_percent + 
+                             self.duplicate_mb + self.startup_count + self.quarantined_count)
 
 
 @dataclass
@@ -125,17 +120,15 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        return 0 <= self.score <= 100 and self.score >= 80
+        return 80 <= self.score <= 100
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    if not isinstance(value, (int, float)) or not math.isfinite(value): return low
-    return max(low, min(high, value))
+    return max(low, min(high, value)) if math.isfinite(value) else low
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     try:
-        if value is None: return default
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
@@ -143,49 +136,32 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 def _to_int(value: Any, default: int = 0) -> int:
     try:
-        if value is None: return default
         return int(float(value))
     except (TypeError, ValueError): return default
 
 
 def score_junk(junk_mb: float | int) -> float:
-    """Calcula salud de archivos basura normalizando respecto al límite definido (_LIMIT_JUNK_MB)."""
-    val = max(0.0, _to_float(junk_mb))
-    return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB), 0.0, 1.0)
+    return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Puntúa seguridad castigando hallazgos sospechosos y advertencias de Defender."""
-    count = max(0, _to_int(suspicious_count))
-    warns = max(0, _to_int(warnings))
-    penalty = (count * 0.05) + (warns * 0.25)
-    return _clamp(1.0 - penalty, 0.0, 1.0)
+    return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> float:
-    """Evalúa presión de memoria basándose en el porcentaje libre disponible respecto al límite (_LIMIT_RAM_PERCENT)."""
-    val = _clamp(_to_float(available_percent), 0.0, 100.0)
-    if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
-    return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
+    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0
 
 
 def score_disk(free_percent: float | int) -> float:
-    """Calcula salud de disco basándose en el porcentaje de espacio libre restante respecto al límite (_LIMIT_DISK_PERCENT)."""
-    val = _clamp(_to_float(free_percent), 0.0, 100.0)
-    if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
-    return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
+    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
-    """Evalúa el volumen de duplicados normalizando por el límite de tolerancia (_LIMIT_DUPLICATE_MB)."""
-    val = max(0.0, _to_float(duplicate_mb))
-    return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
+    return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa cantidad de procesos al arranque comparando contra el límite de eficiencia (_LIMIT_STARTUP_COUNT)."""
-    val = max(0, _to_int(startup_count))
-    return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
+    return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 
 def grade_for_score(score: float | int) -> str:
@@ -202,31 +178,15 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
-    vals = {
-        "seguridad": metrics.suspicious_count,
-        "disco": metrics.disk_free_percent,
-        "memoria": metrics.memory_available_percent,
-        "basura": metrics.junk_mb,
-        "duplicados": metrics.duplicate_mb,
-        "arranque": metrics.startup_count
-    }
+    vals = {"seguridad": metrics.suspicious_count, "disco": metrics.disk_free_percent, "memoria": metrics.memory_available_percent, "basura": metrics.junk_mb, "duplicados": metrics.duplicate_mb, "arranque": metrics.startup_count}
 
     for rule in _RECOMMENDATION_RULES:
-        ratio = ratios.get(rule.area)
-        val = vals.get(rule.area)
-        
-        # Validar existencia de datos y tipos antes de evaluar
-        if isinstance(ratio, (int, float)) and math.isfinite(ratio) and val is not None:
-            if ratio < rule.threshold:
-                try:
-                    if rule.expected_args == 0:
-                        recommendations.append(rule.message_format)
-                    else:
-                        recommendations.append(rule.message_format.format(val))
-                except (ValueError, IndexError, KeyError, TypeError):
-                    continue
+        ratio = ratios.get(rule.area, 0.0)
+        if ratio < rule.threshold:
+            val = vals.get(rule.area, 0.0)
+            recommendations.append(rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format)
     
-    if isinstance(metrics.quarantined_count, int) and metrics.quarantined_count > 0:
+    if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     return recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
@@ -240,7 +200,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
 
-    ratios: ScoreMap = {
+    ratios = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
         "memoria": score_memory(metrics.memory_available_percent),
@@ -249,31 +209,19 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    breakdown = {}
-    for area, factor in _WEIGHT_ITEMS:
-        val = ratios.get(area, 0.0)
-        breakdown[area] = int(round(_clamp(val, 0.0, 1.0) * factor))
-        
+    breakdown = {area: int(round(_clamp(ratios.get(area, 0.0), 0.0, 1.0) * factor)) for area, factor in _WEIGHT_ITEMS}
     final_score = int(round(_clamp(sum(breakdown.values()), 0.0, 100.0)))
     
-    return HealthResult(
-        score=final_score,
-        grade=grade_for_score(final_score),
-        breakdown=breakdown,
-        recommendations=_generate_recommendations(metrics, ratios),
-    )
+    return HealthResult(final_score, grade_for_score(final_score), breakdown, _generate_recommendations(metrics, ratios))
 
 
 def summarize(result: HealthResult) -> List[str]:
     if not isinstance(result, HealthResult): return ["Error: Formato inválido."]
-
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, factor in _WEIGHT_ITEMS:
         puntos = result.breakdown.get(area, 0)
         maximo = int(round(factor))
-        visual = f"[{'#' * puntos}{'.' * (max(0, maximo - puntos))}]"
-        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} {visual}")
-    
+        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (max(0, maximo - puntos))}]")
     lines.extend(["", "Recomendaciones:"])
     lines.extend([f"  - {r}" for r in result.recommendations] if result.recommendations else ["  - Ninguna."])
     return lines
