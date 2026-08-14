@@ -200,6 +200,9 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         ratio = ratios.get(rule.area)
         if ratio is not None and math.isfinite(ratio) and ratio < rule.threshold:
             val = vals[rule.area]
+            # Defensa: Validar que el valor a formatear sea numérico y finito
+            if not isinstance(val, (int, float)) or not math.isfinite(val):
+                continue
             try:
                 msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
                 recommendations.append(msg)

@@ -523,3 +523,11 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-14T06:31:05` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `_scan` evitando que el buscador de duplicados siga enlaces simbólicos o puntos de reparse (Junctions), mitigando el riesgo de recursión infinita o lectura de rutas fuera de las carpetas autorizadas.
 - `2026-08-14T06:31:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T06:31:05` Corrida terminada. Total usado hoy: 156.
+- `2026-08-14T06:38:08` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-14T06:38:36` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la robustez de `_generate_recommendations` añadiendo un chequeo explícito de integridad para los valores de entrada, evitando que una métrica atípica (infinito o NaN) pueda generar errores en el formato de mensajes de usuario.
+- `2026-08-14T06:39:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-14T06:40:49` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha añadido un filtro de seguridad en `on_trim_process` para asegurar que el PID sea tratado como una entrada controlada y se valide contra rangos de sistema, reforzando la protección contra inyección de argumentos o manipulación de procesos críticos antes de invocar la lógica de memoria.
+- `2026-08-14T06:41:18` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-14T06:41:33` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de pertenencia de rutas mediante `.is_relative_to()` (o su equivalente lógico), asegurando que ninguna operación de movimiento o eliminación pueda escapar del directorio de destino previsto, previniendo así posibles ataques de "Path Traversal".
+- `2026-08-14T06:41:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T06:41:33` Corrida terminada. Total usado hoy: 160.

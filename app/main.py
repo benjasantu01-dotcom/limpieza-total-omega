@@ -1309,8 +1309,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         pid = int(raw)
 
+        # Validación de seguridad: evitar tocar procesos del sistema (PID < 100)
         if pid < 100:
-            self.log("Error: PID de sistema protegido.", "Memoria")
+            self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return
 
         if not self._confirm("Liberar working set", memory_mod.TRIM_WARNING + "\n\n¿Seguimos?"):
