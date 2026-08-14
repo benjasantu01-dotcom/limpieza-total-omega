@@ -819,3 +819,37 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-14T09:55:26` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se optimizó `load_manifest` mediante el uso de un diccionario en lugar de una lista para el mapeo de ítems en `purge_all`, evitando una complejidad de búsqueda O(N²) que ralentizaba la purga masiva de archivos.
 - `2026-08-14T09:55:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T09:55:26` Corrida terminada. Total usado hoy: 236.
+- `2026-08-14T10:02:14` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-14T10:02:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-14T10:03:04` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en `_is_system_or_hidden` y `_is_reparse_point` utilizando `os.lstat` para evitar el acceso costoso al sistema de archivos mediante `ctypes.windll` en cada validación, reduciendo drásticamente las llamadas al kernel durante los escaneos recursivos.
+- `2026-08-14T10:03:33` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la heurística `check_recent_executable_in_downloads` para evitar la conversión costosa de cada parte de la ruta a una lista de strings mediante el uso de una intersección de conjuntos pre-calculada, reduciendo la carga de CPU durante el escaneo recursivo.
+- `2026-08-14T10:03:52` Tests FALLARON:
+```
+os: 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:94: SyntaxWarning: invalid escape sequence '\R'
+    """Extrae rutas de comandos formateados como "C:\Ruta\App.exe" args."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed, 7 warnings in 1.18s
+
+```
+- `2026-08-14T10:03:52` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Optimicé el acceso a los datos utilizando `_VALIDATOR_MAP` como un diccionario de acceso directo en lugar de llamar a `load()` repetidamente en `get()`, y añadí una validación temprana en `validate()` para evitar procesar claves innecesarias.
+- `2026-08-14T10:03:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T10:03:52` Corrida terminada. Total usado hoy: 240.

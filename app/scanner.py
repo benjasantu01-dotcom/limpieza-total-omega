@@ -132,8 +132,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     
     try:
-        path_parts = {p.lower() for p in path.parts}
-        if WATCHED_FOLDERS.isdisjoint(path_parts):
+        # Optimización: evitar procesamiento innecesario si la ruta no contiene carpetas vigiladas
+        if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
             return None
 
         # st_mtime puede fallar si el archivo fue bloqueado o eliminado por otro proceso

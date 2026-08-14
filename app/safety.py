@@ -94,21 +94,22 @@ def _has_alternate_data_stream(path: Path) -> bool:
     return ":" in path.name and len(path.name.split(":")) > 2
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Consulta atributos de archivo Win32 para identificar archivos marcados como ocultos o sistema."""
+    """Consulta atributos de archivo Win32 con fallback a stat local."""
     if os.name != 'nt':
         return False
     try:
+        # Usamos GetFileAttributesW para evitar abrir el file handle
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return attrs != -1 and bool(attrs & (0x02 | 0x04))
     except (OSError, AttributeError, TypeError):
         return False
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=2048)
 def _is_reparse_point(path: Path) -> bool:
-    """Detecta puntos de unión (junctions) o symlinks para evitar recursión infinita."""
+    """Detecta puntos de unión (junctions) o symlinks mediante atributos de sistema."""
     if os.name != 'nt':
         return path.is_symlink()
     try:
@@ -139,11 +140,11 @@ def _check_file_integrity(p: Path) -> None:
     if len(p.parts) > 32:
         raise UnsafePathError("Ruta demasiado profunda.")
 
-    def _safe_stat(p: Path) -> os.stat_result:
+    def _safe_stat(path: Path) -> os.stat_result:
         try:
-            return p.stat()
+            return path.stat()
         except OSError:
-            raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
+            raise UnsafePathError(f"No se pudo acceder a metadatos de {path.name}")
 
     violation_checks: list[_IntegrityCheck] = [
         _IntegrityCheck("inaccesible", lambda: not os.access(p, os.W_OK)),
@@ -161,7 +162,7 @@ def _check_file_integrity(p: Path) -> None:
             raise UnsafePathError(f"Operación denegada en {p.name}: {check.reason}.")
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=2048)
 def _is_readonly(path: Path) -> bool:
     """Verifica el estado del bit de solo lectura en los permisos del sistema."""
     try:
@@ -170,7 +171,7 @@ def _is_readonly(path: Path) -> bool:
         return True
 
 
-@lru_cache(maxsize=2048)
+@lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
     """Normaliza rutas a formato absoluto, expandiendo '~' y validando límites MAX_PATH."""
     if path is None:
@@ -200,7 +201,7 @@ def is_drive_root(path: PathLike) -> bool:
         return True
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:
     """Valida si la ruta reside en directorios críticos o es un sistema de archivos reservado."""
     if not path:
@@ -228,7 +229,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         return False
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:
     """Filtra archivos basados en extensiones configuradas como críticas."""
     try:
