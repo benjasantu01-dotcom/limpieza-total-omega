@@ -1358,3 +1358,4 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T20:45:05` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-14T20:55:19` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-14T21:05:31` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-14T21:15:46` Presupuesto diario agotado (350 usados). Corte hasta mañana.
