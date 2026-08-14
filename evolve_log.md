@@ -1081,3 +1081,41 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-14T00:12:45` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run
 - `2026-08-14T00:12:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T00:12:45` Corrida terminada. Total usado hoy: 8.
+- `2026-08-14T00:20:44` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-08-14T00:21:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-14T00:22:32` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-14T00:23:38` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-14T00:24:18` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de manipulación de procesos y utilidades, clarificando las precondiciones, excepciones y el propósito de las constantes utilizadas.
+- `2026-08-14T00:24:47` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). He mejorado la documentación técnica del módulo mediante docstrings más precisos, incluyendo advertencias sobre los efectos secundarios de las operaciones, y he reforzado la legibilidad mediante type hints y la extracción de una lógica de validación de rutas que antes estaba dispersa, manteniendo la integridad del comportamiento.
+- `2026-08-14T00:25:27` Tests FALLARON:
+```
+
+_______________ test_quarantine_summary_reports_size_and_origin ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/_Cuarentena')
+
+    def test_quarantine_summary_reports_size_and_origin(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+        assert "pesado.bin" in texto
+        assert "motivo de prueba" in texto
+>       assert "restaurar" in texto
+E       AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.0 MB\n\n  [104734cf3d4e] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-08-14T00:25:27'
+
+evolve/tests/test_safety.py:311: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) en cuarentena — 0.0 MB\n\n  [104734cf3d4e] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-3/test_quarantine_summary_report0/pesado.bin\n      Aislado: 2026-08-14T00:25:27'
+1 failed, 298 passed in 1.20s
+
+```
+- `2026-08-14T00:25:27` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejora la documentación técnica mediante la adición de Type Hints detallados, descripciones precisas en los docstrings sobre el flujo de control de los parámetros y la corrección de una inconsistencia menor en la gestión de errores de `save_manifest` para mejorar la mantenibilidad del código.
+- `2026-08-14T00:25:59` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T00:26:26` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-14T00:26:44` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-14T00:27:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-14T00:27:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T00:27:06` Corrida terminada. Total usado hoy: 12.

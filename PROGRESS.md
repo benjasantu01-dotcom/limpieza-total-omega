@@ -7,38 +7,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 233
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 61 | 3 | 10 | 7 | 65 |
+| 2026-08-12 | 59 | 3 | 10 | 6 | 64 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 6 | 0 | 1 | 0 | 1 |
+| 2026-08-14 | 8 | 1 | 2 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **55**
+- legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **42**
-- rendimiento: **26**
+- robustez ante casos límite: **41**
+- rendimiento: **25**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
+- `settings.py`: **20**
 - `diskreport.py`: **20**
-- `assistant.py`: **19**
 - `branding.py`: **19**
+- `assistant.py`: **18**
 - `healthscore.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **16**
-- `organizer.py`: **15**
+- `organizer.py`: **16**
 - `browser.py`: **15**
 - `scanner.py`: **13**
 - `main.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T00:24:47` **organizer.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo mediante docstrings más precisos, incluyendo advertencias sobre los efectos secundarios de las operaciones, y he reforzado la legibilidad mediante type hints y la extracción de una lógica de validación de rutas que antes estaba dispersa, manteniendo la integridad del comportamiento.
+- `2026-08-14T00:24:18` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de manipulación de procesos y utilidades, clarificando las precondiciones, excepciones y el propósito de las constantes utilizadas.
 - `2026-08-14T00:11:55` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de puntuación y la documentación explícita de los parámetros críticos, asegurando que las reglas de negocio sean más claras para futuros desarrolladores.
 - `2026-08-14T00:11:27` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones internas (`_collect_candidates`, `_refine_by_hash`) y se han clarificado las intenciones del pipeline de detección para facilitar el mantenimiento.
 - `2026-08-14T00:11:00` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de Type Hints detallados en las funciones de procesamiento de datos y la extracción de la lógica de conversión de bytes a una estructura interna más explícita.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-13T14:30:59` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para asegurar que el valor devuelto por `QueryFullProcessImageNameW` sea procesado correctamente, evitando posibles errores de acceso a memoria al manejar el buffer de caracteres.
 - `2026-08-13T14:30:46` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` validando que las entradas del usuario sean tratadas como strings limpias y verificando la existencia de los widgets antes de interactuar con ellos, evitando errores de excepción al procesar datos vacíos o malformados.
 - `2026-08-13T14:29:39` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación explícita de `ratios` y `metrics` para evitar excepciones en tiempo de ejecución, asegurando que cualquier inconsistencia en los datos de entrada resulte en un mensaje de error controlado en lugar de un fallo en el bucle de la interfaz.
-- `2026-08-13T14:28:56` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `hash_file` y `partial_hash` frente a archivos que cambian de tamaño o desaparecen durante el proceso mediante un manejo de excepciones más granular y validaciones preventivas de tipo y estado, asegurando que la app no aborte ante condiciones de carrera en el disco.
-- `2026-08-13T14:20:53` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de entrada tempranas y capturas de excepciones específicas para evitar el desplome ante archivos bloqueados o con metadatos inaccesibles (stat fallidos), asegurando que el bucle de procesamiento sea resiliente sin sacrificar rendimiento.

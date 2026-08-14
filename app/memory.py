@@ -180,7 +180,6 @@ def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
     if len(parts) < 3:
         return None
     try:
-        # Se asegura que la cadena de PID y WorkingSet no sea vacía antes de convertir
         if not parts[-1] or not parts[-2]:
             return None
         ws, pid = int(parts[-1]), int(parts[-2])
@@ -301,13 +300,23 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si un PID pertenece a servicios críticos protegidos del SO."""
+    """
+    Verifica si un PID pertenece a servicios críticos protegidos del SO.
+    Considera los PIDs del núcleo (0, 4) y procesos de sistema base.
+    """
     return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Intenta liberar el 'working set' de un proceso. 
+    Intenta liberar el 'working set' de un proceso específico.
+    
+    Realiza las siguientes validaciones previas:
+      1. Verifica que el sistema sea Windows (NT).
+      2. Valida que el PID sea un entero no protegido.
+      3. Asegura que el proceso está activo.
+      4. Verifica mediante la ruta del ejecutable que no sea un proceso del sistema.
+    
     ADVERTENCIA: Acción destructiva sobre el rendimiento de caché de memoria.
     """
     if os.name != "nt":
