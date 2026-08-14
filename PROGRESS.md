@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 99 | 7 | 15 | 3 | 128 |
-| 2026-08-14 | 125 | 8 | 18 | 10 | 91 |
+| 2026-08-13 | 99 | 7 | 15 | 3 | 124 |
+| 2026-08-14 | 128 | 8 | 18 | 10 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **42**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
@@ -32,7 +32,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **22**
 - `assistant.py`: **21**
 - `scanner.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **19**
 - `browser.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
@@ -41,11 +41,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **14**
 - `duplicates.py`: **14**
 - `branding.py`: **13**
-- `safety.py`: **12**
-- `startup.py`: **6**
+- `safety.py`: **13**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T10:47:16` **startup.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipo en `_extract_quoted_path` y `_resolve_path_from_command` para prevenir fallos catastróficos ante rutas malformadas o entradas inesperadas del registro, asegurando que el proceso de inventariado sea resiliente ante caracteres prohibidos o rutas truncadas.
+- `2026-08-14T10:44:38` **settings.py** (robustez ante casos límite): Se reforzó la robustez del módulo ante archivos JSON dañados o con esquemas truncados, asegurando que la función `load` valide explícitamente la presencia de todas las claves requeridas antes de retornar la configuración, evitando errores de `KeyError` en otras partes de la app cuando se accede a valores faltantes en archivos de configuración antiguos o mal formados.
+- `2026-08-14T10:43:36` **safety.py** (robustez ante casos límite): Se introdujo una validación de profundidad de recursión mediante `sys.setrecursionlimit` (o chequeo manual de profundidad) y se robusteció `_is_reparse_point` para manejar específicamente casos de `PermissionError` al acceder a atributos de archivo, evitando fallos en carpetas inaccesibles durante el escaneo.
 - `2026-08-14T10:33:50` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de integridad de ruta y manejo de excepciones ante rutas inexistentes, asegurando que solo se procesen archivos que residan efectivamente dentro de los directorios raíz esperados y evitando errores por cambios de estado durante la iteración.
 - `2026-08-14T10:24:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `_generate_recommendations` validando la existencia de claves en el diccionario `valor_metricas` y capturando excepciones de formato de cadena para prevenir el colapso del reporte ante datos inesperados.
 - `2026-08-14T10:23:08` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` implementando un chequeo explícito de `is_symlink` y la validación de la existencia de `st_ino` (mediante `stat()`), evitando bloqueos o errores de ciclo infinito ante enlaces simbólicos circulares o archivos que desaparecen durante la iteración en sistemas con alta concurrencia.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T09:43:16` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` de forma más eficiente y reduciendo el acceso a metadatos innecesarios mediante un manejo proactivo de los filtros, lo que disminuye las llamadas al sistema durante el escaneo del árbol de directorios.
 - `2026-08-14T09:42:19` **browser.py** (rendimiento): Se introdujo un diccionario de caché de resultados intermedios (`perf_cache`) en `_sum_directory_recursive` para evitar recalcular el tamaño de subcarpetas que ya fueron procesadas durante el mismo ciclo, optimizando significativamente la performance en estructuras de directorios complejas.
 - `2026-08-14T09:33:55` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `gradient_colors` mediante una pre-verificación de caché y un uso más eficiente de `blend` para evitar recálculos redundantes en llamadas repetidas al mismo número de pasos.
-- `2026-08-14T09:33:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la creación dinámica de listas (`list(...)`) en el flujo principal por una ejecución directa del generador, evitando la asignación de memoria innecesaria y el procesamiento redundante en cada consulta al asistente.
-- `2026-08-14T09:31:58` **settings.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la creación de un método de fábrica `_get_default_config()` para centralizar la lógica de inicialización y la adición de Type Hints detallados en las funciones de validación, facilitando la comprensión del flujo de datos en el sistema de configuraciones.
-- `2026-08-14T09:22:53` **scanner.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de escaneo heurístico y refiné las anotaciones de tipo y estructura en `scan_file` para clarificar la lógica de ejecución del pipeline, facilitando la comprensión del flujo sin alterar el comportamiento.

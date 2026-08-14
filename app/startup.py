@@ -97,7 +97,7 @@ class StartupEntry:
         end_quote: int = raw_cmd.find('"', 1)
         if end_quote == -1:
             return ""
-        path_str: str = raw_cmd[1:end_quote]
+        path_str: str = raw_cmd[1:end_quote].strip()
         
         if not path_str or any(c in path_str for c in '<>|?*'):
             return ""
@@ -163,8 +163,11 @@ class StartupEntry:
         if cmd.startswith('"'):
             return self._extract_quoted_path(cmd)
             
-        parts: List[str] = cmd.split()
-        return self._resolve_and_cache_path(parts[0]) if parts else ""
+        try:
+            parts: List[str] = cmd.split()
+            return self._resolve_and_cache_path(parts[0]) if parts else ""
+        except (AttributeError, ValueError):
+            return ""
         
     @property
     def executable(self) -> str:

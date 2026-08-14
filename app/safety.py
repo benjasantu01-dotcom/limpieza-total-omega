@@ -11,6 +11,7 @@ import os
 import stat
 import re
 import ctypes
+import sys
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable
 from functools import lru_cache
@@ -100,10 +101,9 @@ def _is_system_or_hidden(path: Path) -> bool:
     if os.name != 'nt':
         return False
     try:
-        # Usamos GetFileAttributesW para evitar abrir el file handle
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return attrs != -1 and bool(attrs & (0x02 | 0x04))
-    except (OSError, AttributeError, TypeError):
+    except (OSError, AttributeError, TypeError, PermissionError):
         return False
 
 
@@ -115,7 +115,7 @@ def _is_reparse_point(path: Path) -> bool:
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return attrs != -1 and bool(attrs & 0x400)
-    except (OSError, AttributeError, TypeError):
+    except (OSError, AttributeError, TypeError, PermissionError):
         return False
 
 

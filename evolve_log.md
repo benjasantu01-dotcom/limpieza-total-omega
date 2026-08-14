@@ -902,3 +902,13 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-14T10:34:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-08-14T10:34:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T10:34:29` Corrida terminada. Total usado hoy: 252.
+- `2026-08-14T10:43:08` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-14T10:43:36` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una validación de profundidad de recursión mediante `sys.setrecursionlimit` (o chequeo manual de profundidad) y se robusteció `_is_reparse_point` para manejar específicamente casos de `PermissionError` al acceder a atributos de archivo, evitando fallos en carpetas inaccesibles durante el escaneo.
+- `2026-08-14T10:44:10` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-14T10:44:38` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez del módulo ante archivos JSON dañados o con esquemas truncados, asegurando que la función `load` valide explícitamente la presencia de todas las claves requeridas antes de retornar la configuración, evitando errores de `KeyError` en otras partes de la app cuando se accede a valores faltantes en archivos de configuración antiguos o mal formados.
+- `2026-08-14T10:45:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T10:45:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-14T10:46:53` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-14T10:47:16` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y validación de tipo en `_extract_quoted_path` y `_resolve_path_from_command` para prevenir fallos catastróficos ante rutas malformadas o entradas inesperadas del registro, asegurando que el proceso de inventariado sea resiliente ante caracteres prohibidos o rutas truncadas.
+- `2026-08-14T10:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T10:47:16` Corrida terminada. Total usado hoy: 256.

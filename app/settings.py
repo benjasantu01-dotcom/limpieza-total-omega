@@ -245,6 +245,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = json.loads(content)
             if isinstance(data, dict):
                 config = validate(data)
+                # Forzar integridad asegurando que existan todas las claves esperadas
+                for key in AppSettings.__annotations__:
+                    if key not in config: config[key] = DEFAULTS[key]
                 _cached_settings = config
                 _cached_hash = hashlib.md5(content).hexdigest()
                 _current_path = ruta
