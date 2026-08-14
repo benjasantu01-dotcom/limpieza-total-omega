@@ -57,7 +57,9 @@ SYSTEM_FOLDER_BLOCKLIST: Final[set[str]] = {
 def list_available_drives() -> List[str]:
     """
     Detecta unidades montadas en Windows.
-    Retorna una lista de rutas raíz (ej: ['C:\\', 'D:\\']).
+
+    Returns:
+        List[str]: Lista de rutas raíz (ej: ['C:\\', 'D:\\']). Retorna lista vacía si no es Windows.
     """
     if os.name != "nt":
         return []
@@ -96,8 +98,10 @@ def _is_junction(entry: os.DirEntry[str]) -> bool:
     """
     Determina si una entrada de sistema de archivos es un punto de reparse (Junction/Symlink).
     
-    Uso: Previene bucles infinitos en escaneos recursivos.
-    Retorna: True si es un enlace, False en caso contrario o error de acceso.
+    Args:
+        entry: La entrada del directorio a evaluar.
+    Returns:
+        bool: True si es un enlace, False en caso contrario o error de acceso.
     """
     try:
         return entry.is_symlink() or (os.name == "nt" and "reparse" in os.stat(entry.path).st_file_attributes)
@@ -136,7 +140,11 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está en uso exclusivo intentando abrirlo en modo append binario.
-    Retorna True si el archivo está bloqueado por otro proceso.
+    
+    Args:
+        path: Ruta del archivo a verificar.
+    Returns:
+        bool: True si el archivo está bloqueado por otro proceso o inaccesible.
     """
     try:
         with open(path, "a+b"):
@@ -181,8 +189,10 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea rutas recursivamente buscando archivos basura.
     
-    Precondición: Usa `is_safe_to_modify` para cada directorio y archivo encontrado.
-    Retorna: Lista de objetos JunkFile encontrados.
+    Args:
+        directories: Lista opcional de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+    Returns:
+        List[JunkFile]: Lista de objetos JunkFile encontrados y validados.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -227,7 +237,16 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena una lista de archivos basura según un criterio dado."""
+    """
+    Ordena una lista de archivos basura según un criterio dado.
+
+    Args:
+        files: Lista de objetos JunkFile a ordenar.
+        by: Campo por el cual ordenar ("size" o "date").
+        ascending: Booleano para orden ascendente o descendente.
+    Returns:
+        List[JunkFile]: Nueva lista ordenada.
+    """
     if not isinstance(files, list):
         return []
         
@@ -246,8 +265,12 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Traslada archivos basura detectados a un directorio de revisión.
-    
-    Nota: Solo mueve archivos si el espacio en disco es suficiente y la ruta es segura.
+
+    Args:
+        files: Lista de objetos JunkFile a procesar.
+        review_dir: Ruta donde se moverán los archivos.
+    Returns:
+        Path: Ruta final del directorio de revisión.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
@@ -283,10 +306,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina archivos de la carpeta de revisión.
+    Elimina archivos de la carpeta de revisión tras validación de seguridad.
     
-    Verificación estricta: solo elimina archivos hijos directos, validados por `is_safe_to_modify`.
-    Retorna: Cantidad de archivos eliminados.
+    Args:
+        review_dir: Directorio de donde borrar los archivos revisados.
+    Returns:
+        int: Cantidad de archivos eliminados exitosamente.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
