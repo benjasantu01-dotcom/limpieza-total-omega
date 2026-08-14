@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 0 | 0 | 0 | 0 | 10 |
+| 2026-08-12 | 0 | 0 | 0 | 0 | 6 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 75 | 5 | 9 | 6 | 49 |
+| 2026-08-14 | 78 | 5 | 10 | 6 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **47**
+- robustez ante casos límite: **42**
 - seguridad defensiva: **40**
-- robustez ante casos límite: **39**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
@@ -36,17 +36,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
 - `duplicates.py`: **16**
-- `quarantine.py`: **16**
 - `browser.py`: **16**
 - `branding.py`: **14**
-- `organizer.py`: **13**
+- `organizer.py`: **14**
+- `safety.py`: **13**
 - `main.py`: **13**
-- `safety.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T06:09:03` **safety.py** (robustez ante casos límite): Se ha añadido `_is_permission_denied` para capturar explícitamente errores `PermissionError` y `OSError` (código 5) durante la resolución de rutas, evitando que una denegación de acceso en una carpeta superior termine propagando excepciones no controladas hacia la lógica de la aplicación y fortaleciendo la robustez ante permisos denegados.
+- `2026-08-14T06:08:33` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en `restore_item` para prevenir excepciones críticas en caso de que un archivo de cuarentena haya sido eliminado o bloqueado externamente entre la carga del manifiesto y la operación de restauración.
+- `2026-08-14T06:08:03` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` ante condiciones de carrera y archivos inconsistentes, añadiendo una validación explícita de que la ruta de origen sigue siendo un archivo válido justo antes de la operación de movimiento (`shutil.move`), evitando errores en escenarios donde el archivo desaparece o cambia de estado durante la iteración.
 - `2026-08-14T05:59:19` **main.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la interfaz ante errores de inicialización de componentes visuales (widgets) en hilos asíncronos mediante el uso de verificadores de existencia (`winfo_exists`) y cierres de sesión (`_closing`), evitando que excepciones en la UI detengan el flujo de ejecución o generen estados inconsistentes.
 - `2026-08-14T05:49:04` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y las funciones de análisis ante casos límite donde los permisos de acceso o estructuras de archivos bloquean la ejecución, envolviendo las llamadas críticas en bloques `try...except` más granulares y asegurando que `Path` no falle ante rutas inválidas o nombres de archivo extremos que podrían lanzar `ValueError` durante el procesamiento de `relative_to`.
 - `2026-08-14T05:48:53` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `_is_system_hidden` y `_sum_directory_recursive` añadiendo validaciones explícitas contra rutas inexistentes y estados de error intermitentes (como `FileNotFoundError`), asegurando que el escaneo no aborte ante cambios de estado del sistema de archivos durante la iteración.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T05:19:01` **main.py** (rendimiento): Optimicé el renderizado del dashboard de salud implementando un `self._last_health_state` que evita cálculos de redibujo y configuraciones de widgets innecesarias si los datos de entrada (puntaje, basura, sospechosos, RAM, disco) no han cambiado entre llamadas.
 - `2026-08-14T05:18:14` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje en `compute_score` eliminando la recreación innecesaria de diccionarios y listas dentro de los bucles, y reemplazando el acceso repetitivo por búsqueda directa, mejorando la eficiencia de procesamiento al evitar asignaciones de memoria redundantes en cada llamada.
 - `2026-08-14T05:17:48` **duplicates.py** (rendimiento): Optimizé el proceso de hashing al cerrar los manejadores de archivo inmediatamente después de la lectura, eliminando la necesidad de re-invocar `stat()` para verificar cambios en archivos grandes, y sustituí llamadas redundantes a `Path.is_file()` por el uso de los atributos de `os.DirEntry` ya obtenidos durante el recorrido inicial, reduciendo drásticamente las llamadas al sistema operativo (syscalls) innecesarias.
-- `2026-08-14T05:17:13` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para evitar el costo computacional repetitivo de `entry.path` y `Path(entry.path).resolve()` dentro del bucle, realizando la resolución de rutas solo cuando es estrictamente necesario.
-- `2026-08-14T05:07:42` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiendo la iteración sobre `_CRITERIOS_SALUD` en un generador eficiente que evita el cálculo innecesario de condiciones para todas las métricas, además de pre-compilar los formateadores y evitar accesos redundantes a `getattr` en bucles de alta frecuencia.
-- `2026-08-14T05:06:52` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `StartupEntry` mediante la adición de docstrings detallados en sus métodos privados y el uso de anotaciones para clarificar el flujo de resolución de rutas, facilitando el mantenimiento y la auditoría de seguridad del proceso de resolución perezosa.

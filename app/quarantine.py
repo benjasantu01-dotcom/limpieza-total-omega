@@ -401,10 +401,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         stored_file = (base_path / match.stored_name).resolve()
     except (OSError, ValueError) as e:
         raise RuntimeError(f"Falla de acceso al sandbox: {e}")
-    if not stored_file.exists():
+    
+    if not stored_file.exists() or not stored_file.is_file():
         items.remove(match)
         save_manifest(items, base)
-        raise FileNotFoundError("Archivo no encontrado en cuarentena.")
+        raise FileNotFoundError("Archivo en cuarentena no localizado o inaccesible.")
     
     if not match.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue modificado.")

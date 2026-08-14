@@ -473,3 +473,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-14T05:59:35` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-08-14T05:59:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T05:59:35` Corrida terminada. Total usado hoy: 144.
+- `2026-08-14T06:07:35` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-08-14T06:08:03` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `stage_for_review` ante condiciones de carrera y archivos inconsistentes, añadiendo una validación explícita de que la ruta de origen sigue siendo un archivo válido justo antes de la operación de movimiento (`shutil.move`), evitando errores en escenarios donde el archivo desaparece o cambia de estado durante la iteración.
+- `2026-08-14T06:08:33` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de existencia y accesibilidad en `restore_item` para prevenir excepciones críticas en caso de que un archivo de cuarentena haya sido eliminado o bloqueado externamente entre la carga del manifiesto y la operación de restauración.
+- `2026-08-14T06:08:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-14T06:09:03` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido `_is_permission_denied` para capturar explícitamente errores `PermissionError` y `OSError` (código 5) durante la resolución de rutas, evitando que una denegación de acceso en una carpeta superior termine propagando excepciones no controladas hacia la lógica de la aplicación y fortaleciendo la robustez ante permisos denegados.
+- `2026-08-14T06:09:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T06:09:03` Corrida terminada. Total usado hoy: 148.

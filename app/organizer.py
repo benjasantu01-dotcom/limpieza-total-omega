@@ -268,10 +268,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile):
             continue
         try:
-            if junk_file.path.exists() and os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
-                if shutil.disk_usage(dest).free > junk_file.size_bytes:
-                    target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-                    shutil.move(str(junk_file.path), str(target))
+            # Re-verificar existencia y estado justo antes del movimiento para mitigar condiciones de carrera
+            if junk_file.path.exists() and junk_file.path.is_file():
+                if os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
+                    if shutil.disk_usage(dest).free > junk_file.size_bytes:
+                        target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
+                        shutil.move(str(junk_file.path), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
     return dest

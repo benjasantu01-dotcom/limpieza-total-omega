@@ -72,6 +72,11 @@ class _IntegrityCheck(NamedTuple):
     predicate: ViolationPredicate
 
 
+def _is_permission_denied(e: Exception) -> bool:
+    """Verifica si una excepción de sistema indica falta de permisos."""
+    return isinstance(e, (PermissionError, OSError)) and getattr(e, 'errno', 0) in (13, 5)
+
+
 def _has_invalid_chars(path_str: str) -> bool:
     """Valida la presencia de caracteres no permitidos o rutas reservadas (Windows)."""
     norm = os.path.normpath(path_str)
@@ -184,6 +189,8 @@ def normalize(path: PathLike) -> Path:
     try:
         return Path(str_path).expanduser().resolve()
     except (OSError, RuntimeError) as e:
+        if _is_permission_denied(e):
+            raise ValueError("Acceso denegado durante la normalización.")
         raise ValueError(f"Error al normalizar: {e}")
 
 
