@@ -1238,3 +1238,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-14T01:34:01` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-14T01:34:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T01:34:01` Corrida terminada. Total usado hoy: 40.
+- `2026-08-14T01:42:16` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-14T01:42:50` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-14T01:43:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-14T01:43:35` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para archivos con tamaño cero (vacíos) en `_check_file_integrity` para prevenir la manipulación accidental de archivos de configuración o marcadores de sistema que, aunque no están protegidos por nombre, suelen ser críticos cuando su tamaño es nulo, mejorando la robustez ante casos límite.
+- `2026-08-14T01:43:43` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez ante archivos inexistentes o bloqueados durante el acceso a sus atributos, encapsulando las llamadas a `path.suffix` y `path.parts` dentro de bloques `try-except` para prevenir que una excepción inesperada (como un error de codificación en el nombre del archivo) interrumpa el escaneo completo.
+- `2026-08-14T01:43:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T01:43:43` Corrida terminada. Total usado hoy: 44.

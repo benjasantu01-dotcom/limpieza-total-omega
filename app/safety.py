@@ -143,7 +143,8 @@ def _check_file_integrity(p: Path) -> None:
             _IntegrityCheck("en uso", lambda: _is_file_in_use(p)),
             _IntegrityCheck("sistema/oculto", lambda: _is_system_or_hidden(p)),
             _IntegrityCheck("hard link detectado", lambda: p.is_file() and p.stat().st_nlink > 1),
-            _IntegrityCheck("ADS (flujos alternativos)", lambda: _has_alternate_data_stream(p))
+            _IntegrityCheck("ADS (flujos alternativos)", lambda: _has_alternate_data_stream(p)),
+            _IntegrityCheck("archivo vacío", lambda: p.is_file() and p.stat().st_size == 0)
         ]
     except OSError:
         raise UnsafePathError(f"Error de E/S al auditar {p.name}: archivo posiblemente eliminado.")
@@ -315,5 +316,6 @@ def describe_protection(path: PathLike) -> str:
         if _is_file_in_use(p): return f"'{p}' en uso por otro proceso."
         if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema."
         if _has_alternate_data_stream(p): return f"'{p}' contiene ADS."
+        if p.is_file() and p.stat().st_size == 0: return f"'{p}' es un archivo vacío."
     if is_sensitive_file(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."

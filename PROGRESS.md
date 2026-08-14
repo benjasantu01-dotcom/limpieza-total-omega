@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 44 | 2 | 7 | 5 | 56 |
+| 2026-08-12 | 44 | 2 | 7 | 5 | 52 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 24 | 3 | 4 | 3 | 6 |
+| 2026-08-14 | 26 | 3 | 5 | 3 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 - seguridad defensiva: **35**
 - rendimiento: **34**
 
@@ -39,14 +39,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **17**
 - `browser.py`: **16**
 - `duplicates.py`: **16**
+- `scanner.py`: **15**
 - `organizer.py`: **14**
-- `scanner.py`: **14**
 - `main.py`: **11**
-- `safety.py`: **9**
+- `safety.py`: **10**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T01:43:43` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o bloqueados durante el acceso a sus atributos, encapsulando las llamadas a `path.suffix` y `path.parts` dentro de bloques `try-except` para prevenir que una excepción inesperada (como un error de codificación en el nombre del archivo) interrumpa el escaneo completo.
+- `2026-08-14T01:43:35` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos con tamaño cero (vacíos) en `_check_file_integrity` para prevenir la manipulación accidental de archivos de configuración o marcadores de sistema que, aunque no están protegidos por nombre, suelen ser críticos cuando su tamaño es nulo, mejorando la robustez ante casos límite.
 - `2026-08-14T01:33:54` **memory.py** (robustez ante casos límite): Se mejora `parse_windows_process_csv` para ser robusto ante casos límite como líneas vacías, formatos de CSV inesperados o valores PID/WorkingSet no numéricos, garantizando que el bucle de procesamiento no falle ante datos parciales del sistema.
 - `2026-08-14T01:32:31` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_generate_recommendations` ante configuraciones o estados inesperados, añadiendo una validación de seguridad de tipo y garantizando que el acceso al diccionario `vals` nunca lance una excepción aunque el sistema se expanda.
 - `2026-08-14T01:23:18` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y las funciones auxiliares incorporando una gestión explícita de `OSError` (como `PermissionError` o `FileNotFoundError`) mediante un bloque `try-except` más granular para asegurar que el escaneo no se detenga ante archivos bloqueados o inaccesibles, manteniendo la integridad del proceso de recolección de datos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T00:52:00` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un generador y evitando recrear listas intermedias mediante `yield`, reduciendo el uso de memoria durante el recorrido inicial del disco.
 - `2026-08-14T00:43:14` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` dentro del bucle de iteración (`os.scandir` ya provee objetos `DirEntry` que contienen la ruta y los metadatos necesarios), reduciendo drásticamente la carga sobre el recolector de basura y mejorando la velocidad de escaneo.
 - `2026-08-14T00:42:59` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo integrando el chequeo de `is_protected_path` directamente dentro del bucle de `os.scandir` en `_sum_directory_recursive` para evitar llamadas redundantes a `Path.resolve()` y `is_protected_path()` sobre archivos individuales que ya fueron validados al entrar en su directorio padre.
-- `2026-08-14T00:41:47` **assistant.py** (rendimiento): Optimicé el rendimiento de `_gen_problems` convirtiendo la tupla `criterios` en una constante fuera de la función para evitar su recreación en cada llamada, y reemplacé la conversión a `list()` por un generador para procesar solo los elementos necesarios hasta alcanzar el límite de 3.
-- `2026-08-14T00:32:19` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de carga, validación y gestión de rutas para mejorar la mantenibilidad y claridad del flujo de datos, sin alterar el comportamiento funcional.

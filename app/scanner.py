@@ -115,8 +115,11 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta nombres con múltiples extensiones que ocultan un ejecutable (ej: .pdf.exe)."""
-    if DOUBLE_EXTENSION_RE.search(path.name):
-        return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
+    try:
+        if DOUBLE_EXTENSION_RE.search(path.name):
+            return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
+    except Exception:
+        pass
     return None
 
 
@@ -125,12 +128,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not entry:
         return None
     
-    # Optimización: uso de set para intersección rápida evitando iteración manual
-    path_parts = {p.lower() for p in path.parts}
-    if WATCHED_FOLDERS.isdisjoint(path_parts):
-        return None
-
     try:
+        # Optimización: uso de set para intersección rápida evitando iteración manual
+        path_parts = {p.lower() for p in path.parts}
+        if WATCHED_FOLDERS.isdisjoint(path_parts):
+            return None
+
         # st_mtime puede fallar si el archivo fue bloqueado o eliminado por otro proceso
         file_stat = entry.stat()
         if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
@@ -142,9 +145,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta binarios que imitan procesos críticos del sistema ubicados fuera de System32."""
-    if not path or not path.name:
-        return None
-        
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
             # Comprobación de ruta segura ante fallos de string o ausencia de parent
@@ -158,10 +158,6 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Ejecuta el pipeline de heurísticas sobre un archivo dado y retorna la lista de hallazgos.
-    
-    El proceso se divide en:
-    1. Reglas universales aplicables a cualquier extensión.
-    2. Reglas específicas para ejecutables (según extensión).
     """
     if not isinstance(path, Path):
         return []
