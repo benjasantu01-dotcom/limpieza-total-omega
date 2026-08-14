@@ -186,6 +186,7 @@ def _sum_directory_recursive(
     Args:
         root_dir: Ruta absoluta del directorio a sumar.
         visited: Set para rastrear nodos y prevenir recursión infinita.
+        cache: Diccionario para memorización de resultados de subdirectorios.
         depth: Límite de profundidad (20) para prevenir stack overflow.
     """
     if depth > 20 or root_dir in visited:

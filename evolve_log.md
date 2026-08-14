@@ -803,3 +803,10 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-14T09:33:55` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo del degradado en `gradient_colors` mediante una pre-verificación de caché y un uso más eficiente de `blend` para evitar recálculos redundantes en llamadas repetidas al mismo número de pasos.
 - `2026-08-14T09:33:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T09:33:55` Corrida terminada. Total usado hoy: 228.
+- `2026-08-14T09:41:46` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-14T09:42:19` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se introdujo un diccionario de caché de resultados intermedios (`perf_cache`) en `_sum_directory_recursive` para evitar recalcular el tamaño de subcarpetas que ya fueron procesadas durante el mismo ciclo, optimizando significativamente la performance en estructuras de directorios complejas.
+- `2026-08-14T09:42:44` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-14T09:43:16` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de archivos utilizando `os.scandir` de forma más eficiente y reduciendo el acceso a metadatos innecesarios mediante un manejo proactivo de los filtros, lo que disminuye las llamadas al sistema durante el escaneo del árbol de directorios.
+- `2026-08-14T09:43:26` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-14T09:43:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T09:43:26` Corrida terminada. Total usado hoy: 232.

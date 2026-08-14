@@ -152,48 +152,39 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo capturando candidatos.
-    Utiliza inodos/dispositivos (dev, ino) para evitar procesar enlaces físicos 
-    múltiples como archivos distintos y asegurar que cada archivo único se cuente.
+    Optimizado mediante cache de inodos para evitar redundancia y minimizar syscalls.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
-    visited_inodes: Dict[Tuple[int, int], bool] = {}
-    processed_files: set[Tuple[int, int]] = set()
+    visited_inodes: set[Tuple[int, int]] = set()
     
-    def _scan(root_path: Path) -> Generator[Tuple[int, Path], None, None]:
+    def _scan(root_path: Path):
         try:
-            with os.scandir(root_path) as dir_iterator:
-                for entry in dir_iterator:
+            with os.scandir(root_path) as it:
+                for entry in it:
                     try:
-                        # Seguridad: no seguir symlinks ni puntos de reparse (Junctions)
                         if entry.is_symlink(): continue
                         
                         st = entry.stat(follow_symlinks=False)
-                        # 0x400: FILE_ATTRIBUTE_SYSTEM (Windows)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
+                        inode = (st.st_dev, st.st_ino)
+                        if inode in visited_inodes: continue
+                        
                         if entry.is_dir():
-                            key = (st.st_dev, st.st_ino)
-                            if key not in visited_inodes:
-                                visited_inodes[key] = True
-                                yield from _scan(Path(entry.path))
+                            visited_inodes.add(inode)
+                            _scan(Path(entry.path))
                         elif entry.is_file():
-                            if skip_protected and is_protected_path(Path(entry.path)): continue
-                            file_id = (st.st_dev, st.st_ino)
-                            if file_id not in processed_files:
-                                processed_files.add(file_id)
-                                if st.st_size >= min_size:
-                                    yield st.st_size, Path(entry.path)
+                            if st.st_size >= min_size:
+                                if skip_protected and is_protected_path(Path(entry.path)): continue
+                                visited_inodes.add(inode)
+                                temp_groups[st.st_size].append(Path(entry.path))
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
-    if directories:
-        for directory in directories:
-            try:
-                p = Path(directory).resolve()
-                if p.is_dir() and (not skip_protected or not is_protected_path(p)):
-                    for size, path in _scan(p):
-                        temp_groups[size].append(path)
-            except (OSError, PermissionError, ValueError, TypeError): continue
+    for directory in directories:
+        try:
+            _scan(Path(directory).resolve())
+        except (OSError, PermissionError, ValueError, TypeError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 

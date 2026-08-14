@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 111 | 7 | 17 | 3 | 138 |
-| 2026-08-14 | 114 | 6 | 15 | 7 | 86 |
+| 2026-08-13 | 109 | 7 | 16 | 3 | 137 |
+| 2026-08-14 | 116 | 6 | 15 | 7 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **38**
-- rendimiento: **32**
+- robustez ante casos límite: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **20**
 - `assistant.py`: **20**
 - `scanner.py`: **19**
-- `quarantine.py`: **18**
-- `browser.py`: **17**
+- `browser.py`: **18**
 - `memory.py`: **17**
+- `quarantine.py`: **17**
 - `organizer.py`: **16**
 - `healthscore.py`: **16**
+- `duplicates.py`: **15**
 - `branding.py`: **14**
-- `duplicates.py`: **14**
 - `main.py`: **14**
-- `safety.py`: **12**
+- `safety.py`: **11**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T09:43:16` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` de forma más eficiente y reduciendo el acceso a metadatos innecesarios mediante un manejo proactivo de los filtros, lo que disminuye las llamadas al sistema durante el escaneo del árbol de directorios.
+- `2026-08-14T09:42:19` **browser.py** (rendimiento): Se introdujo un diccionario de caché de resultados intermedios (`perf_cache`) en `_sum_directory_recursive` para evitar recalcular el tamaño de subcarpetas que ya fueron procesadas durante el mismo ciclo, optimizando significativamente la performance en estructuras de directorios complejas.
 - `2026-08-14T09:33:55` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `gradient_colors` mediante una pre-verificación de caché y un uso más eficiente de `blend` para evitar recálculos redundantes en llamadas repetidas al mismo número de pasos.
 - `2026-08-14T09:33:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la creación dinámica de listas (`list(...)`) en el flujo principal por una ejecución directa del generador, evitando la asignación de memoria innecesaria y el procesamiento redundante en cada consulta al asistente.
 - `2026-08-14T09:31:58` **settings.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la creación de un método de fábrica `_get_default_config()` para centralizar la lógica de inicialización y la adición de Type Hints detallados en las funciones de validación, facilitando la comprensión del flujo de datos en el sistema de configuraciones.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T09:02:00` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación interna mediante docstrings estructurados, detallando los casos límite y las precondiciones de seguridad que dictan el comportamiento del módulo.
 - `2026-08-14T09:01:34` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones auxiliares de bajo nivel para aclarar su comportamiento, parámetros y manejo de errores, facilitando el mantenimiento.
 - `2026-08-14T08:52:34` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `_gen_problems` para utilizar un nombre de función más descriptivo y la adición de Type Hints precisos, facilitando la comprensión del flujo de evaluación de riesgos del sistema.
-- `2026-08-14T08:51:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de los validadores integrando chequeos específicos para evitar el procesamiento de valores `None` o mal formados, previniendo excepciones innecesarias en `_Validators.int` y `_Validators.path`, lo que asegura una carga más resiliente frente a configuraciones corrompidas.
-- `2026-08-14T08:51:18` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `process_entry` ante entradas nulas o rutas inválidas mediante validaciones explícitas y manejo defensivo de `os.scandir` para evitar fallos por rutas que cambian o desaparecen durante la iteración.
