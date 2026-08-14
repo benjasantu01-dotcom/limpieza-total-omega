@@ -54,7 +54,10 @@ SYSTEM_FOLDER_BLOCKLIST: Final[set[str]] = {
 
 
 def list_available_drives() -> List[str]:
-    """Detecta unidades montadas en sistemas Windows devolviendo una lista de rutas raíz."""
+    """
+    Detecta unidades montadas en Windows.
+    Retorna una lista de rutas raíz (ej: ['C:\\', 'D:\\']).
+    """
     if os.name != "nt":
         return []
     drives: List[str] = []
@@ -92,8 +95,8 @@ def _is_junction(entry: os.DirEntry[str]) -> bool:
     """
     Determina si una entrada de sistema de archivos es un punto de reparse (Junction/Symlink).
     
-    Se utiliza para prevenir que el escaneo recursivo entre en bucles infinitos 
-    o siga enlaces fuera de los directorios de usuario.
+    Uso: Previene bucles infinitos en escaneos recursivos.
+    Retorna: True si es un enlace, False en caso contrario o error de acceso.
     """
     try:
         return entry.is_symlink() or (os.name == "nt" and "reparse" in os.stat(entry.path).st_file_attributes)
@@ -102,13 +105,14 @@ def _is_junction(entry: os.DirEntry[str]) -> bool:
 
 
 def _is_junk_path(path: Path) -> bool:
-    """Valida si el archivo posee una extensión categorizada como 'basura' según JUNK_EXTENSIONS."""
+    """Valida si el archivo posee una extensión categorizada como 'basura'."""
     return path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
 def _generate_unique_target(target: Path) -> Path:
     """
     Genera una ruta única para un archivo destino evitando colisiones por nombre.
+    Si el destino existe, añade un sufijo numérico incremental.
     """
     if not target.exists():
         return target
@@ -130,7 +134,8 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está en uso exclusivo mediante un intento de apertura.
+    Verifica si un archivo está en uso exclusivo intentando abrirlo en modo append binario.
+    Retorna True si el archivo está bloqueado por otro proceso.
     """
     try:
         with open(path, "a+b"):
@@ -140,7 +145,11 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Valida si una instancia de JunkFile puede ser movida de forma segura.
+    Evalúa si el movimiento es seguro basándose en:
+    1. Existencia y atributos de archivo (no oculto/sistema).
+    2. Evitación de ciclos (no mover dentro de sí mismo).
+    3. Bloqueos de archivo y consistencia de unidad (debe ser la misma).
+    4. Validación de seguridad mediante `is_safe_to_modify`.
     """
     try:
         current_abs = junk_file.path.resolve()
@@ -169,7 +178,10 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Escanea rutas de disco en busca de archivos que coincidan con los criterios de limpieza.
+    Escanea rutas recursivamente buscando archivos basura.
+    
+    Precondición: Usa `is_safe_to_modify` para cada directorio y archivo encontrado.
+    Retorna: Lista de objetos JunkFile encontrados.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -216,9 +228,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """
-    Ordena una lista de archivos basura basándose en metadatos específicos.
-    """
+    """Ordena una lista de archivos basura según un criterio dado."""
     if not isinstance(files, list):
         return []
         
@@ -236,14 +246,15 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Traslada los archivos detectados a una carpeta designada para revisión humana.
+    Traslada archivos basura detectados a un directorio de revisión.
+    
+    Nota: Solo mueve archivos si el espacio en disco es suficiente y la ruta es segura.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
 
     dest: Path = Path(review_dir).expanduser().resolve()
     
-    # Validar integridad del destino antes de intentar crear o mover
     if not is_safe_to_modify(dest):
         return dest
         
@@ -258,7 +269,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             if junk_file.path.exists() and junk_file.path.is_file():
                 if os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
-                    # Chequear espacio disponible antes de mover
                     usage = shutil.disk_usage(dest)
                     if usage.free > junk_file.size_bytes:
                         target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
@@ -271,7 +281,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina permanentemente los archivos contenidos en el directorio de revisión.
+    Elimina archivos de la carpeta de revisión.
+    
+    Verificación estricta: solo elimina archivos hijos directos, validados por `is_safe_to_modify`.
+    Retorna: Cantidad de archivos eliminados.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -286,7 +299,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if item.is_file() and not item.is_symlink():
                     path_to_delete = item.resolve()
-                    # Verificación estricta: asegurar que el ítem sea hijo directo del destino
                     if dest == path_to_delete.parent and is_safe_to_modify(path_to_delete):
                         path_to_delete.unlink()
                         count += 1

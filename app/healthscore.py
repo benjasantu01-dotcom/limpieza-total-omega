@@ -21,6 +21,7 @@ import math
 ScoreMap: TypeAlias = Dict[str, float]
 
 class RecommendationRule(NamedTuple):
+    """Define una condición de advertencia basada en umbrales de métricas."""
     area: str
     threshold: float
     message_format: str
@@ -81,6 +82,7 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
 )
 
 def _validate_weights() -> bool:
+    """Verifica la integridad de los pesos definidos para evitar divisiones por cero."""
     return math.isfinite(_TOTAL_WEIGHTS) and _TOTAL_WEIGHTS > 0 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
 
 
@@ -96,6 +98,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
+        """Asegura que los valores de entrada estén dentro de rangos lógicos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -106,6 +109,7 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
+        """Verifica que todas las métricas contengan números finitos válidos."""
         return math.isfinite(self.junk_mb + self.suspicious_count + self.suspicious_warnings + 
                              self.memory_available_percent + self.disk_free_percent + 
                              self.duplicate_mb + self.startup_count + self.quarantined_count)
@@ -124,10 +128,12 @@ class HealthResult:
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+    """Restringe un valor numérico a un rango acotado [low, high]."""
     return max(low, min(high, value)) if math.isfinite(value) else low
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Conversión segura a float manejando excepciones de tipo."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
@@ -135,28 +141,29 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 
 def _to_int(value: Any, default: int = 0) -> int:
+    """Conversión segura a int manejando excepciones de tipo."""
     try:
         return int(float(value))
     except (TypeError, ValueError): return default
 
 
 def score_junk(junk_mb: float | int) -> float:
-    """Calcula el ratio de salud de archivos basura (0.0=mal, 1.0=bien)."""
+    """Normaliza el volumen de basura a un ratio (1.0 = impecable, 0.0 = lleno)."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Calcula el ratio de seguridad penalizando amenazas y advertencias."""
+    """Calcula el ratio de seguridad penalizando amenazas (fuerte) y advertencias (leve)."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> float:
-    """Calcula el ratio de salud de memoria basándose en el porcentaje libre."""
+    """Normaliza la disponibilidad de RAM basándose en el límite definido."""
     return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0
 
 
 def score_disk(free_percent: float | int) -> float:
-    """Calcula el ratio de salud de disco basándose en el porcentaje libre."""
+    """Normaliza el espacio en disco libre relativo al umbral mínimo deseado."""
     return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0
 
 
@@ -186,8 +193,8 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
-    # Mapeo directo para evitar llamadas a .get() repetitivas
-    vals = {
+    # Diccionario de acceso rápido para mapear área a la métrica cruda relevante
+    valor_metricas: Dict[str, float | int] = {
         "seguridad": metrics.suspicious_count, 
         "disco": metrics.disk_free_percent, 
         "memoria": metrics.memory_available_percent, 
@@ -199,8 +206,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     for rule in _RECOMMENDATION_RULES:
         ratio = ratios.get(rule.area)
         if ratio is not None and math.isfinite(ratio) and ratio < rule.threshold:
-            val = vals[rule.area]
-            # Defensa: Validar que el valor a formatear sea numérico y finito
+            val = valor_metricas.get(rule.area, 0)
             if not isinstance(val, (int, float)) or not math.isfinite(val):
                 continue
             try:

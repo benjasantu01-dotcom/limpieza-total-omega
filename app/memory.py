@@ -316,10 +316,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """
-    Verifica si un PID pertenece a servicios críticos protegidos del SO.
-    Considera los PIDs del núcleo (0, 4) y procesos de sistema base.
-    """
+    """Verifica si un PID pertenece a servicios críticos protegidos del SO."""
     return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
@@ -347,37 +344,35 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     psapi = getattr(ctypes.windll, "psapi", None)
     
     if psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
-        return False, "Error de sistema: PSAPI no disponible o incompatible."
+        return False, "Error de sistema: PSAPI no disponible."
 
+    # Obtención de handle con permisos de consulta y cambio de cuota
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
         return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
         
     try:
+        # 1. Verificación de estado vivo
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
             
+        # 2. Verificación de ruta (Seguridad)
         buf = ctypes.create_unicode_buffer(4096)
         size = ctypes.c_ulong(4096)
-        
-        # Validación de seguridad: obtener ruta y chequear contra lista protegida
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
-            exe_path = os.path.normpath(buf.value)
-            if is_protected_path(exe_path):
+            if is_protected_path(os.path.normpath(buf.value)):
                 return False, "Operación denegada: ruta de ejecutable protegida."
         else:
             return False, "Error interno: no se pudo verificar la identidad del proceso."
             
+        # 3. Ejecución del comando de limpieza
         if not psapi.EmptyWorkingSet(proc_handle):
-            error_code = kernel32.GetLastError()
-            if error_code == ERROR_ACCESS_DENIED:
-                return False, "Acceso denegado: privilegios insuficientes."
-            return False, f"Error al intentar liberar memoria (código {error_code})."
+            err = kernel32.GetLastError()
+            return False, f"Acceso denegado: privilegios insuficientes (error {err})." if err == ERROR_ACCESS_DENIED else f"Error al intentar liberar memoria (código {err})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, MemoryError, OSError) as e:
         return False, f"Ocurrió un error técnico al gestionar el proceso: {str(e)}"
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)
