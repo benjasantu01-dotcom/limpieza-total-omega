@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 114 | 7 | 17 | 3 | 139 |
-| 2026-08-14 | 111 | 6 | 15 | 7 | 85 |
+| 2026-08-13 | 111 | 7 | 17 | 3 | 138 |
+| 2026-08-14 | 114 | 6 | 15 | 7 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **55**
+- legibilidad y documentación: **56**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **41**
-- rendimiento: **30**
+- robustez ante casos límite: **38**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
+- `settings.py`: **20**
+- `assistant.py`: **20**
 - `scanner.py`: **19**
-- `settings.py`: **19**
-- `assistant.py`: **19**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
 - `browser.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **16**
-- `duplicates.py`: **15**
-- `main.py`: **15**
-- `branding.py`: **13**
+- `healthscore.py`: **16**
+- `branding.py`: **14**
+- `duplicates.py`: **14**
+- `main.py`: **14**
 - `safety.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T09:33:55` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `gradient_colors` mediante una pre-verificación de caché y un uso más eficiente de `blend` para evitar recálculos redundantes en llamadas repetidas al mismo número de pasos.
+- `2026-08-14T09:33:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la creación dinámica de listas (`list(...)`) en el flujo principal por una ejecución directa del generador, evitando la asignación de memoria innecesaria y el procesamiento redundante en cada consulta al asistente.
+- `2026-08-14T09:31:58` **settings.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la creación de un método de fábrica `_get_default_config()` para centralizar la lógica de inicialización y la adición de Type Hints detallados en las funciones de validación, facilitando la comprensión del flujo de datos en el sistema de configuraciones.
 - `2026-08-14T09:22:53` **scanner.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de escaneo heurístico y refiné las anotaciones de tipo y estructura en `scan_file` para clarificar la lógica de ejecución del pipeline, facilitando la comprensión del flujo sin alterar el comportamiento.
 - `2026-08-14T09:21:55` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings detallados en las funciones de manipulación de archivos para aclarar las precondiciones de seguridad y el comportamiento ante errores.
 - `2026-08-14T09:13:15` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican las precondiciones, excepciones manejadas y los efectos laterales de las funciones críticas, facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T08:52:34` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `_gen_problems` para utilizar un nombre de función más descriptivo y la adición de Type Hints precisos, facilitando la comprensión del flujo de evaluación de riesgos del sistema.
 - `2026-08-14T08:51:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de los validadores integrando chequeos específicos para evitar el procesamiento de valores `None` o mal formados, previniendo excepciones innecesarias en `_Validators.int` y `_Validators.path`, lo que asegura una carga más resiliente frente a configuraciones corrompidas.
 - `2026-08-14T08:51:18` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `process_entry` ante entradas nulas o rutas inválidas mediante validaciones explícitas y manejo defensivo de `os.scandir` para evitar fallos por rutas que cambian o desaparecen durante la iteración.
-- `2026-08-14T08:42:03` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `ensure_safe_to_modify` ante entradas inválidas o None agregando validaciones preventivas más estrictas y manejando excepciones de tipo de forma explícita para evitar propagar errores inesperados hacia los bucles de la aplicación.
-- `2026-08-14T08:41:31` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `os.path.commonpath` al verificar la colisión entre origen y destino, y sustituí chequeos genéricos por un bloque `try-except` más específico en el cálculo de hash para evitar errores silenciados.
-- `2026-08-14T08:40:56` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura más estrictas sobre los parámetros de entrada y el estado del sistema de archivos, previniendo comportamientos indefinidos al recibir rutas vacías, inválidas o al encontrar errores de acceso durante la iteración.

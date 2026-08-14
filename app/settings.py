@@ -95,24 +95,28 @@ _cached_settings: AppSettings | None = None
 _cached_hash: str | None = None
 _current_path: Path | None = None
 
-DEFAULTS: Final[AppSettings] = {
-    ConfigKey.TEMA.value: "oscuro",
-    ConfigKey.ACENTO.value: "menta",
-    ConfigKey.MOSTRAR_BARRAS.value: True,
-    ConfigKey.ANIMACIONES.value: True,
-    ConfigKey.CONFIRMAR_SIEMPRE.value: True,
-    ConfigKey.ABRIR_EN.value: "Salud",
-    ConfigKey.RECORDAR_ULTIMA_CARPETA.value: True,
-    ConfigKey.ULTIMA_CARPETA.value: "",
-    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB.value: 64,
-    ConfigKey.TOP_ARCHIVOS.value: 15,
-    ConfigKey.TOP_PROCESOS.value: 15,
-    ConfigKey.ANALISIS_EN_PARALELO.value: True,
-    ConfigKey.ASISTENTE_ACTIVADO.value: False,
-    ConfigKey.ASISTENTE_CLAVE_API.value: "",
-    ConfigKey.ASISTENTE_ENVIAR_METRICAS.value: True,
-    ConfigKey.ASISTENTE_MODELO.value: "gemini-3.1-flash-lite",
-}
+def _get_default_config() -> AppSettings:
+    """Genera un diccionario fresco con los valores de fábrica."""
+    return {
+        ConfigKey.TEMA.value: "oscuro",
+        ConfigKey.ACENTO.value: "menta",
+        ConfigKey.MOSTRAR_BARRAS.value: True,
+        ConfigKey.ANIMACIONES.value: True,
+        ConfigKey.CONFIRMAR_SIEMPRE.value: True,
+        ConfigKey.ABRIR_EN.value: "Salud",
+        ConfigKey.RECORDAR_ULTIMA_CARPETA.value: True,
+        ConfigKey.ULTIMA_CARPETA.value: "",
+        ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB.value: 64,
+        ConfigKey.TOP_ARCHIVOS.value: 15,
+        ConfigKey.TOP_PROCESOS.value: 15,
+        ConfigKey.ANALISIS_EN_PARALELO.value: True,
+        ConfigKey.ASISTENTE_ACTIVADO.value: False,
+        ConfigKey.ASISTENTE_CLAVE_API.value: "",
+        ConfigKey.ASISTENTE_ENVIAR_METRICAS.value: True,
+        ConfigKey.ASISTENTE_MODELO.value: "gemini-3.1-flash-lite",
+    }
+
+DEFAULTS: Final[AppSettings] = _get_default_config()
 
 _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
     ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: (0, 1024 * 1024),
@@ -211,7 +215,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 
 def validate(raw_values: Any) -> AppSettings:
     """Aplica validadores a un diccionario crudo, retornando defaults ante discrepancias."""
-    config = DEFAULTS.copy()
+    config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     for key, validator in _VALIDATOR_MAP.items():
         if key in raw_values:
@@ -228,10 +232,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     global _cached_settings, _current_path, _cached_hash
     ruta = settings_path(custom_base)
     
-    if not ruta.exists(): return DEFAULTS.copy()
+    if not ruta.exists(): return _get_default_config()
     
     try:
-        if not _Validators._is_safe_path(ruta.parent): return DEFAULTS.copy()
+        if not _Validators._is_safe_path(ruta.parent): return _get_default_config()
         
         if _cached_settings is not None and _current_path == ruta:
             return _cached_settings.copy()
@@ -247,7 +251,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 return config.copy()
     except (OSError, PermissionError, json.JSONDecodeError, ValueError):
         pass
-    return DEFAULTS.copy()
+    return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Guarda configuración al disco de forma atómica, validando integridad y seguridad."""
@@ -299,12 +303,12 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Sobrescribe la configuración actual con los valores de fábrica."""
-    save(DEFAULTS, custom_base)
-    return DEFAULTS.copy()
+    save(_get_default_config(), custom_base)
+    return _get_default_config()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Extrae un valor único de la configuración."""
-    return load(custom_base).get(key, DEFAULTS.get(key))
+    return load(custom_base).get(key, _get_default_config().get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
     """Recupera la clave API, dando prioridad a la variable de entorno sobre el archivo."""

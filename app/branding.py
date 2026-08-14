@@ -262,11 +262,6 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
     Realiza una interpolación lineal (lerp) entre dos colores HEX.
-    
-    Args:
-        start: Color hexadecimal inicial.
-        end: Color hexadecimal final.
-        ratio: Factor de mezcla entre 0.0 y 1.0.
     """
     ratio_clamped = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
@@ -358,13 +353,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         p = Path(destination).expanduser().resolve()
-        # Validación estricta usando ensure_safe_to_modify para prevenir accesos no autorizados
         ensure_safe_to_modify(p)
         
         parent_dir = p.parent
         if not parent_dir.exists():
             parent_dir.mkdir(parents=True, exist_ok=True)
-        # Verificamos que el destino sea un directorio válido y no un archivo de sistema/bloqueado
         if not parent_dir.is_dir():
             return None
             
@@ -441,16 +434,6 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               fill: Optional[HexColor] = None) -> None:
     """
     Dibuja un medidor circular tipo anillo para representar porcentajes de salud.
-    
-    Args:
-        canvas: Objeto Canvas de tkinter donde dibujar.
-        percent: Valor de salud [0, 100].
-        size: Diámetro total del círculo en píxeles.
-        thickness: Ancho del anillo en píxeles.
-        canvas_x: Offset horizontal del centro del componente.
-        canvas_y: Offset vertical del centro del componente.
-        track: Color de fondo (opcional).
-        fill: Color de progreso (opcional, por defecto usa el color de salud).
     """
     if not hasattr(canvas, "create_arc"): return
     try:

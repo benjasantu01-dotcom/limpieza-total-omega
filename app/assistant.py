@@ -448,7 +448,6 @@ def _identify_active_problems(ctx: SystemContext) -> Generator[str, None, None]:
     encontrados: int = 0
     for attr, limit, op, msg in _CRITERIOS_SALUD:
         val: Any = getattr(ctx, attr, 0)
-        # Evaluamos la condición lógica asegurando finitud numérica
         if (op == "<" and val < limit) or (op == ">" and val > limit):
             yield msg.format(val)
             encontrados += 1
