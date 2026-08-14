@@ -149,14 +149,17 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
-    """Filtro de seguridad para la iteración de directorios."""
+    """Determina si una entrada de directorio debe omitirse por seguridad o por ser contenido protegido."""
     if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path'):
         return True
     try:
+        # Excluir archivos de configuración/datos sensibles
         if _is_excluded_file(entry.name):
             return True
+        # Excluir archivos ocultos del sistema
         if _is_system_hidden(entry.path, kernel32):
             return True
+        # Excluir enlaces simbólicos y puntos de reparse para evitar bucles infinitos
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
     except (OSError, PermissionError):
@@ -173,7 +176,7 @@ def _sum_directory_recursive(
     cache: Dict[str, int], 
     depth: int = 0
 ) -> int:
-    """DFS recursivo con limitación de profundidad y caché para medición de disco."""
+    """Calcula el tamaño total de una carpeta mediante DFS, evitando ciclos y niveles excesivos."""
     if depth > 20 or root_dir in visited:
         return 0
     if root_dir in cache:
@@ -196,6 +199,7 @@ def _sum_directory_recursive(
                     else:
                         total_size += entry.stat().st_size
                 except (PermissionError, OSError) as e:
+                    # Ignorar errores de acceso (winerror 32: archivo en uso)
                     if getattr(e, 'winerror', None) == 32:
                         continue
                     continue

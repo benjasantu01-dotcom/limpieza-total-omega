@@ -42,6 +42,7 @@ __all__ = [
 ]
 
 # --- UMBRALES DE NORMALIZACIÓN (referencias constantes para cálculo) ---
+# Valores de referencia utilizados para mapear unidades físicas (MB, count) a ratios de salud 0.0-1.0
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
@@ -49,6 +50,7 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # --- UMBRALES DE ADVERTENCIA (ratios de 0.0 a 1.0) ---
+# Indican el punto de corte por debajo del cual se dispara una recomendación
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -141,30 +143,37 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> float:
+    """Calcula el ratio de salud de archivos basura (0.0=mal, 1.0=bien)."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
+    """Calcula el ratio de seguridad penalizando amenazas y advertencias."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> float:
+    """Calcula el ratio de salud de memoria basándose en el porcentaje libre."""
     return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0
 
 
 def score_disk(free_percent: float | int) -> float:
+    """Calcula el ratio de salud de disco basándose en el porcentaje libre."""
     return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
+    """Calcula el ratio de salud referente a archivos duplicados."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
+    """Calcula el ratio de salud de los elementos en inicio automático."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 
 def grade_for_score(score: float | int) -> str:
+    """Convierte un puntaje numérico (0-100) en una calificación alfabética."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -174,6 +183,7 @@ def grade_for_score(score: float | int) -> str:
 
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
+    """Genera una lista de textos explicativos según las violaciones de umbrales."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
@@ -207,6 +217,10 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
+    """
+    Función principal de cálculo: toma métricas crudas, las normaliza a ratios,
+    aplica los pesos configurados y consolida un puntaje total de 0 a 100.
+    """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
@@ -223,6 +237,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
+    # Calcular desglose ponderado redondeado al entero más cercano
     breakdown = {area: int(round(_clamp(ratios.get(area, 0.0), 0.0, 1.0) * factor)) for area, factor in _WEIGHT_ITEMS}
     final_score = int(round(_clamp(sum(breakdown.values()), 0.0, 100.0)))
     
@@ -230,6 +245,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 
 def summarize(result: HealthResult) -> List[str]:
+    """Genera un reporte textual formateado del resultado del análisis."""
     if not isinstance(result, HealthResult): return ["Error: Formato inválido."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, factor in _WEIGHT_ITEMS:

@@ -1513,3 +1513,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-14T04:30:52` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-08-14T04:30:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T04:30:52` Corrida terminada. Total usado hoy: 108.
+- `2026-08-14T04:35:46` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-08-14T04:36:16` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad de tipos en las funciones de escaneo (`_sum_directory_recursive` y `_should_skip_entry`) para clarificar la lógica de exclusión y el manejo de excepciones, haciendo el código más mantenible sin alterar su comportamiento funcional.
+- `2026-08-14T04:36:43` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings (ajustándolos a la convención Google/NumPy) y se añadieron type hints más precisos (especialmente en `walk_files`) para mejorar la claridad sobre las estructuras de datos que recorre la aplicación.
+- `2026-08-14T04:37:08` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de hashing y la gestión de excepciones en `_collect_candidates` para mayor claridad, asegurando que cada etapa del pipeline sea explicable por sí misma en el contexto de la integridad del sistema.
+- `2026-08-14T04:37:31` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado los umbrales constantes y la función de cálculo de puntaje, clarificando el significado de cada ratio (0.0-1.0) y su relación con la salud del sistema.
+- `2026-08-14T04:37:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T04:37:31` Corrida terminada. Total usado hoy: 112.

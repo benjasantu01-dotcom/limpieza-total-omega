@@ -76,8 +76,11 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo mediante lectura por bloques.
-    Retorna None si el archivo es inaccesible, está protegido o cambia durante la lectura.
+    Calcula el hash SHA256 completo del archivo leyendo en bloques.
+    
+    Esta función verifica la integridad mediante comparación de metadatos antes 
+    y después de la lectura para detectar si el archivo fue modificado durante 
+    el proceso, en cuyo caso retorna None.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -88,7 +91,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
 
         stat_initial = file_path.stat()
-        # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT
+        # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT (Junctions)
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -100,7 +103,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         
-        # Validar consistencia final: el tamaño no debe haber cambiado durante la lectura
+        # Validar consistencia final: el tamaño debe ser idéntico al de inicio
         if file_path.stat().st_size != stat_initial.st_size:
             return None
             
@@ -111,7 +114,10 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Hash rápido de los primeros bytes del archivo para una comparación inicial probabilística.
+    Hash rápido de los primeros bytes (64KB) para una comparación heurística.
+    
+    Retorna None si el acceso es denegado o si el archivo cambia de tamaño
+    durante la lectura, asegurando que la comparación inicial sea confiable.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -127,7 +133,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             if not content:
                 return None
             
-            # Verificación de integridad: el archivo no debe haber sido truncado o modificado
+            # Verificación de integridad: el archivo no debe haber sido truncado
             if file_path.stat().st_size != stat_initial.st_size:
                 return None
             return hashlib.sha256(content).hexdigest()
@@ -159,7 +165,10 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo en profundidad (DFS) del sistema de archivos.
+    Realiza un recorrido recursivo en profundidad (DFS) capturando archivos.
+    
+    Usa el par (dispositivo, inodo) para evitar el procesamiento redundante de 
+    hardlinks o múltiples entradas que apunten al mismo contenido físico.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -208,7 +217,7 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Reduce un conjunto de archivos candidatos aplicándoles una función de hashing.
+    Reduce un conjunto de archivos candidatos aplicando una función de hashing.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
