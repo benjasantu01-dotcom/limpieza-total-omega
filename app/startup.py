@@ -46,7 +46,7 @@ REGISTRY_RUN_KEYS: Tuple[str, ...] = (
 )
 
 # Extensiones consideradas ejecutables para el escaneo de carpetas.
-EXECUTABLE_EXTS: Tuple[str, ...] = ('.exe', '.bat', '.cmd', '.scr', '.lnk')
+EXECUTABLE_EXTS: Set[str] = {'.exe', '.bat', '.cmd', '.scr', '.lnk'}
 
 # Caché global para evitar operaciones de I/O redundantes durante la sesión.
 _EXISTS_CACHE: Dict[str, bool] = {}
@@ -201,7 +201,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     scan_folders = folders if folders is not None else startup_folders()
     
     for folder in scan_folders:
-        if not folder or not folder.is_dir():
+        if not folder or not folder.is_dir() or is_protected_path(folder):
             continue
         try:
             found_entries.extend(

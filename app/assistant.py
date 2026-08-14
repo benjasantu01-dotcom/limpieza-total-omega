@@ -241,9 +241,17 @@ def _get_metric_val(source: Any, key: str, default: Any) -> Any:
         elif hasattr(source, key):
             val = getattr(source, key)
         
-        if val is None or not isinstance(val, (int, float, str)) or (isinstance(val, (int, float)) and not math.isfinite(val)):
+        if val is None or not isinstance(val, (int, float, str)):
             return default
-        return val
+        
+        # Conversión forzada para verificar finitud
+        try:
+            num = float(val)
+            if not math.isfinite(num):
+                return default
+            return num
+        except (ValueError, TypeError):
+            return default
     except Exception: return default
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:

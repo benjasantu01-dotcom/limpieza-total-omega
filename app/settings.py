@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 import os
+import hashlib
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict
@@ -91,9 +92,8 @@ VALID_THEMES: Final[tuple[str, ...]] = ("oscuro", "claro", "sistema")
 VALID_ACCENTS: Final[tuple[str, ...]] = ("menta", "violeta", "magenta", "cian", "ambar")
 
 _cached_settings: AppSettings | None = None
+_cached_hash: str | None = None
 _current_path: Path | None = None
-_last_mtime: float = -1.0
-_path_cache: dict[str, Path] = {}
 
 DEFAULTS: Final[AppSettings] = {
     ConfigKey.TEMA.value: "oscuro",
@@ -206,14 +206,8 @@ _VALIDATOR_MAP: Final[dict[str, Callable[[ConfigKey, Any], Any]]] = {
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ubicación del archivo de configuración, validando seguridad."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
-    key = str(custom_base)
-    if key not in _path_cache:
-        try:
-            base = Path(key).expanduser().resolve(strict=False)
-            _path_cache[key] = (base / SETTINGS_FILE) if _Validators._is_safe_path(base) else (SETTINGS_DIR / SETTINGS_FILE)
-        except (OSError, RuntimeError, PermissionError):
-            return SETTINGS_DIR / SETTINGS_FILE
-    return _path_cache[key]
+    base = Path(custom_base).expanduser().resolve(strict=False)
+    return (base / SETTINGS_FILE) if _Validators._is_safe_path(base) else (SETTINGS_DIR / SETTINGS_FILE)
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un diccionario crudo, aplicando valores de fábrica ante errores."""
@@ -231,31 +225,31 @@ def validate(raw_values: Any) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y valida la configuración desde el disco, usando caché si es posible."""
-    global _cached_settings, _current_path, _last_mtime
+    global _cached_settings, _current_path, _cached_hash
     ruta = settings_path(custom_base)
     
     if not ruta.exists(): return DEFAULTS.copy()
     
     try:
-        stats = ruta.stat()
-        if _cached_settings is not None and _current_path == ruta and _last_mtime == stats.st_mtime:
+        if _cached_settings is not None and _current_path == ruta:
             return _cached_settings.copy()
         
-        if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
-            with open(ruta, "r", encoding="utf-8") as f:
-                data = json.load(f)
+        content = ruta.read_bytes()
+        if 0 < len(content) <= MAX_SETTINGS_SIZE:
+            data = json.loads(content)
             if isinstance(data, dict):
                 config = validate(data)
                 _cached_settings = config
-                _current_path, _last_mtime = ruta, stats.st_mtime
+                _cached_hash = hashlib.md5(content).hexdigest()
+                _current_path = ruta
                 return config.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError):
         pass
     return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Guarda la configuración validada mediante escritura atómica."""
-    global _cached_settings, _current_path, _last_mtime
+    """Guarda la configuración validada mediante escritura atómica y comprobación de hash."""
+    global _cached_settings, _current_path, _cached_hash
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
@@ -263,18 +257,16 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
     cleaned_settings = validate(values)
-    
     if cleaned_settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and not (cleaned_settings.get(ConfigKey.ASISTENTE_CLAVE_API.value) or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings[ConfigKey.ASISTENTE_ACTIVADO.value] = False
         
+    json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+    new_hash = hashlib.md5(json_data).hexdigest()
+    
+    if _cached_hash == new_hash and _current_path == ruta: return ruta
+        
     try:
-        json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
-        if len(json_data) > MAX_SETTINGS_SIZE: return None
-        
-        if _cached_settings == cleaned_settings and _current_path == ruta: return ruta
-        
         if not ruta.parent.exists():
-            if not _Validators._is_safe_path(ruta.parent): return None
             ruta.parent.mkdir(parents=True, exist_ok=True)
             
         temp = ruta.with_suffix(f".{os.getpid()}.tmp")
@@ -284,33 +276,22 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             os.fsync(f.fileno())
             
         os.replace(temp, ruta)
-        _cached_settings, _current_path = cleaned_settings, ruta
-        _last_mtime = ruta.stat().st_mtime
+        _cached_settings, _current_path, _cached_hash = cleaned_settings, ruta, new_hash
         return ruta
-        
     except (OSError, IOError, PermissionError, RuntimeError):
         return None
-    finally:
-        if "temp" in locals() and temp.exists():
-            try: temp.unlink()
-            except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza campos específicos de la configuración."""
     current = load(custom_base)
     needs_save = False
-    if not isinstance(changes, dict): return current
     for k, v in changes.items():
-        if k in _VALIDATOR_MAP and current.get(k) != v:
-            try:
-                validator = _VALIDATOR_MAP[k]
-                enum_key = ConfigKey(k)
-                val = validator(enum_key, v)
-                if val is not None and val != current.get(k):
-                    current[k] = val
-                    needs_save = True
-            except (ValueError, TypeError, KeyError):
-                continue
+        if k in _VALIDATOR_MAP:
+            validator = _VALIDATOR_MAP[k]
+            val = validator(ConfigKey(k), v)
+            if val is not None and val != current.get(k):
+                current[k] = val
+                needs_save = True
     if needs_save: save(current, custom_base)
     return current
 

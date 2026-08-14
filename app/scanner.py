@@ -125,8 +125,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not entry:
         return None
     
-    # Eficiencia: comparar el set de partes de la ruta contra el set de carpetas vigiladas
-    if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
+    # Optimización: uso de set para intersección rápida evitando iteración manual
+    path_parts = {p.lower() for p in path.parts}
+    if WATCHED_FOLDERS.isdisjoint(path_parts):
         return None
 
     try:

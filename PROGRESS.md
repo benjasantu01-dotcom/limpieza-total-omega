@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 50 | 3 | 9 | 5 | 59 |
+| 2026-08-12 | 47 | 3 | 9 | 5 | 58 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 16 | 3 | 4 | 2 | 3 |
+| 2026-08-14 | 20 | 3 | 4 | 2 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **35**
-- rendimiento: **31**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
-- `settings.py`: **20**
+- `settings.py`: **21**
+- `diskreport.py`: **20**
+- `assistant.py`: **19**
 - `quarantine.py`: **18**
-- `assistant.py`: **18**
 - `branding.py`: **18**
-- `healthscore.py`: **17**
 - `duplicates.py`: **16**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `organizer.py`: **15**
 - `browser.py`: **15**
-- `scanner.py`: **13**
-- `main.py`: **12**
+- `scanner.py`: **14**
+- `main.py`: **11**
 - `safety.py`: **9**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T01:13:32` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `build_context` y sus funciones auxiliares implementando una validación explícita de `float('inf')` y `float('nan')` mediante `math.isfinite` durante el procesamiento de datos externos, previniendo errores de serialización JSON o comportamientos inesperados ante valores numéricos corruptos provenientes de `settings` o del entorno.
+- `2026-08-14T01:13:07` **startup.py** (rendimiento): Se optimizó el rendimiento del escaneo de carpetas convirtiendo la lista `EXECUTABLE_EXTS` en un `set` para búsquedas en tiempo constante O(1) y se implementó una pre-validación de rutas protegidas mediante `is_protected_path` al inicio de `entries_from_folders` para evitar procesar recursivamente directorios innecesarios.
+- `2026-08-14T01:12:37` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando la serialización repetitiva y la comparación de diccionarios completos por una comparación de hash (MD5) del contenido JSON, evitando escrituras innecesarias en disco y reduciendo la carga de CPU durante llamadas frecuentes.
+- `2026-08-14T01:12:07` **scanner.py** (rendimiento): Optimizamos `check_recent_executable_in_downloads` para usar una intersección de conjuntos (`set.isdisjoint`) en lugar de `any()` con un generador, reduciendo la carga computacional en cada iteración de archivos.
 - `2026-08-14T01:02:29` **quarantine.py** (rendimiento): Optimicé `list_items` y `load_manifest` reemplazando la carga redundante y el filtrado por lista con una estructura de mapeo (`dict`) en `purge_all`, reduciendo la complejidad algorítmica de O(N*M) a O(N+M) al procesar la purga de archivos.
 - `2026-08-14T00:52:28` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación repetitiva de diccionarios dentro de los bucles y consolidando la lógica de validación de métricas para reducir el número de llamadas a funciones auxiliares.
 - `2026-08-14T00:52:00` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un generador y evitando recrear listas intermedias mediante `yield`, reduciendo el uso de memoria durante el recorrido inicial del disco.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T00:24:47` **organizer.py** (legibilidad y documentación): He mejorado la documentación técnica del módulo mediante docstrings más precisos, incluyendo advertencias sobre los efectos secundarios de las operaciones, y he reforzado la legibilidad mediante type hints y la extracción de una lógica de validación de rutas que antes estaba dispersa, manteniendo la integridad del comportamiento.
 - `2026-08-14T00:24:18` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de manipulación de procesos y utilidades, clarificando las precondiciones, excepciones y el propósito de las constantes utilizadas.
 - `2026-08-14T00:11:55` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones de puntuación y la documentación explícita de los parámetros críticos, asegurando que las reglas de negocio sean más claras para futuros desarrolladores.
-- `2026-08-14T00:11:27` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones internas (`_collect_candidates`, `_refine_by_hash`) y se han clarificado las intenciones del pipeline de detección para facilitar el mantenimiento.
-- `2026-08-14T00:11:00` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de Type Hints detallados en las funciones de procesamiento de datos y la extracción de la lógica de conversión de bytes a una estructura interna más explícita.
-- `2026-08-14T00:02:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo Google Style y se clarificaron los roles de las funciones internas que interactúan con APIs de bajo nivel, facilitando la auditoría de seguridad del código.
-- `2026-08-14T00:02:24` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato tipo Google/NumPy) en funciones complejas y la aclaración de las unidades de medida en los Type Aliases, facilitando el mantenimiento y la comprensión de las transformaciones de coordenadas y colores.
