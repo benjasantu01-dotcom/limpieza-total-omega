@@ -158,8 +158,11 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo del disco buscando candidatos a duplicados.
-    Evita ciclos mediante seguimiento de inodos y descarta rutas protegidas.
+    Realiza un recorrido recursivo en profundidad (DFS) del sistema de archivos.
+    
+    Utiliza el identificador único (dev, ino) de cada archivo y carpeta para 
+    evitar ciclos (loops infinitos por reparse points/junctions) y para ignorar 
+    archivos duplicados físicamente (hard links) en el reporte de espacio.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -217,8 +220,10 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Aplica un algoritmo de hashing a un grupo para confirmar colisiones.
-    Solo retorna grupos con al menos dos archivos con el mismo hash.
+    Reduce un conjunto de archivos candidatos aplicándoles una función de hashing.
+    
+    Agrupa los archivos por el resultado de la función proveída (hash parcial o completo).
+    Solo retiene aquellos grupos que contienen más de un archivo tras la colisión.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest

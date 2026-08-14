@@ -149,7 +149,7 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> float:
-    """Calcula salud de archivos basura normalizando respecto al límite definido."""
+    """Calcula salud de archivos basura normalizando respecto al límite definido (_LIMIT_JUNK_MB)."""
     val = max(0.0, _to_float(junk_mb))
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_JUNK_MB), 0.0, 1.0)
 
@@ -163,27 +163,27 @@ def score_security(suspicious_count: int, warnings: int = 0) -> float:
 
 
 def score_memory(available_percent: float | int) -> float:
-    """Evalúa presión de memoria basándose en el porcentaje libre disponible."""
+    """Evalúa presión de memoria basándose en el porcentaje libre disponible respecto al límite (_LIMIT_RAM_PERCENT)."""
     val = _clamp(_to_float(available_percent), 0.0, 100.0)
     if _LIMIT_RAM_PERCENT <= 0.0: return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 
 def score_disk(free_percent: float | int) -> float:
-    """Calcula salud de disco basándose en el porcentaje de espacio libre restante."""
+    """Calcula salud de disco basándose en el porcentaje de espacio libre restante respecto al límite (_LIMIT_DISK_PERCENT)."""
     val = _clamp(_to_float(free_percent), 0.0, 100.0)
     if _LIMIT_DISK_PERCENT <= 0.0: return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
-    """Evalúa el volumen de duplicados, normalizando por el límite de tolerancia."""
+    """Evalúa el volumen de duplicados normalizando por el límite de tolerancia (_LIMIT_DUPLICATE_MB)."""
     val = max(0.0, _to_float(duplicate_mb))
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (val / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
-    """Puntúa cantidad de procesos al arranque comparando contra el límite de eficiencia."""
+    """Puntúa cantidad de procesos al arranque comparando contra el límite de eficiencia (_LIMIT_STARTUP_COUNT)."""
     val = max(0, _to_int(startup_count))
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (val / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 

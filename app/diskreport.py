@@ -343,6 +343,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     except (OSError, TypeError, RuntimeError, ValueError):
         return ["Error: Ruta inválida o inaccesible."]
         
+    # Definimos estructura para acumular métricas: {ext: [bytes, count]}
     ext_data: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
