@@ -260,10 +260,10 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     
     for path, size in walk_files(directory, skip_protected):
         try:
-            ext = path.suffix.lower() or "(sin extensión)"
+            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
             size_map[ext] += size
             count_map[ext] += 1
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, AttributeError):
             continue
     
     usage_list: List[ExtensionUsage] = [
@@ -295,7 +295,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 top_level = base / rel.parts[0]
                 sums[top_level] += size
                 counts[top_level] += 1
-            except (ValueError, IndexError, OSError): 
+            except (ValueError, IndexError, OSError, TypeError): 
                 continue
 
         results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
@@ -340,7 +340,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         total_files += 1
         
         try:
-            ext = path.suffix.lower() or "(sin extensión)"
+            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
             data_ext = ext_data[ext]
             data_ext[0] += size
             data_ext[1] += 1

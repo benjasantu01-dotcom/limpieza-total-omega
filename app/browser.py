@@ -141,10 +141,10 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
         return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
-        if attrs == 0xFFFFFFFF:
+        if not isinstance(attrs, int) or attrs == 0xFFFFFFFF:
             return False
         return bool(attrs & 0x04 or attrs & 0x02)
-    except (OSError, AttributeError, TypeError, ValueError):
+    except (OSError, AttributeError, TypeError, ValueError, MemoryError):
         return False
 
 

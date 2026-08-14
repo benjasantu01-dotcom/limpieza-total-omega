@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 131 | 8 | 20 | 5 | 144 |
-| 2026-08-14 | 91 | 6 | 11 | 7 | 81 |
+| 2026-08-13 | 128 | 8 | 19 | 5 | 144 |
+| 2026-08-14 | 94 | 6 | 11 | 7 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
 - seguridad defensiva: **52**
+- legibilidad y documentación: **49**
 - robustez ante casos límite: **43**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **38**
-- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **23**
 - `settings.py`: **20**
+- `assistant.py`: **20**
 - `scanner.py`: **19**
-- `assistant.py`: **19**
-- `quarantine.py`: **17**
-- `memory.py`: **16**
-- `browser.py`: **16**
+- `browser.py`: **17**
 - `healthscore.py`: **16**
-- `organizer.py`: **15**
+- `quarantine.py`: **16**
 - `duplicates.py`: **15**
+- `memory.py`: **15**
 - `main.py`: **14**
+- `organizer.py`: **14**
 - `safety.py`: **13**
 - `branding.py`: **13**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T08:21:57` **diskreport.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `summarize` y `largest_folders` para capturar explícitamente fallos en `Path.relative_to` y `Path.suffix`, asegurando que el análisis no se interrumpa ante rutas con caracteres inválidos o estructuras inesperadas.
+- `2026-08-14T08:21:41` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_hidden` añadiendo una validación explícita para el tipo de datos del handle devuelto por `GetFileAttributesW` y capturando posibles excepciones de acceso a memoria, previniendo fallos en entornos con permisos restringidos.
+- `2026-08-14T08:20:44` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando un chequeo explícito de tipos antes de la asignación y reemplazando la lógica de `hasattr` por una verificación directa de los atributos permitidos, evitando así posibles errores con tipos de datos malformados que podrían romper la integridad de la estructura de datos `SystemContext`.
 - `2026-08-14T07:00:23` **startup.py** (seguridad defensiva): Reforcé la seguridad defensiva al añadir un filtro en `entries_from_folders` para omitir explícitamente cualquier archivo que sea un punto de reparse (Junction/Symlink), previniendo así la recursión infinita o la salida accidental del árbol de directorios permitido al escanear carpetas de inicio.
 - `2026-08-14T06:59:17` **settings.py** (seguridad defensiva): He endurecido la seguridad en `save()` y `settings_path()` verificando que la carpeta de destino exista y sea accesible antes de intentar cualquier operación, previniendo así errores de tiempo de ejecución y posibles condiciones de carrera al crear directorios en rutas bloqueadas.
 - `2026-08-14T06:49:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `check_recent_executable_in_downloads` mediante la validación estricta de la ruta usando `is_protected_path` antes de procesar el archivo, evitando cualquier posible acceso a directorios protegidos incluso si el `base_root` fuera malintencionado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T06:30:55` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y las funciones de consulta añadiendo una validación explícita mediante `path.resolve()` antes de realizar operaciones de entrada/salida, evitando así la exposición a rutas fuera del alcance esperado debido a enlaces simbólicos o manipulaciones de rutas relativas.
 - `2026-08-14T06:30:00` **browser.py** (seguridad defensiva): Se corrigió el manejo de excepciones en `_sum_directory_recursive` para evitar que una variable no definida (`e`) cause una excepción secundaria al intentar acceder a `winerror`, reforzando la seguridad y estabilidad del bucle de escaneo.
 - `2026-08-14T06:29:35` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia y el tipo de directorio padre antes de realizar operaciones de escritura, evitando posibles errores de E/S inesperados al trabajar con rutas.
-- `2026-08-14T06:18:14` **scanner.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `check_recent_executable_in_downloads` para capturar `ValueError` y `TypeError`, previniendo fallos al procesar nombres de archivos con caracteres no estándar o rutas mal formadas (casos límite comunes en sistemas de archivos), y se encapsuló `path.parts` en una validación de existencia.
-- `2026-08-14T06:09:03` **safety.py** (robustez ante casos límite): Se ha añadido `_is_permission_denied` para capturar explícitamente errores `PermissionError` y `OSError` (código 5) durante la resolución de rutas, evitando que una denegación de acceso en una carpeta superior termine propagando excepciones no controladas hacia la lógica de la aplicación y fortaleciendo la robustez ante permisos denegados.
-- `2026-08-14T06:08:33` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en `restore_item` para prevenir excepciones críticas en caso de que un archivo de cuarentena haya sido eliminado o bloqueado externamente entre la carga del manifiesto y la operación de restauración.

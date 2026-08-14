@@ -744,3 +744,10 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-14T08:14:05` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-14T08:14:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T08:14:05` Corrida terminada. Total usado hoy: 196.
+- `2026-08-14T08:20:05` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-14T08:20:44` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` implementando un chequeo explícito de tipos antes de la asignación y reemplazando la lógica de `hasattr` por una verificación directa de los atributos permitidos, evitando así posibles errores con tipos de datos malformados que podrían romper la integridad de la estructura de datos `SystemContext`.
+- `2026-08-14T08:21:15` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-14T08:21:41` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_system_hidden` añadiendo una validación explícita para el tipo de datos del handle devuelto por `GetFileAttributesW` y capturando posibles excepciones de acceso a memoria, previniendo fallos en entornos con permisos restringidos.
+- `2026-08-14T08:21:57` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `summarize` y `largest_folders` para capturar explícitamente fallos en `Path.relative_to` y `Path.suffix`, asegurando que el análisis no se interrumpa ante rutas con caracteres inválidos o estructuras inesperadas.
+- `2026-08-14T08:21:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T08:21:57` Corrida terminada. Total usado hoy: 200.
