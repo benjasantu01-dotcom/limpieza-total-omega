@@ -138,12 +138,12 @@ class StartupEntry:
                 
             try:
                 p_abs: Path = p.resolve(strict=True)
+                # Seguridad adicional tras resolución: verificar ruta real contra bloqueos
+                if is_protected_path(p_abs):
+                    _EXISTS_CACHE[path_str] = False
+                    return ""
             except (OSError, PermissionError, RuntimeError):
                 return path_str
-                
-            if is_protected_path(p_abs):
-                _EXISTS_CACHE[path_str] = False
-                return ""
                 
             p_str: str = str(p_abs)
             _EXISTS_CACHE[p_str] = p_abs.is_file()

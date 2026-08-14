@@ -71,7 +71,7 @@ class AppSettings(TypedDict):
     top_archivos: int
     top_procesos: int
     analisis_en_paralelo: bool
-    asistente_activado: bool
+    asistente_ACTIVADO: bool
     asistente_clave_api: str
     asistente_enviar_metricas: bool
     asistente_modelo: str
@@ -228,11 +228,12 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga la configuración desde disco con caché inteligente para evitar IO repetitivo."""
+    """Carga la configuración desde disco con caché inteligente y verificación de acceso."""
     global _cached_settings, _current_path, _cached_hash
     ruta = settings_path(custom_base)
     
     if not ruta.exists(): return _get_default_config()
+    if not os.access(ruta, os.R_OK): return _get_default_config()
     
     try:
         if not _Validators._is_safe_path(ruta.parent): return _get_default_config()
@@ -245,7 +246,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = json.loads(content)
             if isinstance(data, dict):
                 config = validate(data)
-                # Forzar integridad asegurando que existan todas las claves esperadas
                 for key in AppSettings.__annotations__:
                     if key not in config: config[key] = DEFAULTS[key]
                 _cached_settings = config
@@ -257,14 +257,15 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Guarda configuración al disco de forma atómica, validando integridad y seguridad."""
+    """Guarda configuración al disco tras verificar permisos de escritura y seguridad."""
     global _cached_settings, _current_path, _cached_hash
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
     if not _Validators._is_safe_path(ruta.parent) or is_protected_path(str(ruta)):
         return None
-
+    if ruta.exists() and not os.access(ruta, os.W_OK): return None
+        
     cleaned_settings = validate(values)
     if cleaned_settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and not (cleaned_settings.get(ConfigKey.ASISTENTE_CLAVE_API.value) or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings[ConfigKey.ASISTENTE_ACTIVADO.value] = False
@@ -276,14 +277,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        if not _Validators._is_safe_path(ruta.parent): return None
-            
         temp = ruta.with_suffix(f".{os.getpid()}.tmp")
         with open(temp, "wb") as f:
             f.write(json_data)
             f.flush()
             os.fsync(f.fileno())
-            
         os.replace(temp, ruta)
         _cached_settings, _current_path, _cached_hash = cleaned_settings, ruta, new_hash
         return ruta
