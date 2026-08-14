@@ -174,7 +174,7 @@ def grade_for_score(score: float | int) -> str:
 
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite() or not all(math.isfinite(r) for r in ratios.values()):
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
@@ -188,12 +188,16 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     }
 
     for rule in _RECOMMENDATION_RULES:
-        ratio = ratios.get(rule.area, 0.0)
+        ratio = ratios.get(rule.area)
+        if ratio is None or not math.isfinite(ratio):
+            continue
+            
         if ratio < rule.threshold:
             val = vals.get(rule.area, 0.0)
             try:
-                recommendations.append(rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format)
-            except (ValueError, IndexError):
+                msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
+                recommendations.append(msg)
+            except (ValueError, IndexError, KeyError):
                 continue
     
     if metrics.quarantined_count > 0:

@@ -230,7 +230,7 @@ def read_snapshot() -> MemorySnapshot:
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
-        except Exception:
+        except (AttributeError, OSError, ctypes.ArgumentError):
             return MemorySnapshot(total=0, available=0)
     
     meminfo_path: str = "/proc/meminfo"
@@ -343,9 +343,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "Error de sistema: PSAPI no disponible o incompatible."
 
+    # Pre-check: intentar abrir proceso con privilegios mínimos necesarios
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        return False, "Acceso denegado o proceso no encontrado."
+        return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
         
     try:
         exit_code = ctypes.c_ulong()
@@ -364,11 +365,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "Error interno: no se pudo verificar la identidad del proceso."
             
         if not psapi.EmptyWorkingSet(proc_handle):
-            return False, "Error al intentar liberar memoria (código interno)."
+            error_code = kernel32.GetLastError()
+            if error_code == ERROR_ACCESS_DENIED:
+                return False, "Acceso denegado: privilegios insuficientes."
+            return False, f"Error al intentar liberar memoria (código {error_code})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except Exception:
-        return False, "Ocurrió un error técnico al gestionar el proceso."
+    except (ctypes.ArgumentError, MemoryError, OSError) as e:
+        return False, f"Ocurrió un error técnico al gestionar el proceso: {str(e)}"
     finally:
         if proc_handle:
             kernel32.CloseHandle(proc_handle)
