@@ -69,7 +69,10 @@ class Scanner:
         self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """Verifica que la entrada esté dentro del base_root definido para evitar escapes del directorio raíz."""
+        """
+        Valida que una ruta esté contenida dentro del base_root inicial.
+        Retorna False si hay errores de resolución de ruta o si la ruta está fuera del alcance.
+        """
         try:
             resolved = entry_path.resolve()
             return self.base_root == resolved or self.base_root in resolved.parents
@@ -77,7 +80,10 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si una entrada es un punto de reanálisis (Junction o Symlink) para evitar ciclos infinitos."""
+        """
+        Determina si una entrada es un punto de reanálisis (Junction o Symlink).
+        Se utiliza para prevenir la recursión infinita en estructuras complejas de Windows.
+        """
         try:
             # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -86,7 +92,9 @@ class Scanner:
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
-        Valida y procesa una entrada del sistema de archivos, decidiendo si continuar la recursión o analizar el archivo.
+        Analiza una entrada del sistema de archivos:
+        - Si es directorio: lo añade al stack de recursión tras validación de seguridad.
+        - Si es archivo: ejecuta las heurísticas de scan_file.
         """
         if entry is None or not entry.path:
             return
@@ -116,7 +124,8 @@ class Scanner:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Analiza si el nombre del archivo contiene una doble extensión que sugiere una intención de ocultamiento.
-    Retorna un objeto Suspicion si se detecta un patrón coincidente.
+    Precondición: Path debe ser válido. 
+    Retorna objeto Suspicion si se detecta un patrón coincidente de extensión oculta.
     """
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -125,8 +134,9 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Verifica si un ejecutable ha sido modificado recientemente en directorios de alta exposición.
-    Usa el timestamp de inicio 'now_ts' para calcular la ventana temporal de riesgo.
+    Verifica si un ejecutable ha sido modificado en las últimas 24h dentro de carpetas de alta exposición.
+    Utiliza el DirEntry proporcionado para acceder a metadatos de sistema (st_mtime) de forma eficiente.
+    Si el archivo no tiene metadatos accesibles (por bloqueo de SO), la verificación se omite silenciosamente.
     """
     if not entry or not isinstance(entry, os.DirEntry):
         return None
@@ -151,7 +161,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Identifica archivos cuyo nombre coincide con procesos críticos de Windows pero residen fuera de System32.
-    Previene la ejecución accidental de binarios falsificados en rutas de usuario.
+    Esto permite detectar binarios falsificados ("lookalikes") que buscan imitar comportamiento legítimo.
     """
     if path.name.lower() in SYSTEM_LOOKALIKES:
         parent_path = path.parent
@@ -186,7 +196,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Inicializa y ejecuta el proceso de escaneo recursivo en el directorio proporcionado."""
+    """
+    Inicializa y ejecuta el proceso de escaneo recursivo en el directorio proporcionado.
+    Valida la existencia y permisos del directorio base antes de instanciar el Scanner.
+    Retorna una lista de objetos Suspicion encontrados.
+    """
     if not directory:
         return []
         
@@ -216,7 +230,11 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """Interactúa con Windows Defender vía PowerShell para realizar un análisis rápido del sistema."""
+    """
+    Interactúa con Windows Defender vía PowerShell para realizar un análisis rápido del sistema.
+    Retorna un string con el resultado de la ejecución o mensaje de error.
+    Requiere ejecución en entorno Windows.
+    """
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

@@ -1278,3 +1278,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T13:48:28` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la integración de docstrings explicativos sobre la lógica de validación de integridad (`_check_file_integrity`) y la clarificación de las responsabilidades de las funciones de chequeo, facilitando el mantenimiento y auditoría del módulo conforme a las reglas exigidas.
 - `2026-08-14T13:48:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T13:48:28` Corrida terminada. Total usado hoy: 328.
+- `2026-08-14T13:57:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-14T13:57:30` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados que especifican precondiciones, comportamientos ante errores y el propósito técnico de las heurísticas, facilitando el mantenimiento y la auditoría del motor de escaneo.
+- `2026-08-14T13:58:00` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings detallados en las funciones de la API pública y una mayor consistencia en los type hints, siguiendo el enfoque de documentación técnica exigido.
+- `2026-08-14T13:58:30` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-08-14T13:58:51` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` convirtiendo la lista `_CRITERIOS_SALUD` en un conjunto de tuplas pre-procesadas y eliminando la creación repetida de la lista `problemas` en cada llamada a `local_answer` y `handle_score`.
+- `2026-08-14T13:58:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T13:58:51` Corrida terminada. Total usado hoy: 332.

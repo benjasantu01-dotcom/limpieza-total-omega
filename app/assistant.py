@@ -381,7 +381,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre el puntaje de salud del sistema."""
     partes = [f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."]
-    problemas = list(_identify_active_problems(ctx))
+    problemas = _identify_active_problems(ctx)
     
     if problemas:
         partes.append("Lo que más te está restando: " + ", ".join(problemas) + ".")
@@ -436,7 +436,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
-    problemas = list(_identify_active_problems(context))
+    problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
@@ -445,19 +445,19 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
-def _identify_active_problems(ctx: SystemContext) -> Generator[str, None, None]:
+def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """
-    Identifica y genera un listado de problemas detectados priorizados por criticidad.
+    Identifica y devuelve un listado de problemas detectados priorizados por criticidad.
     Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
     """
-    encontrados: int = 0
+    encontrados = []
     for attr, limit, op, msg in _CRITERIOS_SALUD:
         val: Any = getattr(ctx, attr, 0)
         if (op == "<" and val < limit) or (op == ">" and val > limit):
-            yield msg.format(val)
-            encontrados += 1
-            if encontrados >= 3:
+            encontrados.append(msg.format(val))
+            if len(encontrados) >= 3:
                 break
+    return encontrados
 
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si la configuración del sistema permite el uso del asistente en línea."""
