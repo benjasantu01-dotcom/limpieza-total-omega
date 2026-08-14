@@ -145,6 +145,15 @@ _KEYWORD_MAP: Final[dict[str, str]] = {
     "inicio": "startup", "arranque": "startup", "arranca": "startup", "encender": "startup"
 }
 
+_CRITERIOS_SALUD: Final = (
+    ("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
+    ("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
+    ("memory_available_percent", 15.0, "<", "{:.0f}% de RAM"),
+    ("junk_mb", 1000.0, ">", "{:.0f} MB de basura"),
+    ("duplicate_mb", 500.0, ">", "{:.0f} MB en duplicados"),
+    ("startup_count", 15, ">", "{:d} programas de inicio")
+)
+
 @dataclass
 class SystemContext:
     """
@@ -440,22 +449,12 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     Genera un listado de problemas detectados priorizados por criticidad.
     Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
     """
-    if not ctx: return
-    
-    # Lista de tuplas: (condición, mensaje, valores para formateo)
-    criterios = (
-        (ctx.disk_free_percent < 10.0, "{:.0f}% de disco libre", ctx.disk_free_percent),
-        (ctx.suspicious_warnings > 0, "{:d} archivo(s) sospechosos", ctx.suspicious_warnings),
-        (ctx.memory_available_percent < 15.0, "{:.0f}% de RAM", ctx.memory_available_percent),
-        (ctx.junk_mb > 1000.0, "{:.0f} MB de basura", ctx.junk_mb),
-        (ctx.duplicate_mb > 500.0, "{:.0f} MB en duplicados", ctx.duplicate_mb),
-        (ctx.startup_count > 15, "{:d} programas de inicio", ctx.startup_count)
-    )
-    
     encontrados = 0
-    for condition, msg, value in criterios:
-        if condition:
-            yield msg.format(value)
+    for attr, limit, op, msg in _CRITERIOS_SALUD:
+        val = getattr(ctx, attr, 0)
+        condicion = (val < limit) if op == "<" else (val > limit)
+        if condicion:
+            yield msg.format(val)
             encontrados += 1
         if encontrados >= 3:
             break

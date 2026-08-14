@@ -212,7 +212,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [root]
+    stack: List[str] = [str(root)]
     
     while stack:
         current_dir = stack.pop()
@@ -231,10 +231,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                stack.append(Path(entry.path))
+                                stack.append(entry.path)
                         else:
-                            st = entry.stat()
-                            yield Path(entry.path), st.st_size
+                            yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

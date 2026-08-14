@@ -174,7 +174,7 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """DFS recursivo con limitación de profundidad y caché para medición de disco."""
-    if depth > 20 or root_dir in visited or is_protected_path(Path(root_dir)):
+    if depth > 20 or root_dir in visited:
         return 0
     if root_dir in cache:
         return cache[root_dir]
@@ -188,7 +188,8 @@ def _sum_directory_recursive(
                     continue
                 try:
                     if entry.is_dir():
-                        total_size += _sum_directory_recursive(entry.path, base_dir, is_junction_fn, kernel32, visited, cache, depth + 1)
+                        if not is_protected_path(Path(entry.path)):
+                            total_size += _sum_directory_recursive(entry.path, base_dir, is_junction_fn, kernel32, visited, cache, depth + 1)
                     else:
                         total_size += entry.stat().st_size
                 except (PermissionError, OSError):
