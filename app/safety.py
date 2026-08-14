@@ -175,17 +175,17 @@ def _is_readonly(path: Path) -> bool:
 def normalize(path: PathLike) -> Path:
     """Normaliza rutas a formato absoluto, expandiendo '~' y validando límites MAX_PATH."""
     if path is None:
-        raise ValueError("Ruta nula.")
+        raise ValueError("Ruta nula recibida.")
     
-    path_val = str(path).strip()
-    if not path_val:
+    path_str = str(path).strip()
+    if not path_str:
         raise ValueError("Entrada de ruta vacía.")
     
-    if len(path_val) > 260:
+    if len(path_str) > 260:
         raise ValueError("Longitud de ruta excedida.")
         
     try:
-        return Path(path_val).expanduser().resolve()
+        return Path(path_str).expanduser().resolve()
     except (OSError, RuntimeError) as e:
         if _is_permission_denied(e):
             raise ValueError("Acceso denegado durante la normalización.")
@@ -220,6 +220,8 @@ def is_protected_path(path: PathLike) -> bool:
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
     """Valida si 'child' es descendiente lógico de 'parent' tras resolver symlinks."""
+    if child is None or parent is None:
+        return False
     try:
         c, p = normalize(child), normalize(parent)
         if allow_equal and c == p:
@@ -233,7 +235,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 def is_sensitive_file(path: PathLike) -> bool:
     """Filtra archivos basados en extensiones configuradas como críticas."""
     try:
-        return Path(path).suffix.lower() in SENSITIVE_EXTENSIONS
+        return Path(str(path)).suffix.lower() in SENSITIVE_EXTENSIONS
     except (TypeError, ValueError, OSError):
         return True 
 
@@ -308,7 +310,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     valid: list[Path] = []
     if paths is None: return valid
     for p in paths:
-        if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
+        if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive):
             try:
                 valid.append(normalize(p))
             except (TypeError, ValueError, OSError):
@@ -318,6 +320,7 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
 
 def describe_protection(path: PathLike) -> str:
     """Provee una justificación clara de por qué una ruta específica ha sido bloqueada."""
+    if path is None: return "Ruta nula."
     try:
         p = normalize(path)
         raw_str = str(path)

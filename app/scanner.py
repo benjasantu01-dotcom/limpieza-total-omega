@@ -128,7 +128,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Verifica si un ejecutable ha sido modificado recientemente en directorios de alta exposición.
     Usa el timestamp de inicio 'now_ts' para calcular la ventana temporal de riesgo.
     """
-    if not entry or is_protected_path(path):
+    if not entry or not isinstance(entry, os.DirEntry):
+        return None
+        
+    if is_protected_path(path):
         return None
     
     try:
@@ -188,11 +191,11 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
         
     try:
-        path_input = Path(directory).resolve()
+        path_input = Path(directory).resolve(strict=True)
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError) as e:
-        logger.error(f"Error inicializando directorio base {directory}: {e}")
+        logger.error(f"Error accediendo al directorio base {directory}: {e}")
         return []
 
     scanner = Scanner(base_root=path_input)

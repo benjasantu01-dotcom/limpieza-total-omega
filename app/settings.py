@@ -137,7 +137,7 @@ class _Validators:
             if is_protected_path(str(resolved)): return False
             target = resolved if resolved.exists() else resolved.parent
             return is_safe_to_modify(str(target))
-        except (OSError, RuntimeError, PermissionError):
+        except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
 
     @staticmethod

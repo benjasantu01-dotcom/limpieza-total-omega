@@ -236,14 +236,15 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     parsed_entries: List[StartupEntry] = []
     
     try:
-        reader: csv.DictReader = csv.DictReader(io.StringIO(text))
+        reader: csv.DictReader = csv.DictReader(io.StringIO(text.strip()))
         for row in reader:
             if not isinstance(row, dict) or len(row) < 2:
                 continue
             
-            vals = list(row.values())
-            name_raw = vals[0] if len(vals) > 0 else None
-            cmd_raw = vals[1] if len(vals) > 1 else None
+            # Extraer valores ignorando claves de metadatos de PowerShell si existen
+            keys = list(row.keys())
+            name_raw = row.get(keys[0])
+            cmd_raw = row.get(keys[1])
             
             if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
                 continue
@@ -251,10 +252,11 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             
-            # Validación estricta: si no hay nombre o comando útil, descartamos la fila
+            # Validación estricta: descartar filas vacías o basura de cabecera de PS
             if not name or not cmd or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
                 continue
             
+            # Prevenir inyección de shell en los comandos leídos
             if any(c in cmd for c in '<>|?*'):
                 continue
             
