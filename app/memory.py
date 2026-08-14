@@ -241,7 +241,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - cache_ref[0] < 5.0 and cache_ref[1]:
         return cache_ref[1][:limit]
     
-    cmd = "Get-CimInstance Win32_PerfFormattedData_PerfProc_Process | Select-Object Name,IDProcess,WorkingSetPrivate | ConvertTo-Csv -NoTypeInformation"
+    # Se utiliza Get-Process por ser significativamente más rápido que Get-CimInstance
+    cmd = "Get-Process | Select-Object Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
         if proc.returncode == 0 and proc.stdout:

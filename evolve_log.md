@@ -1292,3 +1292,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T14:08:48` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `is_protected_path` al mover la validación antes de obtener los metadatos completos, y reduciendo el uso de `Path` mediante el uso directo de `entry.path` donde es posible.
 - `2026-08-14T14:08:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T14:08:48` Corrida terminada. Total usado hoy: 336.
+- `2026-08-14T14:17:31` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-14T14:17:59` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje y la generación de recomendaciones eliminando la creación repetitiva de diccionarios dentro de los bucles y consolidando el acceso a los datos mediante una estructura de mapeo pre-computada, reduciendo la carga de procesamiento en cada llamada a `compute_score`.
+- `2026-08-14T14:19:04` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché más eficiente en `on_full_analysis` y se eliminó el cálculo redundante de métricas en el bucle principal, utilizando `self._get_cached` para reutilizar resultados previos de `diskreport` y `memory` en lugar de disparar operaciones de E/S síncronas en cada actualización de la UI.
+- `2026-08-14T14:19:38` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de `Get-CimInstance` (que es lenta y genera un proceso hijo pesado) por `Get-Process`, reduciendo el tiempo de ejecución y el uso de CPU/memoria en cada consulta.
+- `2026-08-14T14:20:38` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-14T14:21:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-14T14:21:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T14:21:03` Corrida terminada. Total usado hoy: 340.
