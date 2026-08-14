@@ -1220,3 +1220,32 @@ FAILED evolve/tests/test_modules.py::test_drive_usage_reads_a_real_path - assert
 - `2026-08-14T13:18:02` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita para evitar procesar filas malformadas o entradas de PowerShell que no contienen rutas, asegurando que `csv.DictReader` no genere errores silenciosos al iterar.
 - `2026-08-14T13:18:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T13:18:02` Corrida terminada. Total usado hoy: 316.
+- `2026-08-14T13:26:20` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-14T13:26:54` Tests FALLARON:
+```
+lar hallazgos'." = Answer(text="Hay 3 archivo(s) marcados. Si no reconocés alguno, usá 'Aislar hallazgos'.", source='local', notice='Resp...conexión ni envío de datos. Para preguntas escritas con tus palabras, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'puntaje 98/100. problemas: ninguno.'
+ +  where 'puntaje 98/100. problemas: ninguno.' = <built-in method lower of str object at 0x7f4f358dbaa0>()
+ +    where <built-in method lower of str object at 0x7f4f358dbaa0> = 'Puntaje 98/100. Problemas: Ninguno.'.lower
+ +      where 'Puntaje 98/100. Problemas: Ninguno.' = Answer(text='Puntaje 98/100. Problemas: Ninguno.', source='local', notice='Respondido por el motor local, sin conexión...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_explain_area_on_unknown_input - AttributeError: 'NoneType' object has no attribute 'strip'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C
+    Basura: 2400 MB
+  ?         ++++
+    Sospechosos: 3
+    RAM disponible: 11 percent
+    Disco libre: 6 percent
+    Duplicados: 900 MB
+    Inicio: 19 items
+8 failed, 291 passed, 7 warnings in 1.21s
+
+```
+- `2026-08-14T13:26:54` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y la robustez del motor local mediante el uso de `Enum` para las áreas del sistema, eliminando la dependencia de strings mágicos en el mapeo de palabras clave y en la identificación de problemas.
+- `2026-08-14T13:27:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-08-14T13:28:21` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos recursivos y de validación en `browser.py` mediante type hints específicos, docstrings detallados que explican el propósito de las guardas de seguridad y la normalización de la terminología para mejorar la mantenibilidad.
+- `2026-08-14T13:28:35` 🛑 Propuesta bloqueada por la guardia en diskreport.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ExtensionUsage.size_mb, FileEntry.size_mb, FolderUsage.size_mb
+- `2026-08-14T13:28:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T13:28:35` Corrida terminada. Total usado hoy: 320.

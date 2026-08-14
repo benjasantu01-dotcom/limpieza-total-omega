@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 15
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 77 | 7 | 12 | 3 | 89 |
-| 2026-08-14 | 147 | 10 | 20 | 12 | 127 |
+| 2026-08-13 | 76 | 6 | 12 | 2 | 88 |
+| 2026-08-14 | 148 | 11 | 21 | 12 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **53**
 - manejo de errores y validación de entradas: **49**
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **45**
 - robustez ante casos límite: **42**
-- rendimiento: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
 - `diskreport.py`: **20**
+- `browser.py`: **19**
 - `settings.py`: **19**
 - `scanner.py`: **18**
-- `browser.py`: **18**
 - `organizer.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
-- `quarantine.py`: **16**
+- `quarantine.py`: **15**
 - `duplicates.py`: **14**
 - `main.py`: **13**
 - `safety.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T13:28:21` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos recursivos y de validación en `browser.py` mediante type hints específicos, docstrings detallados que explican el propósito de las guardas de seguridad y la normalización de la terminología para mejorar la mantenibilidad.
 - `2026-08-14T13:18:02` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validación explícita para evitar procesar filas malformadas o entradas de PowerShell que no contienen rutas, asegurando que `csv.DictReader` no genere errores silenciosos al iterar.
 - `2026-08-14T13:17:49` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_Validators.path` y `_Validators.int` para manejar explícitamente posibles errores durante la conversión de tipos o acceso a disco, asegurando que los validadores siempre devuelvan un valor predecible y nunca propaguen excepciones que puedan romper la carga o persistencia de la configuración.
 - `2026-08-14T13:17:09` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `check_recent_executable_in_downloads` y `scan_directory` añadiendo validaciones preventivas de tipos y excepciones específicas para evitar errores en tiempo de ejecución al interactuar con rutas del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T11:24:48` **settings.py** (seguridad defensiva): Se endureció la validación de archivos de configuración mediante el uso de `os.access` con el modo `os.R_OK` y `os.W_OK` dentro de los validadores, garantizando que el archivo no solo esté en una ruta segura, sino que tenga los permisos mínimos necesarios para ser leído o escrito por la aplicación, previniendo errores de acceso a nivel de sistema operativo antes de intentar cualquier operación de I/O.
 - `2026-08-14T11:15:08` **quarantine.py** (seguridad defensiva): Se implementó una validación estricta de "Path Traversal" mediante `os.path.commonpath` en `purge_all` para asegurar que, al iterar sobre el directorio, solo se procesen archivos que residan físicamente bajo la raíz de cuarentena, evitando cualquier posibilidad de manipulación externa por enlaces simbólicos o rutas maliciosas.
 - `2026-08-14T11:14:35` **organizer.py** (seguridad defensiva): Se ha implementado una validación de "escape de sandbox" en `delete_reviewed` para garantizar, mediante `os.path.commonpath`, que ningún archivo sea eliminado si, debido a una condición de carrera o manipulación externa, ya no reside estrictamente dentro de la carpeta de cuarentena, reforzando la seguridad defensiva contra posibles ataques de redirección de rutas.
-- `2026-08-14T11:05:37` **memory.py** (seguridad defensiva): Se añadió una validación defensiva en `trim_working_set` para asegurar que el proceso objetivo sea un proceso de usuario real y no un componente del sistema, utilizando `QueryFullProcessImageNameW` para inspeccionar la ruta del ejecutable y verificarla contra `is_protected_path` antes de intentar cualquier operación de gestión de memoria.
