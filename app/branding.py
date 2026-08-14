@@ -345,7 +345,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         parent_dir = p.parent
         if not parent_dir.exists():
             parent_dir.mkdir(parents=True, exist_ok=True)
-        elif not parent_dir.is_dir():
+        # Verificamos que el destino sea un directorio válido y no un archivo de sistema/bloqueado
+        if not parent_dir.is_dir():
             return None
             
         p.write_text(logo_svg(), encoding="utf-8")

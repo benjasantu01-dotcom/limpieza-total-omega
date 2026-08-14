@@ -512,3 +512,14 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-14T06:19:57` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva al invocar `filter_safe_paths` sobre la `api_key` y el `model` antes de la comunicación remota, además de aplicar `_ensure_safe_text` sobre el resultado crudo recibido de Gemini, garantizando que ni la configuración ni la respuesta contengan rutas o caracteres maliciosos.
 - `2026-08-14T06:19:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T06:19:57` Corrida terminada. Total usado hoy: 152.
+- `2026-08-14T06:27:56` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-08-14T06:28:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T06:28:36` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-14T06:28:43` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-14T06:29:35` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia y el tipo de directorio padre antes de realizar operaciones de escritura, evitando posibles errores de E/S inesperados al trabajar con rutas.
+- `2026-08-14T06:30:00` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se corrigió el manejo de excepciones en `_sum_directory_recursive` para evitar que una variable no definida (`e`) cause una excepción secundaria al intentar acceder a `winerror`, reforzando la seguridad y estabilidad del bucle de escaneo.
+- `2026-08-14T06:30:14` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T06:30:55` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` y las funciones de consulta añadiendo una validación explícita mediante `path.resolve()` antes de realizar operaciones de entrada/salida, evitando así la exposición a rutas fuera del alcance esperado debido a enlaces simbólicos o manipulaciones de rutas relativas.
+- `2026-08-14T06:31:05` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` y `_scan` evitando que el buscador de duplicados siga enlaces simbólicos o puntos de reparse (Junctions), mitigando el riesgo de recursión infinita o lectura de rutas fuera de las carpetas autorizadas.
+- `2026-08-14T06:31:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T06:31:05` Corrida terminada. Total usado hoy: 156.

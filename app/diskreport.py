@@ -156,10 +156,10 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount:
         return None
     try:
-        p = Path(mount).expanduser()
+        p = Path(mount).expanduser().resolve()
         if str(p).startswith(("\\\\", "//")):
             return None
-        if not p.exists() or is_protected_path(p.resolve()):
+        if not p.exists() or is_protected_path(p):
             return None
             
         usage = shutil.disk_usage(p)
@@ -214,6 +214,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Se resuelven rutas antes de validar para evitar desbordamientos o symlink jumps
+                        entry_path = Path(entry.path).resolve()
+                        
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
 
@@ -222,12 +225,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                entry_path = Path(entry.path)
-                                if skip_protected and is_protected_path(entry_path.resolve()):
+                                if skip_protected and is_protected_path(entry_path):
                                     continue
                                 stack.append(entry_path)
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            yield entry_path, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -287,7 +289,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                # relative_to puede lanzar ValueError si no es subdirectorio, tratamos el error
                 rel = path.relative_to(base)
                 if not rel.parts:
                     continue

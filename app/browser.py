@@ -198,9 +198,9 @@ def _sum_directory_recursive(
                         total_size += _sum_directory_recursive(entry.path, base_dir, is_junction_fn, kernel32, visited, cache, depth + 1)
                     else:
                         total_size += entry.stat().st_size
-                except (PermissionError, OSError, FileNotFoundError):
-                    # Ignorar errores de acceso (winerror 32: archivo en uso, o borrado durante escaneo)
-                    if getattr(e, 'winerror', None) == 32:
+                except (PermissionError, OSError, FileNotFoundError) as e:
+                    # Ignorar errores de acceso comunes (ej. archivo en uso o borrado)
+                    if getattr(e, 'winerror', 0) == 32:
                         continue
                     continue
     except (PermissionError, OSError, FileNotFoundError):

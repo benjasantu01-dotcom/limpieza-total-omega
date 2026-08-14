@@ -157,6 +157,9 @@ def _collect_candidates(
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
+                        # Seguridad: no seguir symlinks ni puntos de reparse (Junctions)
+                        if entry.is_symlink(): continue
+                        
                         st = entry.stat(follow_symlinks=False)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
