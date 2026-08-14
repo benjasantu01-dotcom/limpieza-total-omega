@@ -192,13 +192,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el sistema de archivos de forma iterativa y segura.
-    
-    Args:
-        directory: Directorio raíz desde donde comenzar.
-        skip_protected: Si es True, saltea directorios marcados como protegidos.
-        
-    Yields:
-        Tuplas (Path, int) con la ruta del archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -294,10 +287,11 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                parts = path.relative_to(base).parts
-                if not parts:
+                # relative_to puede lanzar ValueError si no es subdirectorio, tratamos el error
+                rel = path.relative_to(base)
+                if not rel.parts:
                     continue
-                top_level = base / parts[0]
+                top_level = base / rel.parts[0]
                 sums[top_level] += size
                 counts[top_level] += 1
             except (ValueError, IndexError, OSError): 

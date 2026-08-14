@@ -448,7 +448,7 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     encontrados = 0
     for attr, limit, op, msg in _CRITERIOS_SALUD:
         val = getattr(ctx, attr, 0)
-        # Evaluamos la condición lógica sin crear objetos innecesarios
+        # Evaluamos la condición lógica asegurando finitud
         if (op == "<" and val < limit) or (op == ">" and val > limit):
             yield msg.format(val)
             encontrados += 1

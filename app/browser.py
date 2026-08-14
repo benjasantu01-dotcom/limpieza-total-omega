@@ -183,7 +183,7 @@ def _sum_directory_recursive(
         return cache[root_dir]
     
     current_path = Path(root_dir)
-    if is_protected_path(current_path):
+    if not current_path.exists() or is_protected_path(current_path):
         return 0
         
     visited.add(root_dir)
@@ -198,12 +198,12 @@ def _sum_directory_recursive(
                         total_size += _sum_directory_recursive(entry.path, base_dir, is_junction_fn, kernel32, visited, cache, depth + 1)
                     else:
                         total_size += entry.stat().st_size
-                except (PermissionError, OSError) as e:
-                    # Ignorar errores de acceso (winerror 32: archivo en uso)
+                except (PermissionError, OSError, FileNotFoundError):
+                    # Ignorar errores de acceso (winerror 32: archivo en uso, o borrado durante escaneo)
                     if getattr(e, 'winerror', None) == 32:
                         continue
                     continue
-    except (PermissionError, OSError):
+    except (PermissionError, OSError, FileNotFoundError):
         return 0
     
     cache[root_dir] = total_size
