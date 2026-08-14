@@ -1224,3 +1224,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-14T01:13:32` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `build_context` y sus funciones auxiliares implementando una validación explícita de `float('inf')` y `float('nan')` mediante `math.isfinite` durante el procesamiento de datos externos, previniendo errores de serialización JSON o comportamientos inesperados ante valores numéricos corruptos provenientes de `settings` o del entorno.
 - `2026-08-14T01:13:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T01:13:32` Corrida terminada. Total usado hoy: 32.
+- `2026-08-14T01:21:56` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-14T01:22:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-14T01:22:53` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `directory_size` ante el caso límite de bloqueos por archivos en uso (típico al escanear carpetas de caché abiertas), agregando un manejo explícito de `WinError 32` (sharing violation) para evitar que el proceso se detenga ante errores esperados de E/S.
+- `2026-08-14T01:23:18` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y las funciones auxiliares incorporando una gestión explícita de `OSError` (como `PermissionError` o `FileNotFoundError`) mediante un bloque `try-except` más granular para asegurar que el escaneo no se detenga ante archivos bloqueados o inaccesibles, manteniendo la integridad del proceso de recolección de datos.
+- `2026-08-14T01:23:25` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-14T01:23:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T01:23:25` Corrida terminada. Total usado hoy: 36.

@@ -192,7 +192,10 @@ def _sum_directory_recursive(
                             total_size += _sum_directory_recursive(entry.path, base_dir, is_junction_fn, kernel32, visited, cache, depth + 1)
                     else:
                         total_size += entry.stat().st_size
-                except (PermissionError, OSError):
+                except (PermissionError, OSError) as e:
+                    # WinError 32: Sharing violation (archivo en uso por navegador)
+                    if getattr(e, 'winerror', None) == 32:
+                        continue
                     continue
     except (PermissionError, OSError):
         return 0
