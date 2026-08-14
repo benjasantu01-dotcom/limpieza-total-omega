@@ -442,21 +442,22 @@ def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
     if not ctx: return
     
-    evaluators: list[tuple[bool, str, dict[str, Any]]] = [
-        (ctx.disk_free_percent < 10.0, "{percent:.0f}% de disco libre", {"percent": ctx.disk_free_percent}),
-        (ctx.suspicious_warnings > 0, "{count} archivo(s) sospechosos", {"count": ctx.suspicious_warnings}),
-        (ctx.memory_available_percent < 15.0, "{percent:.0f}% de RAM", {"percent": ctx.memory_available_percent}),
-        (ctx.junk_mb > 1000.0, "{mb:.0f} MB de basura", {"mb": ctx.junk_mb}),
-        (ctx.duplicate_mb > 500.0, "{mb:.0f} MB en duplicados", {"mb": ctx.duplicate_mb}),
-        (ctx.startup_count > 15, "{count} programas de inicio", {"count": ctx.startup_count})
-    ]
+    # Lista de tuplas: (condición, mensaje, valores para formateo)
+    criterios = (
+        (ctx.disk_free_percent < 10.0, "{:.0f}% de disco libre", ctx.disk_free_percent),
+        (ctx.suspicious_warnings > 0, "{:d} archivo(s) sospechosos", ctx.suspicious_warnings),
+        (ctx.memory_available_percent < 15.0, "{:.0f}% de RAM", ctx.memory_available_percent),
+        (ctx.junk_mb > 1000.0, "{:.0f} MB de basura", ctx.junk_mb),
+        (ctx.duplicate_mb > 500.0, "{:.0f} MB en duplicados", ctx.duplicate_mb),
+        (ctx.startup_count > 15, "{:d} programas de inicio", ctx.startup_count)
+    )
     
-    found = 0
-    for condition, msg, args in evaluators:
+    encontrados = 0
+    for condition, msg, value in criterios:
         if condition:
-            yield msg.format(**args)
-            found += 1
-        if found >= 3:
+            yield msg.format(value)
+            encontrados += 1
+        if encontrados >= 3:
             break
 
 def available(base: Union[str, Path, None] = None) -> bool:

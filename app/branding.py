@@ -30,7 +30,7 @@ HexColor: TypeAlias = str  # Formato: "#RRGGBB"
 SeverityLevel: TypeAlias = Literal["ok", "info", "warning", "danger"]
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[HexColor, str]  # (Color, Etiqueta)
-RGBTuple: TypeAlias = Tuple[int, int, int]
+RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 PointCoords: TypeAlias = List[float]  # Lista plana [x1, y1, x2, y2, ...]
 
 class PaletteDict(TypedDict):
@@ -424,16 +424,17 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     Dibuja un medidor circular tipo anillo para representar porcentajes de salud.
     
     Args:
-        canvas: Objeto Canvas de tkinter.
-        percent: Valor porcentual (0-100).
-        size: Diámetro del anillo.
-        thickness: Grosor del trazo.
-        track: Color opcional para el fondo.
-        fill: Color opcional para el arco de progreso.
+        canvas: Objeto Canvas de tkinter donde dibujar.
+        percent: Valor de salud [0, 100].
+        size: Diámetro total del círculo en píxeles.
+        thickness: Ancho del anillo en píxeles.
+        canvas_x: Offset horizontal del centro del componente.
+        canvas_y: Offset vertical del centro del componente.
+        track: Color de fondo (opcional).
+        fill: Color de progreso (opcional, por defecto usa el color de salud).
     """
     if not hasattr(canvas, "create_arc"): return
     try:
-        # Validación explícita de entradas
         valor = float(percent)
         diametro = int(size)
         grosor = int(thickness)
