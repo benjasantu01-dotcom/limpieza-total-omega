@@ -20,7 +20,7 @@ from __future__ import annotations
 import os
 import ctypes
 from dataclasses import dataclass
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import Iterable, Sequence, Dict, List, Optional, Callable, Set, Union
 from safety import is_protected_path
 
@@ -78,7 +78,8 @@ def base_directories() -> List[Path]:
     """Retorna la lista de directorios base del sistema para buscar perfiles.
     
     Returns:
-        Lista conteniendo LOCALAPPDATA si es una ruta válida y no protegida.
+        Lista conteniendo LOCALAPPDATA si es una ruta válida, existente, 
+        absoluta y no protegida. Retorna lista vacía ante cualquier error.
     """
     if os.name != "nt":
         return []
@@ -97,7 +98,11 @@ def base_directories() -> List[Path]:
 
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
-    """Valida la integridad de la ruta y previene Path Traversal."""
+    """Valida la integridad de la ruta y previene Path Traversal.
+    
+    Verifica que la ruta resuelta pertenezca a la base, no sea un enlace
+    simbólico/junction y no contenga caracteres de control maliciosos.
+    """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
@@ -117,7 +122,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         except ValueError:
             return False
 
-        is_junction = getattr(os.path, 'isjunction', lambda _: False)
+        is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
 
@@ -134,7 +139,10 @@ def _is_excluded_file(name: str | None) -> bool:
 
 
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
-    """Consulta atributos del sistema de archivos mediante Win32 API."""
+    """Consulta atributos del sistema de archivos mediante Win32 API.
+    
+    Retorna True si el archivo es oculto (0x02) o sistema (0x04).
+    """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     if not os.path.exists(entry_path):
@@ -153,13 +161,10 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
     if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path'):
         return True
     try:
-        # Excluir archivos de configuración/datos sensibles
         if _is_excluded_file(entry.name):
             return True
-        # Excluir archivos ocultos del sistema
         if _is_system_hidden(entry.path, kernel32):
             return True
-        # Excluir enlaces simbólicos y puntos de reparse para evitar bucles infinitos
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
     except (OSError, PermissionError):
@@ -176,7 +181,13 @@ def _sum_directory_recursive(
     cache: Dict[str, int], 
     depth: int = 0
 ) -> int:
-    """Calcula el tamaño total de una carpeta mediante DFS, evitando ciclos y niveles excesivos."""
+    """Calcula el tamaño total de una carpeta mediante DFS, evitando ciclos y niveles excesivos.
+    
+    Args:
+        root_dir: Ruta absoluta del directorio a sumar.
+        visited: Set para rastrear nodos y prevenir recursión infinita.
+        depth: Límite de profundidad (20) para prevenir stack overflow.
+    """
     if depth > 20 or root_dir in visited:
         return 0
     if root_dir in cache:
@@ -199,7 +210,6 @@ def _sum_directory_recursive(
                     else:
                         total_size += entry.stat().st_size
                 except (PermissionError, OSError, FileNotFoundError) as e:
-                    # Ignorar errores de acceso comunes (ej. archivo en uso o borrado)
                     if getattr(e, 'winerror', 0) == 32:
                         continue
                     continue
@@ -211,7 +221,10 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
-    """Calcula el tamaño en bytes de un directorio tras validación de seguridad."""
+    """Calcula el tamaño en bytes de un directorio tras validación de seguridad.
+    
+    Retorna 0 si la ruta es inválida, protegida, o inaccesible.
+    """
     if path is None:
         return 0
     
@@ -250,7 +263,11 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Detecta cachés instalados en el sistema mediante escaneo heurístico."""
+    """Detecta cachés instalados mediante escaneo heurístico de rutas predefinidas.
+    
+    Retorna una lista ordenada de objetos BrowserCache. Los errores en rutas
+    individuales son silenciados para continuar con el escaneo completo.
+    """
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)

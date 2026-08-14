@@ -76,7 +76,10 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo leyendo en bloques.
+    Calcula el hash SHA256 completo del archivo.
+    
+    Ignora rutas protegidas, archivos vacíos o marcados con atributos de sistema
+    (FILE_ATTRIBUTE_SYSTEM = 0x400) para evitar colisiones o bloqueos.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -105,7 +108,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Hash rápido de los primeros bytes (64KB) para una comparación heurística.
+    Hash rápido de los primeros bytes (64KB) para una comparación heurística eficiente.
+    Retorna None si el archivo es inaccesible o si la ruta es protegida.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -125,6 +129,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Clasifica una colección de rutas según su tamaño en bytes.
+    Filtra automáticamente rutas protegidas y errores de sistema.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: 
@@ -146,7 +151,9 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo en profundidad (DFS) capturando archivos.
+    Realiza un recorrido recursivo capturando candidatos.
+    Utiliza inodos/dispositivos (dev, ino) para evitar procesar enlaces físicos 
+    múltiples como archivos distintos y asegurar que cada archivo único se cuente.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Dict[Tuple[int, int], bool] = {}
@@ -161,6 +168,7 @@ def _collect_candidates(
                         if entry.is_symlink(): continue
                         
                         st = entry.stat(follow_symlinks=False)
+                        # 0x400: FILE_ATTRIBUTE_SYSTEM (Windows)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
                         if entry.is_dir():
@@ -196,6 +204,7 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Reduce un conjunto de archivos candidatos aplicando una función de hashing.
+    Solo retorna grupos que mantengan colisiones (len > 1).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -215,6 +224,7 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Pipeline principal: filtra por tamaño -> hash parcial -> hash completo.
+    Retorna una lista ordenada de grupos por mayor ahorro potencial de espacio.
     """
     if directories is None or min_size < 0: return []
     
@@ -241,7 +251,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística: selecciona el archivo a conservar (más antiguo, ruta más corta).
-    Valida la existencia de cada ruta para evitar excepciones en el acceso.
+    Valida la existencia de cada ruta para evitar excepciones.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

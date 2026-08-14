@@ -225,6 +225,12 @@ def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
     Genera una representación visual de progreso en formato texto.
+    
+    Args:
+        percent: Valor numérico de 0 a 100.
+        width: Número total de caracteres de la barra.
+        filled: Carácter para el segmento completado.
+        empty: Carácter para el segmento vacío.
     """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
@@ -237,7 +243,10 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte un color hexadecimal a valores RGB para cálculos de interpolación."""
+    """
+    Convierte un string HEX (#RRGGBB) a una tupla RGB (r, g, b).
+    Retorna (0,0,0) ante formatos inválidos para evitar errores de renderizado.
+    """
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
@@ -251,7 +260,14 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Realiza una interpolación lineal (lerp) entre dos colores hex. Ratio: [0.0, 1.0]."""
+    """
+    Realiza una interpolación lineal (lerp) entre dos colores HEX.
+    
+    Args:
+        start: Color hexadecimal inicial.
+        end: Color hexadecimal final.
+        ratio: Factor de mezcla entre 0.0 y 1.0.
+    """
     ratio_clamped = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -264,7 +280,10 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
-    """Calcula una secuencia de colores interpolados a lo largo de varios puntos de control."""
+    """
+    Calcula una secuencia de colores interpolados (n = steps) a lo largo de 
+    múltiples puntos de control definidos en stops.
+    """
     try:
         n = max(1, int(steps))
         if not stops: return (PALETTE["accent"],) * n
