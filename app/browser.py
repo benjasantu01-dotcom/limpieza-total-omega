@@ -98,11 +98,7 @@ def base_directories() -> List[Path]:
 
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
-    """Valida la integridad de la ruta y previene Path Traversal.
-    
-    Verifica que la ruta resuelta pertenezca a la base, no sea un enlace
-    simbólico/junction y no contenga caracteres de control maliciosos.
-    """
+    """Valida la integridad de la ruta y previene Path Traversal."""
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
@@ -114,7 +110,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Bloqueo estricto adicional de seguridad: verificar protección post-resolución
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
@@ -140,10 +135,7 @@ def _is_excluded_file(name: str | None) -> bool:
 
 
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
-    """Consulta atributos del sistema de archivos mediante Win32 API.
-    
-    Retorna True si el archivo es oculto (0x02) o sistema (0x04).
-    """
+    """Consulta atributos del sistema de archivos mediante Win32 API."""
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
@@ -151,12 +143,12 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
         if attrs == 0xFFFFFFFF:
             return False
         return bool(attrs & 0x04 or attrs & 0x02)
-    except (OSError, AttributeError, TypeError, ValueError, MemoryError):
+    except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
-    """Determina si una entrada de directorio debe omitirse por seguridad o por ser contenido protegido."""
+    """Determina si una entrada de directorio debe omitirse por seguridad."""
     if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path'):
         return True
     try:
@@ -187,7 +179,10 @@ def _sum_directory_recursive(
         return cache[root_dir]
     
     current_path = Path(root_dir)
-    if not current_path.exists() or is_protected_path(current_path):
+    try:
+        if not current_path.exists() or is_protected_path(current_path):
+            return 0
+    except (OSError, PermissionError):
         return 0
         
     visited.add(root_dir)

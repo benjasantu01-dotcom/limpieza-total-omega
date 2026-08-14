@@ -211,6 +211,7 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     if val is None:
         return
     try:
+        # Solo procesar tipos que puedan ser representados como números
         if not isinstance(val, (int, float, str)):
             return
         
@@ -238,7 +239,11 @@ def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> 
     
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
-    if val is None or not isinstance(val, (int, float, str)):
+    if val is None:
+        return default
+    
+    # Validar tipos aceptables antes de la conversión
+    if not isinstance(val, (int, float, str)):
         return default
     
     try:
@@ -271,7 +276,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
         grade = _get_metric_val(health, "grade", "")
-        if grade is not None:
+        if isinstance(grade, (str, int, float)):
             ctx.grade = str(grade)[:10]
         ctx.analyzed = True
 
