@@ -146,7 +146,9 @@ def format_bytes(num: Optional[int | float]) -> str:
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
     """
     Parsea la salida de /proc/meminfo extrayendo métricas clave.
-    Utiliza un patrón de búsqueda simple sobre el texto para mapear valores a KB.
+    
+    Args:
+        text: Contenido crudo del archivo /proc/meminfo.
     """
     if not text:
         return MemorySnapshot(0, 0)
@@ -171,8 +173,12 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
     """
-    Helper para deserializar una línea CSV proveniente de PowerShell.
-    Maneja validaciones robustas ante entradas malformadas o PIDs inválidos.
+    Deserializa una línea CSV (formato: Name, Id, WorkingSet) proveniente de PowerShell.
+    
+    Args:
+        line: Una línea única de texto CSV sin procesar.
+    Returns:
+        Un objeto ProcessMemory si la línea es válida, None en caso contrario.
     """
     if not line or not line.strip():
         return None
@@ -201,7 +207,10 @@ def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Convierte la salida cruda de PowerShell (CSV) a una lista ordenada de ProcessMemory.
-    Filtra líneas inválidas y aplica un límite de cantidad a los resultados.
+    
+    Args:
+        text: Salida completa del comando PowerShell Get-Process convertido a CSV.
+        limit: Número máximo de procesos a retornar.
     """
     if not isinstance(text, str) or not text:
         return []
@@ -316,15 +325,12 @@ def _is_system_process(pid: int) -> bool:
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Intenta liberar el 'working set' de un proceso específico.
+    Intenta liberar el 'working set' de un proceso específico mediante llamadas a la API de Windows.
     
-    Realiza las siguientes validaciones previas:
-      1. Verifica que el sistema sea Windows (NT).
-      2. Valida que el PID sea un entero no protegido.
-      3. Asegura que el proceso está activo.
-      4. Verifica mediante la ruta del ejecutable que no sea un proceso del sistema.
-    
-    ADVERTENCIA: Acción destructiva sobre el rendimiento de caché de memoria.
+    Args:
+        pid: Identificador de proceso (PID) a intervenir.
+    Returns:
+        Tupla (éxito: bool, mensaje: str).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
