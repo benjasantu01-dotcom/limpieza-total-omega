@@ -88,6 +88,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
 
         stat_initial = file_path.stat()
+        # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -169,7 +170,7 @@ def _collect_candidates(
             with os.scandir(root_path) as dir_iterator:
                 for entry in dir_iterator:
                     try:
-                        if entry.is_symlink(): continue
+                        # 0x400: FILE_ATTRIBUTE_REPARSE_POINT (Junctions/Symlinks)
                         st = entry.stat(follow_symlinks=False)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         

@@ -178,6 +178,10 @@ def _sum_directory_recursive(
         return 0
     if root_dir in cache:
         return cache[root_dir]
+    
+    current_path = Path(root_dir)
+    if is_protected_path(current_path):
+        return 0
         
     visited.add(root_dir)
     total_size: int = 0
@@ -188,12 +192,10 @@ def _sum_directory_recursive(
                     continue
                 try:
                     if entry.is_dir():
-                        if not is_protected_path(Path(entry.path)):
-                            total_size += _sum_directory_recursive(entry.path, base_dir, is_junction_fn, kernel32, visited, cache, depth + 1)
+                        total_size += _sum_directory_recursive(entry.path, base_dir, is_junction_fn, kernel32, visited, cache, depth + 1)
                     else:
                         total_size += entry.stat().st_size
                 except (PermissionError, OSError) as e:
-                    # WinError 32: Sharing violation (archivo en uso por navegador)
                     if getattr(e, 'winerror', None) == 32:
                         continue
                     continue

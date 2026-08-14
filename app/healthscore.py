@@ -174,7 +174,7 @@ def grade_for_score(score: float | int) -> str:
 
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite() or not all(math.isfinite(r) for r in ratios.values()):
         return ["Error: Datos de entrada corruptos, análisis no disponible."]
         
     recommendations: List[str] = []
