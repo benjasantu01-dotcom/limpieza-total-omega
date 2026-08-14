@@ -266,12 +266,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile):
             continue
         try:
+            # Validar que el archivo aún exista y sea un archivo real antes de mover
             if junk_file.path.exists() and junk_file.path.is_file():
                 if os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
                     usage = shutil.disk_usage(dest)
                     if usage.free > junk_file.size_bytes:
                         target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-                        if dest in target.parents:
+                        # Verifica nuevamente la seguridad absoluta de la ruta resultante
+                        if dest == target.parent and is_safe_to_modify(target):
                             shutil.move(str(junk_file.path), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
@@ -289,15 +291,17 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     dest: Path = Path(review_dir).expanduser().resolve()
-    if not dest.exists() or not is_safe_to_modify(dest):
+    if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
         return 0
 
     count: int = 0
     try:
         for item in dest.iterdir():
             try:
+                # Validar tipo y seguridad antes de intentar borrar
                 if item.is_file() and not item.is_symlink():
                     path_to_delete = item.resolve()
+                    # Asegurar que el archivo realmente resida dentro del directorio de revisión
                     if dest == path_to_delete.parent and is_safe_to_modify(path_to_delete):
                         path_to_delete.unlink()
                         count += 1

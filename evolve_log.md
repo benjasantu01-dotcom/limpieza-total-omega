@@ -870,3 +870,35 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-14T10:25:04` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una gestión robusta de los recursos de la UI mediante `winfo_exists()` en todas las llamadas asíncronas (`_render_gauge`, `set_status`, `_set_busy`, `log`, etc.) para prevenir excepciones de tipo `TclError` si el usuario cierra la ventana mientras hay hilos de fondo ejecutándose, además de validar explícitamente el estado del widget antes de cada operación de escritura.
 - `2026-08-14T10:25:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T10:25:04` Corrida terminada. Total usado hoy: 248.
+- `2026-08-14T10:32:54` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-08-14T10:33:24` Tests FALLARON:
+```
+sert len(procesos) == 1
+E       AssertionError: assert 2 == 1
+E        +  where 2 = len([ProcessMemory(name='ok', pid=1, working_set=1024, extra={}), ProcessMemory(name='malo', pid=0, working_set=0, extra={})])
+
+evolve/tests/test_modules.py:353: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:94: SyntaxWarning: invalid escape sequence '\R'
+    """Extrae rutas de comandos formateados como "C:\Ruta\App.exe" args."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - AssertionError: assert 2 == 1
+ +  where 2 = len([ProcessMemory(name='ok', pid=1, working_set=1024, extra={}), ProcessMemory(name='malo', pid=0, working_set=0, extra={})])
+1 failed, 298 passed, 7 warnings in 1.18s
+
+```
+- `2026-08-14T10:33:24` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación robusta contra valores `None` o corruptos en `_parse_csv_row` y `top_memory_processes`, previniendo que una salida de PowerShell malformada o inesperada (típica en casos de alta carga del sistema o cambios de permisos) propague errores o cese el funcionamiento de la interfaz.
+- `2026-08-14T10:33:50` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de integridad de ruta y manejo de excepciones ante rutas inexistentes, asegurando que solo se procesen archivos que residan efectivamente dentro de los directorios raíz esperados y evitando errores por cambios de estado durante la iteración.
+- `2026-08-14T10:34:22` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una comprobación de disponibilidad de espacio en disco más robusta en `quarantine_file` y `purge_all`, utilizando `shutil.disk_usage` y validando bloqueos de sistema antes de operaciones críticas para evitar estados inconsistentes (archivos bloqueados o falta de espacio a mitad de proceso).
+- `2026-08-14T10:34:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-14T10:34:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T10:34:29` Corrida terminada. Total usado hoy: 252.

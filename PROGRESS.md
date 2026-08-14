@@ -7,37 +7,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 222
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 100 | 7 | 15 | 3 | 131 |
-| 2026-08-14 | 124 | 7 | 17 | 9 | 91 |
+| 2026-08-13 | 99 | 7 | 15 | 3 | 128 |
+| 2026-08-14 | 125 | 8 | 18 | 10 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **45**
+- seguridad defensiva: **44**
+- robustez ante casos límite: **39**
 - rendimiento: **38**
-- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `assistant.py`: **21**
-- `settings.py`: **19**
 - `scanner.py`: **19**
+- `settings.py`: **18**
 - `browser.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
+- `organizer.py`: **17**
 - `quarantine.py`: **16**
-- `organizer.py`: **16**
 - `main.py`: **14**
 - `duplicates.py`: **14**
 - `branding.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T10:33:50` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de integridad de ruta y manejo de excepciones ante rutas inexistentes, asegurando que solo se procesen archivos que residan efectivamente dentro de los directorios raíz esperados y evitando errores por cambios de estado durante la iteración.
 - `2026-08-14T10:24:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `_generate_recommendations` validando la existencia de claves en el diccionario `valor_metricas` y capturando excepciones de formato de cadena para prevenir el colapso del reporte ante datos inesperados.
 - `2026-08-14T10:23:08` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` implementando un chequeo explícito de `is_symlink` y la validación de la existencia de `st_ino` (mediante `stat()`), evitando bloqueos o errores de ciclo infinito ante enlaces simbólicos circulares o archivos que desaparecen durante la iteración en sistemas con alta concurrencia.
 - `2026-08-14T10:17:53` **browser.py** (robustez ante casos límite): Se mejoró la robustez de `_is_system_hidden` ante rutas inexistentes o inaccesibles y se integró un manejo de errores más específico en `_sum_directory_recursive` para evitar que `PermissionError` silenciosos interrumpan la medición de carpetas parcialmente accesibles.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T09:33:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la creación dinámica de listas (`list(...)`) en el flujo principal por una ejecución directa del generador, evitando la asignación de memoria innecesaria y el procesamiento redundante en cada consulta al asistente.
 - `2026-08-14T09:31:58` **settings.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la creación de un método de fábrica `_get_default_config()` para centralizar la lógica de inicialización y la adición de Type Hints detallados en las funciones de validación, facilitando la comprensión del flujo de datos en el sistema de configuraciones.
 - `2026-08-14T09:22:53` **scanner.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de escaneo heurístico y refiné las anotaciones de tipo y estructura en `scan_file` para clarificar la lógica de ejecución del pipeline, facilitando la comprensión del flujo sin alterar el comportamiento.
-- `2026-08-14T09:21:55` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings detallados en las funciones de manipulación de archivos para aclarar las precondiciones de seguridad y el comportamiento ante errores.
