@@ -40,6 +40,8 @@ class Suspicion:
     severity: str
 
 # Alias para funciones de chequeo heurístico.
+# Reciben el path del archivo, el objeto DirEntry opcional para evitar stat() extra, 
+# y el timestamp de inicio del escaneo para cálculos de antigüedad.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
@@ -155,6 +157,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Ejecuta el pipeline de heurísticas sobre un archivo dado y retorna la lista de hallazgos.
+    
+    El proceso se divide en:
+    1. Reglas universales aplicables a cualquier extensión.
+    2. Reglas específicas para ejecutables (según extensión).
     """
     if not isinstance(path, Path):
         return []

@@ -1119,3 +1119,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T00:27:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-14T00:27:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T00:27:06` Corrida terminada. Total usado hoy: 12.
+- `2026-08-14T00:30:57` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-08-14T00:31:27` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-14T00:31:52` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). He mejorado la documentación y tipado interno de `scanner.py` para clarificar la arquitectura del pipeline de heurísticas, incluyendo docstrings explicativos y anotaciones de tipo más precisas para reducir la ambigüedad en el manejo de las funciones de chequeo.
+- `2026-08-14T00:32:19` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en las funciones clave de carga, validación y gestión de rutas para mejorar la mantenibilidad y claridad del flujo de datos, sin alterar el comportamiento funcional.
+- `2026-08-14T00:32:27` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._is_valid_executable, StartupEntry._sanitize_command
+- `2026-08-14T00:32:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T00:32:27` Corrida terminada. Total usado hoy: 16.
