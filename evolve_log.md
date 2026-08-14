@@ -1267,3 +1267,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-14T02:15:14` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están explícitamente registrados en el manifiesto, evitando el borrado de archivos huérfanos o accidentales dentro de la carpeta de cuarentena.
 - `2026-08-14T02:15:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T02:15:14` Corrida terminada. Total usado hoy: 56.
+- `2026-08-14T02:23:06` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-14T02:23:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-14T02:23:51` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió una validación en `_validate_basic_path_safety` para detectar enlaces simbólicos o puntos de unión (junctions) en la ruta *antes* de que sea normalizada o resuelta, evitando así posibles escapes de sandbox mediante rutas recursivas o bucles infinitos en el sistema de archivos de Windows.
+- `2026-08-14T02:24:12` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-14T02:24:25` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_Validators._is_safe_path` para prevenir ataques de *Time-of-Check to Time-of-Use* (TOCTOU) y manejo de errores mediante el uso de `resolve(strict=False)` y validación explícita de la existencia antes de la resolución, asegurando que el proceso de validación no sea susceptible a cambios en la estructura del sistema de archivos durante la ejecución.
+- `2026-08-14T02:24:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T02:24:25` Corrida terminada. Total usado hoy: 60.

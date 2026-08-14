@@ -127,10 +127,13 @@ class _Validators:
     def _is_safe_path(path_obj: Path) -> bool:
         """Verifica que la ruta sea segura contra manipulaciones de sistema."""
         try:
-            resolved = path_obj.resolve()
+            # resolve(strict=False) previene errores si la ruta no existe aún
+            resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return False
             if is_protected_path(str(resolved)): return False
+            
+            # Validar el segmento base más profundo existente para evitar el salto
             target = resolved if resolved.exists() else resolved.parent
             return is_safe_to_modify(str(target))
         except (OSError, RuntimeError, PermissionError):

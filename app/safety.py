@@ -227,6 +227,10 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_basic_path_safety(p: Path, path_str: str) -> None:
     """Verifica riesgos estructurales como path traversal o nombres de dispositivos inválidos."""
+    # Verificación preventiva contra puntos de reparse antes de evaluar partes
+    if p.exists() and _is_reparse_point(p):
+        raise UnsafePathError("La ruta apunta a un enlace simbólico o punto de unión.")
+
     if p.exists() and p.parent and not p.parent.exists():
         raise UnsafePathError("Directorio padre inaccesible.")
 

@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 44 | 2 | 7 | 5 | 40 |
+| 2026-08-12 | 44 | 2 | 7 | 5 | 36 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 37 | 3 | 5 | 3 | 8 |
+| 2026-08-14 | 39 | 3 | 6 | 3 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **43**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `settings.py`: **21**
+- `settings.py`: **22**
 - `assistant.py`: **20**
 - `branding.py`: **19**
 - `healthscore.py`: **18**
@@ -42,11 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **15**
 - `scanner.py`: **15**
 - `main.py`: **12**
-- `safety.py`: **10**
+- `safety.py`: **11**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T02:24:25` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_Validators._is_safe_path` para prevenir ataques de *Time-of-Check to Time-of-Use* (TOCTOU) y manejo de errores mediante el uso de `resolve(strict=False)` y validación explícita de la existencia antes de la resolución, asegurando que el proceso de validación no sea susceptible a cambios en la estructura del sistema de archivos durante la ejecución.
+- `2026-08-14T02:23:51` **safety.py** (seguridad defensiva): Se añadió una validación en `_validate_basic_path_safety` para detectar enlaces simbólicos o puntos de unión (junctions) en la ruta *antes* de que sea normalizada o resuelta, evitando así posibles escapes de sandbox mediante rutas recursivas o bucles infinitos en el sistema de archivos de Windows.
 - `2026-08-14T02:15:14` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` implementando una validación estricta en `purge_all` para asegurar que solo se eliminen archivos que están explícitamente registrados en el manifiesto, evitando el borrado de archivos huérfanos o accidentales dentro de la carpeta de cuarentena.
 - `2026-08-14T02:14:55` **organizer.py** (seguridad defensiva): Se endureció la validación en `delete_reviewed` para asegurar que, antes de realizar cualquier operación `unlink`, la ruta sea canónicamente verificada dentro de la carpeta de revisión, previniendo riesgos de "Path Traversal" y asegurando que `is_safe_to_modify` tenga la última palabra antes de la destrucción.
 - `2026-08-14T02:14:30` **memory.py** (seguridad defensiva): Mejoré la seguridad en `trim_working_set` al asegurar que el manejo de procesos ocurra siempre bajo un bloque `try...finally` garantizando el cierre del `proc_handle`, y añadí una validación de seguridad explícita sobre el `exe_path` obtenido mediante `is_protected_path` antes de cualquier interacción con las APIs de memoria.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T01:52:58` **settings.py** (robustez ante casos límite): He robustecido la carga de archivos añadiendo un chequeo preventivo de `is_safe_to_modify` sobre el directorio padre antes de intentar cualquier operación de I/O en `load`, y he forzado una gestión de permisos más estricta en el método `save` mediante un `try-except` encapsulado que garantiza la integridad del estado si el disco se bloquea o el permiso es denegado durante la escritura.
 - `2026-08-14T01:43:43` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o bloqueados durante el acceso a sus atributos, encapsulando las llamadas a `path.suffix` y `path.parts` dentro de bloques `try-except` para prevenir que una excepción inesperada (como un error de codificación en el nombre del archivo) interrumpa el escaneo completo.
 - `2026-08-14T01:43:35` **safety.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos con tamaño cero (vacíos) en `_check_file_integrity` para prevenir la manipulación accidental de archivos de configuración o marcadores de sistema que, aunque no están protegidos por nombre, suelen ser críticos cuando su tamaño es nulo, mejorando la robustez ante casos límite.
-- `2026-08-14T01:33:54` **memory.py** (robustez ante casos límite): Se mejora `parse_windows_process_csv` para ser robusto ante casos límite como líneas vacías, formatos de CSV inesperados o valores PID/WorkingSet no numéricos, garantizando que el bucle de procesamiento no falle ante datos parciales del sistema.
-- `2026-08-14T01:32:31` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_generate_recommendations` ante configuraciones o estados inesperados, añadiendo una validación de seguridad de tipo y garantizando que el acceso al diccionario `vals` nunca lance una excepción aunque el sistema se expanda.
