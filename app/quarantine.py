@@ -253,7 +253,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 @lru_cache(maxsize=1)
 def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
-    """Carga el manifiesto desde el disco, utilizando caché LRU para optimizar el acceso."""
+    """Carga el manifiesto desde el disco, validando estructura y tipos."""
     base_path = Path(base_str)
     path = _manifest_path(base_path)
     if not path.exists():
@@ -263,8 +263,14 @@ def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
             raw_data = json.load(f)
         if not isinstance(raw_data, list):
             return []
-        return [item for entry in raw_data if (item := QuarantineItem.from_dict(entry))]
-    except (json.JSONDecodeError, OSError, PermissionError, ValueError):
+        valid_items = []
+        for entry in raw_data:
+            if isinstance(entry, dict):
+                item = QuarantineItem.from_dict(entry)
+                if item:
+                    valid_items.append(item)
+        return valid_items
+    except (json.JSONDecodeError, OSError, PermissionError):
         return []
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:

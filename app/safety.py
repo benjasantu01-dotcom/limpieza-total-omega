@@ -126,28 +126,28 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(p: Path) -> None:
-    """
-    Realiza una auditoría exhaustiva de un archivo existente para asegurar que es seguro modificarlo.
-    """
+    """Realiza una auditoría exhaustiva de un archivo para asegurar que es seguro modificarlo."""
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
-
     if len(p.parts) > 32:
-        raise UnsafePathError("Ruta demasiado profunda: posible ataque de evasión.")
+        raise UnsafePathError("Ruta demasiado profunda.")
 
-    try:
-        violation_checks = [
-            _IntegrityCheck("inaccesible", lambda: not os.access(p, os.W_OK)),
-            _IntegrityCheck("punto de reparse", lambda: _is_reparse_point(p)),
-            _IntegrityCheck("solo lectura", lambda: _is_readonly(p)),
-            _IntegrityCheck("en uso", lambda: _is_file_in_use(p)),
-            _IntegrityCheck("sistema/oculto", lambda: _is_system_or_hidden(p)),
-            _IntegrityCheck("hard link detectado", lambda: p.is_file() and p.stat().st_nlink > 1),
-            _IntegrityCheck("ADS (flujos alternativos)", lambda: _has_alternate_data_stream(p)),
-            _IntegrityCheck("archivo vacío", lambda: p.is_file() and p.stat().st_size == 0)
-        ]
-    except OSError:
-        raise UnsafePathError(f"Error de E/S al auditar {p.name}: archivo posiblemente eliminado.")
+    def _safe_stat(p: Path) -> os.stat_result:
+        try:
+            return p.stat()
+        except OSError:
+            raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
+
+    violation_checks = [
+        _IntegrityCheck("inaccesible", lambda: not os.access(p, os.W_OK)),
+        _IntegrityCheck("punto de reparse", lambda: _is_reparse_point(p)),
+        _IntegrityCheck("solo lectura", lambda: _is_readonly(p)),
+        _IntegrityCheck("en uso", lambda: _is_file_in_use(p)),
+        _IntegrityCheck("sistema/oculto", lambda: _is_system_or_hidden(p)),
+        _IntegrityCheck("hard link detectado", lambda: p.is_file() and _safe_stat(p).st_nlink > 1),
+        _IntegrityCheck("ADS (flujos alternativos)", lambda: _has_alternate_data_stream(p)),
+        _IntegrityCheck("archivo vacío", lambda: p.is_file() and _safe_stat(p).st_size == 0)
+    ]
 
     for check in violation_checks:
         if check.predicate():
@@ -227,7 +227,6 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_basic_path_safety(p: Path, path_str: str) -> None:
     """Verifica riesgos estructurales como path traversal o nombres de dispositivos inválidos."""
-    # Verificación preventiva contra puntos de reparse antes de evaluar partes
     if p.exists() and _is_reparse_point(p):
         raise UnsafePathError("La ruta apunta a un enlace simbólico o punto de unión.")
 

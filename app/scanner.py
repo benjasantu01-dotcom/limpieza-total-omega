@@ -160,6 +160,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Ejecuta el pipeline de heurísticas sobre un archivo dado y retorna la lista de hallazgos.
     """
     if not isinstance(path, Path):
+        logger.warning("scan_file llamado con objeto no Path")
         return []
 
     findings: ScanResult = []
@@ -189,14 +190,19 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Inicializa y ejecuta el proceso de escaneo recursivo en el directorio proporcionado."""
-    if not directory:
+    if directory is None:
         return []
         
     try:
         path_input = Path(directory).resolve()
-        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
+        # Validación temprana de existencia y acceso
+        if not path_input.is_dir():
+            logger.warning(f"Ruta no es un directorio válido: {directory}")
             return []
-    except (OSError, RuntimeError, TypeError, ValueError):
+        if is_protected_path(path_input):
+            return []
+    except (OSError, TypeError, ValueError) as e:
+        logger.error(f"Error procesando directorio base {directory}: {e}")
         return []
 
     scanner = Scanner(base_root=path_input)

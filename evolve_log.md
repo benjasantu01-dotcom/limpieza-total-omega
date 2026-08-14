@@ -1494,3 +1494,12 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-14T04:07:24` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-14T04:07:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T04:07:24` Corrida terminada. Total usado hoy: 100.
+- `2026-08-14T04:15:21` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-14T04:16:03` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `load_manifest` añadiendo un manejo de excepciones más granular y validación estricta de tipos tras la carga del JSON para evitar que un manifiesto corrupto provoque un fallo silencioso o un comportamiento inesperado.
+- `2026-08-14T04:16:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-14T04:17:27` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-14T04:17:54` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-14T04:18:27` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_check_file_integrity` al consolidar las comprobaciones en un bloque protegido individualmente, evitando que un fallo de E/S en un archivo específico durante la auditoría detenga el proceso global innecesariamente, y asegurando que las llamadas a `p.stat()` se realicen solo tras validar que el archivo existe y es accesible.
+- `2026-08-14T04:18:37` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scanner.py` implementando una validación de entrada estricta y más informativa en `scan_directory` y `scan_file`, asegurando que rutas mal formadas, nulas o inaccesibles sean gestionadas mediante excepciones específicas antes de realizar operaciones de E/S.
+- `2026-08-14T04:18:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T04:18:37` Corrida terminada. Total usado hoy: 104.
