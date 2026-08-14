@@ -254,7 +254,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     dest: Path = Path(review_dir).expanduser().resolve()
     
-    if not is_safe_to_modify(dest):
+    # Validar que la ruta de destino no sea raíz ni esté protegida
+    if not dest or dest == dest.parent or not is_safe_to_modify(dest):
         return dest
         
     try:
@@ -291,18 +292,20 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     dest: Path = Path(review_dir).expanduser().resolve()
+    # Verifica que la carpeta exista, sea directorio y no sea ruta crítica
     if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
         return 0
 
     count: int = 0
     try:
+        dest_str = str(dest)
         for item in dest.iterdir():
             try:
                 # Validar tipo y seguridad antes de intentar borrar
                 if item.is_file() and not item.is_symlink():
                     path_to_delete = item.resolve()
                     # Verificación de Sandbox: asegurarse que el archivo está estrictamente bajo dest
-                    if os.path.commonpath([str(dest), str(path_to_delete)]) == str(dest):
+                    if os.path.commonpath([dest_str, str(path_to_delete)]) == dest_str:
                         if is_safe_to_modify(path_to_delete):
                             path_to_delete.unlink()
                             count += 1

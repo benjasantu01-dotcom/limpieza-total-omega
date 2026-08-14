@@ -80,7 +80,7 @@ class QuarantineItem:
             self.size_bytes = int(self.size_bytes)
         except (ValueError, TypeError):
             self.size_bytes = 0
-        if not self.item_id:
+        if not self.item_id or not isinstance(self.item_id, str):
             raise ValueError("ID de ítem vacío o inválido")
 
     @property
@@ -483,24 +483,21 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
-    item_map = {i.stored_name: i for i in items}
+    item_map = {i.stored_name: i for i in items if i.stored_name}
     purged_count = 0
     items_to_remove = []
     
     for entry in quarantine_root.iterdir():
-        # Validar que sea archivo, no sea manifiesto y esté en el sandbox real
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
             
         real_entry = entry.resolve()
-        # Seguridad: verificar estrictamente que el real_entry esté bajo la raíz
         try:
             if os.path.commonpath([str(real_entry), str(quarantine_root)]) != str(quarantine_root):
                 continue
         except (ValueError, OSError):
             continue
             
-        # SEGURIDAD: Solo purgar si el archivo figura en el manifiesto
         item = item_map.get(entry.name)
         if not item:
             continue

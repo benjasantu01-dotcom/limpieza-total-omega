@@ -1205,3 +1205,11 @@ FAILED evolve/tests/test_modules.py::test_drive_usage_reads_a_real_path - assert
 - `2026-08-14T12:59:01` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante validaciones de tipo y estado de los objetos antes de ejecutar las operaciones, garantizando que los datos ingresados por el usuario pasen por un filtro de integridad básico para evitar excepciones inesperadas en el pool de hilos.
 - `2026-08-14T12:59:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T12:59:01` Corrida terminada. Total usado hoy: 308.
+- `2026-08-14T13:05:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-14T13:06:24` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-14T13:06:50` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura más estrictas sobre las rutas de destino, asegurando que `commonpath` o la jerarquía de directorios no sean vulnerables a manipulaciones de entrada inválidas antes de proceder con operaciones críticas de disco.
+- `2026-08-14T13:07:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T13:07:40` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación explícita de `item_id` en las operaciones del manifiesto y una verificación de `None` en `purge_all` para prevenir errores de referencia, mejorando la robustez frente a datos corrompidos.
+- `2026-08-14T13:07:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-14T13:07:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T13:07:45` Corrida terminada. Total usado hoy: 312.
