@@ -145,11 +145,9 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
     """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
-    if not os.path.exists(entry_path):
-        return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
-        if not isinstance(attrs, int) or attrs == 0xFFFFFFFF:
+        if attrs == 0xFFFFFFFF:
             return False
         return bool(attrs & 0x04 or attrs & 0x02)
     except (OSError, AttributeError, TypeError, ValueError, MemoryError):
@@ -181,14 +179,7 @@ def _sum_directory_recursive(
     cache: Dict[str, int], 
     depth: int = 0
 ) -> int:
-    """Calcula el tamaño total de una carpeta mediante DFS, evitando ciclos y niveles excesivos.
-    
-    Args:
-        root_dir: Ruta absoluta del directorio a sumar.
-        visited: Set para rastrear nodos y prevenir recursión infinita.
-        cache: Diccionario para memorización de resultados de subdirectorios.
-        depth: Límite de profundidad (20) para prevenir stack overflow.
-    """
+    """Calcula el tamaño total de una carpeta mediante DFS, evitando ciclos y niveles excesivos."""
     if depth > 20 or root_dir in visited:
         return 0
     if root_dir in cache:
@@ -210,11 +201,9 @@ def _sum_directory_recursive(
                         total_size += _sum_directory_recursive(entry.path, base_dir, is_junction_fn, kernel32, visited, cache, depth + 1)
                     else:
                         total_size += entry.stat().st_size
-                except (PermissionError, OSError, FileNotFoundError) as e:
-                    if getattr(e, 'winerror', 0) == 32:
-                        continue
+                except (PermissionError, OSError):
                     continue
-    except (PermissionError, OSError, FileNotFoundError):
+    except (PermissionError, OSError):
         return 0
     
     cache[root_dir] = total_size
@@ -222,10 +211,7 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
-    """Calcula el tamaño en bytes de un directorio tras validación de seguridad.
-    
-    Retorna 0 si la ruta es inválida, protegida, o inaccesible.
-    """
+    """Calcula el tamaño en bytes de un directorio tras validación de seguridad."""
     if path is None:
         return 0
     
@@ -264,11 +250,7 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Detecta cachés instalados mediante escaneo heurístico de rutas predefinidas.
-    
-    Retorna una lista ordenada de objetos BrowserCache. Los errores en rutas
-    individuales son silenciados para continuar con el escaneo completo.
-    """
+    """Detecta cachés instalados mediante escaneo heurístico de rutas predefinidas."""
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)

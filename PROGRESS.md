@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 103 | 7 | 16 | 3 | 135 |
-| 2026-08-14 | 120 | 7 | 17 | 8 | 88 |
+| 2026-08-13 | 101 | 7 | 16 | 3 | 133 |
+| 2026-08-14 | 122 | 7 | 17 | 8 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
-- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
+- seguridad defensiva: **46**
 - rendimiento: **38**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **21**
 - `diskreport.py`: **21**
-- `assistant.py`: **20**
 - `settings.py`: **19**
 - `scanner.py`: **19**
-- `memory.py`: **18**
-- `organizer.py`: **17**
+- `browser.py`: **18**
 - `quarantine.py`: **17**
-- `browser.py`: **17**
+- `memory.py`: **17**
 - `healthscore.py`: **16**
+- `organizer.py`: **16**
 - `main.py`: **14**
 - `duplicates.py`: **14**
 - `branding.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T10:17:53` **browser.py** (robustez ante casos límite): Se mejoró la robustez de `_is_system_hidden` ante rutas inexistentes o inaccesibles y se integró un manejo de errores más específico en `_sum_directory_recursive` para evitar que `PermissionError` silenciosos interrumpan la medición de carpetas parcialmente accesibles.
+- `2026-08-14T10:17:00` **assistant.py** (robustez ante casos límite): Se ha robustecido el manejo de estados de `SystemContext` en `build_context` añadiendo validaciones específicas para prevenir inyecciones o valores atípicos (NaN/Inf) que pudieran derivar de una configuración corrupta o de la manipulación externa de datos.
 - `2026-08-14T10:03:33` **scanner.py** (rendimiento): Optimizé la heurística `check_recent_executable_in_downloads` para evitar la conversión costosa de cada parte de la ruta a una lista de strings mediante el uso de una intersección de conjuntos pre-calculada, reduciendo la carga de CPU durante el escaneo recursivo.
 - `2026-08-14T10:03:04` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `_is_system_or_hidden` y `_is_reparse_point` utilizando `os.lstat` para evitar el acceso costoso al sistema de archivos mediante `ctypes.windll` en cada validación, reduciendo drásticamente las llamadas al kernel durante los escaneos recursivos.
 - `2026-08-14T09:54:44` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` y `_walk_dir` al reemplazar el uso de `os.path.splitext(entry.name)` (que realiza una nueva llamada y normalización en cada iteración) por la validación directa de `entry.name.lower().endswith(tuple(_LOWER_JUNK_EXTS))`, eliminando la creación innecesaria de objetos `Path` antes de confirmar que el archivo es basura.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T09:21:55` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings detallados en las funciones de manipulación de archivos para aclarar las precondiciones de seguridad y el comportamiento ante errores.
 - `2026-08-14T09:13:15` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican las precondiciones, excepciones manejadas y los efectos laterales de las funciones críticas, facilitando el mantenimiento y la comprensión de las restricciones de seguridad.
 - `2026-08-14T09:13:05` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `trim_working_set` hacia un estilo de "guard clauses" y la incorporación de type hints y documentación detallada en los métodos auxiliares de la API de Windows, facilitando la comprensión del flujo de seguridad.
-- `2026-08-14T09:11:32` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos que explican la lógica de normalización y el propósito de cada regla, además de incluir type hints más descriptivos y refactorizar el acceso a valores en `_generate_recommendations` para mejorar la legibilidad del flujo lógico sin alterar la funcionalidad.
-- `2026-08-14T09:02:46` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y el tipado en los métodos de hashing y recolección para clarificar las asunciones de seguridad y el flujo de datos, asegurando que el uso de `st_file_attributes` y el filtrado por `is_protected_path` sea explícito en su propósito dentro de los docstrings.
