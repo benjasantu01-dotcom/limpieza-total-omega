@@ -137,8 +137,8 @@ def _get_sha256(path: Path) -> str:
         with open(path, "rb") as f:
             while chunk := f.read(65536):
                 sha256_hash.update(chunk)
-    except (OSError, PermissionError):
-        return ""
+    except (OSError, PermissionError) as e:
+        raise RuntimeError(f"Error al leer archivo para hash: {e}")
     return sha256_hash.hexdigest()
 
 
@@ -327,8 +327,12 @@ def quarantine_file(
     if not dest_dir.exists():
         raise RuntimeError("Directorio de cuarentena inaccesible o no creado.")
     
-    if source_path.parent.resolve() == dest_dir.resolve():
-        raise UnsafePathError("Operación denegada: el archivo ya está en el destino.")
+    # Prevenir que el origen y destino sean la misma carpeta o anidados
+    try:
+        if os.path.commonpath([str(source_path.parent), str(dest_dir)]) == str(dest_dir):
+            raise UnsafePathError("Operación denegada: el archivo ya está en el destino o bajo una subcarpeta del mismo.")
+    except ValueError:
+        pass
         
     _validate_isolation_request(source_path, dest_dir)
     if not os.access(dest_dir, os.W_OK):

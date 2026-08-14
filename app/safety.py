@@ -101,7 +101,6 @@ def _is_system_or_hidden(path: Path) -> bool:
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        # 0x02 = FILE_ATTRIBUTE_HIDDEN, 0x04 = FILE_ATTRIBUTE_SYSTEM
         return attrs != -1 and bool(attrs & (0x02 | 0x04))
     except (OSError, AttributeError, TypeError):
         return False
@@ -114,7 +113,6 @@ def _is_reparse_point(path: Path) -> bool:
         return path.is_symlink()
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT
         return attrs != -1 and bool(attrs & 0x400)
     except (OSError, AttributeError, TypeError):
         return False
@@ -135,13 +133,7 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(p: Path) -> None:
-    """
-    Realiza una auditoría exhaustiva del estado físico y lógico de un archivo.
-    
-    Verifica que el archivo sea accesible, no esté bloqueado por procesos,
-    no sea un punto de entrada del sistema y cumpla con los requisitos
-    básicos de integridad para operaciones de movimiento o borrado.
-    """
+    """Realiza una auditoría exhaustiva del estado físico y lógico de un archivo."""
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
     if len(p.parts) > 32:
@@ -181,15 +173,18 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=2048)
 def normalize(path: PathLike) -> Path:
     """Normaliza rutas a formato absoluto, expandiendo '~' y validando límites MAX_PATH."""
-    if not path or not isinstance(path, (str, os.PathLike)) or not str(path).strip():
+    if path is None:
+        raise ValueError("Ruta nula.")
+    
+    path_val = str(path).strip()
+    if not path_val:
         raise ValueError("Entrada de ruta vacía.")
     
-    str_path = str(path).strip()
-    if len(str_path) > 260:
+    if len(path_val) > 260:
         raise ValueError("Longitud de ruta excedida.")
         
     try:
-        return Path(str_path).expanduser().resolve()
+        return Path(path_val).expanduser().resolve()
     except (OSError, RuntimeError) as e:
         if _is_permission_denied(e):
             raise ValueError("Acceso denegado durante la normalización.")
@@ -278,13 +273,13 @@ def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """Punto de entrada principal para validar si es seguro modificar un recurso."""
     if path is None:
-        raise UnsafePathError("Ruta nula.")
+        raise UnsafePathError("Ruta nula recibida para validación.")
 
     try:
         p = normalize(path)
         path_str = str(path)
     except (ValueError, TypeError) as e:
-        raise UnsafePathError(f"Ruta mal formada: {e}")
+        raise UnsafePathError(f"Ruta inválida o mal formada: {e}")
 
     _validate_basic_path_safety(p, path_str)
     _validate_boundary_conditions(p, base_dir)
@@ -310,6 +305,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una colección de rutas, retornando únicamente las que pasan los estándares de seguridad."""
     valid: list[Path] = []
+    if paths is None: return valid
     for p in paths:
         if is_safe_to_modify(p, allow_sensitive=allow_sensitive):
             try:

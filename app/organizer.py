@@ -239,9 +239,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     Traslada los archivos detectados a una carpeta designada para revisión humana.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
-        return Path(review_dir).expanduser() if isinstance(review_dir, str) else Path(".")
+        return Path(".")
 
     dest: Path = Path(review_dir).expanduser().resolve()
+    
+    # Validar integridad del destino antes de intentar crear o mover
     if not is_safe_to_modify(dest):
         return dest
         
@@ -255,11 +257,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
         try:
             if junk_file.path.exists() and junk_file.path.is_file():
-                # Validar que el archivo no sea una ruta fuera de control o un intento de escape
                 if os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
-                    if shutil.disk_usage(dest).free > junk_file.size_bytes:
+                    # Chequear espacio disponible antes de mover
+                    usage = shutil.disk_usage(dest)
+                    if usage.free > junk_file.size_bytes:
                         target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-                        # Verifica que el destino final mantenga relación con la carpeta de revisión
                         if dest in target.parents:
                             shutil.move(str(junk_file.path), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):
@@ -275,13 +277,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     dest: Path = Path(review_dir).expanduser().resolve()
-    if not is_safe_to_modify(dest):
+    if not dest.exists() or not is_safe_to_modify(dest):
         return 0
 
     count: int = 0
     try:
-        if not dest.exists():
-            return 0
         for item in dest.iterdir():
             try:
                 if item.is_file() and not item.is_symlink():
