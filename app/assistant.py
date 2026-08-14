@@ -211,9 +211,12 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     if val is None or not hasattr(obj, attr):
         return
     try:
+        # Validar tipo permitido antes de cast
         if not isinstance(val, (int, float, str)):
             return
+        
         clean = cast(val)
+        # Validar finititud y tipo nuevamente tras el cast
         if isinstance(clean, (int, float)) and math.isfinite(clean):
             setattr(obj, attr, max(min_val, min(clean, max_val)))
     except (ValueError, TypeError):
@@ -234,25 +237,23 @@ def _get_metric_val(source: Any, key: str, default: Any) -> Any:
     """
     if source is None:
         return default
+    
+    val = None
+    if isinstance(source, dict):
+        val = source.get(key)
+    elif hasattr(source, key):
+        val = getattr(source, key)
+    
+    if val is None or not isinstance(val, (int, float, str)):
+        return default
+    
     try:
-        val = None
-        if isinstance(source, dict):
-            val = source.get(key)
-        elif hasattr(source, key):
-            val = getattr(source, key)
-        
-        if val is None or not isinstance(val, (int, float, str)):
+        num = float(val)
+        if not math.isfinite(num):
             return default
-        
-        # Conversión forzada para verificar finitud
-        try:
-            num = float(val)
-            if not math.isfinite(num):
-                return default
-            return num
-        except (ValueError, TypeError):
-            return default
-    except Exception: return default
+        return num
+    except (ValueError, TypeError):
+        return default
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
@@ -287,7 +288,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     for k, v in extra.items():
-        # Verificación estricta de atributos permitidos y tipos antes de asignar
         if hasattr(ctx, k) and v is not None:
             attr_val = getattr(ctx, k)
             if isinstance(attr_val, (int, float)):

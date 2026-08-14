@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 31 | 2 | 6 | 3 | 24 |
+| 2026-08-12 | 28 | 2 | 5 | 3 | 24 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 40 | 3 | 6 | 3 | 36 |
+| 2026-08-14 | 41 | 3 | 6 | 3 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **53**
 - seguridad defensiva: **48**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **38**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
 - `settings.py`: **21**
-- `assistant.py`: **18**
-- `healthscore.py`: **17**
+- `diskreport.py`: **20**
+- `assistant.py`: **19**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
 - `branding.py`: **17**
-- `duplicates.py`: **16**
+- `healthscore.py`: **16**
+- `duplicates.py`: **15**
 - `browser.py`: **15**
 - `scanner.py`: **15**
 - `organizer.py`: **14**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T03:48:32` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_assign` y `_get_metric_val` agregando validaciones de tipo explícitas y manejo defensivo de valores `NaN` o `inf`, asegurando que `SystemContext` solo contenga datos numéricos válidos antes de ser procesados.
 - `2026-08-14T02:33:44` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_resolve_and_cache_path` añadiendo una comprobación adicional mediante `path.exists()` dentro de un bloque `try/except` robusto, asegurando que no se intente resolver rutas malformadas o que generen excepciones de sistema que puedan interrumpir el bucle de escaneo.
 - `2026-08-14T02:24:25` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_Validators._is_safe_path` para prevenir ataques de *Time-of-Check to Time-of-Use* (TOCTOU) y manejo de errores mediante el uso de `resolve(strict=False)` y validación explícita de la existencia antes de la resolución, asegurando que el proceso de validación no sea susceptible a cambios en la estructura del sistema de archivos durante la ejecución.
 - `2026-08-14T02:23:51` **safety.py** (seguridad defensiva): Se añadió una validación en `_validate_basic_path_safety` para detectar enlaces simbólicos o puntos de unión (junctions) en la ruta *antes* de que sea normalizada o resuelta, evitando así posibles escapes de sandbox mediante rutas recursivas o bucles infinitos en el sistema de archivos de Windows.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T01:54:22` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el desbordamiento de rutas (`Path Traversal`) mediante `ensure_safe_to_modify`, transformando la validación de un booleano (`is_safe_to_modify`) a un chequeo que garantiza la integridad de la ruta antes de cualquier operación de escritura, alineándose con las directrices de seguridad defensiva para evitar la escritura en carpetas restringidas.
 - `2026-08-14T01:53:56` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar el contexto, asegurando que `context_as_text` valide la ausencia de datos sensibles antes de enviarlos, y evitando cualquier posible inyección de caracteres en el pipeline de datos del asistente mediante `_ensure_safe_text`.
 - `2026-08-14T01:52:58` **settings.py** (robustez ante casos límite): He robustecido la carga de archivos añadiendo un chequeo preventivo de `is_safe_to_modify` sobre el directorio padre antes de intentar cualquier operación de I/O en `load`, y he forzado una gestión de permisos más estricta en el método `save` mediante un `try-except` encapsulado que garantiza la integridad del estado si el disco se bloquea o el permiso es denegado durante la escritura.
-- `2026-08-14T01:43:43` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o bloqueados durante el acceso a sus atributos, encapsulando las llamadas a `path.suffix` y `path.parts` dentro de bloques `try-except` para prevenir que una excepción inesperada (como un error de codificación en el nombre del archivo) interrumpa el escaneo completo.
