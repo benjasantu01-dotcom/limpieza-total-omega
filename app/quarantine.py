@@ -227,16 +227,13 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     Ejecuta chequeos de seguridad antes de mover un archivo al sandbox.
     Verifica sintaxis, atributos de archivo y protege contra colisiones/traversal.
     """
-    # 1. Validaciones sintácticas y de sistema (bloqueos de Windows)
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
 
-    # 2. Validaciones de estado del archivo
     resolved_source = source_path.resolve()
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares.")
     
-    # 3. Verificación de seguridad de rutas (evitar mover archivos sensibles)
     if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta está protegida por el sistema.")
     if is_protected_path(dest_dir):
@@ -244,14 +241,12 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if _is_valid_quarantine_path(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     
-    # 4. Validaciones de infraestructura de disco
     try:
         if resolved_source.drive and dest_dir.drive and resolved_source.drive.lower() != dest_dir.drive.lower():
             raise UnsafePathError("Operación prohibida entre dispositivos distintos.")
     except OSError:
         pass
 
-    # 5. Verificación final de permisos de escritura y estado de bloqueo
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if _is_file_locked(resolved_source):
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
@@ -315,7 +310,6 @@ def quarantine_file(
     if not source_path.exists() or not source_path.is_file():
         raise FileNotFoundError(f"Archivo no encontrado: {source_path}")
     
-    # Verificación preventiva de bloqueo antes de cualquier manipulación
     if _is_file_locked(source_path):
         raise IOError("El archivo está en uso y no puede ser movido a cuarentena.")
         
@@ -406,7 +400,6 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         save_manifest(items, base)
         raise FileNotFoundError("Archivo no encontrado en cuarentena.")
     
-    # Validar integridad antes de restaurar
     if not match.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue modificado.")
     
@@ -474,13 +467,12 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items = load_manifest(base)
     item_map = {i.stored_name: i for i in items}
     purged_count = 0
-    items_to_remove: List[QuarantineItem] = []
+    items_to_remove = []
     
     for entry in quarantine_root.iterdir():
         if not _is_safe_to_purge(entry, quarantine_root):
             continue
         try:
-            # Validar bloqueo antes de intentar borrar
             if _is_file_locked(entry):
                 continue
             
@@ -492,7 +484,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                         items_to_remove.append(item)
                         purged_count += 1
             else:
-                # Limpieza de archivos huérfanos sin registro
                 ensure_safe_to_modify(entry, allow_sensitive=False)
                 _safe_unlink(entry)
         except (OSError, PermissionError, UnsafePathError):

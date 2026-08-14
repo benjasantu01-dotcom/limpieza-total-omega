@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 33
+- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 229
 
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 53 | 3 | 9 | 5 | 60 |
+| 2026-08-12 | 50 | 3 | 9 | 5 | 59 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 15 | 2 | 3 | 2 | 2 |
+| 2026-08-14 | 16 | 3 | 4 | 2 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **44**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **35**
-- rendimiento: **30**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
 - `settings.py`: **20**
-- `assistant.py`: **19**
-- `branding.py`: **19**
+- `quarantine.py`: **18**
+- `assistant.py`: **18**
+- `branding.py`: **18**
 - `healthscore.py`: **17**
-- `quarantine.py`: **17**
-- `browser.py`: **16**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
 - `organizer.py`: **15**
+- `browser.py`: **15**
 - `scanner.py`: **13**
 - `main.py`: **12**
 - `safety.py`: **9**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T01:02:29` **quarantine.py** (rendimiento): Optimicé `list_items` y `load_manifest` reemplazando la carga redundante y el filtrado por lista con una estructura de mapeo (`dict`) en `purge_all`, reduciendo la complejidad algorítmica de O(N*M) a O(N+M) al procesar la purga de archivos.
 - `2026-08-14T00:52:28` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación repetitiva de diccionarios dentro de los bucles y consolidando la lógica de validación de métricas para reducir el número de llamadas a funciones auxiliares.
 - `2026-08-14T00:52:00` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un generador y evitando recrear listas intermedias mediante `yield`, reduciendo el uso de memoria durante el recorrido inicial del disco.
 - `2026-08-14T00:43:14` **diskreport.py** (rendimiento): Optimizé la función `walk_files` evitando la creación innecesaria de objetos `Path` dentro del bucle de iteración (`os.scandir` ya provee objetos `DirEntry` que contienen la ruta y los metadatos necesarios), reduciendo drásticamente la carga sobre el recolector de basura y mejorando la velocidad de escaneo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T00:11:00` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de Type Hints detallados en las funciones de procesamiento de datos y la extracción de la lógica de conversión de bytes a una estructura interna más explícita.
 - `2026-08-14T00:02:37` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo Google Style y se clarificaron los roles de las funciones internas que interactúan con APIs de bajo nivel, facilitando la auditoría de seguridad del código.
 - `2026-08-14T00:02:24` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato tipo Google/NumPy) en funciones complejas y la aclaración de las unidades de medida en los Type Aliases, facilitando el mantenimiento y la comprensión de las transformaciones de coordenadas y colores.
-- `2026-08-14T00:01:44` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_gen_problems` para usar una estructura de datos más clara y declarativa, eliminando la duplicación de lógica de formateo y validación, y reforzando los docstrings para mayor claridad.

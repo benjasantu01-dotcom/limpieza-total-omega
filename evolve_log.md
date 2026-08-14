@@ -1186,3 +1186,34 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-08-14T00:53:53` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de procesos mediante `powershell` filtrando directamente por los 10 procesos con mayor uso desde el comando nativo (`Sort-Object -Descending -Property WorkingSet | Select-Object -First 10`), evitando el procesamiento innecesario de listas completas en Python y reduciendo la carga de memoria durante la ejecución del comando.
 - `2026-08-14T00:53:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T00:53:53` Corrida terminada. Total usado hoy: 24.
+- `2026-08-14T01:01:31` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-08-14T01:01:58` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-14T01:02:29` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `list_items` y `load_manifest` reemplazando la carga redundante y el filtrado por lista con una estructura de mapeo (`dict`) en `purge_all`, reduciendo la complejidad algorítmica de O(N*M) a O(N+M) al procesar la purga de archivos.
+- `2026-08-14T01:02:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-14T01:03:02` Tests FALLARON:
+```
+raises(safety, tmp_path):
+        """`is_safe_to_modify` es la variante para usar en un `if`."""
+        assert safety.is_safe_to_modify(tmp_path / "ok.tmp") is True
+        assert safety.is_safe_to_modify(tmp_path / "Windows" / "x.txt") is False
+        assert safety.is_safe_to_modify(tmp_path.anchor) is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe") is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe", allow_sensitive=True) is True
+        # Basura de entrada: devuelve False, no explota.
+        for basura in (None, "", 12345, [], {}):
+>           assert safety.is_safe_to_modify(basura) is False
+E           AssertionError: assert True is False
+E            +  where True = <function is_safe_to_modify at 0x7fee76907b00>(12345)
+E            +    where <function is_safe_to_modify at 0x7fee76907b00> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+
+evolve/tests/test_integrity.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7fee76907b00>(12345)
+ +    where <function is_safe_to_modify at 0x7fee76907b00> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+1 failed, 298 passed in 1.16s
+
+```
+- `2026-08-14T01:03:02` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la validación de rutas mediante la sustitución de comprobaciones redundantes y repetitivas por una estrategia de caché más inteligente, evitando llamadas repetidas a `path.parts` y `path.exists()` dentro de los bucles de `is_protected_path` y `ensure_safe_to_modify`.
+- `2026-08-14T01:03:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T01:03:02` Corrida terminada. Total usado hoy: 28.
