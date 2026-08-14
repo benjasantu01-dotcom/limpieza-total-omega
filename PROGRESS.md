@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 222
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-12 | 0 | 0 | 0 | 0 | 6 |
+| 2026-08-12 | 0 | 0 | 0 | 0 | 2 |
 | 2026-08-13 | 147 | 9 | 21 | 6 | 167 |
-| 2026-08-14 | 78 | 5 | 10 | 6 | 49 |
+| 2026-08-14 | 79 | 6 | 10 | 7 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **40**
 - rendimiento: **38**
 
@@ -32,8 +32,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `diskreport.py`: **23**
 - `assistant.py`: **21**
+- `scanner.py`: **19**
 - `settings.py`: **19**
-- `scanner.py`: **18**
 - `healthscore.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T06:18:14` **scanner.py** (robustez ante casos límite): Se ha añadido un robusto manejo de errores en `check_recent_executable_in_downloads` para capturar `ValueError` y `TypeError`, previniendo fallos al procesar nombres de archivos con caracteres no estándar o rutas mal formadas (casos límite comunes en sistemas de archivos), y se encapsuló `path.parts` en una validación de existencia.
 - `2026-08-14T06:09:03` **safety.py** (robustez ante casos límite): Se ha añadido `_is_permission_denied` para capturar explícitamente errores `PermissionError` y `OSError` (código 5) durante la resolución de rutas, evitando que una denegación de acceso en una carpeta superior termine propagando excepciones no controladas hacia la lógica de la aplicación y fortaleciendo la robustez ante permisos denegados.
 - `2026-08-14T06:08:33` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en `restore_item` para prevenir excepciones críticas en caso de que un archivo de cuarentena haya sido eliminado o bloqueado externamente entre la carga del manifiesto y la operación de restauración.
 - `2026-08-14T06:08:03` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `stage_for_review` ante condiciones de carrera y archivos inconsistentes, añadiendo una validación explícita de que la ruta de origen sigue siendo un archivo válido justo antes de la operación de movimiento (`shutil.move`), evitando errores en escenarios donde el archivo desaparece o cambia de estado durante la iteración.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T05:27:11` **memory.py** (rendimiento): Optimizamos `parse_windows_process_csv` para evitar la creación innecesaria de listas intermedias y reducir las llamadas a `split()` mediante un enfoque de una sola pasada sobre el texto, mejorando la eficiencia de procesamiento cuando el número de procesos es elevado.
 - `2026-08-14T05:19:01` **main.py** (rendimiento): Optimicé el renderizado del dashboard de salud implementando un `self._last_health_state` que evita cálculos de redibujo y configuraciones de widgets innecesarias si los datos de entrada (puntaje, basura, sospechosos, RAM, disco) no han cambiado entre llamadas.
 - `2026-08-14T05:18:14` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje en `compute_score` eliminando la recreación innecesaria de diccionarios y listas dentro de los bucles, y reemplazando el acceso repetitivo por búsqueda directa, mejorando la eficiencia de procesamiento al evitar asignaciones de memoria redundantes en cada llamada.
-- `2026-08-14T05:17:48` **duplicates.py** (rendimiento): Optimizé el proceso de hashing al cerrar los manejadores de archivo inmediatamente después de la lectura, eliminando la necesidad de re-invocar `stat()` para verificar cambios en archivos grandes, y sustituí llamadas redundantes a `Path.is_file()` por el uso de los atributos de `os.DirEntry` ya obtenidos durante el recorrido inicial, reduciendo drásticamente las llamadas al sistema operativo (syscalls) innecesarias.

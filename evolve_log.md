@@ -480,3 +480,35 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-14T06:09:03` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido `_is_permission_denied` para capturar explícitamente errores `PermissionError` y `OSError` (código 5) durante la resolución de rutas, evitando que una denegación de acceso en una carpeta superior termine propagando excepciones no controladas hacia la lógica de la aplicación y fortaleciendo la robustez ante permisos denegados.
 - `2026-08-14T06:09:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T06:09:03` Corrida terminada. Total usado hoy: 148.
+- `2026-08-14T06:17:44` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-14T06:18:14` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de errores en `check_recent_executable_in_downloads` para capturar `ValueError` y `TypeError`, previniendo fallos al procesar nombres de archivos con caracteres no estándar o rutas mal formadas (casos límite comunes en sistemas de archivos), y se encapsuló `path.parts` en una validación de existencia.
+- `2026-08-14T06:18:42` Tests FALLARON:
+```
+mo_kb'
+
+evolve/tests/test_assistant.py:91: KeyError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:94: SyntaxWarning: invalid escape sequence '\R'
+    """Extrae rutas de comandos formateados como "C:\Ruta\App.exe" args."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_defaults_are_complete_and_typed - AssertionError: assert 'duplicados_tamano_minimo_kb' in {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}
+ +  where {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range - KeyError: 'duplicados_tamano_minimo_kb'
+2 failed, 297 passed, 7 warnings in 1.16s
+
+```
+- `2026-08-14T06:18:42` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez ante errores de E/S y corrupción de archivos al añadir una verificación de tamaño mínimo y manejo explícito de archivos vacíos en `load`, y se garantizó la atomicidad en `save` al asegurar que el directorio padre exista antes de crear el archivo temporal.
+- `2026-08-14T06:18:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-14T06:19:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-14T06:19:57` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva al invocar `filter_safe_paths` sobre la `api_key` y el `model` antes de la comunicación remota, además de aplicar `_ensure_safe_text` sobre el resultado crudo recibido de Gemini, garantizando que ni la configuración ni la respuesta contengan rutas o caracteres maliciosos.
+- `2026-08-14T06:19:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T06:19:57` Corrida terminada. Total usado hoy: 152.
