@@ -114,7 +114,14 @@ class Scanner:
             logger.debug(f"Acceso denegado o error de sistema en {entry.path}: {e}")
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta nombres con múltiples extensiones que ocultan un ejecutable (ej: .pdf.exe)."""
+    """
+    Analiza si el nombre del archivo contiene una doble extensión que sugiere una intención de ocultamiento.
+    
+    Args:
+        path: Objeto Path del archivo.
+        entry: No requerido para este análisis.
+        now_ts: No requerido para este análisis.
+    """
     try:
         if DOUBLE_EXTENSION_RE.search(path.name):
             return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -124,7 +131,11 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Señala ejecutables modificados hace menos de 24h en carpetas de alta descarga/temp."""
+    """
+    Verifica si un ejecutable ha sido creado/modificado recientemente en directorios de alta exposición.
+    
+    Requiere el objeto `entry` para obtener metadatos de sistema (st_mtime) eficientemente.
+    """
     if not entry:
         return None
     
@@ -144,7 +155,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta binarios que imitan procesos críticos del sistema ubicados fuera de System32."""
+    """
+    Identifica archivos cuyo nombre coincide con procesos críticos de Windows pero residen fuera de System32.
+    """
     try:
         if path.name.lower() in SYSTEM_LOOKALIKES:
             # Comprobación de ruta segura ante fallos de string o ausencia de parent

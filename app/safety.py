@@ -16,6 +16,7 @@ from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable
 from functools import lru_cache
 
 PathLike: TypeAlias = Union[str, os.PathLike]
+ViolationPredicate: TypeAlias = Callable[[], bool]
 
 __all__ = [
     "UnsafePathError",
@@ -66,8 +67,9 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 
 
 class _IntegrityCheck(NamedTuple):
+    """Representa un criterio de validación de seguridad para un archivo."""
     reason: str
-    predicate: Callable[[], bool]
+    predicate: ViolationPredicate
 
 
 def _has_invalid_chars(path_str: str) -> bool:
@@ -126,7 +128,13 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(p: Path) -> None:
-    """Realiza una auditoría exhaustiva de un archivo para asegurar que es seguro modificarlo."""
+    """
+    Realiza una auditoría exhaustiva del estado físico y lógico de un archivo.
+    
+    Verifica que el archivo sea accesible, no esté bloqueado por procesos,
+    no sea un punto de entrada del sistema y cumpla con los requisitos
+    básicos de integridad para operaciones de movimiento o borrado.
+    """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
     if len(p.parts) > 32:
@@ -138,7 +146,7 @@ def _check_file_integrity(p: Path) -> None:
         except OSError:
             raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
 
-    violation_checks = [
+    violation_checks: list[_IntegrityCheck] = [
         _IntegrityCheck("inaccesible", lambda: not os.access(p, os.W_OK)),
         _IntegrityCheck("punto de reparse", lambda: _is_reparse_point(p)),
         _IntegrityCheck("solo lectura", lambda: _is_readonly(p)),
