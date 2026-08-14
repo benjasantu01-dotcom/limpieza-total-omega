@@ -1221,15 +1221,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
+                # Validar existencia antes de procesar
                 if not quarantine.item_exists(raw_id):
                     self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
                     return
                 
                 item = quarantine.get_item(raw_id)
+                # Validar integridad del manifiesto
                 if not item or not hasattr(item, 'original_path'):
                     self.log("Error: Manifiesto de cuarentena corrupto.", "Cuarentena")
                     return
                 
+                # Chequeo de seguridad: la ruta original debe seguir siendo válida
                 if not self._is_safe_path(item.original_path):
                     self.log(f"Error: La ruta original {item.original_path} ahora es insegura.", "Cuarentena")
                     return
@@ -1304,11 +1307,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
             
         raw = self.pid_entry.get().strip()
+        # Validación de tipo antes de procesar
         if not raw.isdigit():
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
+        
         pid = int(raw)
-
         # Validación de seguridad: evitar tocar procesos del sistema (PID < 100)
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
@@ -1319,6 +1323,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
+                # Verificación de existencia del proceso antes de operar
                 if not memory_mod.process_exists(pid):
                     self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
                     return

@@ -751,3 +751,11 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-14T08:21:57` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `summarize` y `largest_folders` para capturar explícitamente fallos en `Path.relative_to` y `Path.suffix`, asegurando que el análisis no se interrumpa ante rutas con caracteres inválidos o estructuras inesperadas.
 - `2026-08-14T08:21:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T08:21:57` Corrida terminada. Total usado hoy: 200.
+- `2026-08-14T08:30:18` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-14T08:30:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-14T08:31:22` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-14T08:32:22` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-14T08:33:41` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante validaciones de tipo y estado más estrictas antes de delegar la operación al pool de hilos, evitando excepciones innecesarias en la UI cuando el usuario ingresa datos malformados o el estado del sistema cambia bruscamente.
+- `2026-08-14T08:33:56` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para asegurar que el proceso objetivo exista mediante `GetExitCodeProcess` antes de cualquier operación y garantizando el cierre del handle del proceso en caso de errores mediante un bloque `finally` más exhaustivo, evitando fugas de recursos.
+- `2026-08-14T08:33:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T08:33:56` Corrida terminada. Total usado hoy: 204.

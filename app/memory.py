@@ -349,7 +349,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "Error de sistema: PSAPI no disponible o incompatible."
 
-    # Pre-check: intentar abrir proceso con privilegios mínimos necesarios
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
         return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
