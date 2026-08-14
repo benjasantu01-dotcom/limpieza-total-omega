@@ -1315,3 +1315,9 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T14:40:01` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-08-14T14:40:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T14:40:01` Corrida terminada. Total usado hoy: 348.
+- `2026-08-14T14:48:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-14T14:48:32` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se añadió un control de excepciones específico para `PermissionError` y `OSError` en la resolución de rutas y creación de candidatos de caché, asegurando que si un subdirectorio deniega el acceso, el escaneo continúe con el resto sin abortar ni corromper el estado de la iteración.
+- `2026-08-14T14:49:05` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el recorrido (condición de carrera) y se ha protegido `summarize` ante casos de rutas con permisos denegados durante la iteración, evitando que una excepción en un archivo puntual aborte el reporte completo.
+- `2026-08-14T14:49:05` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-14T14:49:05` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T14:49:05` Corrida terminada. Total usado hoy: 350.

@@ -290,12 +290,9 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     count_map: Dict[str, int] = defaultdict(int)
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-            size_map[ext] += size
-            count_map[ext] += 1
-        except (OSError, PermissionError, AttributeError):
-            continue
+        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+        size_map[ext] += size
+        count_map[ext] += 1
     
     usage_list: List[ExtensionUsage] = [
         ExtensionUsage(extension=ext, size_bytes=size, count=count_map[ext])
@@ -336,7 +333,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 top_level = base / rel.parts[0]
                 sums[top_level] += size
                 counts[top_level] += 1
-            except (ValueError, IndexError, OSError, TypeError): 
+            except (ValueError, IndexError): 
                 continue
 
         results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
@@ -355,12 +352,9 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not directory:
         return (0, 0)
     total_bytes, file_count = 0, 0
-    try:
-        for _, size in walk_files(directory, skip_protected):
-            total_bytes += size
-            file_count += 1
-    except (OSError, PermissionError):
-        pass
+    for _, size in walk_files(directory, skip_protected):
+        total_bytes += size
+        file_count += 1
     return total_bytes, file_count
 
 
@@ -399,18 +393,15 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         total_bytes += size
         total_files += 1
         
-        try:
-            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-            stats = ext_stats[ext]
-            stats[0] += size
-            stats[1] += 1
-            
-            if len(top_files_heap) < 8:
-                heapq.heappush(top_files_heap, (size, str(path)))
-            elif size > top_files_heap[0][0]:
-                heapq.heapreplace(top_files_heap, (size, str(path)))
-        except (OSError, PermissionError, AttributeError):
-            continue
+        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+        stats = ext_stats[ext]
+        stats[0] += size
+        stats[1] += 1
+        
+        if len(top_files_heap) < 8:
+            heapq.heappush(top_files_heap, (size, str(path)))
+        elif size > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (size, str(path)))
 
     lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     

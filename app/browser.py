@@ -279,18 +279,21 @@ def detect_profiles(
         for browser_name, relative_path_str in cache_paths.items():
             if not isinstance(relative_path_str, str): continue
             
-            candidate = real_base.joinpath(*relative_path_str.split("\\"))
-            if _is_valid_cache_path(candidate, real_base):
-                c_path = candidate.resolve()
-                c_path_str = str(c_path)
-                
-                size: int = _sum_directory_recursive(c_path_str, c_path, is_junction, k32, visited, perf_cache)
-                if size > 0:
-                    found.append(BrowserCache(
-                        browser=str(browser_name),
-                        path=c_path,
-                        size_bytes=size,
-                    ))
+            try:
+                candidate = real_base.joinpath(*relative_path_str.split("\\"))
+                if _is_valid_cache_path(candidate, real_base):
+                    c_path = candidate.resolve()
+                    c_path_str = str(c_path)
+                    
+                    size: int = _sum_directory_recursive(c_path_str, c_path, is_junction, k32, visited, perf_cache)
+                    if size > 0:
+                        found.append(BrowserCache(
+                            browser=str(browser_name),
+                            path=c_path,
+                            size_bytes=size,
+                        ))
+            except (OSError, PermissionError):
+                continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
