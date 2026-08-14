@@ -766,3 +766,10 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-14T08:42:03` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `ensure_safe_to_modify` ante entradas inválidas o None agregando validaciones preventivas más estrictas y manejando excepciones de tipo de forma explícita para evitar propagar errores inesperados hacia los bucles de la aplicación.
 - `2026-08-14T08:42:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-14T08:42:03` Corrida terminada. Total usado hoy: 208.
+- `2026-08-14T08:50:45` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-08-14T08:51:18` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` y `process_entry` ante entradas nulas o rutas inválidas mediante validaciones explícitas y manejo defensivo de `os.scandir` para evitar fallos por rutas que cambian o desaparecen durante la iteración.
+- `2026-08-14T08:51:47` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de los validadores integrando chequeos específicos para evitar el procesamiento de valores `None` o mal formados, previniendo excepciones innecesarias en `_Validators.int` y `_Validators.path`, lo que asegura una carga más resiliente frente a configuraciones corrompidas.
+- `2026-08-14T08:52:12` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-14T08:52:34` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `_gen_problems` para utilizar un nombre de función más descriptivo y la adición de Type Hints precisos, facilitando la comprensión del flujo de evaluación de riesgos del sistema.
+- `2026-08-14T08:52:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-14T08:52:34` Corrida terminada. Total usado hoy: 212.

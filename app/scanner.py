@@ -84,11 +84,11 @@ class Scanner:
         except (OSError, AttributeError):
             return True # Asumir inseguro si no se puede verificar
 
-    def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
+    def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
         Valida y procesa una entrada del sistema de archivos, decidiendo si continuar la recursión o analizar el archivo.
         """
-        if not entry:
+        if entry is None or not entry.path:
             return
         
         # Bloqueo total de enlaces simbólicos y puntos de reanálisis por seguridad
@@ -177,15 +177,15 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Inicializa y ejecuta el proceso de escaneo recursivo en el directorio proporcionado."""
-    if directory is None:
+    if not directory:
         return []
         
     try:
         path_input = Path(directory).resolve()
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
-    except (OSError, TypeError, ValueError) as e:
-        logger.error(f"Error procesando directorio base {directory}: {e}")
+    except (OSError, TypeError, ValueError, RuntimeError) as e:
+        logger.error(f"Error inicializando directorio base {directory}: {e}")
         return []
 
     scanner = Scanner(base_root=path_input)

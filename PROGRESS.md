@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 12
+- Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 121 | 8 | 18 | 5 | 144 |
-| 2026-08-14 | 99 | 6 | 12 | 7 | 84 |
+| 2026-08-13 | 119 | 8 | 18 | 4 | 143 |
+| 2026-08-14 | 102 | 6 | 12 | 7 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- manejo de errores y validación de entradas: **45**
-- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **47**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **43**
-- rendimiento: **35**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **23**
-- `settings.py`: **19**
-- `assistant.py`: **19**
-- `scanner.py`: **18**
+- `diskreport.py`: **22**
+- `settings.py`: **20**
+- `assistant.py`: **20**
+- `scanner.py`: **19**
 - `quarantine.py`: **17**
 - `healthscore.py`: **16**
 - `browser.py`: **16**
 - `memory.py`: **16**
-- `duplicates.py`: **15**
 - `main.py`: **15**
 - `organizer.py`: **15**
+- `duplicates.py`: **14**
 - `safety.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-14T08:52:34` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `assistant.py` mediante la refactorización de `_gen_problems` para utilizar un nombre de función más descriptivo y la adición de Type Hints precisos, facilitando la comprensión del flujo de evaluación de riesgos del sistema.
+- `2026-08-14T08:51:47` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de los validadores integrando chequeos específicos para evitar el procesamiento de valores `None` o mal formados, previniendo excepciones innecesarias en `_Validators.int` y `_Validators.path`, lo que asegura una carga más resiliente frente a configuraciones corrompidas.
+- `2026-08-14T08:51:18` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `process_entry` ante entradas nulas o rutas inválidas mediante validaciones explícitas y manejo defensivo de `os.scandir` para evitar fallos por rutas que cambian o desaparecen durante la iteración.
 - `2026-08-14T08:42:03` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `ensure_safe_to_modify` ante entradas inválidas o None agregando validaciones preventivas más estrictas y manejando excepciones de tipo de forma explícita para evitar propagar errores inesperados hacia los bucles de la aplicación.
 - `2026-08-14T08:41:31` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `os.path.commonpath` al verificar la colisión entre origen y destino, y sustituí chequeos genéricos por un bloque `try-except` más específico en el cálculo de hash para evitar errores silenciados.
 - `2026-08-14T08:40:56` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura más estrictas sobre los parámetros de entrada y el estado del sistema de archivos, previniendo comportamientos indefinidos al recibir rutas vacías, inválidas o al encontrar errores de acceso durante la iteración.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T06:59:17` **settings.py** (seguridad defensiva): He endurecido la seguridad en `save()` y `settings_path()` verificando que la carpeta de destino exista y sea accesible antes de intentar cualquier operación, previniendo así errores de tiempo de ejecución y posibles condiciones de carrera al crear directorios en rutas bloqueadas.
 - `2026-08-14T06:49:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `check_recent_executable_in_downloads` mediante la validación estricta de la ruta usando `is_protected_path` antes de procesar el archivo, evitando cualquier posible acceso a directorios protegidos incluso si el `base_root` fuera malintencionado.
 - `2026-08-14T06:49:44` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la eliminación o modificación de archivos críticos mediante el chequeo de sus atributos de sistema en el sistema de archivos (bloqueo contra archivos marcados como `FILE_ATTRIBUTE_SYSTEM` o `FILE_ATTRIBUTE_HIDDEN`) en `_check_file_integrity` usando las APIs nativas, reforzando la protección ante archivos de configuración ocultos o de sistema operativo.
-- `2026-08-14T06:48:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad en `purge_all` y `purge_item` implementando una validación estricta de la ruta base del archivo contra `quarantine_dir` mediante una resolución de ruta completa antes de realizar cualquier operación destructiva, asegurando que la función no pueda ser engañada por enlaces simbólicos o ataques de salto de directorio incluso si el manifiesto fuera manipulado.
-- `2026-08-14T06:41:33` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de pertenencia de rutas mediante `.is_relative_to()` (o su equivalente lógico), asegurando que ninguna operación de movimiento o eliminación pueda escapar del directorio de destino previsto, previniendo así posibles ataques de "Path Traversal".
-- `2026-08-14T06:40:49` **main.py** (seguridad defensiva): Se ha añadido un filtro de seguridad en `on_trim_process` para asegurar que el PID sea tratado como una entrada controlada y se valide contra rangos de sistema, reforzando la protección contra inyección de argumentos o manipulación de procesos críticos antes de invocar la lógica de memoria.

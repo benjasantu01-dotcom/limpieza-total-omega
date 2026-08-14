@@ -376,7 +376,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Responde preguntas sobre el puntaje de salud del sistema."""
     partes = [f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."]
-    problemas = list(_gen_problems(ctx))
+    problemas = list(_identify_active_problems(ctx))
     
     if problemas:
         partes.append("Lo que más te está restando: " + ", ".join(problemas) + ".")
@@ -431,7 +431,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
-    problemas = list(_gen_problems(context))
+    problemas = list(_identify_active_problems(context))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
@@ -440,15 +440,15 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
-def _gen_problems(ctx: SystemContext) -> Generator[str, None, None]:
+def _identify_active_problems(ctx: SystemContext) -> Generator[str, None, None]:
     """
-    Genera un listado de problemas detectados priorizados por criticidad.
+    Identifica y genera un listado de problemas detectados priorizados por criticidad.
     Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
     """
-    encontrados = 0
+    encontrados: int = 0
     for attr, limit, op, msg in _CRITERIOS_SALUD:
-        val = getattr(ctx, attr, 0)
-        # Evaluamos la condición lógica asegurando finitud
+        val: Any = getattr(ctx, attr, 0)
+        # Evaluamos la condición lógica asegurando finitud numérica
         if (op == "<" and val < limit) or (op == ">" and val > limit):
             yield msg.format(val)
             encontrados += 1
