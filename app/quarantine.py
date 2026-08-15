@@ -324,11 +324,9 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).expanduser().resolve()
-    
     if not source_path.is_file():
         raise FileNotFoundError(f"Archivo no encontrado o inválido: {source_path}")
     
-    # Verificación de integridad adicional contra alias/enlaces
     if source_path.is_symlink():
         raise UnsafePathError("No se permite cuarentena de enlaces simbólicos.")
 
@@ -339,10 +337,9 @@ def quarantine_file(
         raise UnsafePathError("Operación prohibida: origen protegido.")
     
     dest_dir = quarantine_dir(base)
-    if not dest_dir.exists():
+    if not dest_dir.is_dir():
         raise RuntimeError("Directorio de cuarentena inaccesible.")
     
-    # Prevenir que el origen y destino sean la misma carpeta o anidados
     try:
         if os.path.commonpath([str(source_path.parent), str(dest_dir)]) == str(dest_dir):
             raise UnsafePathError("Operación denegada: el archivo ya está en el destino o subcarpeta.")
@@ -350,7 +347,6 @@ def quarantine_file(
         pass
         
     _validate_isolation_request(source_path, dest_dir)
-    
     file_size = source_path.stat().st_size
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
@@ -376,6 +372,8 @@ def quarantine_file(
     except (OSError, PermissionError) as e:
         if temp_dest.exists(): _safe_unlink(temp_dest)
         raise RuntimeError(f"Error crítico durante el aislamiento: {e}")
+    finally:
+        if temp_dest.exists(): _safe_unlink(temp_dest)
     
     try:
         item = QuarantineItem(
