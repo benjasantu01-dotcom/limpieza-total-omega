@@ -494,6 +494,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             continue
             
         real_entry = entry.resolve()
+        # Seguridad extra: verificar que la entrada real siga dentro de la raíz
+        if not _is_valid_quarantine_path(real_entry, quarantine_root):
+            continue
+            
         item = item_map.get(entry.name)
             
         try:

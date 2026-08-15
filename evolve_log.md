@@ -700,3 +700,11 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-08-15T04:36:37` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `main.py` ante posibles excepciones durante la inicialización de la interfaz en `_build_tabs_container` y `_tab_factory`, garantizando que un error al construir una pestaña no bloquee la inicialización del resto de la aplicación, y añadí una verificación de seguridad al cerrar la aplicación para asegurar que el `ThreadPoolExecutor` no intente procesar tareas nuevas durante el proceso de destrucción.
 - `2026-08-15T04:36:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T04:36:37` Corrida terminada. Total usado hoy: 108.
+- `2026-08-15T04:44:40` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-08-15T04:45:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-15T04:46:17` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-15T04:46:41` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `organizer.py` ante errores de entrada y estados inconsistentes del sistema de archivos, añadiendo validaciones de tipo explícitas, manejo de errores de resolución de rutas en `scan_for_junk` y verificaciones de integridad en `stage_for_review` para prevenir colisiones o errores inesperados durante el procesamiento por lotes.
+- `2026-08-15T04:47:12` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se añadió una validación en `purge_all` para asegurar que solo se intente borrar archivos dentro de `quarantine_root` mediante `is_within_directory`, reforzando la seguridad frente a estados inesperados del sistema de archivos.
+- `2026-08-15T04:47:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-15T04:47:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T04:47:15` Corrida terminada. Total usado hoy: 112.
