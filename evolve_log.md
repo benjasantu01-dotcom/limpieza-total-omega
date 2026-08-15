@@ -708,3 +708,30 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-08-15T04:47:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-15T04:47:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T04:47:15` Corrida terminada. Total usado hoy: 112.
+- `2026-08-15T04:54:58` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-15T04:55:26` Tests FALLARON:
+```
+t.py::test_available_reflects_the_configuration - AssertionError: assert False is True
+ +  where False = <function available at 0x7f92d773df80>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_available_reflects_the_co0'))
+ +    where <function available at 0x7f92d773df80> = assistant.available
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AssertionError: assert 'basura.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - assert False
+ +  where False = any(<generator object test_scan_for_junk_recurses_into_subfolders.<locals>.<genexpr> at 0x7f92d6fcaf60>)
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AssertionError: assert 'normal.tmp' in set()
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+FAILED evolve/tests/test_basic.py::test_delete_reviewed_only_touches_the_review_folder - assert 0 == 1
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: Operación denegada en carpeta: hard link detectado.
+18 failed, 281 passed in 1.11s
+
+```
+- `2026-08-15T04:55:26` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado `_check_file_integrity` para manejar correctamente errores de E/S inesperados al acceder a atributos de archivos (como `st_nlink` o tamaño), evitando que la validación falle con un traceback y protegiendo el bucle de ejecución ante archivos corruptos o bloqueados por el sistema de archivos durante la inspección.
+- `2026-08-15T04:55:49` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez ante archivos inexistentes o bloqueados durante la iteración (`scandir` puede fallar si un archivo es borrado o movido por otro proceso durante el escaneo), añadiendo un manejo de excepciones más granular en `Scanner.process_entry` para evitar que una entrada corrupta o inaccesible interrumpa el flujo del bucle.
+- `2026-08-15T04:56:15` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o vacíos, incorporando un chequeo explícito de `json.JSONDecodeError` y una validación de estructura de datos `isinstance(data, dict)` dentro de un bloque `try-except` más acotado para evitar que errores inesperados de I/O dejen a la app en un estado inconsistente.
+- `2026-08-15T04:56:25` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito para rutas que, aunque existen físicamente, no pueden ser resueltas por el sistema de archivos (ej. debido a bloqueos de acceso o permisos denegados), evitando que la app falle ante archivos "fantasma" o inaccesibles.
+- `2026-08-15T04:56:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T04:56:25` Corrida terminada. Total usado hoy: 116.

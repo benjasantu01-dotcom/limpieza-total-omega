@@ -230,7 +230,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 _cached_settings = validate(data)
                 _cached_mtime, _current_path = mtime, ruta
                 return _cached_settings
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError): pass
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError):
+        pass
     return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:

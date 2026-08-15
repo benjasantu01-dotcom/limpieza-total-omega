@@ -102,11 +102,11 @@ class Scanner:
         if entry is None or not entry.path:
             return
         
-        # Bloqueo total de enlaces simbólicos y puntos de reanálisis por seguridad
-        if entry.is_symlink() or self._is_reparse_point(entry):
-            return
-
         try:
+            # Bloqueo total de enlaces simbólicos y puntos de reanálisis por seguridad
+            if entry.is_symlink() or self._is_reparse_point(entry):
+                return
+
             target_path = Path(entry.path)
             if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
@@ -121,7 +121,7 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
-        except (PermissionError, OSError) as e:
+        except (PermissionError, OSError, FileNotFoundError) as e:
             logger.debug(f"Acceso denegado o error de sistema en {entry.path}: {e}")
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:

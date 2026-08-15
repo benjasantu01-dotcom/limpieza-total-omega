@@ -143,12 +143,13 @@ class StartupEntry:
                 if is_protected_path(p_abs):
                     _EXISTS_CACHE[path_str] = False
                     return ""
+                p_str: str = str(p_abs)
             except (OSError, PermissionError, RuntimeError):
-                return path_str
+                # Si no se puede resolver (ej. acceso denegado), asumimos válida pero no resolvemos
+                p_str = path_str
                 
-            p_str: str = str(p_abs)
-            _EXISTS_CACHE[p_str] = p_abs.is_file()
-            return p_str if _EXISTS_CACHE[p_str] else path_str
+            _EXISTS_CACHE[p_str] = True
+            return p_str
         except (OSError, ValueError, RuntimeError, TypeError):
             _EXISTS_CACHE[path_str] = False
             return path_str
