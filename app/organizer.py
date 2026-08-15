@@ -150,7 +150,6 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
         if not junk_file.path.exists():
             return False
         
-        # Uso de resolve() limitado a validación inicial
         current_abs = junk_file.path.resolve()
         dest_abs = dest.resolve()
         
@@ -228,10 +227,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return Path(".")
 
     try:
-        dest: Path = Path(review_dir).expanduser().resolve()
-        if dest.anchor == str(dest): return Path(".") 
-        if not is_safe_to_modify(dest): return dest
-        dest.mkdir(parents=True, exist_ok=True)
+        dest_base = Path(review_dir).expanduser().resolve()
+        if not is_safe_to_modify(dest_base): return Path(".")
+        dest_base.mkdir(parents=True, exist_ok=True)
+        dest = dest_base.resolve()
     except (OSError, PermissionError, RuntimeError):
         return Path(".")
 
@@ -244,7 +243,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                     usage = shutil.disk_usage(dest)
                     if usage.free > junk_file.size_bytes:
                         target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-                        if is_safe_to_modify(target) and dest in target.resolve().parents:
+                        if is_safe_to_modify(target):
                             ensure_safe_to_modify(target)
                             shutil.move(str(junk_file.path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):

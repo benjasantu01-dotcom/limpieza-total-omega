@@ -305,13 +305,6 @@ def _get_process_path(handle: int) -> Optional[str]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows.
-    
-    Flujo técnico:
-    1. Valida el PID y asegura que no sea un proceso crítico.
-    2. Obtiene un handle con privilegios mínimos (QUERY + SET_QUOTA).
-    3. Verifica que el proceso esté activo vía GetExitCodeProcess.
-    4. Valida la ruta del ejecutable para evitar tocar archivos protegidos.
-    5. Invoca 'psapi.EmptyWorkingSet'.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -334,14 +327,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
         
     try:
-        # Verificación de estado del proceso antes de actuar
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
             
         path = _get_process_path(proc_handle)
-        if not path or is_protected_path(os.path.normpath(path)):
-            return False, "Operación denegada: ruta de ejecutable protegida o inválida."
+        if not path or not os.path.exists(path) or is_protected_path(os.path.normpath(path)):
+            return False, "Operación denegada: ruta de ejecutable inexistente, protegida o inválida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
             err = kernel32.GetLastError()

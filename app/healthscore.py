@@ -112,7 +112,11 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que todas las métricas contengan números finitos válidos."""
-        return all(math.isfinite(getattr(self, attr, 0.0)) for attr in self.__dataclass_fields__)
+        for field_name in self.__dataclass_fields__:
+            val = getattr(self, field_name)
+            if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
+                return False
+        return True
 
 
 @dataclass
@@ -159,12 +163,14 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula ratio de salud de memoria."""
-    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0
+    return (_clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) 
+            if _LIMIT_RAM_PERCENT > 0 else 0.0)
 
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Calcula ratio de salud de disco."""
-    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0
+    return (_clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) 
+            if _LIMIT_DISK_PERCENT > 0 else 0.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:

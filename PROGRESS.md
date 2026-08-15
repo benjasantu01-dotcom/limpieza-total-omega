@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 78 | 6 | 13 | 7 | 84 |
-| 2026-08-15 | 138 | 15 | 16 | 10 | 137 |
+| 2026-08-14 | 74 | 6 | 13 | 7 | 84 |
+| 2026-08-15 | 142 | 15 | 16 | 10 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
+- robustez ante casos límite: **42**
 - rendimiento: **40**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
+- `settings.py`: **21**
 - `assistant.py`: **20**
 - `diskreport.py`: **20**
-- `scanner.py`: **19**
 - `browser.py`: **19**
-- `organizer.py`: **17**
+- `organizer.py`: **18**
+- `scanner.py`: **18**
+- `healthscore.py`: **18**
 - `quarantine.py`: **17**
-- `healthscore.py`: **17**
-- `memory.py`: **15**
+- `memory.py`: **16**
 - `duplicates.py`: **15**
-- `safety.py`: **11**
-- `startup.py`: **10**
-- `main.py`: **10**
+- `main.py`: **11**
+- `safety.py`: **10**
+- `startup.py`: **9**
 - `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T13:37:28` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` ante errores de entrada y condiciones de carrera, garantizando que el destino sea siempre una ruta absoluta y validada antes de intentar cualquier operación de disco.
+- `2026-08-15T13:37:18` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` ante procesos que cierran inesperadamente o tienen estados de acceso intermitentes, asegurando que `OpenProcess` maneje correctamente la propagación de errores y validando la existencia de la ruta antes de intentar cualquier operación.
+- `2026-08-15T13:36:50` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante la carga de pestañas y la ejecución de tareas asíncronas, asegurando que un fallo en un componente no deje la interfaz "congelada" en un estado de espera (busy) indefinida.
+- `2026-08-15T13:35:44` **healthscore.py** (robustez ante casos límite): Se añadió una validación explícita para evitar divisiones por cero en `score_memory` y `score_disk` ante configuraciones de umbrales inválidos (cero o negativos) y se robusteció `SystemMetrics.is_finite` usando un filtro más riguroso para prevenir valores `NaN` o `Inf` que pudieran corromper el cálculo de `HealthResult`.
 - `2026-08-15T13:26:35` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `suggest_keeper` para manejar el caso límite donde un archivo desaparece del sistema de archivos entre el escaneo y la sugerencia, evitando excepciones no controladas y asegurando que la selección del "conservar" sea siempre válida.
 - `2026-08-15T13:26:26` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `is_protected_path` antes de iniciar el recorrido en `summarize` y `largest_folders` para prevenir el procesamiento de rutas root o directorios críticos en casos de error de resolución, y se añadieron bloques `try-except` granulares en `walk_files` para manejar de forma robusta errores de `OSError` al intentar acceder a rutas que no existen o tienen permisos denegados durante la iteración.
 - `2026-08-15T13:15:53` **settings.py** (rendimiento): Optimicé el rendimiento de carga de configuraciones mediante la implementación de `lru_cache` en `load` para evitar lecturas de disco redundantes y parseos de JSON repetitivos en llamadas frecuentes.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T12:45:53` **diskreport.py** (rendimiento): Optimicé el método `_collect_summary_data` eliminando la llamada innecesaria a `str(path)` dentro del loop principal al usar `path` directamente en el `heap`, postergando su conversión solo al momento de generar el reporte final, lo cual reduce la sobrecarga de memoria y ciclos de CPU durante el escaneo.
 - `2026-08-15T12:35:34` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `type hints` adicionales, consolidando docstrings para mayor claridad y añadiendo una anotación de clase `StartupEntry` detallada que explica las responsabilidades de cada método privado, facilitando el mantenimiento y auditoría del código.
 - `2026-08-15T12:35:23` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos claros a las funciones públicas y clases clave, especificando precondiciones, efectos secundarios y el tratamiento de errores, lo cual clarifica el flujo de datos sin alterar la lógica.
-- `2026-08-15T12:34:55` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando mediante docstrings detallados la lógica de cada función de escaneo y clarificando las responsabilidades de los tipos de datos utilizados.
-- `2026-08-15T12:34:32` **safety.py** (legibilidad y documentación): Se introdujo un `Enum` interno llamado `ProtectionReason` para tipificar los fallos de `_check_file_integrity`, reemplazando el uso de strings literales y mejorando la legibilidad y mantenibilidad de la lógica de auditoría.
-- `2026-08-15T12:25:16` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `quarantine_file`, extrayendo la compleja lógica de copia y verificación de integridad a una función privada dedicada `_atomic_isolate_file`, permitiendo que el flujo principal de `quarantine_file` sea más claro y declarativo.
-- `2026-08-15T12:24:44` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints detallados, documentación estructurada (docstrings con secciones Args/Returns) y la simplificación de lógicas de filtrado mediante la extracción de predicados, alineándome con el enfoque de legibilidad sin alterar el comportamiento.

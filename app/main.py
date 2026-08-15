@@ -823,7 +823,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _set_busy(self, busy: bool) -> None:
         """Gestiona la visibilidad y estado de la barra de progreso."""
         def actualizar() -> None:
-            if self._closing or not self.activity.winfo_exists(): return
+            if self._closing or not hasattr(self, 'activity') or not self.activity.winfo_exists(): return
             if busy:
                 self._tasks_running += 1
             else:
