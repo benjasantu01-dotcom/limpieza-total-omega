@@ -157,7 +157,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve()
-        if str(p).startswith(("\\\\", "//")):
+        # Rechazar explícitamente rutas UNC para evitar inyección de rutas de red
+        if p.parts[0].startswith(("\\\\", "//")):
             return None
         if not p.exists() or is_protected_path(p):
             return None
@@ -211,7 +212,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
     try:
         base_path = Path(directory).resolve()
-        if str(base_path).startswith(("\\\\", "//")):
+        # Bloquear rutas UNC preventivamente
+        if base_path.parts[0].startswith(("\\\\", "//")):
             return
         if not base_path.exists() or not base_path.is_dir():
             return
@@ -229,9 +231,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Saltar enlaces simbólicos para evitar bucles o escape de directorios
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
+                        # Validar ruta contra protección antes de procesar
                         target = Path(entry.path).resolve()
                         if skip_protected and is_protected_path(target):
                             continue
@@ -403,7 +407,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     
     try:
         p_input = Path(directory).resolve()
-        if str(p_input).startswith(("\\\\", "//")):
+        # Rechazar rutas UNC
+        if p_input.parts[0].startswith(("\\\\", "//")):
             return ["Error: No se permiten rutas de red (UNC)."]
         if not p_input.exists():
             return [f"Error: La ruta no existe: {p_input}"]

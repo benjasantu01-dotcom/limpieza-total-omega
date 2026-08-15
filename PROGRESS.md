@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 125 | 9 | 18 | 11 | 117 |
-| 2026-08-15 | 99 | 10 | 11 | 7 | 97 |
+| 2026-08-14 | 125 | 9 | 18 | 11 | 113 |
+| 2026-08-15 | 103 | 10 | 11 | 7 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,27 +25,31 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **44**
 - rendimiento: **43**
-- seguridad defensiva: **37**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
-- `diskreport.py`: **20**
+- `diskreport.py`: **21**
 - `settings.py`: **20**
 - `browser.py`: **20**
+- `healthscore.py`: **19**
 - `scanner.py`: **19**
-- `healthscore.py`: **18**
 - `quarantine.py`: **17**
 - `organizer.py`: **17**
-- `duplicates.py`: **15**
+- `duplicates.py`: **16**
 - `memory.py`: **15**
 - `safety.py`: **13**
 - `startup.py`: **12**
-- `main.py`: **11**
+- `main.py`: **12**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T09:42:40` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` al centralizar la validación de la ruta seleccionada mediante `safety.ensure_safe_to_modify`, evitando que la aplicación procese rutas protegidas desde el diálogo nativo de selección de carpetas.
+- `2026-08-15T09:41:55` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del cálculo de `breakdown` introduciendo un redondeo consciente con `round()` antes del truncamiento a entero, evitando el error de precisión donde un puntaje de `99.9` (salud excelente) se truncaba erróneamente a `99` (perdiendo el grado 'A').
+- `2026-08-15T09:41:30` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `hash_file` y `partial_hash` al verificar que la ruta sea absoluta antes de realizar operaciones de acceso al sistema de archivos, previniendo posibles discrepancias en la resolución de rutas relativas durante el escaneo de directorios.
+- `2026-08-15T09:41:07` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` para prevenir ataques de escalada de privilegios o acceso no deseado mediante la validación estricta de rutas UNC y la resolución de enlaces simbólicos maliciosos, asegurando que solo se procesen rutas locales físicas.
 - `2026-08-15T09:32:05` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de un chequeo de longitud máxima de ruta (`MAX_PATH`) y una validación de seguridad adicional contra `is_protected_path` en cada nivel de la recursión para prevenir el escape del escaneo hacia directorios críticos del sistema.
 - `2026-08-15T09:31:26` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` validando la integridad del formato de respuesta de la API antes de procesarlo, evitando posibles inyecciones de objetos malformados o tipos inesperados que podrían explotar el parsing posterior.
 - `2026-08-15T09:21:42` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia en la carga de configuración ante archivos corruptos o truncados mediante un manejo más granular de excepciones y una validación de estructura de datos más estricta antes de reemplazar la caché.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T08:50:08` **settings.py** (rendimiento): Implementé un mecanismo de validación perezosa (memoization) en los validadores de configuración usando `functools.lru_cache` para evitar repetir cálculos costosos de resolución de rutas y validación de tipos durante las llamadas frecuentes a `get` y `load`.
 - `2026-08-15T08:40:49` **scanner.py** (rendimiento): Optimizé `check_recent_executable_in_downloads` para realizar la verificación de pertenencia a `WATCHED_FOLDERS` mediante una intersección de conjuntos precalculada o simple, evitando la creación innecesaria de un nuevo set `path_parts` en cada llamada al evaluar si el archivo es un ejecutable.
 - `2026-08-15T08:40:41` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `is_protected_path` evitando la re-normalización y el re-cálculo de `parts` en cada iteración mediante una optimización de flujo, lo cual reduce drásticamente el costo computacional de las operaciones masivas de filtrado.
-- `2026-08-15T08:31:54` **organizer.py** (rendimiento): Optimicé el bucle de escaneo de `scan_for_junk` sustituyendo el uso de `os.scandir` recursivo por un generador eficiente que evita múltiples llamadas de `Path()` y `resolve()` innecesarias dentro de los ciclos, reduciendo la presión sobre el sistema de archivos al pre-validar las rutas mediante `os.DirEntry` antes de instanciar objetos pesados.
-- `2026-08-15T08:31:45` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` para evitar la creación innecesaria de listas intermedias y reduje el costo de las operaciones de string mediante el uso de generadores, mejorando el rendimiento en sistemas con muchos procesos activos.
-- `2026-08-15T08:20:31` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` dentro de los bucles, reduciendo drásticamente las llamadas al sistema de archivos al pre-filtrar mediante `entry.is_file()` y cacheando los resultados necesarios.
-- `2026-08-15T08:20:22` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` para evitar cálculos repetitivos y accesos redundantes a metadatos, reemplazando la creación de objetos `FileEntry` innecesarios dentro del bucle principal y consolidando las operaciones de agregación en una única pasada eficiente sobre `walk_files`.

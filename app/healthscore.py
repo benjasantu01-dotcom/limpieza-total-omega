@@ -234,9 +234,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[str, int] = {}
     for area, factor in _WEIGHT_ITEMS:
         val = ratios[area] * factor
-        breakdown[area] = _to_int(_clamp(val, 0.0, factor)) if math.isfinite(val) else 0
+        # Redondeamos antes del cast a int para evitar truncamientos injustos de 0.99 a 0
+        breakdown[area] = int(round(_clamp(val, 0.0, factor))) if math.isfinite(val) else 0
 
-    final_score = _to_int(_clamp(float(sum(breakdown.values())), 0.0, 100.0))
+    final_score = int(round(_clamp(float(sum(breakdown.values())), 0.0, 100.0)))
     
     metrics_map = asdict(metrics)
     recs = _generate_recommendations(metrics_map, metrics.quarantined_count, ratios)

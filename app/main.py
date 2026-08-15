@@ -906,11 +906,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             p = Path(folder).resolve(strict=True)
-            if not p.is_dir() or not os.access(p, os.R_OK):
-                messagebox.showwarning("Ruta inaccesible", "La ruta seleccionada no existe o no se puede leer.")
-                return None
-            
-            # Verificación preventiva obligatoria antes de retornar la ruta
+            # Validación de seguridad: debe ser un directorio y pasar el filtro de `safety`
             safety.ensure_safe_to_modify(p)
             return str(p)
         except (safety.UnsafePathError, OSError, PermissionError, FileNotFoundError):
