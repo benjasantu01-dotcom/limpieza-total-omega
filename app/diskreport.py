@@ -227,6 +227,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                             
                         target = Path(entry.path).resolve()
+                        
+                        # Seguridad: verificar que el target resuelto siga estando bajo base_path
+                        if base_path not in target.parents and target != base_path:
+                            continue
+
                         if skip_protected and is_protected_path(target):
                             continue
 

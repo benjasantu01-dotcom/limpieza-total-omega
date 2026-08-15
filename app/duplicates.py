@@ -272,8 +272,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
-            # Validar existencia actual, pues el archivo pudo ser borrado por el usuario
-            if not p.is_file():
+            # Validar existencia y seguridad antes de procesar
+            if not p.is_file() or is_protected_path(p) or not is_safe_to_modify(p):
                 continue
             stat_info = p.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0))

@@ -100,7 +100,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
-        """Asegura que los valores de entrada estén dentro de rangos lógicos."""
+        """Asegura que los valores de entrada estén dentro de rangos lógicos y sean finitos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -147,7 +147,8 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 def _to_int(value: Any, default: int = 0) -> int:
     """Conversión segura a int manejando excepciones de tipo."""
     try:
-        return int(float(value))
+        val = float(value)
+        return int(val) if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 
