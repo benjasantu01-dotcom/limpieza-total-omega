@@ -247,8 +247,10 @@ def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> 
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Constructor centralizado para el estado del sistema. Aplica saneamiento
-    estricto a cada campo para asegurar la integridad total de la estructura.
+    Construye un objeto SystemContext validando estrictamente los datos de entrada.
+    Este método actúa como barrera de seguridad: convierte fuentes heterogéneas 
+    (diccionarios o clases) en un contenedor tipado, descartando valores no numéricos 
+    o sospechosos para prevenir inyecciones o errores de serialización.
     """
     ctx = SystemContext()
     

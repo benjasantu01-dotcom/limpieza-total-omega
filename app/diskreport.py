@@ -361,6 +361,28 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     return total_bytes, file_count
 
 
+def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, str]]]:
+    """Recolecta métricas crudas para el resumen de disco."""
+    total_bytes, total_files = 0, 0
+    ext_sizes: Dict[str, int] = defaultdict(int)
+    ext_counts: Dict[str, int] = defaultdict(int)
+    top_files_heap: List[Tuple[int, str]] = []
+    
+    for path, size in walk_files(directory, skip_protected):
+        total_bytes += size
+        total_files += 1
+        ext = path.suffix.lower() or "(sin extensión)"
+        ext_sizes[ext] += size
+        ext_counts[ext] += 1
+        
+        if len(top_files_heap) < 8:
+            heapq.heappush(top_files_heap, (size, str(path)))
+        elif size > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (size, str(path)))
+            
+    return total_bytes, total_files, ext_sizes, ext_counts, top_files_heap
+
+
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe textual resumen del análisis de uso de disco.
@@ -385,27 +407,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             return [f"Error: No es un directorio: {p_input}"]
         if skip_protected and is_protected_path(p_input):
             return [f"Error: Ruta protegida no permitida: {p_input}"]
-    except (OSError, TypeError, RuntimeError, ValueError):
-        return ["Error: Ruta inválida o inaccesible."]
-        
-    ext_sizes: Dict[str, int] = defaultdict(int)
-    ext_counts: Dict[str, int] = defaultdict(int)
-    top_files_heap: List[Tuple[int, str]] = []
-    total_bytes, total_files = 0, 0
-    
-    try:
-        for path, size in walk_files(p_input, skip_protected):
-            total_bytes += size
-            total_files += 1
             
-            ext = path.suffix.lower() or "(sin extensión)"
-            ext_sizes[ext] += size
-            ext_counts[ext] += 1
-            
-            if len(top_files_heap) < 8:
-                heapq.heappush(top_files_heap, (size, str(path)))
-            elif size > top_files_heap[0][0]:
-                heapq.heapreplace(top_files_heap, (size, str(path)))
+        total_bytes, total_files, ext_sizes, ext_counts, top_files_heap = _collect_summary_data(p_input, skip_protected)
     except Exception:
         return ["Error: Fallo inesperado durante el análisis del disco."]
 
