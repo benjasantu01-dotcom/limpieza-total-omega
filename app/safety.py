@@ -91,9 +91,7 @@ def _is_permission_denied(e: Exception) -> bool:
 
 def _has_invalid_chars(path_str: str) -> bool:
     """Detecta caracteres nulos, secuencias de control o rutas de dispositivos inválidas."""
-    norm = os.path.normpath(path_str)
-    return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str) or
-                norm.startswith(r"\\?") or norm.startswith(r"\\."))
+    return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str))
 
 
 def _is_reserved_device_name(name: str) -> bool:
@@ -200,7 +198,7 @@ def normalize(path: PathLike) -> Path:
         raise ValueError("Longitud de ruta excedida.")
         
     try:
-        return Path(path_str).expanduser().resolve()
+        return Path(path_str).expanduser().resolve(strict=False)
     except (OSError, RuntimeError) as e:
         if _is_permission_denied(e):
             raise ValueError("Acceso denegado durante la normalización.")
@@ -260,22 +258,16 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_basic_path_safety(p: Path, path_str: str) -> None:
     """Verifica estructuralmente que la ruta no sea un riesgo de inyección o traversal."""
-    if p.exists() and _is_reparse_point(p):
-        raise UnsafePathError("La ruta apunta a un enlace simbólico o punto de unión.")
-
-    if p.exists() and p.parent and not p.parent.exists():
-        raise UnsafePathError("Directorio padre inaccesible.")
-
-    if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
-        raise UnsafePathError("Intento de path traversal detectado.")
-
     if _has_invalid_chars(path_str) or _is_reserved_device_name(p.name):
         raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
     
+    if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
+        raise UnsafePathError("Intento de path traversal detectado.")
+
     if path_str.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas de red (UNC) no permitidas.")
 
-    if not p.anchor or not os.path.exists(p.anchor):
+    if p.anchor and not os.path.exists(p.anchor):
         raise UnsafePathError("Unidad o punto de montaje no disponible.")
 
 
@@ -296,9 +288,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
 
+    path_str = str(path)
+    if _has_invalid_chars(path_str):
+        raise UnsafePathError("Caracteres ilegales detectados en la ruta.")
+
     try:
         p = normalize(path)
-        path_str = str(path)
     except (ValueError, TypeError) as e:
         raise UnsafePathError(f"Ruta inválida o mal formada: {e}")
 

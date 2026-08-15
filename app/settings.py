@@ -231,16 +231,18 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if _cached_settings is not None and _current_path == ruta and _cached_mtime == mtime:
             return _cached_settings
         if not _Validators._is_safe_path(str(ruta.parent)): return _get_default_config()
+        
         content = ruta.read_bytes()
-        if 0 < len(content) <= MAX_SETTINGS_SIZE:
-            data = json.loads(content)
-            if isinstance(data, dict):
-                _cached_settings = validate(data)
-                _cached_mtime, _current_path = mtime, ruta
-                return _cached_settings
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError):
-        pass
-    return _get_default_config()
+        if not content or len(content) > MAX_SETTINGS_SIZE: return _get_default_config()
+        
+        data = json.loads(content)
+        if not isinstance(data, dict): return _get_default_config()
+        
+        validated = validate(data)
+        _cached_settings, _current_path, _cached_mtime = validated, ruta, mtime
+        return validated
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
+        return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _current_path, _cached_mtime
