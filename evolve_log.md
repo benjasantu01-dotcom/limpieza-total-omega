@@ -1138,3 +1138,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T08:20:31` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` dentro de los bucles, reduciendo drásticamente las llamadas al sistema de archivos al pre-filtrar mediante `entry.is_file()` y cacheando los resultados necesarios.
 - `2026-08-15T08:20:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T08:20:31` Corrida terminada. Total usado hoy: 196.
+- `2026-08-15T08:29:14` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-15T08:30:20` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-15T08:31:20` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el redibujo de los logs utilizando `update_idletasks()` y el procesamiento por lotes en `_flush_logs` para evitar que la interfaz se bloquee ante una saturación de mensajes, y añadí `winfo_exists()` para asegurar que las actualizaciones de UI solo ocurran en widgets activos, mejorando la fluidez.
+- `2026-08-15T08:31:45` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `parse_windows_process_csv` para evitar la creación innecesaria de listas intermedias y reduje el costo de las operaciones de string mediante el uso de generadores, mejorando el rendimiento en sistemas con muchos procesos activos.
+- `2026-08-15T08:31:54` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el bucle de escaneo de `scan_for_junk` sustituyendo el uso de `os.scandir` recursivo por un generador eficiente que evita múltiples llamadas de `Path()` y `resolve()` innecesarias dentro de los ciclos, reduciendo la presión sobre el sistema de archivos al pre-validar las rutas mediante `os.DirEntry` antes de instanciar objetos pesados.
+- `2026-08-15T08:31:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T08:31:54` Corrida terminada. Total usado hoy: 200.

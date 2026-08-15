@@ -167,16 +167,19 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
     """Deserializa una línea CSV (Name,Id,WorkingSet) proveniente de PowerShell."""
-    if not line or not line.strip():
+    line = line.strip()
+    if not line:
         return None
     
-    parts = [p.strip().strip("'\"") for p in line.split(",")]
+    parts = line.split(",")
     if len(parts) < 3 or parts[0].lower() == "name":
         return None
         
     try:
-        ws, pid = int(parts[-1]), int(parts[-2])
-        return ProcessMemory(",".join(parts[:-2]), pid, ws)
+        ws = int(parts[-1].strip("'\""))
+        pid = int(parts[-2].strip("'\""))
+        name = ",".join(parts[:-2]).strip("'\"")
+        return ProcessMemory(name, pid, ws)
     except (ValueError, TypeError):
         return None
 
@@ -186,8 +189,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
     if not isinstance(text, str) or not text:
         return []
     
-    lines = text.splitlines()
-    processes = [p for line in lines if (p := _parse_csv_row(line))]
+    processes = [p for line in text.splitlines() if (p := _parse_csv_row(line))]
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 

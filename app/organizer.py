@@ -176,54 +176,42 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea rutas recursivamente buscando archivos basura basados en la extensión.
-
-    Args:
-        directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
-
-    Returns:
-        List[JunkFile]: Lista de objetos encontrados que cumplen el criterio de basura.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
-    
     unique_dirs: set[Path] = set()
+    
     for d in raw_dirs:
-        if d and isinstance(d, str):
+        if d:
             try:
                 p = Path(d).expanduser()
                 if p.exists():
-                    resolved_p = p.resolve()
-                    if resolved_p.is_dir() and is_safe_to_modify(resolved_p):
-                        unique_dirs.add(resolved_p)
+                    rp = p.resolve()
+                    if rp.is_dir() and is_safe_to_modify(rp):
+                        unique_dirs.add(rp)
             except (RuntimeError, OSError, ValueError):
                 continue
 
-    def _walk_dir(base_path: Path) -> None:
+    def _walk_generator(base: Path):
         try:
-            with os.scandir(base_path) as it:
-                for entry in it:
-                    if _is_junction(entry):
-                        continue
-                    if entry.is_dir():
-                        if _is_allowed_directory(entry.name):
-                            _walk_dir(Path(entry.path))
-                    elif entry.is_file() and entry.name.lower().endswith(_JUNK_EXT_TUPLE):
-                        path_obj = Path(entry.path)
-                        if is_safe_to_modify(path_obj):
-                            try:
-                                stat = entry.stat()
-                                found.append(JunkFile(
-                                    path=path_obj,
-                                    size_bytes=stat.st_size,
-                                    modified=datetime.fromtimestamp(stat.st_mtime)
-                                ))
-                            except OSError:
-                                continue
+            for entry in os.scandir(base):
+                if _is_junction(entry):
+                    continue
+                if entry.is_dir() and _is_allowed_directory(entry.name):
+                    yield from _walk_generator(Path(entry.path))
+                elif entry.is_file() and entry.name.lower().endswith(_JUNK_EXT_TUPLE):
+                    path_obj = Path(entry.path)
+                    if is_safe_to_modify(path_obj):
+                        try:
+                            s = entry.stat()
+                            yield JunkFile(path_obj, s.st_size, datetime.fromtimestamp(s.st_mtime))
+                        except OSError:
+                            continue
         except (PermissionError, OSError):
             pass
 
     for d in unique_dirs:
-        _walk_dir(d)
+        found.extend(_walk_generator(d))
     return found
 
 
