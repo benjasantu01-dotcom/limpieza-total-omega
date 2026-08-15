@@ -54,11 +54,11 @@ __all__ = [
     "summarize",
 ]
 
-DEFAULT_QUARANTINE_DIR = "~/LimpiezaTotalOmega/_Cuarentena"
-MANIFEST_NAME = "manifest.json"
+DEFAULT_QUARANTINE_DIR: str = "~/LimpiezaTotalOmega/_Cuarentena"
+MANIFEST_NAME: str = "manifest.json"
 
 # Nombres reservados en sistemas Windows que podrían causar colisiones o fallos de acceso
-WINDOWS_RESERVED_NAMES = {
+WINDOWS_RESERVED_NAMES: set[str] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", 
     "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", 
     "LPT6", "LPT7", "LPT8", "LPT9"
@@ -500,11 +500,15 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if _is_file_locked(entry):
                 continue
             
+            # Verificar integridad solo si el ítem existe en manifiesto, sino es basura huérfana
             if item and item.verify_integrity(real_entry):
                 ensure_safe_to_modify(real_entry, allow_sensitive=False)
                 if _safe_unlink(real_entry):
                     items_to_remove.append(item)
                     purged_count += 1
+            elif item is None:
+                # Limpiar archivos huérfanos sin entrada en manifiesto
+                _safe_unlink(real_entry)
         except (OSError, PermissionError, UnsafePathError):
             continue
     

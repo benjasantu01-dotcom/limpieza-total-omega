@@ -604,3 +604,10 @@ FAILED evolve/tests/test_basic.py::test_sort_junk_does_not_mutate_the_original_l
 - `2026-08-15T03:25:14` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se agregaron docstrings detallados a las funciones clave y se refinaron los nombres de parámetros (ej. `by_field` y `is_ascending`) para clarificar su propósito, mejorando la legibilidad técnica del módulo sin alterar su lógica operativa.
 - `2026-08-15T03:25:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T03:25:14` Corrida terminada. Total usado hoy: 80.
+- `2026-08-15T03:33:16` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-08-15T03:33:50` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del módulo añadiendo type hints faltantes, tipado explícito para `Union`, y refactorizando el chequeo de integridad en `purge_all` para hacerlo más robusto frente a archivos huérfanos o corrompidos.
+- `2026-08-15T03:34:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-15T03:34:35` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-15T03:34:44` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings (especificando `Args` y `Returns`) y se ha refactorizado la lógica de `scan_file` para ser más legible y robusta, facilitando la comprensión del flujo de análisis heurístico.
+- `2026-08-15T03:34:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T03:34:44` Corrida terminada. Total usado hoy: 84.

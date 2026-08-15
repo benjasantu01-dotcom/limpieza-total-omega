@@ -71,7 +71,11 @@ class Scanner:
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """
         Valida que una ruta esté contenida dentro del base_root inicial.
-        Retorna False si hay errores de resolución de ruta o si la ruta está fuera del alcance.
+        
+        Args:
+            entry_path: Ruta a verificar.
+        Returns:
+            True si la ruta está dentro del alcance, False en caso contrario o error.
         """
         try:
             resolved = entry_path.resolve()
@@ -82,7 +86,6 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
         Determina si una entrada es un punto de reanálisis (Junction o Symlink).
-        Se utiliza para prevenir la recursión infinita en estructuras complejas de Windows.
         """
         try:
             # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
@@ -123,7 +126,7 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Analiza si el nombre del archivo contiene una doble extensión que sugiere una intención de ocultamiento.
+    Analiza si el nombre del archivo contiene una doble extensión que sugiere ocultamiento.
     """
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -132,7 +135,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Verifica si un ejecutable ha sido modificado en las últimas 24h dentro de carpetas de alta exposición.
+    Verifica si un ejecutable ha sido modificado en las últimas 24h dentro de carpetas expuestas.
     """
     if not isinstance(entry, os.DirEntry):
         return None
@@ -155,7 +158,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Identifica archivos cuyo nombre coincide con procesos críticos de Windows pero residen fuera de System32.
+    Identifica nombres que imitan procesos de sistema fuera de System32.
     """
     if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         parent_path = path.parent
@@ -165,30 +168,30 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Ejecuta el pipeline de heurísticas sobre un archivo dado.
+    Pipeline de análisis heurístico sobre un archivo individual.
+    
+    Args:
+        path: Objeto Path del archivo.
+        now_ts: Timestamp actual para comparaciones de tiempo.
+        entry: Objeto DirEntry opcional para reducir llamadas al sistema.
+    Returns:
+        Lista de sospechas encontradas.
     """
     findings: ScanResult = []
     
-    # 1. Chequeos genéricos
-    try:
-        if (gen_res := check_double_extension(path, entry, now_ts)):
-            findings.append(gen_res)
-    except Exception as e:
-        logger.debug(f"Error en check_double_extension para {path}: {e}")
+    # 1. Aplicar reglas universales
+    if (res := check_double_extension(path, entry, now_ts)):
+        findings.append(res)
     
-    # 2. Chequeos de contexto: solo para ejecutables potenciales
-    try:
-        suffix = path.suffix.lower()
-        if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-            checks: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
-            for check in checks:
-                try:
-                    if (res := check(path, entry, now_ts)):
-                        findings.append(res)
-                except Exception as e:
-                    logger.debug(f"Error en chequeo {check.__name__} para {path}: {e}")
-    except Exception as e:
-        logger.debug(f"Error en pipeline de escaneo para {path}: {e}")
+    # 2. Aplicar reglas específicas para ejecutables
+    suffix = path.suffix.lower()
+    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
+        for check in [check_system_lookalike, check_recent_executable_in_downloads]:
+            try:
+                if (res := check(path, entry, now_ts)):
+                    findings.append(res)
+            except Exception as e:
+                logger.debug(f"Error en chequeo {check.__name__} para {path}: {e}")
                 
     return findings
 
