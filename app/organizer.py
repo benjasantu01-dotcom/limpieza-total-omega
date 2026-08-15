@@ -146,7 +146,6 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     Evalúa si el movimiento es seguro basándose en atributos, bloqueos y consistencia.
     """
     try:
-        # Validación de integridad de ruta previa a resolución
         if not junk_file.path.exists():
             return False
         
@@ -245,11 +244,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
 
-    dest: Path = Path(review_dir).expanduser()
-    try:
-        dest = dest.resolve()
-    except (OSError, RuntimeError):
-        return dest
+    dest: Path = Path(review_dir).expanduser().resolve()
     
     if not is_safe_to_modify(dest):
         return dest
@@ -268,7 +263,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                     usage = shutil.disk_usage(dest)
                     if usage.free > junk_file.size_bytes:
                         target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-                        if is_safe_to_modify(target):
+                        # Verifica que el destino generado siga siendo hijo de la carpeta de revisión
+                        if is_safe_to_modify(target) and dest in target.resolve().parents:
                             shutil.move(str(junk_file.path), str(target))
         except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
@@ -282,26 +278,21 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
-    dest: Path = Path(review_dir).expanduser()
-    try:
-        dest = dest.resolve()
-    except (OSError, RuntimeError):
-        return 0
+    dest: Path = Path(review_dir).expanduser().resolve()
 
     if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
         return 0
 
     count: int = 0
     try:
-        dest_str = str(dest)
         for item in dest.iterdir():
             try:
+                # Se asegura que sea un archivo y esté contenido explícitamente en dest
                 if item.is_file() and not item.is_symlink():
                     path_to_delete = item.resolve()
-                    if os.path.commonpath([dest_str, str(path_to_delete)]) == dest_str:
-                        if is_safe_to_modify(path_to_delete):
-                            path_to_delete.unlink()
-                            count += 1
+                    if dest in path_to_delete.parents and is_safe_to_modify(path_to_delete):
+                        path_to_delete.unlink()
+                        count += 1
             except (PermissionError, OSError, ValueError):
                 continue
     except (PermissionError, OSError):

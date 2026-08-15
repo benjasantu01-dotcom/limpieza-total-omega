@@ -332,6 +332,8 @@ def quarantine_file(
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en recursos compartidos de red.")
+    if is_protected_path(source_path):
+        raise UnsafePathError("Operación prohibida: origen protegido.")
     
     dest_dir = quarantine_dir(base)
     if not dest_dir.exists():

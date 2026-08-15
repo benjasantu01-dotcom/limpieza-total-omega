@@ -749,3 +749,10 @@ FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_wher
 - `2026-08-15T05:17:20` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
 - `2026-08-15T05:17:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T05:17:20` Corrida terminada. Total usado hoy: 124.
+- `2026-08-15T05:25:33` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-15T05:26:00` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de pertenencia de subrutas mediante `pathlib` para evitar ataques de tipo Path Traversal, asegurando que los archivos operados realmente residan dentro de las carpetas de destino/origen autorizadas.
+- `2026-08-15T05:26:29` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `quarantine_file` añadiendo una validación explícita para asegurar que la ruta de origen no sea una ruta de sistema ni contenga caracteres de escape, evitando posibles ataques de inyección de rutas antes de iniciar la operación de copia.
+- `2026-08-15T05:26:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-15T05:26:57` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-15T05:26:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T05:26:57` Corrida terminada. Total usado hoy: 128.
