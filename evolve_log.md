@@ -402,3 +402,54 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T12:35:34` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando `type hints` adicionales, consolidando docstrings para mayor claridad y añadiendo una anotación de clase `StartupEntry` detallada que explica las responsabilidades de cada método privado, facilitando el mantenimiento y auditoría del código.
 - `2026-08-15T12:35:34` Rotación — log: 1144 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T12:35:34` Corrida terminada. Total usado hoy: 296.
+- `2026-08-15T12:44:19` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-15T12:44:52` Tests FALLARON:
+```
+in method lower of str object at 0x7f347f69fe70> = 'Hay 3 sospechosos.'.lower
+ +      where 'Hay 3 sospechosos.' = Answer(text='Hay 3 sospechosos.', source='local', notice='Respondido por el motor local, sin conexión ni envío de datos. Para preguntas escritas con tus palabras, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'puntaje 98/100. todo bien.'
+ +  where 'puntaje 98/100. todo bien.' = <built-in method lower of str object at 0x7f347f79fa50>()
+ +    where <built-in method lower of str object at 0x7f347f79fa50> = 'Puntaje 98/100. Todo bien.'.lower
+ +      where 'Puntaje 98/100. Todo bien.' = Answer(text='Puntaje 98/100. Todo bien.', source='local', notice='Respondido por el motor local, sin conexión ni envío de datos. Para preguntas escritas con tus palabras, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_explain_area_covers_every_health_area - AssertionError: assert 37 > 40
+ +  where 37 = len('Copias idénticas: se pueden eliminar.')
+ +    where 'Copias idénticas: se pueden eliminar.' = <function explain_area at 0x7f347fe71da0>('duplicados')
+ +      where <function explain_area at 0x7f347fe71da0> = assistant.explain_area
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Sin métricas.'
+8 failed, 291 passed in 1.23s
+
+```
+- `2026-08-15T12:44:52` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `build_context` y `context_as_text` reemplazando llamadas redundantes a `getattr` y `isinstance` por un procesamiento más eficiente basado en `__dict__`, y pre-compilé la búsqueda de problemas mediante una lista de claves fijas para evitar iteraciones costosas sobre objetos complejos.
+- `2026-08-15T12:45:18` Tests FALLARON:
+```
+nd_a_halo _____________________
+
+    def test_logo_draws_a_gradient_and_a_halo():
+        canvas = _CanvasFalso()
+        branding.draw_logo(canvas, size=72)
+>       assert "oval" in canvas.llamadas, "falta el halo detrás del escudo"
+E       AssertionError: falta el halo detrás del escudo
+E       assert 'oval' in ['polygon']
+E        +  where ['polygon'] = <test_modules._CanvasFalso object at 0x7fe07256b290>.llamadas
+
+evolve/tests/test_modules.py:272: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_draw_logo_paints_on_the_canvas_without_a_display - AssertionError: assert 'text' in ['polygon']
+ +  where ['polygon'] = <test_modules._CanvasFalso object at 0x7fe071e826c0>.llamadas
+FAILED evolve/tests/test_modules.py::test_blend_clamps_out_of_range_ratios - AssertionError: assert '#-4fb-4fb-4fb' == '#000000'
+  
+  - #000000
+  + #-4fb-4fb-4fb
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - TypeError: '>' not supported between instances of 'str' and 'int'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - ValueError: could not convert string to float: 'mucho'
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - AssertionError: falta el halo detrás del escudo
+assert 'oval' in ['polygon']
+ +  where ['polygon'] = <test_modules._CanvasFalso object at 0x7fe07256b290>.llamadas
+5 failed, 294 passed in 1.29s
+
+```
+- `2026-08-15T12:45:18` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la gestión de colores y estilos eliminando llamadas innecesarias a `lru_cache` para tipos simples (`bool`, `int`) y reduciendo el costo de cómputo en `blend` y `gradient_colors` mediante una conversión más eficiente a RGB y la pre-validación del espacio de color.
+- `2026-08-15T12:45:40` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-15T12:45:53` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `_collect_summary_data` eliminando la llamada innecesaria a `str(path)` dentro del loop principal al usar `path` directamente en el `heap`, postergando su conversión solo al momento de generar el reporte final, lo cual reduce la sobrecarga de memoria y ciclos de CPU durante el escaneo.
+- `2026-08-15T12:45:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T12:45:53` Corrida terminada. Total usado hoy: 300.

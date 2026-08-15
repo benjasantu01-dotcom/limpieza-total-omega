@@ -370,12 +370,12 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     return total_bytes, file_count
 
 
-def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, str]]]:
+def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
     """Recolecta métricas crudas para el resumen de disco en una única pasada."""
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
-    top_files_heap: List[Tuple[int, str]] = []
+    top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
         try:
@@ -387,9 +387,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
             ext_counts[ext] += 1
             
             if len(top_files_heap) < 8:
-                heapq.heappush(top_files_heap, (size, str(path)))
+                heapq.heappush(top_files_heap, (size, path))
             elif size > top_files_heap[0][0]:
-                heapq.heapreplace(top_files_heap, (size, str(path)))
+                heapq.heapreplace(top_files_heap, (size, path))
         except (AttributeError, TypeError, OSError):
             continue
             
