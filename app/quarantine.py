@@ -315,8 +315,10 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """
-    Aísla un archivo en la zona de cuarentena. 
-    1. Valida el origen. 2. Realiza copia atómica. 3. Borra el origen tras verificar integridad.
+    Aísla un archivo moviéndolo al sandbox y registrándolo en el manifiesto.
+    Realiza una copia atómica seguida de una verificación de integridad (SHA256) 
+    para garantizar que el archivo capturado sea idéntico al original antes 
+    de confirmar la operación.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -404,7 +406,9 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo desde la cuarentena a su ruta original.
-    Valida: 1. Integridad SHA256. 2. Seguridad del destino. 3. Existencia en manifiesto.
+    Realiza validaciones de seguridad: verifica la integridad del archivo (hash SHA256), 
+    asegura que el destino no sea una ruta protegida y garantiza que el proceso 
+    sea atómico para evitar corrupción en caso de interrupción.
     """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido o vacío.")
@@ -446,7 +450,12 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Borra un ítem específico de la cuarentena tras validar su integridad y sandbox."""
+    """
+    Borra permanentemente un ítem específico del sandbox de cuarentena.
+    Incluye una validación estricta de que la ruta resida dentro del sandbox 
+    y verifica el hash SHA256 para asegurar que se está eliminando el archivo 
+    correcto, evitando borrados accidentales de archivos legítimos.
+    """
     if not isinstance(item_id, str) or not item_id.strip():
         return False
     
