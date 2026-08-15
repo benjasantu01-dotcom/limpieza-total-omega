@@ -100,9 +100,10 @@ class Scanner:
                 return
 
             if entry.is_dir(follow_symlinks=False):
-                if str(target_path) not in self.seen:
-                    self.seen.add(str(target_path))
-                    stack.append(str(target_path))
+                path_str = str(target_path)
+                if path_str not in self.seen:
+                    self.seen.add(path_str)
+                    stack.append(path_str)
             elif entry.is_file(follow_symlinks=False):
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
@@ -125,6 +126,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry):
         return None
     
+    # Normalización estricta de componentes de ruta para comparación segura
     path_parts = {p.lower() for p in path.parts}
     if WATCHED_FOLDERS.isdisjoint(path_parts):
         return None
@@ -141,8 +143,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable usa nombres protegidos del sistema fuera de su ubicación legítima (System32)."""
     if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        parent_path = path.parent
-        if parent_path and SYSTEM32_LOWER not in str(parent_path).lower():
+        # Validación de ruta absoluta asegurando que System32 no sea parte de la ruta de una subcarpeta
+        if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 

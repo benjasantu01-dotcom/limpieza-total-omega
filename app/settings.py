@@ -229,9 +229,13 @@ def validate(raw_values: Any) -> AppSettings:
 @lru_cache(maxsize=1)
 def _load_internal(ruta: Path) -> AppSettings:
     """Carga interna cacheada por ruta y mtime (gestionado mediante wrapper en load)."""
-    if not ruta.exists() or ruta.is_dir() or not os.access(ruta, os.R_OK): return _get_default_config()
     try:
-        if not _Validators._is_safe_path(str(ruta.parent)): return _get_default_config()
+        # Validación de integridad antes de intentar cualquier lectura
+        if not ruta.exists() or ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()):
+            return _get_default_config()
+        if not os.access(ruta, os.R_OK) or not _Validators._is_safe_path(str(ruta.parent)):
+            return _get_default_config()
+        
         content = ruta.read_bytes()
         if not content or len(content) > MAX_SETTINGS_SIZE: return _get_default_config()
         data = json.loads(content)

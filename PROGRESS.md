@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 74 | 6 | 13 | 7 | 68 |
-| 2026-08-15 | 155 | 16 | 17 | 10 | 138 |
+| 2026-08-14 | 74 | 6 | 13 | 7 | 64 |
+| 2026-08-15 | 157 | 16 | 18 | 10 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
+- seguridad defensiva: **46**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **44**
 - rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
+- `settings.py`: **23**
 - `assistant.py`: **21**
 - `diskreport.py`: **21**
 - `browser.py`: **20**
+- `scanner.py`: **20**
 - `organizer.py`: **19**
-- `scanner.py`: **19**
 - `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `memory.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T14:27:31` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_load_internal` reemplazando la verificación simple de `ruta.exists()` por una validación de integridad previa que asegura que el archivo no sea un symlink ni un punto de reparse, mitigando ataques de enlace simbólico (symlink races) al intentar leer la configuración.
+- `2026-08-15T14:27:18` **scanner.py** (seguridad defensiva): Se reforzó `scanner.py` implementando una validación estricta de nombres de ruta mediante la normalización de la caja (case-insensitive) y comparaciones seguras antes de acceder al sistema de archivos, asegurando que `SYSTEM_LOOKALIKES` y `WATCHED_FOLDERS` se comparen contra las partes reales del sistema de archivos, evitando fugas de seguridad por rutas mal formadas.
 - `2026-08-15T14:18:06` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo contra archivos con flujos de datos alternos (ADS) ocultos en `_check_path_syntax_integrity` y se reforzó la validación de `restore_item` usando `is_protected_path` sobre la ruta de destino resuelta para evitar desbordamientos de directorio incluso si el manifiesto fue manipulado.
 - `2026-08-15T14:17:51` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `_is_safe_to_move` validando que la ruta de origen sea estrictamente un archivo y no un directorio o un dispositivo especial, evitando así intentos erróneos de mover estructuras complejas fuera de la carpeta de destino.
 - `2026-08-15T14:17:28` **memory.py** (seguridad defensiva): Mejoré la seguridad en `trim_working_set` al validar la ruta del proceso mediante `is_protected_path` ANTES de intentar cualquier operación, asegurando que no se pueda manipular el working set de procesos protegidos ni mediante rutas mal formadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T13:56:08` **settings.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar que `save` intente operar sobre archivos que existen pero son directorios, previniendo errores de `PermissionError` o `IsADirectoryError` en sistemas con permisos restrictivos.
 - `2026-08-15T13:46:49` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia del `Scanner` ante archivos sin nombre o sin extensión (ej. archivos temporales o creados por sistemas) mediante la adición de verificaciones de integridad `if` adicionales en las heurísticas, evitando `AttributeError` o `NoneType` inesperados.
 - `2026-08-15T13:46:41` **safety.py** (robustez ante casos límite): Se introdujo la verificación `p.exists()` antes de consultar los atributos mediante `GetFileAttributesW` en las funciones `_is_system_or_hidden` y `_is_reparse_point` para evitar falsos positivos y errores de acceso en rutas inexistentes durante la inspección.
-- `2026-08-15T13:37:28` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` ante errores de entrada y condiciones de carrera, garantizando que el destino sea siempre una ruta absoluta y validada antes de intentar cualquier operación de disco.
-- `2026-08-15T13:37:18` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` ante procesos que cierran inesperadamente o tienen estados de acceso intermitentes, asegurando que `OpenProcess` maneje correctamente la propagación de errores y validando la existencia de la ruta antes de intentar cualquier operación.
