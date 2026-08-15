@@ -76,11 +76,10 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
-    Calcula el hash SHA256 completo del archivo.
+    Calcula el hash SHA256 completo del archivo tras validar su seguridad.
     
-    Aplica filtros de seguridad: omite rutas protegidas, symlinks y puntos
-    de reparse (FILE_ATTRIBUTE_REPARSE_POINT = 0x400) para evitar recursión
-    infinita o acceso a volúmenes montados fuera del scope del usuario.
+    Aplica filtros de seguridad (`is_protected_path`, `is_safe_to_modify`)
+    y omite symlinks o reparse points para evitar recursión.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -93,7 +92,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
 
         stat_initial = file_path.stat()
-        # Verificar st_file_attributes para detectar junctions/reparse points.
+        # Verificar st_file_attributes para detectar junctions/reparse points (0x400).
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -114,8 +113,8 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Hash rápido de los primeros bytes (64KB) para comparación heurística.
     
-    Comparte lógica de validación de seguridad con hash_file para asegurar 
-    consistencia en el acceso a archivos restringidos.
+    Comparte lógica de validación con hash_file para mantener consistencia
+    en la evaluación de seguridad del archivo.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -161,11 +160,12 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo capturando candidatos mediante os.scandir.
+    Usa el par (dev, ino) para evitar procesar el mismo archivo múltiples veces.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     
-    def _scan(root_path: Path):
+    def _scan(root_path: Path) -> None:
         try:
             with os.scandir(root_path) as it:
                 for entry in it:
@@ -206,7 +206,8 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Reduce un conjunto de archivos candidatos aplicando una función de hashing.
+    Reduce un conjunto de archivos candidatos aplicando una función de hash dada.
+    Solo retorna grupos que mantienen al menos dos archivos colisionando.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -227,6 +228,7 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Pipeline principal: filtra por tamaño -> hash parcial -> hash completo.
+    Retorna lista de grupos ordenados por bytes recuperables (descendente).
     """
     if directories is None or min_size < 0: return []
     
@@ -234,8 +236,10 @@ def find_duplicates(
     groups: List[DuplicateGroup] = []
     
     for size, paths_in_size_group in size_map.items():
+        # Filtro 2: Hash parcial
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         for partial_candidates in partial_groups.values():
+            # Filtro 3: Hash completo
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
@@ -252,7 +256,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Heurística: selecciona el archivo a conservar (más antiguo, ruta más corta).
+    Heurística para selección: conserva el archivo más antiguo (mtime) 
+    y, ante empate, el de ruta más corta.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -273,7 +278,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """
-    Genera representación textual de un grupo para la interfaz.
+    Genera representación textual de un grupo para visualización en UI.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return []

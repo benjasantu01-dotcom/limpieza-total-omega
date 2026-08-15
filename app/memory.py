@@ -80,7 +80,7 @@ _PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, []
 
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura de Windows (GlobalMemoryStatusEx) para reportar estado global."""
-    _fields_ = [
+    _fields_: List[Tuple[str, ctypes._SimpleCData]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
         ("ullTotalPhys", ctypes.c_ulonglong),
@@ -299,9 +299,7 @@ def _get_process_path(handle: int) -> Optional[str]:
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows.
-    """
+    """Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
@@ -323,19 +321,22 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
         
     try:
+        # Verificación de estado del proceso antes de actuar
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
             
         path = _get_process_path(proc_handle)
-        if path and is_protected_path(os.path.normpath(path)):
-            return False, "Operación denegada: ruta de ejecutable protegida."
         if not path:
             return False, "Error interno: no se pudo verificar la identidad del proceso."
             
+        if is_protected_path(os.path.normpath(path)):
+            return False, "Operación denegada: ruta de ejecutable protegida."
+            
         if not psapi.EmptyWorkingSet(proc_handle):
             err = kernel32.GetLastError()
-            return False, f"Acceso denegado: privilegios insuficientes (error {err})." if err == ERROR_ACCESS_DENIED else f"Error al intentar liberar memoria (código {err})."
+            msg = f"Acceso denegado: privilegios insuficientes (error {err})." if err == ERROR_ACCESS_DENIED else f"Error al intentar liberar memoria (código {err})."
+            return False, msg
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, MemoryError, OSError) as e:

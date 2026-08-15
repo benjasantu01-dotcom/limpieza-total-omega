@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 29
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 218
 
@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 149 | 10 | 21 | 12 | 132 |
-| 2026-08-15 | 74 | 7 | 8 | 5 | 86 |
+| 2026-08-14 | 147 | 9 | 20 | 12 | 132 |
+| 2026-08-15 | 78 | 7 | 8 | 5 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
+- legibilidad y documentación: **47**
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **43**
-- rendimiento: **37**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `settings.py`: **20**
 - `diskreport.py`: **20**
-- `scanner.py`: **19**
+- `healthscore.py`: **20**
 - `browser.py`: **19**
-- `healthscore.py`: **19**
+- `settings.py`: **19**
+- `scanner.py`: **18**
+- `memory.py`: **16**
 - `organizer.py`: **16**
 - `quarantine.py`: **16**
-- `memory.py`: **15**
+- `duplicates.py`: **15**
 - `startup.py`: **14**
-- `duplicates.py`: **14**
 - `safety.py`: **13**
-- `main.py`: **11**
+- `main.py`: **12**
 - `branding.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T07:50:25` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `trim_working_set` hacia una estructura de guardas más clara, la adición de Type Hints en la estructura `MEMORYSTATUSEX` y la mejora de los comentarios explicativos para seguir las directrices de documentación.
+- `2026-08-15T07:50:13` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de hilos en `main.py` extrayendo la lógica del hilo de trabajo a un método privado dedicado (`_worker_thread_logic`) con tipado claro, reduciendo el anidamiento y facilitando la depuración.
+- `2026-08-15T07:49:12` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y seguridad del contrato de tipos en las funciones de puntuación y validación, introduciendo `Annotated` para documentar explícitamente los rangos esperados (0.0-1.0) y facilitando el mantenimiento al evitar la ambigüedad en los retornos numéricos.
+- `2026-08-15T07:48:47` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en el módulo, clarificando la distinción entre las funciones de procesamiento de datos (`_collect_candidates`, `_refine_by_hash`) y la lógica de negocio, para facilitar el mantenimiento y la auditabilidad del pipeline de escaneo.
 - `2026-08-15T07:39:46` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `summarize` extrayendo la lógica de recolección de métricas a una función auxiliar interna, lo que reduce la complejidad ciclomática de la función principal y documenta claramente el flujo de datos.
 - `2026-08-15T07:39:35` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo *docstrings* detallados en las funciones de filtrado, simplifiqué la lógica de detección de funciones del sistema (evitando repeticiones de `ctypes`) y ajusté las *type hints* para ser más estrictas y coherentes con el estándar del proyecto.
 - `2026-08-15T07:38:42` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `build_context` y añadí *type hints* precisos en las métricas de `SystemContext` para asegurar que el contrato de datos sea evidente y facilitar el mantenimiento futuro.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T07:09:37` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` mediante una validación explícita del ID ingresado antes de intentar cualquier operación de disco y asegurando que las comprobaciones de integridad (existencia del manifiesto y seguridad de la ruta) se ejecuten antes de intentar restaurar el archivo, siguiendo el patrón de seguridad exigido.
 - `2026-08-15T07:08:49` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación explícita de `metrics_map` y la captura de errores de formato, previniendo que una configuración de reglas mal definida provoque un fallo en la generación del reporte.
 - `2026-08-15T07:08:02` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` agregando chequeos específicos para rutas nulas o vacías y capturando excepciones de sistema de forma más granular para evitar abortos silenciosos del generador ante errores de permisos comunes en Windows.
-- `2026-08-15T06:59:48` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `_is_safe_path` y `_is_excluded_file` añadiendo chequeos contra tipos inesperados, además de asegurar que `summarize` maneje correctamente las entradas `None` mediante validación explícita para evitar errores en tiempo de ejecución.
-- `2026-08-15T06:59:06` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y sus funciones auxiliares mediante la validación explícita de `float` y la captura de errores en la extracción de datos, evitando que valores `NaN` o `inf` de fuentes externas corrompan el estado del asistente.
-- `2026-08-15T05:36:39` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` implementando una comprobación de seguridad explícita sobre la ruta del archivo de configuración antes de cualquier operación de escritura, asegurando que la ruta no esté bloqueada ni sea una ruta de sistema, cumpliendo estrictamente con el uso de `is_safe_to_modify`.
-- `2026-08-15T05:36:13` **scanner.py** (seguridad defensiva): Se ha mejorado `Scanner.process_entry` para validar que `entry.path` sea una ruta absoluta antes de realizar operaciones de resolución o filtrado, evitando así posibles discrepancias de contexto al evaluar `base_root` y garantizando que los chequeos de seguridad operen siempre sobre la ruta completa resuelta.

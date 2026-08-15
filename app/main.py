@@ -860,6 +860,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not self._closing:
                 self._validate_and_log_error(e, tab)
 
+    def _worker_thread_logic(self, fn: Callable[[], Any], tab: str) -> None:
+        """Encapsula la ejecución de una tarea en un hilo y gestiona el ciclo de vida de busy state."""
+        try:
+            self._safe_run(fn, tab)
+        finally:
+            if not self._closing:
+                self._set_busy(False)
+                self.set_status("Listo.")
+
     def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:
         """Envía tarea al pool de hilos y garantiza el manejo de bloqueos y seguridad."""
         if self._closing: return
@@ -874,17 +883,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._set_busy(True)
         tab = self._current_tab()
         
-        def wrapper() -> None:
-            with self._task_lock:
-                try:
-                    self._safe_run(fn, tab)
-                finally:
-                    if not self._closing:
-                        self._set_busy(False)
-                        self.set_status("Listo.")
-
         if not self._closing and self._executor:
-            self._executor.submit(wrapper)
+            self._executor.submit(self._worker_thread_logic, fn, tab)
 
     def _current_tab(self) -> str:
         """Determina qué pestaña está activa para el contexto de logs."""
