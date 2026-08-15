@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 14 | 0 | 2 | 0 | 34 |
+| 2026-08-13 | 13 | 0 | 1 | 0 | 32 |
 | 2026-08-14 | 165 | 12 | 24 | 14 | 135 |
-| 2026-08-15 | 45 | 4 | 5 | 4 | 46 |
+| 2026-08-15 | 49 | 4 | 5 | 4 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **43**
 - rendimiento: **43**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `settings.py`: **20**
 - `browser.py`: **20**
-- `diskreport.py`: **19**
-- `healthscore.py`: **19**
+- `diskreport.py`: **20**
+- `healthscore.py`: **20**
 - `scanner.py`: **18**
-- `quarantine.py`: **16**
-- `duplicates.py`: **16**
+- `duplicates.py`: **17**
 - `memory.py`: **16**
 - `organizer.py`: **15**
+- `quarantine.py`: **15**
 - `startup.py`: **13**
 - `safety.py`: **13**
-- `main.py`: **10**
+- `main.py`: **11**
 - `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T04:36:37` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante posibles excepciones durante la inicialización de la interfaz en `_build_tabs_container` y `_tab_factory`, garantizando que un error al construir una pestaña no bloquee la inicialización del resto de la aplicación, y añadí una verificación de seguridad al cerrar la aplicación para asegurar que el `ThreadPoolExecutor` no intente procesar tareas nuevas durante el proceso de destrucción.
+- `2026-08-15T04:35:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante datos de entrada maliciosos o corruptos mediante una validación estricta de los tipos y rangos de las métricas antes de procesar el cálculo, evitando que valores inesperados (como `NaN` o `inf`) propaguen estados inválidos en el puntaje final.
+- `2026-08-15T04:35:21` **duplicates.py** (robustez ante casos límite): Se mejoró la robustez ante errores de acceso a archivos dentro de `hash_file` y `partial_hash` implementando un chequeo previo de `exists()` y `is_file()` para evitar excepciones innecesarias en archivos bloqueados o eliminados durante la ejecución.
+- `2026-08-15T04:34:58` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` ante errores críticos de sistema (como rutas con caracteres inválidos o Unicode no soportado por el file system) añadiendo un manejo de excepciones más granular que impide la propagación de fallos al iterar directorios profundos.
 - `2026-08-15T04:26:00` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_system_hidden` y `_should_skip_entry` para gestionar correctamente casos donde `kernel32` no esté disponible o falle la llamada al sistema, previniendo excepciones no capturadas durante la exploración del disco.
 - `2026-08-15T04:25:50` **branding.py** (robustez ante casos límite): Se ha robustecido el método `save_logo_svg` añadiendo una verificación previa mediante `is_safe_to_modify` para evitar el uso innecesario de excepciones en la lógica de control, alineándose con las reglas de seguridad requeridas.
 - `2026-08-15T04:25:19` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, asegurando que `extra` no sobrescriba tipos de datos críticos con valores de tipos incompatibles, lo que evita desbordamientos o comportamientos impredecibles durante el procesamiento de datos del sistema.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T03:55:04` **healthscore.py** (rendimiento): Optimicé el bucle de generación de recomendaciones convirtiendo el acceso a atributos de `metrics` en una operación más eficiente mediante el pre-procesamiento de los valores en un diccionario dentro de `compute_score`, evitando llamadas repetitivas a `getattr` y `hasattr` dentro del bucle de reglas.
 - `2026-08-15T03:54:31` **diskreport.py** (rendimiento): Optimicé el bucle principal en `summarize` para reducir las llamadas a `path.suffix` y mejorar la eficiencia del cálculo de estadísticas al unificar la recolección de datos y evitar diccionarios anidados innecesarios.
 - `2026-08-15T03:54:05` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios mediante la persistencia del diccionario `perf_cache` a través de toda la ejecución de `detect_profiles` y evitando re-escanear rutas visitadas, reduciendo significativamente la complejidad en sistemas con estructuras de directorios compartidas o redundantes.
-- `2026-08-15T03:45:00` **assistant.py** (rendimiento): Optimizé la detección de problemas en `_identify_active_problems` reemplazando la iteración secuencial con una lista comprensiva y eliminé el uso de `getattr` dentro del bucle principal, accediendo directamente a los atributos del `SystemContext` mediante una nueva estructura de mapeo eficiente.
-- `2026-08-15T03:44:26` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo type hints faltantes en los métodos internos y clarificando las docstrings de las operaciones de resolución de rutas para asegurar que se entienda el flujo de seguridad perezosa.
-- `2026-08-15T03:43:59` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de acceso (`load`, `save`, `update`, `reset`, `get`) y se extrajo la lógica de verificación de clave en `assistant_enabled` para mejorar la legibilidad y el mantenimiento.
-- `2026-08-15T03:34:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especificando `Args` y `Returns`) y se ha refactorizado la lógica de `scan_file` para ser más legible y robusta, facilitando la comprensión del flujo de análisis heurístico.

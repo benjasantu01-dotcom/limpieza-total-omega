@@ -137,8 +137,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _on_closing(self) -> None:
         """Cierra la aplicación cancelando tareas pendientes y liberando hilos."""
         self._closing = True
-        if self._executor:
-            self._executor.shutdown(wait=False)
+        with self._task_lock:
+            if self._executor:
+                self._executor.shutdown(wait=False)
         self.destroy()
 
     def _validate_environment(self) -> None:
@@ -187,7 +188,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
         
         self._tasks_running = 0
-        if self._executor: self._executor.shutdown(wait=False)
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         self._debounces: Dict[str, str] = {}
         
@@ -308,7 +308,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
                 if name in self.tabs:
-                    self._create_styled_label(self.tabs[name], f"Error al cargar: {type(e).__name__}", "caption").pack()
+                    self._create_styled_label(self.tabs[name], f"Error al cargar módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
 
     def _build_tabs_container(self) -> None:
         """Configura el widget tabview y delega la creación de contenido interno por cada pestaña."""
@@ -335,7 +335,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     self.tabs[name] = frame
                     self._tab_factory(name)
             except Exception as e:
-                logging.error("Error al construir la pestaña %s: %s", name, e)
+                logging.error("Error al registrar la pestaña %s: %s", name, e)
 
     def _build_header(self) -> None:
         """Renderiza la identidad visual de la app: logo, nombre, versión y barra decorativa."""

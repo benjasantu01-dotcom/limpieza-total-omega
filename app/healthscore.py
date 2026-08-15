@@ -111,9 +111,7 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que todas las métricas contengan números finitos válidos."""
-        return math.isfinite(self.junk_mb + self.suspicious_count + self.suspicious_warnings + 
-                             self.memory_available_percent + self.disk_free_percent + 
-                             self.duplicate_mb + self.startup_count + self.quarantined_count)
+        return all(math.isfinite(getattr(self, attr, 0.0)) for attr in self.__dataclass_fields__)
 
 
 @dataclass

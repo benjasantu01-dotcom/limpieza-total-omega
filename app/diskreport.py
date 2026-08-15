@@ -236,16 +236,19 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
 
                         if entry.is_dir():
-                            st = entry.stat()
-                            inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
-                                if skip_protected and is_protected_path(target):
-                                    continue
-                                stack.append(target)
+                            try:
+                                st = entry.stat()
+                                inode = (st.st_dev, st.st_ino)
+                                if inode not in visited_inodes:
+                                    visited_inodes.add(inode)
+                                    if skip_protected and is_protected_path(target):
+                                        continue
+                                    stack.append(target)
+                            except (OSError, PermissionError):
+                                continue
                         else:
                             yield target, entry.stat().st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, ValueError):
                         continue
         except (OSError, PermissionError):
             continue
