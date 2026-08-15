@@ -864,7 +864,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         target_path = target or self.scan_target
         if check_safety and target_path:
-            # Validar integridad contra None antes de operar
+            # Validar integridad contra la lista negra antes de operar
             if not self._is_safe_target_dir(target_path):
                 self.log(f"Abortado: La ruta de destino {target_path} no es segura.", self._current_tab())
                 return
@@ -908,7 +908,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 messagebox.showwarning("Ruta inaccesible", "La ruta seleccionada no existe o no se puede leer.")
                 return None
             
-            # Verificación preventiva antes de retornar
+            # Verificación preventiva obligatoria antes de retornar la ruta
             safety.ensure_safe_to_modify(p)
             return str(p)
         except (safety.UnsafePathError, OSError, PermissionError, FileNotFoundError):
@@ -1149,7 +1149,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not os.path.isdir(downloads_path):
             self.log("No se encontró la carpeta de Descargas.", "Seguridad")
             return
-        self._run_heuristic_scan(downloads_path)
+        # Validar seguridad antes de ejecutar escaneo
+        try:
+            safety.ensure_safe_to_modify(downloads_path)
+            self._run_heuristic_scan(downloads_path)
+        except safety.UnsafePathError:
+            self.log("La carpeta de Descargas es insegura.", "Seguridad")
 
     def on_heuristic_scan_folder(self) -> None:
         """Inicia escaneo heurístico en una carpeta seleccionada por el usuario."""

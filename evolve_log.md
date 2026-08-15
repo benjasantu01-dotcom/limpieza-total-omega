@@ -1407,3 +1407,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-15T00:42:34` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` al añadir una verificación explícita mediante `is_safe_to_modify` antes de abrir archivos, garantizando que el módulo de lectura no intente procesar rutas que violan las políticas de seguridad incluso si la comprobación previa en `scandir` fuera omitida por error.
 - `2026-08-15T00:42:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T00:42:34` Corrida terminada. Total usado hoy: 16.
+- `2026-08-15T00:50:19` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-15T00:50:48` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez de `healthscore.py` ante datos malintencionados o corruptos, validando explícitamente que los resultados de las funciones de puntuación y el cálculo del puntaje final se mantengan dentro de los límites esperados (0-100) para evitar desbordes o estados inconsistentes en la UI.
+- `2026-08-15T00:51:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-15T00:52:58` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `main.py` añadiendo un filtro de validación obligatorio para todas las rutas proporcionadas por el usuario en las funciones que ejecutan acciones sobre el disco, asegurando que pasen por `safety.ensure_safe_to_modify` antes de ser procesadas en el pool de hilos.
+- `2026-08-15T00:53:23` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-15T00:53:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-15T00:53:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T00:53:33` Corrida terminada. Total usado hoy: 20.
