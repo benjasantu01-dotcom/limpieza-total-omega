@@ -93,8 +93,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae una ruta de una cadena entrecomillada. 
-        Retorna la ruta limpia si es segura, caso contrario retorna cadena vacía.
+        Extracts a path from a quoted string. 
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -158,7 +157,6 @@ class StartupEntry:
         """Orquesta la extracción y validación de la ruta ejecutable según formato."""
         if not cmd:
             return ""
-        # Evitar inyección de comandos mediante operadores shell detectados
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
             return ""
 
@@ -217,10 +215,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                 for entry in it:
                     try:
                         if entry.is_file(follow_symlinks=False):
-                            ext = os.path.splitext(entry.name)[1].lower()
-                            if ext in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
+                            name, ext = os.path.splitext(entry.name)
+                            if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
                                 found_entries.append(StartupEntry(
-                                    name=os.path.splitext(entry.name)[0],
+                                    name=name,
                                     command=entry.path,
                                     source="carpeta"
                                 ))
@@ -309,14 +307,16 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    def _generator() -> Iterator[StartupEntry]:
-        yield from entries_from_folders()
-        yield from entries_from_registry()
-    
-    for entry in _generator():
-        name_normalized: str = entry.name.lower()
-        if name_normalized not in seen_names:
-            seen_names.add(name_normalized)
+    for entry in entries_from_folders():
+        name_n = entry.name.lower()
+        if name_n not in seen_names:
+            seen_names.add(name_n)
+            unique_entries.append(entry)
+
+    for entry in entries_from_registry():
+        name_n = entry.name.lower()
+        if name_n not in seen_names:
+            seen_names.add(name_n)
             unique_entries.append(entry)
             
     _FULL_SCAN_CACHE = unique_entries

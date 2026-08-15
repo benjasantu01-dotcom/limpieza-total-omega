@@ -152,7 +152,7 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """Filtro de exclusión para el iterador de archivos durante la suma de tamaños."""
-    if not isinstance(entry, os.DirEntry) or not hasattr(entry, 'path'):
+    if not isinstance(entry, os.DirEntry):
         return True
     try:
         if _is_excluded_file(entry.name):
@@ -225,7 +225,12 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
             return 0
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
-        k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
+        k32 = None
+        if os.name == 'nt':
+            try:
+                k32 = ctypes.windll.kernel32
+            except (OSError, AttributeError):
+                k32 = None
         return max(0, _sum_directory_recursive(str(root_path), is_junction, k32, set(), {}))
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
@@ -255,7 +260,13 @@ def detect_profiles(
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
-    k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
+    
+    k32 = None
+    if os.name == 'nt':
+        try:
+            k32 = ctypes.windll.kernel32
+        except (OSError, AttributeError):
+            k32 = None
     
     perf_cache: Dict[str, int] = {}
     visited: Set[str] = set()

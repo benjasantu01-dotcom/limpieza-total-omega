@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 18 | 0 | 2 | 0 | 34 |
+| 2026-08-13 | 14 | 0 | 2 | 0 | 34 |
 | 2026-08-14 | 165 | 12 | 24 | 14 | 135 |
-| 2026-08-15 | 41 | 4 | 5 | 4 | 46 |
+| 2026-08-15 | 45 | 4 | 5 | 4 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **50**
-- seguridad defensiva: **47**
-- rendimiento: **42**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **43**
+- rendimiento: **43**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **20**
+- `assistant.py`: **21**
 - `settings.py`: **20**
-- `assistant.py`: **20**
-- `browser.py`: **19**
+- `browser.py`: **20**
 - `diskreport.py`: **19**
+- `healthscore.py`: **19**
 - `scanner.py`: **18**
-- `memory.py`: **17**
-- `organizer.py`: **16**
 - `quarantine.py`: **16**
 - `duplicates.py`: **16**
+- `memory.py`: **16**
+- `organizer.py`: **15**
+- `startup.py`: **13**
 - `safety.py`: **13**
-- `startup.py`: **12**
-- `main.py`: **11**
-- `branding.py`: **7**
+- `main.py`: **10**
+- `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T04:26:00` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_system_hidden` y `_should_skip_entry` para gestionar correctamente casos donde `kernel32` no esté disponible o falle la llamada al sistema, previniendo excepciones no capturadas durante la exploración del disco.
+- `2026-08-15T04:25:50` **branding.py** (robustez ante casos límite): Se ha robustecido el método `save_logo_svg` añadiendo una verificación previa mediante `is_safe_to_modify` para evitar el uso innecesario de excepciones en la lógica de control, alineándose con las reglas de seguridad requeridas.
+- `2026-08-15T04:25:19` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, asegurando que `extra` no sobrescriba tipos de datos críticos con valores de tipos incompatibles, lo que evita desbordamientos o comportamientos impredecibles durante el procesamiento de datos del sistema.
+- `2026-08-15T04:24:46` **startup.py** (rendimiento): Optimizé `list_startup_entries` y `entries_from_folders` para evitar la creación de listas intermedias y el uso de `os.path.splitext` repetitivo, reemplazando el filtrado por nombre con un `set` eficiente y reduciendo llamadas redundantes a `Path` dentro de los bucles.
 - `2026-08-15T04:15:23` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` convirtiendo `_VALIDATOR_MAP` en un diccionario de acceso directo por `ConfigKey` y eliminando la redundancia de `_get_default_config().copy()` en las llamadas exitosas, además de evitar la recreación de objetos `Path` innecesarios.
 - `2026-08-15T04:05:59` **quarantine.py** (rendimiento): Optimizé la función `_get_sha256` utilizando un buffer de 128KB en lugar de 64KB para reducir la cantidad de llamadas al sistema y mejorar el rendimiento de E/S al procesar archivos grandes durante la validación de integridad.
 - `2026-08-15T04:05:21` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` eliminando el uso de `ConvertTo-Csv` y el procesamiento posterior de strings pesados, reemplazándolo por un filtrado de propiedades nativo en PowerShell que reduce drásticamente el consumo de CPU y la carga de datos procesados por `subprocess`.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T03:44:26` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo type hints faltantes en los métodos internos y clarificando las docstrings de las operaciones de resolución de rutas para asegurar que se entienda el flujo de seguridad perezosa.
 - `2026-08-15T03:43:59` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de acceso (`load`, `save`, `update`, `reset`, `get`) y se extrajo la lógica de verificación de clave en `assistant_enabled` para mejorar la legibilidad y el mantenimiento.
 - `2026-08-15T03:34:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (especificando `Args` y `Returns`) y se ha refactorizado la lógica de `scan_file` para ser más legible y robusta, facilitando la comprensión del flujo de análisis heurístico.
-- `2026-08-15T03:33:50` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo añadiendo type hints faltantes, tipado explícito para `Union`, y refactorizando el chequeo de integridad en `purge_all` para hacerlo más robusto frente a archivos huérfanos o corrompidos.
-- `2026-08-15T03:25:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `memory.py` mediante la adición de docstrings estructuradas con la convención Google/NumPy, la especificación de tipos en las firmas de funciones y la extracción del bloque complejo de validación de procesos dentro de `trim_working_set` a una función auxiliar nombrada `_get_process_path`, facilitando su lectura y mantenimiento.
-- `2026-08-15T03:23:35` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incluyendo docstrings detallados en las funciones de puntuación y actualizando las anotaciones de tipo para clarificar la procedencia de los datos, facilitando la mantenibilidad para futuros desarrolladores.
-- `2026-08-15T03:15:36` **duplicates.py** (legibilidad y documentación): Mejoré la documentación de `hash_file` y `partial_hash` explicando el **porqué** de los chequeos de seguridad y el filtrado de atributos (específicamente la máscara `0x400` que identifica puntos de reparse/junctions), facilitando la comprensión del flujo de seguridad para futuros desarrollos.

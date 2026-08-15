@@ -279,7 +279,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if k in ctx.__annotations__ and v is not None:
+        if hasattr(ctx, k) and v is not None:
             attr_type = type(getattr(ctx, k))
             if attr_type in (int, float, str):
                 _safe_assign(ctx, k, v, cast=attr_type)
