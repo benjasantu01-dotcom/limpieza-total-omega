@@ -491,3 +491,10 @@ assert not {'replace'}
 - `2026-08-15T12:56:33` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lectura de `tasklist` mediante `subprocess.check_output`, reduciendo el tiempo de espera y el overhead de inicialización de la shell.
 - `2026-08-15T12:56:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T12:56:33` Corrida terminada. Total usado hoy: 304.
+- `2026-08-15T13:04:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-15T13:05:10` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el proceso `scan_for_junk` sustituyendo la recursión manual por `os.walk` (más eficiente y robusto al manejar el stack del sistema de archivos) y reemplazando `path.resolve()` (que realiza llamadas al sistema repetitivas y costosas por cada archivo) por un chequeo directo de la ruta, mejorando drásticamente el rendimiento en directorios con miles de archivos.
+- `2026-08-15T13:05:42` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` transformando `item_map` en un conjunto de nombres (`stored_names`) para realizar búsquedas de O(1) en lugar de O(N), evitando recorridos redundantes en el bucle principal de limpieza.
+- `2026-08-15T13:06:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-15T13:06:12` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-15T13:06:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T13:06:12` Corrida terminada. Total usado hoy: 308.

@@ -486,6 +486,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     items = load_manifest(base)
     item_map = {i.stored_name: i for i in items}
+    stored_names_in_manifest = set(item_map.keys())
     purged_count = 0
     items_to_remove = []
     
@@ -493,10 +494,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
-        item = item_map.get(entry.name)
-        if not item:
+        if entry.name not in stored_names_in_manifest:
             continue
             
+        item = item_map[entry.name]
         try:
             # Validar integridad antes de borrar
             if not item.verify_integrity(entry.resolve()):

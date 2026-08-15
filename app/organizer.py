@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Iterator
+from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
@@ -94,13 +94,12 @@ class JunkFile:
         return _is_junk_path(self.path)
 
 
-def _is_junction(entry: os.DirEntry[str]) -> bool:
+def _is_junction(path: Path) -> bool:
     """
     Determina si una entrada de sistema de archivos es un punto de reparse (Junction/Symlink).
-    Evita la recursión infinita en enlaces simbólicos del sistema.
     """
     try:
-        return entry.is_symlink() or (os.name == "nt" and "reparse" in os.stat(entry.path).st_file_attributes)
+        return path.is_symlink() or (os.name == "nt" and "reparse" in os.stat(path).st_file_attributes)
     except (OSError, AttributeError):
         return False
 
@@ -113,7 +112,6 @@ def _is_junk_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Genera una ruta única para un archivo destino evitando colisiones por nombre.
-    Si el destino existe, añade un sufijo numérico al nombre del archivo.
     """
     if not target.exists():
         return target
@@ -147,12 +145,12 @@ def _is_file_locked(path: Path) -> bool:
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
     Evalúa si el movimiento es seguro basándose en atributos, bloqueos y consistencia.
-    Verifica permisos, bloqueos de sistema y que la ruta destino no sea un ancestro.
     """
     try:
         if not junk_file.path.exists():
             return False
         
+        # Uso de resolve() limitado a validación inicial
         current_abs = junk_file.path.resolve()
         dest_abs = dest.resolve()
         
@@ -176,63 +174,36 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Escanea rutas recursivamente buscando archivos basura basados en la extensión.
-
-    Args:
-        directories: Lista opcional de rutas a escanear. Usa DEFAULT_SCAN_DIRS si es None.
-    
-    Returns:
-        List[JunkFile]: Lista de objetos JunkFile hallados.
+    Escanea rutas recursivamente buscando archivos basura de forma eficiente usando os.walk.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
-    unique_dirs: set[Path] = set()
     
     for d in raw_dirs:
-        if d:
-            try:
-                p = Path(d).expanduser()
-                if p.exists():
-                    rp = p.resolve()
-                    if rp.is_dir() and is_safe_to_modify(rp):
-                        unique_dirs.add(rp)
-            except (RuntimeError, OSError, ValueError):
-                continue
-
-    def _walk_generator(base: Path) -> Iterator[JunkFile]:
-        try:
-            for entry in os.scandir(base):
-                if _is_junction(entry):
-                    continue
-                if entry.is_dir() and _is_allowed_directory(entry.name):
-                    yield from _walk_generator(Path(entry.path))
-                elif entry.is_file() and entry.name.lower().endswith(_JUNK_EXT_TUPLE):
-                    path_obj = Path(entry.path)
-                    if is_safe_to_modify(path_obj):
+        if not d: continue
+        base = Path(d).expanduser()
+        if not base.exists() or not is_safe_to_modify(base): continue
+        
+        for root, dirs, files in os.walk(base):
+            root_path = Path(root)
+            # Filtrar directorios bloqueados in-place
+            dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
+            
+            for name in files:
+                f_path = root_path / name
+                if name.lower().endswith(_JUNK_EXT_TUPLE):
+                    if is_safe_to_modify(f_path):
                         try:
-                            s = entry.stat()
-                            yield JunkFile(path_obj, s.st_size, datetime.fromtimestamp(s.st_mtime))
+                            s = f_path.stat()
+                            found.append(JunkFile(f_path, s.st_size, datetime.fromtimestamp(s.st_mtime)))
                         except OSError:
                             continue
-        except (PermissionError, OSError):
-            pass
-
-    for d in unique_dirs:
-        found.extend(_walk_generator(d))
     return found
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena una lista de archivos basura según un criterio dado (tamaño o fecha).
-
-    Args:
-        files: Lista de objetos JunkFile a procesar.
-        by: Atributo por el cual ordenar ('size' o 'date').
-        ascending: Booleano para orden ascendente o descendente.
-
-    Returns:
-        List[JunkFile]: Lista ordenada de archivos.
     """
     if not isinstance(files, list):
         return []
@@ -252,14 +223,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Traslada archivos basura detectados a un directorio de revisión de manera segura.
-    Valida espacio en disco antes de mover y asegura unicidad de nombres.
-    
-    Args:
-        files: Lista de objetos JunkFile a mover.
-        review_dir: Ruta destino de la cuarentena temporal.
-        
-    Returns:
-        Path: Ruta destino donde se almacenaron los archivos.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
@@ -292,12 +255,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de la carpeta de revisión tras validar la integridad de la ruta.
-    
-    Args:
-        review_dir: Ruta donde residen los archivos revisados para eliminar.
-        
-    Returns:
-        int: Cantidad de archivos eliminados con éxito.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
