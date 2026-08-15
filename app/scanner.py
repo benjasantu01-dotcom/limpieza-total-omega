@@ -145,8 +145,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     
     try:
-        # Optimización: evitar procesamiento innecesario si la ruta no contiene carpetas vigiladas
-        if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
+        # Validación defensiva de partes de la ruta
+        path_parts = {p.lower() for p in path.parts}
+        if WATCHED_FOLDERS.isdisjoint(path_parts):
             return None
 
         # st_mtime puede fallar si el archivo fue bloqueado o eliminado por otro proceso
@@ -185,12 +186,16 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         findings.append(gen_res)
     
     # 2. Chequeos de contexto: solo para ejecutables potenciales
-    suffix = path.suffix.lower()
-    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        checks: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
-        for check in checks:
-            if (res := check(path, entry, now_ts)):
-                findings.append(res)
+    try:
+        suffix = path.suffix.lower()
+        if suffix in SUSPICIOUS_EXECUTABLE_EXT:
+            checks: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
+            for check in checks:
+                if (res := check(path, entry, now_ts)):
+                    findings.append(res)
+    except Exception:
+        # Silenciar fallos inesperados en el pipeline por archivos corruptos/inalcanzables
+        pass
                 
     return findings
 

@@ -1389,3 +1389,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-15T00:21:23` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez de `is_protected_path` ante errores de resolución de rutas (como unidades desconectadas o permisos denegados) para evitar que la aplicación falle silenciosamente o se bloquee ante estados inestables del sistema de archivos.
 - `2026-08-15T00:21:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T00:21:23` Corrida terminada. Total usado hoy: 8.
+- `2026-08-15T00:29:53` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-08-15T00:30:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-15T00:30:35` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez del escáner ante rutas malformadas o inaccesibles mediante la normalización de la validación de `path.parts` y la adición de un chequeo defensivo contra errores de metadatos en el pipeline de escaneo.
+- `2026-08-15T00:31:04` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `load` para asegurar que el contenido JSON cargado contenga todas las claves necesarias según la definición de `AppSettings`, evitando errores de `KeyError` en partes de la app que consumen el diccionario directamente.
+- `2026-08-15T00:31:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-15T00:32:32` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-15T00:33:05` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se añadió una verificación de archivos inexistentes o bloqueados en `entries_from_folders` mediante `is_file()` con `follow_symlinks=False` y se reforzó la robustez ante rutas corruptas o inaccesibles en el bucle principal de escaneo de directorios.
+- `2026-08-15T00:33:24` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` reemplazando el uso de `filter_safe_paths` (diseñada para archivos en disco) por una validación estricta de formato con regex, evitando así el error conceptual de tratar la API Key y el modelo como rutas de archivo.
+- `2026-08-15T00:33:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T00:33:24` Corrida terminada. Total usado hoy: 12.

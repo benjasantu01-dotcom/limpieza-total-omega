@@ -92,7 +92,7 @@ class StartupEntry:
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae rutas de comandos formateados como "C:\Ruta\App.exe" args."""
+        """Extracts paths from commands formatted like "C:\Ruta\App.exe" args."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -212,18 +212,20 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
         if not folder or not folder.is_dir() or is_protected_path(folder):
             continue
         try:
-            # Usar scandir es más eficiente que iterdir en directorios con muchos archivos
             with os.scandir(folder) as it:
                 for entry in it:
-                    # Seguridad: no seguir enlaces simbólicos o junctions para evitar escapes de ruta
-                    if entry.is_file(follow_symlinks=False) and not entry.is_symlink():
-                        ext = os.path.splitext(entry.name)[1].lower()
-                        if ext in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
-                            found_entries.append(StartupEntry(
-                                name=os.path.splitext(entry.name)[0],
-                                command=entry.path,
-                                source="carpeta"
-                            ))
+                    try:
+                        # Verificación estricta: solo archivos, no symlinks, no bloqueados
+                        if entry.is_file(follow_symlinks=False):
+                            ext = os.path.splitext(entry.name)[1].lower()
+                            if ext in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
+                                found_entries.append(StartupEntry(
+                                    name=os.path.splitext(entry.name)[0],
+                                    command=entry.path,
+                                    source="carpeta"
+                                ))
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
             continue
     return found_entries
@@ -242,7 +244,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             if not isinstance(row, dict) or len(row) < 2:
                 continue
             
-            # Extraer valores ignorando claves de metadatos de PowerShell si existen
             keys = list(row.keys())
             name_raw = row.get(keys[0])
             cmd_raw = row.get(keys[1])
@@ -253,11 +254,9 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             
-            # Validación estricta: descartar filas vacías o basura de cabecera de PS
             if not name or not cmd or name.lower() in ("name", "pscustomobject") or name.upper().startswith("PS"):
                 continue
             
-            # Prevenir inyección de shell en los comandos leídos
             if any(c in cmd for c in '<>|?*'):
                 continue
             

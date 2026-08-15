@@ -71,7 +71,7 @@ class AppSettings(TypedDict):
     top_archivos: int
     top_procesos: int
     analisis_en_paralelo: bool
-    asistente_ACTIVADO: bool
+    asistente_activado: bool
     asistente_clave_api: str
     asistente_enviar_metricas: bool
     asistente_modelo: str
@@ -98,22 +98,22 @@ _current_path: Path | None = None
 def _get_default_config() -> AppSettings:
     """Genera un diccionario fresco con los valores de fábrica."""
     return {
-        ConfigKey.TEMA.value: "oscuro",
-        ConfigKey.ACENTO.value: "menta",
-        ConfigKey.MOSTRAR_BARRAS.value: True,
-        ConfigKey.ANIMACIONES.value: True,
-        ConfigKey.CONFIRMAR_SIEMPRE.value: True,
-        ConfigKey.ABRIR_EN.value: "Salud",
-        ConfigKey.RECORDAR_ULTIMA_CARPETA.value: True,
-        ConfigKey.ULTIMA_CARPETA.value: "",
-        ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB.value: 64,
-        ConfigKey.TOP_ARCHIVOS.value: 15,
-        ConfigKey.TOP_PROCESOS.value: 15,
-        ConfigKey.ANALISIS_EN_PARALELO.value: True,
-        ConfigKey.ASISTENTE_ACTIVADO.value: False,
-        ConfigKey.ASISTENTE_CLAVE_API.value: "",
-        ConfigKey.ASISTENTE_ENVIAR_METRICAS.value: True,
-        ConfigKey.ASISTENTE_MODELO.value: "gemini-3.1-flash-lite",
+        "tema": "oscuro",
+        "acento": "menta",
+        "mostrar_barras": True,
+        "animaciones": True,
+        "confirmar_siempre": True,
+        "abrir_en": "Salud",
+        "recordar_ultima_carpeta": True,
+        "ultima_carpeta": "",
+        "duplicados_tamano_minimo_kb": 64,
+        "top_archivos": 15,
+        "top_procesos": 15,
+        "analisis_en_paralelo": True,
+        "asistente_activado": False,
+        "asistente_clave_api": "",
+        "asistente_enviar_metricas": True,
+        "asistente_modelo": "gemini-3.1-flash-lite",
     }
 
 DEFAULTS: Final[AppSettings] = _get_default_config()
@@ -228,9 +228,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """
-    Carga la configuración desde el disco o desde caché basándose en el tiempo de modificación.
-    """
+    """Carga la configuración, asegurando integridad de claves y caché."""
     global _cached_settings, _current_path, _cached_mtime
     ruta = settings_path(custom_base)
     
@@ -249,7 +247,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = json.loads(content)
             if isinstance(data, dict):
                 config = validate(data)
-                for key in AppSettings.__annotations__:
+                for key in DEFAULTS:
                     if key not in config: config[key] = DEFAULTS[key]
                 _cached_settings = config
                 _cached_mtime = mtime
@@ -260,10 +258,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """
-    Persiste la configuración en disco tras validación.
-    Usa un archivo temporal con fsync para garantizar integridad atómica.
-    """
+    """Persiste la configuración tras validación, con escritura atómica."""
     global _cached_settings, _current_path, _cached_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
@@ -273,8 +268,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if ruta.exists() and not os.access(ruta, os.W_OK): return None
         
     cleaned_settings = validate(values)
-    if cleaned_settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and not (cleaned_settings.get(ConfigKey.ASISTENTE_CLAVE_API.value) or os.environ.get(API_KEY_ENV_VAR)):
-        cleaned_settings[ConfigKey.ASISTENTE_ACTIVADO.value] = False
+    if cleaned_settings.get("asistente_activado") and not (cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)):
+        cleaned_settings["asistente_activado"] = False
         
     json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         
@@ -293,10 +288,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """
-    Actualiza campos específicos de forma parcial.
-    Recalcula y guarda solo si hay cambios validados.
-    """
+    """Actualiza campos específicos de forma parcial."""
     current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
@@ -321,12 +313,12 @@ def get(key: str, custom_base: PathLike | None = None) -> Any:
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
     """Prioriza variables de entorno sobre el JSON para proteger credenciales."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
-    return env_key if env_key else load(custom_base).get(ConfigKey.ASISTENTE_CLAVE_API.value, "").strip()
+    return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     """Verifica si el asistente puede operar (activado y con clave presente)."""
     settings = load(custom_base)
-    return bool(settings.get(ConfigKey.ASISTENTE_ACTIVADO.value) and (os.environ.get(API_KEY_ENV_VAR) or settings.get(ConfigKey.ASISTENTE_CLAVE_API.value)))
+    return bool(settings.get("asistente_activado") and (os.environ.get(API_KEY_ENV_VAR) or settings.get("asistente_clave_api")))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
     """Genera una lista de cadenas descriptivas para el reporte de salud."""
@@ -335,12 +327,12 @@ def describe(custom_base: PathLike | None = None) -> list[str]:
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
     return [
         "Configuración actual", "", f"  Archivo: {settings_path(custom_base)}", "",
-        "  Apariencia", f"    Tema: {current[ConfigKey.TEMA.value]}", f"    Acento: {current[ConfigKey.ACENTO.value]}",
-        f"    Barras visuales: {'sí' if current[ConfigKey.MOSTRAR_BARRAS.value] else 'no'}", "",
-        "  Comportamiento", f"    Confirmar siempre: {'sí' if current[ConfigKey.CONFIRMAR_SIEMPRE.value] else 'no'}",
-        f"    Pestaña inicial: {current[ConfigKey.ABRIR_EN.value]}", f"    Recordar carpeta: {'sí' if current[ConfigKey.RECORDAR_ULTIMA_CARPETA.value] else 'no'}", "",
-        "  Rendimiento", f"    Duplicados desde: {current[ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB.value]} KB",
-        f"    Top de archivos: {current[ConfigKey.TOP_ARCHIVOS.value]}", f"    Análisis en paralelo: {'sí' if current[ConfigKey.ANALISIS_EN_PARALELO.value] else 'no'}", "",
-        "  Asistente IA", f"    Activado: {'sí' if current[ConfigKey.ASISTENTE_ACTIVADO.value] else 'no'}",
-        f"    Clave: {origin}", f"    Modelo: {current[ConfigKey.ASISTENTE_MODELO.value]}", ""
+        "  Apariencia", f"    Tema: {current['tema']}", f"    Acento: {current['acento']}",
+        f"    Barras visuales: {'sí' if current['mostrar_barras'] else 'no'}", "",
+        "  Comportamiento", f"    Confirmar siempre: {'sí' if current['confirmar_siempre'] else 'no'}",
+        f"    Pestaña inicial: {current['abrir_en']}", f"    Recordar carpeta: {'sí' if current['recordar_ultima_carpeta'] else 'no'}", "",
+        "  Rendimiento", f"    Duplicados desde: {current['duplicados_tamano_minimo_kb']} KB",
+        f"    Top de archivos: {current['top_archivos']}", f"    Análisis en paralelo: {'sí' if current['analisis_en_paralelo'] else 'no'}", "",
+        "  Asistente IA", f"    Activado: {'sí' if current['asistente_activado'] else 'no'}",
+        f"    Clave: {origin}", f"    Modelo: {current['asistente_modelo']}", ""
     ]

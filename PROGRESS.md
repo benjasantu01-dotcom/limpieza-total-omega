@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 57 | 3 | 8 | 2 | 76 |
+| 2026-08-13 | 57 | 3 | 8 | 2 | 72 |
 | 2026-08-14 | 165 | 12 | 24 | 14 | 135 |
-| 2026-08-15 | 4 | 0 | 1 | 1 | 2 |
+| 2026-08-15 | 8 | 0 | 1 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
+- robustez ante casos límite: **43**
 - rendimiento: **41**
-- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
+- `assistant.py`: **21**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `organizer.py`: **19**
-- `settings.py`: **19**
 - `browser.py`: **19**
 - `healthscore.py`: **18**
+- `scanner.py`: **18**
 - `memory.py`: **17**
-- `scanner.py`: **17**
 - `quarantine.py`: **16**
 - `duplicates.py`: **16**
 - `safety.py`: **14**
 - `main.py`: **12**
+- `startup.py`: **11**
 - `branding.py`: **10**
-- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T00:33:24` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` reemplazando el uso de `filter_safe_paths` (diseñada para archivos en disco) por una validación estricta de formato con regex, evitando así el error conceptual de tratar la API Key y el modelo como rutas de archivo.
+- `2026-08-15T00:33:05` **startup.py** (robustez ante casos límite): Se añadió una verificación de archivos inexistentes o bloqueados en `entries_from_folders` mediante `is_file()` con `follow_symlinks=False` y se reforzó la robustez ante rutas corruptas o inaccesibles en el bucle principal de escaneo de directorios.
+- `2026-08-15T00:31:04` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para asegurar que el contenido JSON cargado contenga todas las claves necesarias según la definición de `AppSettings`, evitando errores de `KeyError` en partes de la app que consumen el diccionario directamente.
+- `2026-08-15T00:30:35` **scanner.py** (robustez ante casos límite): Se mejora la robustez del escáner ante rutas malformadas o inaccesibles mediante la normalización de la validación de `path.parts` y la adición de un chequeo defensivo contra errores de metadatos en el pipeline de escaneo.
 - `2026-08-15T00:21:23` **safety.py** (robustez ante casos límite): Mejoré la robustez de `is_protected_path` ante errores de resolución de rutas (como unidades desconectadas o permisos denegados) para evitar que la aplicación falle silenciosamente o se bloquee ante estados inestables del sistema de archivos.
 - `2026-08-15T00:20:24` **organizer.py** (robustez ante casos límite): Mejoré `_is_file_locked` para manejar archivos inaccesibles o bloqueados de forma robusta utilizando el protocolo de contexto de forma segura, previniendo excepciones innecesarias durante la iteración sobre miles de archivos.
 - `2026-08-15T00:11:44` **main.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la inicialización y ejecución del hilo principal, añadiendo una validación de seguridad contra `None` en `run_async` y envolviendo la creación de widgets en un chequeo de existencia (`winfo_exists`) para prevenir excepciones si la aplicación se cierra durante tareas asíncronas pendientes.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T14:38:24` **settings.py** (rendimiento): Optimicé el rendimiento del módulo implementando un mecanismo de carga diferida ("lazy loading") y caché más robusto, eliminando lecturas redundantes de disco mediante la comparación de hashes y evitando el parseo de JSON cuando la configuración no ha cambiado.
 - `2026-08-14T14:28:13` **quarantine.py** (rendimiento): Optimizé `purge_all` para mejorar el rendimiento mediante el uso de un `set` para las búsquedas de archivos en el sistema de archivos, reduciendo la complejidad de las comprobaciones de integridad al iterar una sola vez sobre el directorio y evitando múltiples recorridos innecesarios de la lista de ítems.
 - `2026-08-14T14:19:38` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de `Get-CimInstance` (que es lenta y genera un proceso hijo pesado) por `Get-Process`, reduciendo el tiempo de ejecución y el uso de CPU/memoria en cada consulta.
-- `2026-08-14T14:17:59` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje y la generación de recomendaciones eliminando la creación repetitiva de diccionarios dentro de los bucles y consolidando el acceso a los datos mediante una estructura de mapeo pre-computada, reduciendo la carga de procesamiento en cada llamada a `compute_score`.
-- `2026-08-14T14:08:48` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `is_protected_path` al mover la validación antes de obtener los metadatos completos, y reduciendo el uso de `Path` mediante el uso directo de `entry.path` donde es posible.
-- `2026-08-14T13:58:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` convirtiendo la lista `_CRITERIOS_SALUD` en un conjunto de tuplas pre-procesadas y eliminando la creación repetida de la lista `problemas` en cada llamada a `local_answer` y `handle_score`.
-- `2026-08-14T13:58:00` **settings.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings detallados en las funciones de la API pública y una mayor consistencia en los type hints, siguiendo el enfoque de documentación técnica exigido.
