@@ -9,36 +9,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 33 | 2 | 4 | 1 | 38 |
+| 2026-08-13 | 31 | 1 | 4 | 1 | 37 |
 | 2026-08-14 | 165 | 12 | 24 | 14 | 135 |
-| 2026-08-15 | 27 | 1 | 3 | 3 | 42 |
+| 2026-08-15 | 29 | 2 | 3 | 4 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **51**
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **43**
-- rendimiento: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `diskreport.py`: **20**
-- `scanner.py`: **19**
-- `settings.py`: **19**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
 - `browser.py`: **19**
+- `scanner.py`: **18**
+- `settings.py`: **18**
+- `memory.py`: **17**
 - `organizer.py`: **17**
 - `duplicates.py`: **17**
-- `memory.py`: **16**
 - `quarantine.py`: **15**
 - `safety.py`: **14**
 - `startup.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T03:25:05` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `memory.py` mediante la adición de docstrings estructuradas con la convención Google/NumPy, la especificación de tipos en las firmas de funciones y la extracción del bloque complejo de validación de procesos dentro de `trim_working_set` a una función auxiliar nombrada `_get_process_path`, facilitando su lectura y mantenimiento.
+- `2026-08-15T03:23:35` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incluyendo docstrings detallados en las funciones de puntuación y actualizando las anotaciones de tipo para clarificar la procedencia de los datos, facilitando la mantenibilidad para futuros desarrolladores.
 - `2026-08-15T03:15:36` **duplicates.py** (legibilidad y documentación): Mejoré la documentación de `hash_file` y `partial_hash` explicando el **porqué** de los chequeos de seguridad y el filtrado de atributos (específicamente la máscara `0x400` que identifica puntos de reparse/junctions), facilitando la comprensión del flujo de seguridad para futuros desarrollos.
 - `2026-08-15T03:15:27` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en los métodos de las `dataclasses` y funciones auxiliares, mejorando la legibilidad técnica y facilitando el mantenimiento para futuros desarrolladores.
 - `2026-08-15T03:15:00` **browser.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones auxiliares internas, clarificando la lógica de filtrado y recursión para mejorar la mantenibilidad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T02:34:01` **diskreport.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `summarize` y `walk_files` mediante la validación proactiva y el uso de excepciones específicas, evitando que errores de acceso a disco (comunes en escaneos profundos) detengan la ejecución o retornen datos parciales incorrectos.
 - `2026-08-15T02:33:47` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` validando tipos de datos y evitando que entradas nulas o rutas no normalizadas causen excepciones inesperadas durante el escaneo del disco.
 - `2026-08-15T02:32:48` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_safe_assign` y `_get_metric_val` para prevenir excepciones silenciosas o valores inesperados (como strings inyectadas o tipos no numéricos) que podrían romper el contexto del asistente antes de ser procesados.
-- `2026-08-15T01:02:35` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `check_recent_executable_in_downloads` asegurando que la comprobación de `WATCHED_FOLDERS` utilice una comparación de conjuntos más estricta (`isdisjoint` sobre los componentes del path) para evitar falsos positivos y asegurar que la lógica de seguridad sea determinista ante rutas complejas.
-- `2026-08-15T01:02:22` **safety.py** (seguridad defensiva): He mejorado `safety.py` añadiendo un chequeo preventivo de privilegios elevados (Administrador) para evitar que la aplicación intente realizar cambios en disco con permisos innecesarios, lo cual mitiga riesgos de modificaciones accidentales en archivos del sistema protegidos por el control de cuentas de usuario (UAC).

@@ -573,3 +573,34 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-15T03:15:36` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación de `hash_file` y `partial_hash` explicando el **porqué** de los chequeos de seguridad y el filtrado de atributos (específicamente la máscara `0x400` que identifica puntos de reparse/junctions), facilitando la comprensión del flujo de seguridad para futuros desarrollos.
 - `2026-08-15T03:15:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T03:15:36` Corrida terminada. Total usado hoy: 76.
+- `2026-08-15T03:23:07` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-08-15T03:23:35` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo incluyendo docstrings detallados en las funciones de puntuación y actualizando las anotaciones de tipo para clarificar la procedencia de los datos, facilitando la mantenibilidad para futuros desarrolladores.
+- `2026-08-15T03:24:37` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Mejora la legibilidad y mantenibilidad de `main.py` mediante la aplicación de type hints, docstrings descriptivos y la refactorización de la lógica repetitiva en el constructor de pestañas, asegurando que el código cumpla con los estándares de un proyecto profesional para su demo técnica.
+- `2026-08-15T03:25:05` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de `memory.py` mediante la adición de docstrings estructuradas con la convención Google/NumPy, la especificación de tipos en las firmas de funciones y la extracción del bloque complejo de validación de procesos dentro de `trim_working_set` a una función auxiliar nombrada `_get_process_path`, facilitando su lectura y mantenimiento.
+- `2026-08-15T03:25:14` Tests FALLARON:
+```
+ argument 'by'
+
+evolve/tests/test_basic.py:126: TypeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:95: SyntaxWarning: invalid escape sequence '\R'
+    """Extracts paths from commands formatted like "C:\Ruta\App.exe" args."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_sort_junk_by_size_ascending_and_descending - TypeError: sort_junk() got an unexpected keyword argument 'by'
+FAILED evolve/tests/test_basic.py::test_sort_junk_by_date_puts_oldest_first_when_ascending - TypeError: sort_junk() got an unexpected keyword argument 'by'
+FAILED evolve/tests/test_basic.py::test_sort_junk_does_not_mutate_the_original_list - TypeError: sort_junk() got an unexpected keyword argument 'by'
+3 failed, 296 passed, 7 warnings in 1.15s
+
+```
+- `2026-08-15T03:25:14` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se agregaron docstrings detallados a las funciones clave y se refinaron los nombres de parámetros (ej. `by_field` y `is_ascending`) para clarificar su propósito, mejorando la legibilidad técnica del módulo sin alterar su lógica operativa.
+- `2026-08-15T03:25:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T03:25:14` Corrida terminada. Total usado hoy: 80.

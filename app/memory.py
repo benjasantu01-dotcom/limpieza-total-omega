@@ -144,9 +144,7 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
-    """
-    Parsea la salida de /proc/meminfo extrayendo métricas clave.
-    """
+    """Parsea la salida de /proc/meminfo extrayendo métricas clave."""
     if not text:
         return MemorySnapshot(0, 0)
     
@@ -168,9 +166,7 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
-    """
-    Deserializa una línea CSV (Name,Id,WorkingSet) proveniente de PowerShell.
-    """
+    """Deserializa una línea CSV (Name,Id,WorkingSet) proveniente de PowerShell."""
     if not line or not line.strip():
         return None
     
@@ -186,9 +182,7 @@ def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
 
 
 def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
-    """
-    Convierte la salida cruda de PowerShell (CSV) a una lista ordenada de ProcessMemory.
-    """
+    """Convierte la salida cruda de PowerShell (CSV) a una lista ordenada de ProcessMemory."""
     if not isinstance(text, str) or not text:
         return []
     
@@ -228,10 +222,7 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """
-    Consulta procesos de mayor consumo mediante PowerShell con caché temporal (5s).
-    Nota: Solo implementado para entornos Windows.
-    """
+    """Consulta procesos de mayor consumo mediante PowerShell con caché temporal (5s)."""
     if os.name != "nt":
         return []
     
@@ -241,7 +232,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - cache_ref[0] < 5.0 and cache_ref[1]:
         return cache_ref[1][:limit]
     
-    # Se utiliza Get-Process por ser significativamente más rápido que Get-CimInstance
     cmd = "Get-Process | Select-Object Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
@@ -298,11 +288,25 @@ def _is_system_process(pid: int) -> bool:
     return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid <= 100
 
 
+def _get_process_path(handle: int) -> Optional[str]:
+    """Obtiene la ruta completa del ejecutable asociado a un handle de proceso."""
+    kernel32 = ctypes.windll.kernel32
+    buf = ctypes.create_unicode_buffer(4096)
+    size = ctypes.c_ulong(4096)
+    if kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
+        return str(buf.value)
+    return None
+
+
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de la API de Windows.
-    Realiza validaciones de seguridad: bloquea procesos del sistema y rutas protegidas
-    antes de interactuar con el handle.
+    Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows.
+
+    Args:
+        pid: El ID del proceso a procesar.
+
+    Returns:
+        Tupla (éxito: bool, mensaje: str).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -330,12 +334,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
             
-        buf = ctypes.create_unicode_buffer(4096)
-        size = ctypes.c_ulong(4096)
-        # Validación defensiva: verificar que la ruta del ejecutable no sea protegida
-        res = kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size))
-        if res > 0:
-            if is_protected_path(os.path.normpath(buf.value)):
+        path = _get_process_path(proc_handle)
+        if path:
+            if is_protected_path(os.path.normpath(path)):
                 return False, "Operación denegada: ruta de ejecutable protegida."
         else:
             return False, "Error interno: no se pudo verificar la identidad del proceso."

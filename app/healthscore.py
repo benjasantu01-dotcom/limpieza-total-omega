@@ -149,32 +149,32 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> float:
-    """Normaliza el volumen de basura a un ratio (1.0 = impecable, 0.0 = lleno)."""
+    """Calcula ratio (0.0-1.0) de basura: 1.0 es 0 MB, 0.0 es >= _LIMIT_JUNK_MB."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> float:
-    """Normaliza el nivel de seguridad considerando conteo de amenazas y advertencias."""
+    """Calcula ratio de seguridad restando penalizaciones por amenazas y avisos."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> float:
-    """Normaliza la RAM disponible: ratio respecto al umbral crítico definido."""
+    """Calcula ratio de salud de memoria comparando disponibilidad con el umbral crítico."""
     return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0
 
 
 def score_disk(free_percent: float | int) -> float:
-    """Normaliza el espacio libre en disco: ratio respecto al umbral mínimo recomendado."""
+    """Calcula ratio de salud de disco comparando espacio libre con el umbral mínimo."""
     return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0
 
 
 def score_duplicates(duplicate_mb: float | int) -> float:
-    """Normaliza el impacto de archivos duplicados respecto al límite tolerable."""
+    """Calcula ratio de duplicados: 1.0 es 0 MB, 0.0 es >= _LIMIT_DUPLICATE_MB."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> float:
-    """Normaliza el impacto de programas de inicio automático respecto al límite máximo."""
+    """Calcula ratio de programas de arranque: 1.0 es 0 programas, 0.0 es >= _LIMIT_STARTUP_COUNT."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 
@@ -223,7 +223,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite() or not _validate_weights():
         return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
 
-    ratios = {
+    ratios: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
         "memoria": score_memory(metrics.memory_available_percent),
@@ -233,7 +233,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     }
     
     # Calcular desglose ponderado redondeado al entero más cercano, validando rangos
-    breakdown = {area: _to_int(_clamp(ratios[area] * factor, 0.0, factor)) for area, factor in _WEIGHT_ITEMS}
+    breakdown: Dict[str, int] = {area: _to_int(_clamp(ratios[area] * factor, 0.0, factor)) for area, factor in _WEIGHT_ITEMS}
     final_score = _to_int(_clamp(float(sum(breakdown.values())), 0.0, 100.0))
     
     return HealthResult(final_score, grade_for_score(final_score), breakdown, _generate_recommendations(metrics, ratios))
