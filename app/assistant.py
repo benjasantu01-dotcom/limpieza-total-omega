@@ -448,14 +448,22 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     Identifica y devuelve un listado de problemas detectados priorizados por criticidad.
     Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
     """
-    encontrados = []
-    for attr, limit, op, msg in _CRITERIOS_SALUD:
-        val: Any = getattr(ctx, attr, 0)
-        if (op == "<" and val < limit) or (op == ">" and val > limit):
-            encontrados.append(msg.format(val))
-            if len(encontrados) >= 3:
-                break
-    return encontrados
+    # Mapeo directo para evitar llamadas a getattr y optimizar bucles
+    val_map = {
+        "disk_free_percent": ctx.disk_free_percent,
+        "suspicious_warnings": ctx.suspicious_warnings,
+        "memory_available_percent": ctx.memory_available_percent,
+        "junk_mb": ctx.junk_mb,
+        "duplicate_mb": ctx.duplicate_mb,
+        "startup_count": ctx.startup_count
+    }
+    
+    encontrados = [
+        msg.format(val_map[attr])
+        for attr, limit, op, msg in _CRITERIOS_SALUD
+        if (op == "<" and val_map[attr] < limit) or (op == ">" and val_map[attr] > limit)
+    ]
+    return encontrados[:3]
 
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si la configuración del sistema permite el uso del asistente en línea."""

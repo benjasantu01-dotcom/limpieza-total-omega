@@ -228,7 +228,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga la configuración, asegurando integridad de claves y caché."""
+    """Carga y devuelve la configuración desde el disco, usando caché para evitar I/O redundante."""
     global _cached_settings, _current_path, _cached_mtime
     ruta = settings_path(custom_base)
     
@@ -256,7 +256,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste la configuración tras validación, con escritura atómica."""
+    """Valida los valores y persiste la configuración en disco mediante escritura atómica."""
     global _cached_settings, _current_path, _cached_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
@@ -286,7 +286,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Actualiza campos específicos de forma parcial."""
+    """Actualiza campos específicos de la configuración de forma parcial y persistente."""
     current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
@@ -300,24 +300,26 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura la configuración a los valores definidos en DEFAULTS."""
+    """Restaura la configuración a los valores definidos por defecto."""
     default_config = _get_default_config()
     save(default_config, custom_base)
     return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Obtiene un valor individual con fallback a los defaults de fábrica."""
+    """Obtiene un valor individual con fallback a los defaults de fábrica si no existe."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Prioriza variables de entorno sobre el JSON para proteger credenciales."""
+    """Prioriza variables de entorno sobre el archivo de configuración para proteger credenciales."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente puede operar (activado y con clave presente)."""
+    """Verifica si el asistente tiene habilitación lógica y acceso a una clave de API válida."""
     settings = load(custom_base)
-    return bool(settings.get("asistente_activado") and (os.environ.get(API_KEY_ENV_VAR) or settings.get("asistente_clave_api")))
+    is_active = bool(settings.get("asistente_activado"))
+    has_key = bool(os.environ.get(API_KEY_ENV_VAR) or settings.get("asistente_clave_api"))
+    return is_active and has_key
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
     """Genera una lista de cadenas descriptivas para el reporte de salud."""

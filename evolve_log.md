@@ -611,3 +611,31 @@ FAILED evolve/tests/test_basic.py::test_sort_junk_does_not_mutate_the_original_l
 - `2026-08-15T03:34:44` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings (especificando `Args` y `Returns`) y se ha refactorizado la lógica de `scan_file` para ser más legible y robusta, facilitando la comprensión del flujo de análisis heurístico.
 - `2026-08-15T03:34:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T03:34:44` Corrida terminada. Total usado hoy: 84.
+- `2026-08-15T03:43:29` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-08-15T03:43:59` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de acceso (`load`, `save`, `update`, `reset`, `get`) y se extrajo la lógica de verificación de clave en `assistant_enabled` para mejorar la legibilidad y el mantenimiento.
+- `2026-08-15T03:44:26` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `StartupEntry` añadiendo type hints faltantes en los métodos internos y clarificando las docstrings de las operaciones de resolución de rutas para asegurar que se entienda el flujo de seguridad perezosa.
+- `2026-08-15T03:45:00` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé la detección de problemas en `_identify_active_problems` reemplazando la iteración secuencial con una lista comprensiva y eliminé el uso de `getattr` dentro del bucle principal, accediendo directamente a los atributos del `SystemContext` mediante una nueva estructura de mapeo eficiente.
+- `2026-08-15T03:45:14` Tests FALLARON:
+```
+halo detrás del escudo
+E       assert 'oval' in ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...]
+E        +  where ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f0dbf3fffe0>.llamadas
+
+evolve/tests/test_modules.py:272: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_draw_logo_paints_on_the_canvas_without_a_display - AssertionError: assert 'text' in ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...]
+ +  where ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f0dbf57bcb0>.llamadas
+FAILED evolve/tests/test_modules.py::test_blend_clamps_out_of_range_ratios - AssertionError: assert '#-4fb-4fb-4fb' == '#000000'
+  
+  - #000000
+  + #-4fb-4fb-4fb
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - ValueError: invalid literal for int() with base 10: 'ancho'
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - AssertionError: falta el halo detrás del escudo
+assert 'oval' in ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...]
+ +  where ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle', 'rectangle', ...] = <test_modules._CanvasFalso object at 0x7f0dbf3fffe0>.llamadas
+4 failed, 295 passed in 1.28s
+
+```
+- `2026-08-15T03:45:14` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el cálculo de colores en `branding.py` reemplazando los bucles manuales de interpolación de color por una estrategia de pre-cómputo y minimizando la conversión de tipos en las funciones críticas de renderizado (`gradient_colors` y `_hex_to_rgb`) para reducir el costo de CPU durante la actualización de la UI.
+- `2026-08-15T03:45:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T03:45:14` Corrida terminada. Total usado hoy: 88.

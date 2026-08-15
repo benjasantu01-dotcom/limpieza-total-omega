@@ -86,13 +86,16 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Elimina caracteres de control y espacios innecesarios del comando bruto."""
+        """Limpia la cadena de comando eliminando caracteres de control no imprimibles."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extracts paths from commands formatted like "C:\Ruta\App.exe" args."""
+        """
+        Extrae una ruta de una cadena entrecomillada. 
+        Retorna la ruta limpia si es segura, caso contrario retorna cadena vacía.
+        """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -113,8 +116,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Normaliza una ruta, valida seguridad/existencia y guarda en _EXISTS_CACHE.
-        Retorna la ruta absoluta si es válida o la original si es incierta.
+        Normaliza, valida seguridad y verifica existencia física en disco.
+        Usa caché local para evitar accesos repetitivos a `path.exists()`.
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
@@ -132,14 +135,12 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
             
-            # Verificación defensiva extra de existencia antes de resolver
             if not p.exists():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
                 
             try:
                 p_abs: Path = p.resolve(strict=True)
-                # Seguridad adicional tras resolución: verificar ruta real contra bloqueos
                 if is_protected_path(p_abs):
                     _EXISTS_CACHE[path_str] = False
                     return ""
@@ -154,10 +155,10 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Orquesta la extracción de la ruta ejecutable según el formato del comando."""
+        """Orquesta la extracción y validación de la ruta ejecutable según formato."""
         if not cmd:
             return ""
-        # Evitar comandos complejos que contengan operadores de shell
+        # Evitar inyección de comandos mediante operadores shell detectados
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
             return ""
 
@@ -215,7 +216,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             with os.scandir(folder) as it:
                 for entry in it:
                     try:
-                        # Verificación estricta: solo archivos, no symlinks, no bloqueados
                         if entry.is_file(follow_symlinks=False):
                             ext = os.path.splitext(entry.name)[1].lower()
                             if ext in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
