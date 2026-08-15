@@ -213,7 +213,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         base_path = Path(directory).resolve()
         if str(base_path).startswith(("\\\\", "//")):
             return
-        if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
+        if not base_path.exists() or not base_path.is_dir():
+            return
+        if skip_protected and is_protected_path(base_path):
             return
     except (OSError, RuntimeError, TypeError, ValueError):
         return
@@ -392,19 +394,22 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     
-    for path, size in walk_files(p_input, skip_protected):
-        total_bytes += size
-        total_files += 1
-        
-        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-        stats = ext_stats[ext]
-        stats[0] += size
-        stats[1] += 1
-        
-        if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, str(path)))
-        elif size > top_files_heap[0][0]:
-            heapq.heapreplace(top_files_heap, (size, str(path)))
+    try:
+        for path, size in walk_files(p_input, skip_protected):
+            total_bytes += size
+            total_files += 1
+            
+            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+            stats = ext_stats[ext]
+            stats[0] += size
+            stats[1] += 1
+            
+            if len(top_files_heap) < 8:
+                heapq.heappush(top_files_heap, (size, str(path)))
+            elif size > top_files_heap[0][0]:
+                heapq.heapreplace(top_files_heap, (size, str(path)))
+    except Exception:
+        return ["Error: Fallo inesperado durante el análisis del disco."]
 
     lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     

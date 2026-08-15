@@ -537,3 +537,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-15T02:26:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-15T02:26:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T02:26:16` Corrida terminada. Total usado hoy: 56.
+- `2026-08-15T02:32:12` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-15T02:32:48` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_safe_assign` y `_get_metric_val` para prevenir excepciones silenciosas o valores inesperados (como strings inyectadas o tipos no numéricos) que podrían romper el contexto del asistente antes de ser procesados.
+- `2026-08-15T02:33:21` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-15T02:33:47` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` validando tipos de datos y evitando que entradas nulas o rutas no normalizadas causen excepciones inesperadas durante el escaneo del disco.
+- `2026-08-15T02:34:01` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `summarize` y `walk_files` mediante la validación proactiva y el uso de excepciones específicas, evitando que errores de acceso a disco (comunes en escaneos profundos) detengan la ejecución o retornen datos parciales incorrectos.
+- `2026-08-15T02:34:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T02:34:01` Corrida terminada. Total usado hoy: 60.

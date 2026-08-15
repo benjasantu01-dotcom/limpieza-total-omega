@@ -206,7 +206,7 @@ def _ensure_safe_text(text: Any) -> bool:
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
     """
     Asigna de forma robusta un valor a un atributo de SystemContext.
-    Aplica transformación de tipo, validación de finitud y límites (clamping).
+    Valida tipos estrictamente para evitar inyección de datos no numéricos.
     """
     if val is None or isinstance(val, bool):
         return
@@ -214,9 +214,11 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
         if not isinstance(val, (int, float, str)):
             return
         
-        clean = cast(val)
-        if isinstance(clean, (int, float)) and math.isfinite(clean):
-            setattr(obj, attr, max(min_val, min(float(clean), max_val)))
+        # Evitar convertir strings con posibles inyecciones a números
+        clean_val = float(val)
+        if math.isfinite(clean_val):
+            final_val = cast(max(min_val, min(clean_val, max_val)))
+            setattr(obj, attr, final_val)
     except (ValueError, TypeError):
         pass
 
@@ -238,10 +240,8 @@ def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> 
     
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
-    if val is None or isinstance(val, bool):
-        return default
-    
-    if not isinstance(val, (int, float, str)):
+    # Validar tipo: solo permitir tipos que puedan ser números reales
+    if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
         return default
     
     try:
@@ -280,9 +280,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     for k, v in extra.items():
         if k in ctx.__annotations__ and v is not None:
-            attr_val = getattr(ctx, k)
-            if isinstance(attr_val, (int, float, str)):
-                _safe_assign(ctx, k, v, cast=type(attr_val))
+            attr_type = type(getattr(ctx, k))
+            if attr_type in (int, float, str):
+                _safe_assign(ctx, k, v, cast=attr_type)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:

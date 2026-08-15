@@ -177,13 +177,8 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el peso total en bytes mediante DFS limitado.
-    
-    Args:
-        root_dir: Ruta actual a procesar.
-        visited: Set para prevenir ciclos en el grafo del FS.
-        depth: Límite de recursión (evita desbordamiento de pila en estructuras profundas).
     """
-    if depth > 20 or root_dir in visited:
+    if not isinstance(root_dir, str) or depth > 20 or root_dir in visited:
         return 0
     if root_dir in cache:
         return cache[root_dir]
@@ -218,15 +213,15 @@ def _sum_directory_recursive(
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
     """Calcula el tamaño en bytes de una carpeta tras validar que no sea una ruta de sistema."""
-    if path is None:
+    if not path or not isinstance(path, (str, Path)):
         return 0
     
     try:
         p_path = Path(path)
-        if not p_path.exists():
+        if not p_path.is_absolute() or not p_path.exists():
             return 0
         root_path = p_path.resolve(strict=True)
-        if not root_path.is_absolute() or not root_path.is_dir() or is_protected_path(root_path):
+        if not root_path.is_dir() or is_protected_path(root_path):
             return 0
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
