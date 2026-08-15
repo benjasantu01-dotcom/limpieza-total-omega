@@ -1152,3 +1152,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T08:40:49` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `check_recent_executable_in_downloads` para realizar la verificación de pertenencia a `WATCHED_FOLDERS` mediante una intersección de conjuntos precalculada o simple, evitando la creación innecesaria de un nuevo set `path_parts` en cada llamada al evaluar si el archivo es un ejecutable.
 - `2026-08-15T08:40:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T08:40:49` Corrida terminada. Total usado hoy: 204.
+- `2026-08-15T08:49:40` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-15T08:50:08` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Implementé un mecanismo de validación perezosa (memoization) en los validadores de configuración usando `functools.lru_cache` para evitar repetir cálculos costosos de resolución de rutas y validación de tipos durante las llamadas frecuentes a `get` y `load`.
+- `2026-08-15T08:50:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-15T08:51:07` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante la recepción de objetos inesperados o mal formados, garantizando que el asistente nunca falle ni se bloquee si el origen de datos (ej. un módulo con error) entrega atributos inesperados o valores no numéricos, reforzando la integridad del bucle.
+- `2026-08-15T08:51:47` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-15T08:51:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T08:51:47` Corrida terminada. Total usado hoy: 208.

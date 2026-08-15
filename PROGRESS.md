@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 134 | 9 | 19 | 11 | 127 |
-| 2026-08-15 | 90 | 8 | 10 | 6 | 90 |
+| 2026-08-14 | 130 | 9 | 19 | 11 | 127 |
+| 2026-08-15 | 92 | 8 | 10 | 6 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **44**
-- rendimiento: **42**
-- robustez ante casos límite: **38**
+- rendimiento: **43**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
-- `healthscore.py`: **19**
-- `settings.py`: **19**
+- `assistant.py`: **21**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `scanner.py`: **19**
 - `organizer.py`: **18**
+- `healthscore.py`: **18**
 - `browser.py`: **18**
 - `quarantine.py`: **17**
-- `duplicates.py`: **16**
-- `memory.py`: **16**
+- `duplicates.py`: **15**
+- `memory.py`: **15**
 - `safety.py`: **13**
 - `startup.py`: **13**
-- `main.py`: **12**
+- `main.py`: **11**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T08:51:07` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la recepción de objetos inesperados o mal formados, garantizando que el asistente nunca falle ni se bloquee si el origen de datos (ej. un módulo con error) entrega atributos inesperados o valores no numéricos, reforzando la integridad del bucle.
+- `2026-08-15T08:50:08` **settings.py** (rendimiento): Implementé un mecanismo de validación perezosa (memoization) en los validadores de configuración usando `functools.lru_cache` para evitar repetir cálculos costosos de resolución de rutas y validación de tipos durante las llamadas frecuentes a `get` y `load`.
 - `2026-08-15T08:40:49` **scanner.py** (rendimiento): Optimizé `check_recent_executable_in_downloads` para realizar la verificación de pertenencia a `WATCHED_FOLDERS` mediante una intersección de conjuntos precalculada o simple, evitando la creación innecesaria de un nuevo set `path_parts` en cada llamada al evaluar si el archivo es un ejecutable.
 - `2026-08-15T08:40:41` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `is_protected_path` evitando la re-normalización y el re-cálculo de `parts` en cada iteración mediante una optimización de flujo, lo cual reduce drásticamente el costo computacional de las operaciones masivas de filtrado.
 - `2026-08-15T08:31:54` **organizer.py** (rendimiento): Optimicé el bucle de escaneo de `scan_for_junk` sustituyendo el uso de `os.scandir` recursivo por un generador eficiente que evita múltiples llamadas de `Path()` y `resolve()` innecesarias dentro de los ciclos, reduciendo la presión sobre el sistema de archivos al pre-validar las rutas mediante `os.DirEntry` antes de instanciar objetos pesados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T07:59:35` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos críticos (`quarantine_file`, `restore_item`, `purge_item`) mediante docstrings explicativos que detallan el PORQUÉ de las validaciones de seguridad, clarificando la intención técnica detrás de cada paso de aislamiento y restauración.
 - `2026-08-15T07:59:01` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la implementación de Type Hints explícitos para las funciones de escaneo y ordenamiento, y la adición de docstrings técnicos detallados que explican el propósito de las constantes críticas, reduciendo la ambigüedad en el manejo de archivos.
 - `2026-08-15T07:50:25` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `trim_working_set` hacia una estructura de guardas más clara, la adición de Type Hints en la estructura `MEMORYSTATUSEX` y la mejora de los comentarios explicativos para seguir las directrices de documentación.
-- `2026-08-15T07:50:13` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de hilos en `main.py` extrayendo la lógica del hilo de trabajo a un método privado dedicado (`_worker_thread_logic`) con tipado claro, reduciendo el anidamiento y facilitando la depuración.
-- `2026-08-15T07:49:12` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y seguridad del contrato de tipos en las funciones de puntuación y validación, introduciendo `Annotated` para documentar explícitamente los rangos esperados (0.0-1.0) y facilitando el mantenimiento al evitar la ambigüedad en los retornos numéricos.

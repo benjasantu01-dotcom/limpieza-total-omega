@@ -31,6 +31,7 @@ import json
 import os
 from enum import Enum
 from pathlib import Path
+from functools import lru_cache
 from typing import Any, Final, TypeAlias, Callable, TypedDict
 
 from safety import is_safe_to_modify, is_protected_path
@@ -124,14 +125,11 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
 }
 
 class _Validators:
-    """
-    Colección de validadores estáticos.
-    Garantizan que cualquier entrada (manual o externa) sea segura para el sistema
-    y mantenga la integridad del esquema de configuración de la aplicación.
-    """
     @staticmethod
-    def _is_safe_path(path_obj: Path) -> bool:
+    @lru_cache(maxsize=32)
+    def _is_safe_path(path_str: str) -> bool:
         try:
+            path_obj = Path(path_str)
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return False
@@ -168,7 +166,8 @@ class _Validators:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
             if is_protected_path(str(path_obj)): return None
-            return str(path_obj) if _Validators._is_safe_path(path_obj) else None
+            path_str = str(path_obj)
+            return path_str if _Validators._is_safe_path(path_str) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None
 
@@ -209,7 +208,7 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
-    if not _Validators._is_safe_path(base): return SETTINGS_DIR / SETTINGS_FILE
+    if not _Validators._is_safe_path(str(base)): return SETTINGS_DIR / SETTINGS_FILE
     return base / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
@@ -231,7 +230,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         mtime = ruta.stat().st_mtime
         if _cached_settings is not None and _current_path == ruta and _cached_mtime == mtime:
             return _cached_settings
-        if not _Validators._is_safe_path(ruta.parent): return _get_default_config()
+        if not _Validators._is_safe_path(str(ruta.parent)): return _get_default_config()
         content = ruta.read_bytes()
         if 0 < len(content) <= MAX_SETTINGS_SIZE:
             data = json.loads(content)
@@ -247,7 +246,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     global _cached_settings, _current_path, _cached_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    if not _Validators._is_safe_path(ruta.parent) or is_protected_path(str(ruta)): return None
+    if not _Validators._is_safe_path(str(ruta.parent)) or is_protected_path(str(ruta)): return None
     if not is_safe_to_modify(str(ruta)): return None
     if ruta.exists() and not os.access(ruta, os.W_OK): return None
     cleaned_settings = validate(values)

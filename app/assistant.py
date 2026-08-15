@@ -248,9 +248,8 @@ def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Construye un objeto SystemContext validando estrictamente los datos de entrada.
-    Este método actúa como barrera de seguridad: convierte fuentes heterogéneas 
-    (diccionarios o clases) en un contenedor tipado, descartando valores no numéricos 
-    o sospechosos para prevenir inyecciones o errores de serialización.
+    Este método actúa como barrera de seguridad descartando valores no numéricos 
+    o inesperados para prevenir errores de serialización o inyecciones.
     """
     ctx = SystemContext()
     
@@ -270,16 +269,19 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     if isinstance(health, (dict, object)):
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
-        grade = getattr(health, "grade", "") if not isinstance(health, dict) else health.get("grade", "")
+        grade = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
         if isinstance(grade, (str, int, float)):
             ctx.grade = str(grade)[:10]
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if hasattr(ctx, k) and v is not None:
-            attr_type = type(getattr(ctx, k))
-            if attr_type in (int, float, str):
-                _safe_assign(ctx, k, v, cast=attr_type)
+        if hasattr(ctx, k) and v is not None and not isinstance(v, bool):
+            try:
+                attr_type = type(getattr(ctx, k))
+                if attr_type in (int, float, str):
+                    _safe_assign(ctx, k, v, cast=attr_type)
+            except Exception:
+                continue
     return ctx
 
 def context_as_text(context: SystemContext) -> str:
