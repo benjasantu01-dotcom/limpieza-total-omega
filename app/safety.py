@@ -224,9 +224,10 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        if any(p.parts[:len(root)] == root for root in _SYSTEM_ROOT_PARTS):
+        p_parts = p.parts
+        if any(p_parts[:len(root)] == root for root in _SYSTEM_ROOT_PARTS):
             return True
-        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
+        if any(part.lower() in PROTECTED_DIR_NAMES for part in p_parts):
             return True
         if p.exists() and _is_reparse_point(p):
             return True

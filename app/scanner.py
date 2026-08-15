@@ -113,17 +113,14 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Regla: Detecta ejecutables nuevos en carpetas de alta exposición."""
-    if not isinstance(entry, os.DirEntry) or not entry.is_file():
-        return None
-        
-    if is_protected_path(path):
+    if not isinstance(entry, os.DirEntry) or not entry.is_file() or is_protected_path(path):
         return None
     
+    # Optimización: buscar intersección con partes de la ruta sin recrear un set completo
+    if WATCHED_FOLDERS.isdisjoint(p.lower() for p in path.parts):
+        return None
+        
     try:
-        path_parts = {p.lower() for p in path.parts}
-        if WATCHED_FOLDERS.isdisjoint(path_parts):
-            return None
-
         file_stat = entry.stat()
         if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")

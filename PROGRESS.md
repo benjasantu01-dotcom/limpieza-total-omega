@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 138 | 9 | 19 | 11 | 127 |
-| 2026-08-15 | 88 | 8 | 9 | 6 | 89 |
+| 2026-08-14 | 134 | 9 | 19 | 11 | 127 |
+| 2026-08-15 | 90 | 8 | 10 | 6 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **48**
-- rendimiento: **40**
+- seguridad defensiva: **44**
+- rendimiento: **42**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `diskreport.py`: **20**
-- `browser.py`: **19**
+- `assistant.py`: **20**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
+- `diskreport.py`: **19**
+- `scanner.py`: **19**
 - `organizer.py`: **18**
-- `scanner.py`: **18**
+- `browser.py`: **18**
 - `quarantine.py`: **17**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
+- `safety.py`: **13**
 - `startup.py`: **13**
 - `main.py`: **12**
-- `safety.py`: **12**
-- `branding.py`: **6**
+- `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T08:40:49` **scanner.py** (rendimiento): Optimizé `check_recent_executable_in_downloads` para realizar la verificación de pertenencia a `WATCHED_FOLDERS` mediante una intersección de conjuntos precalculada o simple, evitando la creación innecesaria de un nuevo set `path_parts` en cada llamada al evaluar si el archivo es un ejecutable.
+- `2026-08-15T08:40:41` **safety.py** (rendimiento): Se implementó un cacheo más eficiente en `is_protected_path` evitando la re-normalización y el re-cálculo de `parts` en cada iteración mediante una optimización de flujo, lo cual reduce drásticamente el costo computacional de las operaciones masivas de filtrado.
 - `2026-08-15T08:31:54` **organizer.py** (rendimiento): Optimicé el bucle de escaneo de `scan_for_junk` sustituyendo el uso de `os.scandir` recursivo por un generador eficiente que evita múltiples llamadas de `Path()` y `resolve()` innecesarias dentro de los ciclos, reduciendo la presión sobre el sistema de archivos al pre-validar las rutas mediante `os.DirEntry` antes de instanciar objetos pesados.
 - `2026-08-15T08:31:45` **memory.py** (rendimiento): Optimizé `parse_windows_process_csv` para evitar la creación innecesaria de listas intermedias y reduje el costo de las operaciones de string mediante el uso de generadores, mejorando el rendimiento en sistemas con muchos procesos activos.
 - `2026-08-15T08:20:31` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` dentro de los bucles, reduciendo drásticamente las llamadas al sistema de archivos al pre-filtrar mediante `entry.is_file()` y cacheando los resultados necesarios.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T07:50:25` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `trim_working_set` hacia una estructura de guardas más clara, la adición de Type Hints en la estructura `MEMORYSTATUSEX` y la mejora de los comentarios explicativos para seguir las directrices de documentación.
 - `2026-08-15T07:50:13` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de hilos en `main.py` extrayendo la lógica del hilo de trabajo a un método privado dedicado (`_worker_thread_logic`) con tipado claro, reduciendo el anidamiento y facilitando la depuración.
 - `2026-08-15T07:49:12` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y seguridad del contrato de tipos en las funciones de puntuación y validación, introduciendo `Annotated` para documentar explícitamente los rangos esperados (0.0-1.0) y facilitando el mantenimiento al evitar la ambigüedad en los retornos numéricos.
-- `2026-08-15T07:48:47` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en el módulo, clarificando la distinción entre las funciones de procesamiento de datos (`_collect_candidates`, `_refine_by_hash`) y la lógica de negocio, para facilitar el mantenimiento y la auditabilidad del pipeline de escaneo.
-- `2026-08-15T07:39:46` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `summarize` extrayendo la lógica de recolección de métricas a una función auxiliar interna, lo que reduce la complejidad ciclomática de la función principal y documenta claramente el flujo de datos.

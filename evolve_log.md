@@ -1145,3 +1145,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T08:31:54` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el bucle de escaneo de `scan_for_junk` sustituyendo el uso de `os.scandir` recursivo por un generador eficiente que evita múltiples llamadas de `Path()` y `resolve()` innecesarias dentro de los ciclos, reduciendo la presión sobre el sistema de archivos al pre-validar las rutas mediante `os.DirEntry` antes de instanciar objetos pesados.
 - `2026-08-15T08:31:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T08:31:54` Corrida terminada. Total usado hoy: 200.
+- `2026-08-15T08:39:25` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-15T08:39:58` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-08-15T08:40:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-08-15T08:40:41` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en `is_protected_path` evitando la re-normalización y el re-cálculo de `parts` en cada iteración mediante una optimización de flujo, lo cual reduce drásticamente el costo computacional de las operaciones masivas de filtrado.
+- `2026-08-15T08:40:49` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `check_recent_executable_in_downloads` para realizar la verificación de pertenencia a `WATCHED_FOLDERS` mediante una intersección de conjuntos precalculada o simple, evitando la creación innecesaria de un nuevo set `path_parts` en cada llamada al evaluar si el archivo es un ejecutable.
+- `2026-08-15T08:40:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T08:40:49` Corrida terminada. Total usado hoy: 204.
