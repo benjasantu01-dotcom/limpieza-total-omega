@@ -17,7 +17,7 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict
+from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict, Iterator
 
 from safety import is_safe_to_modify, ensure_safe_to_modify
 
@@ -138,10 +138,11 @@ def _is_file_locked(path: Path) -> bool:
     Verifica si un archivo está en uso exclusivo intentando abrirlo en modo lectura exclusiva.
     """
     try:
-        with open(path, "rb") as f:
+        with open(path, "rb"):
             return False
     except (OSError, PermissionError, IOError):
         return True
+
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
@@ -176,6 +177,12 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea rutas recursivamente buscando archivos basura basados en la extensión.
+
+    Args:
+        directories: Lista opcional de rutas a escanear. Usa DEFAULT_SCAN_DIRS si es None.
+    
+    Returns:
+        List[JunkFile]: Lista de objetos JunkFile hallados.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -192,7 +199,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             except (RuntimeError, OSError, ValueError):
                 continue
 
-    def _walk_generator(base: Path):
+    def _walk_generator(base: Path) -> Iterator[JunkFile]:
         try:
             for entry in os.scandir(base):
                 if _is_junction(entry):
@@ -246,13 +253,20 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     """
     Traslada archivos basura detectados a un directorio de revisión de manera segura.
     Valida espacio en disco antes de mover y asegura unicidad de nombres.
+    
+    Args:
+        files: Lista de objetos JunkFile a mover.
+        review_dir: Ruta destino de la cuarentena temporal.
+        
+    Returns:
+        Path: Ruta destino donde se almacenaron los archivos.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if dest.anchor == str(dest): return Path(".") # No operar sobre raíz
+        if dest.anchor == str(dest): return Path(".") 
         if not is_safe_to_modify(dest): return dest
         dest.mkdir(parents=True, exist_ok=True)
     except (OSError, PermissionError, RuntimeError):
@@ -279,6 +293,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina archivos de la carpeta de revisión tras validar la integridad de la ruta.
     
+    Args:
+        review_dir: Ruta donde residen los archivos revisados para eliminar.
+        
     Returns:
         int: Cantidad de archivos eliminados con éxito.
     """

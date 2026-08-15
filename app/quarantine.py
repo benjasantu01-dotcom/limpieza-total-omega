@@ -13,7 +13,7 @@ Garantías de seguridad que este módulo respeta siempre:
   - Nada se borra al poner en cuarentena; solo se mueve.
   - No se puede poner en cuarentena algo de una ruta protegida del sistema.
   - Al restaurar, el destino se valida para que un manifiesto manipulado no
-    pueda escribir en una ruta de sistema.
+  - pueda escribir en una ruta de sistema.
   - Vaciar la cuarentena solo borra dentro de la carpeta de cuarentena.
 """
 
@@ -309,6 +309,26 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     return target_path
 
 
+def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
+    """Realiza la copia física al sandbox y verifica integridad antes de liberar el original."""
+    temp_dest = destination.parent / f"{destination.name}_{os.getpid()}.tmp"
+    try:
+        shutil.copy2(source, temp_dest)
+        if temp_dest.stat().st_size != file_size:
+            raise RuntimeError("Corrupción durante copia: tamaño mismatch.")
+        file_hash = _get_sha256(temp_dest)
+        if not file_hash:
+            raise RuntimeError("Falla de integridad: no se pudo calcular hash.")
+        os.replace(temp_dest, destination)
+        os.remove(source)
+        return file_hash
+    except (OSError, PermissionError) as e:
+        if temp_dest.exists(): _safe_unlink(temp_dest)
+        raise RuntimeError(f"Error crítico durante el aislamiento: {e}")
+    finally:
+        if temp_dest.exists(): _safe_unlink(temp_dest)
+
+
 def quarantine_file(
     source: Union[str, Path],
     reason: str = "Marcado como sospechoso",
@@ -316,9 +336,6 @@ def quarantine_file(
 ) -> QuarantineItem:
     """
     Aísla un archivo moviéndolo al sandbox y registrándolo en el manifiesto.
-    Realiza una copia atómica seguida de una verificación de integridad (SHA256) 
-    para garantizar que el archivo capturado sea idéntico al original antes 
-    de confirmar la operación.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -337,15 +354,7 @@ def quarantine_file(
         raise UnsafePathError("Operación prohibida: origen protegido.")
     
     dest_dir = quarantine_dir(base)
-    if not dest_dir.is_dir():
-        raise RuntimeError("Directorio de cuarentena inaccesible.")
     
-    try:
-        if os.path.commonpath([str(source_path.parent), str(dest_dir)]) == str(dest_dir):
-            raise UnsafePathError("Operación denegada: el archivo ya está en el destino o subcarpeta.")
-    except ValueError:
-        pass
-        
     _validate_isolation_request(source_path, dest_dir)
     file_size = source_path.stat().st_size
     usage = shutil.disk_usage(dest_dir)
@@ -359,21 +368,7 @@ def quarantine_file(
     if destination.exists():
         raise UnsafePathError("Colisión de nombres detectada.")
     
-    temp_dest = dest_dir / f"{item_id}_{os.getpid()}.tmp"
-    try:
-        shutil.copy2(source_path, temp_dest)
-        if temp_dest.stat().st_size != file_size:
-            raise RuntimeError("Corrupción durante copia: tamaño mismatch.")
-        file_hash = _get_sha256(temp_dest)
-        if not file_hash:
-            raise RuntimeError("Falla de integridad: no se pudo calcular hash.")
-        os.replace(temp_dest, destination)
-        os.remove(source_path)
-    except (OSError, PermissionError) as e:
-        if temp_dest.exists(): _safe_unlink(temp_dest)
-        raise RuntimeError(f"Error crítico durante el aislamiento: {e}")
-    finally:
-        if temp_dest.exists(): _safe_unlink(temp_dest)
+    file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
         item = QuarantineItem(

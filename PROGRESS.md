@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 18
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 95 | 8 | 15 | 9 | 89 |
-| 2026-08-15 | 122 | 11 | 14 | 9 | 132 |
+| 2026-08-14 | 93 | 7 | 15 | 8 | 89 |
+| 2026-08-15 | 125 | 11 | 15 | 9 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **45**
-- robustez ante casos límite: **44**
-- rendimiento: **34**
+- robustez ante casos límite: **43**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
 - `browser.py`: **21**
 - `diskreport.py`: **20**
 - `settings.py`: **20**
+- `assistant.py`: **20**
+- `organizer.py`: **18**
+- `quarantine.py`: **18**
 - `scanner.py`: **18**
-- `organizer.py`: **17**
-- `quarantine.py`: **17**
 - `healthscore.py`: **17**
 - `duplicates.py`: **15**
-- `memory.py`: **14**
+- `memory.py`: **15**
 - `main.py`: **11**
 - `safety.py`: **11**
-- `startup.py`: **10**
+- `startup.py`: **9**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T12:25:16` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `quarantine_file`, extrayendo la compleja lógica de copia y verificación de integridad a una función privada dedicada `_atomic_isolate_file`, permitiendo que el flujo principal de `quarantine_file` sea más claro y declarativo.
+- `2026-08-15T12:24:44` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la adición de Type Hints detallados, documentación estructurada (docstrings con secciones Args/Returns) y la simplificación de lógicas de filtrado mediante la extracción de predicados, alineándome con el enfoque de legibilidad sin alterar el comportamiento.
+- `2026-08-15T12:24:20` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo integrando un docstring de bloque en `trim_working_set` para clarificar la cadena de dependencias de API (kernel32 vs psapi) y los estados del proceso, además de añadir type hints explícitos en la estructura `MEMORYSTATUSEX` para facilitar el mantenimiento.
 - `2026-08-15T12:14:58` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación de los cálculos de normalización y la estructura de los datos mediante docstrings claros que explican el *porqué* de los límites y umbrales, además de tipar explícitamente los parámetros en las funciones de score para facilitar la lectura del flujo de datos.
 - `2026-08-15T12:14:32` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `duplicates.py` añadiendo tipos más precisos (especialmente para los nodos del árbol de archivos) y normalizando el estilo de los docstrings para cumplir con los estándares de un proyecto profesional.
 - `2026-08-15T12:14:08` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de la función `walk_files` y se ha encapsulado el manejo de la pila de directorios en una lógica más legible para prevenir problemas con rutas inexistentes o malformadas, alineándose con el enfoque de legibilidad técnica.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T11:45:36` **memory.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `trim_working_set` validando la existencia de `kernel32` y el resultado de `OpenProcess` antes de intentar operaciones adicionales, evitando posibles excepciones de tipo `NoneType` o accesos inválidos.
 - `2026-08-15T11:34:10` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` mediante la validación explícita de `group.paths` antes de procesar y se añadió una verificación de integridad de `path.exists()` para evitar errores en archivos que pudieron ser eliminados externamente durante la ejecución.
 - `2026-08-15T11:33:47` **diskreport.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `summarize` y `walk_files` mediante la captura explícita de excepciones al iterar sobre el sistema de archivos, asegurando que un fallo en el acceso a un archivo individual no detenga el análisis completo ni entregue datos parciales engañosos, además de validar que las entradas numéricas en las funciones de reporte no sean tratadas como válidas si son negativas.
-- `2026-08-15T11:33:20` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_hidden` y `_sum_directory_recursive` mediante la validación explícita de `kernel32` y el manejo preventivo de errores al interactuar con el sistema de archivos, asegurando que las llamadas a funciones de bajo nivel no propaguen excepciones en condiciones de sistema restringidas.
-- `2026-08-15T11:25:26` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` al capturar errores de forma granular en la asignación de atributos y validé explícitamente el tipo de los diccionarios de configuración en `ask`, evitando fallos en tiempo de ejecución ante configuraciones mal formadas.
-- `2026-08-15T10:02:21` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la persistencia de datos al sustituir la escritura directa por un flujo de escritura atómica con `os.replace` y validación previa de integridad de ruta, evitando condiciones de carrera o corrupción parcial de la configuración.

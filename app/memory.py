@@ -303,7 +303,16 @@ def _get_process_path(handle: int) -> Optional[str]:
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows."""
+    """
+    Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows.
+    
+    Flujo técnico:
+    1. Valida el PID y asegura que no sea un proceso crítico.
+    2. Obtiene un handle con privilegios mínimos (QUERY + SET_QUOTA).
+    3. Verifica que el proceso esté activo vía GetExitCodeProcess.
+    4. Valida la ruta del ejecutable para evitar tocar archivos protegidos.
+    5. Invoca 'psapi.EmptyWorkingSet'.
+    """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
