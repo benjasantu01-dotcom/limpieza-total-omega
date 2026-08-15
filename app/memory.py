@@ -232,7 +232,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - cache_ref[0] < 5.0 and cache_ref[1]:
         return cache_ref[1][:limit]
     
-    # Optimizamos el comando para filtrar en PS y solo traer los campos necesarios sin formateo complejo
     cmd = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} Name,Id,WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
@@ -302,12 +301,6 @@ def _get_process_path(handle: int) -> Optional[str]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows.
-
-    Args:
-        pid: El ID del proceso a procesar.
-
-    Returns:
-        Tupla (éxito: bool, mensaje: str).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -322,7 +315,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
-    
     if psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "Error de sistema: PSAPI no disponible."
 
@@ -336,10 +328,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         path = _get_process_path(proc_handle)
-        if path:
-            if is_protected_path(os.path.normpath(path)):
-                return False, "Operación denegada: ruta de ejecutable protegida."
-        else:
+        if path and is_protected_path(os.path.normpath(path)):
+            return False, "Operación denegada: ruta de ejecutable protegida."
+        if not path:
             return False, "Error interno: no se pudo verificar la identidad del proceso."
             
         if not psapi.EmptyWorkingSet(proc_handle):

@@ -255,17 +255,19 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return dest
 
     for junk_file in files:
-        if not isinstance(junk_file, JunkFile):
+        if not isinstance(junk_file, JunkFile) or not junk_file.path:
             continue
         try:
             if junk_file.path.exists() and junk_file.path.is_file():
                 if os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
-                    usage = shutil.disk_usage(dest)
-                    if usage.free > junk_file.size_bytes:
-                        target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-                        # Verifica que el destino generado siga siendo hijo de la carpeta de revisión
-                        if is_safe_to_modify(target) and dest in target.resolve().parents:
-                            shutil.move(str(junk_file.path), str(target))
+                    try:
+                        usage = shutil.disk_usage(dest)
+                        if usage.free > junk_file.size_bytes:
+                            target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
+                            if is_safe_to_modify(target) and dest in target.resolve().parents:
+                                shutil.move(str(junk_file.path), str(target))
+                    except (OSError, ValueError):
+                        continue
         except (PermissionError, OSError, shutil.Error, RuntimeError):
             continue
     return dest
@@ -287,7 +289,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     try:
         for item in dest.iterdir():
             try:
-                # Se asegura que sea un archivo y esté contenido explícitamente en dest
                 if item.is_file() and not item.is_symlink():
                     path_to_delete = item.resolve()
                     if dest in path_to_delete.parents and is_safe_to_modify(path_to_delete):

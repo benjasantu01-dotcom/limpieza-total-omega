@@ -323,12 +323,13 @@ def quarantine_file(
     
     source_path = Path(source).expanduser().resolve()
     
-    if not source_path.exists() or not source_path.is_file():
-        raise FileNotFoundError(f"Archivo no encontrado: {source_path}")
+    if not source_path.is_file():
+        raise FileNotFoundError(f"Archivo no encontrado o inválido: {source_path}")
     
-    if _is_file_locked(source_path):
-        raise IOError("El archivo está en uso y no puede ser movido a cuarentena.")
-        
+    # Verificación de integridad adicional contra alias/enlaces
+    if source_path.is_symlink():
+        raise UnsafePathError("No se permite cuarentena de enlaces simbólicos.")
+
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en recursos compartidos de red.")
@@ -337,30 +338,28 @@ def quarantine_file(
     
     dest_dir = quarantine_dir(base)
     if not dest_dir.exists():
-        raise RuntimeError("Directorio de cuarentena inaccesible o no creado.")
+        raise RuntimeError("Directorio de cuarentena inaccesible.")
     
     # Prevenir que el origen y destino sean la misma carpeta o anidados
     try:
         if os.path.commonpath([str(source_path.parent), str(dest_dir)]) == str(dest_dir):
-            raise UnsafePathError("Operación denegada: el archivo ya está en el destino o bajo una subcarpeta del mismo.")
+            raise UnsafePathError("Operación denegada: el archivo ya está en el destino o subcarpeta.")
     except ValueError:
         pass
         
     _validate_isolation_request(source_path, dest_dir)
-    if not os.access(dest_dir, os.W_OK):
-        raise PermissionError("Sin permisos de escritura en la carpeta de cuarentena.")
     
     file_size = source_path.stat().st_size
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
-        raise RuntimeError("Espacio insuficiente en disco para realizar la cuarentena.")
+        raise RuntimeError("Espacio insuficiente en disco.")
     
     item_id = uuid.uuid4().hex[:12]
     stored_name = _generate_safe_stored_name(source_path, item_id)
     destination = dest_dir / stored_name
     
     if destination.exists():
-        raise UnsafePathError("Colisión de nombres: el destino ya existe.")
+        raise UnsafePathError("Colisión de nombres detectada.")
     
     temp_dest = dest_dir / f"{item_id}_{os.getpid()}.tmp"
     try:
@@ -375,8 +374,6 @@ def quarantine_file(
     except (OSError, PermissionError) as e:
         if temp_dest.exists(): _safe_unlink(temp_dest)
         raise RuntimeError(f"Error crítico durante el aislamiento: {e}")
-    finally:
-        if 'temp_dest' in locals() and temp_dest.exists(): _safe_unlink(temp_dest)
     
     try:
         item = QuarantineItem(
@@ -496,7 +493,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             continue
             
         real_entry = entry.resolve()
-        # Seguridad extra: verificar que la entrada real siga dentro de la raíz
         if not _is_valid_quarantine_path(real_entry, quarantine_root):
             continue
             
@@ -506,14 +502,12 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if _is_file_locked(entry):
                 continue
             
-            # Verificar integridad solo si el ítem existe en manifiesto, sino es basura huérfana
             if item and item.verify_integrity(real_entry):
                 ensure_safe_to_modify(real_entry, allow_sensitive=False)
                 if _safe_unlink(real_entry):
                     items_to_remove.append(item)
                     purged_count += 1
             elif item is None:
-                # Limpiar archivos huérfanos sin entrada en manifiesto
                 _safe_unlink(real_entry)
         except (OSError, PermissionError, UnsafePathError):
             continue

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 19
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 156 | 11 | 22 | 14 | 133 |
-| 2026-08-15 | 66 | 6 | 7 | 5 | 84 |
+| 2026-08-14 | 154 | 11 | 21 | 13 | 133 |
+| 2026-08-15 | 69 | 6 | 8 | 5 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
+- manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **46**
-- manejo de errores y validación de entradas: **44**
-- rendimiento: **43**
-- legibilidad y documentación: **41**
+- rendimiento: **42**
+- legibilidad y documentación: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `settings.py`: **20**
 - `diskreport.py`: **20**
 - `healthscore.py`: **20**
+- `assistant.py`: **20**
 - `browser.py`: **19**
+- `settings.py`: **19**
 - `scanner.py`: **18**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
+- `organizer.py`: **16**
 - `duplicates.py`: **15**
-- `organizer.py`: **15**
+- `memory.py`: **15**
 - `startup.py`: **14**
-- `memory.py`: **14**
 - `safety.py`: **13**
 - `main.py`: **11**
 - `branding.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T07:19:07` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` al incluir una validación estricta de la ruta del archivo tras la resolución (evitando colisiones por alias) y un manejo explícito de errores durante la copia atómica, asegurando que cualquier fallo intermedio deje el sistema en un estado consistente.
+- `2026-08-15T07:18:36` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` agregando validaciones de tipo y estructura antes de operar, asegurando que `shutil.disk_usage` y `os.scandir` no fallen ante entradas inválidas o rutas inexistentes, siguiendo estrictamente el enfoque de manejo de errores y validación de parámetros.
+- `2026-08-15T07:18:13` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` validando el handle y la integridad del proceso antes de operar, encapsulando correctamente el manejo de excepciones de `ctypes` y asegurando que no se intente operar sobre handles inválidos o recursos del sistema mal detectados.
 - `2026-08-15T07:09:37` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` mediante una validación explícita del ID ingresado antes de intentar cualquier operación de disco y asegurando que las comprobaciones de integridad (existencia del manifiesto y seguridad de la ruta) se ejecuten antes de intentar restaurar el archivo, siguiendo el patrón de seguridad exigido.
 - `2026-08-15T07:08:49` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación explícita de `metrics_map` y la captura de errores de formato, previniendo que una configuración de reglas mal definida provoque un fallo en la generación del reporte.
 - `2026-08-15T07:08:02` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` agregando chequeos específicos para rutas nulas o vacías y capturando excepciones de sistema de forma más granular para evitar abortos silenciosos del generador ante errores de permisos comunes en Windows.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T05:16:08` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación de `is_finite` en el desglose ponderado, previniendo que valores no numéricos o infinitos puedan propagarse a la interfaz o al cálculo final del puntaje.
 - `2026-08-15T05:06:49` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `walk_files` y `drive_usage` validando que las rutas resultantes de `Path.resolve()` permanezcan dentro de los límites esperados mediante `is_protected_path` después de cada iteración, previniendo posibles escapes por enlaces simbólicos complejos o manipulaciones del sistema de archivos.
 - `2026-08-15T05:05:45` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor remoto bloqueando la ejecución si la clave de API o el modelo no cumplen con estándares estrictos de formato antes de realizar cualquier operación de red, evitando así la inyección de parámetros en la URL.
-- `2026-08-15T04:56:25` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito para rutas que, aunque existen físicamente, no pueden ser resueltas por el sistema de archivos (ej. debido a bloqueos de acceso o permisos denegados), evitando que la app falle ante archivos "fantasma" o inaccesibles.
-- `2026-08-15T04:56:15` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o vacíos, incorporando un chequeo explícito de `json.JSONDecodeError` y una validación de estructura de datos `isinstance(data, dict)` dentro de un bloque `try-except` más acotado para evitar que errores inesperados de I/O dejen a la app en un estado inconsistente.
-- `2026-08-15T04:55:49` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o bloqueados durante la iteración (`scandir` puede fallar si un archivo es borrado o movido por otro proceso durante el escaneo), añadiendo un manejo de excepciones más granular en `Scanner.process_entry` para evitar que una entrada corrupta o inaccesible interrumpa el flujo del bucle.
