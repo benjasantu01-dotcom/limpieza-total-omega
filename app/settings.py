@@ -229,7 +229,7 @@ def validate(raw_values: Any) -> AppSettings:
 @lru_cache(maxsize=1)
 def _load_internal(ruta: Path) -> AppSettings:
     """Carga interna cacheada por ruta y mtime (gestionado mediante wrapper en load)."""
-    if not ruta.exists() or not os.access(ruta, os.R_OK): return _get_default_config()
+    if not ruta.exists() or ruta.is_dir() or not os.access(ruta, os.R_OK): return _get_default_config()
     try:
         if not _Validators._is_safe_path(str(ruta.parent)): return _get_default_config()
         content = ruta.read_bytes()
@@ -242,7 +242,7 @@ def _load_internal(ruta: Path) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga, valida y cachea el archivo de configuración. Retorna defaults ante cualquier error."""
     ruta = settings_path(custom_base)
-    if not ruta.exists(): return _get_default_config()
+    if not ruta.exists() or ruta.is_dir(): return _get_default_config()
     
     # Invalidar caché si el archivo cambió
     mtime = ruta.stat().st_mtime
@@ -256,6 +256,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Guarda una configuración validada de forma atómica usando un archivo temporal."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
+    if ruta.exists() and ruta.is_dir(): return None
     if not _Validators._is_safe_path(str(ruta.parent)) or is_protected_path(str(ruta)): return None
     if not is_safe_to_modify(str(ruta)): return None
     if ruta.exists() and not os.access(ruta, os.W_OK): return None

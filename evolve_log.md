@@ -550,3 +550,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T13:46:49` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia del `Scanner` ante archivos sin nombre o sin extensión (ej. archivos temporales o creados por sistemas) mediante la adición de verificaciones de integridad `if` adicionales en las heurísticas, evitando `AttributeError` o `NoneType` inesperados.
 - `2026-08-15T13:46:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T13:46:49` Corrida terminada. Total usado hoy: 324.
+- `2026-08-15T13:55:38` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-15T13:56:08` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar que `save` intente operar sobre archivos que existen pero son directorios, previniendo errores de `PermissionError` o `IsADirectoryError` en sistemas con permisos restrictivos.
+- `2026-08-15T13:56:36` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 0.86s
+
+```
+- `2026-08-15T13:56:36` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: He mejorado la robustez ante rutas inválidas o con caracteres especiales en el registro (que suelen causar fallas silenciosas en la creación de objetos `Path`) añadiendo un filtrado previo en `parse_registry_csv` y una validación de `path.exists()` dentro de `_resolve_path_from_command` para prevenir accesos innecesarios a disco.
+- `2026-08-15T13:57:11` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` añadiendo un filtrado explícito del contenido remoto retornado, asegurando que la respuesta de la IA no contenga caracteres de control o rutas antes de ser procesada por la aplicación, manteniendo la robustez ante posibles alucinaciones o inyecciones.
+- `2026-08-15T13:57:29` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` reemplazando la validación implícita por `ensure_safe_to_modify`, garantizando que la operación falle de forma controlada ante rutas restringidas según las reglas del proyecto.
+- `2026-08-15T13:57:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T13:57:29` Corrida terminada. Total usado hoy: 328.

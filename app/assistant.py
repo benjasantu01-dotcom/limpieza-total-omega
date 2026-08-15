@@ -530,7 +530,9 @@ def _call_gemini(
             text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
             final_text = text.strip()[:_MAX_TEXT_LENGTH]
             
-            return final_text if _ensure_safe_text(final_text) else None
+            # Filtrado defensivo final sobre la respuesta de la IA
+            limpia_final = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", final_text))
+            return limpia_final if _ensure_safe_text(limpia_final) else None
     except (urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
 
