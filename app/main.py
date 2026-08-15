@@ -122,6 +122,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.tabs: Dict[str, ctk.CTkFrame] = {}
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         self._log_queue: List[Tuple[str, str]] = []
+        self._log_lock = threading.Lock()
         self._task_lock = threading.Lock()
         self._closing = False
         try:
@@ -777,18 +778,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def log(self, text: str, tab: str = "Limpieza") -> None:
         """Encola logs para ser renderizados de forma segura en UI."""
-        self._log_queue.append((tab, text))
+        with self._log_lock:
+            self._log_queue.append((tab, text))
         self.after_idle(self._flush_logs)
 
     def _flush_logs(self) -> None:
         """Vuelca la cola acumulada de mensajes al componente visual de texto."""
-        if not self._log_queue or self._closing:
-            return
+        if self._closing: return
         
-        # Procesar en lotes limitando la carga al hilo principal
-        self.update_idletasks()
-        pendientes = list(self._log_queue)
-        self._log_queue.clear()
+        with self._log_lock:
+            if not self._log_queue: return
+            pendientes = list(self._log_queue)
+            self._log_queue.clear()
         
         tab_messages = {}
         for tab, text in pendientes:

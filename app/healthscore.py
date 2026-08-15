@@ -13,7 +13,7 @@ vive en los otros módulos; acá solo se puntúa.
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple, Annotated
 import math
 
@@ -148,50 +148,32 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """
-    Calcula ratio (0.0-1.0) de basura. 
-    Escala lineal: 0 MB es salud perfecta (1.0), al alcanzar _LIMIT_JUNK_MB (0.0).
-    """
+    """Calcula ratio (0.0-1.0) de basura."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """
-    Calcula ratio de seguridad. 
-    Penaliza hallazgos críticos (-0.05 c/u) y advertencias (-0.25 c/u).
-    """
+    """Calcula ratio de seguridad."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """
-    Calcula ratio de salud de memoria. 
-    El ratio es 1.0 si la disponibilidad alcanza el umbral de referencia _LIMIT_RAM_PERCENT.
-    """
+    """Calcula ratio de salud de memoria."""
     return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0
 
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """
-    Calcula ratio de salud de disco. 
-    1.0 se alcanza al llegar al umbral de seguridad _LIMIT_DISK_PERCENT.
-    """
+    """Calcula ratio de salud de disco."""
     return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0
 
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """
-    Calcula ratio de duplicados: 1.0 es 0 MB, 0.0 es >= _LIMIT_DUPLICATE_MB.
-    Indica la urgencia de limpieza de archivos repetidos.
-    """
+    """Calcula ratio de duplicados."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """
-    Calcula ratio de programas de arranque. 
-    El exceso de entradas impacta negativamente el tiempo de inicio (1.0 si es 0, 0.0 si es >= _LIMIT_STARTUP_COUNT).
-    """
+    """Calcula ratio de programas de arranque."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 
@@ -205,15 +187,13 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 
-def _generate_recommendations(metrics_map: Dict[str, Any], quarantined: int, ratios: ScoreMap) -> List[str]:
+def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     """Genera una lista de textos explicativos según las violaciones de umbrales."""
     recommendations: List[str] = []
     
-    if not isinstance(metrics_map, dict): return ["Error interno en generación de reporte."]
-
     for rule in _RECOMMENDATION_RULES:
         if ratios.get(rule.area, 1.0) < rule.threshold:
-            val = metrics_map.get(rule.metric_attr)
+            val = getattr(metrics, rule.metric_attr, None)
             if val is not None:
                 try:
                     msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
@@ -221,17 +201,14 @@ def _generate_recommendations(metrics_map: Dict[str, Any], quarantined: int, rat
                 except (ValueError, KeyError, IndexError):
                     continue
     
-    if quarantined > 0:
-        recommendations.append(f"Tenés {quarantined} archivo(s) en cuarentena.")
+    if metrics.quarantined_count > 0:
+        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     return recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """
-    Función principal de cálculo: toma métricas crudas, las normaliza a ratios,
-    aplica los pesos configurados y consolida un puntaje total de 0 a 100.
-    """
+    """Función principal de cálculo: optimizada para evitar duplicación de datos."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
@@ -248,17 +225,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    # Calcular desglose ponderado redondeado al entero más cercano asegurando finitud
     breakdown: Dict[str, int] = {}
     for area, factor in _WEIGHT_ITEMS:
         val = ratios[area] * factor
-        # Redondeamos antes del cast a int para evitar truncamientos injustos de 0.99 a 0
         breakdown[area] = int(round(_clamp(val, 0.0, factor))) if math.isfinite(val) else 0
 
     final_score = int(round(_clamp(float(sum(breakdown.values())), 0.0, 100.0)))
-    
-    metrics_map = asdict(metrics)
-    recs = _generate_recommendations(metrics_map, metrics.quarantined_count, ratios)
+    recs = _generate_recommendations(metrics, ratios)
     
     return HealthResult(final_score, grade_for_score(final_score), breakdown, recs)
 

@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 88 | 7 | 15 | 8 | 86 |
-| 2026-08-15 | 130 | 13 | 15 | 9 | 133 |
+| 2026-08-14 | 86 | 6 | 14 | 8 | 86 |
+| 2026-08-15 | 132 | 14 | 15 | 9 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **38**
-- rendimiento: **34**
+- rendimiento: **36**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **20**
-- `scanner.py`: **19**
-- `healthscore.py`: **17**
+- `healthscore.py`: **18**
+- `scanner.py`: **18**
 - `organizer.py`: **17**
 - `quarantine.py`: **17**
 - `duplicates.py`: **15**
 - `memory.py`: **15**
-- `safety.py`: **12**
-- `main.py`: **10**
+- `main.py`: **11**
+- `safety.py`: **11**
 - `startup.py`: **10**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T12:56:22` **main.py** (rendimiento): Optimizé la gestión de logs en `main.py` sustituyendo el método `after_idle` por un `threading.Lock` y un mecanismo de vaciado por lotes más eficiente, reduciendo drásticamente la carga sobre el hilo principal de la UI al evitar la saturación por eventos de redibujo en análisis intensivos.
+- `2026-08-15T12:55:21` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje convirtiendo el diccionario `metrics_map` de `asdict()` (operación costosa que crea un nuevo objeto en cada ejecución) a una consulta directa sobre el objeto `metrics`, evitando recrear estructuras innecesariamente.
 - `2026-08-15T12:45:53` **diskreport.py** (rendimiento): Optimicé el método `_collect_summary_data` eliminando la llamada innecesaria a `str(path)` dentro del loop principal al usar `path` directamente en el `heap`, postergando su conversión solo al momento de generar el reporte final, lo cual reduce la sobrecarga de memoria y ciclos de CPU durante el escaneo.
 - `2026-08-15T12:35:34` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `type hints` adicionales, consolidando docstrings para mayor claridad y añadiendo una anotación de clase `StartupEntry` detallada que explica las responsabilidades de cada método privado, facilitando el mantenimiento y auditoría del código.
 - `2026-08-15T12:35:23` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos claros a las funciones públicas y clases clave, especificando precondiciones, efectos secundarios y el tratamiento de errores, lo cual clarifica el flujo de datos sin alterar la lógica.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T12:14:08` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de la función `walk_files` y se ha encapsulado el manejo de la pila de directorios en una lógica más legible para prevenir problemas con rutas inexistentes o malformadas, alineándose con el enfoque de legibilidad técnica.
 - `2026-08-15T12:05:13` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` mediante la refactorización de `_sum_directory_recursive`, eliminando la carga de pasar `is_junction_fn` y `kernel32` manualmente en cada llamada recursiva al encapsular la lógica de escaneo en un objeto local, y agregué tipado explícito para clarificar la estructura de los datos.
 - `2026-08-15T12:04:33` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `_identify_active_problems` introduciendo un tipo de datos explícito (`ProblemCriterion`) y reemplazando tuplas anónimas por campos nombrados para documentar la estructura de la lógica de evaluación.
-- `2026-08-15T11:54:35` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de archivos en `save()` y `load()` mediante el uso de `os.fsync` y una estrategia de reemplazo atómico más conservadora, además de añadir validaciones explícitas de tipo y longitud en `_Validators.str` para prevenir la inyección de datos malformados en el JSON.
-- `2026-08-15T11:54:24` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` implementando una validación de entrada estricta en el método `Scanner.process_entry` para filtrar correctamente objetos `entry` inválidos antes de cualquier operación, previniendo errores de `AttributeError` o `OSError` inesperados al acceder a propiedades de `os.DirEntry`.

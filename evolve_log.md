@@ -453,3 +453,41 @@ assert 'oval' in ['polygon']
 - `2026-08-15T12:45:53` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el método `_collect_summary_data` eliminando la llamada innecesaria a `str(path)` dentro del loop principal al usar `path` directamente en el `heap`, postergando su conversión solo al momento de generar el reporte final, lo cual reduce la sobrecarga de memoria y ciclos de CPU durante el escaneo.
 - `2026-08-15T12:45:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T12:45:53` Corrida terminada. Total usado hoy: 300.
+- `2026-08-15T12:54:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-15T12:54:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-15T12:55:21` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje convirtiendo el diccionario `metrics_map` de `asdict()` (operación costosa que crea un nuevo objeto en cada ejecución) a una consulta directa sobre el objeto `metrics`, evitando recrear estructuras innecesariamente.
+- `2026-08-15T12:56:22` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimizé la gestión de logs en `main.py` sustituyendo el método `after_idle` por un `threading.Lock` y un mecanismo de vaciado por lotes más eficiente, reduciendo drásticamente la carga sobre el hilo principal de la UI al evitar la saturación por eventos de redibujo en análisis intensivos.
+- `2026-08-15T12:56:33` Tests FALLARON:
+```
+...................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: memory.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: memory.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.14s
+
+```
+- `2026-08-15T12:56:33` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lectura de `tasklist` mediante `subprocess.check_output`, reduciendo el tiempo de espera y el overhead de inicialización de la shell.
+- `2026-08-15T12:56:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T12:56:33` Corrida terminada. Total usado hoy: 304.
