@@ -77,6 +77,10 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo.
+    
+    Aplica filtros de seguridad: omite rutas protegidas, symlinks y puntos
+    de reparse (FILE_ATTRIBUTE_REPARSE_POINT = 0x400) para evitar recursión
+    infinita o acceso a volúmenes montados fuera del scope del usuario.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -87,6 +91,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
 
         stat_initial = file_path.stat()
+        # Verificar st_file_attributes para detectar junctions/reparse points.
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -106,6 +111,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes (64KB) para comparación heurística.
+    
+    Comparte lógica de validación de seguridad con hash_file para asegurar 
+    consistencia en el acceso a archivos restringidos.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -165,6 +173,7 @@ def _collect_candidates(
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
+                        # Ignorar puntos de reparse (0x400) para prevenir bucles.
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
                         inode = (st.st_dev, st.st_ino)

@@ -565,3 +565,11 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-15T03:04:19` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manejo de respuestas y la clarificación de las responsabilidades de los motores (local vs. remoto) en los docstrings, facilitando la comprensión del flujo de datos sin alterar la lógica.
 - `2026-08-15T03:04:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T03:04:19` Corrida terminada. Total usado hoy: 72.
+- `2026-08-15T03:12:58` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-08-15T03:14:00` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-15T03:14:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-08-15T03:15:00` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en las funciones auxiliares internas, clarificando la lógica de filtrado y recursión para mejorar la mantenibilidad.
+- `2026-08-15T03:15:27` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en los métodos de las `dataclasses` y funciones auxiliares, mejorando la legibilidad técnica y facilitando el mantenimiento para futuros desarrolladores.
+- `2026-08-15T03:15:36` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación de `hash_file` y `partial_hash` explicando el **porqué** de los chequeos de seguridad y el filtrado de atributos (específicamente la máscara `0x400` que identifica puntos de reparse/junctions), facilitando la comprensión del flujo de seguridad para futuros desarrollos.
+- `2026-08-15T03:15:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T03:15:36` Corrida terminada. Total usado hoy: 76.
