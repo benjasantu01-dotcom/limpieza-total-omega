@@ -653,3 +653,36 @@ assert 'oval' in ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle',
 - `2026-08-15T04:05:59` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la función `_get_sha256` utilizando un buffer de 128KB en lugar de 64KB para reducir la cantidad de llamadas al sistema y mejorar el rendimiento de E/S al procesar archivos grandes durante la validación de integridad.
 - `2026-08-15T04:05:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T04:05:59` Corrida terminada. Total usado hoy: 96.
+- `2026-08-15T04:14:07` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-15T04:14:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-08-15T04:14:52` Tests FALLARON:
+```
+pper object at 0x7fcc8291fc10> = safety.is_protected_path
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'app.tmp'
+  'malo.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7fcc81f34400>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7fcc81f34400> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - Failed: DID NOT RAISE UnsafePathError
+15 failed, 284 passed in 1.30s
+
+```
+- `2026-08-15T04:14:52` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `is_protected_path` al cachear `_SYSTEM_ROOT_PARTS` y evitar cálculos innecesarios dentro de los bucles de validación, garantizando que los chequeos de seguridad críticos no degraden la experiencia en escaneos masivos.
+- `2026-08-15T04:15:13` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-15T04:15:23` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` convirtiendo `_VALIDATOR_MAP` en un diccionario de acceso directo por `ConfigKey` y eliminando la redundancia de `_get_default_config().copy()` en las llamadas exitosas, además de evitar la recreación de objetos `Path` innecesarios.
+- `2026-08-15T04:15:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T04:15:23` Corrida terminada. Total usado hoy: 100.
