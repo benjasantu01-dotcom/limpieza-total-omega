@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 112 | 9 | 17 | 10 | 92 |
-| 2026-08-15 | 108 | 10 | 12 | 7 | 127 |
+| 2026-08-14 | 109 | 9 | 17 | 9 | 92 |
+| 2026-08-15 | 109 | 10 | 12 | 7 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
 - seguridad defensiva: **46**
+- legibilidad y documentación: **45**
 - robustez ante casos límite: **44**
 - rendimiento: **43**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **21**
 - `settings.py`: **20**
-- `assistant.py`: **20**
 - `scanner.py`: **19**
 - `diskreport.py`: **19**
 - `browser.py`: **19**
-- `healthscore.py`: **18**
 - `organizer.py`: **18**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `duplicates.py`: **15**
-- `memory.py`: **15**
+- `duplicates.py`: **14**
+- `memory.py`: **14**
 - `safety.py`: **12**
 - `main.py`: **12**
 - `startup.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T11:25:26` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` al capturar errores de forma granular en la asignación de atributos y validé explícitamente el tipo de los diccionarios de configuración en `ask`, evitando fallos en tiempo de ejecución ante configuraciones mal formadas.
 - `2026-08-15T10:02:21` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la persistencia de datos al sustituir la escritura directa por un flujo de escritura atómica con `os.replace` y validación previa de integridad de ruta, evitando condiciones de carrera o corrupción parcial de la configuración.
 - `2026-08-15T10:01:55` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de las heurísticas asegurando que todas las validaciones de acceso a archivos ocurran estrictamente dentro del contexto del bucle de escaneo, evitando invocaciones redundantes o riesgosas de `path.exists()` y `entry.stat()` fuera del manejo de errores controlado.
 - `2026-08-15T09:53:18` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación de existencia del archivo en el manifiesto y verificando explícitamente su integridad mediante `verify_integrity` antes de cualquier intento de eliminación, asegurando que solo los archivos rastreados y validados sean borrados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T09:21:42` **settings.py** (robustez ante casos límite): Se ha mejorado la resiliencia en la carga de configuración ante archivos corruptos o truncados mediante un manejo más granular de excepciones y una validación de estructura de datos más estricta antes de reemplazar la caché.
 - `2026-08-15T09:21:08` **safety.py** (robustez ante casos límite): Se implementó un control de integridad de volumen (check de disco montado/dispositivo extraíble) y se protegió la lógica contra colisiones de caracteres nulos y rutas mal formadas de manera más robusta al inicio de `ensure_safe_to_modify`, previniendo errores de sistema al interactuar con rutas que exceden la longitud máxima de Windows o contienen caracteres de control.
 - `2026-08-15T09:13:15` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante situaciones de concurrencia y fallos de E/S, implementando un mecanismo que verifica la existencia del directorio antes de operar y asegura una limpieza más estricta de archivos temporales mediante bloques `finally`, evitando estados inconsistentes si el proceso se interrumpe durante el movimiento o el cálculo del hash.
-- `2026-08-15T09:00:39` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos que sufren errores de lectura durante el `_collect_summary_data`, evitando que una excepción en un archivo puntual (como un permiso denegado en un archivo bloqueado por el sistema) interrumpa el análisis completo del directorio.
