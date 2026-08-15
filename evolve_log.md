@@ -1485,3 +1485,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T11:46:15` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `purge_all` para prevenir errores de silenciamiento ("silent fail") y asegurar que la integridad del manifiesto se mantenga consistente, incluso si la eliminación de archivos individuales falla, mediante una validación explícita de cada etapa del proceso.
 - `2026-08-15T11:46:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T11:46:15` Corrida terminada. Total usado hoy: 276.
+- `2026-08-15T11:53:16` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-15T11:53:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-15T11:54:01` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-15T11:54:24` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scanner.py` implementando una validación de entrada estricta en el método `Scanner.process_entry` para filtrar correctamente objetos `entry` inválidos antes de cualquier operación, previniendo errores de `AttributeError` o `OSError` inesperados al acceder a propiedades de `os.DirEntry`.
+- `2026-08-15T11:54:35` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de archivos en `save()` y `load()` mediante el uso de `os.fsync` y una estrategia de reemplazo atómico más conservadora, además de añadir validaciones explícitas de tipo y longitud en `_Validators.str` para prevenir la inyección de datos malformados en el JSON.
+- `2026-08-15T11:54:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T11:54:35` Corrida terminada. Total usado hoy: 280.

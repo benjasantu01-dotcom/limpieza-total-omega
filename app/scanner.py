@@ -78,7 +78,7 @@ class Scanner:
         """
         Analiza una entrada: si es directorio, lo encola; si es archivo, ejecuta el pipeline de escaneo.
         """
-        if entry is None or not entry.path:
+        if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
         
         try:

@@ -181,9 +181,8 @@ class _Validators:
     def str(key: ConfigKey, val: Any) -> str | None:
         if not isinstance(val, str): return None
         text = val.strip()
-        if any(ord(c) < 32 for c in text) or ".." in text: return None
+        if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
-        if not text: return "" if key == ConfigKey.ASISTENTE_CLAVE_API else None
         return _Validators._validate_enum_str(text, key)
 
 _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
