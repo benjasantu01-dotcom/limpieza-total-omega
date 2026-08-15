@@ -119,7 +119,7 @@ def _has_alternate_data_stream(path: Path) -> bool:
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
     """Consulta los atributos de archivo Win32; devuelve True si es de sistema u oculto."""
-    if os.name != 'nt':
+    if os.name != 'nt' or not path.exists():
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -133,6 +133,8 @@ def _is_reparse_point(path: Path) -> bool:
     """Identifica junctions o symlinks; son puntos de riesgo para recursión no deseada."""
     if os.name != 'nt':
         return path.is_symlink()
+    if not path.exists():
+        return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return attrs != -1 and bool(attrs & 0x400)

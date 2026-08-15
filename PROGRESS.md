@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 74 | 6 | 13 | 7 | 84 |
-| 2026-08-15 | 142 | 15 | 16 | 10 | 137 |
+| 2026-08-14 | 74 | 6 | 13 | 7 | 80 |
+| 2026-08-15 | 144 | 15 | 17 | 10 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **44**
 - rendimiento: **40**
 - seguridad defensiva: **34**
 
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `diskreport.py`: **20**
 - `browser.py`: **19**
+- `scanner.py`: **19**
 - `organizer.py`: **18**
-- `scanner.py`: **18**
 - `healthscore.py`: **18**
 - `quarantine.py`: **17**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
 - `main.py`: **11**
-- `safety.py`: **10**
+- `safety.py`: **11**
 - `startup.py`: **9**
 - `branding.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T13:46:49` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia del `Scanner` ante archivos sin nombre o sin extensión (ej. archivos temporales o creados por sistemas) mediante la adición de verificaciones de integridad `if` adicionales en las heurísticas, evitando `AttributeError` o `NoneType` inesperados.
+- `2026-08-15T13:46:41` **safety.py** (robustez ante casos límite): Se introdujo la verificación `p.exists()` antes de consultar los atributos mediante `GetFileAttributesW` en las funciones `_is_system_or_hidden` y `_is_reparse_point` para evitar falsos positivos y errores de acceso en rutas inexistentes durante la inspección.
 - `2026-08-15T13:37:28` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` ante errores de entrada y condiciones de carrera, garantizando que el destino sea siempre una ruta absoluta y validada antes de intentar cualquier operación de disco.
 - `2026-08-15T13:37:18` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` ante procesos que cierran inesperadamente o tienen estados de acceso intermitentes, asegurando que `OpenProcess` maneje correctamente la propagación de errores y validando la existencia de la ruta antes de intentar cualquier operación.
 - `2026-08-15T13:36:50` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante la carga de pestañas y la ejecución de tareas asíncronas, asegurando que un fallo en un componente no deje la interfaz "congelada" en un estado de espera (busy) indefinida.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T12:56:22` **main.py** (rendimiento): Optimizé la gestión de logs en `main.py` sustituyendo el método `after_idle` por un `threading.Lock` y un mecanismo de vaciado por lotes más eficiente, reduciendo drásticamente la carga sobre el hilo principal de la UI al evitar la saturación por eventos de redibujo en análisis intensivos.
 - `2026-08-15T12:55:21` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje convirtiendo el diccionario `metrics_map` de `asdict()` (operación costosa que crea un nuevo objeto en cada ejecución) a una consulta directa sobre el objeto `metrics`, evitando recrear estructuras innecesariamente.
 - `2026-08-15T12:45:53` **diskreport.py** (rendimiento): Optimicé el método `_collect_summary_data` eliminando la llamada innecesaria a `str(path)` dentro del loop principal al usar `path` directamente en el `heap`, postergando su conversión solo al momento de generar el reporte final, lo cual reduce la sobrecarga de memoria y ciclos de CPU durante el escaneo.
-- `2026-08-15T12:35:34` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `type hints` adicionales, consolidando docstrings para mayor claridad y añadiendo una anotación de clase `StartupEntry` detallada que explica las responsabilidades de cada método privado, facilitando el mantenimiento y auditoría del código.
-- `2026-08-15T12:35:23` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos claros a las funciones públicas y clases clave, especificando precondiciones, efectos secundarios y el tratamiento de errores, lo cual clarifica el flujo de datos sin alterar la lógica.

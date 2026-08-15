@@ -543,3 +543,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T13:37:28` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` ante errores de entrada y condiciones de carrera, garantizando que el destino sea siempre una ruta absoluta y validada antes de intentar cualquier operación de disco.
 - `2026-08-15T13:37:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T13:37:28` Corrida terminada. Total usado hoy: 320.
+- `2026-08-15T13:45:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-15T13:45:56` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-15T13:46:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-15T13:46:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `p.exists()` antes de consultar los atributos mediante `GetFileAttributesW` en las funciones `_is_system_or_hidden` y `_is_reparse_point` para evitar falsos positivos y errores de acceso en rutas inexistentes durante la inspección.
+- `2026-08-15T13:46:49` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia del `Scanner` ante archivos sin nombre o sin extensión (ej. archivos temporales o creados por sistemas) mediante la adición de verificaciones de integridad `if` adicionales en las heurísticas, evitando `AttributeError` o `NoneType` inesperados.
+- `2026-08-15T13:46:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T13:46:49` Corrida terminada. Total usado hoy: 324.

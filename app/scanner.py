@@ -125,7 +125,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry):
         return None
     
-    # Optimizamos verificando contra un set de partes minúsculas ya calculadas
     path_parts = {p.lower() for p in path.parts}
     if WATCHED_FOLDERS.isdisjoint(path_parts):
         return None
@@ -155,12 +154,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     findings: ScanResult = []
     
-    # 1. Aplicar reglas universales (ej: nombres engañosos)
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # 2. Aplicar reglas condicionales si el archivo posee una extensión ejecutable
-    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
         for check in heuristic_suite:
             try:
