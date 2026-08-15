@@ -385,7 +385,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
                 heapq.heappush(top_files_heap, (size, str(path)))
             elif size > top_files_heap[0][0]:
                 heapq.heapreplace(top_files_heap, (size, str(path)))
-        except Exception:
+        except (AttributeError, TypeError, OSError):
             continue
             
     return total_bytes, total_files, ext_sizes, ext_counts, top_files_heap
@@ -418,6 +418,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             
         total_bytes, total_files, ext_sizes, ext_counts, top_files_heap = _collect_summary_data(p_input, skip_protected)
+    except (OSError, RuntimeError, PermissionError):
+        return ["Error: Acceso denegado o error durante el análisis del disco."]
     except Exception:
         return ["Error: Fallo inesperado durante el análisis del disco."]
 

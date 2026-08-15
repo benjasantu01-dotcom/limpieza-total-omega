@@ -134,9 +134,7 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Convertir a cadena para asegurar compatibilidad de encoding en Win32
-        path_unicode = str(entry_path)
-        attrs = kernel32.GetFileAttributesW(path_unicode)
+        attrs = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False
         return bool(attrs & 0x04 or attrs & 0x02)
@@ -204,7 +202,14 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         if not p_path.is_dir() or is_protected_path(p_path):
             return 0
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
-        k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
+        
+        k32: Optional[ctypes.WinDLL] = None
+        if os.name == 'nt':
+            try:
+                k32 = ctypes.windll.kernel32
+            except (AttributeError, OSError):
+                k32 = None
+                
         return _sum_directory_recursive(str(p_path), is_junction, k32, {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
@@ -229,7 +234,13 @@ def detect_profiles(
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
-    k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
+    
+    k32: Optional[ctypes.WinDLL] = None
+    if os.name == 'nt':
+        try:
+            k32 = ctypes.windll.kernel32
+        except (AttributeError, OSError):
+            k32 = None
     
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []

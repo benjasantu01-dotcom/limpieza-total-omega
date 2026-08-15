@@ -260,9 +260,11 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists():
+        if not isinstance(p, Path):
             continue
         try:
+            if not p.exists():
+                continue
             stat_info = p.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0))
             keepers.append((mtime, len(str(p)), p))
