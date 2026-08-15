@@ -159,13 +159,12 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         p = Path(mount).resolve()
         if str(p).startswith(("\\\\", "//")):
             return None
-        # Validación extra: prevenir resolución a ruta protegida fuera de la raíz esperada
         if not p.exists() or is_protected_path(p):
             return None
             
         usage = shutil.disk_usage(p)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, ValueError, TypeError, PermissionError):
+    except (OSError, PermissionError):
         return None
 
 
@@ -230,27 +229,22 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        target = Path(entry.path).resolve()
-                        # Verificación de confinamiento
-                        if not str(target).startswith(str(base_path)):
-                            continue
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
+                            
+                        target = Path(entry.path).resolve()
                         if skip_protected and is_protected_path(target):
                             continue
 
                         if entry.is_dir():
-                            try:
-                                st = entry.stat()
-                                inode = (st.st_dev, st.st_ino)
-                                if inode not in visited_inodes:
-                                    visited_inodes.add(inode)
-                                    stack.append(target)
-                            except (OSError, PermissionError):
-                                continue
+                            st = entry.stat()
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                stack.append(target)
                         else:
                             yield target, entry.stat().st_size
-                    except (OSError, PermissionError, ValueError):
+                    except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
             continue
@@ -276,7 +270,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
             (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
             key=lambda e: e.size_bytes
         )
-    except (OSError, PermissionError):
+    except Exception:
         return []
 
 
@@ -347,7 +341,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
         results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
         return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
-    except (OSError, RuntimeError, TypeError, ValueError):
+    except Exception:
         return []
 
 

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 217
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 157 | 12 | 23 | 14 | 134 |
-| 2026-08-15 | 63 | 6 | 7 | 5 | 83 |
+| 2026-08-14 | 156 | 11 | 22 | 14 | 133 |
+| 2026-08-15 | 66 | 6 | 7 | 5 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
 - robustez ante casos límite: **46**
+- manejo de errores y validación de entradas: **44**
 - rendimiento: **43**
-- legibilidad y documentación: **42**
-- manejo de errores y validación de entradas: **41**
+- legibilidad y documentación: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `settings.py`: **20**
-- `scanner.py`: **19**
+- `diskreport.py`: **20**
+- `healthscore.py`: **20**
 - `browser.py`: **19**
-- `diskreport.py`: **19**
-- `healthscore.py`: **19**
+- `scanner.py`: **18**
 - `quarantine.py`: **16**
 - `duplicates.py`: **15**
 - `organizer.py`: **15**
 - `startup.py`: **14**
 - `memory.py`: **14**
 - `safety.py`: **13**
-- `main.py`: **10**
+- `main.py`: **11**
 - `branding.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T07:09:37` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_restore_quarantine` mediante una validación explícita del ID ingresado antes de intentar cualquier operación de disco y asegurando que las comprobaciones de integridad (existencia del manifiesto y seguridad de la ruta) se ejecuten antes de intentar restaurar el archivo, siguiendo el patrón de seguridad exigido.
+- `2026-08-15T07:08:49` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación explícita de `metrics_map` y la captura de errores de formato, previniendo que una configuración de reglas mal definida provoque un fallo en la generación del reporte.
+- `2026-08-15T07:08:02` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` agregando chequeos específicos para rutas nulas o vacías y capturando excepciones de sistema de forma más granular para evitar abortos silenciosos del generador ante errores de permisos comunes en Windows.
 - `2026-08-15T06:59:48` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones de entrada en `_is_safe_path` y `_is_excluded_file` añadiendo chequeos contra tipos inesperados, además de asegurar que `summarize` maneje correctamente las entradas `None` mediante validación explícita para evitar errores en tiempo de ejecución.
 - `2026-08-15T06:59:06` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y sus funciones auxiliares mediante la validación explícita de `float` y la captura de errores en la extracción de datos, evitando que valores `NaN` o `inf` de fuentes externas corrompan el estado del asistente.
 - `2026-08-15T05:36:39` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` implementando una comprobación de seguridad explícita sobre la ruta del archivo de configuración antes de cualquier operación de escritura, asegurando que la ruta no esté bloqueada ni sea una ruta de sistema, cumpliendo estrictamente con el uso de `is_safe_to_modify`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T04:56:25` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito para rutas que, aunque existen físicamente, no pueden ser resueltas por el sistema de archivos (ej. debido a bloqueos de acceso o permisos denegados), evitando que la app falle ante archivos "fantasma" o inaccesibles.
 - `2026-08-15T04:56:15` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante archivos de configuración corruptos o vacíos, incorporando un chequeo explícito de `json.JSONDecodeError` y una validación de estructura de datos `isinstance(data, dict)` dentro de un bloque `try-except` más acotado para evitar que errores inesperados de I/O dejen a la app en un estado inconsistente.
 - `2026-08-15T04:55:49` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o bloqueados durante la iteración (`scandir` puede fallar si un archivo es borrado o movido por otro proceso durante el escaneo), añadiendo un manejo de excepciones más granular en `Scanner.process_entry` para evitar que una entrada corrupta o inaccesible interrumpa el flujo del bucle.
-- `2026-08-15T04:47:12` **quarantine.py** (robustez ante casos límite): Se añadió una validación en `purge_all` para asegurar que solo se intente borrar archivos dentro de `quarantine_root` mediante `is_within_directory`, reforzando la seguridad frente a estados inesperados del sistema de archivos.
-- `2026-08-15T04:46:41` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `organizer.py` ante errores de entrada y estados inconsistentes del sistema de archivos, añadiendo validaciones de tipo explícitas, manejo de errores de resolución de rutas en `scan_for_junk` y verificaciones de integridad en `stage_for_review` para prevenir colisiones o errores inesperados durante el procesamiento por lotes.
-- `2026-08-15T04:36:37` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante posibles excepciones durante la inicialización de la interfaz en `_build_tabs_container` y `_tab_factory`, garantizando que un error al construir una pestaña no bloquee la inicialización del resto de la aplicación, y añadí una verificación de seguridad al cerrar la aplicación para asegurar que el `ThreadPoolExecutor` no intente procesar tareas nuevas durante el proceso de destrucción.

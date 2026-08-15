@@ -190,12 +190,17 @@ def _generate_recommendations(metrics_map: Dict[str, Any], quarantined: int, rat
     """Genera una lista de textos explicativos según las violaciones de umbrales."""
     recommendations: List[str] = []
     
+    if not isinstance(metrics_map, dict): return ["Error interno en generación de reporte."]
+
     for rule in _RECOMMENDATION_RULES:
         if ratios.get(rule.area, 1.0) < rule.threshold:
             val = metrics_map.get(rule.metric_attr)
             if val is not None:
-                msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
-                recommendations.append(msg)
+                try:
+                    msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
+                    recommendations.append(msg)
+                except (ValueError, KeyError, IndexError):
+                    continue
     
     if quarantined > 0:
         recommendations.append(f"Tenés {quarantined} archivo(s) en cuarentena.")

@@ -1226,23 +1226,24 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # 1. Validar existencia del ID
+            if not quarantine.item_exists(raw_id):
+                self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
+                return
+            
+            # 2. Recuperar manifiesto y validar integridad
+            item = quarantine.get_item(raw_id)
+            if not item or not hasattr(item, 'original_path'):
+                self.log("Error: Manifiesto de cuarentena corrupto.", "Cuarentena")
+                return
+            
+            # 3. Chequeo de seguridad: la ruta original debe seguir siendo válida
+            if not self._is_safe_path(item.original_path):
+                self.log(f"Error: La ruta original {item.original_path} ahora es insegura.", "Cuarentena")
+                return
+            
+            # 4. Operación final
             try:
-                # Validar existencia antes de procesar
-                if not quarantine.item_exists(raw_id):
-                    self.log(f"Error: El ID '{raw_id}' no existe en la cuarentena.", "Cuarentena")
-                    return
-                
-                item = quarantine.get_item(raw_id)
-                # Validar integridad del manifiesto
-                if not item or not hasattr(item, 'original_path'):
-                    self.log("Error: Manifiesto de cuarentena corrupto.", "Cuarentena")
-                    return
-                
-                # Chequeo de seguridad: la ruta original debe seguir siendo válida
-                if not self._is_safe_path(item.original_path):
-                    self.log(f"Error: La ruta original {item.original_path} ahora es insegura.", "Cuarentena")
-                    return
-                
                 destino = quarantine.restore_item(raw_id)
                 self.log(f"Restaurado en: {destino}", "Cuarentena")
             except Exception as e:
