@@ -407,25 +407,24 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     Restaura un archivo desde la cuarentena a su ruta original.
     Valida: 1. Integridad SHA256. 2. Seguridad del destino. 3. Existencia en manifiesto.
     """
-    if not item_id or not isinstance(item_id, str):
-        raise ValueError("ID de ítem inválido.")
+    if not isinstance(item_id, str) or not item_id.strip():
+        raise ValueError("ID de ítem inválido o vacío.")
+    
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
     if not match:
         raise KeyError(f"No se encontró el ítem: {item_id}")
-    try:
-        base_path = quarantine_dir(base)
-        stored_file = (base_path / match.stored_name).resolve()
-    except (OSError, ValueError) as e:
-        raise RuntimeError(f"Falla de acceso al sandbox: {e}")
     
-    if not stored_file.exists() or not stored_file.is_file():
+    base_path = quarantine_dir(base)
+    stored_file = (base_path / match.stored_name).resolve()
+    
+    if not stored_file.is_file():
         items.remove(match)
         save_manifest(items, base)
-        raise FileNotFoundError("Archivo en cuarentena no localizado o inaccesible.")
+        raise FileNotFoundError("Archivo en cuarentena no localizado.")
     
     if not match.verify_integrity(stored_file):
-        raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue modificado.")
+        raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
     
     destination = Path(match.original_path).resolve()
     if destination.is_symlink() or (hasattr(destination, 'is_junction') and destination.is_junction()):
@@ -440,7 +439,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         destination.parent.mkdir(parents=True, exist_ok=True)
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
-        raise RuntimeError(f"Fallo durante la restauración: {e}")
+        raise RuntimeError(f"Fallo crítico durante la restauración: {e}")
     
     items.remove(match)
     save_manifest(items, base)
@@ -449,12 +448,14 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """Borra un ítem específico de la cuarentena tras validar su integridad y sandbox."""
-    if not item_id or not isinstance(item_id, str):
+    if not isinstance(item_id, str) or not item_id.strip():
         return False
+    
     items = load_manifest(base)
     match = next((i for i in items if i.item_id == item_id), None)
     if not match:
         return False
+        
     quarantine_root = quarantine_dir(base)
     stored_file = (quarantine_root / match.stored_name).resolve()
     
@@ -483,7 +484,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
-    # Usamos un set para búsqueda rápida de nombres de archivos registrados
     manifest_names = {i.stored_name for i in items}
     item_map = {i.stored_name: i for i in items}
     purged_count = 0

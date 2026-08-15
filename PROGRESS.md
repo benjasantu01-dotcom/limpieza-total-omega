@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 38 | 3 | 6 | 2 | 41 |
+| 2026-08-13 | 36 | 2 | 5 | 2 | 41 |
 | 2026-08-14 | 165 | 12 | 24 | 14 | 135 |
-| 2026-08-15 | 20 | 1 | 2 | 3 | 38 |
+| 2026-08-15 | 21 | 1 | 3 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
-- manejo de errores y validación de entradas: **48**
+- manejo de errores y validación de entradas: **49**
 - robustez ante casos límite: **43**
-- rendimiento: **41**
 - legibilidad y documentación: **40**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
-- `browser.py`: **19**
 - `diskreport.py`: **19**
 - `healthscore.py`: **19**
 - `scanner.py`: **18**
 - `settings.py`: **18**
+- `browser.py`: **18**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **17**
-- `quarantine.py`: **14**
+- `quarantine.py`: **15**
 - `safety.py`: **14**
 - `main.py`: **11**
 - `startup.py`: **11**
-- `branding.py`: **9**
+- `branding.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T02:53:28` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de tipos y estados en `restore_item` y `purge_item` para evitar errores de ejecución por rutas o estados de manifiesto inconsistentes, asegurando que las operaciones sean atómicas y seguras frente a entradas inesperadas.
 - `2026-08-15T02:44:34` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `trim_working_set` mediante una validación estricta de parámetros y una captura de errores más granular, asegurando que cualquier entrada sea validada antes de interactuar con la API de Windows y evitando el manejo de punteros nulos.
 - `2026-08-15T02:43:18` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_generate_recommendations` validando la existencia del atributo en `metrics` antes de intentar acceder a él, evitando fallos inesperados si la estructura de datos se desalinea en el futuro.
 - `2026-08-15T02:42:53` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada y validación de rutas mediante la normalización explícita y chequeos preventivos, asegurando que `is_safe_to_modify` siempre reciba rutas resueltas y evitando potenciales fallos por valores vacíos o tipos inesperados.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T00:42:25` **diskreport.py** (seguridad defensiva): Se ha robustecido el manejo de rutas en `walk_files` y `drive_usage` para prevenir ataques de desbordamiento de acceso fuera del directorio base mediante la normalización estricta de rutas con `Path.resolve()` y la validación de prefijos, asegurando que no se pueda escapar del ámbito de escaneo definido.
 - `2026-08-15T00:33:24` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` reemplazando el uso de `filter_safe_paths` (diseñada para archivos en disco) por una validación estricta de formato con regex, evitando así el error conceptual de tratar la API Key y el modelo como rutas de archivo.
 - `2026-08-15T00:33:05` **startup.py** (robustez ante casos límite): Se añadió una verificación de archivos inexistentes o bloqueados en `entries_from_folders` mediante `is_file()` con `follow_symlinks=False` y se reforzó la robustez ante rutas corruptas o inaccesibles en el bucle principal de escaneo de directorios.
-- `2026-08-15T00:31:04` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para asegurar que el contenido JSON cargado contenga todas las claves necesarias según la definición de `AppSettings`, evitando errores de `KeyError` en partes de la app que consumen el diccionario directamente.
