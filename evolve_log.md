@@ -639,3 +639,10 @@ assert 'oval' in ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle',
 - `2026-08-15T03:45:14` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el cálculo de colores en `branding.py` reemplazando los bucles manuales de interpolación de color por una estrategia de pre-cómputo y minimizando la conversión de tipos en las funciones críticas de renderizado (`gradient_colors` y `_hex_to_rgb`) para reducir el costo de CPU durante la actualización de la UI.
 - `2026-08-15T03:45:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T03:45:14` Corrida terminada. Total usado hoy: 88.
+- `2026-08-15T03:53:39` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-15T03:54:05` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios mediante la persistencia del diccionario `perf_cache` a través de toda la ejecución de `detect_profiles` y evitando re-escanear rutas visitadas, reduciendo significativamente la complejidad en sistemas con estructuras de directorios compartidas o redundantes.
+- `2026-08-15T03:54:31` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el bucle principal en `summarize` para reducir las llamadas a `path.suffix` y mejorar la eficiencia del cálculo de estadísticas al unificar la recolección de datos y evitar diccionarios anidados innecesarios.
+- `2026-08-15T03:54:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-15T03:55:04` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de generación de recomendaciones convirtiendo el acceso a atributos de `metrics` en una operación más eficiente mediante el pre-procesamiento de los valores en un diccionario dentro de `compute_score`, evitando llamadas repetitivas a `getattr` y `hasattr` dentro del bucle de reglas.
+- `2026-08-15T03:55:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T03:55:04` Corrida terminada. Total usado hoy: 92.

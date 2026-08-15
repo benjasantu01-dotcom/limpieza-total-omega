@@ -229,7 +229,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Identificar enlaces y prevenir seguir junctions o fugas de path
                         target = Path(entry.path).resolve()
                         if not str(target).startswith(str(base_path)):
                             continue
@@ -295,7 +294,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     count_map: Dict[str, int] = defaultdict(int)
     
     for path, size in walk_files(directory, skip_protected):
-        ext = path.suffix.lower() if path.suffix else "(sin extensión)"
+        ext = path.suffix.lower() or "(sin extensión)"
         size_map[ext] += size
         count_map[ext] += 1
     
@@ -390,7 +389,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     except (OSError, TypeError, RuntimeError, ValueError):
         return ["Error: Ruta inválida o inaccesible."]
         
-    ext_stats: Dict[str, List[int]] = defaultdict(lambda: [0, 0])
+    ext_sizes: Dict[str, int] = defaultdict(int)
+    ext_counts: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, str]] = []
     total_bytes, total_files = 0, 0
     
@@ -399,10 +399,9 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             total_bytes += size
             total_files += 1
             
-            ext = path.suffix.lower() if path.suffix else "(sin extensión)"
-            stats = ext_stats[ext]
-            stats[0] += size
-            stats[1] += 1
+            ext = path.suffix.lower() or "(sin extensión)"
+            ext_sizes[ext] += size
+            ext_counts[ext] += 1
             
             if len(top_files_heap) < 8:
                 heapq.heappush(top_files_heap, (size, str(path)))
@@ -413,8 +412,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
 
     lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     
-    for ext, stats in heapq.nlargest(8, ext_stats.items(), key=lambda item: item[1][0]):
-        lines.append(f"  {ext:<18} {format_size(stats[0]):>10}  ({stats[1]} archivos)")
+    for ext, size in heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1]):
+        lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_counts[ext]} archivos)")
         
     lines.extend(["", "Archivos más grandes:"])
     for size, path in sorted(top_files_heap, key=lambda x: x[0], reverse=True):

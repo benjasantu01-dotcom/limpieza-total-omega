@@ -168,7 +168,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
 
 def _sum_directory_recursive(
     root_dir: str, 
-    base_dir: Path,
     is_junction_fn: Callable[[str], bool], 
     kernel32: ctypes.WinDLL | None,
     visited: Set[str], 
@@ -177,7 +176,7 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el tamaño en bytes de un directorio, aplicando límites de profundidad
-    y control de ciclos para evitar bucles infinitos en el sistema de archivos.
+    y memorización para evitar re-cálculos costosos y bucles infinitos.
     """
     if not isinstance(root_dir, str) or depth > 20 or root_dir in visited:
         return 0
@@ -200,7 +199,7 @@ def _sum_directory_recursive(
                     continue
                 try:
                     if entry.is_dir():
-                        total_size += _sum_directory_recursive(entry.path, base_dir, is_junction_fn, kernel32, visited, cache, depth + 1)
+                        total_size += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, visited, cache, depth + 1)
                     else:
                         total_size += entry.stat().st_size
                 except (PermissionError, OSError):
@@ -227,7 +226,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
-        return max(0, _sum_directory_recursive(str(root_path), root_path, is_junction, k32, set(), {}))
+        return max(0, _sum_directory_recursive(str(root_path), is_junction, k32, set(), {}))
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -281,7 +280,7 @@ def detect_profiles(
                     c_path = candidate.resolve()
                     c_path_str = str(c_path)
                     
-                    size: int = _sum_directory_recursive(c_path_str, c_path, is_junction, k32, visited, perf_cache)
+                    size: int = _sum_directory_recursive(c_path_str, is_junction, k32, visited, perf_cache)
                     if size > 0:
                         found.append(BrowserCache(
                             browser=str(browser_name),

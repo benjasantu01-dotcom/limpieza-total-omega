@@ -13,7 +13,7 @@ vive en los otros módulos; acá solo se puntúa.
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple
 import math
 
@@ -188,25 +188,19 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 
-def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
+def _generate_recommendations(metrics_map: Dict[str, Any], quarantined: int, ratios: ScoreMap) -> List[str]:
     """Genera una lista de textos explicativos según las violaciones de umbrales."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
-        return ["Error: Datos de entrada corruptos, análisis no disponible."]
-        
     recommendations: List[str] = []
     
     for rule in _RECOMMENDATION_RULES:
         if ratios.get(rule.area, 1.0) < rule.threshold:
-            if hasattr(metrics, rule.metric_attr):
-                try:
-                    val = getattr(metrics, rule.metric_attr)
-                    msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
-                    recommendations.append(msg)
-                except (ValueError, TypeError):
-                    continue
+            val = metrics_map.get(rule.metric_attr)
+            if val is not None:
+                msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
+                recommendations.append(msg)
     
-    if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
+    if quarantined > 0:
+        recommendations.append(f"Tenés {quarantined} archivo(s) en cuarentena.")
     
     return recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
@@ -232,11 +226,14 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    # Calcular desglose ponderado redondeado al entero más cercano, validando rangos
+    # Calcular desglose ponderado redondeado al entero más cercano
     breakdown: Dict[str, int] = {area: _to_int(_clamp(ratios[area] * factor, 0.0, factor)) for area, factor in _WEIGHT_ITEMS}
     final_score = _to_int(_clamp(float(sum(breakdown.values())), 0.0, 100.0))
     
-    return HealthResult(final_score, grade_for_score(final_score), breakdown, _generate_recommendations(metrics, ratios))
+    metrics_map = asdict(metrics)
+    recs = _generate_recommendations(metrics_map, metrics.quarantined_count, ratios)
+    
+    return HealthResult(final_score, grade_for_score(final_score), breakdown, recs)
 
 
 def summarize(result: HealthResult) -> List[str]:
