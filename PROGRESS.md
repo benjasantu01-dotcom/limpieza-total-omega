@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 205
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 57 | 3 | 8 | 2 | 64 |
+| 2026-08-13 | 57 | 3 | 8 | 2 | 60 |
 | 2026-08-14 | 165 | 12 | 24 | 14 | 135 |
-| 2026-08-15 | 12 | 0 | 1 | 1 | 6 |
+| 2026-08-15 | 14 | 0 | 2 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
+- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **49**
 - robustez ante casos límite: **43**
 - rendimiento: **41**
 
@@ -36,17 +36,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
 - `browser.py`: **19**
-- `scanner.py`: **18**
+- `scanner.py`: **19**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **16**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `main.py`: **13**
 - `startup.py`: **11**
 - `branding.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T01:02:35` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `check_recent_executable_in_downloads` asegurando que la comprobación de `WATCHED_FOLDERS` utilice una comparación de conjuntos más estricta (`isdisjoint` sobre los componentes del path) para evitar falsos positivos y asegurar que la lógica de seguridad sea determinista ante rutas complejas.
+- `2026-08-15T01:02:22` **safety.py** (seguridad defensiva): He mejorado `safety.py` añadiendo un chequeo preventivo de privilegios elevados (Administrador) para evitar que la aplicación intente realizar cambios en disco con permisos innecesarios, lo cual mitiga riesgos de modificaciones accidentales en archivos del sistema protegidos por el control de cuentas de usuario (UAC).
 - `2026-08-15T00:52:58` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo un filtro de validación obligatorio para todas las rutas proporcionadas por el usuario en las funciones que ejecutan acciones sobre el disco, asegurando que pasen por `safety.ensure_safe_to_modify` antes de ser procesadas en el pool de hilos.
 - `2026-08-15T00:50:48` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `healthscore.py` ante datos malintencionados o corruptos, validando explícitamente que los resultados de las funciones de puntuación y el cálculo del puntaje final se mantengan dentro de los límites esperados (0-100) para evitar desbordes o estados inconsistentes en la UI.
 - `2026-08-15T00:42:34` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` al añadir una verificación explícita mediante `is_safe_to_modify` antes de abrir archivos, garantizando que el módulo de lectura no intente procesar rutas que violan las políticas de seguridad incluso si la comprobación previa en `scandir` fuera omitida por error.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T00:11:44` **main.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la inicialización y ejecución del hilo principal, añadiendo una validación de seguridad contra `None` en `run_async` y envolviendo la creación de widgets en un chequeo de existencia (`winfo_exists`) para prevenir excepciones si la aplicación se cierra durante tareas asíncronas pendientes.
 - `2026-08-15T00:10:29` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `_generate_recommendations` ante datos inesperados mediante el uso de `getattr` sobre la instancia `SystemMetrics` en lugar de un diccionario manual, evitando que desincronizaciones entre la estructura de datos y el mapeo generen falsas recomendaciones o errores silenciosos.
 - `2026-08-14T14:49:05` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el recorrido (condición de carrera) y se ha protegido `summarize` ante casos de rutas con permisos denegados durante la iteración, evitando que una excepción en un archivo puntual aborte el reporte completo.
-- `2026-08-14T14:48:32` **browser.py** (robustez ante casos límite): Se añadió un control de excepciones específico para `PermissionError` y `OSError` en la resolución de rutas y creación de candidatos de caché, asegurando que si un subdirectorio deniega el acceso, el escaneo continúe con el resto sin abortar ni corromper el estado de la iteración.
-- `2026-08-14T14:39:40` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `_get_metric_val` y `_safe_assign` añadiendo validaciones explícitas contra el tipo `bool` (que en Python es subclase de `int` y podría ser interpretado erróneamente como métrica numérica) y se mejoró la resiliencia ante `NaN` o valores infinitos que podrían romper la interfaz gráfica.

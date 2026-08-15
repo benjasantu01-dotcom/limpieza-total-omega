@@ -145,7 +145,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     
     try:
-        # Validación defensiva de partes de la ruta
+        # Validación defensiva de partes de la ruta: verificamos intersección no vacía
         path_parts = {p.lower() for p in path.parts}
         if WATCHED_FOLDERS.isdisjoint(path_parts):
             return None

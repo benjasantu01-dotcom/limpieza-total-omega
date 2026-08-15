@@ -32,6 +32,7 @@ __all__ = [
     "filter_safe_paths",
     "is_sensitive_file",
     "describe_protection",
+    "is_running_as_admin",
 ]
 
 
@@ -71,6 +72,16 @@ class _IntegrityCheck(NamedTuple):
     """Representa un criterio de validación para un archivo específico."""
     reason: str
     predicate: ViolationPredicate
+
+
+def is_running_as_admin() -> bool:
+    """Verifica si el proceso actual tiene privilegios elevados (Administrador)."""
+    if os.name != 'nt':
+        return os.getuid() == 0
+    try:
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
+    except (AttributeError, OSError):
+        return False
 
 
 def _is_permission_denied(e: Exception) -> bool:
@@ -150,7 +161,6 @@ def _check_file_integrity(p: Path) -> None:
         except OSError:
             raise UnsafePathError(f"No se pudo acceder a metadatos de {path.name}")
 
-    # Lista de reglas aplicadas secuencialmente
     violation_checks: list[_IntegrityCheck] = [
         _IntegrityCheck("inaccesible", lambda: not os.access(p, os.W_OK)),
         _IntegrityCheck("punto de reparse", lambda: _is_reparse_point(p)),
@@ -218,12 +228,10 @@ def is_protected_path(path: PathLike) -> bool:
             return True
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
-        # Si la ruta existe y es reparse point, es de riesgo aunque no sea obvio
         if p.exists() and _is_reparse_point(p):
             return True
         return p == Path(p.anchor)
     except (PermissionError, OSError, ValueError, TypeError, RuntimeError):
-        # Ante la duda, protegemos el sistema denegando la operación
         return True 
 
 
