@@ -863,9 +863,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if self._closing: return
         
         target_path = target or self.scan_target
-        if check_safety and target_path and not self._is_safe_target_dir(target_path):
-            self.log(f"Abortado: La ruta de destino {target_path} no es segura.", self._current_tab())
-            return
+        if check_safety and target_path:
+            # Validar integridad contra None antes de operar
+            if not self._is_safe_target_dir(target_path):
+                self.log(f"Abortado: La ruta de destino {target_path} no es segura.", self._current_tab())
+                return
             
         self._set_busy(True)
         tab = self._current_tab()
@@ -979,7 +981,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._last_health_state = state_key
 
         def actualizar() -> None:
-            if self._closing or not self.gauge.winfo_exists(): return
+            if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
             self._draw_gauge(resultado.score, resultado.grade)
 
             valores = {

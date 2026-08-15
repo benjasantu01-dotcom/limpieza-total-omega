@@ -26,6 +26,7 @@ class RecommendationRule(NamedTuple):
     threshold: float
     message_format: str
     expected_args: int = 1
+    metric_attr: str = ""
 
 __all__ = [
     "SystemMetrics",
@@ -73,12 +74,12 @@ _WEIGHT_ITEMS: Final[List[Tuple[str, float]]] = [(k, _WEIGHT_FACTORS[k]) for k i
 
 # Pre-computo de metadatos para optimizar recomendaciones
 _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
-    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, "Revisá los {} hallazgo(s) de seguridad.", 1),
-    RecommendationRule("disco", WARN_THRESHOLD_LOW, "Queda {:.1f}% de disco libre.", 1),
-    RecommendationRule("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios.", 0),
-    RecommendationRule("basura", WARN_THRESHOLD_MED, "Hay {:.0f} MB de archivos temporales.", 1),
-    RecommendationRule("duplicados", WARN_THRESHOLD_MED, "Podrías recuperar {:.0f} MB eliminando duplicados.", 1),
-    RecommendationRule("arranque", WARN_THRESHOLD_LOW, "{} programas arrancan con Windows.", 1),
+    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, "Revisá los {} hallazgo(s) de seguridad.", 1, "suspicious_count"),
+    RecommendationRule("disco", WARN_THRESHOLD_LOW, "Queda {:.1f}% de disco libre.", 1, "disk_free_percent"),
+    RecommendationRule("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios.", 0, "memory_available_percent"),
+    RecommendationRule("basura", WARN_THRESHOLD_MED, "Hay {:.0f} MB de archivos temporales.", 1, "junk_mb"),
+    RecommendationRule("duplicados", WARN_THRESHOLD_MED, "Podrías recuperar {:.0f} MB eliminando duplicados.", 1, "duplicate_mb"),
+    RecommendationRule("arranque", WARN_THRESHOLD_LOW, "{} programas arrancan con Windows.", 1, "startup_count"),
 )
 
 def _validate_weights() -> bool:
@@ -194,24 +195,13 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         
     recommendations: List[str] = []
     
-    # Mapeo pre-vinculado para acceso eficiente en loop
-    val_map = {
-        "seguridad": metrics.suspicious_count, 
-        "disco": metrics.disk_free_percent, 
-        "memoria": metrics.memory_available_percent, 
-        "basura": metrics.junk_mb, 
-        "duplicados": metrics.duplicate_mb, 
-        "arranque": metrics.startup_count
-    }
-
     for rule in _RECOMMENDATION_RULES:
-        ratio = ratios.get(rule.area, 1.0)
-        if ratio < rule.threshold:
-            val = val_map.get(rule.area, 0.0)
+        if ratios.get(rule.area, 1.0) < rule.threshold:
             try:
+                val = getattr(metrics, rule.metric_attr, 0.0)
                 msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
                 recommendations.append(msg)
-            except (ValueError, TypeError):
+            except (AttributeError, ValueError, TypeError):
                 continue
     
     if metrics.quarantined_count > 0:

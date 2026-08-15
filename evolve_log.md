@@ -1375,3 +1375,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-14T23:38:58` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-14T23:49:10` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-14T23:59:16` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-15T00:09:27` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-15T00:10:02` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un chequeo de integridad en `_collect_candidates` para manejar la posibilidad de que un archivo sea movido o borrado por un proceso externo durante la iteración (condición de carrera), envolviendo la obtención de `st_size` en el mismo bloque `try-except` que el resto de las operaciones de disco.
+- `2026-08-15T00:10:29` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_generate_recommendations` ante datos inesperados mediante el uso de `getattr` sobre la instancia `SystemMetrics` en lugar de un diccionario manual, evitando que desincronizaciones entre la estructura de datos y el mapeo generen falsas recomendaciones o errores silenciosos.
+- `2026-08-15T00:11:44` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en la inicialización y ejecución del hilo principal, añadiendo una validación de seguridad contra `None` en `run_async` y envolviendo la creación de widgets en un chequeo de existencia (`winfo_exists`) para prevenir excepciones si la aplicación se cierra durante tareas asíncronas pendientes.
+- `2026-08-15T00:11:54` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-15T00:11:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T00:11:54` Corrida terminada. Total usado hoy: 4.
