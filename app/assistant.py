@@ -482,6 +482,7 @@ def _call_gemini(
     Ejecuta una solicitud POST al motor de Gemini (remoto) si la configuración está activa.
     Las entradas están estrictamente saneadas contra inyecciones y rutas.
     """
+    # Validación estricta previa a cualquier acción de red
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     

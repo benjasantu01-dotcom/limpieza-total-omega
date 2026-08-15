@@ -159,6 +159,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         p = Path(mount).resolve()
         if str(p).startswith(("\\\\", "//")):
             return None
+        # Validación extra: prevenir resolución a ruta protegida fuera de la raíz esperada
         if not p.exists() or is_protected_path(p):
             return None
             
@@ -230,9 +231,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                 for entry in iterator:
                     try:
                         target = Path(entry.path).resolve()
+                        # Verificación de confinamiento
                         if not str(target).startswith(str(base_path)):
                             continue
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
+                            continue
+                        if skip_protected and is_protected_path(target):
                             continue
 
                         if entry.is_dir():
@@ -241,8 +245,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 inode = (st.st_dev, st.st_ino)
                                 if inode not in visited_inodes:
                                     visited_inodes.add(inode)
-                                    if skip_protected and is_protected_path(target):
-                                        continue
                                     stack.append(target)
                             except (OSError, PermissionError):
                                 continue

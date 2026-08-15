@@ -735,3 +735,10 @@ FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_wher
 - `2026-08-15T04:56:25` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito para rutas que, aunque existen físicamente, no pueden ser resueltas por el sistema de archivos (ej. debido a bloqueos de acceso o permisos denegados), evitando que la app falle ante archivos "fantasma" o inaccesibles.
 - `2026-08-15T04:56:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T04:56:25` Corrida terminada. Total usado hoy: 116.
+- `2026-08-15T05:05:10` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-08-15T05:05:45` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la integridad del motor remoto bloqueando la ejecución si la clave de API o el modelo no cumplen con estándares estrictos de formato antes de realizar cualquier operación de red, evitando así la inyección de parámetros en la URL.
+- `2026-08-15T05:06:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-15T05:06:38` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-15T05:06:49` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `walk_files` y `drive_usage` validando que las rutas resultantes de `Path.resolve()` permanezcan dentro de los límites esperados mediante `is_protected_path` después de cada iteración, previniendo posibles escapes por enlaces simbólicos complejos o manipulaciones del sistema de archivos.
+- `2026-08-15T05:06:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T05:06:49` Corrida terminada. Total usado hoy: 120.
