@@ -139,7 +139,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """
     Verifica si un ejecutable ha sido modificado en las últimas 24h dentro de carpetas expuestas.
     """
-    if not isinstance(entry, os.DirEntry):
+    if not isinstance(entry, os.DirEntry) or not entry.is_file():
         return None
         
     if is_protected_path(path):
@@ -181,6 +181,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     findings: ScanResult = []
     
+    # Pre-validación: verificar si el archivo existe para evitar errores en llamadas subsiguientes
+    if not path.exists():
+        return []
+
     # 1. Aplicar reglas universales
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)

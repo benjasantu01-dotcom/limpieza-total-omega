@@ -1017,3 +1017,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T07:19:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-15T07:19:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T07:19:10` Corrida terminada. Total usado hoy: 172.
+- `2026-08-15T07:27:55` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-15T07:28:22` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-15T07:28:46` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `scan_file` y `check_recent_executable_in_downloads` mediante la adición de validaciones explícitas de existencia y tipo de archivo para prevenir errores en condiciones de carrera (Race Conditions) donde el archivo puede haber sido borrado o bloqueado entre el listado (`os.scandir`) y el análisis heurístico.
+- `2026-08-15T07:29:12` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del validador `_Validators.int` para prevenir el uso de valores numéricos fuera de rango y asegurar que ante cualquier entrada maliciosa o corrupta (como `float`, `None` o strings no numéricos) el sistema recupere silenciosamente el valor por defecto sin interrumpir la ejecución.
+- `2026-08-15T07:29:24` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.04s
+
+```
+- `2026-08-15T07:29:24` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré el manejo de errores en `_resolve_and_cache_path` y `_resolve_path_from_command` para prevenir fallos silenciosos al procesar rutas malformadas, garantizando que el bucle de escaneo no se detenga ante entradas inesperadas en el registro o accesos denegados.
+- `2026-08-15T07:29:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T07:29:24` Corrida terminada. Total usado hoy: 176.

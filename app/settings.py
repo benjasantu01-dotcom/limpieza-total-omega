@@ -147,7 +147,7 @@ class _Validators:
 
     @staticmethod
     def int(key: ConfigKey, val: Any) -> int | None:
-        if val is None: return None
+        if val is None or isinstance(val, bool): return None
         try:
             parsed_value = int(val)
             min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
