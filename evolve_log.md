@@ -558,3 +558,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - Asse
 - `2026-08-15T02:53:58` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-15T02:53:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T02:53:58` Corrida terminada. Total usado hoy: 68.
+- `2026-08-15T03:02:45` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-15T03:03:10` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `check_recent_executable_in_downloads` y `scan_file` añadiendo validaciones de tipo y estructura frente a entradas malformadas, asegurando que `path.parts` no sea iterado si `path` es inválido y mejorando el manejo de excepciones en el pipeline para evitar que una falla en un chequeo silencie el resto del análisis.
+- `2026-08-15T03:03:37` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `settings.py` centralizando la lógica de validación de `ConfigKey` dentro de `load` y `update`, evitando el acceso directo con llaves potencialmente inexistentes o inválidas mediante el uso de `.get()` con los `DEFAULTS` definidos.
+- `2026-08-15T03:04:00` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-15T03:04:19` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manejo de respuestas y la clarificación de las responsabilidades de los motores (local vs. remoto) en los docstrings, facilitando la comprensión del flujo de datos sin alterar la lógica.
+- `2026-08-15T03:04:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T03:04:19` Corrida terminada. Total usado hoy: 72.

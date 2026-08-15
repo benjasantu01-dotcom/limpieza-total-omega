@@ -247,8 +247,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = json.loads(content)
             if isinstance(data, dict):
                 config = validate(data)
-                for key in DEFAULTS:
-                    if key not in config: config[key] = DEFAULTS[key]
                 _cached_settings = config
                 _cached_mtime = mtime
                 _current_path = ruta
@@ -303,12 +301,13 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restaura la configuración a los valores definidos en DEFAULTS."""
-    save(_get_default_config(), custom_base)
-    return _get_default_config()
+    default_config = _get_default_config()
+    save(default_config, custom_base)
+    return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Obtiene un valor individual con fallback a los defaults de fábrica."""
-    return load(custom_base).get(key, _get_default_config().get(key))
+    return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
     """Prioriza variables de entorno sobre el JSON para proteger credenciales."""

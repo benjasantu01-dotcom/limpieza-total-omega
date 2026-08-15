@@ -330,7 +330,7 @@ def explain_area(area: Any) -> str:
     return "No tengo una explicación para esa área."
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Responde preguntas sobre el estado actual de la memoria RAM."""
+    """Maneja consultas sobre el estado de la memoria RAM usando el motor local."""
     partes = [
         f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
         f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}."
@@ -348,7 +348,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Responde preguntas sobre el uso del almacenamiento y espacio recuperable."""
+    """Maneja consultas sobre el almacenamiento local."""
     recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
     partes = [
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
@@ -364,7 +364,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Responde preguntas sobre archivos sospechosos encontrados."""
+    """Maneja consultas de seguridad sobre archivos potencialmente riesgosos."""
     partes = []
     if ctx.suspicious_count == 0:
         partes.append("No hay archivos sospechosos en tus Descargas.")
@@ -377,7 +377,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Responde preguntas sobre el puntaje de salud del sistema."""
+    """Maneja consultas sobre el puntaje de salud del sistema."""
     partes = [f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."]
     problemas = _identify_active_problems(ctx)
     
@@ -391,7 +391,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """Responde preguntas sobre programas que arrancan con el sistema."""
+    """Maneja consultas sobre programas de inicio."""
     partes = [f"Tenés {ctx.startup_count} programas que arrancan con Windows."]
     if ctx.startup_count > 15:
         partes.append("Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos.")
@@ -470,7 +470,10 @@ def _call_gemini(
     api_key: str, 
     model: str
 ) -> Optional[str]:
-    """Ejecuta una solicitud POST al endpoint de Gemini protegiendo los datos enviados."""
+    """
+    Ejecuta una solicitud POST al motor de Gemini (remoto) si la configuración está activa.
+    Las entradas están estrictamente saneadas contra inyecciones y rutas.
+    """
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
@@ -509,7 +512,7 @@ def _call_gemini(
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """Orquestador de alto nivel para determinar si responder localmente o via API."""
+    """Orquestador de alto nivel: elige entre el motor local o remoto según disponibilidad."""
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     
