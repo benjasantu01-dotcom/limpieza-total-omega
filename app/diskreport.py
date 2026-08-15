@@ -156,7 +156,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount:
         return None
     try:
-        p = Path(mount).expanduser().resolve()
+        p = Path(mount).resolve()
         if str(p).startswith(("\\\\", "//")):
             return None
         if not p.exists() or is_protected_path(p):
@@ -210,7 +210,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        base_path = Path(directory).expanduser().resolve()
+        base_path = Path(directory).resolve()
         if str(base_path).startswith(("\\\\", "//")):
             return
         if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
@@ -227,7 +227,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Identificar enlaces y prevenir seguir junctions
+                        # Identificar enlaces y prevenir seguir junctions o fugas de path
+                        target = Path(entry.path).resolve()
+                        if not str(target).startswith(str(base_path)):
+                            continue
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
 
@@ -236,11 +239,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
-                                if skip_protected and is_protected_path(Path(entry.path)):
+                                if skip_protected and is_protected_path(target):
                                     continue
-                                stack.append(Path(entry.path))
+                                stack.append(target)
                         else:
-                            yield Path(entry.path), entry.stat().st_size
+                            yield target, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -318,7 +321,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        base = Path(directory).expanduser().resolve()
+        base = Path(directory).resolve()
         if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
             return []
         
@@ -373,7 +376,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
     
     try:
-        p_input = Path(directory).expanduser().resolve()
+        p_input = Path(directory).resolve()
         if str(p_input).startswith(("\\\\", "//")):
             return ["Error: No se permiten rutas de red (UNC)."]
         if not p_input.exists():

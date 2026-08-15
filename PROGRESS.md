@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 57 | 3 | 8 | 2 | 72 |
+| 2026-08-13 | 57 | 3 | 8 | 2 | 68 |
 | 2026-08-14 | 165 | 12 | 24 | 14 | 135 |
-| 2026-08-15 | 8 | 0 | 1 | 1 | 2 |
+| 2026-08-15 | 10 | 0 | 1 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **43**
 - rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
+- `diskreport.py`: **20**
 - `settings.py`: **20**
-- `diskreport.py`: **19**
 - `organizer.py`: **19**
 - `browser.py`: **19**
 - `healthscore.py`: **18**
 - `scanner.py`: **18**
+- `duplicates.py`: **17**
 - `memory.py`: **17**
 - `quarantine.py`: **16**
-- `duplicates.py`: **16**
 - `safety.py`: **14**
 - `main.py`: **12**
 - `startup.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T00:42:34` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` al añadir una verificación explícita mediante `is_safe_to_modify` antes de abrir archivos, garantizando que el módulo de lectura no intente procesar rutas que violan las políticas de seguridad incluso si la comprobación previa en `scandir` fuera omitida por error.
+- `2026-08-15T00:42:25` **diskreport.py** (seguridad defensiva): Se ha robustecido el manejo de rutas en `walk_files` y `drive_usage` para prevenir ataques de desbordamiento de acceso fuera del directorio base mediante la normalización estricta de rutas con `Path.resolve()` y la validación de prefijos, asegurando que no se pueda escapar del ámbito de escaneo definido.
 - `2026-08-15T00:33:24` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` reemplazando el uso de `filter_safe_paths` (diseñada para archivos en disco) por una validación estricta de formato con regex, evitando así el error conceptual de tratar la API Key y el modelo como rutas de archivo.
 - `2026-08-15T00:33:05` **startup.py** (robustez ante casos límite): Se añadió una verificación de archivos inexistentes o bloqueados en `entries_from_folders` mediante `is_file()` con `follow_symlinks=False` y se reforzó la robustez ante rutas corruptas o inaccesibles en el bucle principal de escaneo de directorios.
 - `2026-08-15T00:31:04` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para asegurar que el contenido JSON cargado contenga todas las claves necesarias según la definición de `AppSettings`, evitando errores de `KeyError` en partes de la app que consumen el diccionario directamente.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T14:39:40` **assistant.py** (robustez ante casos límite): Se reforzó la robustez de `_get_metric_val` y `_safe_assign` añadiendo validaciones explícitas contra el tipo `bool` (que en Python es subclase de `int` y podría ser interpretado erróneamente como métrica numérica) y se mejoró la resiliencia ante `NaN` o valores infinitos que podrían romper la interfaz gráfica.
 - `2026-08-14T14:39:06` **startup.py** (rendimiento): Se implementó un cache en `list_startup_entries` para evitar la re-ejecución innecesaria de la lógica de escaneo en cada llamada, optimizando drásticamente el rendimiento durante la navegación en la interfaz.
 - `2026-08-14T14:38:24` **settings.py** (rendimiento): Optimicé el rendimiento del módulo implementando un mecanismo de carga diferida ("lazy loading") y caché más robusto, eliminando lecturas redundantes de disco mediante la comparación de hashes y evitando el parseo de JSON cuando la configuración no ha cambiado.
-- `2026-08-14T14:28:13` **quarantine.py** (rendimiento): Optimizé `purge_all` para mejorar el rendimiento mediante el uso de un `set` para las búsquedas de archivos en el sistema de archivos, reduciendo la complejidad de las comprobaciones de integridad al iterar una sola vez sobre el directorio y evitando múltiples recorridos innecesarios de la lista de ítems.
-- `2026-08-14T14:19:38` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de `Get-CimInstance` (que es lenta y genera un proceso hijo pesado) por `Get-Process`, reduciendo el tiempo de ejecución y el uso de CPU/memoria en cada consulta.

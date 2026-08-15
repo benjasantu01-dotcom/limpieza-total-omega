@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence
 
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 __all__ = [
     "DuplicateGroup",
@@ -91,7 +91,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path)
-        if is_protected_path(file_path) or file_path.is_symlink():
+        if is_protected_path(file_path) or not is_safe_to_modify(file_path) or file_path.is_symlink():
             return None
 
         stat_initial = file_path.stat()
@@ -124,7 +124,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         file_path = Path(path)
-        if is_protected_path(file_path) or file_path.is_symlink():
+        if is_protected_path(file_path) or not is_safe_to_modify(file_path) or file_path.is_symlink():
             return None
             
         with open(file_path, "rb") as f:
@@ -144,7 +144,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return groups
         
     for p in paths:
-        if not isinstance(p, Path) or is_protected_path(p) or p.is_symlink(): continue
+        if not isinstance(p, Path) or is_protected_path(p) or not is_safe_to_modify(p) or p.is_symlink(): continue
         try:
             if p.is_file():
                 groups[p.stat().st_size].append(p)
@@ -172,7 +172,7 @@ def _collect_candidates(
                         if entry.is_symlink(): continue
                         
                         # Filtrado rápido antes de stat pesado
-                        if skip_protected and is_protected_path(Path(entry.path)): continue
+                        if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))): continue
                         
                         st = entry.stat(follow_symlinks=False)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue

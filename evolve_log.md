@@ -1399,3 +1399,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-15T00:33:24` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` reemplazando el uso de `filter_safe_paths` (diseñada para archivos en disco) por una validación estricta de formato con regex, evitando así el error conceptual de tratar la API Key y el modelo como rutas de archivo.
 - `2026-08-15T00:33:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T00:33:24` Corrida terminada. Total usado hoy: 12.
+- `2026-08-15T00:40:08` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-08-15T00:40:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-15T00:41:20` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-15T00:41:45` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-15T00:42:25` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha robustecido el manejo de rutas en `walk_files` y `drive_usage` para prevenir ataques de desbordamiento de acceso fuera del directorio base mediante la normalización estricta de rutas con `Path.resolve()` y la validación de prefijos, asegurando que no se pueda escapar del ámbito de escaneo definido.
+- `2026-08-15T00:42:34` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` al añadir una verificación explícita mediante `is_safe_to_modify` antes de abrir archivos, garantizando que el módulo de lectura no intente procesar rutas que violan las políticas de seguridad incluso si la comprobación previa en `scandir` fuera omitida por error.
+- `2026-08-15T00:42:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T00:42:34` Corrida terminada. Total usado hoy: 16.
