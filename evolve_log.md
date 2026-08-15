@@ -1257,3 +1257,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T09:53:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-08-15T09:53:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T09:53:21` Corrida terminada. Total usado hoy: 232.
+- `2026-08-15T10:01:06` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-15T10:01:33` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-15T10:01:55` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las heurísticas asegurando que todas las validaciones de acceso a archivos ocurran estrictamente dentro del contexto del bucle de escaneo, evitando invocaciones redundantes o riesgosas de `path.exists()` y `entry.stat()` fuera del manejo de errores controlado.
+- `2026-08-15T10:02:21` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de la persistencia de datos al sustituir la escritura directa por un flujo de escritura atómica con `os.replace` y validación previa de integridad de ruta, evitando condiciones de carrera o corrupción parcial de la configuración.
+- `2026-08-15T10:02:30` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-15T10:02:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T10:02:30` Corrida terminada. Total usado hoy: 236.

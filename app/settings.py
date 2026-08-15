@@ -251,20 +251,29 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not _Validators._is_safe_path(str(ruta.parent)) or is_protected_path(str(ruta)): return None
     if not is_safe_to_modify(str(ruta)): return None
     if ruta.exists() and not os.access(ruta, os.W_OK): return None
+    
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
+        
     json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+    temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
+    
     try:
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        temp = ruta.with_suffix(f".{os.getpid()}.tmp")
-        with open(temp, "wb") as f:
-            f.write(json_data); f.flush(); os.fsync(f.fileno())
-        os.replace(temp, ruta)
+        with open(temp_ruta, "wb") as f:
+            f.write(json_data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_ruta, ruta)
         _cached_settings, _current_path = cleaned_settings, ruta
         _cached_mtime = ruta.stat().st_mtime
         return ruta
-    except (OSError, IOError, PermissionError, RuntimeError): return None
+    except (OSError, IOError, PermissionError, RuntimeError):
+        if temp_ruta.exists():
+            try: temp_ruta.unlink()
+            except OSError: pass
+        return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     current = load(custom_base).copy()

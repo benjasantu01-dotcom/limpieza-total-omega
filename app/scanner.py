@@ -113,10 +113,9 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Regla: Detecta ejecutables nuevos en carpetas de alta exposición."""
-    if not isinstance(entry, os.DirEntry) or not entry.is_file() or is_protected_path(path):
+    if not isinstance(entry, os.DirEntry):
         return None
     
-    # Optimización: buscar intersección con partes de la ruta sin recrear un set completo
     if WATCHED_FOLDERS.isdisjoint(p.lower() for p in path.parts):
         return None
         
@@ -142,12 +141,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     Ejecuta el pipeline de reglas heurísticas sobre un archivo.
     """
-    if not path.exists():
-        return []
-
     findings: ScanResult = []
     
-    # 1. Aplicar reglas universales (ej. nombres de archivos, extensiones)
+    # 1. Aplicar reglas universales
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
