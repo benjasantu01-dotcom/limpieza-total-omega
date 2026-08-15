@@ -362,7 +362,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, str]]]:
-    """Recolecta métricas crudas para el resumen de disco."""
+    """Recolecta métricas crudas para el resumen de disco en una única pasada."""
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
@@ -371,6 +371,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
     for path, size in walk_files(directory, skip_protected):
         total_bytes += size
         total_files += 1
+        
         ext = path.suffix.lower() or "(sin extensión)"
         ext_sizes[ext] += size
         ext_counts[ext] += 1

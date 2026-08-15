@@ -86,7 +86,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path).resolve()
-        if not file_path.exists() or not file_path.is_file():
+        if not file_path.is_file():
             return None
         if is_protected_path(file_path) or not is_safe_to_modify(file_path) or file_path.is_symlink():
             return None
@@ -121,7 +121,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         file_path = Path(path).resolve()
-        if not file_path.exists() or not file_path.is_file():
+        if not file_path.is_file():
             return None
         if is_protected_path(file_path) or not is_safe_to_modify(file_path) or file_path.is_symlink():
             return None
@@ -172,31 +172,29 @@ def _collect_candidates(
                     try:
                         if entry.is_symlink(): continue
                         
-                        entry_path = Path(entry.path)
-                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)): 
-                            continue
-                        
+                        # Cache stat para reducir llamadas al sistema
                         st = entry.stat(follow_symlinks=False)
-                        # Ignorar puntos de reparse (0x400) para prevenir bucles.
-                        if getattr(st, 'st_file_attributes', 0) & 0x400: continue
-                        
                         inode = (st.st_dev, st.st_ino)
                         if inode in visited_inodes: continue
                         
+                        # Ignorar puntos de reparse (0x400)
+                        if getattr(st, 'st_file_attributes', 0) & 0x400: continue
+                        
                         if entry.is_dir():
                             visited_inodes.add(inode)
-                            _scan(entry_path)
+                            _scan(Path(entry.path))
                         elif entry.is_file() and st.st_size >= min_size:
+                            path_obj = Path(entry.path)
+                            if skip_protected and (is_protected_path(path_obj) or not is_safe_to_modify(path_obj)):
+                                continue
                             visited_inodes.add(inode)
-                            temp_groups[st.st_size].append(entry_path)
+                            temp_groups[st.st_size].append(path_obj)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
     for directory in directories:
-        if not directory: continue
-        try:
+        if directory:
             _scan(Path(directory).resolve())
-        except (OSError, PermissionError, ValueError, TypeError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
@@ -236,10 +234,8 @@ def find_duplicates(
     groups: List[DuplicateGroup] = []
     
     for size, paths_in_size_group in size_map.items():
-        # Filtro 2: Hash parcial
         partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
         for partial_candidates in partial_groups.values():
-            # Filtro 3: Hash completo
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():
                 groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))

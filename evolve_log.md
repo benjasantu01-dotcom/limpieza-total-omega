@@ -1131,3 +1131,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T08:10:21` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `_identify_active_problems` reemplazando la creación dinámica de un diccionario `val_map` dentro de cada iteración por una búsqueda directa en `ctx` mediante `getattr`, reduciendo drásticamente la asignación de memoria y el overhead innecesario al evaluar métricas.
 - `2026-08-15T08:10:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T08:10:21` Corrida terminada. Total usado hoy: 192.
+- `2026-08-15T08:19:03` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-08-15T08:19:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-15T08:19:57` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo recursivo de `directory_size` utilizando un diccionario de caché persistente y pre-cargado para evitar la redundancia de sumar subdirectorios comunes varias veces durante el escaneo.
+- `2026-08-15T08:20:22` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `_collect_summary_data` para evitar cálculos repetitivos y accesos redundantes a metadatos, reemplazando la creación de objetos `FileEntry` innecesarios dentro del bucle principal y consolidando las operaciones de agregación en una única pasada eficiente sobre `walk_files`.
+- `2026-08-15T08:20:31` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `Path.resolve()` y `stat()` dentro de los bucles, reduciendo drásticamente las llamadas al sistema de archivos al pre-filtrar mediante `entry.is_file()` y cacheando los resultados necesarios.
+- `2026-08-15T08:20:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T08:20:31` Corrida terminada. Total usado hoy: 196.

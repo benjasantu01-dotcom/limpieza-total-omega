@@ -75,12 +75,7 @@ class BrowserCache:
 
 
 def base_directories() -> List[Path]:
-    """Retorna la lista de directorios base del sistema para buscar perfiles.
-    
-    Returns:
-        Lista conteniendo LOCALAPPDATA si es una ruta válida, existente, 
-        absoluta y no protegida. Retorna lista vacía ante cualquier error.
-    """
+    """Retorna la lista de directorios base del sistema para buscar perfiles."""
     if os.name != "nt":
         return []
     
@@ -98,19 +93,11 @@ def base_directories() -> List[Path]:
 
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
-    """
-    Valida la integridad de la ruta para prevenir Path Traversal.
-    
-    Verifica que:
-    1. El target esté dentro de la base (relative_to).
-    2. No contenga caracteres nulos o secuencias de control RTL/LTR maliciosas.
-    3. No sea un enlace simbólico o junction (reparse point).
-    """
+    """Valida la integridad de la ruta para prevenir Path Traversal."""
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
     path_str = str(target_path)
-    # Bloqueo de caracteres maliciosos (ej. Unicode Bidirectional Override)
     if "\0" in path_str or any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
         return False
         
@@ -148,18 +135,13 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
         return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
-        if attrs == 0xFFFFFFFF:
-            return False
-        # 0x04: FILE_ATTRIBUTE_SYSTEM, 0x02: FILE_ATTRIBUTE_HIDDEN
-        return bool(attrs & 0x04 or attrs & 0x02)
+        return bool(attrs != 0xFFFFFFFF and (attrs & 0x04 or attrs & 0x02))
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """Determina si un objeto del sistema de archivos debe ser ignorado."""
-    if not isinstance(entry, os.DirEntry):
-        return True
     try:
         if _is_excluded_file(entry.name):
             return True
@@ -176,24 +158,15 @@ def _sum_directory_recursive(
     root_dir: str, 
     is_junction_fn: Callable[[str], bool], 
     kernel32: ctypes.WinDLL | None,
-    visited: Set[str], 
     cache: Dict[str, int], 
     depth: int = 0
 ) -> int:
-    """Calcula el peso total de un directorio de forma recursiva con protección de ciclo."""
-    if not isinstance(root_dir, str) or depth > 20 or root_dir in visited:
+    """Calcula el peso total recursivamente usando memoización para eficiencia."""
+    if depth > 20:
         return 0
     if root_dir in cache:
         return cache[root_dir]
     
-    current_path = Path(root_dir)
-    try:
-        if not current_path.exists() or is_protected_path(current_path):
-            return 0
-    except (OSError, PermissionError):
-        return 0
-        
-    visited.add(root_dir)
     total_size: int = 0
     try:
         with os.scandir(root_dir) as it:
@@ -202,7 +175,7 @@ def _sum_directory_recursive(
                     continue
                 try:
                     if entry.is_dir():
-                        total_size += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, visited, cache, depth + 1)
+                        total_size += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, cache, depth + 1)
                     else:
                         total_size += entry.stat().st_size
                 except (PermissionError, OSError):
@@ -218,19 +191,13 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
     """Calcula el tamaño en bytes de una ruta tras validar su seguridad."""
     if not path or not isinstance(path, (str, Path)):
         return 0
-    
     try:
-        p_path = Path(path)
-        if not p_path.is_absolute() or not p_path.exists():
+        p_path = Path(path).resolve(strict=True)
+        if not p_path.is_dir() or is_protected_path(p_path):
             return 0
-        root_path = p_path.resolve(strict=True)
-        if not root_path.is_dir() or is_protected_path(root_path):
-            return 0
-        
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
-        
-        return max(0, _sum_directory_recursive(str(root_path), is_junction, k32, set(), {}))
+        return _sum_directory_recursive(str(p_path), is_junction, k32, {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -240,13 +207,8 @@ def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
-        return (
-            candidate.exists() and 
-            candidate.is_dir() and 
-            not is_protected_path(candidate) and
-            _is_safe_path(candidate, base_path) and
-            not _is_excluded_file(candidate.name)
-        )
+        return (candidate.exists() and candidate.is_dir() and not is_protected_path(candidate) and
+                _is_safe_path(candidate, base_path) and not _is_excluded_file(candidate.name))
     except (OSError, PermissionError, RuntimeError):
         return False
 
@@ -255,43 +217,30 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Escanea el sistema buscando cachés de navegadores y devuelve objetos BrowserCache."""
+    """Escanea el sistema buscando cachés de navegadores usando caché de resultados."""
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
     k32 = ctypes.windll.kernel32 if os.name == 'nt' else None
     
     perf_cache: Dict[str, int] = {}
-    visited: Set[str] = set()
     found: List[BrowserCache] = []
     
-    if not isinstance(raw_bases, (list, tuple)) or not isinstance(cache_paths, dict):
-        return found
-        
     for base in raw_bases:
         if not isinstance(base, Path): continue
         try:
             real_base = base.resolve(strict=True)
-        except (OSError, PermissionError):
-            continue
+        except (OSError, PermissionError): continue
             
-        for browser_name, relative_path_str in cache_paths.items():
-            if not isinstance(relative_path_str, str): continue
-            
+        for browser_name, rel_str in cache_paths.items():
             try:
-                candidate = real_base.joinpath(*relative_path_str.split("\\"))
+                candidate = real_base.joinpath(*rel_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base):
                     c_path = candidate.resolve()
-                    
-                    size: int = _sum_directory_recursive(str(c_path), is_junction, k32, visited, perf_cache)
+                    size = _sum_directory_recursive(str(c_path), is_junction, k32, perf_cache)
                     if size > 0:
-                        found.append(BrowserCache(
-                            browser=str(browser_name),
-                            path=c_path,
-                            size_bytes=size,
-                        ))
-            except (OSError, PermissionError):
-                continue
+                        found.append(BrowserCache(str(browser_name), c_path, size))
+            except (OSError, PermissionError): continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found
@@ -305,12 +254,11 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """Genera un reporte legible por humanos de las cachés encontradas."""
     current_caches = caches if caches is not None else detect_profiles()
-    
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
         
-    total_mb: float = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
-    lines: List[str] = [f"Caché de navegadores: {total_mb} MB en {len(current_caches)} carpeta(s)", ""]
+    total_mb = round(total_cache_bytes(current_caches) / (1024 * 1024), 2)
+    lines = [f"Caché de navegadores: {total_mb} MB en {len(current_caches)} carpeta(s)", ""]
     for cache in current_caches:
         lines.append(f"  {cache.browser:<20} {cache.size_mb:>9} MB")
         lines.append(f"      {cache.path}")
