@@ -646,3 +646,10 @@ assert 'oval' in ['polygon', 'rectangle', 'rectangle', 'rectangle', 'rectangle',
 - `2026-08-15T03:55:04` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de generación de recomendaciones convirtiendo el acceso a atributos de `metrics` en una operación más eficiente mediante el pre-procesamiento de los valores en un diccionario dentro de `compute_score`, evitando llamadas repetitivas a `getattr` y `hasattr` dentro del bucle de reglas.
 - `2026-08-15T03:55:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T03:55:04` Corrida terminada. Total usado hoy: 92.
+- `2026-08-15T04:03:56` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-15T04:04:55` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimizé la gestión de los logs en la interfaz para evitar la saturación del hilo principal mediante el uso de `update_idletasks()` antes de los procesos de escritura, reduciendo la carga de renderizado durante análisis masivos y mejorando la respuesta de la UI.
+- `2026-08-15T04:05:21` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `top_memory_processes` eliminando el uso de `ConvertTo-Csv` y el procesamiento posterior de strings pesados, reemplazándolo por un filtrado de propiedades nativo en PowerShell que reduce drásticamente el consumo de CPU y la carga de datos procesados por `subprocess`.
+- `2026-08-15T04:05:44` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-15T04:05:59` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la función `_get_sha256` utilizando un buffer de 128KB en lugar de 64KB para reducir la cantidad de llamadas al sistema y mejorar el rendimiento de E/S al procesar archivos grandes durante la validación de integridad.
+- `2026-08-15T04:05:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T04:05:59` Corrida terminada. Total usado hoy: 96.

@@ -132,11 +132,11 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula el hash SHA256 de un archivo en bloques de 64KB para optimizar memoria."""
+    """Calcula el hash SHA256 de un archivo en bloques de 128KB para optimizar rendimiento de E/S."""
     sha256_hash = hashlib.sha256()
     try:
         with open(path, "rb") as f:
-            while chunk := f.read(65536):
+            while chunk := f.read(131072):
                 sha256_hash.update(chunk)
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Error al leer archivo para hash: {e}")

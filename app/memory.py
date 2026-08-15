@@ -232,7 +232,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - cache_ref[0] < 5.0 and cache_ref[1]:
         return cache_ref[1][:limit]
     
-    cmd = "Get-Process | Select-Object Name,Id,WorkingSet | ConvertTo-Csv -NoTypeInformation"
+    # Optimizamos el comando para filtrar en PS y solo traer los campos necesarios sin formateo complejo
+    cmd = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} Name,Id,WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
         if proc.returncode == 0 and proc.stdout:

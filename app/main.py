@@ -785,6 +785,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not self._log_queue or self._closing:
             return
         
+        # Procesar en lotes limitando la carga al hilo principal
+        self.update_idletasks()
         pendientes = list(self._log_queue)
         self._log_queue.clear()
         
