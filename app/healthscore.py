@@ -224,8 +224,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    # Calcular desglose ponderado redondeado al entero más cercano
-    breakdown: Dict[str, int] = {area: _to_int(_clamp(ratios[area] * factor, 0.0, factor)) for area, factor in _WEIGHT_ITEMS}
+    # Calcular desglose ponderado redondeado al entero más cercano asegurando finitud
+    breakdown: Dict[str, int] = {}
+    for area, factor in _WEIGHT_ITEMS:
+        val = ratios[area] * factor
+        breakdown[area] = _to_int(_clamp(val, 0.0, factor)) if math.isfinite(val) else 0
+
     final_score = _to_int(_clamp(float(sum(breakdown.values())), 0.0, 100.0))
     
     metrics_map = asdict(metrics)

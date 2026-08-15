@@ -742,3 +742,10 @@ FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_wher
 - `2026-08-15T05:06:49` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `walk_files` y `drive_usage` validando que las rutas resultantes de `Path.resolve()` permanezcan dentro de los límites esperados mediante `is_protected_path` después de cada iteración, previniendo posibles escapes por enlaces simbólicos complejos o manipulaciones del sistema de archivos.
 - `2026-08-15T05:06:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T05:06:49` Corrida terminada. Total usado hoy: 120.
+- `2026-08-15T05:15:19` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-08-15T05:15:44` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-15T05:16:08` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación de `is_finite` en el desglose ponderado, previniendo que valores no numéricos o infinitos puedan propagarse a la interfaz o al cálculo final del puntaje.
+- `2026-08-15T05:17:10` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad en `on_trim_process` y `on_restore_quarantine` mediante la validación del estado actual de los recursos (PID y archivos) justo antes de la operación, evitando condiciones de carrera donde un PID podría haber sido reciclado o un archivo restaurado podría haber sido reemplazado por un enlace simbólico entre la UI y el hilo asíncrono.
+- `2026-08-15T05:17:20` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-15T05:17:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T05:17:20` Corrida terminada. Total usado hoy: 124.
