@@ -124,6 +124,11 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
 }
 
 class _Validators:
+    """
+    Colección de validadores estáticos.
+    Garantizan que cualquier entrada (manual o externa) sea segura para el sistema
+    y mantenga la integridad del esquema de configuración de la aplicación.
+    """
     @staticmethod
     def _is_safe_path(path_obj: Path) -> bool:
         try:
@@ -168,15 +173,19 @@ class _Validators:
             return None
 
     @staticmethod
+    def _validate_enum_str(text: str, key: ConfigKey) -> str | None:
+        if key == ConfigKey.TEMA: return text.lower() if text.lower() in VALID_THEMES else None
+        if key == ConfigKey.ACENTO: return text.lower() if text.lower() in VALID_ACCENTS else None
+        return text if len(text) <= 512 else None
+
+    @staticmethod
     def str(key: ConfigKey, val: Any) -> str | None:
         if not isinstance(val, str): return None
         text = val.strip()
         if any(ord(c) < 32 for c in text) or ".." in text: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
         if not text: return "" if key == ConfigKey.ASISTENTE_CLAVE_API else None
-        if key == ConfigKey.TEMA: return text.lower() if text.lower() in VALID_THEMES else None
-        if key == ConfigKey.ACENTO: return text.lower() if text.lower() in VALID_ACCENTS else None
-        return text if len(text) <= 512 else None
+        return _Validators._validate_enum_str(text, key)
 
 _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
     ConfigKey.TEMA: _Validators.str,

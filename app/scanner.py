@@ -1,14 +1,13 @@
 """
 scanner.py
-Detector HEURÍSTICO de archivos sospechosos. Esto es un complemento
-educativo/demostrativo, NO un antivirus real. Para protección seria,
-este módulo se apoya en Windows Defender (ya instalado en Windows 11)
-en vez de reinventar un motor de firmas.
+Detector HEURÍSTICO de archivos sospechosos. Este módulo realiza un análisis 
+estático mediante heurísticas de nombre, extensión y metadatos de archivo, 
+complementando la protección de Windows Defender.
 
-Señales heurísticas que marca (no borra nada, solo informa):
-- Doble extensión (ej. "factura.pdf.exe")
-- Ejecutables en carpetas de usuario recién creados
-- Nombres que imitan archivos de sistema pero fuera de System32
+Señales heurísticas analizadas:
+- Doble extensión engañosa (ej. "documento.pdf.exe")
+- Ejecutables en carpetas de usuario (descargas, temp) creados recientemente
+- Nombres de procesos críticos de sistema fuera de directorios protegidos
 """
 
 from __future__ import annotations
@@ -29,37 +28,29 @@ logger = logging.getLogger(__name__)
 class Suspicion:
     """
     Representa un hallazgo sospechoso detectado durante el escaneo.
-    
-    Attributes:
-        path: Ruta absoluta del archivo analizado.
-        reason: Descripción legible de por qué se considera sospechoso.
-        severity: Nivel de criticidad ("info" para métricas, "warning" para alertas).
     """
     path: Path
     reason: str
     severity: str
 
-# Alias para funciones de chequeo heurístico.
-# Reciben el path del archivo, el objeto DirEntry opcional para evitar stat() extra, 
-# y el timestamp de inicio del escaneo para cálculos de antigüedad.
+# Alias de tipo para las funciones que evalúan un archivo.
+# Deben retornar una instancia de Suspicion o None si no hay hallazgos.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
-# REGEX para detectar extensiones dobles donde la última es ejecutable
+# Expresiones regulares y constantes de configuración
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
-
-# Conjuntos para búsquedas O(1)
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 SYSTEM32_LOWER: Final[str] = "system32"
 WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
-
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 
 
 class Scanner:
     """
-    Controlador de estado para el escaneo recursivo. Gestiona el rastreo de carpetas visitadas.
+    Controlador de estado para el escaneo recursivo del sistema de archivos.
+    Gestiona la pila de directorios pendientes y el registro de rutas visitadas.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -69,14 +60,7 @@ class Scanner:
         self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """
-        Valida que una ruta esté contenida dentro del base_root inicial.
-        
-        Args:
-            entry_path: Ruta a verificar.
-        Returns:
-            True si la ruta está dentro del alcance, False en caso contrario o error.
-        """
+        """Verifica que la ruta resida dentro del árbol de directorios permitido."""
         try:
             resolved = entry_path.resolve()
             return self.base_root == resolved or self.base_root in resolved.parents
@@ -84,29 +68,22 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """
-        Determina si una entrada es un punto de reanálisis (Junction o Symlink).
-        """
+        """Detecta Junctions o enlaces simbólicos para evitar bucles o escaneo fuera de scope."""
         try:
-            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
-            return True # Asumir inseguro si no se puede verificar
+            return True 
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
-        Analiza una entrada del sistema de archivos:
-        - Si es directorio: lo añade al stack de recursión tras validación de seguridad.
-        - Si es archivo: ejecuta las heurísticas de scan_file.
+        Analiza una entrada: si es directorio, lo encola; si es archivo, ejecuta el pipeline de escaneo.
         """
         if entry is None or not entry.path:
             return
         
         try:
-            # Asegurar que trabajamos con rutas absolutas normalizadas desde el inicio
             target_path = Path(entry.path).resolve()
             
-            # Bloqueo total de enlaces simbólicos y puntos de reanálisis por seguridad
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
 
@@ -126,19 +103,16 @@ class Scanner:
         except (PermissionError, OSError, FileNotFoundError) as e:
             logger.debug(f"Acceso denegado o error de sistema en {entry.path}: {e}")
 
+
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Analiza si el nombre del archivo contiene una doble extensión que sugiere ocultamiento.
-    """
+    """Regla: Detecta extensiones compuestas que intentan ocultar un ejecutable."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Verifica si un ejecutable ha sido modificado en las últimas 24h dentro de carpetas expuestas.
-    """
+    """Regla: Detecta ejecutables nuevos en carpetas de alta exposición."""
     if not isinstance(entry, os.DirEntry) or not entry.is_file():
         return None
         
@@ -159,53 +133,42 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Identifica nombres que imitan procesos de sistema fuera de System32.
-    """
+    """Regla: Detecta nombres de procesos de sistema ubicados en directorios no estándar."""
     if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         parent_path = path.parent
         if parent_path and SYSTEM32_LOWER not in str(parent_path).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
+
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Pipeline de análisis heurístico sobre un archivo individual.
-    
-    Args:
-        path: Objeto Path del archivo.
-        now_ts: Timestamp actual para comparaciones de tiempo.
-        entry: Objeto DirEntry opcional para reducir llamadas al sistema.
-    Returns:
-        Lista de sospechas encontradas.
+    Ejecuta el pipeline de reglas heurísticas sobre un archivo.
     """
-    findings: ScanResult = []
-    
-    # Pre-validación: verificar si el archivo existe para evitar errores en llamadas subsiguientes
     if not path.exists():
         return []
 
-    # 1. Aplicar reglas universales
+    findings: ScanResult = []
+    
+    # 1. Aplicar reglas universales (ej. nombres de archivos, extensiones)
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # 2. Aplicar reglas específicas para ejecutables
-    suffix = path.suffix.lower()
-    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        for check in [check_system_lookalike, check_recent_executable_in_downloads]:
+    # 2. Aplicar reglas condicionales si el archivo es un ejecutable
+    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+        heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
+        for check in heuristic_suite:
             try:
                 if (res := check(path, entry, now_ts)):
                     findings.append(res)
             except Exception as e:
-                logger.debug(f"Error en chequeo {check.__name__} para {path}: {e}")
+                logger.debug(f"Fallo en regla {check.__name__} para {path}: {e}")
                 
     return findings
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Inicializa y ejecuta el proceso de escaneo recursivo en el directorio proporcionado.
-    """
+    """Realiza el escaneo recursivo de un directorio y retorna el acumulado de sospechas."""
     if not directory:
         return []
         
@@ -214,7 +177,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError) as e:
-        logger.error(f"Error accediendo al directorio base {directory}: {e}")
+        logger.error(f"Error inicializando escaneo en {directory}: {e}")
         return []
 
     scanner = Scanner(base_root=path_input)
@@ -228,16 +191,14 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 for entry in it:
                     scanner.process_entry(entry, stack)
         except (PermissionError, OSError, ValueError, RuntimeError) as e:
-            logger.debug(f"Error accediendo al directorio {current_dir}: {e}")
+            logger.debug(f"Error de acceso en directorio {current_dir}: {e}")
             continue
             
     return scanner.results
 
 
 def run_windows_defender_quick_scan() -> str:
-    """
-    Interactúa con Windows Defender vía PowerShell para realizar un análisis rápido del sistema.
-    """
+    """Ejecuta un diagnóstico del estado de Windows Defender vía PowerShell."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
