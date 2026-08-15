@@ -211,10 +211,6 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     if val is None or isinstance(val, bool):
         return
     try:
-        if not isinstance(val, (int, float, str)):
-            return
-        
-        # Evitar convertir strings con posibles inyecciones a números
         clean_val = float(val)
         if math.isfinite(clean_val):
             final_val = cast(max(min_val, min(clean_val, max_val)))
@@ -240,8 +236,7 @@ def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> 
     
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
-    # Validar tipo: solo permitir tipos que puedan ser números reales
-    if val is None or isinstance(val, bool) or not isinstance(val, (int, float, str)):
+    if val is None or isinstance(val, bool):
         return default
     
     try:
@@ -273,7 +268,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     if isinstance(health, (dict, object)):
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
-        grade = _get_metric_val(health, "grade", "")
+        grade = getattr(health, "grade", "") if not isinstance(health, dict) else health.get("grade", "")
         if isinstance(grade, (str, int, float)):
             ctx.grade = str(grade)[:10]
         ctx.analyzed = True
@@ -448,7 +443,6 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     Identifica y devuelve un listado de problemas detectados priorizados por criticidad.
     Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
     """
-    # Mapeo directo para evitar llamadas a getattr y optimizar bucles
     val_map = {
         "disk_free_percent": ctx.disk_free_percent,
         "suspicious_warnings": ctx.suspicious_warnings,
@@ -482,7 +476,6 @@ def _call_gemini(
     Ejecuta una solicitud POST al motor de Gemini (remoto) si la configuración está activa.
     Las entradas están estrictamente saneadas contra inyecciones y rutas.
     """
-    # Validación estricta previa a cualquier acción de red
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     

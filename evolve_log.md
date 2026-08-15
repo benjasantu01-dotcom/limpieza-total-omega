@@ -991,3 +991,15 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T06:51:17` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-15T06:51:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T06:51:17` Corrida terminada. Total usado hoy: 160.
+- `2026-08-15T06:57:21` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-15T06:57:22` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-15T06:57:22` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-15T06:57:43` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-15T06:57:43` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-15T06:58:13` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-15T06:58:13` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-15T06:59:06` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` y sus funciones auxiliares mediante la validación explícita de `float` y la captura de errores en la extracción de datos, evitando que valores `NaN` o `inf` de fuentes externas corrompan el estado del asistente.
+- `2026-08-15T06:59:39` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-15T06:59:48` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones de entrada en `_is_safe_path` y `_is_excluded_file` añadiendo chequeos contra tipos inesperados, además de asegurar que `summarize` maneje correctamente las entradas `None` mediante validación explícita para evitar errores en tiempo de ejecución.
+- `2026-08-15T06:59:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T06:59:48` Corrida terminada. Total usado hoy: 164.

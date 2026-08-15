@@ -130,7 +130,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
 
 
-def _is_excluded_file(name: str | None) -> bool:
+def _is_excluded_file(name: Optional[str]) -> bool:
     """Valida si el nombre del archivo pertenece a la lista de archivos prohibidos (NEVER_TOUCH)."""
     if not isinstance(name, str) or not name:
         return True
@@ -312,7 +312,10 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """Genera un reporte legible por humanos de las cachés encontradas y su peso."""
-    current_caches: List[BrowserCache] = caches if caches is not None else detect_profiles()
+    if caches is None:
+        current_caches = detect_profiles()
+    else:
+        current_caches = [c for c in caches if isinstance(c, BrowserCache)]
     
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
