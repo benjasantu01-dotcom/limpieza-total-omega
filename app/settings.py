@@ -91,10 +91,6 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final[tuple[str, ...]] = ("oscuro", "claro", "sistema")
 VALID_ACCENTS: Final[tuple[str, ...]] = ("menta", "violeta", "magenta", "cian", "ambar")
 
-_cached_settings: AppSettings | None = None
-_cached_mtime: float = 0.0
-_current_path: Path | None = None
-
 def _get_default_config() -> AppSettings:
     """Retorna un diccionario con los valores por defecto definidos para la app."""
     return {
@@ -230,32 +226,34 @@ def validate(raw_values: Any) -> AppSettings:
             except (ValueError, TypeError, AttributeError): continue
     return config
 
-def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga, valida y cachea el archivo de configuración. Retorna defaults ante cualquier error."""
-    global _cached_settings, _current_path, _cached_mtime
-    ruta = settings_path(custom_base)
+@lru_cache(maxsize=1)
+def _load_internal(ruta: Path) -> AppSettings:
+    """Carga interna cacheada por ruta y mtime (gestionado mediante wrapper en load)."""
     if not ruta.exists() or not os.access(ruta, os.R_OK): return _get_default_config()
     try:
-        mtime = ruta.stat().st_mtime
-        if _cached_settings is not None and _current_path == ruta and _cached_mtime == mtime:
-            return _cached_settings
         if not _Validators._is_safe_path(str(ruta.parent)): return _get_default_config()
-        
         content = ruta.read_bytes()
         if not content or len(content) > MAX_SETTINGS_SIZE: return _get_default_config()
-        
         data = json.loads(content)
-        if not isinstance(data, dict): return _get_default_config()
-        
-        validated = validate(data)
-        _cached_settings, _current_path, _cached_mtime = validated, ruta, mtime
-        return validated
+        return validate(data) if isinstance(data, dict) else _get_default_config()
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         return _get_default_config()
 
+def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Carga, valida y cachea el archivo de configuración. Retorna defaults ante cualquier error."""
+    ruta = settings_path(custom_base)
+    if not ruta.exists(): return _get_default_config()
+    
+    # Invalidar caché si el archivo cambió
+    mtime = ruta.stat().st_mtime
+    if hasattr(load, "_last_mtime") and load._last_mtime != mtime:
+        _load_internal.cache_clear()
+    
+    load._last_mtime = mtime
+    return _load_internal(ruta)
+
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Guarda una configuración validada de forma atómica usando un archivo temporal."""
-    global _cached_settings, _current_path, _cached_mtime
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     if not _Validators._is_safe_path(str(ruta.parent)) or is_protected_path(str(ruta)): return None
@@ -276,8 +274,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_ruta, ruta)
-        _cached_settings, _current_path = cleaned_settings, ruta
-        _cached_mtime = ruta.stat().st_mtime
+        _load_internal.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
         if temp_ruta.exists():

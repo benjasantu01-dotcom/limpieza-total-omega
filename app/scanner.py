@@ -125,7 +125,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry):
         return None
     
-    if WATCHED_FOLDERS.isdisjoint(p.lower() for p in path.parts):
+    # Optimizamos verificando contra un set de partes minúsculas ya calculadas
+    path_parts = {p.lower() for p in path.parts}
+    if WATCHED_FOLDERS.isdisjoint(path_parts):
         return None
         
     try:

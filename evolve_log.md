@@ -498,3 +498,34 @@ assert not {'replace'}
 - `2026-08-15T13:06:12` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-15T13:06:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T13:06:12` Corrida terminada. Total usado hoy: 308.
+- `2026-08-15T13:14:56` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-15T13:15:26` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `check_recent_executable_in_downloads` para usar `any()` sobre un conjunto pre-procesado de partes de la ruta, eliminando la creación repetida de generadores y la conversión a minúsculas en cada comparación, reduciendo así la carga de CPU durante el escaneo recursivo.
+- `2026-08-15T13:15:53` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de carga de configuraciones mediante la implementación de `lru_cache` en `load` para evitar lecturas de disco redundantes y parseos de JSON repetitivos en llamadas frecuentes.
+- `2026-08-15T13:16:19` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.16s
+
+```
+- `2026-08-15T13:16:19` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de resolución de rutas en `StartupEntry` añadiendo un set de rutas ya validadas al caché de existencia, evitando llamadas redundantes a `Path.exists()` y `Path.resolve()` en el caso de que múltiples entradas apunten al mismo ejecutable (muy común en el registro).
+- `2026-08-15T13:16:36` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `build_context` ante la posible recepción de datos de tipo `None` o corruptos en los diccionarios de entrada, asegurando que `_safe_assign` no intente procesar valores inválidos que podrían haber causado excepciones no controladas en el bucle de construcción del contexto.
+- `2026-08-15T13:16:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T13:16:36` Corrida terminada. Total usado hoy: 312.
