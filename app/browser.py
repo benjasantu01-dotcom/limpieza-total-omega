@@ -153,6 +153,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
             return True
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
+        if is_protected_path(Path(entry.path)):
+            return True
     except (OSError, PermissionError):
         return True
     return False
@@ -165,8 +167,10 @@ def _sum_directory_recursive(
     cache: Dict[str, int], 
     depth: int = 0
 ) -> int:
-    """Calcula el peso total recursivamente usando memoización para eficiencia."""
-    if depth > 20:
+    """Calcula el peso total recursivamente con límites de seguridad y profundidad."""
+    if depth > 20 or len(root_dir) > 260:
+        return 0
+    if is_protected_path(Path(root_dir)):
         return 0
     if root_dir in cache:
         return cache[root_dir]

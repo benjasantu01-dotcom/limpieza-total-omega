@@ -497,15 +497,21 @@ def _call_gemini(
             raw_res = res.read(_MAX_RESPONSE_BYTES)
             if not raw_res: return None
             data = json.loads(raw_res.decode("utf-8"))
-            if not isinstance(data, dict): return None
             
-        candidates = data.get("candidates", [])
-        if not isinstance(candidates, list) or not candidates: return None
-        parts = candidates[0].get("content", {}).get("parts", [])
-        text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
-        final_text = text.strip()[:_MAX_TEXT_LENGTH]
-        
-        return final_text if _ensure_safe_text(final_text) else None
+            # Validación estricta de estructura de respuesta
+            if not isinstance(data, dict) or "candidates" not in data: return None
+            candidates = data["candidates"]
+            if not isinstance(candidates, list) or not candidates: return None
+            
+            content = candidates[0].get("content", {})
+            if not isinstance(content, dict): return None
+            parts = content.get("parts", [])
+            if not isinstance(parts, list): return None
+            
+            text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
+            final_text = text.strip()[:_MAX_TEXT_LENGTH]
+            
+            return final_text if _ensure_safe_text(final_text) else None
     except (urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError):
         return None
 

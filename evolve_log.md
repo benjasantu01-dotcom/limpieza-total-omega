@@ -1211,3 +1211,34 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-15T09:21:42` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia en la carga de configuración ante archivos corruptos o truncados mediante un manejo más granular de excepciones y una validación de estructura de datos más estricta antes de reemplazar la caché.
 - `2026-08-15T09:21:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T09:21:42` Corrida terminada. Total usado hoy: 220.
+- `2026-08-15T09:30:26` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-08-15T09:30:54` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.24s
+
+```
+- `2026-08-15T09:30:54` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito para casos donde `Path.resolve()` falla por rutas con caracteres inválidos o permisos denegados, evitando que el bloque de resolución silencie errores inesperados y asegurando que las rutas malformadas se traten como inválidas de forma consistente.
+- `2026-08-15T09:31:26` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` validando la integridad del formato de respuesta de la API antes de procesarlo, evitando posibles inyecciones de objetos malformados o tipos inesperados que podrían explotar el parsing posterior.
+- `2026-08-15T09:31:56` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-15T09:32:05` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de un chequeo de longitud máxima de ruta (`MAX_PATH`) y una validación de seguridad adicional contra `is_protected_path` en cada nivel de la recursión para prevenir el escape del escaneo hacia directorios críticos del sistema.
+- `2026-08-15T09:32:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T09:32:05` Corrida terminada. Total usado hoy: 224.
