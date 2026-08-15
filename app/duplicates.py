@@ -77,20 +77,12 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo.
-    
-    Args:
-        path: Ruta del archivo a procesar.
-        chunk_size: Tamaño del bloque de lectura en bytes (defecto 1MB).
-        
-    Returns:
-        String hexadecimal del hash SHA256 o None si el archivo es inaccesible
-        o protegido (sistema/symlink).
     """
     if path is None or chunk_size <= 0: 
         return None
         
     try:
-        file_path = Path(path)
+        file_path = Path(path).resolve()
         if is_protected_path(file_path) or not is_safe_to_modify(file_path) or file_path.is_symlink():
             return None
 
@@ -114,16 +106,12 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes (64KB) para comparación heurística.
-    
-    Args:
-        path: Ruta del archivo.
-        read_bytes: Cantidad de bytes a leer desde el inicio.
     """
     if path is None or read_bytes <= 0: 
         return None
         
     try:
-        file_path = Path(path)
+        file_path = Path(path).resolve()
         if is_protected_path(file_path) or not is_safe_to_modify(file_path) or file_path.is_symlink():
             return None
             
@@ -137,17 +125,18 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Clasifica una colección de rutas según su tamaño en bytes.
-    Filtra automáticamente rutas protegidas y errores de sistema.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: 
         return groups
         
     for p in paths:
-        if not isinstance(p, Path) or is_protected_path(p) or not is_safe_to_modify(p) or p.is_symlink(): continue
+        if not isinstance(p, Path): continue
+        target = p.resolve()
+        if is_protected_path(target) or not is_safe_to_modify(target) or target.is_symlink(): continue
         try:
-            if p.is_file():
-                groups[p.stat().st_size].append(p)
+            if target.is_file():
+                groups[target.stat().st_size].append(target)
         except (OSError, PermissionError, FileNotFoundError):
             continue
     return groups
@@ -171,8 +160,9 @@ def _collect_candidates(
                     try:
                         if entry.is_symlink(): continue
                         
-                        # Filtrado rápido antes de stat pesado
-                        if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))): continue
+                        entry_path = Path(entry.path)
+                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)): 
+                            continue
                         
                         st = entry.stat(follow_symlinks=False)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
@@ -182,14 +172,15 @@ def _collect_candidates(
                         
                         if entry.is_dir():
                             visited_inodes.add(inode)
-                            _scan(Path(entry.path))
+                            _scan(entry_path)
                         elif entry.is_file() and st.st_size >= min_size:
                             visited_inodes.add(inode)
-                            temp_groups[st.st_size].append(Path(entry.path))
+                            temp_groups[st.st_size].append(entry_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
     for directory in directories:
+        if not directory: continue
         try:
             _scan(Path(directory).resolve())
         except (OSError, PermissionError, ValueError, TypeError): continue
@@ -208,6 +199,7 @@ def _refine_by_hash(
     if paths is None: return groups_by_digest
     
     for path in paths:
+        if not isinstance(path, Path): continue
         digest = hash_func(path)
         if digest:
             groups_by_digest[digest].append(path)
@@ -222,7 +214,6 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Pipeline principal: filtra por tamaño -> hash parcial -> hash completo.
-    Retorna una lista ordenada de grupos por mayor ahorro potencial de espacio.
     """
     if directories is None or min_size < 0: return []
     
@@ -249,7 +240,6 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística: selecciona el archivo a conservar (más antiguo, ruta más corta).
-    Valida la existencia de cada ruta para evitar excepciones durante el proceso.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
