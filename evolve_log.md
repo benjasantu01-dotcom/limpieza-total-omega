@@ -1249,3 +1249,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T09:42:40` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_ask_folder` al centralizar la validación de la ruta seleccionada mediante `safety.ensure_safe_to_modify`, evitando que la aplicación procese rutas protegidas desde el diálogo nativo de selección de carpetas.
 - `2026-08-15T09:42:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T09:42:40` Corrida terminada. Total usado hoy: 228.
+- `2026-08-15T09:50:54` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-15T09:51:56` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-15T09:52:24` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `trim_working_set` al validar que la ruta del ejecutable sea segura antes de realizar cualquier operación sobre el proceso, utilizando `is_protected_path` sobre la ruta resuelta mediante `QueryFullProcessImageNameW`.
+- `2026-08-15T09:52:47` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha robustecido `stage_for_review` añadiendo una comprobación explícita para evitar que se mueva un archivo si la ruta de destino reside accidentalmente fuera de la estructura permitida, reforzando la seguridad defensiva mediante `ensure_safe_to_modify` antes de la operación de escritura.
+- `2026-08-15T09:53:18` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `purge_all` implementando una validación de existencia del archivo en el manifiesto y verificando explícitamente su integridad mediante `verify_integrity` antes de cualquier intento de eliminación, asegurando que solo los archivos rastreados y validados sean borrados.
+- `2026-08-15T09:53:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-15T09:53:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T09:53:21` Corrida terminada. Total usado hoy: 232.

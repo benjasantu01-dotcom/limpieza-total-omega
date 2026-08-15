@@ -271,6 +271,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                         if usage.free > junk_file.size_bytes:
                             target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
                             if is_safe_to_modify(target) and dest in target.resolve().parents:
+                                ensure_safe_to_modify(target)
                                 shutil.move(str(junk_file.path), str(target))
                     except (OSError, ValueError):
                         continue

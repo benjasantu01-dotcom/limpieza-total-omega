@@ -490,34 +490,26 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     items = load_manifest(base)
-    manifest_names = {i.stored_name for i in items}
     item_map = {i.stored_name: i for i in items}
     purged_count = 0
     items_to_remove = []
     
     for entry in quarantine_root.iterdir():
-        if entry.name == MANIFEST_NAME or entry.name not in manifest_names or not entry.is_file():
+        if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
-            
-        real_entry = entry.resolve()
-        if not _is_valid_quarantine_path(real_entry, quarantine_root):
-            continue
-            
+        
         item = item_map.get(entry.name)
-            
-        try:
-            if _is_file_locked(entry):
-                continue
-            
-            if item and item.verify_integrity(real_entry):
-                ensure_safe_to_modify(real_entry, allow_sensitive=False)
-                if _safe_unlink(real_entry):
+        # Seguridad: Solo borrar si está en el manifiesto y su integridad es verificable
+        if item and item.verify_integrity(entry.resolve()):
+            try:
+                if _is_file_locked(entry):
+                    continue
+                ensure_safe_to_modify(entry.resolve(), allow_sensitive=False)
+                if _safe_unlink(entry):
                     items_to_remove.append(item)
                     purged_count += 1
-            elif item is None:
-                _safe_unlink(real_entry)
-        except (OSError, PermissionError, UnsafePathError):
-            continue
+            except (OSError, PermissionError, UnsafePathError):
+                continue
     
     if purged_count > 0:
         new_items = [i for i in items if i not in items_to_remove]
