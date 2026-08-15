@@ -499,24 +499,33 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             continue
         
         item = item_map.get(entry.name)
-        # Seguridad: Solo borrar si está en el manifiesto y su integridad es verificable
-        if item and item.verify_integrity(entry.resolve()):
-            try:
-                if _is_file_locked(entry):
-                    continue
-                ensure_safe_to_modify(entry.resolve(), allow_sensitive=False)
-                if _safe_unlink(entry):
-                    items_to_remove.append(item)
-                    purged_count += 1
-            except (OSError, PermissionError, UnsafePathError):
+        if not item:
+            continue
+            
+        try:
+            # Validar integridad antes de borrar
+            if not item.verify_integrity(entry.resolve()):
                 continue
+                
+            if _is_file_locked(entry):
+                continue
+                
+            ensure_safe_to_modify(entry.resolve(), allow_sensitive=False)
+            
+            if _safe_unlink(entry):
+                items_to_remove.append(item)
+                purged_count += 1
+        except (OSError, PermissionError, UnsafePathError):
+            continue
     
     if purged_count > 0:
         new_items = [i for i in items if i not in items_to_remove]
         try:
             save_manifest(new_items, base)
         except RuntimeError:
-            pass 
+            # Si falla el guardado del manifiesto, abortamos el conteo 
+            # para evitar incoherencias entre disco y manifiesto.
+            return 0
     return purged_count
 
 

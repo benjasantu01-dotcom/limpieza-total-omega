@@ -250,15 +250,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
 
-    dest: Path = Path(review_dir).expanduser().resolve()
-    
-    if not is_safe_to_modify(dest):
-        return dest
-        
     try:
+        dest: Path = Path(review_dir).expanduser().resolve()
+        if dest.anchor == str(dest): return Path(".") # No operar sobre raíz
+        if not is_safe_to_modify(dest): return dest
         dest.mkdir(parents=True, exist_ok=True)
-    except (OSError, PermissionError):
-        return dest
+    except (OSError, PermissionError, RuntimeError):
+        return Path(".")
 
     for junk_file in files:
         if not isinstance(junk_file, JunkFile) or not junk_file.path:
@@ -266,16 +264,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             if junk_file.path.exists() and junk_file.path.is_file():
                 if os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
-                    try:
-                        usage = shutil.disk_usage(dest)
-                        if usage.free > junk_file.size_bytes:
-                            target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-                            if is_safe_to_modify(target) and dest in target.resolve().parents:
-                                ensure_safe_to_modify(target)
-                                shutil.move(str(junk_file.path), str(target))
-                    except (OSError, ValueError):
-                        continue
-        except (PermissionError, OSError, shutil.Error, RuntimeError):
+                    usage = shutil.disk_usage(dest)
+                    if usage.free > junk_file.size_bytes:
+                        target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
+                        if is_safe_to_modify(target) and dest in target.resolve().parents:
+                            ensure_safe_to_modify(target)
+                            shutil.move(str(junk_file.path), str(target))
+        except (OSError, PermissionError, shutil.Error, RuntimeError):
             continue
     return dest
 
@@ -290,9 +285,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
-    dest: Path = Path(review_dir).expanduser().resolve()
-
-    if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
+    try:
+        dest: Path = Path(review_dir).expanduser().resolve()
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
+            return 0
+    except (OSError, RuntimeError):
         return 0
 
     count: int = 0

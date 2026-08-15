@@ -1477,3 +1477,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T11:34:19` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-15T11:34:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T11:34:19` Corrida terminada. Total usado hoy: 272.
+- `2026-08-15T11:43:06` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-15T11:44:07` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de las validaciones de entrada en los métodos `on_trim_process` y `on_restore_quarantine`, añadiendo chequeos de existencia y tipo de dato más explícitos, y asegurando que las excepciones de UI no bloqueen el hilo principal.
+- `2026-08-15T11:45:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-15T11:45:36` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `trim_working_set` validando la existencia de `kernel32` y el resultado de `OpenProcess` antes de intentar operaciones adicionales, evitando posibles excepciones de tipo `NoneType` o accesos inválidos.
+- `2026-08-15T11:45:59` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas de entrada (como verificar si `review_dir` es una ruta absoluta válida y evitar la manipulación de subdirectorios raíz) para prevenir errores de ejecución y asegurar que las operaciones de movimiento/borrado ocurran exclusivamente dentro del espacio de cuarentena permitido.
+- `2026-08-15T11:46:15` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `purge_all` para prevenir errores de silenciamiento ("silent fail") y asegurar que la integridad del manifiesto se mantenga consistente, incluso si la eliminación de archivos individuales falla, mediante una validación explícita de cada etapa del proceso.
+- `2026-08-15T11:46:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T11:46:15` Corrida terminada. Total usado hoy: 276.

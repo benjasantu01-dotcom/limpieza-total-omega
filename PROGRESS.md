@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 28
-- Sin cambios (nada sustancial que mejorar): 16
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 107 | 8 | 16 | 9 | 92 |
-| 2026-08-15 | 112 | 10 | 12 | 7 | 131 |
+| 2026-08-14 | 103 | 8 | 16 | 9 | 92 |
+| 2026-08-15 | 115 | 10 | 12 | 8 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **44**
-- legibilidad y documentación: **43**
-- rendimiento: **43**
-- manejo de errores y validación de entradas: **43**
+- rendimiento: **42**
+- legibilidad y documentación: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `settings.py`: **20**
 - `diskreport.py`: **20**
+- `assistant.py`: **20**
 - `browser.py`: **20**
-- `scanner.py`: **19**
+- `settings.py`: **19**
+- `organizer.py`: **18**
+- `quarantine.py`: **18**
+- `scanner.py`: **18**
 - `healthscore.py`: **17**
-- `organizer.py`: **17**
-- `quarantine.py`: **17**
 - `duplicates.py`: **15**
-- `memory.py`: **14**
+- `memory.py`: **15**
 - `main.py`: **12**
-- `startup.py`: **11**
 - `safety.py`: **11**
+- `startup.py`: **10**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T11:46:15` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado `purge_all` para prevenir errores de silenciamiento ("silent fail") y asegurar que la integridad del manifiesto se mantenga consistente, incluso si la eliminación de archivos individuales falla, mediante una validación explícita de cada etapa del proceso.
+- `2026-08-15T11:45:59` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas de entrada (como verificar si `review_dir` es una ruta absoluta válida y evitar la manipulación de subdirectorios raíz) para prevenir errores de ejecución y asegurar que las operaciones de movimiento/borrado ocurran exclusivamente dentro del espacio de cuarentena permitido.
+- `2026-08-15T11:45:36` **memory.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `trim_working_set` validando la existencia de `kernel32` y el resultado de `OpenProcess` antes de intentar operaciones adicionales, evitando posibles excepciones de tipo `NoneType` o accesos inválidos.
 - `2026-08-15T11:34:10` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` mediante la validación explícita de `group.paths` antes de procesar y se añadió una verificación de integridad de `path.exists()` para evitar errores en archivos que pudieron ser eliminados externamente durante la ejecución.
 - `2026-08-15T11:33:47` **diskreport.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `summarize` y `walk_files` mediante la captura explícita de excepciones al iterar sobre el sistema de archivos, asegurando que un fallo en el acceso a un archivo individual no detenga el análisis completo ni entregue datos parciales engañosos, además de validar que las entradas numéricas en las funciones de reporte no sean tratadas como válidas si son negativas.
 - `2026-08-15T11:33:20` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_hidden` y `_sum_directory_recursive` mediante la validación explícita de `kernel32` y el manejo preventivo de errores al interactuar con el sistema de archivos, asegurando que las llamadas a funciones de bajo nivel no propaguen excepciones en condiciones de sistema restringidas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T09:42:40` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` al centralizar la validación de la ruta seleccionada mediante `safety.ensure_safe_to_modify`, evitando que la aplicación procese rutas protegidas desde el diálogo nativo de selección de carpetas.
 - `2026-08-15T09:41:55` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del cálculo de `breakdown` introduciendo un redondeo consciente con `round()` antes del truncamiento a entero, evitando el error de precisión donde un puntaje de `99.9` (salud excelente) se truncaba erróneamente a `99` (perdiendo el grado 'A').
 - `2026-08-15T09:41:30` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `hash_file` y `partial_hash` al verificar que la ruta sea absoluta antes de realizar operaciones de acceso al sistema de archivos, previniendo posibles discrepancias en la resolución de rutas relativas durante el escaneo de directorios.
-- `2026-08-15T09:41:07` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `drive_usage` para prevenir ataques de escalada de privilegios o acceso no deseado mediante la validación estricta de rutas UNC y la resolución de enlaces simbólicos maliciosos, asegurando que solo se procesen rutas locales físicas.
-- `2026-08-15T09:32:05` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de un chequeo de longitud máxima de ruta (`MAX_PATH`) y una validación de seguridad adicional contra `is_protected_path` en cada nivel de la recursión para prevenir el escape del escaneo hacia directorios críticos del sistema.
-- `2026-08-15T09:31:26` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` validando la integridad del formato de respuesta de la API antes de procesarlo, evitando posibles inyecciones de objetos malformados o tipos inesperados que podrían explotar el parsing posterior.

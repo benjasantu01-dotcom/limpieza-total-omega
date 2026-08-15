@@ -198,8 +198,8 @@ def _read_windows_snapshot() -> MemorySnapshot:
     """Ejecuta API de Windows (GlobalMemoryStatusEx) para obtener estado de memoria global."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
-    kernel32 = ctypes.windll.kernel32
-    if not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
+    if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
         return MemorySnapshot(total=0, available=0)
     return MemorySnapshot(total=int(stat.ullTotalPhys), available=int(stat.ullAvailPhys))
 
@@ -292,10 +292,12 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(handle: int) -> Optional[str]:
     """Obtiene la ruta completa del ejecutable asociado a un handle de proceso."""
-    kernel32 = ctypes.windll.kernel32
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
+    if kernel32 is None:
+        return None
     buf = ctypes.create_unicode_buffer(4096)
     size = ctypes.c_ulong(4096)
-    if kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
+    if hasattr(kernel32, "QueryFullProcessImageNameW") and kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
         return str(buf.value)
     return None
 
@@ -313,10 +315,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid) or target_pid == os.getpid():
         return False, "Operación denegada: PID fuera de rango o protegido."
     
-    kernel32 = ctypes.windll.kernel32
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
     psapi = getattr(ctypes.windll, "psapi", None)
-    if psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
-        return False, "Error de sistema: PSAPI no disponible."
+    if kernel32 is None or psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
+        return False, "Error de sistema: APIs de memoria no disponibles."
 
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
