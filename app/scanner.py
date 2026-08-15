@@ -103,11 +103,13 @@ class Scanner:
             return
         
         try:
+            # Asegurar que trabajamos con rutas absolutas normalizadas desde el inicio
+            target_path = Path(entry.path).resolve()
+            
             # Bloqueo total de enlaces simbólicos y puntos de reanálisis por seguridad
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
 
-            target_path = Path(entry.path)
             if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
 
@@ -115,9 +117,9 @@ class Scanner:
                 return
 
             if entry.is_dir(follow_symlinks=False):
-                if entry.path not in self.seen:
-                    self.seen.add(entry.path)
-                    stack.append(entry.path)
+                if str(target_path) not in self.seen:
+                    self.seen.add(str(target_path))
+                    stack.append(str(target_path))
             elif entry.is_file(follow_symlinks=False):
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
