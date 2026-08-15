@@ -11,7 +11,7 @@ import os
 import stat
 import re
 import ctypes
-import sys
+from enum import Enum, auto
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable
 from functools import lru_cache
@@ -38,6 +38,18 @@ __all__ = [
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
+
+
+class ProtectionReason(Enum):
+    """Categorías de riesgo para fallos de integridad."""
+    INACCESSIBLE = "inaccesible"
+    REPARSE_POINT = "punto de reparse"
+    READ_ONLY = "solo lectura"
+    IN_USE = "en uso"
+    SYSTEM_HIDDEN = "sistema/oculto"
+    HARD_LINK = "hard link detectado"
+    ADS = "ADS (flujos alternativos)"
+    EMPTY_FILE = "archivo vacío"
 
 
 # DIRECTORIOS_BLOQUEADOS: Nombres que, si aparecen en una ruta, indican riesgo de sistema.
@@ -70,7 +82,7 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 
 class _IntegrityCheck(NamedTuple):
     """Representa un criterio de validación para un archivo específico."""
-    reason: str
+    reason: ProtectionReason
     predicate: ViolationPredicate
 
 
@@ -144,9 +156,9 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(p: Path) -> None:
     """
-    Realiza una batería de pruebas de integridad.
+    Realiza una batería de pruebas de integridad usando predicados tipificados.
     La verificación es fail-fast: la primera condición que no se cumpla
-    lanza un UnsafePathError para proteger el estado del sistema.
+    lanza un UnsafePathError con el motivo del fallo.
     """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
@@ -160,19 +172,19 @@ def _check_file_integrity(p: Path) -> None:
             raise UnsafePathError(f"No se pudo acceder a metadatos de {path.name}")
 
     violation_checks: list[_IntegrityCheck] = [
-        _IntegrityCheck("inaccesible", lambda: not os.access(p, os.W_OK)),
-        _IntegrityCheck("punto de reparse", lambda: _is_reparse_point(p)),
-        _IntegrityCheck("solo lectura", lambda: _is_readonly(p)),
-        _IntegrityCheck("en uso", lambda: _is_file_in_use(p)),
-        _IntegrityCheck("sistema/oculto", lambda: _is_system_or_hidden(p)),
-        _IntegrityCheck("hard link detectado", lambda: p.is_file() and _safe_stat(p).st_nlink > 1),
-        _IntegrityCheck("ADS (flujos alternativos)", lambda: _has_alternate_data_stream(p)),
-        _IntegrityCheck("archivo vacío", lambda: p.is_file() and _safe_stat(p).st_size == 0)
+        _IntegrityCheck(ProtectionReason.INACCESSIBLE, lambda: not os.access(p, os.W_OK)),
+        _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda: _is_reparse_point(p)),
+        _IntegrityCheck(ProtectionReason.READ_ONLY, lambda: _is_readonly(p)),
+        _IntegrityCheck(ProtectionReason.IN_USE, lambda: _is_file_in_use(p)),
+        _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda: _is_system_or_hidden(p)),
+        _IntegrityCheck(ProtectionReason.HARD_LINK, lambda: p.is_file() and _safe_stat(p).st_nlink > 1),
+        _IntegrityCheck(ProtectionReason.ADS, lambda: _has_alternate_data_stream(p)),
+        _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda: p.is_file() and _safe_stat(p).st_size == 0)
     ]
 
     for check in violation_checks:
         if check.predicate():
-            raise UnsafePathError(f"Operación denegada en {p.name}: {check.reason}.")
+            raise UnsafePathError(f"Operación denegada en {p.name}: {check.reason.value}.")
 
 
 @lru_cache(maxsize=2048)

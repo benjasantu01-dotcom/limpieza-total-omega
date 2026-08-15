@@ -68,9 +68,15 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada, sea de carpetas o registro.
     
-    Utiliza resolución perezosa (`lazy loading`) para el ejecutable: la validación 
-    de existencia en disco y el chequeo de seguridad (`safety.py`) se realizan 
-    solo al acceder a la propiedad `executable`.
+    Usa resolución perezosa para el ejecutable: la validación de existencia en 
+    disco y chequeos de seguridad ocurren al acceder a la propiedad `executable`.
+    
+    Métodos internos:
+    - _is_valid_executable: Filtra extensiones y enlaces simbólicos.
+    - _sanitize_command: Limpia caracteres de control no imprimibles.
+    - _extract_quoted_path: Extrae rutas desde cadenas con comillas (uso típico de registro).
+    - _resolve_and_cache_path: Normaliza rutas y verifica existencia en disco (con caché).
+    - _resolve_path_from_command: Lógica de despacho según formato de comando.
     """
     name: str
     command: str
@@ -92,9 +98,7 @@ class StartupEntry:
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """
-        Extracts a path from a quoted string. 
-        """
+        """Extrae la ruta de un comando delimitado por comillas."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -114,10 +118,7 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """
-        Normaliza, valida seguridad y verifica existencia física en disco.
-        Usa caché local para evitar accesos repetitivos a `path.exists()`.
-        """
+        """Normaliza, valida seguridad y verifica existencia física en disco."""
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
@@ -145,7 +146,6 @@ class StartupEntry:
                     return ""
                 p_str: str = str(p_abs)
             except (OSError, PermissionError, RuntimeError):
-                # Si no se puede resolver (ej. acceso denegado), asumimos válida pero no resolvemos
                 p_str = path_str
                 
             _EXISTS_CACHE[p_str] = True
@@ -155,7 +155,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Orquesta la extracción y validación de la ruta ejecutable según formato."""
+        """Orquesta la extracción y validación de la ruta ejecutable."""
         if not cmd:
             return ""
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
