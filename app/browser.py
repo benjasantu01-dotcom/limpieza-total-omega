@@ -162,35 +162,37 @@ def _sum_directory_recursive(
     root_dir: str, 
     is_junction_fn: Callable[[str], bool], 
     kernel32: ctypes.WinDLL | None,
-    cache: Dict[str, int], 
-    depth: int = 0
+    cache: Dict[str, int]
 ) -> int:
-    """Calcula el peso total recursivamente con límites de seguridad y profundidad."""
-    if depth > 20 or len(root_dir) > 260:
-        return 0
-    if is_protected_path(Path(root_dir)):
-        return 0
-    if root_dir in cache:
-        return cache[root_dir]
+    """Calcula el peso total recursivamente mediante una clase local para encapsular el estado."""
     
-    total_size: int = 0
-    try:
-        with os.scandir(root_dir) as it:
-            for entry in it:
-                if _should_skip_entry(entry, kernel32, is_junction_fn):
-                    continue
-                try:
-                    if entry.is_dir():
-                        total_size += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, cache, depth + 1)
-                    else:
-                        total_size += entry.stat().st_size
-                except (PermissionError, OSError):
-                    continue
-    except (PermissionError, OSError):
-        return 0
-    
-    cache[root_dir] = total_size
-    return total_size
+    class Scanner:
+        def __init__(self):
+            self.memo: Dict[str, int] = cache
+
+        def walk(self, current_dir: str, depth: int) -> int:
+            if depth > 20 or len(current_dir) > 260 or is_protected_path(Path(current_dir)):
+                return 0
+            if current_dir in self.memo:
+                return self.memo[current_dir]
+            
+            total: int = 0
+            try:
+                with os.scandir(current_dir) as it:
+                    for entry in it:
+                        if _should_skip_entry(entry, kernel32, is_junction_fn):
+                            continue
+                        if entry.is_dir():
+                            total += self.walk(entry.path, depth + 1)
+                        else:
+                            total += entry.stat().st_size
+            except (PermissionError, OSError):
+                pass
+            
+            self.memo[current_dir] = total
+            return total
+
+    return Scanner().walk(root_dir, 0)
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:

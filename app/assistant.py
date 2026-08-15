@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator, TypedDict
+from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator, TypedDict, NamedTuple
 
 import settings
 from safety import is_protected_path
@@ -72,6 +72,13 @@ class AssistantConfig(TypedDict):
     asistente_api_key: str
     asistente_modelo: str
     asistente_enviar_metricas: bool
+
+class ProblemCriterion(NamedTuple):
+    """Define una regla de salud para la evaluación del sistema."""
+    metric_key: str
+    threshold: float
+    operator: str  # '<' o '>'
+    message_format: str
 
 MetricSource: TypeAlias = Any
 ScoreSource: TypeAlias = Any
@@ -145,13 +152,13 @@ _KEYWORD_MAP: Final[dict[str, str]] = {
     "inicio": "startup", "arranque": "startup", "arranca": "startup", "encender": "startup"
 }
 
-_CRITERIOS_SALUD: Final = (
-    ("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
-    ("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
-    ("memory_available_percent", 15.0, "<", "{:.0f}% de RAM"),
-    ("junk_mb", 1000.0, ">", "{:.0f} MB de basura"),
-    ("duplicate_mb", 500.0, ">", "{:.0f} MB en duplicados"),
-    ("startup_count", 15, ">", "{:d} programas de inicio")
+_CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
+    ProblemCriterion("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
+    ProblemCriterion("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
+    ProblemCriterion("memory_available_percent", 15.0, "<", "{:.0f}% de RAM"),
+    ProblemCriterion("junk_mb", 1000.0, ">", "{:.0f} MB de basura"),
+    ProblemCriterion("duplicate_mb", 500.0, ">", "{:.0f} MB en duplicados"),
+    ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
 @dataclass
@@ -454,10 +461,16 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
     """
     encontrados = []
-    for attr, limit, op, msg in _CRITERIOS_SALUD:
-        val = getattr(ctx, attr)
-        if (op == "<" and val < limit) or (op == ">" and val > limit):
-            encontrados.append(msg.format(val))
+    for crit in _CRITERIOS_SALUD:
+        val = getattr(ctx, crit.metric_key)
+        triggered = False
+        if crit.operator == "<" and val < crit.threshold:
+            triggered = True
+        elif crit.operator == ">" and val > crit.threshold:
+            triggered = True
+        
+        if triggered:
+            encontrados.append(crit.message_format.format(val))
             if len(encontrados) >= 3:
                 break
     return encontrados

@@ -1492,3 +1492,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T11:54:35` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de archivos en `save()` y `load()` mediante el uso de `os.fsync` y una estrategia de reemplazo atómico más conservadora, además de añadir validaciones explícitas de tipo y longitud en `_Validators.str` para prevenir la inyección de datos malformados en el JSON.
 - `2026-08-15T11:54:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T11:54:35` Corrida terminada. Total usado hoy: 280.
+- `2026-08-15T12:03:31` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-08-15T12:04:00` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.15s
+
+```
+- `2026-08-15T12:04:00` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `parse_registry_csv` y `_resolve_and_cache_path` mediante la validación proactiva de tipos y la captura de errores específicos al interactuar con el sistema de archivos, asegurando que la app no falle ante entradas de registro malformadas o rutas inaccesibles.
+- `2026-08-15T12:04:33` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `_identify_active_problems` introduciendo un tipo de datos explícito (`ProblemCriterion`) y reemplazando tuplas anónimas por campos nombrados para documentar la estructura de la lógica de evaluación.
+- `2026-08-15T12:05:04` ➖ Sin cambios en branding.py (enfoque: legibilidad y documentación). Motivo: Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las constantes de configuración y la clarificación de las responsabilidades de las funciones, facilitando la comprensión del sistema de diseño para otros desarrolladores.
+- `2026-08-15T12:05:13` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `browser.py` mediante la refactorización de `_sum_directory_recursive`, eliminando la carga de pasar `is_junction_fn` y `kernel32` manualmente en cada llamada recursiva al encapsular la lógica de escaneo en un objeto local, y agregué tipado explícito para clarificar la estructura de los datos.
+- `2026-08-15T12:05:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T12:05:13` Corrida terminada. Total usado hoy: 284.
