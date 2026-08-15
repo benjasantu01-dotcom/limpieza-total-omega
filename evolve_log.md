@@ -529,3 +529,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-15T13:16:36` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `build_context` ante la posible recepción de datos de tipo `None` o corruptos en los diccionarios de entrada, asegurando que `_safe_assign` no intente procesar valores inválidos que podrían haber causado excepciones no controladas en el bucle de construcción del contexto.
 - `2026-08-15T13:16:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-15T13:16:36` Corrida terminada. Total usado hoy: 312.
+- `2026-08-15T13:25:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-15T13:25:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-15T13:25:59` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-15T13:26:26` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `is_protected_path` antes de iniciar el recorrido en `summarize` y `largest_folders` para prevenir el procesamiento de rutas root o directorios críticos en casos de error de resolución, y se añadieron bloques `try-except` granulares en `walk_files` para manejar de forma robusta errores de `OSError` al intentar acceder a rutas que no existen o tienen permisos denegados durante la iteración.
+- `2026-08-15T13:26:35` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `suggest_keeper` para manejar el caso límite donde un archivo desaparece del sistema de archivos entre el escaneo y la sugerencia, evitando excepciones no controladas y asegurando que la selección del "conservar" sea siempre válida.
+- `2026-08-15T13:26:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-15T13:26:35` Corrida terminada. Total usado hoy: 316.

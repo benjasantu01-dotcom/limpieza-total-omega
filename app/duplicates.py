@@ -272,7 +272,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path):
             continue
         try:
-            if not p.exists():
+            # Validar existencia actual, pues el archivo pudo ser borrado por el usuario
+            if not p.is_file():
                 continue
             stat_info = p.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0))
