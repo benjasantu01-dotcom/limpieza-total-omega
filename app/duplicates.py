@@ -67,7 +67,7 @@ class DuplicateGroup:
         Calcula el espacio total recuperable excluyendo una copia (n-1).
         
         Returns:
-            Total de bytes redundantes o 0 si el grupo es inválido.
+            int: Total de bytes redundantes o 0 si el grupo es inválido.
         """
         if not self.paths or self.count <= 1 or self.size_bytes < 0:
             return 0
@@ -78,8 +78,12 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     Calcula el hash SHA256 completo del archivo tras validar su seguridad.
     
-    Aplica filtros de seguridad (`is_protected_path`, `is_safe_to_modify`)
-    y omite symlinks o reparse points para evitar recursión.
+    Args:
+        path: Ruta del archivo a procesar.
+        chunk_size: Tamaño de bloque para lectura incremental (default 1MB).
+        
+    Returns:
+        Optional[str]: Digest hex SHA256 si es seguro y procesable, None en caso contrario.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -113,8 +117,8 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Hash rápido de los primeros bytes (64KB) para comparación heurística.
     
-    Comparte lógica de validación con hash_file para mantener consistencia
-    en la evaluación de seguridad del archivo.
+    Aplica las mismas restricciones de seguridad que hash_file para mantener
+    consistencia operativa.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -160,9 +164,12 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo capturando candidatos mediante os.scandir.
-    Usa el par (dev, ino) para evitar procesar el mismo archivo múltiples veces.
+    
+    Usa el par (dev, ino) como clave para evitar procesar recursivamente el 
+    mismo inodo en sistemas de archivos con enlaces duros o puntos de montaje.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
+    # visited_inodes: (device_id, inode_id)
     visited_inodes: set[Tuple[int, int]] = set()
     
     def _scan(root_path: Path) -> None:
@@ -172,7 +179,6 @@ def _collect_candidates(
                     try:
                         if entry.is_symlink(): continue
                         
-                        # Cache stat para reducir llamadas al sistema
                         st = entry.stat(follow_symlinks=False)
                         inode = (st.st_dev, st.st_ino)
                         if inode in visited_inodes: continue
@@ -204,8 +210,8 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Reduce un conjunto de archivos candidatos aplicando una función de hash dada.
-    Solo retorna grupos que mantienen al menos dos archivos colisionando.
+    Reduce un conjunto de archivos candidatos aplicando una función de hash.
+    Retorna solo grupos que contienen al menos dos archivos con el mismo digest.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -226,7 +232,9 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Pipeline principal: filtra por tamaño -> hash parcial -> hash completo.
-    Retorna lista de grupos ordenados por bytes recuperables (descendente).
+    
+    Returns:
+        List[DuplicateGroup]: Grupos ordenados por bytes recuperables (descendente).
     """
     if directories is None or min_size < 0: return []
     
@@ -258,6 +266,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
+    # Estructura: (mtime, len_path, path)
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         if not isinstance(p, Path):

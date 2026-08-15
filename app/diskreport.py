@@ -198,21 +198,25 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que recorre archivos bajo un directorio de forma segura.
-    
+    Recorre recursivamente un directorio (sin seguir enlaces simbólicos) y genera
+    tuplas con la ruta de cada archivo y su tamaño en bytes.
+
+    Utiliza `os.scandir` para mejorar el rendimiento de I/O y detecta ciclos de
+    directorios mediante la comparación de inodos (números de dispositivo e inodo).
+
     Args:
-        directory: Ruta base desde donde comenzar el recorrido.
-        skip_protected: Si es True, evita entrar en directorios protegidos por `is_protected_path`.
+        directory: Ruta base donde iniciar el recorrido.
+        skip_protected: Si es True, omite directorios marcados por `is_protected_path`.
 
     Yields:
-        Tuplas conteniendo la ruta `Path` del archivo y su tamaño en `int`.
+        Tuplas (path: Path, size: int) para cada archivo encontrado.
     """
     if not directory:
         return
 
     try:
         base_path = Path(directory).resolve()
-        # Bloquear rutas UNC preventivamente
+        # Rechazar rutas UNC (evita inyección en redes)
         if base_path.parts[0].startswith(("\\\\", "//")):
             return
         if not base_path.exists() or not base_path.is_dir():
@@ -222,6 +226,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, TypeError, ValueError):
         return
 
+    # Estructura de control: (dev, ino) para evitar ciclos (bucle infinito).
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[Path] = [base_path]
     
@@ -231,20 +236,20 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar enlaces simbólicos para evitar bucles o escape de directorios
+                        # Ignorar enlaces simbólicos o junctions para garantizar seguridad
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
-                        # Validar ruta contra protección antes de procesar
+                        # Validar protección antes de procesar la entrada
                         target = Path(entry.path).resolve()
                         if skip_protected and is_protected_path(target):
                             continue
 
                         if entry.is_dir():
-                            st = entry.stat()
-                            inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
+                            stat_data = entry.stat()
+                            inode_key = (stat_data.st_dev, stat_data.st_ino)
+                            if inode_key not in visited_inodes:
+                                visited_inodes.add(inode_key)
                                 stack.append(target)
                         else:
                             yield target, entry.stat().st_size

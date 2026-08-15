@@ -148,32 +148,50 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio (0.0-1.0) de basura: 1.0 es 0 MB, 0.0 es >= _LIMIT_JUNK_MB."""
+    """
+    Calcula ratio (0.0-1.0) de basura. 
+    Escala lineal: 0 MB es salud perfecta (1.0), al alcanzar _LIMIT_JUNK_MB (0.0).
+    """
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula ratio de seguridad restando penalizaciones por amenazas y avisos."""
+    """
+    Calcula ratio de seguridad. 
+    Penaliza hallazgos críticos (-0.05 c/u) y advertencias (-0.25 c/u).
+    """
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio de salud de memoria comparando disponibilidad con el umbral crítico."""
+    """
+    Calcula ratio de salud de memoria. 
+    El ratio es 1.0 si la disponibilidad alcanza el umbral de referencia _LIMIT_RAM_PERCENT.
+    """
     return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0
 
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio de salud de disco comparando espacio libre con el umbral mínimo."""
+    """
+    Calcula ratio de salud de disco. 
+    1.0 se alcanza al llegar al umbral de seguridad _LIMIT_DISK_PERCENT.
+    """
     return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0
 
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio de duplicados: 1.0 es 0 MB, 0.0 es >= _LIMIT_DUPLICATE_MB."""
+    """
+    Calcula ratio de duplicados: 1.0 es 0 MB, 0.0 es >= _LIMIT_DUPLICATE_MB.
+    Indica la urgencia de limpieza de archivos repetidos.
+    """
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula ratio de programas de arranque: 1.0 es 0 programas, 0.0 es >= _LIMIT_STARTUP_COUNT."""
+    """
+    Calcula ratio de programas de arranque. 
+    El exceso de entradas impacta negativamente el tiempo de inicio (1.0 si es 0, 0.0 si es >= _LIMIT_STARTUP_COUNT).
+    """
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 
