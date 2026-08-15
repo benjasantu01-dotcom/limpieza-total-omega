@@ -147,16 +147,18 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     Evalúa si el movimiento es seguro basándose en atributos, bloqueos y consistencia.
     """
     try:
-        if not junk_file.path.exists():
+        if not junk_file.path.exists() or not junk_file.path.is_file():
             return False
         
         current_abs = junk_file.path.resolve()
         dest_abs = dest.resolve()
         
-        if not current_abs.is_file() or current_abs.parent == current_abs:
+        # Validar que no sea un dispositivo especial o ruta circular
+        if current_abs.parent == current_abs:
             return False
         
         if os.name == "nt":
+            # 0x06 son FILE_ATTRIBUTE_HIDDEN y FILE_ATTRIBUTE_SYSTEM
             if current_abs.stat().st_file_attributes & 0x06: 
                 return False
 

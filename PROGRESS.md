@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 74 | 6 | 13 | 7 | 72 |
-| 2026-08-15 | 151 | 16 | 17 | 10 | 138 |
+| 2026-08-14 | 74 | 6 | 13 | 7 | 68 |
+| 2026-08-15 | 155 | 16 | 17 | 10 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **48**
 - robustez ante casos límite: **45**
+- seguridad defensiva: **44**
 - rendimiento: **40**
-- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `diskreport.py`: **21**
 - `browser.py`: **20**
+- `organizer.py`: **19**
 - `scanner.py`: **19**
 - `healthscore.py`: **19**
-- `organizer.py`: **18**
-- `quarantine.py`: **17**
-- `memory.py`: **16**
+- `quarantine.py`: **18**
+- `memory.py`: **17**
 - `duplicates.py`: **16**
-- `main.py`: **11**
+- `main.py`: **12**
 - `safety.py`: **11**
 - `startup.py`: **9**
 - `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T14:18:06` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo contra archivos con flujos de datos alternos (ADS) ocultos en `_check_path_syntax_integrity` y se reforzó la validación de `restore_item` usando `is_protected_path` sobre la ruta de destino resuelta para evitar desbordamientos de directorio incluso si el manifiesto fue manipulado.
+- `2026-08-15T14:17:51` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `_is_safe_to_move` validando que la ruta de origen sea estrictamente un archivo y no un directorio o un dispositivo especial, evitando así intentos erróneos de mover estructuras complejas fuera de la carpeta de destino.
+- `2026-08-15T14:17:28` **memory.py** (seguridad defensiva): Mejoré la seguridad en `trim_working_set` al validar la ruta del proceso mediante `is_protected_path` ANTES de intentar cualquier operación, asegurando que no se pueda manipular el working set de procesos protegidos ni mediante rutas mal formadas.
+- `2026-08-15T14:17:02` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` y `run_async` centralizando la validación de rutas mediante `ensure_safe_to_modify` para prevenir ataques de inyección de directorios, asegurando que cualquier operación sobre el sistema de archivos sea siempre verificada contra la lista de exclusión antes de ejecutarse en un hilo de trabajo.
 - `2026-08-15T14:07:11` **healthscore.py** (seguridad defensiva): Se ha endurecido el método `SystemMetrics.validate()` para asegurar la integridad de los datos de entrada antes del procesamiento, evitando que valores inesperados (`NaN`, `inf` o tipos incorrectos) propaguen inestabilidad en los cálculos de salud, alineándose con las técnicas de seguridad defensiva al validar los datos en el perímetro del objeto.
 - `2026-08-15T14:07:01` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `suggest_keeper` y `group_by_size` agregando una validación explícita mediante `is_safe_to_modify` para asegurar que, incluso en operaciones de solo lectura/consulta, el módulo no procese rutas que violen los criterios de seguridad del sistema.
 - `2026-08-15T14:06:36` **diskreport.py** (seguridad defensiva): Se ha añadido una validación de seguridad proactiva en `walk_files` para verificar que cada ruta resuelta permanezca dentro del árbol de directorios original (previniendo posibles escapes mediante enlaces simbólicos o manipulaciones externas), asegurando la integridad del escaneo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T13:46:41` **safety.py** (robustez ante casos límite): Se introdujo la verificación `p.exists()` antes de consultar los atributos mediante `GetFileAttributesW` en las funciones `_is_system_or_hidden` y `_is_reparse_point` para evitar falsos positivos y errores de acceso en rutas inexistentes durante la inspección.
 - `2026-08-15T13:37:28` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` ante errores de entrada y condiciones de carrera, garantizando que el destino sea siempre una ruta absoluta y validada antes de intentar cualquier operación de disco.
 - `2026-08-15T13:37:18` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` ante procesos que cierran inesperadamente o tienen estados de acceso intermitentes, asegurando que `OpenProcess` maneje correctamente la propagación de errores y validando la existencia de la ruta antes de intentar cualquier operación.
-- `2026-08-15T13:36:50` **main.py** (robustez ante casos límite): Mejoré la robustez de `main.py` ante errores inesperados durante la carga de pestañas y la ejecución de tareas asíncronas, asegurando que un fallo en un componente no deje la interfaz "congelada" en un estado de espera (busy) indefinida.
-- `2026-08-15T13:35:44` **healthscore.py** (robustez ante casos límite): Se añadió una validación explícita para evitar divisiones por cero en `score_memory` y `score_disk` ante configuraciones de umbrales inválidos (cero o negativos) y se robusteció `SystemMetrics.is_finite` usando un filtro más riguroso para prevenir valores `NaN` o `Inf` que pudieran corromper el cálculo de `HealthResult`.
-- `2026-08-15T13:26:35` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `suggest_keeper` para manejar el caso límite donde un archivo desaparece del sistema de archivos entre el escaneo y la sugerencia, evitando excepciones no controladas y asegurando que la selección del "conservar" sea siempre válida.
-- `2026-08-15T13:26:26` **diskreport.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `is_protected_path` antes de iniciar el recorrido en `summarize` y `largest_folders` para prevenir el procesamiento de rutas root o directorios críticos en casos de error de resolución, y se añadieron bloques `try-except` granulares en `walk_files` para manejar de forma robusta errores de `OSError` al intentar acceder a rutas que no existen o tienen permisos denegados durante la iteración.

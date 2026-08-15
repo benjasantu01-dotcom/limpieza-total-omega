@@ -332,8 +332,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         path = _get_process_path(proc_handle)
-        if not path or not os.path.exists(path) or is_protected_path(os.path.normpath(path)):
-            return False, "Operación denegada: ruta de ejecutable inexistente, protegida o inválida."
+        if not path or is_protected_path(os.path.normpath(path)):
+            return False, "Operación denegada: ruta de ejecutable protegida o inválida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
             err = kernel32.GetLastError()
