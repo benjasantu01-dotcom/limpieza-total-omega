@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 32
+- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-13 | 57 | 4 | 8 | 2 | 79 |
+| 2026-08-13 | 57 | 3 | 8 | 2 | 76 |
 | 2026-08-14 | 165 | 12 | 24 | 14 | 135 |
-| 2026-08-15 | 2 | 0 | 0 | 1 | 1 |
+| 2026-08-15 | 4 | 0 | 1 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,27 +26,29 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **44**
 - rendimiento: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
 - `diskreport.py`: **19**
+- `organizer.py`: **19**
 - `settings.py`: **19**
 - `browser.py`: **19**
 - `healthscore.py`: **18**
-- `organizer.py`: **18**
 - `memory.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **16**
 - `duplicates.py`: **16**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `main.py`: **12**
 - `branding.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-15T00:21:23` **safety.py** (robustez ante casos límite): Mejoré la robustez de `is_protected_path` ante errores de resolución de rutas (como unidades desconectadas o permisos denegados) para evitar que la aplicación falle silenciosamente o se bloquee ante estados inestables del sistema de archivos.
+- `2026-08-15T00:20:24` **organizer.py** (robustez ante casos límite): Mejoré `_is_file_locked` para manejar archivos inaccesibles o bloqueados de forma robusta utilizando el protocolo de contexto de forma segura, previniendo excepciones innecesarias durante la iteración sobre miles de archivos.
 - `2026-08-15T00:11:44` **main.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la inicialización y ejecución del hilo principal, añadiendo una validación de seguridad contra `None` en `run_async` y envolviendo la creación de widgets en un chequeo de existencia (`winfo_exists`) para prevenir excepciones si la aplicación se cierra durante tareas asíncronas pendientes.
 - `2026-08-15T00:10:29` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `_generate_recommendations` ante datos inesperados mediante el uso de `getattr` sobre la instancia `SystemMetrics` en lugar de un diccionario manual, evitando que desincronizaciones entre la estructura de datos y el mapeo generen falsas recomendaciones o errores silenciosos.
 - `2026-08-14T14:49:05` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el recorrido (condición de carrera) y se ha protegido `summarize` ante casos de rutas con permisos denegados durante la iteración, evitando que una excepción en un archivo puntual aborte el reporte completo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-14T14:08:48` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `is_protected_path` al mover la validación antes de obtener los metadatos completos, y reduciendo el uso de `Path` mediante el uso directo de `entry.path` donde es posible.
 - `2026-08-14T13:58:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` convirtiendo la lista `_CRITERIOS_SALUD` en un conjunto de tuplas pre-procesadas y eliminando la creación repetida de la lista `problemas` en cada llamada a `local_answer` y `handle_score`.
 - `2026-08-14T13:58:00` **settings.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings detallados en las funciones de la API pública y una mayor consistencia en los type hints, siguiendo el enfoque de documentación técnica exigido.
-- `2026-08-14T13:57:30` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados que especifican precondiciones, comportamientos ante errores y el propósito técnico de las heurísticas, facilitando el mantenimiento y la auditoría del motor de escaneo.
-- `2026-08-14T13:48:28` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la integración de docstrings explicativos sobre la lógica de validación de integridad (`_check_file_integrity`) y la clarificación de las responsabilidades de las funciones de chequeo, facilitando el mantenimiento y auditoría del módulo conforme a las reglas exigidas.

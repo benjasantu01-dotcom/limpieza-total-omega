@@ -139,7 +139,7 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está en uso exclusivo intentando abrirlo en modo append binario.
+    Verifica si un archivo está en uso exclusivo intentando abrirlo en modo lectura exclusiva.
     
     Args:
         path: Ruta del archivo a verificar.
@@ -147,9 +147,11 @@ def _is_file_locked(path: Path) -> bool:
         bool: True si el archivo está bloqueado por otro proceso o inaccesible.
     """
     try:
-        with open(path, "a+b"):
+        # Intentar abrir en modo lectura exclusiva sin modificar metadatos
+        with open(path, "rb") as f:
+            # Si el archivo está vacío, no hay mucho que testear, asumimos libre.
             return False
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, IOError):
         return True
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:

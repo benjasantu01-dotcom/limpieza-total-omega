@@ -218,8 +218,12 @@ def is_protected_path(path: PathLike) -> bool:
             return True
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
-        return p == Path(p.anchor) or (p.exists() and _is_reparse_point(p))
+        # Si la ruta existe y es reparse point, es de riesgo aunque no sea obvio
+        if p.exists() and _is_reparse_point(p):
+            return True
+        return p == Path(p.anchor)
     except (PermissionError, OSError, ValueError, TypeError, RuntimeError):
+        # Ante la duda, protegemos el sistema denegando la operación
         return True 
 
 
