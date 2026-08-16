@@ -1091,3 +1091,4 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-16T14:55:18` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-08-16T14:55:18` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T14:55:18` Corrida terminada. Total usado hoy: 350.
+- `2026-08-16T15:04:39` Presupuesto diario agotado (350 usados). Corte hasta mañana.
