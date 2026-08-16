@@ -118,13 +118,8 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica archivos que utilizan doble extensión para ocultar ejecutables sospechosos."""
-    if path is None or path.name is None:
-        return None
-    try:
-        if DOUBLE_EXTENSION_RE.search(path.name):
-            return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
-    except Exception:
-        pass
+    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+        return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
@@ -133,10 +128,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Analiza si un ejecutable fue creado en carpetas de alta descarga recientemente.
     Se basa en st_mtime de los metadatos del sistema de archivos.
     """
-    if not isinstance(entry, os.DirEntry) or path is None:
+    if not isinstance(entry, os.DirEntry):
         return None
     
-    # Optimización: buscar coincidencia directa sin crear sets nuevos por archivo
     if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         return None
         
@@ -144,21 +138,16 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         file_stat = entry.stat()
         if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, AttributeError, OverflowError, ValueError, TypeError):
-        pass
+    except (OSError, AttributeError, OverflowError, ValueError, TypeError) as e:
+        logger.debug(f"No se pudo leer metadatos de {path}: {e}")
     return None
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable usa nombres protegidos del sistema fuera de su ubicación legítima (System32)."""
-    if path is None or path.name is None:
-        return None
-    try:
-        if path.name.lower() in SYSTEM_LOOKALIKES:
-            if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
-                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-    except Exception:
-        pass
+    if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+        if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
+            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
 
@@ -167,9 +156,6 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Pipeline principal para el análisis de un archivo único.
     Ejecuta heurísticas generales y, si el archivo es un ejecutable, aplica reglas de contexto.
     """
-    if path is None:
-        return []
-        
     findings: ScanResult = []
     
     # Reglas universales
@@ -177,17 +163,14 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         findings.append(res)
     
     # Reglas específicas para ejecutables sospechosos
-    try:
-        if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-            heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
-            for check in heuristic_suite:
-                try:
-                    if (res := check(path, entry, now_ts)):
-                        findings.append(res)
-                except Exception as e:
-                    logger.debug(f"Fallo en regla {check.__name__} para {path}: {e}")
-    except (AttributeError, ValueError):
-        pass
+    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+        heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
+        for check in heuristic_suite:
+            try:
+                if (res := check(path, entry, now_ts)):
+                    findings.append(res)
+            except Exception as e:
+                logger.debug(f"Fallo inesperado en regla {check.__name__} para {path}: {e}")
                 
     return findings
 

@@ -123,7 +123,11 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
 }
 
 class _Validators:
-    """Contiene lógica de validación estricta para asegurar que los datos no corrompan la app."""
+    """
+    Motor de validación estricta que asegura la integridad de los datos.
+    Cada método recibe el valor crudo del JSON y devuelve el valor tipado 
+    o None si el dato es malicioso, corrupto o fuera de rango.
+    """
     
     @staticmethod
     @lru_cache(maxsize=32)
@@ -234,7 +238,10 @@ def validate(raw_values: Any) -> AppSettings:
 
 @lru_cache(maxsize=1)
 def _load_internal(ruta_str: str) -> AppSettings:
-    """Carga interna cacheada por ruta string; la invalidación es gestionada por mtime externo."""
+    """
+    Carga interna cacheada: lee el disco, parsea el JSON y valida el contenido.
+    La caché se invalida externamente mediante `_LAST_MTIME` comparando el mtime del archivo.
+    """
     ruta = Path(ruta_str)
     try:
         if not ruta.exists() or ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()):

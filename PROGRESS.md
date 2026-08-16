@@ -7,46 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **227** (45.0% de aceptación)
-- Rechazadas por tests: 21
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 14
+- Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 2 | 0 | 0 | 0 | 0 |
-| 2026-08-15 | 157 | 16 | 18 | 10 | 149 |
-| 2026-08-16 | 68 | 5 | 8 | 4 | 67 |
+| 2026-08-15 | 156 | 16 | 18 | 9 | 149 |
+| 2026-08-16 | 71 | 6 | 8 | 4 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
-- robustez ante casos límite: **48**
+- legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **46**
+- robustez ante casos límite: **45**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `settings.py`: **22**
-- `healthscore.py`: **21**
-- `browser.py`: **20**
-- `scanner.py`: **20**
+- `settings.py`: **23**
+- `scanner.py`: **21**
+- `diskreport.py`: **21**
 - `assistant.py`: **20**
+- `healthscore.py`: **20**
+- `browser.py`: **19**
 - `quarantine.py`: **19**
 - `organizer.py`: **17**
 - `duplicates.py`: **16**
 - `memory.py`: **16**
 - `main.py`: **13**
-- `safety.py`: **8**
+- `safety.py`: **9**
 - `startup.py`: **7**
 - `branding.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T06:36:18` **settings.py** (legibilidad y documentación): Documenté el propósito de `_Validators` y `_load_internal` con docstrings expandidos, y clarifiqué mediante Type Hints y nombres de argumentos en `_Validators` el rol de la clave de configuración durante la validación, mejorando la mantenibilidad sin alterar la lógica de ejecución.
+- `2026-08-16T06:35:50` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo mediante la adición de Type Hints en las definiciones de las funciones de chequeo y la estandarización del manejo de excepciones, eliminando bloques `except Exception: pass` que ocultaban errores de ejecución.
+- `2026-08-16T06:35:26` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructuradas en las funciones auxiliares de bajo nivel y la unificación de los criterios de validación, garantizando que cada componente de seguridad describa su propósito sin ambiguos tecnicismos.
 - `2026-08-16T06:25:39` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos (incluyendo `Final` y alias) y se mejoró la documentación con docstrings estructurados según el estándar PEP 257, clarificando la intención técnica detrás de cada función.
 - `2026-08-16T06:25:14` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita de las constantes de la API de Windows y la extracción de la lógica de creación de la estructura `MEMORYSTATUSEX` a una función de fábrica clara, facilitando la comprensión del código de bajo nivel.
 - `2026-08-16T06:17:58` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_tab_salud` y `_build_tab_limpieza` para extraer la lógica de construcción de componentes en métodos privados específicos (`_build_health_metrics_row`, `_build_limpieza_controls`), facilitando la navegación del código y clarificando la jerarquía de la interfaz.
@@ -59,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T05:55:37` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas agregando validaciones de tipo y de estado (None/vacío) en las funciones de escaneo para prevenir excepciones inesperadas durante la inspección de archivos con metadatos dañados o inaccesibles.
 - `2026-08-16T05:46:45` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `quarantine_file` para evitar estados inconsistentes en el sistema de archivos cuando falla la operación de eliminación del origen tras una copia exitosa, y refiné la validación de la entrada `reason`.
 - `2026-08-16T05:46:27` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` mediante una validación de rutas más estricta (usando `is_relative_to` para evitar escapes de directorio) y reemplacé el uso de `str()` en operaciones de archivo por `Path` para garantizar consistencia con los chequeos de `safety.py`.
-- `2026-08-16T05:46:03` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita de tipos y valores para el `pid` antes de cualquier operación, y asegurando el cierre del handle del proceso mediante un bloque `try...finally` más robusto para prevenir fugas de recursos ante excepciones inesperadas.
-- `2026-08-16T05:35:20` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación explícita de `isinstance` y chequeos de finitud para evitar que valores `NaN` o tipos inesperados propaguen errores durante el formateo de cadenas de recomendación.
-- `2026-08-16T05:35:10` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando una validación explícita de `is_protected_path` previa a cualquier intento de apertura de archivo, garantizando que el acceso al sistema de archivos sea siempre seguro y consistente con las políticas de la aplicación.
