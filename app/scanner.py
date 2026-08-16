@@ -118,8 +118,10 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica archivos que utilizan doble extensión para ocultar ejecutables sospechosos."""
+    if path is None or path.name is None:
+        return None
     try:
-        if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+        if DOUBLE_EXTENSION_RE.search(path.name):
             return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     except Exception:
         pass
@@ -131,7 +133,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Analiza si un ejecutable fue creado en carpetas de alta descarga recientemente.
     Se basa en st_mtime de los metadatos del sistema de archivos.
     """
-    if not isinstance(entry, os.DirEntry):
+    if not isinstance(entry, os.DirEntry) or path is None:
         return None
     
     # Optimización: buscar coincidencia directa sin crear sets nuevos por archivo
@@ -149,8 +151,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable usa nombres protegidos del sistema fuera de su ubicación legítima (System32)."""
+    if path is None or path.name is None:
+        return None
     try:
-        if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+        if path.name.lower() in SYSTEM_LOOKALIKES:
             if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
                 return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     except Exception:
@@ -163,6 +167,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Pipeline principal para el análisis de un archivo único.
     Ejecuta heurísticas generales y, si el archivo es un ejecutable, aplica reglas de contexto.
     """
+    if path is None:
+        return []
+        
     findings: ScanResult = []
     
     # Reglas universales

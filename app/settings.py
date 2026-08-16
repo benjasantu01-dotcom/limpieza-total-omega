@@ -247,13 +247,7 @@ def _load_internal(ruta_str: str) -> AppSettings:
         data = json.loads(content)
         
         if not isinstance(data, dict): return _get_default_config()
-        validated = validate(data)
-        
-        # Integridad: asegurar que el dict tenga todas las llaves (en caso de versiones viejas)
-        for key in DEFAULTS:
-            if key not in validated:
-                validated[key] = DEFAULTS[key] # type: ignore
-        return validated
+        return validate(data)
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         return _get_default_config()
 

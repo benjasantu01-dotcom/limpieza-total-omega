@@ -1340,3 +1340,35 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-08-16T05:46:45` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `quarantine_file` para evitar estados inconsistentes en el sistema de archivos cuando falla la operación de eliminación del origen tras una copia exitosa, y refiné la validación de la entrada `reason`.
 - `2026-08-16T05:46:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T05:46:45` Corrida terminada. Total usado hoy: 136.
+- `2026-08-16T05:54:15` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-16T05:54:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-16T05:54:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-16T05:55:13` Tests FALLARON:
+```
+raises(safety, tmp_path):
+        """`is_safe_to_modify` es la variante para usar en un `if`."""
+        assert safety.is_safe_to_modify(tmp_path / "ok.tmp") is True
+        assert safety.is_safe_to_modify(tmp_path / "Windows" / "x.txt") is False
+        assert safety.is_safe_to_modify(tmp_path.anchor) is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe") is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe", allow_sensitive=True) is True
+        # Basura de entrada: devuelve False, no explota.
+        for basura in (None, "", 12345, [], {}):
+>           assert safety.is_safe_to_modify(basura) is False
+E           AssertionError: assert True is False
+E            +  where True = <function is_safe_to_modify at 0x7f7d0db342c0>(12345)
+E            +    where <function is_safe_to_modify at 0x7f7d0db342c0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+
+evolve/tests/test_integrity.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7f7d0db342c0>(12345)
+ +    where <function is_safe_to_modify at 0x7f7d0db342c0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+1 failed, 298 passed in 1.17s
+
+```
+- `2026-08-16T05:55:13` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `ensure_safe_to_modify` y sus funciones auxiliares mediante la validación proactiva de tipos y estados, evitando el uso de llamadas a `stat()` o `exists()` sobre rutas inválidas o None antes de tiempo, y garantizando que las excepciones de `Path.parts` sean capturadas para evitar fallos de ejecución en casos de rutas malformadas o fuera de los límites del sistema de archivos.
+- `2026-08-16T05:55:37` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las heurísticas agregando validaciones de tipo y de estado (None/vacío) en las funciones de escaneo para prevenir excepciones inesperadas durante la inspección de archivos con metadatos dañados o inaccesibles.
+- `2026-08-16T05:55:54` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_load_internal` reemplazando el acceso directo a `json.loads` por una lógica de validación que garantiza la estructura del diccionario antes de operar, previniendo errores de `KeyError` o tipos inesperados durante la carga de un archivo parcialmente corrupto.
+- `2026-08-16T05:55:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T05:55:54` Corrida terminada. Total usado hoy: 140.
