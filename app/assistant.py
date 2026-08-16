@@ -495,6 +495,8 @@ def _call_gemini(
     
     safe_q = _sanitize_query(question)
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
+    # Defensa extra: validar explícitamente que ni la pregunta ni el contexto sean paths protegidos
+    if is_protected_path(safe_q) or is_protected_path(context_text): return None
     
     try:
         payload = json.dumps({

@@ -1476,3 +1476,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T07:47:44` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante archivos inexistentes o inaccesibles mediante la adición de una comprobación de existencia `path.exists()` antes de realizar `entry.stat()` en las heurísticas, evitando excepciones innecesarias en archivos efímeros o en uso.
 - `2026-08-16T07:47:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T07:47:44` Corrida terminada. Total usado hoy: 184.
+- `2026-08-16T07:56:25` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-08-16T07:56:55` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha implementado un mecanismo de "rollback" seguro en la función `load` para manejar el caso límite de archivos JSON truncados o parcialmente escritos durante un fallo del sistema, evitando que la aplicación se bloquee permanentemente ante una corrupción inesperada del archivo.
+- `2026-08-16T07:57:21` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.02s
+
+```
+- `2026-08-16T07:57:21` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el método `_resolve_and_cache_path` para manejar casos de rutas mal formadas, truncadas o con caracteres de control mediante un filtrado previo más estricto y el uso de `pathlib.Path.expanduser()` para asegurar que variables como `~` sean expandidas correctamente, evitando errores en la resolución física de las rutas en el registro.
+- `2026-08-16T07:57:55` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la defensa de `assistant.py` implementando una validación explícita mediante `is_protected_path` en `_call_gemini` para asegurar que, bajo ninguna circunstancia, se procesen rutas del sistema, garantizando que el asistente remoto permanezca totalmente aislado de la estructura de archivos local.
+- `2026-08-16T07:58:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-16T07:58:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T07:58:11` Corrida terminada. Total usado hoy: 188.

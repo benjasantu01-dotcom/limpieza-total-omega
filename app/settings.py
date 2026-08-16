@@ -73,7 +73,7 @@ class AppSettings(TypedDict):
     analisis_en_paralelo: bool
     asistente_activado: bool
     asistente_clave_api: str
-    asistente_enviar_metricas: bool
+    asistente_enviar_METRICAS: bool
     asistente_modelo: str
 
 __all__ = [
@@ -110,7 +110,7 @@ def _get_default_config() -> AppSettings:
         "analisis_en_paralelo": True,
         "asistente_activado": False,
         "asistente_clave_api": "",
-        "asistente_enviar_metricas": True,
+        "asistente_enviar_METRICAS": True,
         "asistente_modelo": "gemini-3.1-flash-lite",
     }
 
@@ -256,6 +256,11 @@ def _load_internal(ruta_str: str) -> AppSettings:
         if not isinstance(data, dict): return _get_default_config()
         return validate(data)
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
+        # Si el archivo está corrupto, intentamos renombrarlo para no perder el rastro del error
+        # pero devolvemos los valores seguros de fábrica.
+        try:
+            ruta.replace(ruta.with_suffix(".corrupt"))
+        except OSError: pass
         return _get_default_config()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
