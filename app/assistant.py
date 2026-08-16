@@ -341,6 +341,28 @@ def explain_area(area: Any) -> str:
         return explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área.")
     return "No tengo una explicación para esa área."
 
+def _is_criterion_triggered(ctx: SystemContext, crit: ProblemCriterion) -> bool:
+    """Verifica si un criterio de salud específico se encuentra en un estado problemático."""
+    val = getattr(ctx, crit.metric_key)
+    if crit.operator == "<":
+        return val < crit.threshold
+    if crit.operator == ">":
+        return val > crit.threshold
+    return False
+
+def _identify_active_problems(ctx: SystemContext) -> list[str]:
+    """
+    Identifica y devuelve un listado de problemas detectados priorizados por criticidad.
+    Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
+    """
+    encontrados = []
+    for crit in _CRITERIOS_SALUD:
+        if _is_criterion_triggered(ctx, crit):
+            encontrados.append(crit.message_format.format(getattr(ctx, crit.metric_key)))
+            if len(encontrados) >= 3:
+                break
+    return encontrados
+
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Maneja consultas sobre el estado de la memoria RAM usando el motor local."""
     partes = [
@@ -454,26 +476,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     else:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
     return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
-
-def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """
-    Identifica y devuelve un listado de problemas detectados priorizados por criticidad.
-    Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
-    """
-    encontrados = []
-    for crit in _CRITERIOS_SALUD:
-        val = getattr(ctx, crit.metric_key)
-        triggered = False
-        if crit.operator == "<" and val < crit.threshold:
-            triggered = True
-        elif crit.operator == ">" and val > crit.threshold:
-            triggered = True
-        
-        if triggered:
-            encontrados.append(crit.message_format.format(val))
-            if len(encontrados) >= 3:
-                break
-    return encontrados
 
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si la configuración del sistema permite el uso del asistente en línea."""

@@ -197,8 +197,18 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio (sin seguir enlaces simbólicos) y genera
-    tuplas con la ruta de cada archivo y su tamaño en bytes.
+    Recorre recursivamente un directorio para indexar archivos y tamaños.
+    
+    Utiliza una pila para el recorrido iterativo y evita el seguimiento de enlaces
+    simbólicos o puntos de reparse (junctions). Implementa verificación de seguridad
+    por cada entrada encontrada para ignorar rutas protegidas del sistema.
+
+    Args:
+        directory: Directorio raíz desde donde iniciar el recorrido.
+        skip_protected: Si es True, salta rutas marcadas como seguras/protegidas.
+
+    Yields:
+        Tuplas conteniendo la ruta completa (Path) y el tamaño en bytes (int).
     """
     if not directory:
         return
@@ -336,7 +346,17 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
-    """Recolecta métricas crudas para el resumen de disco en una única pasada."""
+    """
+    Recolecta métricas estadísticas crudas del directorio en una única pasada.
+
+    Args:
+        directory: Path objeto del directorio base.
+        skip_protected: Flag para filtrar rutas protegidas del sistema.
+
+    Returns:
+        Tupla conteniendo (total_bytes, total_files, mapa_extensiones_bytes, 
+        mapa_extensiones_cuenta, heap_archivos_grandes).
+    """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)

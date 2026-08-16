@@ -93,11 +93,15 @@ def base_directories() -> List[Path]:
 
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
-    """Valida la integridad de la ruta para prevenir Path Traversal."""
+    """
+    Valida la integridad de la ruta para prevenir Path Traversal.
+    Verifica que la ruta resuelva dentro de base_path y no contenga caracteres de control.
+    """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
     path_str = str(target_path)
+    # Bloqueo de caracteres de escape y caracteres bidireccionales potencialmente engañosos
     if "\0" in path_str or any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
         return False
         
@@ -105,7 +109,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Verificación estricta contra listas de protección antes de cualquier comparación
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
@@ -165,13 +168,18 @@ def _sum_directory_recursive(
     kernel32: ctypes.WinDLL | None,
     cache: Dict[str, int]
 ) -> int:
-    """Calcula el peso total recursivamente mediante una clase local para encapsular el estado."""
+    """
+    Calcula el peso total recursivamente. 
+    Usa una clase interna `Scanner` para mantener el estado de `cache` 
+    (memoización) y evitar re-procesar subcarpetas en árboles compartidos.
+    """
     
     class Scanner:
         def __init__(self):
             self.memo: Dict[str, int] = cache
 
         def walk(self, current_dir: str, depth: int) -> int:
+            # Prevención de recursión infinita por profundidad o bucles de enlaces
             if depth > 20 or len(current_dir) > 260 or is_protected_path(Path(current_dir)):
                 return 0
             if current_dir in self.memo:
