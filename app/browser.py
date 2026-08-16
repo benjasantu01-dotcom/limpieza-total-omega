@@ -186,8 +186,11 @@ def _sum_directory_recursive(
                         if entry.is_dir():
                             total += self.walk(entry.path, depth + 1)
                         else:
-                            total += entry.stat().st_size
-            except (PermissionError, OSError):
+                            try:
+                                total += entry.stat().st_size
+                            except (OSError, PermissionError):
+                                continue
+            except (PermissionError, OSError, FileNotFoundError):
                 pass
             
             self.memo[current_dir] = total
@@ -198,7 +201,7 @@ def _sum_directory_recursive(
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
     """Calcula el tamaño en bytes de una ruta tras validar su seguridad."""
-    if not path or not isinstance(path, (str, Path)):
+    if path is None:
         return 0
     try:
         p_path = Path(path).resolve(strict=True)

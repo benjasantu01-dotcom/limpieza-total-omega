@@ -290,9 +290,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     for k, v in extra.items():
         if hasattr(ctx, k) and v is not None and not isinstance(v, bool):
             try:
-                attr_type = type(getattr(ctx, k))
-                if attr_type in (int, float, str):
-                    _safe_assign(ctx, k, v, cast=attr_type)
+                # Validar tipos de forma estricta para evitar inyección de tipos inesperados
+                if isinstance(v, (int, float, str)):
+                    _safe_assign(ctx, k, v, cast=type(getattr(ctx, k)))
             except Exception:
                 continue
     return ctx
