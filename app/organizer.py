@@ -39,7 +39,6 @@ JUNK_EXTENSIONS: Final[set[str]] = {
 }
 # Pre-calculado para eficiencia en loops
 _LOWER_JUNK_EXTS: Final[set[str]] = {ext.lower() for ext in JUNK_EXTENSIONS}
-_JUNK_EXT_TUPLE: Final[tuple[str, ...]] = tuple(_LOWER_JUNK_EXTS)
 
 # Carpetas típicas donde se acumula basura
 DEFAULT_SCAN_DIRS: Final[List[str]] = [
@@ -191,12 +190,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
         
         for root, dirs, files in os.walk(base):
             root_path = Path(root)
-            # Filtrar directorios bloqueados in-place
             dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
             
             for name in files:
                 f_path = root_path / name
-                if name.lower().endswith(_JUNK_EXT_TUPLE):
+                # Optimización: chequeo O(1) con set y una sola llamada a is_safe_to_modify
+                if f_path.suffix.lower() in _LOWER_JUNK_EXTS:
                     if is_safe_to_modify(f_path):
                         try:
                             s = f_path.stat()

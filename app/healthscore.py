@@ -207,17 +207,17 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[str, int]:
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     """Genera una lista de textos explicativos según las violaciones de umbrales."""
     recommendations: List[str] = []
+    metrics_dict = metrics.__dict__
     
     for rule in _RECOMMENDATION_RULES:
         if ratios.get(rule.area, 1.0) < rule.threshold:
-            if hasattr(metrics, rule.metric_attr):
-                val = getattr(metrics, rule.metric_attr)
-                if val is not None:
-                    try:
-                        msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
-                        recommendations.append(msg)
-                    except (ValueError, KeyError, IndexError):
-                        continue
+            val = metrics_dict.get(rule.metric_attr)
+            if val is not None:
+                try:
+                    msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
+                    recommendations.append(msg)
+                except (ValueError, KeyError, IndexError):
+                    continue
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
