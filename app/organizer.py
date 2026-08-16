@@ -257,7 +257,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                         target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
                         if is_safe_to_modify(target):
                             ensure_safe_to_modify(target)
-                            shutil.move(str(junk_file.path), str(target))
+                            if junk_file.path.exists():
+                                shutil.move(str(junk_file.path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
             continue
     return dest

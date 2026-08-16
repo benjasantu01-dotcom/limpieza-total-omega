@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 16
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 75 | 9 | 9 | 5 | 62 |
-| 2026-08-16 | 148 | 12 | 18 | 11 | 155 |
+| 2026-08-15 | 73 | 8 | 9 | 5 | 61 |
+| 2026-08-16 | 149 | 12 | 19 | 12 | 156 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - robustez ante casos límite: **46**
-- rendimiento: **43**
+- manejo de errores y validación de entradas: **43**
 - legibilidad y documentación: **43**
-- manejo de errores y validación de entradas: **42**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
-- `assistant.py`: **20**
 - `diskreport.py`: **20**
 - `healthscore.py`: **20**
-- `browser.py`: **19**
 - `memory.py`: **19**
 - `scanner.py`: **19**
+- `assistant.py`: **19**
 - `quarantine.py`: **19**
+- `browser.py`: **18**
+- `organizer.py`: **17**
 - `duplicates.py`: **16**
-- `organizer.py`: **16**
 - `main.py`: **10**
 - `safety.py`: **9**
 - `branding.py`: **9**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T14:44:37` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores potenciales en `shutil.move` y añadiendo validaciones preventivas sobre la existencia de la ruta origen antes de la operación, asegurando que el flujo no se interrumpa ante fallos de I/O específicos.
 - `2026-08-16T14:36:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` validando la integridad del PID antes de operar y asegurando que las llamadas a la API de Windows manejen correctamente los errores de sistema sin colapsar, siguiendo el enfoque de validación de entradas y captura de excepciones específicas.
 - `2026-08-16T14:34:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante una validación estricta de los atributos de métricas y la inyección segura de argumentos, evitando posibles excepciones durante la generación del informe de salud.
 - `2026-08-16T14:34:27` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_collect_candidates` mediante la validación proactiva de entradas (evitando `AttributeError` o `ValueError` si las rutas o el grupo son inválidos) y la centralización de chequeos de seguridad para prevenir fallos silenciosos durante la iteración.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T12:33:19` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_collect_candidates` para prevenir la resolución de rutas mediante `resolve()` antes de realizar las comprobaciones de seguridad, evitando así vulnerabilidades de path traversal y asegurando que las validaciones de `safety.py` actúen sobre la ruta canónica después de verificar que la entrada es un archivo real y seguro.
 - `2026-08-16T12:32:44` **browser.py** (seguridad defensiva): Reforcé la seguridad de `_is_safe_path` integrando explícitamente `is_protected_path` al inicio de la validación y asegurando que las rutas resultantes sean canónicas mediante `resolve(strict=True)` antes de realizar comparaciones de profundidad, evitando así la evasión de los filtros mediante rutas relativas o aliases de sistema.
 - `2026-08-16T12:32:19` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para asegurar que el directorio padre del destino también pase por el proceso de validación de seguridad antes de intentar cualquier operación de escritura, y se ha reemplazado el uso de `mkdir(parents=True)` por una lógica más cautelosa que verifica la seguridad de la ruta resultante antes de crearla.
-- `2026-08-16T12:23:58` **assistant.py** (seguridad defensiva): Se fortaleció `_ensure_safe_text` y `_call_gemini` para prevenir inyecciones maliciosas mediante la normalización de rutas y la detección temprana de caracteres de escape ANSI/Unicode, asegurando que ninguna respuesta del motor remoto pueda contener rutas de sistema ni secuencias de control ocultas.
