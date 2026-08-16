@@ -353,10 +353,10 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         p = Path(destination).expanduser().resolve()
-        # Asegura la ruta siguiendo las reglas de seguridad: lanza excepción si es insegura
+        # Asegura la ruta siguiendo las reglas de seguridad
         ensure_safe_to_modify(p)
             
-        if not p.parent.is_dir():
+        if not p.parent.exists():
             p.parent.mkdir(parents=True, exist_ok=True)
         
         p.write_text(logo_svg(), encoding="utf-8")
@@ -393,7 +393,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
     """Dibuja el escudo de marca en un canvas de Tkinter usando primitivas geométricas."""
     if not hasattr(canvas, "create_polygon"): return
     try:
-        scale = max(0.1, float(size) / 128)
+        scale = max(0.1, min(10.0, float(size) / 128))
         base_coords = _get_shield_coords(scale)
         contorno = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
         for paso in range(4, 0, -1):
@@ -436,13 +436,10 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     if not hasattr(canvas, "create_arc"): return
     try:
         valor = float(percent)
-        diametro = int(size)
-        grosor = int(thickness)
+        diametro = max(20, int(size))
+        grosor = max(2, min(int(thickness), diametro // 2 - 1))
         
         valor = max(0.0, min(100.0, valor))
-        diametro = max(20, diametro)
-        grosor = max(2, min(grosor, diametro // 2 - 1))
-        
         color_fondo = track or PALETTE["surface_alt"]
         color_avance = fill or score_color(valor)
         borde = grosor / 2

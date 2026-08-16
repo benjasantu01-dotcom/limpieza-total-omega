@@ -260,39 +260,38 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
+    # Validar que source sea mapeable o tenga atributos
     if isinstance(metrics, (dict, object)):
-        try:
-            _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
-            _safe_assign(ctx, "suspicious_count", _get_metric_val(metrics, "suspicious_count", 0), int)
-            _safe_assign(ctx, "suspicious_warnings", _get_metric_val(metrics, "suspicious_warnings", 0), int)
-            _safe_assign(ctx, "memory_available_percent", _get_metric_val(metrics, "memory_available_percent", 0.0), max_val=100.0)
-            _safe_assign(ctx, "memory_total_gb", _get_metric_val(metrics, "memory_total_gb", 0.0))
-            _safe_assign(ctx, "disk_free_percent", _get_metric_val(metrics, "disk_free_percent", 0.0), max_val=100.0)
-            _safe_assign(ctx, "duplicate_mb", _get_metric_val(metrics, "duplicate_mb", 0.0))
-            _safe_assign(ctx, "startup_count", _get_metric_val(metrics, "startup_count", 0), int)
-            _safe_assign(ctx, "quarantined_count", _get_metric_val(metrics, "quarantined_count", 0), int)
-            _safe_assign(ctx, "browser_cache_mb", _get_metric_val(metrics, "browser_cache_mb", 0.0))
-            ctx.analyzed = True
-        except Exception:
-            pass
+        _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
+        _safe_assign(ctx, "suspicious_count", _get_metric_val(metrics, "suspicious_count", 0), int)
+        _safe_assign(ctx, "suspicious_warnings", _get_metric_val(metrics, "suspicious_warnings", 0), int)
+        _safe_assign(ctx, "memory_available_percent", _get_metric_val(metrics, "memory_available_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "memory_total_gb", _get_metric_val(metrics, "memory_total_gb", 0.0))
+        _safe_assign(ctx, "disk_free_percent", _get_metric_val(metrics, "disk_free_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "duplicate_mb", _get_metric_val(metrics, "duplicate_mb", 0.0))
+        _safe_assign(ctx, "startup_count", _get_metric_val(metrics, "startup_count", 0), int)
+        _safe_assign(ctx, "quarantined_count", _get_metric_val(metrics, "quarantined_count", 0), int)
+        _safe_assign(ctx, "browser_cache_mb", _get_metric_val(metrics, "browser_cache_mb", 0.0))
+        ctx.analyzed = True
 
     if isinstance(health, (dict, object)):
-        try:
-            raw_score = _get_metric_val(health, "score", None)
-            if raw_score is not None: _safe_assign(ctx, "score", raw_score, int, max_val=100)
-            grade = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
-            if isinstance(grade, (str, int, float)):
-                ctx.grade = str(grade)[:10]
-            ctx.analyzed = True
-        except Exception:
-            pass
+        raw_score = _get_metric_val(health, "score", None)
+        if raw_score is not None: 
+            _safe_assign(ctx, "score", raw_score, int, max_val=100)
+        
+        grade = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
+        if isinstance(grade, (str, int, float)):
+            ctx.grade = str(grade)[:10]
+        ctx.analyzed = True
 
     for k, v in extra.items():
         if hasattr(ctx, k) and v is not None and not isinstance(v, bool):
             try:
                 # Validar tipos de forma estricta para evitar inyección de tipos inesperados
                 if isinstance(v, (int, float, str)):
-                    _safe_assign(ctx, k, v, cast=type(getattr(ctx, k)))
+                    # Aseguramos que la conversión sea consistente con el tipo esperado del campo
+                    target_type = type(getattr(ctx, k))
+                    _safe_assign(ctx, k, v, cast=target_type)
             except Exception:
                 continue
     return ctx

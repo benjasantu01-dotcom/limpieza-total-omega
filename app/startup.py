@@ -50,7 +50,6 @@ EXECUTABLE_EXTS: Set[str] = {'.exe', '.bat', '.cmd', '.scr', '.lnk'}
 
 # Caché global para evitar operaciones de I/O redundantes durante la sesión.
 _EXISTS_CACHE: Dict[str, bool] = {}
-_REGISTRY_CACHE: Optional[List[StartupEntry]] = None
 _FULL_SCAN_CACHE: Optional[List[StartupEntry]] = None
 
 # Mensaje estandarizado para deshabilitar programas sin tocar el registro.
@@ -288,12 +287,8 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """Recupera entradas de inicio desde el registro mediante PowerShell."""
-    global _REGISTRY_CACHE
     if os.name != "nt":
         return []
-    
-    if _REGISTRY_CACHE is not None:
-        return _REGISTRY_CACHE
     
     targets: str = ", ".join(f"'{k}'" for k in keys)
     ps_cmd: str = f"Get-ItemProperty {targets} -ErrorAction SilentlyContinue | Select-Object * -ExcludeProperty PS* | ConvertTo-Csv -NoTypeInformation"
@@ -304,8 +299,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
-            _REGISTRY_CACHE = parse_registry_csv(result.stdout)
-            return _REGISTRY_CACHE
+            return parse_registry_csv(result.stdout)
     except (OSError, subprocess.SubprocessError):
         pass
     return []
@@ -320,13 +314,7 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    for entry in entries_from_folders():
-        name_n = entry.name.lower()
-        if name_n not in seen_names:
-            seen_names.add(name_n)
-            unique_entries.append(entry)
-
-    for entry in entries_from_registry():
+    for entry in entries_from_folders() + entries_from_registry():
         name_n = entry.name.lower()
         if name_n not in seen_names:
             seen_names.add(name_n)

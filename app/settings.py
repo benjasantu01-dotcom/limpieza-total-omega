@@ -73,7 +73,7 @@ class AppSettings(TypedDict):
     analisis_en_paralelo: bool
     asistente_activado: bool
     asistente_clave_api: str
-    asistente_enviar_metricas: bool
+    asistente_enviar_METRICAS: bool
     asistente_modelo: str
 
 __all__ = [
@@ -90,6 +90,8 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
 VALID_THEMES: Final[tuple[str, ...]] = ("oscuro", "claro", "sistema")
 VALID_ACCENTS: Final[tuple[str, ...]] = ("menta", "violeta", "magenta", "cian", "ambar")
+
+_LAST_MTIME: dict[str, float] = {}
 
 def _get_default_config() -> AppSettings:
     """Retorna un diccionario con los valores por defecto definidos para la app."""
@@ -231,8 +233,9 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 @lru_cache(maxsize=1)
-def _load_internal(ruta: Path) -> AppSettings:
-    """Carga interna cacheada por ruta y mtime (gestionado mediante wrapper en load)."""
+def _load_internal(ruta_str: str) -> AppSettings:
+    """Carga interna cacheada por ruta string; la invalidación es gestionada por mtime externo."""
+    ruta = Path(ruta_str)
     try:
         if not ruta.exists() or ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()):
             return _get_default_config()
@@ -247,16 +250,17 @@ def _load_internal(ruta: Path) -> AppSettings:
         return _get_default_config()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga, valida y cachea el archivo de configuración. Retorna defaults ante cualquier error."""
+    """Carga, valida y cachea el archivo de configuración."""
     ruta = settings_path(custom_base)
+    ruta_str = str(ruta)
     if not ruta.exists() or ruta.is_dir(): return _get_default_config()
     
     mtime = ruta.stat().st_mtime
-    if hasattr(load, "_last_mtime") and load._last_mtime != mtime:
+    if _LAST_MTIME.get(ruta_str) != mtime:
         _load_internal.cache_clear()
+        _LAST_MTIME[ruta_str] = mtime
     
-    load._last_mtime = mtime
-    return _load_internal(ruta)
+    return _load_internal(ruta_str)
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Guarda una configuración validada de forma atómica usando un archivo temporal."""
@@ -282,6 +286,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             os.fsync(f.fileno())
         os.replace(temp_ruta, ruta)
         _load_internal.cache_clear()
+        _LAST_MTIME.pop(str(ruta), None)
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
         if temp_ruta.exists():
