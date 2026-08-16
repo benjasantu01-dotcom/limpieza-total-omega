@@ -480,6 +480,9 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     remaining_items = []
     
     for entry in quarantine_root.iterdir():
+        # Validar confinamiento estricto y que el ítem esté registrado
+        if not _is_valid_quarantine_path(entry.resolve(), quarantine_root):
+            continue
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
             
@@ -488,10 +491,12 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if _safe_unlink(entry):
                 purged_count += 1
                 continue
-        remaining_items.append(item)
+        # Mantener en el manifiesto si el archivo físico no se pudo borrar o no coincide
+        if item:
+            remaining_items.append(item)
     
     if purged_count > 0:
-        save_manifest([i for i in remaining_items if i], base)
+        save_manifest(remaining_items, base)
     return purged_count
 
 

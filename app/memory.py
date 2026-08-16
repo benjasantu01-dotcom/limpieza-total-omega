@@ -68,8 +68,8 @@ TRIM_WARNING: str = (
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
 # Constantes para Win32 API
-PROCESS_QUERY_LIMITED_INFORMATION: int = 0x1000  # Acceso requerido para consultar info de proceso
-PROCESS_SET_QUOTA: int = 0x0100                  # Acceso requerido para modificar cuotas (trimming)
+PROCESS_QUERY_LIMITED_INFORMATION: int = 0x1000
+PROCESS_SET_QUOTA: int = 0x0100
 SAFE_ACCESS_MASK: int = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
 STILL_ACTIVE_EXIT_CODE: int = 259
@@ -209,7 +209,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
     if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
         return MemorySnapshot(total=0, available=0)
     
-    # Validar que los valores tengan sentido físico
     total = int(stat.ullTotalPhys)
     avail = int(stat.ullAvailPhys)
     return MemorySnapshot(total=total, available=min(avail, total) if total > 0 else 0)
@@ -245,11 +244,9 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - timestamp < 5.0 and cached_list:
         return cached_list[:limit]
     
-    # CMD adaptado para extraer métricas clave con formato CSV simple
     cmd = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} Name,Id,WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
-        # Validar returncode y que el contenido no sea un error de PowerShell capturado como texto
         if proc.returncode == 0 and proc.stdout and "Exception" not in proc.stdout:
             new_processes = parse_windows_process_csv(proc.stdout, limit=limit)
             if new_processes:
@@ -311,18 +308,13 @@ def _get_process_path(handle: int) -> Optional[str]:
         return None
     buf = ctypes.create_unicode_buffer(4096)
     size = ctypes.c_ulong(4096)
-    # QueryFullProcessImageNameW es la forma recomendada en Windows moderno
     if hasattr(kernel32, "QueryFullProcessImageNameW") and kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
         return str(buf.value)
     return None
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows.
-    
-    Realiza validaciones de seguridad de ruta y privilegios antes de invocar la API.
-    """
+    """Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
@@ -339,7 +331,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if kernel32 is None or psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "Error de sistema: APIs de memoria no disponibles."
 
-    # Obtener handle con permisos mínimos necesarios
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
         return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
@@ -350,7 +341,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         path = _get_process_path(proc_handle)
-        # Seguridad defensiva: validar explícitamente la ruta antes de actuar
         if not path or is_protected_path(os.path.normpath(path)):
             return False, "Operación denegada: ruta de ejecutable protegida o inválida."
             

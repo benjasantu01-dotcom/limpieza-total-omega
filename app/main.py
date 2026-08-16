@@ -1359,18 +1359,27 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         folder = self._ask_folder("Elegí una carpeta para analizar")
         if not folder:
             return
+        
         self.analysis_folder = folder
 
         def task() -> None:
+            try:
+                # Validar seguridad antes de procesar recursivamente
+                safety.ensure_safe_to_modify(Path(folder))
+            except safety.UnsafePathError as e:
+                self.log(f"Error: {e}", "Disco")
+                return
+
             if not self._is_valid_dir(folder):
                 self.log("Error: La carpeta seleccionada ya no existe.", "Disco")
                 return
+            
             self.set_status(f"Analizando {folder}...")
             self.clear("Disco")
             self.log(f"Analizando {folder} (solo lectura, puede tardar)...", "Disco")
             self.log_lines(diskreport.summarize(folder), "Disco")
 
-        self.run_async(task, check_safety=True, target=folder)
+        self.run_async(task)
 
     def on_find_duplicates(self) -> None:
         """Busca y reporta duplicados en la ruta elegida."""
