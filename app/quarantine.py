@@ -33,6 +33,7 @@ from typing import List, Union, Dict, Tuple, Optional, Any, TypeGuard
 from safety import (
     UnsafePathError,
     ensure_safe_to_modify,
+    is_safe_to_modify,
     is_protected_path,
     is_within_directory,
     normalize,
@@ -151,7 +152,7 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """Elimina un archivo asegurándose de que no sea un enlace simbólico."""
     try:
-        if path.is_file() and not path.is_symlink():
+        if path.is_file() and not path.is_symlink() and is_safe_to_modify(path):
             path.unlink()
             return True
         return False
@@ -449,7 +450,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not stored_file.exists() or not match.verify_integrity(stored_file):
         raise UnsafePathError("Integridad comprometida: no se puede procesar el archivo.")
     
-    ensure_safe_to_modify(stored_file, allow_sensitive=False)
     if _safe_unlink(stored_file):
         try:
             items.remove(match)

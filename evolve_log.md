@@ -1082,3 +1082,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-16T03:44:42` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la robustez de las validaciones en `_is_safe_path` y `_is_safe_target_dir` para capturar explícitamente excepciones de resolución de rutas (como accesos denegados a nivel de SO) antes de consultar el módulo `safety`, evitando que una excepción no controlada en la UI detenga el flujo de la aplicación.
 - `2026-08-16T03:44:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T03:44:42` Corrida terminada. Total usado hoy: 88.
+- `2026-08-16T03:51:46` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-16T03:52:16` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable antes de ejecutar cualquier operación, asegurando que no se pueda manipular accidentalmente procesos críticos del sistema aunque el usuario intente forzar el PID.
+- `2026-08-16T03:52:39` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-16T03:53:14` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva al integrar `is_safe_to_modify` en `purge_item` y `purge_all`, garantizando que solo se autorice la eliminación de archivos si la ruta pasa los filtros de seguridad, evitando dependencias destructivas si las políticas de acceso cambian.
+- `2026-08-16T03:53:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-16T03:53:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T03:53:17` Corrida terminada. Total usado hoy: 92.

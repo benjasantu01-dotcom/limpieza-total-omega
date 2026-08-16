@@ -340,7 +340,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         path = _get_process_path(proc_handle)
-        # Seguridad: verificar que no estemos intentando tocar procesos de sistema
+        # Seguridad defensiva: validar explícitamente la ruta antes de actuar
         if not path or is_protected_path(os.path.normpath(path)):
             return False, "Operación denegada: ruta de ejecutable protegida o inválida."
             
