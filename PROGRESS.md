@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 220
 
@@ -16,27 +16,27 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 45 | 5 | 7 | 6 | 47 |
+| 2026-08-14 | 43 | 5 | 7 | 6 | 45 |
 | 2026-08-15 | 157 | 16 | 18 | 10 | 149 |
-| 2026-08-16 | 16 | 1 | 2 | 1 | 24 |
+| 2026-08-16 | 17 | 1 | 3 | 1 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **48**
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **43**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `diskreport.py`: **21**
-- `assistant.py`: **20**
 - `healthscore.py`: **20**
-- `browser.py`: **19**
+- `assistant.py`: **19**
+- `browser.py`: **18**
+- `quarantine.py`: **18**
 - `organizer.py`: **17**
-- `quarantine.py`: **17**
 - `scanner.py`: **17**
 - `memory.py`: **16**
 - `duplicates.py`: **15**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T02:03:50` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la normalización de la terminología de seguridad, clarificando las precondiciones y garantías de los métodos críticos para asegurar la mantenibilidad a largo plazo del módulo.
 - `2026-08-16T01:53:05` **memory.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings explicativos los bloques de lógica de bajo nivel (API de Windows y parseo de memoria), mejorando la mantenibilidad para futuras auditorías de seguridad.
 - `2026-08-16T01:51:43` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, añadí type hints adicionales para mayor robustez y extraje la lógica de cálculo de los puntos de desglose a una función con nombre explícito para facilitar la lectura del flujo principal.
 - `2026-08-16T01:50:56` **duplicates.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones internas `_collect_candidates` y `_refine_by_hash`, aclarando el propósito y el flujo de datos para mejorar la legibilidad del código.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T01:10:47` **main.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones tempranas y explícitas, evitando operaciones sobre objetos `None` o estados inconsistentes de la UI.
 - `2026-08-16T01:09:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación explícita del tipo y la existencia de los atributos antes de acceder a ellos, evitando posibles excepciones de acceso a atributos `None` o mal tipados, reforzando así el manejo de errores ante datos de entrada inconsistentes.
 - `2026-08-16T01:09:08` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones públicas `largest_files`, `usage_by_extension` y `largest_folders` validando la existencia y el tipo de la ruta antes de iniciar el procesamiento, evitando llamadas innecesarias a `walk_files` con rutas inválidas o inaccesibles.
-- `2026-08-16T01:00:49` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` implementando validaciones de tipo y capturas de excepciones más específicas para evitar fallos durante la recursión en sistemas de archivos con permisos restringidos o rutas inalcanzables.
