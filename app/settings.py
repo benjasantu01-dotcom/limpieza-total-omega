@@ -218,19 +218,22 @@ def validate(raw_values: Any) -> AppSettings:
     """Valida un diccionario arbitrario contra el esquema AppSettings, descartando claves corruptas."""
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
+    
+    # Filtramos solo las claves que existen en el Enum definido
     for key, validator in _VALIDATOR_MAP.items():
         if key.value in raw_values:
             try:
-                val = validator(key, raw_values.get(key.value))
-                if val is not None: config[key.value] = val
-            except (ValueError, TypeError, AttributeError): continue
+                val = validator(key, raw_values[key.value])
+                if val is not None: 
+                    config[key.value] = val # type: ignore
+            except (ValueError, TypeError, AttributeError): 
+                continue
     return config
 
 @lru_cache(maxsize=1)
 def _load_internal(ruta: Path) -> AppSettings:
     """Carga interna cacheada por ruta y mtime (gestionado mediante wrapper en load)."""
     try:
-        # Validación de integridad antes de intentar cualquier lectura
         if not ruta.exists() or ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()):
             return _get_default_config()
         if not os.access(ruta, os.R_OK) or not _Validators._is_safe_path(str(ruta.parent)):
@@ -248,7 +251,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     if not ruta.exists() or ruta.is_dir(): return _get_default_config()
     
-    # Invalidar caché si el archivo cambió
     mtime = ruta.stat().st_mtime
     if hasattr(load, "_last_mtime") and load._last_mtime != mtime:
         _load_internal.cache_clear()
@@ -298,7 +300,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
             if validator:
                 val = validator(key_enum, v)
                 if val is not None and val != current.get(k):
-                    current[k] = val
+                    current[k] = val # type: ignore
                     needs_save = True
         except ValueError: continue
     if needs_save: save(current, custom_base)

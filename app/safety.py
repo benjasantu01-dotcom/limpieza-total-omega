@@ -167,21 +167,25 @@ def _check_file_integrity(p: Path) -> None:
     if len(p.parts) > 32:
         raise UnsafePathError("Ruta demasiado profunda.")
 
-    def _safe_stat(path: Path) -> os.stat_result:
+    def _get_stat_safe(path: Path) -> os.stat_result | None:
         try:
             return path.stat()
         except OSError:
-            raise UnsafePathError(f"No se pudo acceder a metadatos de {path.name}")
+            return None
+
+    st = _get_stat_safe(p)
+    if st is None:
+        raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
 
     violation_checks: list[_IntegrityCheck] = [
         _IntegrityCheck(ProtectionReason.INACCESSIBLE, lambda: not os.access(p, os.W_OK)),
         _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda: _is_reparse_point(p)),
-        _IntegrityCheck(ProtectionReason.READ_ONLY, lambda: _is_readonly(p)),
+        _IntegrityCheck(ProtectionReason.READ_ONLY, lambda: not bool(st.st_mode & stat.S_IWRITE)),
         _IntegrityCheck(ProtectionReason.IN_USE, lambda: _is_file_in_use(p)),
         _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda: _is_system_or_hidden(p)),
-        _IntegrityCheck(ProtectionReason.HARD_LINK, lambda: p.is_file() and _safe_stat(p).st_nlink > 1),
+        _IntegrityCheck(ProtectionReason.HARD_LINK, lambda: p.is_file() and st.st_nlink > 1),
         _IntegrityCheck(ProtectionReason.ADS, lambda: _has_alternate_data_stream(p)),
-        _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda: p.is_file() and _safe_stat(p).st_size == 0)
+        _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda: p.is_file() and st.st_size == 0)
     ]
 
     for check in violation_checks:

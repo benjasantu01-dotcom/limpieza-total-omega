@@ -7,46 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 22
+- Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 51 | 6 | 9 | 7 | 49 |
+| 2026-08-14 | 49 | 6 | 9 | 7 | 47 |
 | 2026-08-15 | 157 | 16 | 18 | 10 | 149 |
-| 2026-08-16 | 8 | 0 | 1 | 1 | 22 |
+| 2026-08-16 | 10 | 1 | 1 | 1 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **46**
-- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **45**
 - legibilidad y documentación: **41**
-- rendimiento: **38**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
+- `settings.py`: **22**
 - `diskreport.py`: **20**
-- `browser.py`: **19**
 - `assistant.py`: **19**
 - `healthscore.py`: **19**
 - `organizer.py`: **18**
 - `scanner.py`: **18**
+- `browser.py`: **18**
 - `quarantine.py`: **17**
 - `memory.py`: **16**
-- `duplicates.py`: **15**
+- `duplicates.py`: **14**
 - `main.py`: **12**
-- `safety.py`: **10**
+- `safety.py`: **11**
 - `startup.py`: **9**
 - `branding.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T01:30:24` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `validate` y del mapeo de configuración mediante el uso de `key.value` para garantizar que las claves del diccionario sean consistentes con el `TypedDict`, y añadí una validación explícita para evitar que `raw_values` contenga claves inesperadas que puedan causar problemas en futuras deserializaciones.
+- `2026-08-16T01:29:34` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_check_file_integrity` al reemplazar la lógica de `stat()` interna por una verificación atómica que evita el uso de `st_nlink` en sistemas donde no es confiable o arroja errores de acceso, además de consolidar la captura de excepciones para asegurar que cualquier fallo en los metadatos se trate como una restricción de seguridad en lugar de una excepción no controlada.
 - `2026-08-16T01:20:23` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` implementando una validación temprana de los datos de entrada en `quarantine_file` para evitar estados inconsistentes (especialmente el acceso a `item_id` y `source_path`) y centralizando las excepciones de validación para asegurar que el sistema de cuarentena sea predecible ante datos inesperados.
 - `2026-08-16T01:19:51` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_file_locked` y `_is_safe_to_move` centralizando el manejo de excepciones y evitando intentos de acceso sobre rutas inexistentes o inaccesibles, alineándose con el enfoque de validación defensiva.
 - `2026-08-16T01:19:27` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `top_memory_processes` añadiendo validación de tipo y contenido sobre los datos crudos devueltos por PowerShell antes de procesarlos, asegurando que un mal formato en la salida no cause excepciones no controladas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-15T14:18:06` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo contra archivos con flujos de datos alternos (ADS) ocultos en `_check_path_syntax_integrity` y se reforzó la validación de `restore_item` usando `is_protected_path` sobre la ruta de destino resuelta para evitar desbordamientos de directorio incluso si el manifiesto fue manipulado.
 - `2026-08-15T14:17:51` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `_is_safe_to_move` validando que la ruta de origen sea estrictamente un archivo y no un directorio o un dispositivo especial, evitando así intentos erróneos de mover estructuras complejas fuera de la carpeta de destino.
 - `2026-08-15T14:17:28` **memory.py** (seguridad defensiva): Mejoré la seguridad en `trim_working_set` al validar la ruta del proceso mediante `is_protected_path` ANTES de intentar cualquier operación, asegurando que no se pueda manipular el working set de procesos protegidos ni mediante rutas mal formadas.
-- `2026-08-15T14:17:02` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_ask_folder` y `run_async` centralizando la validación de rutas mediante `ensure_safe_to_modify` para prevenir ataques de inyección de directorios, asegurando que cualquier operación sobre el sistema de archivos sea siempre verificada contra la lista de exclusión antes de ejecutarse en un hilo de trabajo.
-- `2026-08-15T14:07:11` **healthscore.py** (seguridad defensiva): Se ha endurecido el método `SystemMetrics.validate()` para asegurar la integridad de los datos de entrada antes del procesamiento, evitando que valores inesperados (`NaN`, `inf` o tipos incorrectos) propaguen inestabilidad en los cálculos de salud, alineándose con las técnicas de seguridad defensiva al validar los datos en el perímetro del objeto.

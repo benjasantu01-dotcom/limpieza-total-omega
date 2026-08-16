@@ -891,3 +891,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T01:20:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-16T01:20:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T01:20:31` Corrida terminada. Total usado hoy: 32.
+- `2026-08-16T01:29:05` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-16T01:29:34` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_check_file_integrity` al reemplazar la lógica de `stat()` interna por una verificación atómica que evita el uso de `st_nlink` en sistemas donde no es confiable o arroja errores de acceso, además de consolidar la captura de excepciones para asegurar que cualquier fallo en los metadatos se trate como una restricción de seguridad en lugar de una excepción no controlada.
+- `2026-08-16T01:29:56` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-16T01:30:24` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `validate` y del mapeo de configuración mediante el uso de `key.value` para garantizar que las claves del diccionario sean consistentes con el `TypedDict`, y añadí una validación explícita para evitar que `raw_values` contenga claves inesperadas que puedan causar problemas en futuras deserializaciones.
+- `2026-08-16T01:30:35` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.23s
+
+```
+- `2026-08-16T01:30:35` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._extract_quoted_path` y `_resolve_and_cache_path` añadiendo validaciones explícitas de tipo y manejo de errores ante entradas malformadas, asegurando que las rutas vacías o inválidas no sean procesadas ni causen excepciones inesperadas.
+- `2026-08-16T01:30:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T01:30:35` Corrida terminada. Total usado hoy: 36.
