@@ -61,6 +61,8 @@ SAFETY_NOTE: str = (
     "no se van a poder mover."
 )
 
+MAX_SCAN_DEPTH: int = 15
+
 @dataclass
 class BrowserCache:
     """Representación de una carpeta de caché detectada y su peso en disco."""
@@ -177,7 +179,7 @@ def _sum_directory_recursive(
             self.memo: Dict[str, int] = cache
 
         def walk(self, current_dir: str, depth: int) -> int:
-            if depth > 20 or len(current_dir) > 260 or is_protected_path(Path(current_dir)):
+            if depth > MAX_SCAN_DEPTH or len(current_dir) > 260 or is_protected_path(Path(current_dir)):
                 return 0
             if current_dir in self.memo:
                 return self.memo[current_dir]

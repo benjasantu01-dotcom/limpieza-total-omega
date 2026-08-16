@@ -364,11 +364,13 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Maneja consultas sobre el estado de la memoria RAM usando el motor local."""
+    mem_pct = float(ctx.memory_available_percent)
+    total_gb = float(ctx.memory_total_gb)
     partes = [
-        f"Tenés {ctx.memory_available_percent:.0f}% de RAM disponible"
-        f"{f' de {ctx.memory_total_gb:.0f} GB' if ctx.memory_total_gb > 0 else ''}."
+        f"Tenés {mem_pct:.0f}% de RAM disponible"
+        f"{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     ]
-    if ctx.memory_available_percent < 15:
+    if mem_pct < 15:
         partes.append("Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses; en la pestaña Memoria tenés qué consume más.")
     else:
         partes.append("Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM.")
@@ -382,7 +384,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Maneja consultas sobre el almacenamiento local."""
-    recuperable = ctx.junk_mb + ctx.duplicate_mb + ctx.browser_cache_mb
+    recuperable = float(ctx.junk_mb) + float(ctx.duplicate_mb) + float(ctx.browser_cache_mb)
     partes = [
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
         f"Podés recuperar cerca de {recuperable:.0f} MB:",

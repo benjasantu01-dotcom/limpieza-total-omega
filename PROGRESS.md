@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 28 | 2 | 5 | 4 | 35 |
+| 2026-08-14 | 28 | 2 | 5 | 4 | 31 |
 | 2026-08-15 | 157 | 16 | 18 | 10 | 149 |
-| 2026-08-16 | 41 | 3 | 5 | 2 | 29 |
+| 2026-08-16 | 44 | 3 | 5 | 2 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,16 +26,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **49**
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **41**
-- seguridad defensiva: **37**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
+- `assistant.py`: **21**
 - `diskreport.py`: **21**
 - `healthscore.py`: **21**
-- `assistant.py`: **20**
+- `browser.py`: **20**
 - `scanner.py`: **20**
-- `browser.py`: **19**
 - `quarantine.py`: **19**
 - `organizer.py`: **17**
 - `duplicates.py`: **16**
@@ -43,10 +43,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **12**
 - `safety.py`: **10**
 - `startup.py`: **9**
-- `branding.py`: **4**
+- `branding.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T03:33:35` **browser.py** (seguridad defensiva): Se endureció la seguridad defensiva al limitar la profundidad de recursión del escáner en `_sum_directory_recursive` mediante una constante definida, protegiendo contra posibles ataques de desbordamiento de pila o recursión infinita en sistemas de archivos con estructuras de enlaces complejos o cíclicos no detectados.
+- `2026-08-16T03:33:26` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` y `logo_svg` reemplazando la construcción de rutas inseguras y reforzando la validación del destino con `ensure_safe_to_modify`, además de implementar un manejo defensivo ante rutas malformadas o peligrosas.
+- `2026-08-16T03:32:55` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor local en `handle_ram` y `handle_disk` aplicando el principio de mínima exposición: ahora los mensajes dinámicos se construyen usando formateo seguro y validación de tipos, evitando que el asistente pueda devolver contenido no previsto si los datos del contexto fueran manipulados internamente.
 - `2026-08-16T03:22:34` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para asegurar que el contenido JSON cargado contenga todas las claves necesarias según `AppSettings`, evitando `KeyError` ante archivos configurados parcialmente (por ejemplo, tras una actualización incompleta o edición manual).
 - `2026-08-16T03:22:21` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `process_entry` y las heurísticas ante nombres de archivos con caracteres no normalizables (como secuencias RTL o Unicode inválido) y errores de resolución de rutas, asegurando que el scanner no aborte la ejecución completa al encontrar un elemento corrupto o inaccesible.
 - `2026-08-16T03:21:57` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la validación de integridad añadiendo un chequeo preventivo de `OSError` al realizar `stat()` en `_check_file_integrity`, evitando que errores transitorios de E/S o bloqueos de sistema colapsen el proceso de escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T03:01:11` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_system_hidden` añadiendo una comprobación explícita para evitar errores en rutas inexistentes y reforzando la tolerancia a fallos al acceder a atributos de archivos mediante `GetFileAttributesW`.
 - `2026-08-16T02:52:41` **branding.py** (robustez ante casos límite): Se mejora la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, garantizando que valores inesperados (como `float('inf')` o `None`) no provoquen errores en tiempo de ejecución ni rompan la integridad de los cálculos visuales.
 - `2026-08-16T02:52:20` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores inesperados de configuración o errores de tipo en las métricas de entrada, asegurando que si los datos vienen corruptos o con tipos incompatibles (ej: diccionarios malformados en lugar de valores numéricos), el asistente no se rompa y mantenga una integridad mínima mediante valores por defecto seguros.
-- `2026-08-16T02:51:30` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` mediante la consolidación de las llamadas a los escáneres de carpetas y registro, evitando recálculos innecesarios y centralizando la gestión de la caché `_FULL_SCAN_CACHE` para asegurar que el escaneo sea una operación de "solo una vez" por sesión.
-- `2026-08-16T02:51:03` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración reemplazando el chequeo de `mtime` basado en atributos dinámicos de función (que forzaban un acceso a disco en cada llamada) por una comparación directa de `Path` y un estado interno más eficiente.
-- `2026-08-16T02:41:48` **scanner.py** (rendimiento): Optimizé la verificación de carpetas watched en `check_recent_executable_in_downloads` sustituyendo la conversión a set y el cálculo de intersección `isdisjoint` por una verificación directa de subconjuntos, eliminando la creación de objetos innecesarios en cada archivo procesado.
