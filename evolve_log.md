@@ -1387,3 +1387,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-16T06:17:58` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_tab_salud` y `_build_tab_limpieza` para extraer la lógica de construcción de componentes en métodos privados específicos (`_build_health_metrics_row`, `_build_limpieza_controls`), facilitando la navegación del código y clarificando la jerarquía de la interfaz.
 - `2026-08-16T06:17:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T06:17:58` Corrida terminada. Total usado hoy: 148.
+- `2026-08-16T06:24:45` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-16T06:25:14` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita de las constantes de la API de Windows y la extracción de la lógica de creación de la estructura `MEMORYSTATUSEX` a una función de fábrica clara, facilitando la comprensión del código de bajo nivel.
+- `2026-08-16T06:25:39` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (incluyendo `Final` y alias) y se mejoró la documentación con docstrings estructurados según el estándar PEP 257, clarificando la intención técnica detrás de cada función.
+- `2026-08-16T06:26:09` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: legibilidad y documentación).
+- `2026-08-16T06:26:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-16T06:26:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T06:26:17` Corrida terminada. Total usado hoy: 152.

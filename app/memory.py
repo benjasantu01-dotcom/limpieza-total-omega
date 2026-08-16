@@ -67,9 +67,9 @@ TRIM_WARNING: str = (
 
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
-# Constantes para OpenProcess: requiere acceso de consulta y modificación (trimming)
-PROCESS_QUERY_LIMITED_INFORMATION: int = 0x1000
-PROCESS_SET_QUOTA: int = 0x0100
+# Constantes para Win32 API
+PROCESS_QUERY_LIMITED_INFORMATION: int = 0x1000  # Acceso requerido para consultar info de proceso
+PROCESS_SET_QUOTA: int = 0x0100                  # Acceso requerido para modificar cuotas (trimming)
 SAFE_ACCESS_MASK: int = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
 STILL_ACTIVE_EXIT_CODE: int = 259
@@ -81,7 +81,7 @@ SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
 _PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura de datos definida por la API de Win32 GlobalMemoryStatusEx."""
+    """Estructura definida por la API de Win32 GlobalMemoryStatusEx para reportar el estado de RAM."""
     _fields_: List[Tuple[str, ctypes._SimpleCData]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -93,6 +93,12 @@ class MEMORYSTATUSEX(ctypes.Structure):
         ("ullAvailVirtual", ctypes.c_ulonglong),
         ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
     ]
+
+def _create_mem_status_ex() -> MEMORYSTATUSEX:
+    """Inicializa la estructura MEMORYSTATUSEX con el tamaño correcto para el sistema."""
+    stat = MEMORYSTATUSEX()
+    stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+    return stat
 
 @dataclass
 class MemorySnapshot:
@@ -198,8 +204,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Ejecuta la API nativa de Windows (GlobalMemoryStatusEx) para obtener datos globales."""
-    stat = MEMORYSTATUSEX()
-    stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
+    stat = _create_mem_status_ex()
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
         return MemorySnapshot(total=0, available=0)

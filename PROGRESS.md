@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 216
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-14 | 5 | 0 | 0 | 0 | 1 |
+| 2026-08-14 | 2 | 0 | 0 | 0 | 0 |
 | 2026-08-15 | 157 | 16 | 18 | 10 | 149 |
-| 2026-08-16 | 66 | 5 | 7 | 4 | 66 |
+| 2026-08-16 | 68 | 5 | 8 | 4 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- robustez ante casos límite: **49**
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **51**
+- robustez ante casos límite: **48**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **46**
-- rendimiento: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
 - `diskreport.py`: **22**
-- `assistant.py`: **21**
+- `settings.py`: **22**
 - `healthscore.py`: **21**
 - `browser.py`: **20**
 - `scanner.py`: **20**
+- `assistant.py`: **20**
 - `quarantine.py`: **19**
-- `organizer.py`: **16**
+- `organizer.py`: **17**
 - `duplicates.py`: **16**
-- `memory.py`: **15**
+- `memory.py`: **16**
 - `main.py`: **13**
-- `startup.py`: **8**
 - `safety.py`: **8**
+- `startup.py`: **7**
 - `branding.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T06:25:39` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos (incluyendo `Final` y alias) y se mejoró la documentación con docstrings estructurados según el estándar PEP 257, clarificando la intención técnica detrás de cada función.
+- `2026-08-16T06:25:14` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita de las constantes de la API de Windows y la extracción de la lógica de creación de la estructura `MEMORYSTATUSEX` a una función de fábrica clara, facilitando la comprensión del código de bajo nivel.
 - `2026-08-16T06:17:58` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_tab_salud` y `_build_tab_limpieza` para extraer la lógica de construcción de componentes en métodos privados específicos (`_build_health_metrics_row`, `_build_limpieza_controls`), facilitando la navegación del código y clarificando la jerarquía de la interfaz.
 - `2026-08-16T06:15:59` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, estandaricé la nomenclatura de las funciones de puntuación y optimicé el flujo de validación en `compute_score` para asegurar una mayor claridad sobre las responsabilidades de cada componente.
 - `2026-08-16T06:15:32` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `Optional` y `Sequence`) y se añadieron docstrings explicativos en las funciones internas de escaneo, clarificando la lógica de filtrado de inodos y la estrategia de caché de seguridad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T05:46:03` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita de tipos y valores para el `pid` antes de cualquier operación, y asegurando el cierre del handle del proceso mediante un bloque `try...finally` más robusto para prevenir fugas de recursos ante excepciones inesperadas.
 - `2026-08-16T05:35:20` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante la validación explícita de `isinstance` y chequeos de finitud para evitar que valores `NaN` o tipos inesperados propaguen errores durante el formateo de cadenas de recomendación.
 - `2026-08-16T05:35:10` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando una validación explícita de `is_protected_path` previa a cualquier intento de apertura de archivo, garantizando que el acceso al sistema de archivos sea siempre seguro y consistente con las políticas de la aplicación.
-- `2026-08-16T05:34:19` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas y valores inesperados, centralizando la validación para evitar excepciones no capturadas durante la exploración del disco.
-- `2026-08-16T05:26:44` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` capturando excepciones específicas de ruta y validando la existencia de la ruta antes de intentar operaciones de escritura para evitar fallos silenciosos ante entradas malformadas.
