@@ -567,3 +567,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T10:00:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-16T10:00:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T10:00:35` Corrida terminada. Total usado hoy: 236.
+- `2026-08-16T10:09:00` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-16T10:09:27` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la integridad del sistema al añadir validación explícita de `SystemMetrics` mediante `is_finite` antes de realizar cálculos, evitando errores de propagación de datos corruptos y asegurando que `_calculate_breakdown` no procese valores fuera de rango o NaN.
+- `2026-08-16T10:09:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-16T10:11:04` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` validando exhaustivamente las entradas de usuario y el estado de la UI antes de ejecutar operaciones, evitando excepciones por widgets destruidos o entradas malformadas mediante el uso de verificaciones de existencia y limpieza de strings.
+- `2026-08-16T10:11:31` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `top_memory_processes` añadiendo validación explícita sobre la salida de `subprocess` y capturando posibles errores de parseo en el CSV, evitando que datos malformados o inesperados del sistema rompan la ejecución del módulo.
+- `2026-08-16T10:11:41` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `sort_junk` y `stage_for_review` ante entradas inválidas, validando la integridad del contenido de las listas y la existencia de los archivos antes de procesarlos para evitar excepciones inesperadas durante la iteración.
+- `2026-08-16T10:11:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T10:11:41` Corrida terminada. Total usado hoy: 240.

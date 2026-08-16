@@ -247,6 +247,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     cmd = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} Name,Id,WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
+        # Validación estricta: solo procesar si no hubo error y hay contenido útil
         if proc.returncode == 0 and proc.stdout and "Exception" not in proc.stdout:
             new_processes = parse_windows_process_csv(proc.stdout, limit=limit)
             if new_processes:

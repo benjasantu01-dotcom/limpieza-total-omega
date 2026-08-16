@@ -224,7 +224,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     criterio = by.lower() if isinstance(by, str) else "size"
     config = registry.get(criterio, registry["size"])
         
-    valid_files = [f for f in files if isinstance(f, JunkFile)]
+    valid_files = [f for f in files if isinstance(f, JunkFile) and f.path is not None]
     return sorted(valid_files, key=config.key_func, reverse=not bool(ascending))
 
 
@@ -247,7 +247,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return Path(".")
 
     for junk_file in files:
-        if not isinstance(junk_file, JunkFile) or not junk_file.path:
+        if not isinstance(junk_file, JunkFile) or junk_file.path is None:
             continue
         try:
             if junk_file.path.exists() and junk_file.path.is_file():
