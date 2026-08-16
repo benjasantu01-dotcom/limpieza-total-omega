@@ -183,45 +183,37 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea rutas recursivamente buscando archivos basura de forma eficiente.
-    
-    Args:
-        directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
-    Returns:
-        Lista de objetos JunkFile encontrados.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     
     for d in raw_dirs:
         if not d: continue
-        base = Path(d).expanduser()
-        if not base.exists() or not is_safe_to_modify(base): continue
-        
-        for root, dirs, files in os.walk(base):
-            root_path = Path(root)
-            dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
+        try:
+            base = Path(d).expanduser().resolve()
+            if not base.exists() or not base.is_dir() or not is_safe_to_modify(base): 
+                continue
             
-            for name in files:
-                ext = Path(name).suffix.lower()
-                if ext in _LOWER_JUNK_EXTS:
+            for root, dirs, files in os.walk(base):
+                root_path = Path(root)
+                dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
+                
+                for name in files:
                     f_path = root_path / name
-                    if is_safe_to_modify(f_path):
+                    if _is_junk_path(f_path) and is_safe_to_modify(f_path):
                         try:
                             s = f_path.stat()
                             found.append(JunkFile(f_path, s.st_size, datetime.fromtimestamp(s.st_mtime)))
-                        except OSError:
+                        except (OSError, PermissionError):
                             continue
+        except (OSError, RuntimeError):
+            continue
     return found
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena una lista de archivos basura según un criterio.
-    
-    Args:
-        files: Lista de archivos a ordenar.
-        by: "size" para tamaño o "date" para fecha de modificación.
-        ascending: Booleano para orden ascendente.
     """
     if not isinstance(files, list):
         return []
@@ -241,20 +233,15 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve los archivos detectados a un directorio de staging tras validar seguridad.
-    
-    Args:
-        files: Lista de JunkFile a organizar.
-        review_dir: Carpeta destino para revisión.
-    Returns:
-        Ruta Path de la carpeta de revisión.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
 
     try:
         dest_base = Path(review_dir).expanduser().resolve()
+        if not dest_base.exists():
+            dest_base.mkdir(parents=True, exist_ok=True)
         if not is_safe_to_modify(dest_base): return Path(".")
-        dest_base.mkdir(parents=True, exist_ok=True)
         dest = dest_base.resolve()
     except (OSError, PermissionError, RuntimeError):
         return Path(".")
@@ -263,12 +250,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile) or junk_file.path is None:
             continue
         try:
-            if junk_file.path.exists() and junk_file.path.is_file():
-                if os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
-                    # Verificar espacio antes de mover
+            if junk_file.path.exists() and junk_file.path.is_file() and os.access(junk_file.path, os.R_OK):
+                if _is_safe_to_move(junk_file, dest):
                     usage = shutil.disk_usage(dest)
                     if usage.free > junk_file.size_bytes:
-                        # Generar nombre único basado en timestamp para trazabilidad
                         target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
                         if is_safe_to_modify(target):
                             ensure_safe_to_modify(target)
@@ -281,11 +266,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de la carpeta de revisión tras validar la integridad.
-    
-    Args:
-        review_dir: Directorio donde residen los archivos revisados.
-    Returns:
-        Cantidad de archivos eliminados exitosamente.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -300,7 +280,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            # Solo borrar archivos directos (no recursivo) y que no sean enlaces
             if item.is_file() and not item.is_symlink():
                 path_to_delete = item.resolve()
                 if path_to_delete.parent == dest and is_safe_to_modify(path_to_delete):

@@ -727,3 +727,10 @@ ERROR evolve/tests/test_modules.py - IndexError: tuple index out of range
 - `2026-08-16T12:04:47` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y validación de tipos en la función `_parse_csv_row` para prevenir fallos catastróficos ante entradas malformadas o inesperadas provenientes de PowerShell, asegurando la resiliencia del módulo ante datos corruptos.
 - `2026-08-16T12:04:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T12:04:47` Corrida terminada. Total usado hoy: 284.
+- `2026-08-16T12:11:20` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-08-16T12:11:47` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `scan_for_junk` y `stage_for_review` añadiendo validaciones explícitas contra rutas inexistentes, accesibilidad de lectura y consistencia de tipos, previniendo excepciones no controladas al interactuar con el sistema de archivos.
+- `2026-08-16T12:12:17` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita para evitar colisiones de tipo de archivo (solo procesa archivos regulares) y garantizando que las rutas procesadas sean relativas al directorio de cuarentena antes de cualquier operación, mitigando riesgos de manipulación de rutas externas al sandbox.
+- `2026-08-16T12:12:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-16T12:12:47` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-16T12:12:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T12:12:47` Corrida terminada. Total usado hoy: 288.
