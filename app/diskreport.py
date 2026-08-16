@@ -156,8 +156,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     if not mount:
         return None
     try:
-        p = Path(mount).resolve()
-        if p.parts[0].startswith(("\\\\", "//")):
+        p = Path(mount).resolve(strict=False)
+        if not p.anchor or p.parts[0].startswith(("\\\\", "//")):
             return None
         if not p.exists() or is_protected_path(p):
             return None
@@ -214,7 +214,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        base_path = Path(directory).resolve()
+        base_path = Path(directory).resolve(strict=False)
         if base_path.parts[0].startswith(("\\\\", "//")):
             return
         if not base_path.exists() or not base_path.is_dir():
@@ -236,7 +236,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
-                        target = Path(entry.path).resolve()
+                        target = Path(entry.path).resolve(strict=False)
                         
                         # Seguridad: verificar que el target resuelto siga estando bajo base_path
                         if base_path not in target.parents and target != base_path:
@@ -265,8 +265,11 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
         return []
     
     # Validar acceso inicial
-    p = Path(directory)
-    if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
+    try:
+        p = Path(directory).resolve(strict=False)
+        if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
+            return []
+    except OSError:
         return []
 
     try:
@@ -284,8 +287,11 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
-    p = Path(directory)
-    if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
+    try:
+        p = Path(directory).resolve(strict=False)
+        if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
+            return []
+    except OSError:
         return []
     
     size_map: Dict[str, int] = defaultdict(int)
@@ -310,7 +316,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        base = Path(directory).resolve()
+        base = Path(directory).resolve(strict=False)
         if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
             return []
         
@@ -384,7 +390,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
     
     try:
-        p_input = Path(directory).resolve()
+        p_input = Path(directory).resolve(strict=False)
         if p_input.parts[0].startswith(("\\\\", "//")):
             return ["Error: No se permiten rutas de red (UNC)."]
         if not p_input.exists():

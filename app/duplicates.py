@@ -77,13 +77,6 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo tras validar su seguridad.
-    
-    Args:
-        path: Ruta del archivo a procesar.
-        chunk_size: Tamaño de bloque para lectura incremental (default 1MB).
-        
-    Returns:
-        Optional[str]: Digest hex SHA256 si es seguro y procesable, None en caso contrario.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -96,7 +89,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
 
         stat_initial = file_path.stat()
-        # Verificar st_file_attributes para detectar junctions/reparse points (0x400).
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -116,9 +108,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes (64KB) para comparación heurística.
-    
-    Aplica las mismas restricciones de seguridad que hash_file para mantener
-    consistencia operativa.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -132,7 +121,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             
         with open(file_path, "rb") as f:
             content = f.read(read_bytes)
-            return hashlib.sha256(content).hexdigest() if content else None
+            if not content:
+                return None
+            return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
         return None
 
@@ -233,9 +224,6 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Pipeline principal: filtra por tamaño -> hash parcial -> hash completo.
-    
-    Returns:
-        List[DuplicateGroup]: Grupos ordenados por bytes recuperables (descendente).
     """
     if directories is None or min_size < 0: return []
     

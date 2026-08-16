@@ -135,7 +135,7 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
     """Consulta atributos Win32 para detectar carpetas ocultas o de sistema."""
-    if not kernel32 or not isinstance(entry_path, str) or not entry_path:
+    if not kernel32 or not isinstance(entry_path, str) or not entry_path or not os.path.exists(entry_path):
         return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
