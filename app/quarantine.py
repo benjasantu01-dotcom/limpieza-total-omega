@@ -478,9 +478,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     if not items:
         return 0
 
+    # Crear mapa de acceso O(1) para verificar qué archivos en disco están en manifiesto
     item_map = {i.stored_name: i for i in items}
     purged_count = 0
-    items_to_keep = []
+    remaining_items = []
     
     for entry in quarantine_root.iterdir():
         if entry.name == MANIFEST_NAME or not entry.is_file():
@@ -491,11 +492,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if _safe_unlink(entry):
                 purged_count += 1
                 continue
-        
-        items_to_keep.append(item)
+        remaining_items.append(item)
     
     if purged_count > 0:
-        save_manifest(items_to_keep, base)
+        save_manifest([i for i in remaining_items if i], base)
     return purged_count
 
 

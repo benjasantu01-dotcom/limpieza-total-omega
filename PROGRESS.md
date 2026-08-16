@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 25
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 215
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 151 | 16 | 17 | 9 | 147 |
-| 2026-08-16 | 77 | 6 | 8 | 5 | 68 |
+| 2026-08-15 | 149 | 16 | 17 | 9 | 145 |
+| 2026-08-16 | 78 | 6 | 9 | 5 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **46**
-- robustez ante casos límite: **40**
-- rendimiento: **40**
+- seguridad defensiva: **45**
+- rendimiento: **41**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `settings.py`: **22**
-- `assistant.py`: **21**
 - `healthscore.py`: **20**
 - `scanner.py`: **20**
+- `assistant.py`: **20**
 - `browser.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **16**
 - `main.py`: **12**
 - `safety.py`: **8**
-- `startup.py`: **7**
 - `branding.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T07:06:25` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` y la carga inicial del manifiesto transformando las listas de ítems en diccionarios para consultas O(1) en lugar de O(n), y se reemplazó el uso de `.iterdir()` por un bucle eficiente que valida contra el manifiesto en memoria, evitando redundancias en el acceso a disco.
 - `2026-08-16T06:58:35` **memory.py** (rendimiento): Se optimizó la consulta de procesos en `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de filtrado más eficiente, reduciendo el overhead de subprocesos y mejorando la consistencia del caché mediante la eliminación de una lista intermedia innecesaria en el almacenamiento del mismo.
 - `2026-08-16T06:55:46` **duplicates.py** (rendimiento): Optimizé `_refine_by_hash` mediante un filtrado previo de los grupos para evitar procesar listas unitarias que no pueden contener duplicados, reduciendo drásticamente las llamadas innecesarias a la función de hash en el pipeline principal.
 - `2026-08-16T06:48:30` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y mejorar la eficiencia del bucle principal, además de asegurar que las operaciones de recolección sean más rápidas al reducir la creación de objetos innecesarios durante el recorrido.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T06:17:58` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_tab_salud` y `_build_tab_limpieza` para extraer la lógica de construcción de componentes en métodos privados específicos (`_build_health_metrics_row`, `_build_limpieza_controls`), facilitando la navegación del código y clarificando la jerarquía de la interfaz.
 - `2026-08-16T06:15:59` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, estandaricé la nomenclatura de las funciones de puntuación y optimicé el flujo de validación en `compute_score` para asegurar una mayor claridad sobre las responsabilidades de cada componente.
 - `2026-08-16T06:15:32` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `Optional` y `Sequence`) y se añadieron docstrings explicativos en las funciones internas de escaneo, clarificando la lógica de filtrado de inodos y la estrategia de caché de seguridad.
-- `2026-08-16T06:15:07` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_collect_summary_data` para aclarar la lógica de manejo de errores, la técnica de recursión iterativa y la semántica de los datos, facilitando el mantenimiento y la comprensión técnica del motor de análisis.
