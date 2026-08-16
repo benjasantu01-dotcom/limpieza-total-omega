@@ -244,7 +244,7 @@ def _load_internal(ruta_str: str) -> AppSettings:
     """
     ruta = Path(ruta_str)
     try:
-        # Validación de lectura básica antes de parsear JSON para ahorrar ciclos
+        # Validación estricta: nunca leer rutas de sistema ni archivos bloqueados
         if not ruta.is_file() or is_protected_path(str(ruta)) or not os.access(ruta, os.R_OK):
             return _get_default_config()
         
@@ -263,6 +263,9 @@ def _load_internal(ruta_str: str) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga, valida y cachea el archivo de configuración."""
     ruta = settings_path(custom_base)
+    # Bloqueo preventivo de seguridad antes de cualquier acceso
+    if is_protected_path(str(ruta)): return _get_default_config()
+    
     ruta_str = str(ruta)
     if not ruta.exists() or ruta.is_dir(): return _get_default_config()
     
