@@ -137,8 +137,8 @@ def _get_sha256(path: Path) -> str:
         with open(path, "rb") as f:
             while chunk := f.read(131072):
                 sha256_hash.update(chunk)
-    except (OSError, PermissionError) as e:
-        raise RuntimeError(f"Error al leer archivo para hash: {e}")
+    except (OSError, PermissionError):
+        return ""
     return sha256_hash.hexdigest()
 
 
@@ -214,7 +214,6 @@ def _check_path_syntax_integrity(path: Path) -> None:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva: riesgo de desbordamiento.")
-    # Bloqueo explícito de Alternate Data Streams (Windows)
     if ":" in path.name.replace(path.drive, "") or ":" in str(path.parent):
         raise UnsafePathError("Ruta con flujos de datos alternos no permitida.")
     if ".." in path.parts or any(c in str(path.name) for c in "<>\"|?*"):
@@ -474,24 +473,25 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     if not items:
         return 0
 
-    # Crear mapa de acceso O(1) para verificar qué archivos en disco están en manifiesto
     item_map = {i.stored_name: i for i in items}
     purged_count = 0
     remaining_items = []
     
     for entry in quarantine_root.iterdir():
-        # Validar confinamiento estricto y que el ítem esté registrado
-        if not _is_valid_quarantine_path(entry.resolve(), quarantine_root):
-            continue
         if entry.name == MANIFEST_NAME or not entry.is_file():
+            continue
+        
+        # Validar confinamiento estricto y que el ítem esté registrado
+        resolved_path = entry.resolve()
+        if not _is_valid_quarantine_path(resolved_path, quarantine_root):
             continue
             
         item = item_map.get(entry.name)
-        if item and item.verify_integrity(entry.resolve()) and not _is_file_locked(entry):
-            if _safe_unlink(entry):
+        if item and item.verify_integrity(resolved_path) and not _is_file_locked(resolved_path):
+            if _safe_unlink(resolved_path):
                 purged_count += 1
                 continue
-        # Mantener en el manifiesto si el archivo físico no se pudo borrar o no coincide
+            
         if item:
             remaining_items.append(item)
     

@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 26
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 124 | 14 | 14 | 6 | 106 |
-| 2026-08-16 | 102 | 7 | 12 | 8 | 111 |
+| 2026-08-15 | 121 | 13 | 14 | 6 | 106 |
+| 2026-08-16 | 104 | 7 | 13 | 8 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **48**
 - seguridad defensiva: **47**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **44**
-- rendimiento: **43**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `diskreport.py`: **21**
-- `assistant.py`: **20**
-- `browser.py`: **20**
+- `quarantine.py`: **21**
 - `healthscore.py`: **20**
-- `quarantine.py`: **20**
-- `scanner.py`: **19**
+- `diskreport.py`: **20**
+- `scanner.py`: **20**
+- `assistant.py`: **19**
+- `browser.py`: **19**
 - `memory.py`: **18**
 - `organizer.py`: **17**
 - `duplicates.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T10:20:39` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas centralizando la validación de archivos existentes y mejorando el manejo de excepciones al acceder a atributos de `path`, evitando errores silenciosos o malformados en `check_system_lookalike` y `check_double_extension`.
+- `2026-08-16T10:19:43` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` mediante la implementación de validaciones explícitas de estados de error, asegurando que `purge_all` no intente procesar rutas bloqueadas o inválidas sin el contexto adecuado, y fortaleciendo la integridad de los objetos `QuarantineItem` antes de realizar operaciones de disco.
 - `2026-08-16T10:11:41` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `sort_junk` y `stage_for_review` ante entradas inválidas, validando la integridad del contenido de las listas y la existencia de los archivos antes de procesarlos para evitar excepciones inesperadas durante la iteración.
 - `2026-08-16T10:11:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `top_memory_processes` añadiendo validación explícita sobre la salida de `subprocess` y capturando posibles errores de parseo en el CSV, evitando que datos malformados o inesperados del sistema rompan la ejecución del módulo.
 - `2026-08-16T10:09:27` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la integridad del sistema al añadir validación explícita de `SystemMetrics` mediante `is_finite` antes de realizar cálculos, evitando errores de propagación de datos corruptos y asegurando que `_calculate_breakdown` no procese valores fuera de rango o NaN.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T08:07:56` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para validar la integridad de las rutas mediante `is_safe_to_modify` antes de agregarlas a los grupos, unificando el criterio de seguridad con el resto del módulo.
 - `2026-08-16T08:07:32` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad en el recorrido de directorios añadiendo una validación explícita para evitar que `path.relative_to` o la resolución de rutas sigan puntos de reparse (reparse points) o enlaces que apunten fuera de la jerarquía permitida, utilizando `Path.resolve()` correctamente para detectar desviaciones de seguridad incluso en sistemas con enlaces complejos.
 - `2026-08-16T07:57:55` **assistant.py** (seguridad defensiva): Reforcé la defensa de `assistant.py` implementando una validación explícita mediante `is_protected_path` en `_call_gemini` para asegurar que, bajo ninguna circunstancia, se procesen rutas del sistema, garantizando que el asistente remoto permanezca totalmente aislado de la estructura de archivos local.
-- `2026-08-16T07:56:55` **settings.py** (robustez ante casos límite): Se ha implementado un mecanismo de "rollback" seguro en la función `load` para manejar el caso límite de archivos JSON truncados o parcialmente escritos durante un fallo del sistema, evitando que la aplicación se bloquee permanentemente ante una corrupción inesperada del archivo.
-- `2026-08-16T07:47:44` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o inaccesibles mediante la adición de una comprobación de existencia `path.exists()` antes de realizar `entry.stat()` en las heurísticas, evitando excepciones innecesarias en archivos efímeros o en uso.

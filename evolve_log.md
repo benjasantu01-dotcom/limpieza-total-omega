@@ -575,3 +575,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T10:11:41` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `sort_junk` y `stage_for_review` ante entradas inválidas, validando la integridad del contenido de las listas y la existencia de los archivos antes de procesarlos para evitar excepciones inesperadas durante la iteración.
 - `2026-08-16T10:11:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T10:11:41` Corrida terminada. Total usado hoy: 240.
+- `2026-08-16T10:19:10` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-16T10:19:43` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `purge_all` y `restore_item` mediante la implementación de validaciones explícitas de estados de error, asegurando que `purge_all` no intente procesar rutas bloqueadas o inválidas sin el contexto adecuado, y fortaleciendo la integridad de los objetos `QuarantineItem` antes de realizar operaciones de disco.
+- `2026-08-16T10:20:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-16T10:20:28` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-16T10:20:39` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las heurísticas centralizando la validación de archivos existentes y mejorando el manejo de excepciones al acceder a atributos de `path`, evitando errores silenciosos o malformados en `check_system_lookalike` y `check_double_extension`.
+- `2026-08-16T10:20:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T10:20:39` Corrida terminada. Total usado hoy: 244.

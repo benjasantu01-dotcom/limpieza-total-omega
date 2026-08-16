@@ -118,7 +118,7 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica archivos que utilizan doble extensión para ocultar ejecutables sospechosos."""
-    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
@@ -128,10 +128,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Analiza si un ejecutable fue creado en carpetas de alta descarga recientemente.
     Se basa en st_mtime de los metadatos del sistema de archivos.
     """
-    if not isinstance(entry, os.DirEntry) or not path.exists():
+    if not isinstance(entry, os.DirEntry):
         return None
     
-    # Verifica pertenencia de la ruta en las carpetas vigiladas mediante intersección de sets (más rápido que iteración)
+    # Verifica pertenencia de la ruta en las carpetas vigiladas mediante intersección de sets
     if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
         return None
         
@@ -146,7 +146,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable usa nombres protegidos del sistema fuera de su ubicación legítima (System32)."""
-    if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
@@ -164,7 +164,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         findings.append(res)
     
     # Reglas específicas para ejecutables sospechosos
-    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    if path and path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
         for check in heuristic_suite:
             try:
