@@ -253,6 +253,12 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     """Encuentra los N archivos de mayor tamaño en un directorio."""
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
+    
+    # Validar acceso inicial
+    p = Path(directory)
+    if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
+        return []
+
     try:
         return heapq.nlargest(
             limit, 
@@ -266,6 +272,10 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Agrupa el uso de espacio por extensión de archivo dentro de un directorio."""
     if not directory or not isinstance(limit, int) or limit <= 0:
+        return []
+    
+    p = Path(directory)
+    if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
         return []
     
     size_map: Dict[str, int] = defaultdict(int)
