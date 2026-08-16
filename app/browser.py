@@ -169,9 +169,7 @@ def _sum_directory_recursive(
     cache: Dict[str, int]
 ) -> int:
     """
-    Calcula el peso total recursivamente. 
-    Usa una clase interna `Scanner` para mantener el estado de `cache` 
-    (memoización) y evitar re-procesar subcarpetas en árboles compartidos.
+    Calcula el peso total recursivamente usando memoización para evitar re-procesar subárboles.
     """
     
     class Scanner:
@@ -179,7 +177,6 @@ def _sum_directory_recursive(
             self.memo: Dict[str, int] = cache
 
         def walk(self, current_dir: str, depth: int) -> int:
-            # Prevención de recursión infinita por profundidad o bucles de enlaces
             if depth > 20 or len(current_dir) > 260 or is_protected_path(Path(current_dir)):
                 return 0
             if current_dir in self.memo:
@@ -192,6 +189,7 @@ def _sum_directory_recursive(
                         if _should_skip_entry(entry, kernel32, is_junction_fn):
                             continue
                         if entry.is_dir():
+                            # Cache look-up optimizado
                             total += self.walk(entry.path, depth + 1)
                         else:
                             try:

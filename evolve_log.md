@@ -971,3 +971,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-16T02:12:20` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de construcción del contexto (`build_context`) reemplazando las múltiples llamadas repetitivas a `getattr/get` por una iteración sobre un mapeo predefinido, y se mejoró la eficiencia de `_identify_active_problems` para evitar realizar el formato de string antes de verificar si el criterio es relevante.
 - `2026-08-16T02:12:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T02:12:20` Corrida terminada. Total usado hoy: 52.
+- `2026-08-16T02:19:59` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-16T02:20:34` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de colores en `gradient_colors` reemplazando la creación de listas intermedias y el acceso repetido a diccionarios dentro del bucle principal por una estrategia de pre-cálculo de límites de tramos, mejorando el rendimiento de renderizado en componentes de alta frecuencia.
+- `2026-08-16T02:20:59` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo recursivo de `_sum_directory_recursive` mediante una comprobación anticipada de existencia en el caché de resultados (`perf_cache`), evitando llamadas innecesarias al sistema de archivos para subcarpetas que ya fueron procesadas durante la iteración actual.
+- `2026-08-16T02:21:29` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-16T02:21:46` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el recorrido de directorios en `_collect_candidates` para evitar llamadas redundantes a `is_safe_to_modify` y `is_protected_path` (que requieren validación de rutas y operaciones de disco) mediante el uso de una caché local de resultados para cada ruta absoluta ya procesada.
+- `2026-08-16T02:21:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T02:21:46` Corrida terminada. Total usado hoy: 56.

@@ -164,17 +164,16 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad del sistema de archivos.
-    
-    Args:
-        directories: Lista de carpetas base desde donde iniciar la búsqueda.
-        min_size: Tamaño mínimo (en bytes) para considerar un archivo candidato.
-        skip_protected: Si es True, ignora rutas que fallan las validaciones de seguridad.
-
-    Returns:
-        Diccionario agrupado por tamaño de archivo, conteniendo solo listas con >= 2 elementos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
+    safety_cache: Dict[str, bool] = {}
+
+    def _is_safe_cached(p: Path) -> bool:
+        path_str = str(p)
+        if path_str not in safety_cache:
+            safety_cache[path_str] = not (is_protected_path(p) or not is_safe_to_modify(p))
+        return safety_cache[path_str]
     
     def _scan(root_path: Path) -> None:
         try:
@@ -194,7 +193,7 @@ def _collect_candidates(
                             _scan(Path(entry.path))
                         elif entry.is_file() and st.st_size >= min_size:
                             path_obj = Path(entry.path)
-                            if skip_protected and (is_protected_path(path_obj) or not is_safe_to_modify(path_obj)):
+                            if skip_protected and not _is_safe_cached(path_obj):
                                 continue
                             visited_inodes.add(inode)
                             temp_groups[st.st_size].append(path_obj)
@@ -214,13 +213,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Filtra candidatos agrupándolos según el resultado de una función de hash.
-    
-    Args:
-        paths: Lista de rutas de archivos candidatos.
-        hash_func: Función (ej. partial_hash o hash_file) para generar el digest.
-
-    Returns:
-        Diccionario mapeando el digest a la lista de archivos que comparten ese hash.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest

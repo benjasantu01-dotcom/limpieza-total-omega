@@ -281,13 +281,13 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     """
     try:
         n = max(1, int(steps))
-        if not stops: return (PALETTE["accent"],) * n
-        if len(stops) < 2: return (stops[0],) * n
+        if len(stops) < 2: return (stops[0] if stops else PALETTE["accent"],) * n
         
         res = [stops[0]] * n
         tramos = len(stops) - 1
+        paso_tramo = tramos / (n - 1)
         for i in range(1, n - 1):
-            pos = (i / (n - 1)) * tramos
+            pos = i * paso_tramo
             idx = int(pos)
             res[i] = blend(stops[idx], stops[idx + 1], pos - idx)
         res[-1] = stops[-1]
