@@ -1325,3 +1325,10 @@ FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_o
 - `2026-08-16T05:26:44` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` capturando excepciones específicas de ruta y validando la existencia de la ruta antes de intentar operaciones de escritura para evitar fallos silenciosos ante entradas malformadas.
 - `2026-08-16T05:26:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T05:26:44` Corrida terminada. Total usado hoy: 128.
+- `2026-08-16T05:33:53` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-16T05:34:19` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `directory_size` y `_is_safe_path` ante errores de resolución de rutas y valores inesperados, centralizando la validación para evitar excepciones no capturadas durante la exploración del disco.
+- `2026-08-16T05:34:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-16T05:35:10` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando una validación explícita de `is_protected_path` previa a cualquier intento de apertura de archivo, garantizando que el acceso al sistema de archivos sea siempre seguro y consistente con las políticas de la aplicación.
+- `2026-08-16T05:35:20` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_generate_recommendations` mediante la validación explícita de `isinstance` y chequeos de finitud para evitar que valores `NaN` o tipos inesperados propaguen errores durante el formateo de cadenas de recomendación.
+- `2026-08-16T05:35:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T05:35:20` Corrida terminada. Total usado hoy: 132.

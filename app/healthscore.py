@@ -207,17 +207,13 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[str, int]:
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     """Genera una lista de textos explicativos según las violaciones de umbrales."""
     recommendations: List[str] = []
-    metrics_dict = metrics.__dict__
     
     for rule in _RECOMMENDATION_RULES:
         if ratios.get(rule.area, 1.0) < rule.threshold:
-            val = metrics_dict.get(rule.metric_attr)
-            if val is not None:
+            val = getattr(metrics, rule.metric_attr, None)
+            if val is not None and isinstance(val, (int, float)) and math.isfinite(float(val)):
                 try:
-                    # Validar tipo numérico y existencia de argumentos antes de formatear
                     if rule.expected_args > 0:
-                        if not isinstance(val, (int, float)):
-                            continue
                         msg = rule.message_format.format(val)
                     else:
                         msg = rule.message_format

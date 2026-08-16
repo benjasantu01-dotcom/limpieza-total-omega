@@ -103,7 +103,6 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
     
     path_str = str(target_path)
-    # Bloqueo de caracteres de escape y caracteres bidireccionales potencialmente engañosos
     if "\0" in path_str or any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
         return False
         
@@ -137,7 +136,7 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
     """Consulta atributos Win32 para detectar carpetas ocultas o de sistema."""
-    if not kernel32 or not isinstance(entry_path, str) or not entry_path or not os.path.exists(entry_path):
+    if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
         attrs = kernel32.GetFileAttributesW(entry_path)
@@ -191,7 +190,6 @@ def _sum_directory_recursive(
                         if _should_skip_entry(entry, kernel32, is_junction_fn):
                             continue
                         if entry.is_dir():
-                            # Cache look-up optimizado
                             total += self.walk(entry.path, depth + 1)
                         else:
                             try:
@@ -212,7 +210,10 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
     if path is None:
         return 0
     try:
-        p_path = Path(path).resolve(strict=True)
+        target = Path(path)
+        if not target.exists():
+            return 0
+        p_path = target.resolve(strict=True)
         if not p_path.is_dir() or is_protected_path(p_path):
             return 0
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
