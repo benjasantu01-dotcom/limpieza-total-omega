@@ -1052,3 +1052,42 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-16T14:45:50` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-16T14:45:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T14:45:50` Corrida terminada. Total usado hoy: 348.
+- `2026-08-16T14:54:25` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-16T14:54:50` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scanner.py` validando explícitamente los parámetros en `scan_directory` y `process_entry` para evitar errores de tipo o rutas vacías, y añadiendo un filtrado defensivo contra rutas nulas antes de realizar operaciones de sistema en `scan_file`.
+- `2026-08-16T14:55:18` Tests FALLARON:
+```
+th, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed in 1.17s
+
+```
+- `2026-08-16T14:55:18` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del manejo de archivos en `save()` y `_load_internal` reemplazando operaciones de lectura/escritura propensas a errores por bloques `try-except` más granulares y verificaciones de integridad previas para evitar bloqueos por archivos inaccesibles o mal formateados.
+- `2026-08-16T14:55:18` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-16T14:55:18` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T14:55:18` Corrida terminada. Total usado hoy: 350.

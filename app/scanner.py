@@ -116,13 +116,6 @@ class Scanner:
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Detecta archivos con extensiones dobles engañosas.
-    
-    Args:
-        path: Objeto Path del archivo a inspeccionar.
-        entry: Objeto DirEntry opcional para optimización.
-        now_ts: Timestamp actual para cálculos de tiempo.
-    Returns:
-        Objeto Suspicion si se detecta riesgo, None en caso contrario.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -162,12 +155,15 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     Pipeline principal para el análisis de un archivo único.
     """
+    if not path:
+        return []
+
     findings: ScanResult = []
     
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    if path and path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
         for check in heuristic_suite:
             try:
@@ -183,7 +179,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Inicia el escaneo recursivo mediante un stack.
     """
-    if not directory:
+    if not directory or not str(directory).strip():
         return []
         
     try:
