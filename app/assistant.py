@@ -259,7 +259,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    if isinstance(metrics, (dict, object)):
+    if metrics is not None:
         _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
         _safe_assign(ctx, "suspicious_count", _get_metric_val(metrics, "suspicious_count", 0), int)
         _safe_assign(ctx, "suspicious_warnings", _get_metric_val(metrics, "suspicious_warnings", 0), int)
@@ -272,23 +272,23 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         _safe_assign(ctx, "browser_cache_mb", _get_metric_val(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
-    if isinstance(health, (dict, object)):
+    if health is not None:
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: 
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
         
-        grade = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
-        if isinstance(grade, (str, int, float)):
-            ctx.grade = str(grade)[:10]
+        grade_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
+        if isinstance(grade_val, (str, int, float)):
+            ctx.grade = str(grade_val)[:10]
         ctx.analyzed = True
 
     for k, v in extra.items():
         if hasattr(ctx, k) and v is not None and not isinstance(v, bool):
-            target_val = getattr(ctx, k)
-            if isinstance(target_val, (int, float, str)):
-                cast_func = type(target_val)
-                if cast_func in (int, float, str):
-                    _safe_assign(ctx, k, v, cast=cast_func)
+            attr_val = getattr(ctx, k)
+            if isinstance(attr_val, (int, float)):
+                _safe_assign(ctx, k, v, type(attr_val))
+            elif isinstance(attr_val, str):
+                setattr(ctx, k, str(v)[:10])
     return ctx
 
 def context_as_text(context: SystemContext) -> str:
