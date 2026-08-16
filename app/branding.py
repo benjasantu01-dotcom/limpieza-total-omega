@@ -279,36 +279,29 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     Calcula una secuencia de colores interpolados (n = steps) a lo largo de 
     múltiples puntos de control definidos en stops.
     """
-    try:
-        n = max(1, int(steps))
-        if len(stops) < 2: return (stops[0] if stops else PALETTE["accent"],) * n
-        
-        res = [stops[0]] * n
-        tramos = len(stops) - 1
-        paso_tramo = tramos / (n - 1)
-        for i in range(1, n - 1):
-            pos = i * paso_tramo
-            idx = int(pos)
-            res[i] = blend(stops[idx], stops[idx + 1], pos - idx)
-        res[-1] = stops[-1]
-        return tuple(res)
-    except (ValueError, TypeError, ZeroDivisionError):
-        return (PALETTE["accent"],) * max(1, int(steps))
+    n = max(1, int(steps))
+    if len(stops) < 2: return (stops[0] if stops else PALETTE["accent"],) * n
+    
+    res = [stops[0]] * n
+    tramos = len(stops) - 1
+    for i in range(1, n):
+        pos = (i * tramos) / (n - 1)
+        idx = int(pos)
+        res[i] = blend(stops[idx], stops[idx + 1], pos - idx) if idx < tramos else stops[-1]
+    return tuple(res)
 
 
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
     """Optimiza la serie de colores agrupando segmentos consecutivos idénticos para reducir llamadas de dibujo."""
+    if not colors: return ()
     segments = []
-    if not colors: return tuple(segments)
     start = 0
-    curr = colors[0]
     for i in range(1, len(colors)):
-        if colors[i] != curr:
-            segments.append((curr, start, i))
-            curr = colors[i]
+        if colors[i] != colors[start]:
+            segments.append((colors[start], start, i))
             start = i
-    segments.append((curr, start, len(colors)))
+    segments.append((colors[start], start, len(colors)))
     return tuple(segments)
 
 

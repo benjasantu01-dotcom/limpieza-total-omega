@@ -213,8 +213,8 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         p_path = target.resolve(strict=True)
         if not p_path.is_dir() or is_protected_path(p_path):
             return 0
-        is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         
+        is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         k32: Optional[ctypes.WinDLL] = None
         if os.name == 'nt':
             try:

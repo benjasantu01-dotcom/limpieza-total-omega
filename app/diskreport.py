@@ -354,10 +354,6 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
     """
     Agrega métricas de uso de disco en una única iteración de archivos.
-    
-    Utiliza una cola de prioridad (min-heap de tamaño 8) para mantener los 8 archivos 
-    más grandes encontrados, optimizando el uso de memoria al no almacenar la 
-    lista completa de archivos procesados.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -368,11 +364,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
         try:
             total_bytes += size
             total_files += 1
+            # Cacheamos la extensión para evitar múltiples llamadas a propiedades de Path
             ext = path.suffix.lower() or "(sin extensión)"
             ext_sizes[ext] += size
             ext_counts[ext] += 1
             
-            # Mantener solo los 8 archivos más grandes en memoria (min-heap)
+            # Gestión eficiente del heap para archivos grandes
             if len(top_files_heap) < 8:
                 heapq.heappush(top_files_heap, (size, path))
             elif size > top_files_heap[0][0]:

@@ -259,26 +259,19 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    # Mapeo de métricas base
     if isinstance(metrics, (dict, object)):
-        mapping = {
-            "junk_mb": (0.0, float),
-            "suspicious_count": (0, int),
-            "suspicious_warnings": (0, int),
-            "memory_available_percent": (0.0, float, 100.0),
-            "memory_total_gb": (0.0, float),
-            "disk_free_percent": (0.0, float, 100.0),
-            "duplicate_mb": (0.0, float),
-            "startup_count": (0, int),
-            "quarantined_count": (0, int),
-            "browser_cache_mb": (0.0, float),
-        }
-        for attr, (default, cast, *max_v) in mapping.items():
-            max_val = max_v[0] if max_v else float('inf')
-            _safe_assign(ctx, attr, _get_metric_val(metrics, attr, default), cast=cast, max_val=max_val)
+        _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
+        _safe_assign(ctx, "suspicious_count", _get_metric_val(metrics, "suspicious_count", 0), int)
+        _safe_assign(ctx, "suspicious_warnings", _get_metric_val(metrics, "suspicious_warnings", 0), int)
+        _safe_assign(ctx, "memory_available_percent", _get_metric_val(metrics, "memory_available_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "memory_total_gb", _get_metric_val(metrics, "memory_total_gb", 0.0))
+        _safe_assign(ctx, "disk_free_percent", _get_metric_val(metrics, "disk_free_percent", 0.0), max_val=100.0)
+        _safe_assign(ctx, "duplicate_mb", _get_metric_val(metrics, "duplicate_mb", 0.0))
+        _safe_assign(ctx, "startup_count", _get_metric_val(metrics, "startup_count", 0), int)
+        _safe_assign(ctx, "quarantined_count", _get_metric_val(metrics, "quarantined_count", 0), int)
+        _safe_assign(ctx, "browser_cache_mb", _get_metric_val(metrics, "browser_cache_mb", 0.0))
         ctx.analyzed = True
 
-    # Procesamiento específico de salud
     if isinstance(health, (dict, object)):
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: 
@@ -289,7 +282,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             ctx.grade = str(grade)[:10]
         ctx.analyzed = True
 
-    # Inyección de parámetros adicionales validados
     for k, v in extra.items():
         if hasattr(ctx, k) and v is not None and not isinstance(v, bool):
             target_val = getattr(ctx, k)
