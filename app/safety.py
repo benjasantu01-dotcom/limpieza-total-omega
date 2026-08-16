@@ -102,23 +102,23 @@ def _is_permission_denied(e: Exception) -> bool:
 
 
 def _has_invalid_chars(path_str: str) -> bool:
-    """Verifica la ausencia de caracteres reservados de control o ilegales en el SO."""
+    """Detecta caracteres ilegales en rutas (null bytes, control chars, RTL marks)."""
     return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str))
 
 
 def _is_reserved_device_name(name: str) -> bool:
-    """Comprueba si el nombre del archivo colisiona con dispositivos reservados del kernel."""
+    """Comprueba si el nombre del archivo colisiona con dispositivos reservados del kernel (ej. NUL)."""
     return bool(_RESERVED_NAMES_PATTERN.fullmatch(name))
 
 
 def _has_alternate_data_stream(path: Path) -> bool:
-    """Identifica flujos de datos NTFS adicionales (ADS), técnica común para ofuscación."""
+    """Identifica flujos NTFS (ADS) detectando ':' adicional en el nombre del archivo."""
     return ":" in path.name and len(path.name.split(":")) > 2
 
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Verifica via API de Windows si el archivo tiene atributos de sistema u oculto."""
+    """Consulta atributos de archivo win32 para verificar flags de sistema u oculto."""
     if os.name != 'nt' or not path.exists():
         return False
     try:
@@ -130,7 +130,7 @@ def _is_system_or_hidden(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_reparse_point(path: Path) -> bool:
-    """Determina si la ruta es un symlink o junction, evitando bucles en escaneos."""
+    """Detecta puntos de reparse (junctions/symlinks) mediante atributos win32 para evitar recursión."""
     if os.name != 'nt':
         return path.is_symlink()
     if not path.exists():
@@ -143,25 +143,21 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """Verifica si el archivo está bloqueado por el SO (error winerror 32 o similar)."""
+    """Verifica exclusividad de acceso intentando abrir el archivo con modo solo lectura."""
     if not path.exists() or not path.is_file():
         return False
     try:
-        # Intentar abrir con permisos mínimos de solo lectura sin compartir acceso
         handle = os.open(path, os.O_RDONLY | getattr(os, 'O_BINARY', 0))
         os.close(handle)
         return False
     except OSError as e:
-        # El error 32 en Windows (sharing violation) confirma el bloqueo
-        if getattr(e, 'winerror', 0) == 32 or getattr(e, 'errno', 0) == 13:
-            return True
-        return False
+        return getattr(e, 'winerror', 0) == 32 or getattr(e, 'errno', 0) == 13
 
 
 def _check_file_integrity(p: Path) -> None:
     """
-    Ejecuta el set de validaciones críticas sobre un objeto Path.
-    Lanza UnsafePathError inmediatamente ante cualquier violación detectada.
+    Realiza una batería de verificaciones de integridad antes de modificar archivos.
+    Lanza UnsafePathError ante el primer criterio de riesgo detectado.
     """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
@@ -173,20 +169,20 @@ def _check_file_integrity(p: Path) -> None:
     except OSError:
         raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
 
-    violation_checks: list[_IntegrityCheck] = [
-        _IntegrityCheck(ProtectionReason.INACCESSIBLE, lambda: not os.access(p, os.W_OK)),
-        _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda: _is_reparse_point(p)),
-        _IntegrityCheck(ProtectionReason.READ_ONLY, lambda: not bool(st.st_mode & stat.S_IWRITE)),
-        _IntegrityCheck(ProtectionReason.IN_USE, lambda: _is_file_in_use(p)),
-        _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda: _is_system_or_hidden(p)),
-        _IntegrityCheck(ProtectionReason.HARD_LINK, lambda: p.is_file() and st.st_nlink > 1),
-        _IntegrityCheck(ProtectionReason.ADS, lambda: _has_alternate_data_stream(p)),
-        _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda: p.is_file() and st.st_size == 0)
+    checks = [
+        (ProtectionReason.INACCESSIBLE, lambda: not os.access(p, os.W_OK)),
+        (ProtectionReason.REPARSE_POINT, lambda: _is_reparse_point(p)),
+        (ProtectionReason.READ_ONLY, lambda: not bool(st.st_mode & stat.S_IWRITE)),
+        (ProtectionReason.IN_USE, lambda: _is_file_in_use(p)),
+        (ProtectionReason.SYSTEM_HIDDEN, lambda: _is_system_or_hidden(p)),
+        (ProtectionReason.HARD_LINK, lambda: p.is_file() and st.st_nlink > 1),
+        (ProtectionReason.ADS, lambda: _has_alternate_data_stream(p)),
+        (ProtectionReason.EMPTY_FILE, lambda: p.is_file() and st.st_size == 0)
     ]
 
-    for check in violation_checks:
-        if check.predicate():
-            raise UnsafePathError(f"Operación denegada en {p.name}: {check.reason.value}.")
+    for reason, predicate in checks:
+        if predicate():
+            raise UnsafePathError(f"Operación denegada en {p.name}: {reason.value}.")
 
 
 @lru_cache(maxsize=2048)

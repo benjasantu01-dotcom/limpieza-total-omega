@@ -159,7 +159,7 @@ class _Validators:
         """Valida números dentro de rangos acotados para prevenir errores de lógica."""
         if val is None or isinstance(val, bool): return None
         try:
-            parsed_value = int(val)
+            parsed_value: int = int(val)
             min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
             return max(min_limit, min(max_limit, parsed_value))
         except (TypeError, ValueError, OverflowError): return None

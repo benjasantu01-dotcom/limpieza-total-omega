@@ -117,7 +117,16 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Identifica archivos que utilizan doble extensión para ocultar ejecutables sospechosos."""
+    """
+    Detecta archivos con extensiones dobles engañosas.
+    
+    Args:
+        path: Objeto Path del archivo a inspeccionar.
+        entry: Objeto DirEntry opcional para optimización.
+        now_ts: Timestamp actual para cálculos de tiempo.
+    Returns:
+        Objeto Suspicion si se detecta riesgo, None en caso contrario.
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -125,8 +134,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Analiza si un ejecutable fue creado en carpetas de alta descarga recientemente.
-    Se basa en st_mtime de los metadatos del sistema de archivos.
+    Analiza si un ejecutable reside en carpetas temporales y fue creado recientemente.
+    
+    La función verifica si el archivo pertenece a las carpetas configuradas en WATCHED_FOLDERS
+    y compara el mtime del archivo con el umbral definido en RECENT_FILE_THRESHOLD_HOURS.
     """
     if not isinstance(entry, os.DirEntry):
         return None
@@ -145,7 +156,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Valida si un ejecutable usa nombres protegidos del sistema fuera de su ubicación legítima (System32)."""
+    """
+    Valida nombres de archivos contra ejecutables críticos conocidos del sistema.
+    
+    Si el nombre del archivo coincide con un proceso de sistema, se verifica que su
+    ubicación sea la correcta (System32). Si no, se reporta como sospechoso.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
