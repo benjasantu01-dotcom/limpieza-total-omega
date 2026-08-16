@@ -259,7 +259,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Mapea diccionarios u objetos de entrada a las métricas validadas del sistema.
     """
     ctx = SystemContext()
-    is_dict = isinstance(metrics, dict)
     
     if metrics is not None:
         _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
@@ -340,6 +339,9 @@ def explain_area(area: Any) -> str:
 def _is_criterion_triggered(ctx: SystemContext, crit: ProblemCriterion) -> bool:
     """Verifica si un criterio de salud específico se encuentra en un estado problemático."""
     val = getattr(ctx, crit.metric_key)
+    # Proteccion contra tipos no numéricos residuales o estados inválidos
+    if not isinstance(val, (int, float)) or not math.isfinite(val):
+        return False
     if crit.operator == "<":
         return val < crit.threshold
     if crit.operator == ">":
@@ -354,7 +356,8 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     encontrados = []
     for crit in _CRITERIOS_SALUD:
         if _is_criterion_triggered(ctx, crit):
-            encontrados.append(crit.message_format.format(getattr(ctx, crit.metric_key)))
+            val = getattr(ctx, crit.metric_key)
+            encontrados.append(crit.message_format.format(val))
             if len(encontrados) >= 3:
                 break
     return encontrados
@@ -445,8 +448,10 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 }
 
 def _sanitize_query(question: str) -> str:
-    """Limpia la consulta del usuario de caracteres no permitidos."""
-    return re.sub(r'[\x00-\x1f\x7f]', '', (question or "").strip())[:100].lower()
+    """Limpia la consulta del usuario de caracteres no permitidos e invisibles."""
+    if not isinstance(question, str): return ""
+    clean = re.sub(r'[\x00-\x1f\x7f\u200b-\u200f\u202a-\u202e]', '', question)
+    return clean.strip()[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """

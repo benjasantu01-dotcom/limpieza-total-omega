@@ -280,7 +280,8 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     múltiples puntos de control definidos en stops.
     """
     n = max(1, int(steps))
-    if len(stops) < 2: return (stops[0] if stops else PALETTE["accent"],) * n
+    if not stops: return (PALETTE["accent"],) * n
+    if len(stops) < 2: return (stops[0],) * n
     
     res = [stops[0]] * n
     tramos = len(stops) - 1
@@ -293,7 +294,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
-    """Optimiza la serie de colores agrupando segmentos consecutivos idénticos para reducir llamadas de dibujo."""
+    """Optimiza la serie de colores agrupando segmentos consecutivos idénticos."""
     if not colors: return ()
     segments = []
     start = 0
@@ -342,21 +343,18 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo en disco previa validación de seguridad de la ruta."""
-    if not destination:
-        return None
+    if not destination: return None
     try:
         target = Path(destination).expanduser().resolve()
-        ensure_safe_to_modify(target)
-            
+        if not is_safe_to_modify(target): return None
+        
         target_dir = target.parent
-        if not target_dir.exists():
-            target_dir.mkdir(parents=True, exist_ok=True)
-        elif not target_dir.is_dir():
-            return None
+        target_dir.mkdir(parents=True, exist_ok=True)
+        if not target_dir.is_dir(): return None
         
         target.write_text(logo_svg(), encoding="utf-8")
         return target
-    except (OSError, PermissionError, ValueError, RuntimeError, IOError, AttributeError, TypeError):
+    except (OSError, PermissionError, ValueError, TypeError):
         return None
 
 

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 100 | 11 | 12 | 6 | 99 |
-| 2026-08-16 | 123 | 10 | 15 | 11 | 117 |
+| 2026-08-15 | 98 | 11 | 12 | 5 | 98 |
+| 2026-08-16 | 126 | 10 | 15 | 11 | 118 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **44**
 - rendimiento: **43**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `quarantine.py`: **21**
+- `diskreport.py`: **21**
 - `scanner.py`: **20**
-- `diskreport.py`: **20**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
+- `quarantine.py`: **20**
 - `browser.py`: **19**
 - `healthscore.py`: **19**
-- `organizer.py`: **18**
 - `memory.py`: **18**
+- `organizer.py`: **17**
 - `duplicates.py`: **15**
 - `main.py`: **10**
 - `safety.py`: **9**
-- `branding.py`: **7**
+- `branding.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T11:52:45` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular dentro del iterador de `os.scandir`, evitando que fallos de acceso en subdirectorios interrumpan el análisis completo.
+- `2026-08-16T11:52:09` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de rutas y manejo de estados inválidos, asegurando que las operaciones gráficas y de archivo no aborten ante entradas corruptas o rutas protegidas.
+- `2026-08-16T11:51:36` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor local ante valores inesperados de métricas (NaN, Infinito o tipos inválidos) en `_identify_active_problems` y se agregó una validación de seguridad extra en `_sanitize_query` para prevenir posibles inyecciones de control mediante caracteres invisibles, garantizando que el asistente nunca procese datos potencialmente maliciosos incluso si provienen de la interfaz.
 - `2026-08-16T11:42:18` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` evitando la concatenación costosa de listas (`entries_from_folders() + entries_from_registry()`) y el procesamiento innecesario de duplicados, utilizando una lógica de generación directa para reducir el uso de memoria y ciclos de CPU.
 - `2026-08-16T11:42:06` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración reemplazando el chequeo costoso de `is_safe_to_modify` por una validación lógica más eficiente en `_load_internal`, reduciendo las llamadas innecesarias al sistema de archivos al priorizar la validación de estructura antes de verificar permisos de escritura.
 - `2026-08-16T11:31:56` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando la búsqueda lineal O(N*M) sobre la lista de ítems en una búsqueda O(1) mediante un diccionario (`set` de nombres validados), evitando iterar innecesariamente sobre el manifiesto para cada archivo en disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T11:10:40` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna de la clase `StartupEntry` y se han añadido `type hints` y docstrings más descriptivos en métodos críticos de resolución de rutas para clarificar el flujo de validación de seguridad (el "porqué" detrás de la sanitización y el filtrado).
 - `2026-08-16T11:01:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo tipado explícito en `_Validators.int` y centralizando la lógica de validación de rangos numéricos mediante un mapeo más descriptivo, lo que reduce la carga cognitiva al mantener las restricciones de seguridad.
 - `2026-08-16T11:01:15` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones de heurística y métodos críticos, clarificando los parámetros y el propósito de cada lógica de inspección.
-- `2026-08-16T11:00:51` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en funciones auxiliares privadas y se ha simplificado la estructura de `_check_file_integrity` para mejorar la legibilidad y mantenibilidad del flujo de validación.
-- `2026-08-16T10:52:03` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de control de integridad (`verify_integrity`, `_check_path_syntax_integrity`) y los métodos públicos del ciclo de vida de cuarentena, utilizando docstrings claros para clarificar las asunciones de seguridad y los pre-requisitos de cada operación.
-- `2026-08-16T10:51:46` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados que explican el propósito de las funciones internas y se agregaron type hints adicionales para mejorar la legibilidad y el mantenimiento del código.

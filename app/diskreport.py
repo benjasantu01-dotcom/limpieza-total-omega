@@ -231,7 +231,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
-                        # Validación contra Path Traversal sin resolver cada archivo
                         if not entry.path.startswith(base_path_str):
                             continue
 
