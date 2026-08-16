@@ -134,7 +134,8 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Comprueba si un archivo está en uso exclusivo mediante un intento de apertura.
+    Comprueba si un archivo está en uso exclusivo intentando abrirlo en modo binario.
+    Devuelve True si el archivo está bloqueado o es inaccesible.
     """
     if not path.exists():
         return True
@@ -147,8 +148,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Evalúa la seguridad de mover un archivo: verifica permisos, bloqueos,
-    relación entre rutas y si la operación es destructiva.
+    Evalúa la seguridad de una operación de movimiento: verifica existencia, 
+    permisos, estado de bloqueo, atributos de sistema y seguridad de rutas.
     """
     try:
         if not junk_file.path.exists() or not junk_file.path.is_file():
@@ -157,19 +158,20 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
         current_abs = junk_file.path.resolve()
         dest_abs = dest.resolve()
         
+        # Evitar operaciones sobre la raíz o rutas inválidas
         if current_abs.parent == current_abs:
             return False
         
-        # Verificar atributos ocultos o de sistema (0x06 = Hidden | System)
+        # Verificar atributos ocultos o de sistema en Windows (0x06 = Hidden | System)
         if os.name == "nt":
             if current_abs.stat().st_file_attributes & 0x06: 
                 return False
 
-        # Prevenir movimientos cíclicos o recursivos
+        # Prevenir movimientos circulares o recursivos entre carpetas
         if current_abs == dest_abs or dest_abs in current_abs.parents or current_abs.parent == dest_abs:
             return False
         
-        # Bloqueos y consistencia de partición
+        # Restricción: No mover archivos bloqueados o entre particiones distintas
         if _is_file_locked(current_abs) or current_abs.anchor != dest_abs.anchor:
             return False
             
@@ -184,6 +186,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     
     Args:
         directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+    Returns:
+        Lista de objetos JunkFile encontrados.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -212,6 +216,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena una lista de archivos basura según un criterio.
+    
+    Args:
+        files: Lista de archivos a ordenar.
+        by: "size" para tamaño o "date" para fecha de modificación.
+        ascending: Booleano para orden ascendente.
     """
     if not isinstance(files, list):
         return []
@@ -230,10 +239,13 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve los archivos detectados a un directorio de staging para revisión.
+    Mueve los archivos detectados a un directorio de staging tras validar seguridad.
     
+    Args:
+        files: Lista de JunkFile a organizar.
+        review_dir: Carpeta destino para revisión.
     Returns:
-        La ruta del directorio de destino si fue creada, o Path(".") en caso de error.
+        Ruta Path de la carpeta de revisión.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
@@ -252,8 +264,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             if junk_file.path.exists() and junk_file.path.is_file():
                 if os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
+                    # Verificar espacio antes de mover
                     usage = shutil.disk_usage(dest)
                     if usage.free > junk_file.size_bytes:
+                        # Generar nombre único basado en timestamp para trazabilidad
                         target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
                         if is_safe_to_modify(target):
                             ensure_safe_to_modify(target)
@@ -267,6 +281,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina archivos de la carpeta de revisión tras validar la integridad.
     
+    Args:
+        review_dir: Directorio donde residen los archivos revisados.
     Returns:
         Cantidad de archivos eliminados exitosamente.
     """
@@ -283,9 +299,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
+            # Solo borrar archivos directos (no recursivo) y que no sean enlaces
             if item.is_file() and not item.is_symlink():
                 path_to_delete = item.resolve()
-                # El chequeo es estricto: hijo directo y verificado por seguridad
                 if path_to_delete.parent == dest and is_safe_to_modify(path_to_delete):
                     path_to_delete.unlink()
                     count += 1

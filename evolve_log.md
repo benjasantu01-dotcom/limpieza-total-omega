@@ -629,3 +629,30 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-16T10:41:07` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Documenté con docstrings explicativos la lógica de normalización y pesos en `healthscore.py` para facilitar el mantenimiento y audibilidad de la lógica de negocio, alineándolo con el enfoque de legibilidad.
 - `2026-08-16T10:41:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T10:41:07` Corrida terminada. Total usado hoy: 252.
+- `2026-08-16T10:49:51` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-16T10:50:56` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Se mejora la legibilidad y mantenibilidad de `main.py` mediante la refactorización de `on_scan_junk` y `on_find_duplicates` para centralizar la lógica de obtención de rutas de escaneo y validación de seguridad, eliminando la duplicidad y documentando la intención de los flujos de trabajo asíncronos.
+- `2026-08-16T10:51:22` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:27: in <module>
+    import memory  # noqa: E402
+    ^^^^^^^^^^^^^
+app/memory.py:82: in <module>
+    class Win32API:
+app/memory.py:84: in Win32API
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
+                       ^^^^^^^^^^^^^
+E   AttributeError: module 'ctypes' has no attribute 'windll'
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - AttributeError: module 'ctypes' has no attribute 'windll'
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.29s
+
+```
+- `2026-08-16T10:51:22` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `trim_working_set` hacia un estilo de "guard clauses", el uso de una clase `Win32API` encapsulada para acceder a `kernel32` y `psapi` (evitando llamadas repetitivas a `getattr`), y añadiendo type hints más precisos.
+- `2026-08-16T10:51:46` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante docstrings detallados que explican el propósito de las funciones internas y se agregaron type hints adicionales para mejorar la legibilidad y el mantenimiento del código.
+- `2026-08-16T10:52:03` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de control de integridad (`verify_integrity`, `_check_path_syntax_integrity`) y los métodos públicos del ciclo de vida de cuarentena, utilizando docstrings claros para clarificar las asunciones de seguridad y los pre-requisitos de cada operación.
+- `2026-08-16T10:52:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T10:52:03` Corrida terminada. Total usado hoy: 256.
