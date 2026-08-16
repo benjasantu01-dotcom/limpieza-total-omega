@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 16
+- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 26
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 107 | 12 | 13 | 6 | 102 |
-| 2026-08-16 | 115 | 10 | 14 | 10 | 115 |
+| 2026-08-15 | 105 | 11 | 12 | 6 | 102 |
+| 2026-08-16 | 118 | 10 | 14 | 11 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **40**
-- rendimiento: **35**
+- robustez ante casos límite: **38**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `quarantine.py`: **21**
-- `scanner.py`: **21**
+- `diskreport.py`: **21**
 - `assistant.py`: **20**
-- `diskreport.py`: **20**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
+- `quarantine.py`: **20**
+- `scanner.py`: **20**
 - `browser.py`: **19**
 - `organizer.py`: **17**
 - `memory.py`: **17**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
 - `main.py`: **10**
 - `safety.py`: **9**
 - `branding.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T11:21:46` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje convirtiendo el diccionario de `ratios` en un mapeo de acceso directo dentro de `compute_score` y eliminando la redundancia de iteraciones en la generación de recomendaciones mediante un diccionario de consulta rápida, reduciendo la complejidad algorítmica de O(N*M) a O(N).
+- `2026-08-16T11:21:20` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_refine_by_hash` eliminando la conversión innecesaria de la lista de rutas a un `list` temporal, lo cual evita iteraciones dobles y consumo extra de memoria durante el filtrado de candidatos.
+- `2026-08-16T11:20:54` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para evitar el costo computacional innecesario de llamar a `Path(entry.path).resolve()` en cada iteración del bucle, utilizando directamente la propiedad `entry.path` y verificando la contención mediante comparación de cadenas (`startswith`), lo cual reduce drásticamente las llamadas al sistema operativo (I/O) durante el recorrido de directorios.
 - `2026-08-16T11:11:13` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` evitando llamadas repetitivas a `getattr` y `isinstance` dentro de los bucles, y pre-compilé la conversión de tipos, reduciendo la carga de CPU en cada ciclo de análisis.
 - `2026-08-16T11:10:40` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna de la clase `StartupEntry` y se han añadido `type hints` y docstrings más descriptivos en métodos críticos de resolución de rutas para clarificar el flujo de validación de seguridad (el "porqué" detrás de la sanitización y el filtrado).
 - `2026-08-16T11:01:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo tipado explícito en `_Validators.int` y centralizando la lógica de validación de rangos numéricos mediante un mapeo más descriptivo, lo que reduce la carga cognitiva al mantener las restricciones de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T10:40:05` **browser.py** (legibilidad y documentación): Mejora la legibilidad del motor de escaneo añadiendo tipos explícitos, docstrings que clarifican la lógica de los atributos de archivo Win32 y la distinción necesaria entre el cálculo recursivo y la validación de seguridad de rutas.
 - `2026-08-16T10:30:54` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la implementación de Type Hints explícitos para las constantes globales, el uso de comentarios de bloque mejorados y la creación de un alias `AssistantConfig` para centralizar la estructura de datos de configuración, facilitando la auditoría de seguridad sobre los datos manejados.
 - `2026-08-16T10:20:39` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas centralizando la validación de archivos existentes y mejorando el manejo de excepciones al acceder a atributos de `path`, evitando errores silenciosos o malformados en `check_system_lookalike` y `check_double_extension`.
-- `2026-08-16T10:19:43` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` mediante la implementación de validaciones explícitas de estados de error, asegurando que `purge_all` no intente procesar rutas bloqueadas o inválidas sin el contexto adecuado, y fortaleciendo la integridad de los objetos `QuarantineItem` antes de realizar operaciones de disco.
-- `2026-08-16T10:11:41` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `sort_junk` y `stage_for_review` ante entradas inválidas, validando la integridad del contenido de las listas y la existencia de los archivos antes de procesarlos para evitar excepciones inesperadas durante la iteración.
-- `2026-08-16T10:11:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `top_memory_processes` añadiendo validación explícita sobre la salida de `subprocess` y capturando posibles errores de parseo en el CSV, evitando que datos malformados o inesperados del sistema rompan la ejecución del módulo.

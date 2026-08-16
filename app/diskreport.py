@@ -206,10 +206,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not directory:
         return
 
+    base_path_str = str(Path(directory).resolve(strict=False))
+    if base_path_str.startswith(("\\\\", "//")):
+        return
+
     try:
-        base_path = Path(directory).resolve(strict=False)
-        if base_path.parts[0].startswith(("\\\\", "//")):
-            return
+        base_path = Path(base_path_str)
         if not base_path.exists() or not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
@@ -218,7 +220,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [base_path]
+    stack: List[str] = [base_path_str]
     
     while stack:
         current_dir = stack.pop()
@@ -226,17 +228,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar reparse points/symlinks para evitar salir del árbol origen
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
-                        target = Path(entry.path).resolve()
-                        
-                        # Validación contra Path Traversal: asegurar que el destino está dentro de la base
-                        if not str(target).startswith(str(base_path)):
+                        # Validación contra Path Traversal sin resolver cada archivo
+                        if not entry.path.startswith(base_path_str):
                             continue
 
-                        if skip_protected and is_protected_path(target):
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
 
                         if entry.is_dir():
@@ -244,9 +243,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(target)
+                                stack.append(entry.path)
                         elif entry.is_file():
-                            yield target, entry.stat().st_size
+                            yield Path(entry.path), entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -364,7 +363,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
             ext_sizes[ext] += size
             ext_counts[ext] += 1
             
-            # Gestión eficiente del heap para mantener los N archivos más grandes
             if len(top_files_heap) < 8:
                 heapq.heappush(top_files_heap, (size, path))
             elif size > top_files_heap[0][0]:

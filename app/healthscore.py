@@ -210,13 +210,7 @@ def grade_for_score(score: float | int) -> str:
 
 def _calculate_breakdown(ratios: ScoreMap) -> Dict[str, int]:
     """Distribuye los puntos totales del sistema entre las categorías definidas."""
-    breakdown: Dict[str, int] = {}
-    for area, factor in _WEIGHT_ITEMS:
-        # Validamos ratio para evitar propagación de valores fuera de rango
-        ratio = _clamp(ratios.get(area, 0.0), 0.0, 1.0)
-        val = ratio * factor
-        breakdown[area] = int(round(val)) if math.isfinite(val) else 0
-    return breakdown
+    return {area: int(round(_clamp(ratios.get(area, 0.0), 0.0, 1.0) * factor)) for area, factor in _WEIGHT_ITEMS}
 
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
@@ -226,14 +220,10 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     for rule in _RECOMMENDATION_RULES:
         if _clamp(ratios.get(rule.area, 1.0), 0.0, 1.0) < rule.threshold:
             val = getattr(metrics, rule.metric_attr, None)
-            if val is not None and isinstance(val, (int, float)) and math.isfinite(float(val)):
+            if isinstance(val, (int, float)) and math.isfinite(float(val)):
                 try:
-                    if rule.expected_args > 0:
-                        msg = rule.message_format.format(val)
-                    else:
-                        msg = rule.message_format
-                    recommendations.append(msg)
-                except (ValueError, KeyError, IndexError, TypeError):
+                    recommendations.append(rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format)
+                except (ValueError, IndexError, TypeError):
                     continue
     
     if metrics.quarantined_count > 0:
@@ -262,9 +252,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     breakdown = _calculate_breakdown(ratios)
     final_score = int(round(_clamp(float(sum(breakdown.values())), 0.0, 100.0)))
-    recs = _generate_recommendations(metrics, ratios)
     
-    return HealthResult(final_score, grade_for_score(final_score), breakdown, recs)
+    return HealthResult(final_score, grade_for_score(final_score), breakdown, _generate_recommendations(metrics, ratios))
 
 
 def summarize(result: HealthResult) -> List[str]:

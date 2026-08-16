@@ -211,10 +211,8 @@ def _refine_by_hash(
     Filtra candidatos agrupándolos según el resultado de una función de hash.
     Retorna solo grupos que contienen al menos dos archivos colisionando.
     """
-    if len(list(paths)) < 2:
-        return {}
-    
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
+    
     for path in paths:
         if not isinstance(path, Path): continue
         digest = hash_func(path)
