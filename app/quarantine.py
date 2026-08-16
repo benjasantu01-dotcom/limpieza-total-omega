@@ -306,7 +306,11 @@ def quarantine_file(
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
-    source_path = Path(source).expanduser().resolve()
+    try:
+        source_path = Path(source).expanduser().resolve()
+    except (OSError, RuntimeError) as e:
+        raise ValueError(f"Ruta de origen inválida: {e}")
+
     if not source_path.is_file():
         raise FileNotFoundError(f"Archivo no encontrado o inválido: {source_path}")
     

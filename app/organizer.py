@@ -135,6 +135,8 @@ def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está en uso exclusivo intentando abrirlo en modo lectura exclusiva.
     """
+    if not path.exists():
+        return True
     try:
         with open(path, "rb"):
             return False
@@ -153,18 +155,20 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
         current_abs = junk_file.path.resolve()
         dest_abs = dest.resolve()
         
-        # Validar que no sea un dispositivo especial o ruta circular
+        # Validar ruta padre válida
         if current_abs.parent == current_abs:
             return False
         
+        # Atributos de sistema/ocultos (NTFS)
         if os.name == "nt":
-            # 0x06 son FILE_ATTRIBUTE_HIDDEN y FILE_ATTRIBUTE_SYSTEM
             if current_abs.stat().st_file_attributes & 0x06: 
                 return False
 
+        # Evitar ciclos o movimiento sobre sí mismo
         if current_abs == dest_abs or dest_abs in current_abs.parents or current_abs.parent == dest_abs:
             return False
         
+        # Bloqueos y consistencia de unidad
         if _is_file_locked(current_abs) or current_abs.anchor != dest_abs.anchor:
             return False
             
