@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 143 | 15 | 16 | 8 | 126 |
-| 2026-08-16 | 96 | 7 | 11 | 7 | 75 |
+| 2026-08-15 | 143 | 15 | 16 | 8 | 122 |
+| 2026-08-16 | 97 | 7 | 12 | 7 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
 - robustez ante casos límite: **48**
-- seguridad defensiva: **46**
+- seguridad defensiva: **47**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **24**
 - `diskreport.py`: **23**
-- `settings.py`: **23**
 - `quarantine.py`: **22**
 - `assistant.py`: **21**
 - `browser.py`: **21**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T08:28:24` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_protected_path` al archivo final y asegurando que la ruta destino no sea un punto de reparse antes de la escritura, alineándolo con las reglas de integridad del proyecto.
 - `2026-08-16T08:19:03` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación estricta de "sandbox" mediante `is_within_directory` y asegurando que solo se eliminen archivos explícitamente registrados en el manifiesto, evitando borrados accidentales de otros archivos presentes en la carpeta de cuarentena.
 - `2026-08-16T08:18:25` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` al abrir el proceso, asegurando que la máscara de acceso sea estrictamente la necesaria y verificando la integridad de la ruta obtenida antes de ejecutar cualquier operación de memoria.
 - `2026-08-16T08:17:58` **main.py** (seguridad defensiva): Se ha añadido un filtro de seguridad en `on_trim_process` para asegurar que el PID sea un número positivo y se ha encapsulado correctamente la validación de la carpeta seleccionada en `on_disk_analysis` usando un `try-except` con `ensure_safe_to_modify`, garantizando que cualquier error de acceso o ruta protegida sea capturado y notificado en lugar de interrumpir el flujo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T07:37:55` **memory.py** (robustez ante casos límite): Se mejora la robustez de `read_snapshot` y `top_memory_processes` añadiendo validaciones contra respuestas malformadas o inesperadas que podrían causar excepciones no controladas durante la ejecución.
 - `2026-08-16T07:36:30` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del sistema ante posibles fallos de integridad durante la ejecución, asegurando que `_validate_integrity` sea consultado en puntos críticos y protegiendo el cálculo de recomendaciones contra divisiones por cero o datos malformados en `SystemMetrics`.
 - `2026-08-16T07:27:17` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y las funciones auxiliares ante archivos inexistentes o bloqueados durante el escaneo, añadiendo una verificación robusta de `is_file()` antes de procesar el tamaño, evitando excepciones de `stat()` por archivos que desaparecen entre la iteración y el acceso (condición de carrera común en escaneos de disco).
-- `2026-08-16T07:26:50` **browser.py** (robustez ante casos límite): Reforcé la robustez de `_is_safe_path` y `_sum_directory_recursive` para manejar rutas excesivamente largas (superando el límite de 260 caracteres de Windows) y fallos en la resolución de nombres de archivo, utilizando el prefijo `\\?\` en rutas absolutas para asegurar que el escáner no aborte prematuramente en instalaciones de navegadores con estructuras de carpetas profundas.

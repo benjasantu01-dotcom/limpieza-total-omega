@@ -256,8 +256,6 @@ def _load_internal(ruta_str: str) -> AppSettings:
         if not isinstance(data, dict): return _get_default_config()
         return validate(data)
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
-        # Si el archivo está corrupto, intentamos renombrarlo para no perder el rastro del error
-        # pero devolvemos los valores seguros de fábrica.
         try:
             ruta.replace(ruta.with_suffix(".corrupt"))
         except OSError: pass
@@ -280,10 +278,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Guarda una configuración validada de forma atómica usando un archivo temporal."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    if ruta.exists() and ruta.is_dir(): return None
-    # Verificación estricta: impedir escritura en rutas protegidas aunque vengan de custom_base
-    if not _Validators._is_safe_path(str(ruta.parent)) or is_protected_path(str(ruta)): return None
-    if not is_safe_to_modify(str(ruta)): return None
+    # Bloqueo estricto: evitar reparse points o rutas protegidas
+    if (ruta.exists() and (ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()))) or is_protected_path(str(ruta)):
+        return None
+    if not _Validators._is_safe_path(str(ruta.parent)) or not is_safe_to_modify(str(ruta)): return None
     if ruta.exists() and not os.access(ruta, os.W_OK): return None
     
     cleaned_settings = validate(values)

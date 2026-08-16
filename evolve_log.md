@@ -1531,3 +1531,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T08:19:03` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `purge_all` implementando una validación estricta de "sandbox" mediante `is_within_directory` y asegurando que solo se eliminen archivos explícitamente registrados en el manifiesto, evitando borrados accidentales de otros archivos presentes en la carpeta de cuarentena.
 - `2026-08-16T08:19:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T08:19:03` Corrida terminada. Total usado hoy: 196.
+- `2026-08-16T08:27:04` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-16T08:27:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-16T08:27:49` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-16T08:28:12` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-16T08:28:24` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_protected_path` al archivo final y asegurando que la ruta destino no sea un punto de reparse antes de la escritura, alineándolo con las reglas de integridad del proyecto.
+- `2026-08-16T08:28:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T08:28:24` Corrida terminada. Total usado hoy: 200.
