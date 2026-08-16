@@ -22,7 +22,16 @@ ScoreMap: TypeAlias = Dict[str, float]
 NormalizedRatio: TypeAlias = Annotated[float, "Un valor entre 0.0 y 1.0 representando salud"]
 
 class RecommendationRule(NamedTuple):
-    """Define una condición de advertencia basada en umbrales de métricas."""
+    """
+    Define una condición de advertencia basada en umbrales de métricas.
+    
+    Attributes:
+        area: Categoría del sistema (ej: 'seguridad').
+        threshold: Ratio debajo del cual se considera necesario recomendar.
+        message_format: Plantilla del mensaje al usuario.
+        expected_args: Cantidad de valores numéricos que inyecta la plantilla.
+        metric_attr: Nombre del atributo en SystemMetrics a evaluar.
+    """
     area: str
     threshold: float
     message_format: str
@@ -57,6 +66,7 @@ WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # --- PESOS DE CALIFICACIÓN (base para cálculo de puntaje) ---
+# Los pesos relativos definen la importancia de cada área en el score final.
 WEIGHTS: Final[Dict[str, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -67,6 +77,7 @@ WEIGHTS: Final[Dict[str, int]] = {
 }
 
 _TOTAL_WEIGHTS: Final[float] = float(sum(WEIGHTS.values()))
+# Normaliza los pesos a una suma de 100 para simplificar la obtención del puntaje total.
 _WEIGHT_FACTORS: Final[Dict[str, float]] = {
     k: (w * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
     for k, w in WEIGHTS.items()
@@ -156,34 +167,34 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud para archivos basura."""
+    """Calcula el ratio (0.0-1.0) comparando basura vs umbral máximo permitido."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de seguridad basándose en conteo de hallazgos."""
+    """Calcula el ratio penalizando linealmente cada hallazgo de seguridad."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de memoria."""
+    """Calcula el ratio de salud basado en la memoria disponible."""
     return (_clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) 
             if _LIMIT_RAM_PERCENT > 0 else 0.0)
 
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de disco."""
+    """Calcula el ratio de salud basándose en el porcentaje de espacio libre."""
     return (_clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) 
             if _LIMIT_DISK_PERCENT > 0 else 0.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud para archivos duplicados."""
+    """Calcula el ratio de salud por peso de duplicados."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula el ratio de salud para programas en inicio."""
+    """Calcula el ratio de salud inversamente al número de programas en inicio."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 

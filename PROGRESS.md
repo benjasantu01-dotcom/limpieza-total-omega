@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 27
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 26
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 219
 
@@ -16,26 +16,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 118 | 13 | 14 | 6 | 105 |
-| 2026-08-16 | 105 | 8 | 13 | 8 | 114 |
+| 2026-08-15 | 117 | 12 | 13 | 6 | 104 |
+| 2026-08-16 | 108 | 8 | 13 | 8 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **48**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **45**
-- rendimiento: **37**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `quarantine.py`: **21**
+- `diskreport.py`: **21**
 - `assistant.py`: **20**
-- `diskreport.py`: **20**
+- `browser.py`: **20**
+- `healthscore.py`: **20**
+- `quarantine.py`: **20**
 - `scanner.py`: **20**
-- `browser.py`: **19**
-- `healthscore.py`: **19**
 - `organizer.py`: **17**
 - `memory.py`: **17**
 - `duplicates.py`: **15**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T10:41:07` **healthscore.py** (legibilidad y documentación): Documenté con docstrings explicativos la lógica de normalización y pesos en `healthscore.py` para facilitar el mantenimiento y audibilidad de la lógica de negocio, alineándolo con el enfoque de legibilidad.
+- `2026-08-16T10:40:31` **diskreport.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en las funciones de recorrido de disco y recolección de datos, clarificando las estrategias de seguridad, manejo de excepciones y optimización de memoria (uso de heaps) para mejorar la mantenibilidad del código.
+- `2026-08-16T10:40:05` **browser.py** (legibilidad y documentación): Mejora la legibilidad del motor de escaneo añadiendo tipos explícitos, docstrings que clarifican la lógica de los atributos de archivo Win32 y la distinción necesaria entre el cálculo recursivo y la validación de seguridad de rutas.
 - `2026-08-16T10:30:54` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la implementación de Type Hints explícitos para las constantes globales, el uso de comentarios de bloque mejorados y la creación de un alias `AssistantConfig` para centralizar la estructura de datos de configuración, facilitando la auditoría de seguridad sobre los datos manejados.
 - `2026-08-16T10:20:39` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las heurísticas centralizando la validación de archivos existentes y mejorando el manejo de excepciones al acceder a atributos de `path`, evitando errores silenciosos o malformados en `check_system_lookalike` y `check_double_extension`.
 - `2026-08-16T10:19:43` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `restore_item` mediante la implementación de validaciones explícitas de estados de error, asegurando que `purge_all` no intente procesar rutas bloqueadas o inválidas sin el contexto adecuado, y fortaleciendo la integridad de los objetos `QuarantineItem` antes de realizar operaciones de disco.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T08:19:03` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `purge_all` implementando una validación estricta de "sandbox" mediante `is_within_directory` y asegurando que solo se eliminen archivos explícitamente registrados en el manifiesto, evitando borrados accidentales de otros archivos presentes en la carpeta de cuarentena.
 - `2026-08-16T08:18:25` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` al abrir el proceso, asegurando que la máscara de acceso sea estrictamente la necesaria y verificando la integridad de la ruta obtenida antes de ejecutar cualquier operación de memoria.
 - `2026-08-16T08:17:58` **main.py** (seguridad defensiva): Se ha añadido un filtro de seguridad en `on_trim_process` para asegurar que el PID sea un número positivo y se ha encapsulado correctamente la validación de la carpeta seleccionada en `on_disk_analysis` usando un `try-except` con `ensure_safe_to_modify`, garantizando que cualquier error de acceso o ruta protegida sea capturado y notificado en lugar de interrumpir el flujo.
-- `2026-08-16T08:08:07` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación explícita de `ratios` en `_calculate_breakdown` y `_generate_recommendations` para asegurar que los valores sean siempre finitos y conformes al rango esperado (0.0-1.0), previniendo desbordamientos en el cálculo de puntajes ante métricas inyectadas.
-- `2026-08-16T08:07:56` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para validar la integridad de las rutas mediante `is_safe_to_modify` antes de agregarlas a los grupos, unificando el criterio de seguridad con el resto del módulo.
-- `2026-08-16T08:07:32` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad en el recorrido de directorios añadiendo una validación explícita para evitar que `path.relative_to` o la resolución de rutas sigan puntos de reparse (reparse points) o enlaces que apunten fuera de la jerarquía permitida, utilizando `Path.resolve()` correctamente para detectar desviaciones de seguridad incluso en sistemas con enlaces complejos.

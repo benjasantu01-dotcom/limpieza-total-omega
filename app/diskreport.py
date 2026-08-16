@@ -199,9 +199,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Recorre recursivamente un directorio para indexar archivos y tamaños.
     
-    Utiliza un enfoque de pila para la navegación iterativa para evitar desbordamientos
-    de pila en estructuras profundas. Detecta ciclos mediante inodos (st_ino, st_dev) 
-    y saltea enlaces simbólicos/junctions para garantizar la integridad y seguridad.
+    Implementación iterativa (stack-based) para evitar `RecursionError` en árboles profundos.
+    Aplica seguridad defensiva mediante `is_protected_path`, detección de inodos para 
+    evitar ciclos y validación estricta de rutas relativas para prevenir traversal attacks.
     """
     if not directory:
         return
@@ -226,15 +226,13 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Identificar y saltar enlaces/puntos de reparse para seguridad
+                        # Saltar reparse points/symlinks para evitar salir del árbol origen
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
-                        # Resolvemos la ruta completa para validar su ubicación real
                         target = Path(entry.path).resolve()
                         
-                        # Seguridad defensiva: verificar que la ruta resuelta mantenga el prefijo de la base
-                        # Evita ataques de "path traversal" por enlaces simbólicos internos
+                        # Validación contra Path Traversal: asegurar que el destino está dentro de la base
                         if not str(target).startswith(str(base_path)):
                             continue
 
@@ -256,7 +254,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Encuentra los N archivos de mayor tamaño en un directorio."""
+    """Encuentra los N archivos de mayor tamaño en un directorio utilizando un heap."""
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -349,6 +347,9 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
     """
     Agrega métricas de uso de disco en una única iteración de archivos.
+    
+    Utiliza un min-heap para mantener el top-8 de archivos más grandes en O(n log k), 
+    optimizando el uso de memoria comparado con una ordenación completa de todos los archivos.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -359,12 +360,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
         try:
             total_bytes += size
             total_files += 1
-            # Cacheamos la extensión para evitar múltiples llamadas a propiedades de Path
             ext = path.suffix.lower() or "(sin extensión)"
             ext_sizes[ext] += size
             ext_counts[ext] += 1
             
-            # Gestión eficiente del heap para archivos grandes
+            # Gestión eficiente del heap para mantener los N archivos más grandes
             if len(top_files_heap) < 8:
                 heapq.heappush(top_files_heap, (size, path))
             elif size > top_files_heap[0][0]:
