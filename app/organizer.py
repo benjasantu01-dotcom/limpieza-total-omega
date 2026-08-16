@@ -243,14 +243,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile) or not junk_file.path:
             continue
         try:
-            # Check previo a la operación de I/O
             if junk_file.path.exists() and junk_file.path.is_file():
                 if os.access(junk_file.path, os.R_OK) and _is_safe_to_move(junk_file, dest):
-                    # Verificar nuevamente estado de disco justo antes de mover
                     usage = shutil.disk_usage(dest)
                     if usage.free > junk_file.size_bytes:
                         target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-                        # Doble verificación de seguridad antes de mover
                         if is_safe_to_modify(target):
                             ensure_safe_to_modify(target)
                             shutil.move(str(junk_file.path), str(target))
@@ -274,19 +271,14 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     count: int = 0
-    try:
-        for item in dest.iterdir():
-            try:
-                # Filtrar solo archivos, sin seguir symlinks, evitando estados de carrera
-                if item.is_file() and not item.is_symlink():
-                    # Resolución completa antes de verificar seguridad
-                    path_to_delete = item.resolve()
-                    if dest in path_to_delete.parents and is_safe_to_modify(path_to_delete):
-                        # Acción final tras asegurar la integridad
-                        path_to_delete.unlink()
-                        count += 1
-            except (PermissionError, OSError, ValueError):
-                continue
-    except (PermissionError, OSError):
-        pass
+    for item in dest.iterdir():
+        try:
+            if item.is_file() and not item.is_symlink():
+                path_to_delete = item.resolve()
+                # Verifica que sea hijo directo y pase chequeos de seguridad
+                if path_to_delete.parent == dest and is_safe_to_modify(path_to_delete):
+                    path_to_delete.unlink()
+                    count += 1
+        except (PermissionError, OSError, ValueError):
+            continue
     return count

@@ -353,4 +353,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, MemoryError, OSError) as e:
         return False, f"Ocurrió un error técnico al gestionar el proceso: {str(e)}"
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

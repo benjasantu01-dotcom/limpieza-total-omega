@@ -83,6 +83,8 @@ class QuarantineItem:
             self.size_bytes = 0
         if not self.item_id or not isinstance(self.item_id, str):
             raise ValueError("ID de ítem vacío o inválido")
+        if not self.reason or not isinstance(self.reason, str):
+            self.reason = "Sin motivo especificado"
 
     @property
     def size_mb(self) -> float:
@@ -359,9 +361,13 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
-        # Solo eliminar origen si el archivo ya existe y fue validado en cuarentena
+        # Validación post-copia: solo eliminar origen si el archivo aislado es íntegro
         if destination.exists() and destination.stat().st_size == file_size:
-            os.remove(source_path)
+            try:
+                os.remove(source_path)
+            except OSError as e:
+                # Si falla la eliminación, marcar el error pero mantener el archivo en cuarentena
+                raise RuntimeError(f"Archivo copiado a cuarentena pero error al borrar original: {e}")
         else:
             raise RuntimeError("Fallo en la confirmación de aislamiento.")
             
@@ -370,7 +376,7 @@ def quarantine_file(
             original_path=str(source_path),
             stored_name=stored_name,
             size_bytes=file_size,
-            reason=reason,
+            reason=str(reason) if reason else "Sin motivo",
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
         )
@@ -379,6 +385,7 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
+        # Si falló algo, intentar limpiar el destino parcial para no dejar residuos huérfanos
         if destination.exists():
             try: os.remove(destination)
             except OSError: pass
