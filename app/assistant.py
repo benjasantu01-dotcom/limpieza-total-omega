@@ -255,25 +255,30 @@ def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Construye un objeto SystemContext validando estrictamente los datos de entrada.
-    Este método actúa como barrera de seguridad descartando valores no numéricos 
-    o inesperados para prevenir errores de serialización o inyecciones.
+    Mapea diccionarios u objetos de entrada a las métricas validadas del sistema.
     """
     ctx = SystemContext()
     
-    # Validar que source sea mapeable o tenga atributos
+    # Mapeo de métricas base
     if isinstance(metrics, (dict, object)):
-        _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
-        _safe_assign(ctx, "suspicious_count", _get_metric_val(metrics, "suspicious_count", 0), int)
-        _safe_assign(ctx, "suspicious_warnings", _get_metric_val(metrics, "suspicious_warnings", 0), int)
-        _safe_assign(ctx, "memory_available_percent", _get_metric_val(metrics, "memory_available_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "memory_total_gb", _get_metric_val(metrics, "memory_total_gb", 0.0))
-        _safe_assign(ctx, "disk_free_percent", _get_metric_val(metrics, "disk_free_percent", 0.0), max_val=100.0)
-        _safe_assign(ctx, "duplicate_mb", _get_metric_val(metrics, "duplicate_mb", 0.0))
-        _safe_assign(ctx, "startup_count", _get_metric_val(metrics, "startup_count", 0), int)
-        _safe_assign(ctx, "quarantined_count", _get_metric_val(metrics, "quarantined_count", 0), int)
-        _safe_assign(ctx, "browser_cache_mb", _get_metric_val(metrics, "browser_cache_mb", 0.0))
+        mapping = {
+            "junk_mb": (0.0, float),
+            "suspicious_count": (0, int),
+            "suspicious_warnings": (0, int),
+            "memory_available_percent": (0.0, float, 100.0),
+            "memory_total_gb": (0.0, float),
+            "disk_free_percent": (0.0, float, 100.0),
+            "duplicate_mb": (0.0, float),
+            "startup_count": (0, int),
+            "quarantined_count": (0, int),
+            "browser_cache_mb": (0.0, float),
+        }
+        for attr, (default, cast, *max_v) in mapping.items():
+            max_val = max_v[0] if max_v else float('inf')
+            _safe_assign(ctx, attr, _get_metric_val(metrics, attr, default), cast=cast, max_val=max_val)
         ctx.analyzed = True
 
+    # Procesamiento específico de salud
     if isinstance(health, (dict, object)):
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: 
@@ -284,11 +289,11 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             ctx.grade = str(grade)[:10]
         ctx.analyzed = True
 
+    # Inyección de parámetros adicionales validados
     for k, v in extra.items():
         if hasattr(ctx, k) and v is not None and not isinstance(v, bool):
             target_val = getattr(ctx, k)
             if isinstance(target_val, (int, float, str)):
-                # Solo asignamos si el tipo del cast es una función que conoce el valor
                 cast_func = type(target_val)
                 if cast_func in (int, float, str):
                     _safe_assign(ctx, k, v, cast=cast_func)
