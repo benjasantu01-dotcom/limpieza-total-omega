@@ -157,12 +157,14 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad del sistema de archivos.
+    Utiliza un set de inodos (dev, ino) para evitar ciclos y procesamiento redundante.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     safety_cache: Dict[str, bool] = {}
 
     def _is_safe_cached(p: Path) -> bool:
+        """Caché temporal de validación para evitar llamar a safety.py repetidamente."""
         path_str = str(p)
         if path_str not in safety_cache:
             safety_cache[path_str] = not (is_protected_path(p) or not is_safe_to_modify(p))
@@ -179,6 +181,7 @@ def _collect_candidates(
                         inode = (st.st_dev, st.st_ino)
                         if inode in visited_inodes: continue
                         
+                        # Saltar archivos de sistema (FILE_ATTRIBUTE_SYSTEM)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
                         if entry.is_dir():
@@ -206,9 +209,9 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Filtra candidatos agrupándolos según el resultado de una función de hash.
+    Retorna solo grupos que contienen al menos dos archivos colisionando.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
-    if paths is None: return groups_by_digest
     
     for path in paths:
         if not isinstance(path, Path): continue
@@ -245,14 +248,13 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma total de bytes redundantes en los grupos detectados."""
-    if not isinstance(groups, (list, tuple)): return 0
-    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
+    return sum(g.wasted_bytes for g in groups)
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística para selección: conserva el archivo más antiguo (mtime) 
-    y, ante empate, el de ruta más corta.
+    y, ante empate, el de ruta más corta (menos profundidad).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

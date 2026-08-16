@@ -494,6 +494,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._action(row, "Mover a revisión", self.on_stage, secondary=True, column=1)
         self._action(row, "Vaciar revisados", self.on_delete_reviewed, danger=True, column=2)
 
+        self._build_limpieza_controls(tab)
+        self._make_output("Limpieza", tab)
+
+    def _build_limpieza_controls(self, tab: ctk.CTk) -> None:
+        """Construye los controles de filtro para la pestaña Limpieza."""
         options_container = ctk.CTkFrame(tab, fg_color="transparent")
         options_container.pack(fill="x", padx=12, pady=(12, 0))
 
@@ -510,8 +515,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.sort_by = ctk.StringVar(value="size")
         self._menu(options_container, ["size", "date"], self.sort_by,
                    lambda _: self.refresh_list(), width=110).grid(row=0, column=4, padx=4)
-
-        self._make_output("Limpieza", tab)
 
     def _build_tab_seguridad(self) -> None:
         """Construye controles para escaneos heurísticos y supervisión de Windows Defender."""

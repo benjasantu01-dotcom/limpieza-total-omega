@@ -199,16 +199,17 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Recorre recursivamente un directorio para indexar archivos y tamaños.
     
-    Utiliza una pila para el recorrido iterativo y evita el seguimiento de enlaces
-    simbólicos o puntos de reparse (junctions). Implementa verificación de seguridad
-    por cada entrada encontrada para ignorar rutas protegidas del sistema.
+    Utiliza un enfoque de pila para la navegación iterativa para evitar desbordamientos
+    de pila en estructuras profundas. Detecta ciclos mediante inodos (st_ino, st_dev) 
+    y saltea enlaces simbólicos/junctions para garantizar la integridad y seguridad.
 
     Args:
-        directory: Directorio raíz desde donde iniciar el recorrido.
-        skip_protected: Si es True, salta rutas marcadas como seguras/protegidas.
+        directory: Directorio raíz donde iniciar el recorrido.
+        skip_protected: Si es True, omite subárboles marcados como protegidos por `safety.py`.
 
     Yields:
-        Tuplas conteniendo la ruta completa (Path) y el tamaño en bytes (int).
+        Tuplas (ruta_archivo, tamaño_bytes). Captura y descarta errores de acceso
+        (PermissionError) para permitir análisis parciales de unidades grandes.
     """
     if not directory:
         return
@@ -352,7 +353,11 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
     """
-    Recolecta métricas estadísticas crudas del directorio en una única pasada.
+    Agrega métricas de uso de disco en una única iteración de archivos.
+    
+    Utiliza una cola de prioridad (min-heap de tamaño 8) para mantener los 8 archivos 
+    más grandes encontrados, optimizando el uso de memoria al no almacenar la 
+    lista completa de archivos procesados.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -366,6 +371,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
             ext = path.suffix.lower() or "(sin extensión)"
             ext_sizes[ext] += size
             ext_counts[ext] += 1
+            
+            # Mantener solo los 8 archivos más grandes en memoria (min-heap)
             if len(top_files_heap) < 8:
                 heapq.heappush(top_files_heap, (size, path))
             elif size > top_files_heap[0][0]:
