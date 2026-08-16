@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union, Generator, TypedDict, NamedTuple
+from typing import Any, Final, TypeAlias, Callable, Optional, Union, TypedDict, NamedTuple
 
 import settings
 from safety import is_protected_path
@@ -68,18 +68,19 @@ __all__ = [
 ]
 
 class AssistantConfig(TypedDict):
-    """Esquema de configuración cargado desde el archivo de ajustes."""
+    """Esquema estricto de la configuración cargada desde el archivo de ajustes."""
     asistente_api_key: str
     asistente_modelo: str
     asistente_enviar_metricas: bool
 
 class ProblemCriterion(NamedTuple):
-    """Define una regla de salud para la evaluación del sistema."""
+    """Define una regla de salud lógica para la evaluación de métricas."""
     metric_key: str
     threshold: float
     operator: str  # '<' o '>'
     message_format: str
 
+# TypeAliases para mejorar la legibilidad de las firmas de funciones
 MetricSource: TypeAlias = Any
 ScoreSource: TypeAlias = Any
 
