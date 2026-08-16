@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 14
+- Rechazadas por guardia de seguridad: 27
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 149 | 16 | 17 | 9 | 145 |
-| 2026-08-16 | 78 | 6 | 9 | 5 | 70 |
+| 2026-08-15 | 145 | 16 | 17 | 9 | 145 |
+| 2026-08-16 | 80 | 6 | 10 | 6 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **45**
-- rendimiento: **41**
+- rendimiento: **43**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
 - `settings.py`: **22**
-- `healthscore.py`: **20**
-- `scanner.py`: **20**
+- `scanner.py`: **21**
+- `diskreport.py`: **21**
 - `assistant.py`: **20**
 - `browser.py`: **20**
 - `quarantine.py`: **20**
-- `duplicates.py`: **17**
+- `healthscore.py`: **19**
 - `memory.py`: **17**
+- `duplicates.py`: **16**
 - `organizer.py`: **16**
-- `main.py`: **12**
+- `main.py`: **11**
 - `safety.py`: **8**
+- `startup.py`: **7**
 - `branding.py`: **7**
-- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T07:16:57` **startup.py** (rendimiento): Se implementó un mecanismo de caché local dentro de `entries_from_registry` para evitar la ejecución redundante y costosa del subproceso de PowerShell, optimizando el rendimiento en llamadas sucesivas a `list_startup_entries`.
+- `2026-08-16T07:16:06` **scanner.py** (rendimiento): Optimicé el rendimiento de `check_recent_executable_in_downloads` sustituyendo la iteración sobre `path.parts` por una verificación directa de pertenencia en `WATCHED_FOLDERS` mediante un `set.isdisjoint` inverso, evitando iterar innecesariamente sobre cada componente de la ruta y reduciendo la complejidad de los chequeos constantes.
 - `2026-08-16T07:06:25` **quarantine.py** (rendimiento): Se optimizó el rendimiento de `purge_all` y la carga inicial del manifiesto transformando las listas de ítems en diccionarios para consultas O(1) en lugar de O(n), y se reemplazó el uso de `.iterdir()` por un bucle eficiente que valida contra el manifiesto en memoria, evitando redundancias en el acceso a disco.
 - `2026-08-16T06:58:35` **memory.py** (rendimiento): Se optimizó la consulta de procesos en `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de filtrado más eficiente, reduciendo el overhead de subprocesos y mejorando la consistencia del caché mediante la eliminación de una lista intermedia innecesaria en el almacenamiento del mismo.
 - `2026-08-16T06:55:46` **duplicates.py** (rendimiento): Optimizé `_refine_by_hash` mediante un filtrado previo de los grupos para evitar procesar listas unitarias que no pueden contener duplicados, reduciendo drásticamente las llamadas innecesarias a la función de hash en el pipeline principal.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T06:25:39` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos (incluyendo `Final` y alias) y se mejoró la documentación con docstrings estructurados según el estándar PEP 257, clarificando la intención técnica detrás de cada función.
 - `2026-08-16T06:25:14` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la documentación explícita de las constantes de la API de Windows y la extracción de la lógica de creación de la estructura `MEMORYSTATUSEX` a una función de fábrica clara, facilitando la comprensión del código de bajo nivel.
 - `2026-08-16T06:17:58` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la refactorización de `_build_tab_salud` y `_build_tab_limpieza` para extraer la lógica de construcción de componentes en métodos privados específicos (`_build_health_metrics_row`, `_build_limpieza_controls`), facilitando la navegación del código y clarificando la jerarquía de la interfaz.
-- `2026-08-16T06:15:59` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, estandaricé la nomenclatura de las funciones de puntuación y optimicé el flujo de validación en `compute_score` para asegurar una mayor claridad sobre las responsabilidades de cada componente.
-- `2026-08-16T06:15:32` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `Optional` y `Sequence`) y se añadieron docstrings explicativos en las funciones internas de escaneo, clarificando la lógica de filtrado de inodos y la estrategia de caché de seguridad.

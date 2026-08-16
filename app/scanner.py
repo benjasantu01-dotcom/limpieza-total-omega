@@ -131,7 +131,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry):
         return None
     
-    if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
+    # Verifica pertenencia de la ruta en las carpetas vigiladas mediante intersección de sets (más rápido que iteración)
+    if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
         return None
         
     try:

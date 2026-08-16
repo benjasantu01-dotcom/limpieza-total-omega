@@ -51,6 +51,7 @@ EXECUTABLE_EXTS: Set[str] = {'.exe', '.bat', '.cmd', '.scr', '.lnk'}
 # Caché global para evitar operaciones de I/O redundantes durante la sesión.
 _EXISTS_CACHE: Dict[str, bool] = {}
 _FULL_SCAN_CACHE: Optional[List[StartupEntry]] = None
+_REGISTRY_CACHE: Optional[List[StartupEntry]] = None
 
 # Mensaje estandarizado para deshabilitar programas sin tocar el registro.
 HOW_TO_DISABLE: str = (
@@ -287,6 +288,10 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """Recupera entradas de inicio desde el registro mediante PowerShell."""
+    global _REGISTRY_CACHE
+    if _REGISTRY_CACHE is not None:
+        return _REGISTRY_CACHE
+
     if os.name != "nt":
         return []
     
@@ -299,7 +304,8 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
-            return parse_registry_csv(result.stdout)
+            _REGISTRY_CACHE = parse_registry_csv(result.stdout)
+            return _REGISTRY_CACHE
     except (OSError, subprocess.SubprocessError):
         pass
     return []

@@ -1448,3 +1448,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T07:06:55` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-16T07:06:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T07:06:55` Corrida terminada. Total usado hoy: 168.
+- `2026-08-16T07:15:41` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-16T07:16:06` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `check_recent_executable_in_downloads` sustituyendo la iteración sobre `path.parts` por una verificación directa de pertenencia en `WATCHED_FOLDERS` mediante un `set.isdisjoint` inverso, evitando iterar innecesariamente sobre cada componente de la ruta y reduciendo la complejidad de los chequeos constantes.
+- `2026-08-16T07:16:32` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
+- `2026-08-16T07:16:57` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se implementó un mecanismo de caché local dentro de `entries_from_registry` para evitar la ejecución redundante y costosa del subproceso de PowerShell, optimizando el rendimiento en llamadas sucesivas a `list_startup_entries`.
+- `2026-08-16T07:17:15` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `build_context` ante valores `NaN` o `inf` provenientes de fuentes externas, evitando que `math.isfinite` se saltee números potencialmente válidos pero mal formateados, y asegurando que las conversiones sean estrictamente controladas.
+- `2026-08-16T07:17:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T07:17:15` Corrida terminada. Total usado hoy: 172.
