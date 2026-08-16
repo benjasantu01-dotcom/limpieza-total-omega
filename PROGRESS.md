@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 27
+- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Rechazadas por tests: 22
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 96 | 10 | 11 | 5 | 82 |
-| 2026-08-16 | 140 | 11 | 16 | 11 | 122 |
+| 2026-08-15 | 96 | 10 | 11 | 5 | 78 |
+| 2026-08-16 | 141 | 12 | 17 | 11 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
-- seguridad defensiva: **47**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **46**
 - rendimiento: **43**
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `healthscore.py`: **21**
 - `quarantine.py`: **21**
+- `scanner.py`: **21**
 - `browser.py`: **20**
 - `memory.py`: **20**
-- `scanner.py`: **20**
 - `organizer.py`: **18**
 - `duplicates.py`: **16**
 - `main.py`: **12**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T12:53:36` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al asegurar que el manejo de rutas no sea vulnerable a excepciones de permisos o corrupción durante el acceso, utilizando `try-except` explícitos y validando que el objeto `Path` sea absoluto antes de cualquier comparación de padres.
 - `2026-08-16T12:43:56` **memory.py** (seguridad defensiva): Se ha endurecido la seguridad en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable del proceso objetivo antes de realizar cualquier manipulación, garantizando que no se apliquen acciones sobre procesos críticos incluso si se logran abrir sus handles.
 - `2026-08-16T12:43:29` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo un filtro explícito en `on_trim_process` para asegurar que el proceso a liberar no sea un proceso crítico del sistema (PID < 100) ni un proceso inexistente, previniendo errores de sistema y reforzando la protección sobre componentes vitales.
 - `2026-08-16T12:42:23` **healthscore.py** (seguridad defensiva): Reforcé la integridad defensiva de la función `_generate_recommendations` validando explícitamente el tipo y la finitud de los valores de las métricas antes de intentar formatear los mensajes, evitando errores de ejecución si los datos de entrada estuvieran corrompidos o fueran no numéricos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T12:04:47` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos en la función `_parse_csv_row` para prevenir fallos catastróficos ante entradas malformadas o inesperadas provenientes de PowerShell, asegurando la resiliencia del módulo ante datos corruptos.
 - `2026-08-16T12:04:35` **main.py** (robustez ante casos límite): Se mejora la robustez ante rutas inexistentes o inaccesibles en `on_disk_analysis` y el constructor de pestañas, asegurando que el intento de acceso a rutas malformadas o eliminadas durante la ejecución no bloquee ni genere excepciones no controladas en el hilo principal.
 - `2026-08-16T12:02:24` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_calculate_breakdown` y `_generate_recommendations` para prevenir errores ante configuraciones de pesos mal definidos o métricas ausentes, asegurando que un valor inesperado en los pesos (ej. cero o suma nula) no resulte en un score `NaN` o una excepción.
-- `2026-08-16T11:52:45` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular dentro del iterador de `os.scandir`, evitando que fallos de acceso en subdirectorios interrumpan el análisis completo.

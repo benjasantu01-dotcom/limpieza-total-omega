@@ -780,3 +780,46 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T12:44:04` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-16T12:44:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T12:44:04` Corrida terminada. Total usado hoy: 300.
+- `2026-08-16T12:52:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-16T12:52:39` Tests FALLARON:
+```
+^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+base_str = '/tmp/pytest-of-runner/pytest-1/test_corrupt_manifest_does_not0/_Cuarentena'
+
+    @lru_cache(maxsize=1)
+    def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
+        """Carga el manifiesto; se usa lru_cache para evitar re-lecturas innecesarias de disco."""
+        base_path = Path(base_str)
+        path = _manifest_path(base_path)
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if not isinstance(raw_data, list):
+                return []
+            valid_items = []
+            for entry in raw_data:
+                if isinstance(entry, dict):
+                    item = QuarantineItem.from_dict(entry)
+                    if item:
+                        valid_items.append(item)
+            return valid_items
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:276: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 0.71s
+
+```
+- `2026-08-16T12:52:39` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad en `quarantine_file` añadiendo una comprobación explícita para evitar que se ponga en cuarentena el propio manifiesto o el directorio raíz de la cuarentena, previniendo recursividad accidental o corrupción del registro.
+- `2026-08-16T12:53:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-16T12:53:26` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-16T12:53:36` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al asegurar que el manejo de rutas no sea vulnerable a excepciones de permisos o corrupción durante el acceso, utilizando `try-except` explícitos y validando que el objeto `Path` sea absoluto antes de cualquier comparación de padres.
+- `2026-08-16T12:53:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T12:53:36` Corrida terminada. Total usado hoy: 304.

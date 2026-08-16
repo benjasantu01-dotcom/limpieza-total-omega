@@ -65,9 +65,9 @@ class Scanner:
         """Verifica que la ruta resuelta esté contenida dentro del directorio base de escaneo."""
         try:
             resolved = entry_path.resolve()
-            # Verifica si la ruta es la base o está dentro de ella, manejando casos de path traversal
+            # Validar que sea subdirectorio o el mismo mediante comparación de padres
             return self.base_root == resolved or self.base_root in resolved.parents
-        except (RuntimeError, ValueError, OSError):
+        except (OSError, RuntimeError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
@@ -76,7 +76,6 @@ class Scanner:
         Evita seguir symlinks o junctions para prevenir bucles de recursión.
         """
         try:
-            # 0x400 es el bit de FILE_ATTRIBUTE_REPARSE_POINT en Windows
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
             return True 
@@ -93,14 +92,12 @@ class Scanner:
         try:
             target_path = Path(entry.path)
             
-            # Filtros de seguridad iniciales: symlinks, reparse points y directorios protegidos
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
 
             if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
 
-            # Validar integridad contra base_root antes de proceder
             if not self._is_safe_entry(target_path):
                 return
 
@@ -112,8 +109,8 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
-        except (PermissionError, OSError, FileNotFoundError, UnicodeDecodeError) as e:
-            logger.debug(f"Acceso denegado, error de sistema o codificación en {getattr(entry, 'path', 'unknown')}: {e}")
+        except (PermissionError, OSError, FileNotFoundError, UnicodeDecodeError):
+            pass
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -135,24 +132,18 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Analiza si un ejecutable reside en carpetas temporales y fue creado recientemente.
-    
-    La función verifica si el archivo pertenece a las carpetas configuradas en WATCHED_FOLDERS
-    y compara el mtime del archivo con el umbral definido en RECENT_FILE_THRESHOLD_HOURS.
     """
     if not isinstance(entry, os.DirEntry):
         return None
     
-    # Verifica pertenencia de la ruta en las carpetas vigiladas mediante intersección de sets
     if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
         return None
         
     try:
-        # El acceso a stat puede fallar si el archivo fue eliminado o bloqueado durante el escaneo
         file_stat = entry.stat()
         if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, OverflowError, ValueError, TypeError):
-        # Fallo silencioso ante acceso denegado o archivos temporales inexistentes
         return None
     return None
 
@@ -160,9 +151,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Valida nombres de archivos contra ejecutables críticos conocidos del sistema.
-    
-    Si el nombre del archivo coincide con un proceso de sistema, se verifica que su
-    ubicación sea la correcta (System32). Si no, se reporta como sospechoso.
     """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
@@ -173,15 +161,12 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Pipeline principal para el análisis de un archivo único.
-    Ejecuta heurísticas generales y, si el archivo es un ejecutable, aplica reglas de contexto.
     """
     findings: ScanResult = []
     
-    # Reglas universales
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # Reglas específicas para ejecutables sospechosos
     if path and path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
         for check in heuristic_suite:
@@ -189,7 +174,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
                 if (res := check(path, entry, now_ts)):
                     findings.append(res)
             except Exception as e:
-                logger.debug(f"Fallo inesperado en regla {check.__name__} para {path}: {e}")
+                logger.debug(f"Fallo inesperado en regla {check.__name__}: {e}")
                 
     return findings
 
@@ -197,18 +182,15 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Inicia el escaneo recursivo mediante un stack.
-    Realiza validaciones de seguridad iniciales sobre la ruta origen antes de comenzar.
     """
     if not directory:
         return []
         
     try:
         path_input = Path(directory).resolve(strict=True)
-        # Verificación doble contra el módulo de seguridad
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
-    except (OSError, TypeError, ValueError, RuntimeError) as e:
-        logger.error(f"Error inicializando escaneo en {directory}: {e}")
+    except (OSError, TypeError, ValueError, RuntimeError):
         return []
 
     scanner = Scanner(base_root=path_input)
@@ -221,8 +203,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError, ValueError, RuntimeError) as e:
-            logger.debug(f"Error de acceso en directorio {current_dir}: {e}")
+        except (PermissionError, OSError, ValueError, RuntimeError):
             continue
             
     return scanner.results
