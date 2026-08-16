@@ -322,7 +322,11 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    for entry in entries_from_folders() + entries_from_registry():
+    def _gen_combined() -> Iterator[StartupEntry]:
+        yield from entries_from_folders()
+        yield from entries_from_registry()
+
+    for entry in _gen_combined():
         name_n = entry.name.lower()
         if name_n not in seen_names:
             seen_names.add(name_n)

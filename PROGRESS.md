@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 102 | 11 | 12 | 6 | 101 |
-| 2026-08-16 | 121 | 10 | 15 | 11 | 115 |
+| 2026-08-15 | 100 | 11 | 12 | 6 | 99 |
+| 2026-08-16 | 123 | 10 | 15 | 11 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
-- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **46**
-- rendimiento: **41**
+- seguridad defensiva: **44**
+- rendimiento: **43**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `settings.py`: **22**
 - `quarantine.py`: **21**
-- `settings.py`: **21**
-- `healthscore.py`: **20**
 - `scanner.py`: **20**
+- `diskreport.py`: **20**
 - `assistant.py`: **19**
 - `browser.py`: **19**
+- `healthscore.py`: **19**
 - `organizer.py`: **18**
 - `memory.py`: **18**
 - `duplicates.py`: **15**
 - `main.py`: **10**
 - `safety.py`: **9**
 - `branding.py`: **7**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T11:42:18` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` evitando la concatenación costosa de listas (`entries_from_folders() + entries_from_registry()`) y el procesamiento innecesario de duplicados, utilizando una lógica de generación directa para reducir el uso de memoria y ciclos de CPU.
+- `2026-08-16T11:42:06` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración reemplazando el chequeo costoso de `is_safe_to_modify` por una validación lógica más eficiente en `_load_internal`, reduciendo las llamadas innecesarias al sistema de archivos al priorizar la validación de estructura antes de verificar permisos de escritura.
 - `2026-08-16T11:31:56` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando la búsqueda lineal O(N*M) sobre la lista de ítems en una búsqueda O(1) mediante un diccionario (`set` de nombres validados), evitando iterar innecesariamente sobre el manifiesto para cada archivo en disco.
 - `2026-08-16T11:31:25` **organizer.py** (rendimiento): Optimizé el escaneo de directorios reemplazando el acceso repetido a `path.suffix` por una búsqueda eficiente en `_LOWER_JUNK_EXTS` y reduciendo las llamadas redundantes a `is_safe_to_modify` dentro del bucle anidado, además de evitar la conversión innecesaria a `Path` dentro de los bucles críticos.
 - `2026-08-16T11:31:01` **memory.py** (rendimiento): Se ha optimizado `top_memory_processes` reemplazando la ejecución de comandos PowerShell por una única llamada optimizada para evitar procesos de shell innecesarios y se ha mejorado la caché para prevenir lecturas redundantes del sistema.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T11:00:51` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en funciones auxiliares privadas y se ha simplificado la estructura de `_check_file_integrity` para mejorar la legibilidad y mantenibilidad del flujo de validación.
 - `2026-08-16T10:52:03` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de control de integridad (`verify_integrity`, `_check_path_syntax_integrity`) y los métodos públicos del ciclo de vida de cuarentena, utilizando docstrings claros para clarificar las asunciones de seguridad y los pre-requisitos de cada operación.
 - `2026-08-16T10:51:46` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados que explican el propósito de las funciones internas y se agregaron type hints adicionales para mejorar la legibilidad y el mantenimiento del código.
-- `2026-08-16T10:41:07` **healthscore.py** (legibilidad y documentación): Documenté con docstrings explicativos la lógica de normalización y pesos en `healthscore.py` para facilitar el mantenimiento y audibilidad de la lógica de negocio, alineándolo con el enfoque de legibilidad.
-- `2026-08-16T10:40:31` **diskreport.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en las funciones de recorrido de disco y recolección de datos, clarificando las estrategias de seguridad, manejo de excepciones y optimización de memoria (uso de heaps) para mejorar la mantenibilidad del código.

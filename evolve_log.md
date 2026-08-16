@@ -705,3 +705,10 @@ ERROR evolve/tests/test_modules.py - IndexError: tuple index out of range
 - `2026-08-16T11:32:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-08-16T11:32:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T11:32:12` Corrida terminada. Total usado hoy: 272.
+- `2026-08-16T11:40:48` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-16T11:41:15` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-16T11:41:38` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-16T11:42:06` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuración reemplazando el chequeo costoso de `is_safe_to_modify` por una validación lógica más eficiente en `_load_internal`, reduciendo las llamadas innecesarias al sistema de archivos al priorizar la validación de estructura antes de verificar permisos de escritura.
+- `2026-08-16T11:42:18` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` evitando la concatenación costosa de listas (`entries_from_folders() + entries_from_registry()`) y el procesamiento innecesario de duplicados, utilizando una lógica de generación directa para reducir el uso de memoria y ciclos de CPU.
+- `2026-08-16T11:42:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T11:42:18` Corrida terminada. Total usado hoy: 276.

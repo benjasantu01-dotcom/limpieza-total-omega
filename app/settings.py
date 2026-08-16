@@ -244,9 +244,8 @@ def _load_internal(ruta_str: str) -> AppSettings:
     """
     ruta = Path(ruta_str)
     try:
-        if not ruta.exists() or ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()):
-            return _get_default_config()
-        if not os.access(ruta, os.R_OK) or not _Validators._is_safe_path(str(ruta.parent)) or is_protected_path(str(ruta)):
+        # Validación de lectura básica antes de parsear JSON para ahorrar ciclos
+        if not ruta.is_file() or is_protected_path(str(ruta)) or not os.access(ruta, os.R_OK):
             return _get_default_config()
         
         content = ruta.read_bytes()
