@@ -222,7 +222,7 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
         if math.isfinite(clean_val):
             final_val = cast(max(min_val, min(clean_val, max_val)))
             setattr(obj, attr, final_val)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, OverflowError):
         pass
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
@@ -286,14 +286,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     for k, v in extra.items():
         if hasattr(ctx, k) and v is not None and not isinstance(v, bool):
-            try:
-                # Validar tipos de forma estricta para evitar inyección de tipos inesperados
-                if isinstance(v, (int, float, str)):
-                    # Aseguramos que la conversión sea consistente con el tipo esperado del campo
-                    target_type = type(getattr(ctx, k))
-                    _safe_assign(ctx, k, v, cast=target_type)
-            except Exception:
-                continue
+            target_val = getattr(ctx, k)
+            if isinstance(target_val, (int, float, str)):
+                # Solo asignamos si el tipo del cast es una función que conoce el valor
+                cast_func = type(target_val)
+                if cast_func in (int, float, str):
+                    _safe_assign(ctx, k, v, cast=cast_func)
     return ctx
 
 def context_as_text(context: SystemContext) -> str:

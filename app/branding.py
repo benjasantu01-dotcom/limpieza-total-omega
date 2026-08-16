@@ -349,7 +349,7 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo en disco previa validación de seguridad de la ruta."""
-    if destination is None:
+    if not destination:
         return None
     try:
         target = Path(destination).expanduser().resolve()
