@@ -82,19 +82,21 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
         
     try:
-        file_path = Path(path).resolve()
-        if not file_path.is_absolute() or not file_path.is_file():
-            return None
+        file_path = Path(path)
         # Validación estricta previa a cualquier acceso
-        if is_protected_path(file_path) or not is_safe_to_modify(file_path) or file_path.is_symlink():
+        if is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
 
-        stat_initial = file_path.stat()
+        resolved_path = file_path.resolve()
+        if not resolved_path.is_file() or resolved_path.is_symlink():
+            return None
+
+        stat_initial = resolved_path.stat()
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
         digest = hashlib.sha256()
-        with open(file_path, "rb") as f:
+        with open(resolved_path, "rb") as f:
             while True:
                 buffer = f.read(chunk_size)
                 if not buffer:
@@ -114,14 +116,16 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
         
     try:
-        file_path = Path(path).resolve()
-        if not file_path.is_absolute() or not file_path.is_file():
-            return None
+        file_path = Path(path)
         # Validación estricta previa a cualquier acceso
-        if is_protected_path(file_path) or not is_safe_to_modify(file_path) or file_path.is_symlink():
+        if is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
             
-        with open(file_path, "rb") as f:
+        resolved_path = file_path.resolve()
+        if not resolved_path.is_file() or resolved_path.is_symlink():
+            return None
+            
+        with open(resolved_path, "rb") as f:
             content = f.read(read_bytes)
             if not content:
                 return None
@@ -139,11 +143,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         return groups
         
     for p in paths:
-        if not isinstance(p, Path): continue
-        target = p.resolve()
-        if is_protected_path(target) or not is_safe_to_modify(target) or target.is_symlink(): continue
+        if not isinstance(p, Path) or is_protected_path(p) or not is_safe_to_modify(p): 
+            continue
         try:
-            if target.is_file():
+            target = p.resolve()
+            if target.is_file() and not target.is_symlink():
                 groups[target.stat().st_size].append(target)
         except (OSError, PermissionError, FileNotFoundError):
             continue
@@ -164,7 +168,6 @@ def _collect_candidates(
     safety_cache: Dict[str, bool] = {}
 
     def _is_safe_cached(p: Path) -> bool:
-        """Caché temporal de validación para evitar llamar a safety.py repetidamente."""
         path_str = str(p)
         if path_str not in safety_cache:
             safety_cache[path_str] = not (is_protected_path(p) or not is_safe_to_modify(p))
@@ -181,18 +184,17 @@ def _collect_candidates(
                         inode = (st.st_dev, st.st_ino)
                         if inode in visited_inodes: continue
                         
-                        # Saltar archivos de sistema (FILE_ATTRIBUTE_SYSTEM)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
                         if entry.is_dir():
                             visited_inodes.add(inode)
                             _scan(Path(entry.path))
                         elif entry.is_file() and st.st_size >= min_size:
-                            path_obj = Path(entry.path).resolve()
+                            path_obj = Path(entry.path)
                             if skip_protected and not _is_safe_cached(path_obj):
                                 continue
                             visited_inodes.add(inode)
-                            temp_groups[st.st_size].append(path_obj)
+                            temp_groups[st.st_size].append(path_obj.resolve())
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -261,10 +263,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path):
+        if not isinstance(p, Path) or is_protected_path(p) or not is_safe_to_modify(p):
             continue
         try:
-            if not p.is_file() or is_protected_path(p) or not is_safe_to_modify(p):
+            if not p.is_file():
                 continue
             stat_info = p.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0))

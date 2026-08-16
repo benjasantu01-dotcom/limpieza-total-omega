@@ -102,8 +102,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
+    # Pre-filtro de caracteres de control o invisibles
     path_str = str(target_path)
-    # Bloqueo de caracteres de control o invisibles (RTL/LTR) para evitar engaños en la ruta
     if "\0" in path_str or any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
         return False
         
@@ -111,15 +111,14 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
+        # Bloqueo explícito de rutas protegidas a nivel de sistema antes de operar
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
-        try:
-            real_target.relative_to(real_base)
-        except ValueError:
-            return False
+        # Verifica que la ruta target sea subdirectorio de la base
+        real_target.relative_to(real_base)
 
-        # Verifica junctions/symlinks de Windows
+        # Verifica junctions/symlinks de Windows que podrían saltar fuera del arbol
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
@@ -144,7 +143,6 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Normalización de ruta para manejo de long paths mediante el prefijo \\?\
         path_to_check = entry_path if not entry_path.startswith(r"\\?") else entry_path[4:]
         attrs = kernel32.GetFileAttributesW(path_to_check)
         if attrs == 0xFFFFFFFF:
