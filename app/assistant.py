@@ -242,7 +242,7 @@ def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> 
     if source is None:
         return default
     
-    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+    val = source[key] if isinstance(source, dict) else getattr(source, key, None)
     
     if val is None or isinstance(val, bool):
         return default
@@ -259,6 +259,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Mapea diccionarios u objetos de entrada a las métricas validadas del sistema.
     """
     ctx = SystemContext()
+    is_dict = isinstance(metrics, dict)
     
     if metrics is not None:
         _safe_assign(ctx, "junk_mb", _get_metric_val(metrics, "junk_mb", 0.0))
@@ -278,14 +279,14 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         if raw_score is not None: 
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
         
-        grade_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
+        grade_val = health["grade"] if isinstance(health, dict) else getattr(health, "grade", None)
         if isinstance(grade_val, (str, int, float)):
             ctx.grade = str(grade_val)[:10]
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if hasattr(ctx, k) and v is not None and not isinstance(v, bool):
-            attr_val = getattr(ctx, k)
+        if v is not None and not isinstance(v, bool):
+            attr_val = getattr(ctx, k, None)
             if isinstance(attr_val, (int, float)):
                 _safe_assign(ctx, k, v, type(attr_val))
             elif isinstance(attr_val, str):

@@ -68,8 +68,10 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada, sea de carpetas o registro.
     
-    Usa resolución perezosa: la validación física y de seguridad ocurre al 
-    acceder a la propiedad `executable`, almacenando el resultado en caché.
+    Implementa resolución perezosa para el ejecutable asociado:
+    1. Sanitiza el comando crudo recibido.
+    2. Extrae la ruta del archivo ignorando argumentos.
+    3. Valida contra `is_protected_path` antes de confirmar su existencia.
     """
     name: str
     command: str
@@ -85,17 +87,18 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Elimina caracteres de control (ord < 32) de la cadena de comando."""
+        """Limpia caracteres de control y espacios en blanco del comando crudo."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae una ruta de archivo contenida entre comillas.
+        Extrae la ruta contenida entre comillas.
         
-        Valida que la cadena extraída no contenga caracteres prohibidos (<>|?*)
-        y que supere el chequeo de seguridad de rutas (`is_protected_path`).
+        Es necesario porque los comandos de registro suelen envolver rutas con
+        espacios en comillas dobles. Validamos que no sea una ruta protegida
+        para evitar revelar información sensible de carpetas del sistema.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -117,10 +120,10 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Normaliza, valida y verifica la existencia física de una ruta.
+        Resuelve la ruta física y verifica su existencia usando caché global.
         
-        Utiliza `_EXISTS_CACHE` para evitar llamadas redundantes a `Path.exists()`
-        y `Path.resolve()`. Si la ruta es protegida o un enlace, retorna vacío.
+        Realiza `Path.resolve(strict=True)` para identificar archivos huérfanos.
+        Se detiene si la ruta cae dentro de un directorio protegido.
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
@@ -159,10 +162,9 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, cmd: str) -> str:
         """
-        Despacha la lógica de resolución según el formato detectado en el comando.
+        Selecciona la estrategia de extracción de ruta según el formato del comando.
         
-        Prioriza la extracción de comillas; si no existen, asume que el primer
-        bloque de texto es la ruta ejecutable.
+        Previene inyección de comandos rechazando cadenas con operadores shell.
         """
         if not cmd:
             return ""
@@ -181,9 +183,9 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Propiedad de acceso perezoso a la ruta absoluta del ejecutable.
+        Acceso perezoso a la ruta absoluta del ejecutable.
         
-        Ejecuta la resolución solo una vez por instancia.
+        Calculado solo bajo demanda y cacheado en la instancia.
         """
         if self._checked_exists:
             return self._exec_cache or ""

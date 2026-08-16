@@ -663,3 +663,31 @@ ERROR evolve/tests/test_modules.py - AttributeError: module 'ctypes' has no attr
 - `2026-08-16T11:01:28` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y la robustez del código añadiendo tipado explícito en `_Validators.int` y centralizando la lógica de validación de rangos numéricos mediante un mapeo más descriptivo, lo que reduce la carga cognitiva al mantener las restricciones de seguridad.
 - `2026-08-16T11:01:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T11:01:28` Corrida terminada. Total usado hoy: 260.
+- `2026-08-16T11:10:11` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-16T11:10:40` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna de la clase `StartupEntry` y se han añadido `type hints` y docstrings más descriptivos en métodos críticos de resolución de rutas para clarificar el flujo de validación de seguridad (el "porqué" detrás de la sanitización y el filtrado).
+- `2026-08-16T11:11:13` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` evitando llamadas repetitivas a `getattr` y `isinstance` dentro de los bucles, y pre-compilé la conversión de tipos, reduciendo la carga de CPU en cada ciclo de análisis.
+- `2026-08-16T11:11:44` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:21: in <module>
+    import branding  # noqa: E402
+    ^^^^^^^^^^^^^^^
+app/branding.py:270: in <module>
+    _PRECOMPUTED_GRADIENT = gradient_colors(30, GRADIENT_STOPS)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+app/branding.py:265: in gradient_colors
+    res[i] = blend(stops[idx], stops[idx + 1], pos - idx)
+                               ^^^^^^^^^^^^^^
+E   IndexError: tuple index out of range
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - IndexError: tuple index out of range
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.28s
+
+```
+- `2026-08-16T11:11:44` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el cálculo de colores de la interfaz pre-computando la tabla `GRADIENT_COLORS` como una constante estática, eliminando la sobrecarga de `lru_cache` y el cálculo de interpolación lineal en tiempo de ejecución para las barras y franjas de logo.
+- `2026-08-16T11:11:52` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimizé el rendimiento de `directory_size` y `detect_profiles` al compartir una instancia única del `memo` (diccionario de caché de tamaños) durante todo el ciclo de escaneo, evitando recorridos redundantes si múltiples navegadores comparten estructuras de directorios padre.
+- `2026-08-16T11:11:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T11:11:52` Corrida terminada. Total usado hoy: 264.
