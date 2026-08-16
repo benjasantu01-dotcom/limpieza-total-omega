@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 214
+- Rechazadas por guardia de seguridad: 25
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 154 | 16 | 18 | 9 | 147 |
-| 2026-08-16 | 75 | 6 | 8 | 4 | 67 |
+| 2026-08-15 | 151 | 16 | 17 | 9 | 147 |
+| 2026-08-16 | 77 | 6 | 8 | 5 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **43**
-- rendimiento: **38**
+- robustez ante casos límite: **40**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
 - `diskreport.py`: **22**
-- `scanner.py`: **21**
+- `settings.py`: **22**
 - `assistant.py`: **21**
 - `healthscore.py`: **20**
+- `scanner.py`: **20**
 - `browser.py`: **20**
 - `quarantine.py`: **19**
-- `duplicates.py`: **16**
-- `memory.py`: **16**
+- `duplicates.py`: **17**
+- `memory.py`: **17**
 - `organizer.py`: **16**
 - `main.py`: **12**
-- `safety.py`: **9**
+- `safety.py`: **8**
 - `startup.py`: **7**
 - `branding.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T06:58:35` **memory.py** (rendimiento): Se optimizó la consulta de procesos en `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de filtrado más eficiente, reduciendo el overhead de subprocesos y mejorando la consistencia del caché mediante la eliminación de una lista intermedia innecesaria en el almacenamiento del mismo.
+- `2026-08-16T06:55:46` **duplicates.py** (rendimiento): Optimizé `_refine_by_hash` mediante un filtrado previo de los grupos para evitar procesar listas unitarias que no pueden contener duplicados, reduciendo drásticamente las llamadas innecesarias a la función de hash en el pipeline principal.
 - `2026-08-16T06:48:30` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y mejorar la eficiencia del bucle principal, además de asegurar que las operaciones de recolección sean más rápidas al reducir la creación de objetos innecesarios durante el recorrido.
 - `2026-08-16T06:48:00` **browser.py** (rendimiento): Optimizé `_sum_directory_recursive` para evitar inicializaciones repetitivas de `k32` y `is_junction_fn` dentro de cada llamada, y mejoré la lógica de `directory_size` para inyectar estas dependencias de forma eficiente, reduciendo el overhead de llamadas al sistema.
 - `2026-08-16T06:47:35` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas intermedias y reduciendo la complejidad del bucle, además de ajustar la lógica de `_get_grouped_segments` para procesar segmentos con mayor eficiencia usando generadores/iteradores en lugar de múltiples asignaciones.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T06:15:59` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings más precisos, estandaricé la nomenclatura de las funciones de puntuación y optimicé el flujo de validación en `compute_score` para asegurar una mayor claridad sobre las responsabilidades de cada componente.
 - `2026-08-16T06:15:32` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `Optional` y `Sequence`) y se añadieron docstrings explicativos en las funciones internas de escaneo, clarificando la lógica de filtrado de inodos y la estrategia de caché de seguridad.
 - `2026-08-16T06:15:07` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `_collect_summary_data` para aclarar la lógica de manejo de errores, la técnica de recursión iterativa y la semántica de los datos, facilitando el mantenimiento y la comprensión técnica del motor de análisis.
-- `2026-08-16T06:06:14` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del proceso recursivo de escaneo mediante la extracción de la lógica de `Scanner` a una función de orden superior documentada, eliminando el anidamiento innecesario y aclarando el propósito de la validación de seguridad.
-- `2026-08-16T06:05:32` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `build_context` para utilizar un patrón de asignación más limpio y documentado, eliminando la repetición de lógica y fortaleciendo los docstrings.

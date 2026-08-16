@@ -1433,3 +1433,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T06:48:30` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y mejorar la eficiencia del bucle principal, además de asegurar que las operaciones de recolección sean más rápidas al reducir la creación de objetos innecesarios durante el recorrido.
 - `2026-08-16T06:48:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T06:48:30` Corrida terminada. Total usado hoy: 160.
+- `2026-08-16T06:55:19` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-16T06:55:46` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_refine_by_hash` mediante un filtrado previo de los grupos para evitar procesar listas unitarias que no pueden contener duplicados, reduciendo drásticamente las llamadas innecesarias a la función de hash en el pipeline principal.
+- `2026-08-16T06:56:14` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-16T06:57:20` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el sistema de caché implementando una invalidación granular por pestaña en lugar de una limpieza global, evitando que análisis como "Basura" o "Duplicados" fuercen la recarga innecesaria de otras áreas de la app.
+- `2026-08-16T06:58:20` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-16T06:58:35` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó la consulta de procesos en `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de filtrado más eficiente, reduciendo el overhead de subprocesos y mejorando la consistencia del caché mediante la eliminación de una lista intermedia innecesaria en el almacenamiento del mismo.
+- `2026-08-16T06:58:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T06:58:35` Corrida terminada. Total usado hoy: 164.

@@ -236,16 +236,16 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         return []
     
     now: float = time.monotonic()
-    cache_ref = _PROCESS_CACHE["data"]
+    timestamp, cached_list = _PROCESS_CACHE["data"]
     
-    if now - cache_ref[0] < 5.0 and cache_ref[1]:
-        return cache_ref[1][:limit]
+    if now - timestamp < 5.0 and cached_list:
+        return cached_list[:limit]
     
     # CMD adaptado para extraer métricas clave con formato CSV simple
     cmd = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} Name,Id,WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
-        if proc.returncode == 0 and isinstance(proc.stdout, str) and proc.stdout.strip():
+        if proc.returncode == 0 and proc.stdout.strip():
             new_processes = parse_windows_process_csv(proc.stdout, limit=limit)
             if new_processes:
                 _PROCESS_CACHE["data"] = (now, new_processes)
