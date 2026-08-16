@@ -68,15 +68,8 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada, sea de carpetas o registro.
     
-    Usa resolución perezosa para el ejecutable: la validación de existencia en 
-    disco y chequeos de seguridad ocurren al acceder a la propiedad `executable`.
-    
-    Métodos internos:
-    - _is_valid_executable: Filtra extensiones y enlaces simbólicos.
-    - _sanitize_command: Limpia caracteres de control no imprimibles.
-    - _extract_quoted_path: Extrae rutas desde cadenas con comillas (uso típico de registro).
-    - _resolve_and_cache_path: Normaliza rutas y verifica existencia en disco (con caché).
-    - _resolve_path_from_command: Lógica de despacho según formato de comando.
+    Usa resolución perezosa: la validación física y de seguridad ocurre al 
+    acceder a la propiedad `executable`, almacenando el resultado en caché.
     """
     name: str
     command: str
@@ -85,20 +78,25 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la extensión del archivo es ejecutable y no es un enlace simbólico."""
+        """Verifica si la extensión es ejecutable y descarta enlaces simbólicos."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia la cadena de comando eliminando caracteres de control no imprimibles."""
+        """Elimina caracteres de control (ord < 32) de la cadena de comando."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae la ruta de un comando delimitado por comillas."""
+        """
+        Extrae una ruta de archivo contenida entre comillas.
+        
+        Valida que la cadena extraída no contenga caracteres prohibidos (<>|?*)
+        y que supere el chequeo de seguridad de rutas (`is_protected_path`).
+        """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -118,7 +116,12 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Normaliza, valida seguridad y verifica existencia física en disco."""
+        """
+        Normaliza, valida y verifica la existencia física de una ruta.
+        
+        Utiliza `_EXISTS_CACHE` para evitar llamadas redundantes a `Path.exists()`
+        y `Path.resolve()`. Si la ruta es protegida o un enlace, retorna vacío.
+        """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
@@ -155,7 +158,12 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Orquesta la extracción y validación de la ruta ejecutable."""
+        """
+        Despacha la lógica de resolución según el formato detectado en el comando.
+        
+        Prioriza la extracción de comillas; si no existen, asume que el primer
+        bloque de texto es la ruta ejecutable.
+        """
         if not cmd:
             return ""
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
@@ -172,7 +180,11 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Retorna la ruta absoluta del ejecutable tras ejecutar la resolución perezosa."""
+        """
+        Propiedad de acceso perezoso a la ruta absoluta del ejecutable.
+        
+        Ejecuta la resolución solo una vez por instancia.
+        """
         if self._checked_exists:
             return self._exec_cache or ""
             

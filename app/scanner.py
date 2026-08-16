@@ -62,7 +62,7 @@ class Scanner:
         self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """Valida que la ruta sea descendiente del directorio raíz de escaneo."""
+        """Verifica que la ruta resuelta esté contenida dentro del directorio base de escaneo."""
         try:
             resolved = entry_path.resolve()
             return self.base_root == resolved or self.base_root in resolved.parents
@@ -71,18 +71,20 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Verifica si un directorio es un punto de reanálisis (Junction/Symlink).
-        Se considera 'inseguro' seguir estos puntos para prevenir bucles.
+        Consulta los atributos de archivo mediante syscall para detectar puntos de reanálisis.
+        Evita seguir symlinks o junctions para prevenir bucles de recursión.
         """
         try:
+            # 0x400 es el bit de FILE_ATTRIBUTE_REPARSE_POINT en Windows
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
             return True 
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
-        Analiza una entrada: si es directorio, lo encola; si es archivo, ejecuta el pipeline de escaneo.
-        Gestiona la lógica de exclusión basada en safety.py antes del procesamiento.
+        Ejecuta el pipeline de filtrado y procesamiento para una entrada individual.
+        Si la entrada es directorio, la agrega al stack de recorrido; si es archivo,
+        ejecuta el análisis heurístico.
         """
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
@@ -90,6 +92,7 @@ class Scanner:
         try:
             target_path = Path(entry.path).resolve()
             
+            # Filtros de seguridad iniciales: symlinks, reparse points y directorios protegidos
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
 
@@ -121,12 +124,11 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Analiza si un ejecutable fue creado en carpetas de alta descarga recientemente.
-    Requiere acceso al objeto os.DirEntry para obtener metadatos de creación/modificación.
+    Se basa en st_mtime de los metadatos del sistema de archivos.
     """
     if not isinstance(entry, os.DirEntry):
         return None
     
-    # Normalización estricta de componentes de ruta para comparación segura
     path_parts = {p.lower() for p in path.parts}
     if WATCHED_FOLDERS.isdisjoint(path_parts):
         return None
@@ -143,7 +145,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable usa nombres protegidos del sistema fuera de su ubicación legítima (System32)."""
     if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        # Validación de ruta absoluta asegurando que System32 no sea parte de la ruta de una subcarpeta
         if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
@@ -151,14 +152,16 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Ejecuta el pipeline de reglas heurísticas sobre un archivo.
-    Separa reglas universales de aquellas exclusivas para ejecutables.
+    Pipeline principal para el análisis de un archivo único.
+    Ejecuta heurísticas generales y, si el archivo es un ejecutable, aplica reglas de contexto.
     """
     findings: ScanResult = []
     
+    # Reglas universales
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
+    # Reglas específicas para ejecutables sospechosos
     if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
         for check in heuristic_suite:
@@ -173,8 +176,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Inicializa y ejecuta el escaneo recursivo desde un directorio base.
-    Implementa el recorrido usando un stack para evitar errores de recursión profunda.
+    Inicia el escaneo recursivo mediante un stack.
+    Realiza validaciones de seguridad iniciales sobre la ruta origen antes de comenzar.
     """
     if not directory:
         return []

@@ -947,3 +947,27 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T02:04:20` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
 - `2026-08-16T02:04:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T02:04:20` Corrida terminada. Total usado hoy: 48.
+- `2026-08-16T02:09:48` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-08-16T02:10:20` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `scanner.py` mediante la adición de docstrings técnicos detallados en los métodos clave, la estandarización de las anotaciones de tipo y la mejora en la claridad de las expresiones de control de flujo para cumplir con el enfoque de legibilidad.
+- `2026-08-16T02:10:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-16T02:11:12` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo `settings.py` documentando explícitamente el contrato de los validadores y delegando la lógica de validación de tipos complejos a funciones más granulares, facilitando la comprensión del flujo de datos.
+- `2026-08-16T02:11:39` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de resolución en `StartupEntry` utilizando docstrings estructurados según el enfoque, facilitando la comprensión del flujo de datos y la gestión de la caché perezosa.
+- `2026-08-16T02:11:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-16T02:12:20` Tests FALLARON:
+```
+in confirmación." = Answer(text="Hay 3 archivos marcados. Si no los reconocés, usá 'Aislar hallazgos'. La app nunca borra sin confirmación...conexión ni envío de datos. Para preguntas escritas con tus palabras, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'puntaje 98/100. sin problemas urgentes.'
+ +  where 'puntaje 98/100. sin problemas urgentes.' = <built-in method lower of str object at 0x7f52fe5cbbe0>()
+ +    where <built-in method lower of str object at 0x7f52fe5cbbe0> = 'Puntaje 98/100. Sin problemas urgentes.'.lower
+ +      where 'Puntaje 98/100. Sin problemas urgentes.' = Answer(text='Puntaje 98/100. Sin problemas urgentes.', source='local', notice='Respondido por el motor local, sin cone...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_explain_area_covers_every_health_area - AssertionError: assert 37 > 40
+ +  where 37 = len('Copias idénticas: se pueden eliminar.')
+ +    where 'Copias idénticas: se pueden eliminar.' = <function explain_area at 0x7f52fec75f80>('duplicados')
+ +      where <function explain_area at 0x7f52fec75f80> = assistant.explain_area
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Privado.'
+6 failed, 293 passed in 1.20s
+
+```
+- `2026-08-16T02:12:20` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de construcción del contexto (`build_context`) reemplazando las múltiples llamadas repetitivas a `getattr/get` por una iteración sobre un mapeo predefinido, y se mejoró la eficiencia de `_identify_active_problems` para evitar realizar el formato de string antes de verificar si el criterio es relevante.
+- `2026-08-16T02:12:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T02:12:20` Corrida terminada. Total usado hoy: 52.

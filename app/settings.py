@@ -122,6 +122,7 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
 
 class _Validators:
     """Contiene lógica de validación estricta para asegurar que los datos no corrompan la app."""
+    
     @staticmethod
     @lru_cache(maxsize=32)
     def _is_safe_path(path_str: str) -> bool:
@@ -174,7 +175,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> str | None:
-        """Valida que los strings de configuración pertenezcan a los valores permitidos (whitelisting)."""
+        """Valida que los strings de configuración pertenezcan a los valores permitidos."""
         if key == ConfigKey.TEMA: return text.lower() if text.lower() in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return text.lower() if text.lower() in VALID_ACCENTS else None
         return text if len(text) <= 512 else None
@@ -219,7 +220,6 @@ def validate(raw_values: Any) -> AppSettings:
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     
-    # Filtramos solo las claves que existen en el Enum definido
     for key, validator in _VALIDATOR_MAP.items():
         if key.value in raw_values:
             try:
