@@ -239,7 +239,7 @@ def _load_internal(ruta_str: str) -> AppSettings:
     try:
         if not ruta.exists() or ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()):
             return _get_default_config()
-        if not os.access(ruta, os.R_OK) or not _Validators._is_safe_path(str(ruta.parent)):
+        if not os.access(ruta, os.R_OK) or not _Validators._is_safe_path(str(ruta.parent)) or is_protected_path(str(ruta)):
             return _get_default_config()
         
         content = ruta.read_bytes()
@@ -275,6 +275,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     if ruta.exists() and ruta.is_dir(): return None
+    # Verificación estricta: impedir escritura en rutas protegidas aunque vengan de custom_base
     if not _Validators._is_safe_path(str(ruta.parent)) or is_protected_path(str(ruta)): return None
     if not is_safe_to_modify(str(ruta)): return None
     if ruta.exists() and not os.access(ruta, os.W_OK): return None

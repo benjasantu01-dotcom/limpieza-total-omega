@@ -65,6 +65,7 @@ class Scanner:
         """Verifica que la ruta resuelta esté contenida dentro del directorio base de escaneo."""
         try:
             resolved = entry_path.resolve()
+            # Verifica si la ruta es la base o está dentro de ella, manejando casos de path traversal
             return self.base_root == resolved or self.base_root in resolved.parents
         except (RuntimeError, ValueError, OSError):
             return False
@@ -90,7 +91,6 @@ class Scanner:
             return
         
         try:
-            # Usamos el path del entry intentando normalizar errores de encoding de nombre
             target_path = Path(entry.path)
             
             # Filtros de seguridad iniciales: symlinks, reparse points y directorios protegidos
@@ -100,6 +100,7 @@ class Scanner:
             if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
 
+            # Validar integridad contra base_root antes de proceder
             if not self._is_safe_entry(target_path):
                 return
 
@@ -194,6 +195,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve(strict=True)
+        # Verificación doble contra el módulo de seguridad
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError) as e:

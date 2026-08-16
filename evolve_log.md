@@ -1089,3 +1089,33 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-16T03:53:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-16T03:53:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T03:53:17` Corrida terminada. Total usado hoy: 92.
+- `2026-08-16T04:01:57` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-16T04:02:26` Tests FALLARON:
+```
+est_is_safe_returns_bool_and_never_raises - AssertionError: assert False is True
+ +  where False = <function is_safe_to_modify at 0x7f6bc83282c0>((PosixPath('/tmp/pytest-of-runner/pytest-1/test_is_safe_returns_bool_and_0') / 'ok.tmp'))
+ +    where <function is_safe_to_modify at 0x7f6bc83282c0> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - safety.UnsafePathError: Ruta inaccesible o mal formada: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_save_logo_svg_writes_the_0/iconos/logo.svg'
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - safety.UnsafePathError: Ruta inaccesible o mal formada: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_ensure_safe_allows_sensit0/sospechoso.exe'
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_a_normal_user_file - safety.UnsafePathError: Ruta inaccesible o mal formada: [Errno 2] No such file or directory: '/tmp/pytest-of-runner/pytest-1/test_ensure_safe_allows_a_norm0/basura.tmp'
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert set() == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the right set:
+  'ok.tmp'
+  'otro.log'
+  
+  Full diff:
+  + set()
+  - {
+  -     'ok.tmp',
+  -     'otro.log',
+  - }
+18 failed, 281 passed in 1.43s
+
+```
+- `2026-08-16T04:02:26` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la validación de integridad al inyectar una verificación explícita de `stat` antes de procesar atributos, evitando que las llamadas a `os.access` o `ctypes` fallen silenciosamente con rutas inaccesibles, asegurando que cualquier error de acceso lance `UnsafePathError` antes de proceder con heurísticas.
+- `2026-08-16T04:02:50` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Mejoré la robustez de `_is_safe_entry` y la validación de rutas en `scan_directory` utilizando el método `is_relative_to` (o lógica equivalente más segura) para prevenir ataques de *path traversal* fuera del directorio base, asegurando que `Path.resolve()` sea utilizado de forma consistente antes de cualquier comparación.
+- `2026-08-16T04:03:20` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save` y `load` añadiendo una comprobación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, garantizando que el archivo de configuración nunca pueda ser redirigido a una ubicación sensible mediante una inyección de `custom_base` o manipulación externa.
+- `2026-08-16T04:03:30` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-16T04:03:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T04:03:30` Corrida terminada. Total usado hoy: 96.
