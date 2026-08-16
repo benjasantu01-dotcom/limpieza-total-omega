@@ -186,7 +186,6 @@ def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
         return None
         
     try:
-        # Limpiar comillas y espacios de los valores extraídos
         ws_raw = parts[-1].strip().strip("'\"")
         pid_raw = parts[-2].strip().strip("'\"")
         name = ",".join(parts[:-2]).strip().strip("'\"")
@@ -248,7 +247,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - timestamp < 5.0 and cached_list:
         return cached_list[:limit]
     
-    # Optimizamos la llamada evitando pipelines múltiples si es posible
     cmd = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} Name,Id,WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
