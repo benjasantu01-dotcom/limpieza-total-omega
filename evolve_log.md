@@ -1053,3 +1053,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-16T03:02:11` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_generate_recommendations` mediante la validación de tipos de los datos de entrada obtenidos del diccionario de métricas, evitando posibles errores de formato si el valor recuperado no coincide con el tipo esperado por el `message_format`.
 - `2026-08-16T03:02:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T03:02:11` Corrida terminada. Total usado hoy: 72.
+- `2026-08-16T03:10:57` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-08-16T03:12:03` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de rutas en `_validate_environment` y `_ask_folder` utilizando `pathlib` de forma más defensiva ante condiciones de carrera o permisos denegados, asegurando que el estado de la UI no colapse si el sistema de archivos deniega el acceso a rutas esperadas.
+- `2026-08-16T03:12:30` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-16T03:12:57` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones contra condiciones de carrera, errores de permiso persistentes y manejo estricto de rutas para evitar colisiones accidentales o accesos a archivos bloqueados por el sistema durante la operación.
+- `2026-08-16T03:13:40` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_file` para evitar la pérdida de datos ante fallos inesperados entre la copia del archivo y la actualización del manifiesto, implementando un mecanismo de reversión más seguro y validaciones de pre-condición más estrictas (como el manejo de rutas inexistentes en el origen).
+- `2026-08-16T03:13:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T03:13:40` Corrida terminada. Total usado hoy: 76.

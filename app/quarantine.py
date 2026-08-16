@@ -299,7 +299,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
     """Copia el archivo a cuarentena de forma atómica y verifica integridad post-copia."""
-    temp_dest = destination.parent / f"{destination.name}_{os.getpid()}.tmp"
+    temp_dest = destination.parent / f"{destination.name}_{uuid.uuid4().hex[:6]}.tmp"
     try:
         shutil.copy2(source, temp_dest)
         if temp_dest.stat().st_size != file_size:
@@ -308,7 +308,6 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         if not file_hash:
             raise RuntimeError("Falla de integridad: no se pudo calcular hash.")
         os.replace(temp_dest, destination)
-        os.remove(source)
         return file_hash
     except (OSError, PermissionError) as e:
         if temp_dest.exists(): _safe_unlink(temp_dest)
@@ -326,13 +325,12 @@ def quarantine_file(
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
-    try:
-        source_path = Path(source).expanduser().resolve()
-    except (OSError, RuntimeError) as e:
-        raise ValueError(f"Ruta de origen inválida: {e}")
-
+    source_path = Path(source).expanduser().resolve()
+    if not source_path.exists():
+        raise FileNotFoundError(f"El archivo origen no existe: {source_path}")
+    
     if not source_path.is_file():
-        raise FileNotFoundError(f"Archivo no encontrado o inválido: {source_path}")
+        raise UnsafePathError("Solo se aceptan archivos regulares.")
     
     if source_path.is_symlink():
         raise UnsafePathError("No se permite cuarentena de enlaces simbólicos.")
@@ -344,7 +342,6 @@ def quarantine_file(
         raise UnsafePathError("Operación prohibida: origen protegido.")
     
     dest_dir = quarantine_dir(base)
-    
     _validate_isolation_request(source_path, dest_dir)
     file_size = source_path.stat().st_size
     usage = shutil.disk_usage(dest_dir)
@@ -361,6 +358,12 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
+        # Solo eliminar origen si el archivo ya existe y fue validado en cuarentena
+        if destination.exists() and destination.stat().st_size == file_size:
+            os.remove(source_path)
+        else:
+            raise RuntimeError("Fallo en la confirmación de aislamiento.")
+            
         item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
@@ -376,9 +379,9 @@ def quarantine_file(
         return item
     except Exception as e:
         if destination.exists():
-            try: shutil.move(str(destination), str(source_path))
-            except Exception: pass
-        raise RuntimeError(f"Error al procesar el manifiesto: {e}")
+            try: os.remove(destination)
+            except OSError: pass
+        raise RuntimeError(f"Error al finalizar el aislamiento: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
@@ -408,7 +411,6 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise RuntimeError("Integridad comprometida: el archivo en cuarentena fue alterado.")
     
     destination = Path(match.original_path).resolve()
-    # Doble validación: el manifiesto podría ser malintencionado
     if is_protected_path(destination):
         raise UnsafePathError("Restauración denegada: destino protegido por sistema.")
     if destination.is_symlink() or (hasattr(destination, 'is_junction') and destination.is_junction()):

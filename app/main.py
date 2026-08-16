@@ -145,9 +145,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_environment(self) -> None:
         """Comprueba permisos de lectura en el home del usuario como requisito base."""
-        home = os.path.expanduser("~")
-        if not os.path.exists(home) or not os.access(home, os.R_OK):
-            raise OSError(f"Directorio de usuario inaccesible: {home}")
+        try:
+            home = Path.home()
+            if not home.exists() or not os.access(home, os.R_OK):
+                raise OSError(f"Directorio de usuario inaccesible: {home}")
+        except Exception as e:
+            raise OSError(f"Fallo al validar entorno: {e}")
 
     def _init_window_properties(self) -> None:
         """Aplica dimensiones, título y temas visuales definidos en branding.py."""
@@ -823,7 +826,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _set_busy(self, busy: bool) -> None:
         """Gestiona la visibilidad y estado de la barra de progreso."""
         def actualizar() -> None:
-            if self._closing or not hasattr(self, 'activity') or not self.activity.winfo_exists(): return
+            if self._closing or not hasattr(self, 'activity') or self.activity is None or not self.activity.winfo_exists(): return
             if busy:
                 self._tasks_running += 1
             else:
@@ -903,11 +906,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _ask_folder(self, title: str) -> Optional[str]:
         """Solicita selección de carpeta con filtros de seguridad anti-inyección."""
-        folder = filedialog.askdirectory(title=title)
-        if not folder or not isinstance(folder, str):
-            return None
-        
         try:
+            folder = filedialog.askdirectory(title=title)
+            if not folder:
+                return None
+            
             p = Path(folder).resolve(strict=True)
             # Validación de seguridad: debe ser un directorio y pasar el filtro de `safety`
             safety.ensure_safe_to_modify(p)
@@ -928,9 +931,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         dups = self._get_cached("dups") or []
 
         snapshot = memory_mod.read_snapshot()
-        home = os.path.expanduser("~")
+        home = Path.home()
         
-        disk_info = self._get_cached(f"disk_info_{home}", provider=lambda: diskreport.drive_usage(home) if os.path.exists(home) else None)
+        disk_info = self._get_cached(f"disk_info_{home}", provider=lambda: diskreport.drive_usage(home) if home.exists() else None)
         
         metrics = healthscore.SystemMetrics(
             junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),
@@ -1146,11 +1149,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_heuristic_scan(self) -> None:
         """Inicia escaneo heurístico en la carpeta de Descargas."""
-        downloads_path = os.path.expanduser("~/Downloads")
-        if not os.path.isdir(downloads_path):
+        downloads_path = Path.home() / "Downloads"
+        if not downloads_path.is_dir():
             self.log("No se encontró la carpeta de Descargas.", "Seguridad")
             return
-        self._run_heuristic_scan(downloads_path)
+        self._run_heuristic_scan(str(downloads_path))
 
     def on_heuristic_scan_folder(self) -> None:
         """Inicia escaneo heurístico en una carpeta seleccionada por el usuario."""
