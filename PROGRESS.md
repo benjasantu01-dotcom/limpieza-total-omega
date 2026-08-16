@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 22
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 26
-- Sin cambios (nada sustancial que mejorar): 14
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 145 | 16 | 16 | 8 | 143 |
-| 2026-08-16 | 83 | 6 | 10 | 6 | 71 |
+| 2026-08-15 | 143 | 15 | 16 | 8 | 142 |
+| 2026-08-16 | 85 | 6 | 10 | 7 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
+- robustez ante casos límite: **44**
 - rendimiento: **43**
-- robustez ante casos límite: **42**
-- seguridad defensiva: **41**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `settings.py`: **22**
-- `scanner.py`: **21**
 - `browser.py`: **21**
 - `assistant.py`: **20**
+- `healthscore.py`: **20**
 - `quarantine.py`: **20**
-- `healthscore.py`: **19**
-- `memory.py`: **17**
+- `scanner.py`: **20**
+- `memory.py`: **18**
 - `duplicates.py`: **16**
 - `organizer.py`: **16**
 - `main.py`: **11**
-- `safety.py`: **8**
 - `branding.py`: **8**
 - `startup.py`: **7**
+- `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T07:37:55` **memory.py** (robustez ante casos límite): Se mejora la robustez de `read_snapshot` y `top_memory_processes` añadiendo validaciones contra respuestas malformadas o inesperadas que podrían causar excepciones no controladas durante la ejecución.
+- `2026-08-16T07:36:30` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del sistema ante posibles fallos de integridad durante la ejecución, asegurando que `_validate_integrity` sea consultado en puntos críticos y protegiendo el cálculo de recomendaciones contra divisiones por cero o datos malformados en `SystemMetrics`.
 - `2026-08-16T07:27:17` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y las funciones auxiliares ante archivos inexistentes o bloqueados durante el escaneo, añadiendo una verificación robusta de `is_file()` antes de procesar el tamaño, evitando excepciones de `stat()` por archivos que desaparecen entre la iteración y el acceso (condición de carrera común en escaneos de disco).
 - `2026-08-16T07:26:50` **browser.py** (robustez ante casos límite): Reforcé la robustez de `_is_safe_path` y `_sum_directory_recursive` para manejar rutas excesivamente largas (superando el límite de 260 caracteres de Windows) y fallos en la resolución de nombres de archivo, utilizando el prefijo `\\?\` en rutas absolutas para asegurar que el escáner no aborte prematuramente en instalaciones de navegadores con estructuras de carpetas profundas.
 - `2026-08-16T07:26:25` **branding.py** (robustez ante casos límite): Se ha mejorado `save_logo_svg` para manejar de manera robusta la creación de directorios y la escritura de archivos en entornos con permisos restringidos o rutas inválidas, asegurando que la operación falle de forma limpia sin interrumpir la ejecución de la UI.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T06:47:35` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas intermedias y reduciendo la complejidad del bucle, además de ajustar la lógica de `_get_grouped_segments` para procesar segmentos con mayor eficiencia usando generadores/iteradores en lugar de múltiples asignaciones.
 - `2026-08-16T06:46:00` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` eliminando la creación y el recorrido de diccionarios/listas en cada llamada, reemplazándolos por un acceso directo y eficiente a los atributos, lo que reduce la carga de CPU y la asignación de memoria innecesaria.
 - `2026-08-16T06:36:18` **settings.py** (legibilidad y documentación): Documenté el propósito de `_Validators` y `_load_internal` con docstrings expandidos, y clarifiqué mediante Type Hints y nombres de argumentos en `_Validators` el rol de la clave de configuración durante la validación, mejorando la mantenibilidad sin alterar la lógica de ejecución.
-- `2026-08-16T06:35:50` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo mediante la adición de Type Hints en las definiciones de las funciones de chequeo y la estandarización del manejo de excepciones, eliminando bloques `except Exception: pass` que ocultaban errores de ejecución.
-- `2026-08-16T06:35:26` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructuradas en las funciones auxiliares de bajo nivel y la unificación de los criterios de validación, garantizando que cada componente de seguridad describa su propósito sin ambiguos tecnicismos.

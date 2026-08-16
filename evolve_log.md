@@ -1462,3 +1462,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T07:27:25` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-16T07:27:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T07:27:25` Corrida terminada. Total usado hoy: 176.
+- `2026-08-16T07:36:03` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-08-16T07:36:30` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez del sistema ante posibles fallos de integridad durante la ejecución, asegurando que `_validate_integrity` sea consultado en puntos críticos y protegiendo el cálculo de recomendaciones contra divisiones por cero o datos malformados en `SystemMetrics`.
+- `2026-08-16T07:37:28` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_target_choice_changed` para prevenir el uso de rutas que, aunque parezcan válidas, no son aptas para el escaneo (ej. rutas de red, junctions, o archivos sin permisos), utilizando `_is_safe_target_dir` y una comprobación de existencia `resolve(strict=True)` para cerrar la brecha entre la selección del usuario y el inicio del escaneo.
+- `2026-08-16T07:37:55` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejora la robustez de `read_snapshot` y `top_memory_processes` añadiendo validaciones contra respuestas malformadas o inesperadas que podrían causar excepciones no controladas durante la ejecución.
+- `2026-08-16T07:38:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-16T07:38:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T07:38:02` Corrida terminada. Total usado hoy: 180.

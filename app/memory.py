@@ -208,7 +208,11 @@ def _read_windows_snapshot() -> MemorySnapshot:
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
         return MemorySnapshot(total=0, available=0)
-    return MemorySnapshot(total=int(stat.ullTotalPhys), available=int(stat.ullAvailPhys))
+    
+    # Validar que los valores tengan sentido físico
+    total = int(stat.ullTotalPhys)
+    avail = int(stat.ullAvailPhys)
+    return MemorySnapshot(total=total, available=min(avail, total) if total > 0 else 0)
 
 
 def read_snapshot() -> MemorySnapshot:
@@ -245,7 +249,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     cmd = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} Name,Id,WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
-        if proc.returncode == 0 and proc.stdout.strip():
+        # Validar returncode y que el contenido no sea un error de PowerShell capturado como texto
+        if proc.returncode == 0 and proc.stdout and "Exception" not in proc.stdout:
             new_processes = parse_windows_process_csv(proc.stdout, limit=limit)
             if new_processes:
                 _PROCESS_CACHE["data"] = (now, new_processes)

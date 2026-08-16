@@ -201,7 +201,7 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[str, int]:
     """Distribuye los puntos totales del sistema entre las categorías definidas."""
     breakdown: Dict[str, int] = {}
     for area, factor in _WEIGHT_ITEMS:
-        val = ratios[area] * factor
+        val = ratios.get(area, 0.0) * factor
         breakdown[area] = int(round(_clamp(val, 0.0, factor))) if math.isfinite(val) else 0
     return breakdown
 
@@ -231,12 +231,12 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Punto de entrada: orquestación completa para la evaluación de salud del sistema."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
+    if not isinstance(metrics, SystemMetrics) or not _validate_integrity():
+        return HealthResult(0, "F", {}, ["Error: Sistema de evaluación inestable."])
     
     metrics.validate()
-    if not metrics.is_finite() or not _validate_integrity():
-        return HealthResult(0, "F", {}, ["Error: Datos o configuración inestables."])
+    if not metrics.is_finite():
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
 
     ratios: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
