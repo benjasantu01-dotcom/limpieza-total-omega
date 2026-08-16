@@ -238,7 +238,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             
                         target = Path(entry.path).resolve(strict=False)
                         
-                        # Seguridad: verificar que el target resuelto siga estando bajo base_path
+                        # Seguridad defensiva: verificar contención estricta bajo base_path
                         if base_path not in target.parents and target != base_path:
                             continue
 
@@ -264,7 +264,6 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
-    # Validar acceso inicial
     try:
         p = Path(directory).resolve(strict=False)
         if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
@@ -354,14 +353,6 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
     """
     Recolecta métricas estadísticas crudas del directorio en una única pasada.
-
-    Args:
-        directory: Path objeto del directorio base.
-        skip_protected: Flag para filtrar rutas protegidas del sistema.
-
-    Returns:
-        Tupla conteniendo (total_bytes, total_files, mapa_extensiones_bytes, 
-        mapa_extensiones_cuenta, heap_archivos_grandes).
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)

@@ -214,10 +214,13 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
             val = metrics_dict.get(rule.metric_attr)
             if val is not None:
                 try:
-                    # Validar tipo numérico antes de formatear para evitar errores de tipo
-                    if rule.expected_args > 0 and not isinstance(val, (int, float)):
-                        continue
-                    msg = rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format
+                    # Validar tipo numérico y existencia de argumentos antes de formatear
+                    if rule.expected_args > 0:
+                        if not isinstance(val, (int, float)):
+                            continue
+                        msg = rule.message_format.format(val)
+                    else:
+                        msg = rule.message_format
                     recommendations.append(msg)
                 except (ValueError, KeyError, IndexError, TypeError):
                     continue
