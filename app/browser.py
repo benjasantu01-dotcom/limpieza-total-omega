@@ -139,7 +139,8 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        attrs = kernel32.GetFileAttributesW(entry_path)
+        path_to_check = entry_path if not entry_path.startswith(r"\\?") else entry_path[4:]
+        attrs = kernel32.GetFileAttributesW(path_to_check)
         if attrs == 0xFFFFFFFF:
             return False
         return bool(attrs & 0x04 or attrs & 0x02)
@@ -174,8 +175,11 @@ def _sum_directory_recursive(
     Usa un diccionario 'memo' para evitar re-procesar subdirectorios ya visitados.
     """
     
+    # Manejo de rutas largas en Windows
+    safe_root = root_dir if not (os.name == 'nt' and not root_dir.startswith(r"\\?")) else r"\\?\\" + root_dir
+
     def _walk(current_dir: str, depth: int) -> int:
-        if depth > MAX_SCAN_DEPTH or len(current_dir) > 260 or is_protected_path(Path(current_dir)):
+        if depth > MAX_SCAN_DEPTH or is_protected_path(Path(current_dir)):
             return 0
         if current_dir in memo:
             return memo[current_dir]
@@ -199,7 +203,7 @@ def _sum_directory_recursive(
         memo[current_dir] = total
         return total
 
-    return _walk(root_dir, 0)
+    return _walk(safe_root, 0)
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:

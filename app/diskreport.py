@@ -252,7 +252,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
                                 stack.append(target)
-                        else:
+                        elif entry.is_file():
                             yield target, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
