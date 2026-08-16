@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 96 | 10 | 11 | 5 | 94 |
-| 2026-08-16 | 131 | 10 | 16 | 11 | 120 |
+| 2026-08-15 | 96 | 10 | 11 | 5 | 90 |
+| 2026-08-16 | 134 | 11 | 16 | 11 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **44**
+- robustez ante casos límite: **46**
 - rendimiento: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **22**
+- `assistant.py`: **21**
 - `diskreport.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **21**
-- `assistant.py`: **20**
 - `healthscore.py`: **20**
+- `scanner.py`: **20**
 - `browser.py`: **19**
 - `memory.py`: **19**
-- `scanner.py`: **19**
 - `organizer.py`: **18**
 - `duplicates.py`: **15**
 - `main.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T12:23:58` **assistant.py** (seguridad defensiva): Se fortaleció `_ensure_safe_text` y `_call_gemini` para prevenir inyecciones maliciosas mediante la normalización de rutas y la detección temprana de caracteres de escape ANSI/Unicode, asegurando que ninguna respuesta del motor remoto pueda contener rutas de sistema ni secuencias de control ocultas.
+- `2026-08-16T12:22:26` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante la concurrencia y fallos de escritura añadiendo una verificación previa de existencia del directorio y un manejo de excepciones más granular que evita dejar archivos temporales huérfanos o en estados inconsistentes en situaciones de bajo espacio en disco o bloqueos por sistemas de archivos.
+- `2026-08-16T12:21:58` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o con permisos restringidos durante la lectura de metadatos (stat) mediante un manejo defensivo de `OSError` en `check_recent_executable_in_downloads`, evitando que el escáner se interrumpa ante cambios volátiles en el sistema de archivos durante la iteración.
 - `2026-08-16T12:12:17` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita para evitar colisiones de tipo de archivo (solo procesa archivos regulares) y garantizando que las rutas procesadas sean relativas al directorio de cuarentena antes de cualquier operación, mitigando riesgos de manipulación de rutas externas al sandbox.
 - `2026-08-16T12:11:47` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `scan_for_junk` y `stage_for_review` añadiendo validaciones explícitas contra rutas inexistentes, accesibilidad de lectura y consistencia de tipos, previniendo excepciones no controladas al interactuar con el sistema de archivos.
 - `2026-08-16T12:04:47` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos en la función `_parse_csv_row` para prevenir fallos catastróficos ante entradas malformadas o inesperadas provenientes de PowerShell, asegurando la resiliencia del módulo ante datos corruptos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T11:42:06` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración reemplazando el chequeo costoso de `is_safe_to_modify` por una validación lógica más eficiente en `_load_internal`, reduciendo las llamadas innecesarias al sistema de archivos al priorizar la validación de estructura antes de verificar permisos de escritura.
 - `2026-08-16T11:31:56` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando la búsqueda lineal O(N*M) sobre la lista de ítems en una búsqueda O(1) mediante un diccionario (`set` de nombres validados), evitando iterar innecesariamente sobre el manifiesto para cada archivo en disco.
 - `2026-08-16T11:31:25` **organizer.py** (rendimiento): Optimizé el escaneo de directorios reemplazando el acceso repetido a `path.suffix` por una búsqueda eficiente en `_LOWER_JUNK_EXTS` y reduciendo las llamadas redundantes a `is_safe_to_modify` dentro del bucle anidado, además de evitar la conversión innecesaria a `Path` dentro de los bucles críticos.
-- `2026-08-16T11:31:01` **memory.py** (rendimiento): Se ha optimizado `top_memory_processes` reemplazando la ejecución de comandos PowerShell por una única llamada optimizada para evitar procesos de shell innecesarios y se ha mejorado la caché para prevenir lecturas redundantes del sistema.
-- `2026-08-16T11:21:46` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje convirtiendo el diccionario de `ratios` en un mapeo de acceso directo dentro de `compute_score` y eliminando la redundancia de iteraciones en la generación de recomendaciones mediante un diccionario de consulta rápida, reduciendo la complejidad algorítmica de O(N*M) a O(N).
-- `2026-08-16T11:21:20` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_refine_by_hash` eliminando la conversión innecesaria de la lista de rutas a un `list` temporal, lo cual evita iteraciones dobles y consumo extra de memoria durante el filtrado de candidatos.

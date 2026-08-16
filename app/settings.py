@@ -291,7 +291,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
     
     try:
-        ruta.parent.mkdir(parents=True, exist_ok=True)
+        if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
         with open(temp_ruta, "wb") as f:
             f.write(json_data)
             f.flush()

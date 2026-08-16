@@ -44,6 +44,7 @@ import urllib.error
 import urllib.request
 import re
 import math
+import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional, Union, TypedDict, NamedTuple
@@ -140,7 +141,7 @@ SYSTEM_PROMPT: Final[str] = (
 _ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0|[\u202e\u202d])")
-_CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f]")
+_CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f]")
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]+$")
 _API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]+$")
@@ -198,8 +199,8 @@ class Answer:
 
 def _ensure_safe_text(text: Any) -> bool:
     """
-    Verifica que el texto sea seguro: longitud máxima, sin caracteres de control
-    y, crucialmente, sin patrones que sugieran rutas o inyecciones de path.
+    Verifica la integridad del texto bloqueando inyecciones de ruta,
+    caracteres de control y normalizando el path si existiera accidentalmente.
     """
     if not isinstance(text, str) or not text:
         return False
@@ -207,7 +208,10 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if _CONTROL_CHARS_REGEX.search(text):
         return False
-    if is_protected_path(text) or _PATH_REGEX.search(text):
+    
+    # Normalización defensiva para detectar rutas disfrazadas
+    normalized = os.path.normpath(text)
+    if is_protected_path(normalized) or _PATH_REGEX.search(text):
         return False
     return True
 
@@ -502,8 +506,10 @@ def _call_gemini(
     
     safe_q = _sanitize_query(question)
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
-    # Defensa extra: validar explícitamente que ni la pregunta ni el contexto sean paths protegidos
-    if is_protected_path(safe_q) or is_protected_path(context_text): return None
+    
+    # Defensa extra: validar que ni la pregunta ni el contexto sean paths protegidos
+    if is_protected_path(os.path.normpath(safe_q)) or is_protected_path(os.path.normpath(context_text)): 
+        return None
     
     try:
         payload = json.dumps({

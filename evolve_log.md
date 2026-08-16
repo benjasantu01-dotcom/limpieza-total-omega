@@ -734,3 +734,35 @@ ERROR evolve/tests/test_modules.py - IndexError: tuple index out of range
 - `2026-08-16T12:12:47` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-16T12:12:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T12:12:47` Corrida terminada. Total usado hoy: 288.
+- `2026-08-16T12:21:32` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-16T12:21:58` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez ante archivos inexistentes o con permisos restringidos durante la lectura de metadatos (stat) mediante un manejo defensivo de `OSError` en `check_recent_executable_in_downloads`, evitando que el escáner se interrumpa ante cambios volátiles en el sistema de archivos durante la iteración.
+- `2026-08-16T12:22:26` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante la concurrencia y fallos de escritura añadiendo una verificación previa de existencia del directorio y un manejo de excepciones más granular que evita dejar archivos temporales huérfanos o en estados inconsistentes en situaciones de bajo espacio en disco o bloqueos por sistemas de archivos.
+- `2026-08-16T12:22:54` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.17s
+
+```
+- `2026-08-16T12:22:54` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez ante errores de permiso y rutas inexistentes en `_resolve_and_cache_path` añadiendo un bloque `try-except` más granular que evita el bloqueo total de la resolución si una ruta específica falla por acceso denegado u otros errores del sistema, garantizando que el resto de la app continúe funcionando.
+- `2026-08-16T12:23:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-16T12:23:58` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se fortaleció `_ensure_safe_text` y `_call_gemini` para prevenir inyecciones maliciosas mediante la normalización de rutas y la detección temprana de caracteres de escape ANSI/Unicode, asegurando que ninguna respuesta del motor remoto pueda contener rutas de sistema ni secuencias de control ocultas.
+- `2026-08-16T12:23:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T12:23:58` Corrida terminada. Total usado hoy: 292.

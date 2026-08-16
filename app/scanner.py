@@ -147,11 +147,13 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
+        # El acceso a stat puede fallar si el archivo fue eliminado o bloqueado durante el escaneo
         file_stat = entry.stat()
         if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, AttributeError, OverflowError, ValueError, TypeError) as e:
-        logger.debug(f"No se pudo leer metadatos de {path}: {e}")
+    except (OSError, AttributeError, OverflowError, ValueError, TypeError):
+        # Fallo silencioso ante acceso denegado o archivos temporales inexistentes
+        return None
     return None
 
 
