@@ -128,6 +128,7 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
+        """Retorna True si el puntaje indica un estado general aceptable."""
         return 80 <= self.score <= 100
 
 
@@ -153,34 +154,34 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio (0.0-1.0) de basura."""
+    """Calcula ratio (0.0-1.0) de basura basándose en el límite definido."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula ratio de seguridad."""
+    """Calcula el ratio de seguridad penalizando hallazgos y advertencias."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio de salud de memoria."""
+    """Calcula el ratio de salud de memoria comparado contra el límite RAM."""
     return (_clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) 
             if _LIMIT_RAM_PERCENT > 0 else 0.0)
 
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio de salud de disco."""
+    """Calcula el ratio de salud de disco comparado contra el límite definido."""
     return (_clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) 
             if _LIMIT_DISK_PERCENT > 0 else 0.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio de duplicados."""
+    """Calcula el ratio de salud según el volumen de archivos duplicados."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula ratio de programas de arranque."""
+    """Calcula el ratio de salud considerando la cantidad de programas en inicio."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 
@@ -192,6 +193,15 @@ def grade_for_score(score: float | int) -> str:
     if s >= 65: return "C"
     if s >= 50: return "D"
     return "F"
+
+
+def _calculate_breakdown(ratios: ScoreMap) -> Dict[str, int]:
+    """Calcula los puntos ponderados para cada área del sistema."""
+    breakdown: Dict[str, int] = {}
+    for area, factor in _WEIGHT_ITEMS:
+        val = ratios[area] * factor
+        breakdown[area] = int(round(_clamp(val, 0.0, factor))) if math.isfinite(val) else 0
+    return breakdown
 
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
@@ -216,7 +226,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Función principal de cálculo: optimizada para evitar duplicación de datos."""
+    """Función principal: procesa métricas, calcula desglose y genera recomendaciones."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
@@ -233,11 +243,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    breakdown: Dict[str, int] = {}
-    for area, factor in _WEIGHT_ITEMS:
-        val = ratios[area] * factor
-        breakdown[area] = int(round(_clamp(val, 0.0, factor))) if math.isfinite(val) else 0
-
+    breakdown = _calculate_breakdown(ratios)
     final_score = int(round(_clamp(float(sum(breakdown.values())), 0.0, 100.0)))
     recs = _generate_recommendations(metrics, ratios)
     

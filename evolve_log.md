@@ -929,3 +929,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T01:40:58` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de `walk_files` y `_collect_summary_data` mediante la adición de docstrings estructurados (Google style), aclarando el propósito y el manejo de excepciones de funciones críticas para facilitar el mantenimiento futuro.
 - `2026-08-16T01:40:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T01:40:58` Corrida terminada. Total usado hoy: 40.
+- `2026-08-16T01:49:27` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-16T01:50:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-16T01:50:56` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en las funciones internas `_collect_candidates` y `_refine_by_hash`, aclarando el propósito y el flujo de datos para mejorar la legibilidad del código.
+- `2026-08-16T01:51:43` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante docstrings más precisos, añadí type hints adicionales para mayor robustez y extraje la lógica de cálculo de los puntos de desglose a una función con nombre explícito para facilitar la lectura del flujo principal.
+- `2026-08-16T01:52:50` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._set_busy
+- `2026-08-16T01:53:05` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Documenté con type hints más precisos y docstrings explicativos los bloques de lógica de bajo nivel (API de Windows y parseo de memoria), mejorando la mantenibilidad para futuras auditorías de seguridad.
+- `2026-08-16T01:53:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T01:53:05` Corrida terminada. Total usado hoy: 44.

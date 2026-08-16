@@ -163,13 +163,17 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo capturando candidatos mediante os.scandir.
+    Realiza un recorrido recursivo en profundidad del sistema de archivos.
     
-    Usa el par (dev, ino) como clave para evitar procesar recursivamente el 
-    mismo inodo en sistemas de archivos con enlaces duros o puntos de montaje.
+    Args:
+        directories: Lista de carpetas base desde donde iniciar la búsqueda.
+        min_size: Tamaño mínimo (en bytes) para considerar un archivo candidato.
+        skip_protected: Si es True, ignora rutas que fallan las validaciones de seguridad.
+
+    Returns:
+        Diccionario agrupado por tamaño de archivo, conteniendo solo listas con >= 2 elementos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
-    # visited_inodes: (device_id, inode_id)
     visited_inodes: set[Tuple[int, int]] = set()
     
     def _scan(root_path: Path) -> None:
@@ -183,7 +187,6 @@ def _collect_candidates(
                         inode = (st.st_dev, st.st_ino)
                         if inode in visited_inodes: continue
                         
-                        # Ignorar puntos de reparse (0x400)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                         
                         if entry.is_dir():
@@ -210,8 +213,14 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Reduce un conjunto de archivos candidatos aplicando una función de hash.
-    Retorna solo grupos que contienen al menos dos archivos con el mismo digest.
+    Filtra candidatos agrupándolos según el resultado de una función de hash.
+    
+    Args:
+        paths: Lista de rutas de archivos candidatos.
+        hash_func: Función (ej. partial_hash o hash_file) para generar el digest.
+
+    Returns:
+        Diccionario mapeando el digest a la lista de archivos que comparten ese hash.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     if paths is None: return groups_by_digest
@@ -266,13 +275,11 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
 
-    # Estructura: (mtime, len_path, path)
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         if not isinstance(p, Path):
             continue
         try:
-            # Validar existencia y seguridad antes de procesar
             if not p.is_file() or is_protected_path(p) or not is_safe_to_modify(p):
                 continue
             stat_info = p.stat()

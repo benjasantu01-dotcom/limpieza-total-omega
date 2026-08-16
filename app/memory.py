@@ -67,6 +67,7 @@ TRIM_WARNING: str = (
 
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
+# Constantes para OpenProcess: requiere acceso de consulta y modificación (trimming)
 PROCESS_QUERY_LIMITED_INFORMATION: int = 0x1000
 PROCESS_SET_QUOTA: int = 0x0100
 SAFE_ACCESS_MASK: int = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -74,12 +75,13 @@ SAFE_ACCESS_MASK: int = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 STILL_ACTIVE_EXIT_CODE: int = 259
 ERROR_ACCESS_DENIED: int = 5
 
+# PIDs reservados: 0 (System Idle), 4 (System)
 SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
 
 _PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura de Windows (GlobalMemoryStatusEx) para reportar estado global."""
+    """Estructura de datos definida por la API de Win32 GlobalMemoryStatusEx."""
     _fields_: List[Tuple[str, ctypes._SimpleCData]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -129,7 +131,7 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Retorna el working set convertido a Megabytes."""
+        """Retorna el Working Set (RAM física residente) convertido a Megabytes."""
         return round(self.working_set / BYTES_IN_MB, 1)
 
 
@@ -144,7 +146,7 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(text: str) -> MemorySnapshot:
-    """Parsea la salida de /proc/meminfo extrayendo métricas clave."""
+    """Parsea la salida cruda de /proc/meminfo usando expresiones regulares."""
     if not text:
         return MemorySnapshot(0, 0)
     
@@ -195,7 +197,7 @@ def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Ejecuta API de Windows (GlobalMemoryStatusEx) para obtener estado de memoria global."""
+    """Ejecuta la API nativa de Windows (GlobalMemoryStatusEx) para obtener datos globales."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     kernel32 = getattr(ctypes.windll, "kernel32", None)
@@ -234,10 +236,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if now - cache_ref[0] < 5.0 and cache_ref[1]:
         return cache_ref[1][:limit]
     
+    # CMD adaptado para extraer métricas clave con formato CSV simple
     cmd = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} Name,Id,WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
-        # Validación: solo procesar si la salida es cadena no vacía
         if proc.returncode == 0 and isinstance(proc.stdout, str) and proc.stdout.strip():
             new_processes = parse_windows_process_csv(proc.stdout, limit=limit)
             if new_processes:
@@ -293,12 +295,13 @@ def _is_system_process(pid: int) -> bool:
 
 
 def _get_process_path(handle: int) -> Optional[str]:
-    """Obtiene la ruta completa del ejecutable asociado a un handle de proceso."""
+    """Obtiene la ruta completa del ejecutable asociado a un handle de proceso via API."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if kernel32 is None:
         return None
     buf = ctypes.create_unicode_buffer(4096)
     size = ctypes.c_ulong(4096)
+    # QueryFullProcessImageNameW es la forma recomendada en Windows moderno
     if hasattr(kernel32, "QueryFullProcessImageNameW") and kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
         return str(buf.value)
     return None
@@ -307,6 +310,8 @@ def _get_process_path(handle: int) -> Optional[str]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar el 'working set' de un proceso vía EmptyWorkingSet de Windows.
+    
+    Realiza validaciones de seguridad de ruta y privilegios antes de invocar la API.
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
@@ -324,6 +329,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if kernel32 is None or psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "Error de sistema: APIs de memoria no disponibles."
 
+    # Obtener handle con permisos mínimos necesarios
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
         return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
@@ -334,6 +340,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El proceso seleccionado ya no está activo."
             
         path = _get_process_path(proc_handle)
+        # Seguridad: verificar que no estemos intentando tocar procesos de sistema
         if not path or is_protected_path(os.path.normpath(path)):
             return False, "Operación denegada: ruta de ejecutable protegida o inválida."
             
