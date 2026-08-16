@@ -128,7 +128,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Analiza si un ejecutable fue creado en carpetas de alta descarga recientemente.
     Se basa en st_mtime de los metadatos del sistema de archivos.
     """
-    if not isinstance(entry, os.DirEntry):
+    if not isinstance(entry, os.DirEntry) or not path.exists():
         return None
     
     # Verifica pertenencia de la ruta en las carpetas vigiladas mediante intersección de sets (más rápido que iteración)

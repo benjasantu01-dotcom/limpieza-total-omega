@@ -143,15 +143,17 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """Verifica si el archivo está bloqueado abriéndolo de forma exclusiva."""
+    """Verifica si el archivo está bloqueado por el SO (error winerror 32 o similar)."""
     if not path.exists() or not path.is_file():
         return False
     try:
-        fd = os.open(path, os.O_RDWR | os.O_EXCL)
-        os.close(fd)
+        # Intentar abrir con permisos mínimos de solo lectura sin compartir acceso
+        handle = os.open(path, os.O_RDONLY | getattr(os, 'O_BINARY', 0))
+        os.close(handle)
         return False
     except OSError as e:
-        if hasattr(e, 'winerror') and e.winerror == 32:
+        # El error 32 en Windows (sharing violation) confirma el bloqueo
+        if getattr(e, 'winerror', 0) == 32 or getattr(e, 'errno', 0) == 13:
             return True
         return False
 

@@ -313,10 +313,10 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         os.replace(temp_dest, destination)
         return file_hash
     except (OSError, PermissionError) as e:
-        if temp_dest.exists(): _safe_unlink(temp_dest)
         raise RuntimeError(f"Error crítico durante el aislamiento: {e}")
     finally:
-        if temp_dest.exists(): _safe_unlink(temp_dest)
+        if temp_dest.exists():
+            _safe_unlink(temp_dest)
 
 
 def quarantine_file(
@@ -361,12 +361,10 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
-        # Validación post-copia: solo eliminar origen si el archivo aislado es íntegro
         if destination.exists() and destination.stat().st_size == file_size:
             try:
                 os.remove(source_path)
             except OSError as e:
-                # Si falla la eliminación, marcar el error pero mantener el archivo en cuarentena
                 raise RuntimeError(f"Archivo copiado a cuarentena pero error al borrar original: {e}")
         else:
             raise RuntimeError("Fallo en la confirmación de aislamiento.")
@@ -385,10 +383,8 @@ def quarantine_file(
         save_manifest(items, base)
         return item
     except Exception as e:
-        # Si falló algo, intentar limpiar el destino parcial para no dejar residuos huérfanos
         if destination.exists():
-            try: os.remove(destination)
-            except OSError: pass
+            _safe_unlink(destination)
         raise RuntimeError(f"Error al finalizar el aislamiento: {e}")
 
 

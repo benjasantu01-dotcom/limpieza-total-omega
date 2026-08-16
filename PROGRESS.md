@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 26
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 143 | 15 | 16 | 8 | 142 |
-| 2026-08-16 | 85 | 6 | 10 | 7 | 72 |
+| 2026-08-15 | 143 | 15 | 16 | 8 | 138 |
+| 2026-08-16 | 88 | 6 | 11 | 7 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **44**
+- robustez ante casos límite: **47**
 - rendimiento: **43**
 - seguridad defensiva: **39**
 
@@ -32,20 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **22**
 - `settings.py`: **22**
 - `browser.py`: **21**
+- `quarantine.py`: **21**
+- `scanner.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
-- `quarantine.py`: **20**
-- `scanner.py`: **20**
 - `memory.py`: **18**
 - `duplicates.py`: **16**
 - `organizer.py`: **16**
 - `main.py`: **11**
 - `branding.py`: **8**
+- `safety.py`: **8**
 - `startup.py`: **7**
-- `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T07:47:44` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante archivos inexistentes o inaccesibles mediante la adición de una comprobación de existencia `path.exists()` antes de realizar `entry.stat()` en las heurísticas, evitando excepciones innecesarias en archivos efímeros o en uso.
+- `2026-08-16T07:47:35` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` agregando un manejo explícito para archivos bloqueados por el sistema operativo, permitiendo identificar errores de bloqueo mediante una excepción más específica antes de intentar la apertura, y se añadió una validación de `st.st_size` dentro de `_check_file_integrity` para evitar tratar archivos corruptos o inexistentes con atributos bloqueados de manera ineficiente.
+- `2026-08-16T07:46:48` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` ante fallos en el sistema de archivos durante el proceso de aislamiento, implementando un bloque `try...finally` más estricto que asegura la limpieza de archivos temporales huérfanos incluso ante excepciones inesperadas (como interrupciones de E/S), evitando así la acumulación de basura en el directorio de cuarentena.
 - `2026-08-16T07:37:55` **memory.py** (robustez ante casos límite): Se mejora la robustez de `read_snapshot` y `top_memory_processes` añadiendo validaciones contra respuestas malformadas o inesperadas que podrían causar excepciones no controladas durante la ejecución.
 - `2026-08-16T07:36:30` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del sistema ante posibles fallos de integridad durante la ejecución, asegurando que `_validate_integrity` sea consultado en puntos críticos y protegiendo el cálculo de recomendaciones contra divisiones por cero o datos malformados en `SystemMetrics`.
 - `2026-08-16T07:27:17` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` y las funciones auxiliares ante archivos inexistentes o bloqueados durante el escaneo, añadiendo una verificación robusta de `is_file()` antes de procesar el tamaño, evitando excepciones de `stat()` por archivos que desaparecen entre la iteración y el acceso (condición de carrera común en escaneos de disco).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T06:55:46` **duplicates.py** (rendimiento): Optimizé `_refine_by_hash` mediante un filtrado previo de los grupos para evitar procesar listas unitarias que no pueden contener duplicados, reduciendo drásticamente las llamadas innecesarias a la función de hash en el pipeline principal.
 - `2026-08-16T06:48:30` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y mejorar la eficiencia del bucle principal, además de asegurar que las operaciones de recolección sean más rápidas al reducir la creación de objetos innecesarios durante el recorrido.
 - `2026-08-16T06:48:00` **browser.py** (rendimiento): Optimizé `_sum_directory_recursive` para evitar inicializaciones repetitivas de `k32` y `is_junction_fn` dentro de cada llamada, y mejoré la lógica de `directory_size` para inyectar estas dependencias de forma eficiente, reduciendo el overhead de llamadas al sistema.
-- `2026-08-16T06:47:35` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando la creación innecesaria de listas intermedias y reduciendo la complejidad del bucle, además de ajustar la lógica de `_get_grouped_segments` para procesar segmentos con mayor eficiencia usando generadores/iteradores en lugar de múltiples asignaciones.
-- `2026-08-16T06:46:00` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` eliminando la creación y el recorrido de diccionarios/listas en cada llamada, reemplazándolos por un acceso directo y eficiente a los atributos, lo que reduce la carga de CPU y la asignación de memoria innecesaria.
-- `2026-08-16T06:36:18` **settings.py** (legibilidad y documentación): Documenté el propósito de `_Validators` y `_load_internal` con docstrings expandidos, y clarifiqué mediante Type Hints y nombres de argumentos en `_Validators` el rol de la clave de configuración durante la validación, mejorando la mantenibilidad sin alterar la lógica de ejecución.
