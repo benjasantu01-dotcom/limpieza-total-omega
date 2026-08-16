@@ -202,14 +202,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Utiliza un enfoque de pila para la navegación iterativa para evitar desbordamientos
     de pila en estructuras profundas. Detecta ciclos mediante inodos (st_ino, st_dev) 
     y saltea enlaces simbólicos/junctions para garantizar la integridad y seguridad.
-
-    Args:
-        directory: Directorio raíz donde iniciar el recorrido.
-        skip_protected: Si es True, omite subárboles marcados como protegidos por `safety.py`.
-
-    Yields:
-        Tuplas (ruta_archivo, tamaño_bytes). Captura y descarta errores de acceso
-        (PermissionError) para permitir análisis parciales de unidades grandes.
     """
     if not directory:
         return
@@ -234,13 +226,16 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Identificar y saltar enlaces/puntos de reparse para seguridad
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
-                        target = Path(entry.path).resolve(strict=False)
+                        # Resolvemos la ruta completa para validar su ubicación real
+                        target = Path(entry.path).resolve()
                         
-                        # Seguridad defensiva: verificar contención estricta bajo base_path
-                        if base_path not in target.parents and target != base_path:
+                        # Seguridad defensiva: verificar que la ruta resuelta mantenga el prefijo de la base
+                        # Evita ataques de "path traversal" por enlaces simbólicos internos
+                        if not str(target).startswith(str(base_path)):
                             continue
 
                         if skip_protected and is_protected_path(target):

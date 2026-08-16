@@ -201,8 +201,10 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[str, int]:
     """Distribuye los puntos totales del sistema entre las categorías definidas."""
     breakdown: Dict[str, int] = {}
     for area, factor in _WEIGHT_ITEMS:
-        val = ratios.get(area, 0.0) * factor
-        breakdown[area] = int(round(_clamp(val, 0.0, factor))) if math.isfinite(val) else 0
+        # Aseguramos que el ratio obtenido sea un valor seguro y finito
+        ratio = _clamp(ratios.get(area, 0.0), 0.0, 1.0)
+        val = ratio * factor
+        breakdown[area] = int(round(val)) if math.isfinite(val) else 0
     return breakdown
 
 
@@ -211,7 +213,8 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     recommendations: List[str] = []
     
     for rule in _RECOMMENDATION_RULES:
-        if ratios.get(rule.area, 1.0) < rule.threshold:
+        # Validamos ratio antes de comparar para evitar comportamientos inesperados
+        if _clamp(ratios.get(rule.area, 1.0), 0.0, 1.0) < rule.threshold:
             val = getattr(metrics, rule.metric_attr, None)
             if val is not None and isinstance(val, (int, float)) and math.isfinite(float(val)):
                 try:

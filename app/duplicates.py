@@ -188,7 +188,7 @@ def _collect_candidates(
                             visited_inodes.add(inode)
                             _scan(Path(entry.path))
                         elif entry.is_file() and st.st_size >= min_size:
-                            path_obj = Path(entry.path)
+                            path_obj = Path(entry.path).resolve()
                             if skip_protected and not _is_safe_cached(path_obj):
                                 continue
                             visited_inodes.add(inode)

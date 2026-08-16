@@ -1517,3 +1517,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T07:58:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-08-16T07:58:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T07:58:11` Corrida terminada. Total usado hoy: 188.
+- `2026-08-16T08:06:38` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-16T08:07:05` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-16T08:07:32` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el recorrido de directorios añadiendo una validación explícita para evitar que `path.relative_to` o la resolución de rutas sigan puntos de reparse (reparse points) o enlaces que apunten fuera de la jerarquía permitida, utilizando `Path.resolve()` correctamente para detectar desviaciones de seguridad incluso en sistemas con enlaces complejos.
+- `2026-08-16T08:07:56` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` para validar la integridad de las rutas mediante `is_safe_to_modify` antes de agregarlas a los grupos, unificando el criterio de seguridad con el resto del módulo.
+- `2026-08-16T08:08:07` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación explícita de `ratios` en `_calculate_breakdown` y `_generate_recommendations` para asegurar que los valores sean siempre finitos y conformes al rango esperado (0.0-1.0), previniendo desbordamientos en el cálculo de puntajes ante métricas inyectadas.
+- `2026-08-16T08:08:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T08:08:07` Corrida terminada. Total usado hoy: 192.
