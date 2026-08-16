@@ -202,8 +202,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
             
             for name in files:
-                f_path = root_path / name
-                if f_path.suffix.lower() in _LOWER_JUNK_EXTS:
+                ext = Path(name).suffix.lower()
+                if ext in _LOWER_JUNK_EXTS:
+                    f_path = root_path / name
                     if is_safe_to_modify(f_path):
                         try:
                             s = f_path.stat()

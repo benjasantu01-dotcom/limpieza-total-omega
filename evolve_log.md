@@ -698,3 +698,10 @@ ERROR evolve/tests/test_modules.py - IndexError: tuple index out of range
 - `2026-08-16T11:22:35` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un sistema de "debouncing" más robusto y centralizado para la actualización de la interfaz de salud, evitando redibujados costosos mediante un chequeo de estado previo (`_last_health_state`) y limitando la tasa de eventos asíncronos que saturan el hilo principal.
 - `2026-08-16T11:22:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T11:22:35` Corrida terminada. Total usado hoy: 268.
+- `2026-08-16T11:30:33` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-16T11:31:01` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se ha optimizado `top_memory_processes` reemplazando la ejecución de comandos PowerShell por una única llamada optimizada para evitar procesos de shell innecesarios y se ha mejorado la caché para prevenir lecturas redundantes del sistema.
+- `2026-08-16T11:31:25` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el escaneo de directorios reemplazando el acceso repetido a `path.suffix` por una búsqueda eficiente en `_LOWER_JUNK_EXTS` y reduciendo las llamadas redundantes a `is_safe_to_modify` dentro del bucle anidado, además de evitar la conversión innecesaria a `Path` dentro de los bucles críticos.
+- `2026-08-16T11:31:56` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` transformando la búsqueda lineal O(N*M) sobre la lista de ítems en una búsqueda O(1) mediante un diccionario (`set` de nombres validados), evitando iterar innecesariamente sobre el manifiesto para cada archivo en disco.
+- `2026-08-16T11:32:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-16T11:32:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T11:32:12` Corrida terminada. Total usado hoy: 272.

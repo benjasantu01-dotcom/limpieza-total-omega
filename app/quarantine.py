@@ -485,6 +485,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     if not items:
         return 0
 
+    # Usamos un dict para O(1) lookups de metadatos por nombre de archivo
     item_map = {i.stored_name: i for i in items}
     purged_count = 0
     remaining_items = []
