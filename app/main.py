@@ -311,8 +311,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 constructor()
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
-                if name in self.tabs:
-                    self._create_styled_label(self.tabs[name], f"Error al cargar módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
+                # Uso de try-except defensivo para asegurar que un fallo no deje la pestaña vacía permanentemente
+                if name in self.tabs and self.tabs[name].winfo_exists():
+                    self._create_styled_label(self.tabs[name], f"Error interno al cargar módulo", "caption").pack(padx=20, pady=20)
 
     def _build_tabs_container(self) -> None:
         """Configura el widget tabview y delega la creación de contenido interno por cada pestaña."""
@@ -1363,6 +1364,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.analysis_folder = folder
 
         def task() -> None:
+            # Validar existencia de la ruta en el momento de la ejecución
+            if not Path(folder).exists():
+                self.log(f"Error: La carpeta {folder} ya no existe.", "Disco")
+                return
+
             try:
                 # Validar seguridad antes de procesar recursivamente
                 safety.ensure_safe_to_modify(Path(folder))
@@ -1371,7 +1377,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return
 
             if not self._is_valid_dir(folder):
-                self.log("Error: La carpeta seleccionada ya no existe.", "Disco")
+                self.log("Error: La carpeta seleccionada no es accesible.", "Disco")
                 return
             
             self.set_status(f"Analizando {folder}...")

@@ -220,7 +220,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     for rule in _RECOMMENDATION_RULES:
         if _clamp(ratios.get(rule.area, 1.0), 0.0, 1.0) < rule.threshold:
             val = getattr(metrics, rule.metric_attr, None)
-            if isinstance(val, (int, float)) and math.isfinite(float(val)):
+            if val is not None and isinstance(val, (int, float)) and math.isfinite(float(val)):
                 try:
                     recommendations.append(rule.message_format.format(val) if rule.expected_args > 0 else rule.message_format)
                 except (ValueError, IndexError, TypeError):

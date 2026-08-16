@@ -175,20 +175,24 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
 
 def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
     """Deserializa una línea CSV (Name,Id,WorkingSet) proveniente de PowerShell."""
+    if not isinstance(line, str):
+        return None
     line = line.strip()
     if not line:
         return None
     
     parts = line.split(",")
-    if len(parts) < 3 or parts[0].lower() == "name":
+    if len(parts) < 3 or parts[0].strip().lower() == "name":
         return None
         
     try:
-        ws = int(parts[-1].strip("'\""))
-        pid = int(parts[-2].strip("'\""))
-        name = ",".join(parts[:-2]).strip("'\"")
-        return ProcessMemory(name, pid, ws)
-    except (ValueError, TypeError):
+        # Limpiar comillas y espacios de los valores extraídos
+        ws_raw = parts[-1].strip().strip("'\"")
+        pid_raw = parts[-2].strip().strip("'\"")
+        name = ",".join(parts[:-2]).strip().strip("'\"")
+        
+        return ProcessMemory(name=name, pid=int(pid_raw), working_set=int(ws_raw))
+    except (ValueError, TypeError, IndexError):
         return None
 
 
