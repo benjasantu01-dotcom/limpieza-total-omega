@@ -560,3 +560,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-16T09:52:29` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de los datos de entrada en `build_context` y se encapsuló el acceso a atributos usando `getattr` con valores por defecto explícitos, evitando posibles excepciones `AttributeError` o valores de tipo incorrecto al procesar fuentes de datos externas.
 - `2026-08-16T09:52:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T09:52:29` Corrida terminada. Total usado hoy: 232.
+- `2026-08-16T09:58:57` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-16T09:59:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-16T09:59:53` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que los argumentos sean strings válidos antes de operar, previniendo errores de tipo en las llamadas a `os.scandir` y `ctypes`, además de asegurar que `root_dir` no sea una cadena vacía.
+- `2026-08-16T10:00:24` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-16T10:00:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-16T10:00:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T10:00:35` Corrida terminada. Total usado hoy: 236.

@@ -174,7 +174,9 @@ def _sum_directory_recursive(
     Calcula el peso total de un directorio de forma recursiva. 
     Usa un diccionario 'memo' para evitar re-procesar subdirectorios ya visitados.
     """
-    
+    if not root_dir or not isinstance(root_dir, str):
+        return 0
+
     # Manejo de rutas largas en Windows
     safe_root = root_dir if not (os.name == 'nt' and not root_dir.startswith(r"\\?")) else r"\\?\\" + root_dir
 
@@ -208,7 +210,7 @@ def _sum_directory_recursive(
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
     """Calcula el tamaño en bytes de una ruta tras validar su seguridad."""
-    if path is None:
+    if path is None or not isinstance(path, (str, Path)):
         return 0
     try:
         target = Path(path)
