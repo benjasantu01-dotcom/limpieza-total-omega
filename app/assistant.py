@@ -218,7 +218,7 @@ def _ensure_safe_text(text: Any) -> bool:
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
     """
     Asigna de forma robusta un valor a un atributo de SystemContext.
-    Valida tipos estrictamente para evitar inyección de datos no numéricos.
+    Valida tipos y finitud para evitar inyección de datos no numéricos o corruptos.
     """
     if val is None or isinstance(val, bool):
         return
@@ -241,7 +241,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
 def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> Any:
     """
     Intenta extraer un valor de una fuente (dict o clase) de forma defensiva,
-    garantizando que el resultado sea procesable numéricamente.
+    garantizando que el resultado sea procesable numéricamente y finito.
     """
     if source is None:
         return default

@@ -1030,3 +1030,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-16T14:17:48` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-16T14:17:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T14:17:49` Corrida terminada. Total usado hoy: 336.
+- `2026-08-16T14:23:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-16T14:24:30` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_safe_assign` y `_get_metric_val` añadiendo validaciones específicas para detectar valores `NaN` o `Inf` (mediante `math.isfinite`), evitando que datos corruptos de métricas inyecten valores numéricos inválidos en el estado del sistema.
+- `2026-08-16T14:25:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-16T14:25:27` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente la integridad de los parámetros en los puntos de entrada, asegurando que `os.scandir` no reciba rutas malformadas y evitando propagación de excepciones ante directorios inaccesibles.
+- `2026-08-16T14:25:41` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de entrada más granulares y capturando excepciones de forma específica, evitando que errores inesperados en el sistema de archivos (como estados intermitentes) interrumpan el análisis completo de manera silenciosa o abrupta.
+- `2026-08-16T14:25:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T14:25:41` Corrida terminada. Total usado hoy: 340.

@@ -164,7 +164,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
             
         usage = shutil.disk_usage(p)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, ValueError):
         return None
 
 
@@ -185,6 +185,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
                       if os.path.exists(f"{letter}:\\")]
         else:
             mounts = ["/"]
+    
     results: List[DriveUsage] = []
     if mounts:
         for mount in mounts:
@@ -198,24 +199,19 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre recursivamente un directorio para indexar archivos y tamaños.
-    
-    Implementación iterativa (stack-based) para evitar `RecursionError` en árboles profundos.
-    Aplica seguridad defensiva mediante `is_protected_path`, detección de inodos para 
-    evitar ciclos y validación estricta de rutas relativas para prevenir traversal attacks.
     """
     if not directory:
         return
 
-    base_path_str = str(Path(directory).resolve(strict=False))
-    if base_path_str.startswith(("\\\\", "//")):
-        return
-
     try:
-        base_path = Path(base_path_str)
+        base_path = Path(directory).resolve(strict=False)
+        if base_path.parts[0].startswith(("\\\\", "//")):
+            return
         if not base_path.exists() or not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
             return
+        base_path_str = str(base_path)
     except (OSError, RuntimeError, TypeError, ValueError):
         return
 
@@ -231,6 +227,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
+                        # Validar que seguimos dentro de la base
                         if not entry.path.startswith(base_path_str):
                             continue
 
@@ -260,7 +257,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
         p = Path(directory).resolve(strict=False)
         if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
             return []
-    except OSError:
+    except (OSError, RuntimeError):
         return []
 
     try:
@@ -282,7 +279,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
         p = Path(directory).resolve(strict=False)
         if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
             return []
-    except OSError:
+    except (OSError, RuntimeError):
         return []
     
     size_map: Dict[str, int] = defaultdict(int)
@@ -343,12 +340,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
-    """
-    Agrega métricas de uso de disco en una única iteración de archivos.
-    
-    Utiliza un min-heap para mantener el top-8 de archivos más grandes en O(n log k), 
-    optimizando el uso de memoria comparado con una ordenación completa de todos los archivos.
-    """
+    """Agrega métricas de uso de disco en una única iteración."""
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
@@ -388,7 +380,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             
         total_bytes, total_files, ext_sizes, ext_counts, top_files_heap = _collect_summary_data(p_input, skip_protected)
-    except (OSError, RuntimeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError, ValueError):
         return ["Error: Acceso denegado o error durante el análisis del disco."]
     except Exception:
         return ["Error: Fallo inesperado durante el análisis del disco."]

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 81 | 9 | 10 | 5 | 63 |
-| 2026-08-16 | 142 | 12 | 17 | 11 | 154 |
+| 2026-08-15 | 77 | 9 | 10 | 5 | 63 |
+| 2026-08-16 | 145 | 12 | 17 | 11 | 155 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
 - seguridad defensiva: **49**
 - robustez ante casos límite: **46**
+- legibilidad y documentación: **45**
 - rendimiento: **43**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `quarantine.py`: **20**
 - `scanner.py`: **20**
-- `memory.py`: **19**
-- `assistant.py`: **19**
-- `diskreport.py`: **19**
+- `assistant.py`: **20**
+- `diskreport.py`: **20**
+- `browser.py`: **19**
+- `quarantine.py`: **19**
 - `healthscore.py`: **19**
-- `browser.py`: **18**
-- `organizer.py`: **17**
+- `memory.py`: **18**
+- `organizer.py`: **16**
 - `duplicates.py`: **15**
-- `main.py`: **11**
+- `main.py`: **10**
 - `safety.py`: **9**
 - `branding.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-16T14:25:41` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de entrada más granulares y capturando excepciones de forma específica, evitando que errores inesperados en el sistema de archivos (como estados intermitentes) interrumpan el análisis completo de manera silenciosa o abrupta.
+- `2026-08-16T14:25:27` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente la integridad de los parámetros en los puntos de entrada, asegurando que `os.scandir` no reciba rutas malformadas y evitando propagación de excepciones ante directorios inaccesibles.
+- `2026-08-16T14:24:30` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_assign` y `_get_metric_val` añadiendo validaciones específicas para detectar valores `NaN` o `Inf` (mediante `math.isfinite`), evitando que datos corruptos de métricas inyecten valores numéricos inválidos en el estado del sistema.
 - `2026-08-16T13:02:53` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad en la carga de archivos al implementar `is_protected_path` como chequeo preventivo antes de procesar cualquier contenido, asegurando que ni siquiera se intente leer un archivo si su ruta es sospechosa de ser sistema, cumpliendo con la regla de capas defensivas.
 - `2026-08-16T12:53:36` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al asegurar que el manejo de rutas no sea vulnerable a excepciones de permisos o corrupción durante el acceso, utilizando `try-except` explícitos y validando que el objeto `Path` sea absoluto antes de cualquier comparación de padres.
 - `2026-08-16T12:43:56` **memory.py** (seguridad defensiva): Se ha endurecido la seguridad en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable del proceso objetivo antes de realizar cualquier manipulación, garantizando que no se apliquen acciones sobre procesos críticos incluso si se logran abrir sus handles.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T12:22:26` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante la concurrencia y fallos de escritura añadiendo una verificación previa de existencia del directorio y un manejo de excepciones más granular que evita dejar archivos temporales huérfanos o en estados inconsistentes en situaciones de bajo espacio en disco o bloqueos por sistemas de archivos.
 - `2026-08-16T12:21:58` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante archivos inexistentes o con permisos restringidos durante la lectura de metadatos (stat) mediante un manejo defensivo de `OSError` en `check_recent_executable_in_downloads`, evitando que el escáner se interrumpa ante cambios volátiles en el sistema de archivos durante la iteración.
 - `2026-08-16T12:12:17` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `purge_all` añadiendo una validación explícita para evitar colisiones de tipo de archivo (solo procesa archivos regulares) y garantizando que las rutas procesadas sean relativas al directorio de cuarentena antes de cualquier operación, mitigando riesgos de manipulación de rutas externas al sandbox.
-- `2026-08-16T12:11:47` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `scan_for_junk` y `stage_for_review` añadiendo validaciones explícitas contra rutas inexistentes, accesibilidad de lectura y consistencia de tipos, previniendo excepciones no controladas al interactuar con el sistema de archivos.
-- `2026-08-16T12:04:47` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos en la función `_parse_csv_row` para prevenir fallos catastróficos ante entradas malformadas o inesperadas provenientes de PowerShell, asegurando la resiliencia del módulo ante datos corruptos.
-- `2026-08-16T12:04:35` **main.py** (robustez ante casos límite): Se mejora la robustez ante rutas inexistentes o inaccesibles en `on_disk_analysis` y el constructor de pestañas, asegurando que el intento de acceso a rutas malformadas o eliminadas durante la ejecución no bloquee ni genere excepciones no controladas en el hilo principal.

@@ -213,7 +213,7 @@ def _sum_directory_recursive(
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
     """Valida la ruta de entrada y delega el cálculo recursivo a _sum_directory_recursive."""
-    if path is None or not isinstance(path, (str, Path)):
+    if path is None:
         return 0
     try:
         target = Path(path)
