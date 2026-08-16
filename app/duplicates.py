@@ -83,7 +83,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path)
-        # Validación estricta previa a cualquier acceso
         if is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
 
@@ -117,7 +116,6 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         file_path = Path(path)
-        # Validación estricta previa a cualquier acceso
         if is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
             
@@ -161,7 +159,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad del sistema de archivos.
-    Utiliza un set de inodos (dev, ino) para evitar ciclos y procesamiento redundante.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -175,29 +172,29 @@ def _collect_candidates(
     
     def _scan(root_path: Path) -> None:
         try:
-            with os.scandir(root_path) as it:
-                for entry in it:
-                    try:
-                        if entry.is_symlink(): continue
-                        
-                        st = entry.stat(follow_symlinks=False)
-                        inode = (st.st_dev, st.st_ino)
-                        if inode in visited_inodes: continue
-                        
-                        if getattr(st, 'st_file_attributes', 0) & 0x400: continue
-                        
-                        if entry.is_dir():
-                            visited_inodes.add(inode)
-                            _scan(Path(entry.path))
-                        elif entry.is_file() and st.st_size >= min_size:
-                            path_obj = Path(entry.path)
-                            if skip_protected and not _is_safe_cached(path_obj):
-                                continue
-                            visited_inodes.add(inode)
-                            temp_groups[st.st_size].append(path_obj.resolve())
-                    except (OSError, PermissionError): continue
+            for entry in os.scandir(root_path):
+                try:
+                    if entry.is_symlink(): continue
+                    
+                    st = entry.stat(follow_symlinks=False)
+                    inode = (st.st_dev, st.st_ino)
+                    if inode in visited_inodes: continue
+                    
+                    if getattr(st, 'st_file_attributes', 0) & 0x400: continue
+                    
+                    if entry.is_dir():
+                        visited_inodes.add(inode)
+                        _scan(Path(entry.path))
+                    elif entry.is_file() and st.st_size >= min_size:
+                        path_obj = Path(entry.path)
+                        if skip_protected and not _is_safe_cached(path_obj):
+                            continue
+                        visited_inodes.add(inode)
+                        temp_groups[st.st_size].append(path_obj.resolve())
+                except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
+    if directories is None: return {}
     for directory in directories:
         if directory:
             _scan(Path(directory).resolve())
@@ -211,7 +208,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Filtra candidatos agrupándolos según el resultado de una función de hash.
-    Retorna solo grupos que contienen al menos dos archivos colisionando.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     
@@ -250,6 +246,7 @@ def find_duplicates(
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma total de bytes redundantes en los grupos detectados."""
+    if not groups: return 0
     return sum(g.wasted_bytes for g in groups)
 
 
@@ -266,8 +263,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path) or is_protected_path(p) or not is_safe_to_modify(p):
             continue
         try:
-            if not p.is_file():
-                continue
             stat_info = p.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0))
             keepers.append((mtime, len(str(p)), p))

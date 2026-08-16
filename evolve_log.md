@@ -1037,3 +1037,11 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-16T14:25:41` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de entrada más granulares y capturando excepciones de forma específica, evitando que errores inesperados en el sistema de archivos (como estados intermitentes) interrumpan el análisis completo de manera silenciosa o abrupta.
 - `2026-08-16T14:25:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-16T14:25:41` Corrida terminada. Total usado hoy: 340.
+- `2026-08-16T14:34:02` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-16T14:34:27` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `_collect_candidates` mediante la validación proactiva de entradas (evitando `AttributeError` o `ValueError` si las rutas o el grupo son inválidos) y la centralización de chequeos de seguridad para prevenir fallos silenciosos durante la iteración.
+- `2026-08-16T14:34:57` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_generate_recommendations` mediante una validación estricta de los atributos de métricas y la inyección segura de argumentos, evitando posibles excepciones durante la generación del informe de salud.
+- `2026-08-16T14:35:57` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-16T14:36:18` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-08-16T14:36:31` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` validando la integridad del PID antes de operar y asegurando que las llamadas a la API de Windows manejen correctamente los errores de sistema sin colapsar, siguiendo el enfoque de validación de entradas y captura de excepciones específicas.
+- `2026-08-16T14:36:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-16T14:36:31` Corrida terminada. Total usado hoy: 344.

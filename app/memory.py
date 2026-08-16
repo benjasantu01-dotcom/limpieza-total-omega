@@ -311,8 +311,11 @@ def _get_process_path(handle: int) -> Optional[str]:
         return None
     buf = ctypes.create_unicode_buffer(4096)
     size = ctypes.c_ulong(4096)
-    if hasattr(kernel32, "QueryFullProcessImageNameW") and kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
-        return str(buf.value)
+    try:
+        if hasattr(kernel32, "QueryFullProcessImageNameW") and kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
+            return str(buf.value)
+    except (OSError, ctypes.ArgumentError):
+        return None
     return None
 
 
@@ -325,6 +328,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         target_pid = int(pid)
     except (ValueError, TypeError):
         return False, "El PID debe ser un número entero válido."
+    
+    if target_pid <= 0:
+        return False, "PID inválido: debe ser un número positivo."
     
     if _is_system_process(target_pid) or target_pid == os.getpid():
         return False, "Operación denegada: PID fuera de rango o protegido."
