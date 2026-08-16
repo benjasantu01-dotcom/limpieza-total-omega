@@ -167,14 +167,9 @@ def _check_file_integrity(p: Path) -> None:
     if len(p.parts) > 32:
         raise UnsafePathError("Ruta demasiado profunda.")
 
-    def _get_stat_safe(path: Path) -> os.stat_result | None:
-        try:
-            return path.stat()
-        except OSError:
-            return None
-
-    st = _get_stat_safe(p)
-    if st is None:
+    try:
+        st = p.stat()
+    except OSError:
         raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
 
     violation_checks: list[_IntegrityCheck] = [

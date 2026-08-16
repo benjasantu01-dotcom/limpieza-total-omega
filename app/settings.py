@@ -73,7 +73,7 @@ class AppSettings(TypedDict):
     analisis_en_paralelo: bool
     asistente_activado: bool
     asistente_clave_api: str
-    asistente_enviar_METRICAS: bool
+    asistente_enviar_metricas: bool
     asistente_modelo: str
 
 __all__ = [
@@ -245,7 +245,15 @@ def _load_internal(ruta_str: str) -> AppSettings:
         content = ruta.read_bytes()
         if not content or len(content) > MAX_SETTINGS_SIZE: return _get_default_config()
         data = json.loads(content)
-        return validate(data) if isinstance(data, dict) else _get_default_config()
+        
+        if not isinstance(data, dict): return _get_default_config()
+        validated = validate(data)
+        
+        # Integridad: asegurar que el dict tenga todas las llaves (en caso de versiones viejas)
+        for key in DEFAULTS:
+            if key not in validated:
+                validated[key] = DEFAULTS[key] # type: ignore
+        return validated
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         return _get_default_config()
 

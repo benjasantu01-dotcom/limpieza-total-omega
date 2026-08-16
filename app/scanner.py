@@ -90,7 +90,8 @@ class Scanner:
             return
         
         try:
-            target_path = Path(entry.path).resolve()
+            # Usamos el path del entry intentando normalizar errores de encoding de nombre
+            target_path = Path(entry.path)
             
             # Filtros de seguridad iniciales: symlinks, reparse points y directorios protegidos
             if entry.is_symlink() or self._is_reparse_point(entry):
@@ -110,14 +111,17 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
-        except (PermissionError, OSError, FileNotFoundError) as e:
-            logger.debug(f"Acceso denegado o error de sistema en {entry.path}: {e}")
+        except (PermissionError, OSError, FileNotFoundError, UnicodeDecodeError) as e:
+            logger.debug(f"Acceso denegado, error de sistema o codificación en {getattr(entry, 'path', 'unknown')}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica archivos que utilizan doble extensión para ocultar ejecutables sospechosos."""
-    if path.name and DOUBLE_EXTENSION_RE.search(path.name):
-        return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
+    try:
+        if path.name and DOUBLE_EXTENSION_RE.search(path.name):
+            return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
+    except Exception:
+        pass
     return None
 
 
@@ -144,9 +148,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable usa nombres protegidos del sistema fuera de su ubicación legítima (System32)."""
-    if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    try:
+        if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+            if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
+                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    except Exception:
+        pass
     return None
 
 
@@ -162,14 +169,17 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         findings.append(res)
     
     # Reglas específicas para ejecutables sospechosos
-    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-        heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
-        for check in heuristic_suite:
-            try:
-                if (res := check(path, entry, now_ts)):
-                    findings.append(res)
-            except Exception as e:
-                logger.debug(f"Fallo en regla {check.__name__} para {path}: {e}")
+    try:
+        if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+            heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
+            for check in heuristic_suite:
+                try:
+                    if (res := check(path, entry, now_ts)):
+                        findings.append(res)
+                except Exception as e:
+                    logger.debug(f"Fallo en regla {check.__name__} para {path}: {e}")
+    except (AttributeError, ValueError):
+        pass
                 
     return findings
 
