@@ -306,8 +306,8 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
-    """Copia protegida a cuarentena verificando hash post-escritura."""
-    temp_dest = destination.parent / f"{destination.name}_{uuid.uuid4().hex[:6]}.tmp"
+    """Copia protegida a cuarentena verificando hash post-escritura con nombre único para evitar colisiones."""
+    temp_dest = destination.parent / f".tmp_{uuid.uuid4().hex}"
     try:
         shutil.copy2(source, temp_dest)
         if temp_dest.stat().st_size != file_size:

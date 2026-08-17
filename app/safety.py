@@ -165,7 +165,8 @@ def _check_file_integrity(p: Path) -> None:
         raise UnsafePathError("Ruta demasiado profunda.")
 
     try:
-        st = p.stat()
+        # Usamos lstat para evitar seguir enlaces/reparse points durante la inspección
+        st = p.lstat()
     except OSError:
         raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
 

@@ -1272,3 +1272,11 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-17T01:38:57` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` y `delete_reviewed` para manejar errores de archivos ocupados y condiciones de carrera, añadiendo comprobaciones de integridad de rutas mediante `path.resolve()` antes de realizar operaciones de sistema de archivos, asegurando que no se acceda fuera de las rutas permitidas.
 - `2026-08-17T01:38:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T01:38:57` Corrida terminada. Total usado hoy: 40.
+- `2026-08-17T01:46:58` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-17T01:47:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-17T01:47:53` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de concurrencia y acceso mediante un sistema de bloqueo por nombre único (via `uuid`) para evitar colisiones en `quarantine_file` y asegurar que, ante caídas en el proceso de copia, no queden archivos parciales huérfanos o manifiestos corruptos en el sandbox.
+- `2026-08-17T01:48:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-17T01:48:51` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `p.lstat()` en lugar de `p.stat()` dentro de `_check_file_integrity` para evitar seguir enlaces simbólicos o puntos de reparse durante la inspección, mitigando riesgos de seguridad al analizar rutas externas y mejorando la robustez frente a ciclos de directorios.
+- `2026-08-17T01:49:00` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en `process_entry` y `scan_directory` manejando explícitamente errores de acceso (`OSError`, `PermissionError`) y rutas malformadas que pueden ocurrir durante el recorrido del disco.
+- `2026-08-17T01:49:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T01:49:00` Corrida terminada. Total usado hoy: 44.

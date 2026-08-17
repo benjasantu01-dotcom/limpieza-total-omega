@@ -65,7 +65,6 @@ class Scanner:
         """Verifica que la ruta resuelta esté contenida dentro del directorio base de escaneo."""
         try:
             resolved = entry_path.resolve()
-            # Validar que sea subdirectorio o el mismo mediante comparación de padres
             return self.base_root == resolved or self.base_root in resolved.parents
         except (OSError, RuntimeError):
             return False
@@ -86,7 +85,7 @@ class Scanner:
         Si la entrada es directorio, la agrega al stack de recorrido; si es archivo,
         ejecuta el análisis heurístico.
         """
-        if entry is None or not hasattr(entry, 'path') or not entry.path:
+        if entry is None or not entry.path:
             return
         
         try:
@@ -109,7 +108,7 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
-        except (PermissionError, OSError, FileNotFoundError, UnicodeDecodeError):
+        except (PermissionError, OSError, ValueError):
             pass
 
 
@@ -131,7 +130,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry):
         return None
     
-    # Comprobación de alta eficiencia mediante intersección de conjuntos
     if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
         return None
         
@@ -205,7 +203,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError, ValueError, RuntimeError):
+        except (PermissionError, OSError):
             continue
             
     return scanner.results
