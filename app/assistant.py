@@ -273,13 +273,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         "browser_cache_mb": (float, 0.0, float('inf')),
     }
     
-    if metrics is not None:
+    if isinstance(metrics, (dict, object)):
         for key, (cast, min_v, max_v) in validators.items():
             val = _get_metric_val(metrics, key, getattr(ctx, key))
             _safe_assign(ctx, key, val, cast, min_v, max_v)
         ctx.analyzed = True
 
-    if health is not None:
+    if isinstance(health, (dict, object)):
         raw_score = _get_metric_val(health, "score", None)
         if raw_score is not None: 
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
