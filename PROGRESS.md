@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 10 | 0 | 1 | 0 | 11 |
+| 2026-08-15 | 6 | 0 | 1 | 0 | 11 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 69 | 4 | 9 | 4 | 46 |
+| 2026-08-17 | 71 | 4 | 10 | 4 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- seguridad defensiva: **48**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **42**
+- rendimiento: **44**
 - robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
-- `browser.py`: **21**
+- `healthscore.py`: **22**
 - `memory.py`: **21**
-- `scanner.py`: **20**
+- `scanner.py`: **21**
 - `assistant.py`: **20**
+- `browser.py`: **20**
 - `quarantine.py`: **19**
 - `settings.py`: **18**
-- `diskreport.py`: **17**
-- `duplicates.py`: **17**
+- `diskreport.py`: **16**
+- `duplicates.py`: **16**
 - `organizer.py`: **15**
 - `branding.py`: **14**
 - `main.py`: **10**
+- `startup.py`: **8**
 - `safety.py`: **7**
-- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T05:42:53` **startup.py** (rendimiento): Optimizé `list_startup_entries` eliminando el uso de `yield from` en un generador intermedio, consolidando la lógica de recolección en una única pasada que aprovecha la pre-evaluación del registro, reduciendo el overhead de llamadas y mejorando la eficiencia de la memoria al procesar las colecciones de forma más plana.
+- `2026-08-17T05:42:16` **scanner.py** (rendimiento): Optimizé la regla `check_recent_executable_in_downloads` para verificar la existencia de carpetas vigiladas mediante una intersección de conjuntos (`isdisjoint`), evitando el costo de iterar y convertir cada parte de la ruta a minúsculas en cada llamada, y eliminé una llamada redundante a `path.exists()` dentro del bucle de escaneo.
 - `2026-08-17T05:32:41` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` convirtiendo la carga del manifiesto y la validación en operaciones más eficientes mediante el uso de diccionarios (set lookups) y evitando re-procesar iterativamente la lista completa en operaciones de borrado masivo.
 - `2026-08-17T05:31:47` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la llamada innecesaria a `_fetch_raw_process_data` cuando la lista de procesos es solicitada frecuentemente, implementando un mecanismo de expiración simple de 30 segundos sobre la caché `lru_cache` mediante el uso de un parámetro de tiempo o, en este caso, eliminando la sobrecarga innecesaria de serialización/deserialización mediante el uso de una lógica de filtrado más eficiente dentro del proceso de `parse_windows_process_csv`.
 - `2026-08-17T05:22:21` **healthscore.py** (rendimiento): Optimicé el rendimiento de `_calculate_breakdown` y `_generate_recommendations` eliminando la creación repetida de listas y el uso de `hasattr`/`getattr` dentro de los bucles, accediendo directamente a los atributos de las métricas mediante un mapeo pre-computado.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T05:02:39` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints precisos, docstrings detallados en las funciones de validación para clarificar el flujo de trabajo, y la optimización de la estructura de `scan_file` para mejorar la legibilidad y mantenibilidad de la suite de reglas heurísticas.
 - `2026-08-17T05:02:09` **safety.py** (legibilidad y documentación): Documenté con docstrings claros y tipado estricto las funciones de validación internas, mejorando la legibilidad técnica para auditorías futuras sin alterar el comportamiento de seguridad.
 - `2026-08-17T04:52:49` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings precisos en las funciones de manipulación de archivos para explicar los mecanismos de seguridad (integridad, atómica y aislamiento) que previenen la corrupción o manipulación no autorizada.
-- `2026-08-17T04:52:30` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `organizer.py` mediante la adición de docstrings estructurados (usando formato Google Style), normalización de type hints y la extracción de una función de validación de seguridad (`_is_safe_for_disk_op`) para desacoplar la lógica de integridad de las operaciones de movimiento, facilitando el mantenimiento y la auditoría.
-- `2026-08-17T04:52:03` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos, utilicé type hints más precisos y extraje la lógica de validación de procesos en `trim_working_set` hacia una función dedicada para mejorar la legibilidad.

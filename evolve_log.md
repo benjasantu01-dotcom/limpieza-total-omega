@@ -491,3 +491,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T05:32:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-08-17T05:32:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T05:32:45` Corrida terminada. Total usado hoy: 132.
+- `2026-08-17T05:41:26` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-17T05:41:53` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-17T05:42:16` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la regla `check_recent_executable_in_downloads` para verificar la existencia de carpetas vigiladas mediante una intersección de conjuntos (`isdisjoint`), evitando el costo de iterar y convertir cada parte de la ruta a minúsculas en cada llamada, y eliminé una llamada redundante a `path.exists()` dentro del bucle de escaneo.
+- `2026-08-17T05:42:42` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
+- `2026-08-17T05:42:53` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `list_startup_entries` eliminando el uso de `yield from` en un generador intermedio, consolidando la lógica de recolección en una única pasada que aprovecha la pre-evaluación del registro, reduciendo el overhead de llamadas y mejorando la eficiencia de la memoria al procesar las colecciones de forma más plana.
+- `2026-08-17T05:42:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T05:42:53` Corrida terminada. Total usado hoy: 136.

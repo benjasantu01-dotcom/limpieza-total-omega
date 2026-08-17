@@ -147,9 +147,6 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Ejecuta el pipeline de reglas heurísticas. Primero analiza el nombre (estático),
     luego, si es un ejecutable, aplica reglas que requieren acceso a metadatos.
     """
-    if not path or not path.exists():
-        return []
-
     findings: ScanResult = []
     
     # Regla 1: Análisis rápido de nombre
