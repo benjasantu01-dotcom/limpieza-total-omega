@@ -129,28 +129,26 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 
+def _is_recursive_violation(src: Path, dest: Path) -> bool:
+    """Comprueba si el destino está dentro de la jerarquía de origen para evitar bucles."""
+    return src == dest or src == dest.parent or dest in src.parents
+
+
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """
-    Verifica precondiciones de seguridad (existencia, jerarquía y permisos) 
-    para mover o eliminar un archivo, previniendo inyección de rutas.
-    """
+    """Verifica precondiciones de seguridad (existencia, jerarquía y permisos)."""
     try:
         if not src.exists() or not src.is_file():
             return False
         
-        # Resolvemos para evitar bypass mediante paths relativos o ..
-        src_abs = src.resolve()
-        dest_abs = dest.resolve()
+        src_abs, dest_abs = src.resolve(), dest.resolve()
         
-        # Evitar recursión o operaciones sobre sí mismo o sus contenedores
-        if src_abs == dest_abs or src_abs.parent == dest_abs or dest_abs in src_abs.parents:
+        if _is_recursive_violation(src_abs, dest_abs):
             return False
         
         # Bloqueos de sistema (atributo de archivo del sistema en Windows)
         if os.name == "nt" and (src_abs.stat().st_file_attributes & 0x06):
             return False
             
-        # El destino debe ser un directorio bajo control
         return is_safe_to_modify(src_abs) and is_safe_to_modify(dest_abs)
     except (OSError, RuntimeError, AttributeError):
         return False
@@ -158,14 +156,12 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Evalúa si es seguro mover un archivo basándose en permisos, bloqueos y ubicación."""
-    # Verificación de TOCTOU: re-resolución de ruta absoluta antes de comparar
     current_path = junk_file.path.resolve()
     dest_abs = dest.resolve()
     
     if not _is_safe_for_disk_op(current_path, dest_abs):
         return False
         
-    # Validar bloqueo y misma unidad (shutil.move suele fallar entre volúmenes)
     if _is_file_locked(current_path) or current_path.anchor != dest_abs.anchor:
         return False
         
@@ -189,7 +185,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                 dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
                 
                 for name in files:
-                    # Acceso rápido a la extensión
                     ext = Path(name).suffix.lower()
                     if ext in _LOWER_JUNK_EXTS:
                         f_path = root_path / name
@@ -235,20 +230,17 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for junk_file in files:
         try:
-            # Re-verificar existencia y tipo antes de cualquier operación
             if not junk_file.path.exists() or not junk_file.path.is_file():
                 continue
             
             if not _is_safe_to_move(junk_file, dest_base):
                 continue
             
-            # Verificación explícita de disponibilidad de espacio
             if shutil.disk_usage(dest_base).free <= junk_file.size_bytes:
                 continue
                 
             target = _generate_unique_target(dest_base / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
             
-            # Chequeo final de seguridad antes de la ejecución de movimiento
             ensure_safe_to_modify(junk_file.path)
             ensure_safe_to_modify(target)
             shutil.move(str(junk_file.path), str(target))
@@ -276,7 +268,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 continue
                 
             resolved_item = item.resolve()
-            # Confirmar que la ruta base coincide para evitar saltos accidentales
             if resolved_item.parent.resolve() == dest and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)
