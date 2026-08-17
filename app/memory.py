@@ -154,27 +154,24 @@ def format_bytes(num: Optional[int | float]) -> str:
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     """
-    Lógica pura para procesar el formato de /proc/meminfo en sistemas Unix.
-    Recibe el contenido crudo del archivo como parámetro para permitir pruebas unitarias.
+    Procesa /proc/meminfo. Recibe texto crudo para facilitar testing en CI.
     """
-    if not isinstance(meminfo_text, str) or not meminfo_text:
+    if not meminfo_text:
         return MemorySnapshot(0, 0)
     
     metrics: Dict[str, int] = {}
+    target_keys = {"MemTotal", "MemAvailable", "MemFree", "Cached"}
+    
     for line in meminfo_text.splitlines():
-        if match := re.match(r"^(\w+):\s+(\d+)", line):
-            key, value = match.groups()
-            metrics[key] = int(value) * 1024
+        parts = line.split(":")
+        if len(parts) == 2 and parts[0] in target_keys:
+            metrics[parts[0]] = int(parts[1].split()[0]) * 1024
     
     total = metrics.get("MemTotal", 0)
     available = metrics.get("MemAvailable", metrics.get("MemFree", 0))
     cached = metrics.get("Cached", 0)
     
-    return MemorySnapshot(
-        total=total,
-        available=max(0, min(available, total)),
-        cached=cached
-    )
+    return MemorySnapshot(total=total, available=min(available, total), cached=cached)
 
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
@@ -207,11 +204,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    processes = []
-    for line in raw_csv_text.splitlines():
-        if proc := _parse_csv_row(line):
-            processes.append(proc)
-            
+    processes = [proc for line in raw_csv_text.splitlines() if (proc := _parse_csv_row(line))]
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:max(0, limit)]
 
@@ -234,17 +227,13 @@ def read_snapshot() -> MemorySnapshot:
         try:
             return _read_windows_snapshot()
         except (AttributeError, OSError, ctypes.ArgumentError):
-            return MemorySnapshot(total=0, available=0)
+            return MemorySnapshot(0, 0)
     
-    meminfo_path: str = "/proc/meminfo"
-    if os.path.exists(meminfo_path):
-        try:
-            with open(meminfo_path, encoding="utf-8", errors="replace") as f:
-                content = f.read()
-                return parse_linux_meminfo(content) if content else MemorySnapshot(0, 0)
-        except (OSError, PermissionError):
-            return MemorySnapshot(total=0, available=0)
-    return MemorySnapshot(total=0, available=0)
+    try:
+        with open("/proc/meminfo", encoding="utf-8", errors="replace") as f:
+            return parse_linux_meminfo(f.read())
+    except (OSError, PermissionError):
+        return MemorySnapshot(0, 0)
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:

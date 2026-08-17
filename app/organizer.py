@@ -177,16 +177,18 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
         if not d: continue
         try:
             base = Path(d).expanduser().resolve()
+            # Validación única antes de entrar al loop
             if not base.exists() or not base.is_dir() or not is_safe_to_modify(base): 
                 continue
             
             for root, dirs, files in os.walk(base):
                 root_path = Path(root)
+                # Filtrado de subdirectorios
                 dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
                 
                 for name in files:
-                    ext = Path(name).suffix.lower()
-                    if ext in _LOWER_JUNK_EXTS:
+                    # Uso de suffix.lower() directo sin recrear el objeto Path innecesariamente
+                    if name.lower().endswith(tuple(_LOWER_JUNK_EXTS)):
                         f_path = root_path / name
                         if is_safe_to_modify(f_path):
                             try:
