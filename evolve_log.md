@@ -892,3 +892,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-17T10:07:53` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a disco mediante una caché de segundo nivel (`_CACHED_SETTINGS`) que evita la serialización/deserialización JSON y el cálculo de `mtime` en cada llamada a `load`, mejorando drásticamente el rendimiento en bucles de lectura frecuente.
 - `2026-08-17T10:07:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T10:07:53` Corrida terminada. Total usado hoy: 240.
+- `2026-08-17T10:16:43` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-17T10:17:11` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` mediante el uso de `itertools.chain` y una estructura `set` inicializada correctamente, evitando la concatenación de listas grandes en memoria y mejorando la eficiencia del filtrado de duplicados.
+- `2026-08-17T10:17:46` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` y `_safe_assign` ante valores `NaN` o infinitos de origen externo, garantizando que el `SystemContext` sea siempre numéricamente válido y evitando propagar estados corrompidos a los cálculos del asistente.
+- `2026-08-17T10:18:17` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-17T10:18:26` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-17T10:18:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T10:18:26` Corrida terminada. Total usado hoy: 244.

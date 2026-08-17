@@ -217,7 +217,7 @@ def _ensure_safe_text(text: Any) -> bool:
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
     """
     Asigna de forma robusta un valor a un atributo de SystemContext.
-    Valida tipos y finitud para evitar inyección de datos no numéricos o corruptos.
+    Valida tipos, finitud y NaN para evitar inyección de datos corruptos.
     """
     if val is None or isinstance(val, bool):
         return

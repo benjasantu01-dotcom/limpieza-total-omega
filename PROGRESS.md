@@ -9,31 +9,31 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 220
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 105 | 10 | 14 | 10 | 125 |
-| 2026-08-17 | 115 | 6 | 16 | 8 | 95 |
+| 2026-08-16 | 103 | 10 | 14 | 9 | 124 |
+| 2026-08-17 | 117 | 6 | 16 | 8 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- rendimiento: **44**
-- seguridad defensiva: **41**
+- rendimiento: **45**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
+- `assistant.py`: **22**
+- `healthscore.py`: **22**
 - `scanner.py`: **21**
-- `assistant.py`: **21**
-- `memory.py`: **20**
 - `quarantine.py`: **19**
+- `memory.py`: **19**
 - `settings.py`: **18**
 - `browser.py`: **18**
 - `duplicates.py`: **15**
@@ -41,11 +41,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **15**
 - `branding.py`: **12**
 - `main.py`: **9**
+- `startup.py`: **8**
 - `safety.py`: **7**
-- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T10:17:46` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` y `_safe_assign` ante valores `NaN` o infinitos de origen externo, garantizando que el `SystemContext` sea siempre numéricamente válido y evitando propagar estados corrompidos a los cálculos del asistente.
+- `2026-08-17T10:17:11` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` mediante el uso de `itertools.chain` y una estructura `set` inicializada correctamente, evitando la concatenación de listas grandes en memoria y mejorando la eficiencia del filtrado de duplicados.
 - `2026-08-17T10:07:53` **settings.py** (rendimiento): Se optimizó el acceso a disco mediante una caché de segundo nivel (`_CACHED_SETTINGS`) que evita la serialización/deserialización JSON y el cálculo de `mtime` en cada llamada a `load`, mejorando drásticamente el rendimiento en bucles de lectura frecuente.
 - `2026-08-17T10:07:42` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la lógica de búsqueda en listas por `frozenset` en las funciones `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando iteraciones innecesarias y conversiones de tipos dentro de los bucles de escaneo.
 - `2026-08-17T10:07:18` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` y `ensure_safe_to_modify` reemplazando llamadas redundantes a `Path.parts` y operaciones costosas de sistema por verificaciones de prefijo optimizadas y lógica de corto circuito, reduciendo drásticamente la carga en escaneos masivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T09:36:21` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `settings.py` mediante la inclusión de type hints precisos, la estandarización de docstrings siguiendo las convenciones de Google, y la clarificación de las responsabilidades de los validadores para asegurar que el comportamiento de "fallo seguro" sea evidente para futuros desarrolladores.
 - `2026-08-17T09:27:08` **scanner.py** (legibilidad y documentación): Se introdujo un `TypeAlias` para `ScanResult` y se mejoró la claridad de los `docstrings` en las funciones de análisis, especificando el contrato de los parámetros para facilitar el mantenimiento y la extensibilidad del motor heurístico.
 - `2026-08-17T09:27:00` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de `ensure_safe_to_modify` y se han añadido comentarios de bloque críticos para explicar la arquitectura de validación de `_check_file_integrity`, aclarando el propósito y el orden lógico de las protecciones frente a riesgos del sistema de archivos.
-- `2026-08-17T09:26:14` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en parámetros complejos y docstrings enriquecidos, clarificando las precondiciones de seguridad y el flujo de los métodos de gestión de manifiestos.
-- `2026-08-17T09:17:30` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en colecciones), se refinó la documentación (docstrings) para aclarar las precondiciones de seguridad y se eliminó la redundancia en `JunkFile.__post_init__` para mejorar la legibilidad y mantenibilidad del flujo de datos.

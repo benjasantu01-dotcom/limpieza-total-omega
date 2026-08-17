@@ -20,6 +20,7 @@ import os
 import subprocess
 import csv
 import io
+import itertools
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
@@ -320,9 +321,8 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    sources: List[StartupEntry] = entries_from_folders() + entries_from_registry()
-
-    for entry in sources:
+    # Uso de itertools.chain para iterar sin crear listas intermedias innecesarias
+    for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
         name_n: str = entry.name.lower()
         if name_n not in seen_names:
             seen_names.add(name_n)
