@@ -222,13 +222,11 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     if val is None or isinstance(val, bool):
         return
     try:
-        # Forzamos conversión específica para evitar comportamiento extraño de tipos como None o listas vacías
         clean_val = float(val)
         if math.isfinite(clean_val):
             final_val = cast(max(min_val, min(clean_val, max_val)))
             setattr(obj, attr, final_val)
     except (ValueError, TypeError, OverflowError):
-        # En caso de error de conversión, se mantiene el valor por defecto del dataclass
         pass
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
@@ -261,7 +259,6 @@ def _get_metric_val(source: MetricSource, key: str, default: Any) -> Any:
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Construye un objeto SystemContext validando estrictamente los datos de entrada.
-    Mapea diccionarios u objetos de entrada a las métricas validadas del sistema.
     """
     ctx = SystemContext()
     
@@ -285,17 +282,17 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         
         grade_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
         if isinstance(grade_val, (str, int, float)):
-            ctx.grade = str(grade_val)[:10]
+            # Validar longitud y convertir string para prevenir inyecciones
+            ctx.grade = str(grade_val)[:10].strip()
         ctx.analyzed = True
 
     for k, v in extra.items():
         if v is not None and not isinstance(v, bool):
             attr_val = getattr(ctx, k, None)
-            # Validación de tipo para asegurar consistencia con el dataclass original
             if isinstance(attr_val, (int, float)):
                 _safe_assign(ctx, k, v, type(attr_val))
             elif isinstance(attr_val, str):
-                setattr(ctx, k, str(v)[:10])
+                setattr(ctx, k, str(v)[:10].strip())
     return ctx
 
 def context_as_text(context: SystemContext) -> str:

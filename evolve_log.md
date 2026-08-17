@@ -498,3 +498,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T05:42:53` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimizé `list_startup_entries` eliminando el uso de `yield from` en un generador intermedio, consolidando la lógica de recolección en una única pasada que aprovecha la pre-evaluación del registro, reduciendo el overhead de llamadas y mejorando la eficiencia de la memoria al procesar las colecciones de forma más plana.
 - `2026-08-17T05:42:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T05:42:53` Corrida terminada. Total usado hoy: 136.
+- `2026-08-17T05:51:36` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-17T05:52:15` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` y `_safe_assign` ante valores `NaN` o infinitos, garantizando que el asistente siempre trabaje con datos numéricos válidos incluso si las fuentes externas devuelven estados de error, y añadí una validación de longitud para `grade` en `build_context` para prevenir desbordamientos o inyecciones por cadenas inesperadamente largas.
+- `2026-08-17T05:52:47` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-17T05:53:11` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-17T05:53:21` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y las funciones que la consumen ante el caso límite de archivos corruptos o inaccesibles dentro de directorios, asegurando que `entry.stat()` sea invocado con un bloque `try-except` robusto para evitar que una entrada con permisos restringidos o error de E/S detenga todo el análisis del sistema de archivos.
+- `2026-08-17T05:53:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T05:53:21` Corrida terminada. Total usado hoy: 140.

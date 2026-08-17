@@ -196,7 +196,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
     try:
         base_path = Path(directory).resolve(strict=False)
-        base_str = str(base_path)
         if base_path.parts[0].startswith(("\\\\", "//")):
             return
         if not base_path.exists() or not base_path.is_dir():
@@ -299,10 +298,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         sums: Dict[Path, int] = defaultdict(int)
         counts: Dict[Path, int] = defaultdict(int)
         
-        base_str = str(base)
         for path, size in walk_files(base, skip_protected):
             try:
-                # Evitar relative_to que es costoso, buscar nivel inmediato
                 parts = path.parts[len(base.parts):]
                 if not parts:
                     continue
