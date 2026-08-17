@@ -157,6 +157,11 @@ def _is_file_in_use(path: Path) -> bool:
 def _check_file_integrity(p: Path) -> None:
     """
     Realiza una batería de verificaciones de integridad antes de modificar archivos.
+    
+    El proceso sigue un orden descendente de riesgo: primero se validan capacidades
+    de acceso (OS), luego estructuras de red/enlace (reparse points) y finalmente
+    estado lógico del archivo (ADS, in-use, flags).
+    
     Lanza UnsafePathError ante el primer criterio de riesgo detectado.
     """
     if not p.exists():
@@ -294,7 +299,15 @@ def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """Valida la integridad y seguridad de la ruta antes de realizar cambios persistentes."""
+    """
+    Valida la integridad y seguridad de la ruta antes de realizar cambios persistentes.
+    
+    Esta función es el punto único de entrada para toda operación de escritura.
+    Verifica secuencialmente: normalización de ruta, límites del directorio de trabajo,
+    existencia física y finalmente la integridad del archivo mediante _check_file_integrity.
+    
+    Retorna el objeto Path normalizado o lanza UnsafePathError.
+    """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
 

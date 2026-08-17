@@ -35,8 +35,13 @@ class Suspicion:
     severity: str
 
 # Alias de tipo para las funciones de inspección heurística.
-# Argumentos: (Ruta, Objeto DirEntry si está disponible para evitar syscalls, timestamp actual).
+# Argumentos: 
+#   path: Ruta completa del archivo.
+#   entry: Objeto DirEntry opcional para aprovechar datos de stat previos.
+#   now_ts: Timestamp actual (epoch) para comparar antiguedad.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
+
+# Alias para representar una colección de hallazgos.
 ScanResult: TypeAlias = List[Suspicion]
 
 # Expresiones regulares y constantes de configuración

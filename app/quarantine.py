@@ -28,7 +28,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
 from functools import lru_cache
-from typing import List, Union, Dict, Tuple, Optional, Any, TypeGuard
+from typing import List, Union, Dict, Any, TypeGuard
 
 from safety import (
     UnsafePathError,
@@ -36,7 +36,6 @@ from safety import (
     is_safe_to_modify,
     is_protected_path,
     is_within_directory,
-    normalize,
 )
 
 __all__ = [
@@ -245,7 +244,6 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if _is_valid_quarantine_path(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     
-    # Verificación estricta de partición (impedir saltos entre unidades/dispositivos)
     if resolved_source.drive.lower() != dest_dir.drive.lower():
         raise UnsafePathError("Operación prohibida: origen y destino en dispositivos diferentes.")
 
@@ -416,7 +414,6 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem inválido o vacío.")
     
     items = load_manifest(base)
-    # Optimización: acceso directo por ID en lugar de búsqueda lineal
     item_lookup = {i.item_id: i for i in items}
     match = item_lookup.get(item_id)
     
@@ -503,7 +500,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
-        # Solo procesamos si el archivo está en el manifiesto
         if entry.name in item_map:
             item = item_map[entry.name]
             resolved_path = entry.resolve()
