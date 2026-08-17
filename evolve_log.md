@@ -527,3 +527,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T06:23:55` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` añadiendo un filtro de longitud y contenido para el JSON de la respuesta antes de procesarla, asegurando que si la IA intenta retornar un payload malicioso, este sea descartado antes de entrar al sistema.
 - `2026-08-17T06:23:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T06:23:55` Corrida terminada. Total usado hoy: 152.
+- `2026-08-17T06:32:25` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-08-17T06:32:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-17T06:33:27` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_safe_path` integrando `os.path.abspath` antes de la comparación de rutas para asegurar que la validación de `relative_to` sea efectiva incluso en entornos con rutas relativas, previniendo posibles errores de `ValueError` y garantizando que el chequeo de "subdirectorio" sea estricto.
+- `2026-08-17T06:34:05` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-08-17T06:34:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-17T06:34:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T06:34:21` Corrida terminada. Total usado hoy: 156.

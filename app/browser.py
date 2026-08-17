@@ -108,8 +108,8 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         return False
         
     try:
-        real_base = Path(os.path.realpath(str(base_path)))
-        real_target = Path(os.path.realpath(str(target_path)))
+        real_base = Path(os.path.abspath(os.path.realpath(str(base_path))))
+        real_target = Path(os.path.abspath(os.path.realpath(str(target_path))))
         
         # Bloqueo explícito de rutas protegidas a nivel de sistema antes de operar
         if is_protected_path(real_target) or is_protected_path(real_base):

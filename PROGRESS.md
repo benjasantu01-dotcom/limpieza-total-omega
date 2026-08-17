@@ -6,19 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 0 | 0 | 0 | 0 | 2 |
-| 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 79 | 4 | 11 | 5 | 53 |
+| 2026-08-16 | 150 | 13 | 19 | 12 | 154 |
+| 2026-08-17 | 80 | 4 | 11 | 5 | 56 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,14 +25,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **49**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **44**
-- seguridad defensiva: **39**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
 - `assistant.py`: **22**
+- `browser.py`: **21**
 - `scanner.py`: **21**
-- `browser.py`: **20**
 - `memory.py`: **20**
 - `quarantine.py`: **19**
 - `settings.py`: **18**
@@ -47,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T06:33:27` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_path` integrando `os.path.abspath` antes de la comparación de rutas para asegurar que la validación de `relative_to` sea efectiva incluso en entornos con rutas relativas, previniendo posibles errores de `ValueError` y garantizando que el chequeo de "subdirectorio" sea estricto.
 - `2026-08-17T06:23:55` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` añadiendo un filtro de longitud y contenido para el JSON de la respuesta antes de procesarla, asegurando que si la IA intenta retornar un payload malicioso, este sea descartado antes de entrar al sistema.
 - `2026-08-17T06:23:08` **settings.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores durante la serialización del JSON en `save()`, capturando explícitamente posibles fallos en el volcado de datos o escritura en disco para evitar que la aplicación quede en un estado inconsistente ante problemas de permisos o espacio en disco.
 - `2026-08-17T06:22:38` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una validación explícita mediante `is_file()` y `is_dir()` antes de realizar operaciones de acceso, evitando capturar excepciones innecesarias en el flujo normal y fortaleciendo la resiliencia del escáner frente a errores de E/S comunes en sistemas de archivos.
@@ -61,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T05:31:47` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la llamada innecesaria a `_fetch_raw_process_data` cuando la lista de procesos es solicitada frecuentemente, implementando un mecanismo de expiración simple de 30 segundos sobre la caché `lru_cache` mediante el uso de un parámetro de tiempo o, en este caso, eliminando la sobrecarga innecesaria de serialización/deserialización mediante el uso de una lógica de filtrado más eficiente dentro del proceso de `parse_windows_process_csv`.
 - `2026-08-17T05:22:21` **healthscore.py** (rendimiento): Optimicé el rendimiento de `_calculate_breakdown` y `_generate_recommendations` eliminando la creación repetida de listas y el uso de `hasattr`/`getattr` dentro de los bucles, accediendo directamente a los atributos de las métricas mediante un mapeo pre-computado.
 - `2026-08-17T05:21:56` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar redundancia mediante la resolución de rutas (`resolve()`) desde la etapa inicial, evitando llamadas costosas a `stat().st_size` y `resolve()` múltiples veces para el mismo archivo.
-- `2026-08-17T05:21:31` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando llamadas repetitivas y costosas a `Path.resolve()` y `Path.relative_to()` por operaciones de cadena y acceso directo a los atributos del objeto `os.DirEntry`, evitando recrear objetos `Path` innecesariamente en cada iteración del bucle.
