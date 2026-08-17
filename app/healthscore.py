@@ -101,6 +101,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
+        # Forzar conversión y limpieza de tipos para evitar inyecciones de valores NaN o Inf
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -111,7 +112,7 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        return all(math.isfinite(float(a)) for a in (self.junk_mb, self.suspicious_count, self.suspicious_warnings, self.memory_available_percent, self.disk_free_percent, self.duplicate_mb, self.startup_count, self.quarantined_count))
+        return all(math.isfinite(float(getattr(self, a))) for a in self.__dataclass_fields__)
 
 @dataclass
 class HealthResult:
@@ -172,11 +173,12 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     recommendations: List[str] = []
     for rule in _RECOMMENDATION_RULES:
         if _clamp(ratios.get(rule.area, 1.0), 0.0, 1.0) < rule.threshold:
-            val = getattr(metrics, rule.metric_attr)
-            if rule.expected_args > 0:
+            val = getattr(metrics, rule.metric_attr, None)
+            if rule.expected_args > 0 and val is not None:
                 try: recommendations.append(rule.message_format.format(val))
                 except (ValueError, IndexError, TypeError, KeyError): continue
-            else: recommendations.append(rule.message_format)
+            elif rule.expected_args == 0:
+                recommendations.append(rule.message_format)
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

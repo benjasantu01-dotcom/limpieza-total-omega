@@ -899,3 +899,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-17T10:18:26` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-08-17T10:18:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T10:18:26` Corrida terminada. Total usado hoy: 244.
+- `2026-08-17T10:26:51` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-08-17T10:27:18` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-17T10:27:42` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` ante errores de acceso a disco y estados inconsistentes, añadiendo verificaciones de tipo y manejo de excepciones más granular para evitar que un solo archivo inaccesible detenga el procesamiento de un grupo completo.
+- `2026-08-17T10:28:07` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics.validate()` y `_generate_recommendations` para prevenir fallos silenciosos o excepciones ante estados de objeto inconsistentes, asegurando que `getattr` y el formato de strings siempre tengan una ruta de escape segura.
+- `2026-08-17T10:28:55` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `main.py` frente a la concurrencia y cierres inesperados al añadir verificaciones de `winfo_exists()` antes de acceder a widgets de `customtkinter` en todas las tareas asíncronas, evitando así errores de `TclError` si el usuario cierra la ventana mientras una tarea está en ejecución.
+- `2026-08-17T10:28:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T10:28:55` Corrida terminada. Total usado hoy: 248.

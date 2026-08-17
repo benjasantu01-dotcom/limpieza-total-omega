@@ -89,7 +89,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         if not file_path.exists() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
 
-        resolved_path = file_path.resolve()
+        resolved_path = file_path.resolve(strict=True)
         if not resolved_path.is_file() or resolved_path.is_symlink():
             return None
 
@@ -124,7 +124,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         if not file_path.exists() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
             
-        resolved_path = file_path.resolve()
+        resolved_path = file_path.resolve(strict=True)
         if not resolved_path.is_file() or resolved_path.is_symlink():
             return None
             
@@ -149,7 +149,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if not isinstance(p, Path) or not p.exists() or is_protected_path(p) or not is_safe_to_modify(p): 
             continue
         try:
-            target = p.resolve()
+            target = p.resolve(strict=True)
             if target.is_file() and not target.is_symlink():
                 groups[target.stat().st_size].append(target)
         except (OSError, PermissionError, FileNotFoundError):
@@ -182,7 +182,7 @@ def _collect_candidates(
                             _scan(Path(entry.path))
                     elif entry.is_file():
                         if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
-                            p_obj = Path(entry.path).resolve()
+                            p_obj = Path(entry.path).resolve(strict=True)
                             if not skip_protected or (not is_protected_path(p_obj) and is_safe_to_modify(p_obj)):
                                 temp_groups[st.st_size].append(p_obj)
                 except (OSError, PermissionError): continue
@@ -192,7 +192,7 @@ def _collect_candidates(
     for directory in directories:
         if directory:
             try:
-                _scan(Path(directory).resolve())
+                _scan(Path(directory).resolve(strict=True))
             except (OSError, RuntimeError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
@@ -266,10 +266,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists():
+        if not isinstance(p, Path):
             continue
         try:
-            if is_protected_path(p) or not is_safe_to_modify(p):
+            if not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
                 continue
             stat_info = p.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0))
@@ -295,7 +295,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     for path in group.paths:
         if not isinstance(path, Path): 
             continue
-        is_keeper = (keeper is not None and path.resolve() == keeper.resolve())
+        is_keeper = (keeper is not None and path.absolute() == keeper.absolute())
         marca = "conservar" if is_keeper else "duplicado"
         lines.append(f"   [{marca}] {path}")
     return lines
