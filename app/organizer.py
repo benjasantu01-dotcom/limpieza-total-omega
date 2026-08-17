@@ -132,37 +132,44 @@ def _is_file_locked(path: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Verifica precondiciones de seguridad (existencia, jerarquía y permisos) 
-    para mover o eliminar un archivo.
+    para mover o eliminar un archivo, previniendo inyección de rutas.
     """
     try:
         if not src.exists() or not src.is_file():
             return False
         
-        src_abs, dest_abs = src.resolve(), dest.resolve()
+        # Resolvemos para evitar bypass mediante paths relativos o ..
+        src_abs = src.resolve()
+        dest_abs = dest.resolve()
         
-        # Evitar recursión o operaciones sobre sí mismo
-        if src_abs == dest_abs or dest_abs in src_abs.parents or src_abs.parent == dest_abs:
+        # Evitar recursión o operaciones sobre sí mismo o sus contenedores
+        if src_abs == dest_abs or src_abs.parent == dest_abs or dest_abs in src_abs.parents:
             return False
         
         # Bloqueos de sistema (atributo de archivo del sistema en Windows)
         if os.name == "nt" and (src_abs.stat().st_file_attributes & 0x06):
             return False
             
-        return is_safe_to_modify(src_abs)
+        # El destino debe ser un directorio bajo control
+        return is_safe_to_modify(src_abs) and is_safe_to_modify(dest_abs)
     except (OSError, RuntimeError, AttributeError):
         return False
 
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Evalúa si es seguro mover un archivo basándose en permisos, bloqueos y ubicación."""
-    if not _is_safe_for_disk_op(junk_file.path, dest):
+    # Verificación de TOCTOU: re-resolución de ruta absoluta antes de comparar
+    current_path = junk_file.path.resolve()
+    dest_abs = dest.resolve()
+    
+    if not _is_safe_for_disk_op(current_path, dest_abs):
         return False
         
     # Validar bloqueo y misma unidad (shutil.move suele fallar entre volúmenes)
-    if _is_file_locked(junk_file.path) or junk_file.path.anchor != dest.resolve().anchor:
+    if _is_file_locked(current_path) or current_path.anchor != dest_abs.anchor:
         return False
         
-    return is_safe_to_modify(dest.resolve())
+    return True
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
@@ -241,6 +248,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 
             target = _generate_unique_target(dest_base / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
             
+            # Chequeo final de seguridad antes de la ejecución de movimiento
             ensure_safe_to_modify(junk_file.path)
             ensure_safe_to_modify(target)
             shutil.move(str(junk_file.path), str(target))

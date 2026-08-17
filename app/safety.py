@@ -50,6 +50,7 @@ class ProtectionReason(Enum):
     HARD_LINK = "hard link detectado"
     ADS = "ADS (flujos alternativos)"
     EMPTY_FILE = "archivo vacío"
+    EXCESSIVE_DEPTH = "profundidad excesiva"
 
 
 # DIRECTORIOS_BLOQUEADOS: Nombres que, si aparecen en una ruta, indican riesgo de sistema.
@@ -162,6 +163,10 @@ def _check_file_integrity(p: Path) -> None:
     """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
+
+    # Defensa contra ataques de profundidad de directorios (Límite 64 niveles)
+    if len(p.parts) > 64:
+        raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
     try:
         st = p.lstat()
@@ -357,6 +362,7 @@ def describe_protection(path: PathLike) -> str:
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
     if is_protected_path(p): return f"'{p}' protegida por sistema."
     if p.exists():
+        if len(p.parts) > 64: return f"'{p}' profundidad excesiva."
         if not os.access(p, os.W_OK): return f"'{p}' sin permisos de escritura."
         if _is_readonly(p): return f"'{p}' es solo lectura."
         if _is_file_in_use(p): return f"'{p}' en uso por otro proceso."

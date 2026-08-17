@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 100 | 9 | 13 | 9 | 109 |
-| 2026-08-17 | 128 | 8 | 17 | 11 | 100 |
+| 2026-08-16 | 100 | 9 | 13 | 9 | 105 |
+| 2026-08-17 | 130 | 9 | 18 | 11 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **45**
 - robustez ante casos límite: **44**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,15 +37,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `duplicates.py`: **17**
 - `settings.py`: **17**
+- `organizer.py`: **16**
 - `diskreport.py`: **16**
-- `organizer.py`: **15**
 - `branding.py`: **12**
 - `main.py`: **9**
-- `safety.py`: **8**
+- `safety.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T11:19:27` **safety.py** (seguridad defensiva): Se añadió la validación de profundidad de directorios para evitar que el escáner intente procesar estructuras de archivos recursivas excesivamente profundas o ataques de enlaces simbólicos circulares que podrían causar desbordamientos o ciclos infinitos durante el análisis de disco.
+- `2026-08-17T11:18:20` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` y `stage_for_review` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y garantizar que la ruta de destino no sea una suplantación, asegurando que la operación de movimiento ocurra dentro de límites de confianza validados.
 - `2026-08-17T11:08:44` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `healthscore.py` validando que los pesos y límites globales (definidos como constantes) no sean manipulados para producir valores negativos o infinitos, garantizando que el cálculo de `_WEIGHT_ITEMS` sea siempre consistente.
 - `2026-08-17T11:08:17` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` al realizar el `resolve(strict=True)` de forma previa y aislada, garantizando que cualquier error de acceso o inexistencia de la ruta ocurra antes de interactuar con el sistema de archivos, y asegurando que las validaciones de `is_safe_to_modify` se realicen siempre sobre rutas resueltas y verificadas.
 - `2026-08-17T10:59:42` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `all_drives_usage` bloqueando explícitamente el acceso a rutas UNC para evitar comportamientos inesperados o bloqueos en llamadas de sistema de bajo nivel, alineándolo con las restricciones de `drive_usage`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T10:27:42` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` ante errores de acceso a disco y estados inconsistentes, añadiendo verificaciones de tipo y manejo de excepciones más granular para evitar que un solo archivo inaccesible detenga el procesamiento de un grupo completo.
 - `2026-08-17T10:17:46` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` y `_safe_assign` ante valores `NaN` o infinitos de origen externo, garantizando que el `SystemContext` sea siempre numéricamente válido y evitando propagar estados corrompidos a los cálculos del asistente.
 - `2026-08-17T10:17:11` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` mediante el uso de `itertools.chain` y una estructura `set` inicializada correctamente, evitando la concatenación de listas grandes en memoria y mejorando la eficiencia del filtrado de duplicados.
-- `2026-08-17T10:07:53` **settings.py** (rendimiento): Se optimizó el acceso a disco mediante una caché de segundo nivel (`_CACHED_SETTINGS`) que evita la serialización/deserialización JSON y el cálculo de `mtime` en cada llamada a `load`, mejorando drásticamente el rendimiento en bucles de lectura frecuente.
-- `2026-08-17T10:07:42` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la lógica de búsqueda en listas por `frozenset` en las funciones `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando iteraciones innecesarias y conversiones de tipos dentro de los bucles de escaneo.

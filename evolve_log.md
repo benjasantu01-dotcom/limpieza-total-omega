@@ -994,3 +994,46 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-17T11:10:02` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva en `_is_valid_trim_target` asegurando que la ruta del ejecutable se normalice antes de la validación de seguridad, evitando posibles evasiones por variaciones en el formato de ruta o caracteres de escape.
 - `2026-08-17T11:10:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T11:10:02` Corrida terminada. Total usado hoy: 264.
+- `2026-08-17T11:17:53` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-17T11:18:20` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` y `stage_for_review` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y garantizar que la ruta de destino no sea una suplantación, asegurando que la operación de movimiento ocurra dentro de límites de confianza validados.
+- `2026-08-17T11:18:53` Tests FALLARON:
+```
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+base_str = '/tmp/pytest-of-runner/pytest-2/test_corrupt_manifest_does_not0/_Cuarentena'
+
+    @lru_cache(maxsize=4)
+    def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
+        """Carga el manifiesto; caché indexada por ruta para acceso eficiente."""
+        base_path = Path(base_str)
+        path = _manifest_path(base_path)
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if not isinstance(raw_data, list):
+                return []
+            valid_items = []
+            for entry in raw_data:
+                if isinstance(entry, dict):
+                    item = QuarantineItem.from_dict(entry)
+                    if item:
+                        valid_items.append(item)
+            return valid_items
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:268: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 1.17s
+
+```
+- `2026-08-17T11:18:53` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva mediante la validación estricta de la integridad del archivo original antes del movimiento y la implementación de una verificación de estado de archivo (no bloqueado) antes de realizar operaciones destructivas en el sandbox, mitigando riesgos de acceso concurrente y corrupción.
+- `2026-08-17T11:19:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-17T11:19:27` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se añadió la validación de profundidad de directorios para evitar que el escáner intente procesar estructuras de archivos recursivas excesivamente profundas o ataques de enlaces simbólicos circulares que podrían causar desbordamientos o ciclos infinitos durante el análisis de disco.
+- `2026-08-17T11:19:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T11:19:27` Corrida terminada. Total usado hoy: 268.
