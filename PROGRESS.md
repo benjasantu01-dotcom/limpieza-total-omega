@@ -7,38 +7,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 15
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 28 | 5 | 3 | 1 | 17 |
+| 2026-08-15 | 27 | 3 | 3 | 1 | 16 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 47 | 3 | 5 | 2 | 43 |
+| 2026-08-17 | 48 | 3 | 6 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **43**
-- rendimiento: **41**
+- manejo de errores y validación de entradas: **44**
+- rendimiento: **40**
 - legibilidad y documentación: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
-- `scanner.py`: **20**
+- `scanner.py`: **21**
 - `memory.py`: **20**
 - `settings.py`: **19**
 - `assistant.py`: **19**
 - `browser.py`: **19**
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
 - `organizer.py`: **16**
+- `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `branding.py`: **13**
 - `main.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T04:21:15` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `process_entry` y `scan_directory` añadiendo validaciones explícitas de tipo y estado de ruta, y se mejoró la resiliencia del pipeline de escaneo al capturar excepciones específicas durante la instanciación de `Path` y el acceso a metadatos, evitando que fallos parciales en una entrada interrumpan el escaneo recursivo.
 - `2026-08-17T04:11:47` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones preventivas contra rutas inexistentes, tipos de archivo inválidos y errores de resolución de disco, asegurando que las operaciones solo procedan bajo condiciones de integridad verificables.
 - `2026-08-17T04:11:39` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` validando el handle y la integridad de las APIs de Windows antes de operar, asegurando que los fallos sean capturados y reportados de forma controlada.
 - `2026-08-17T04:11:12` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la inicialización de pestañas al envolver cada llamada al `constructor` en un bloque `try-except` específico, evitando que un error en el layout de una sola pestaña bloquee la carga completa de la aplicación, y además validé la existencia de los widgets antes de interactuar con ellos en métodos como `_draw_gauge` y `_set_busy`.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T02:19:48` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` al realizar una validación de ruta absoluta y comparación de dispositivos después de la resolución, impidiendo explícitamente cualquier intento de escape o movimiento entre particiones que pudiera ser aprovechado para manipular permisos de archivo.
 - `2026-08-17T02:19:03` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` al validar la integridad de la ruta del ejecutable antes de ejecutar la acción, aplicando `is_protected_path` sobre una ruta normalizada y verificando que el proceso no sea un proceso del sistema (mediante el PID) antes de realizar cualquier llamada a la API de Windows.
 - `2026-08-17T02:18:34` **main.py** (seguridad defensiva): Se reforzó la seguridad en el inicio de la aplicación añadiendo `ensure_safe_to_modify` sobre el directorio de usuario (home) para prevenir operaciones accidentales en rutas del sistema, garantizando que el punto de entrada principal sea validado antes de renderizar la interfaz.
-- `2026-08-17T02:08:58` **healthscore.py** (seguridad defensiva): Reforcé la integridad del sistema de recomendaciones validando explícitamente que los argumentos pasados al `format` de las plantillas coincidan con las expectativas definidas en `RecommendationRule`, evitando excepciones en tiempo de ejecución ante datos de entrada mal formados.

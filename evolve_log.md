@@ -402,3 +402,10 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-17T04:11:47` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones preventivas contra rutas inexistentes, tipos de archivo inválidos y errores de resolución de disco, asegurando que las operaciones solo procedan bajo condiciones de integridad verificables.
 - `2026-08-17T04:11:47` Rotación — log: 1128 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T04:11:47` Corrida terminada. Total usado hoy: 100.
+- `2026-08-17T04:19:50` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-17T04:20:22` ➖ Sin cambios en quarantine.py (enfoque: manejo de errores y validación de entradas). Motivo: Se introdujo una validación explícita de `None` y tipos en `restore_item` y `purge_item` para prevenir excepciones críticas ante estados de manifiesto inconsistentes, asegurando que la manipulación del sistema de archivos sea siempre segura y predecible.
+- `2026-08-17T04:20:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-17T04:21:07` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-17T04:21:15` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de errores en `process_entry` y `scan_directory` añadiendo validaciones explícitas de tipo y estado de ruta, y se mejoró la resiliencia del pipeline de escaneo al capturar excepciones específicas durante la instanciación de `Path` y el acceso a metadatos, evitando que fallos parciales en una entrada interrumpan el escaneo recursivo.
+- `2026-08-17T04:21:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T04:21:15` Corrida terminada. Total usado hoy: 104.

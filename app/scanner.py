@@ -108,8 +108,8 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
-        except (PermissionError, OSError, ValueError):
-            pass
+        except (PermissionError, OSError, ValueError, TypeError):
+            logger.debug(f"Acceso denegado o error en ruta: {entry.path}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
@@ -158,7 +158,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Pipeline principal para el análisis de un archivo único. Ejecuta todas las 
     reglas registradas y retorna una lista acumulada de hallazgos (Suspicion).
     """
-    if not path:
+    if not path or not path.exists():
         return []
 
     findings: ScanResult = []
@@ -183,7 +183,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     Inicia el escaneo recursivo mediante un stack. Valida la existencia y 
     seguridad de la ruta de entrada antes de procesar recursivamente.
     """
-    if not directory or not str(directory).strip():
+    if not directory:
         return []
         
     try:
@@ -203,7 +203,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, FileNotFoundError):
             continue
             
     return scanner.results
