@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 74 | 7 | 11 | 8 | 88 |
-| 2026-08-17 | 141 | 10 | 19 | 11 | 135 |
+| 2026-08-16 | 72 | 7 | 11 | 7 | 87 |
+| 2026-08-17 | 145 | 10 | 19 | 11 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **45**
 - robustez ante casos límite: **44**
-- rendimiento: **40**
 - manejo de errores y validación de entradas: **40**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
+- `assistant.py`: **22**
 - `scanner.py`: **21**
-- `assistant.py`: **21**
-- `memory.py`: **19**
-- `quarantine.py`: **19**
-- `browser.py`: **16**
+- `memory.py`: **18**
+- `quarantine.py`: **18**
+- `browser.py`: **17**
+- `diskreport.py`: **16**
 - `settings.py`: **16**
-- `diskreport.py`: **15**
 - `duplicates.py`: **14**
 - `organizer.py`: **14**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `startup.py`: **9**
 - `safety.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T13:32:32` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en `_collect_summary_data` y `walk_files`, mejorando la documentación interna para aclarar la lógica de recorrido y agregación sin alterar el comportamiento.
+- `2026-08-17T13:32:12` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones críticas de escaneo y recursión (`_sum_directory_recursive`, `_is_safe_path`, `_should_skip_entry`) mediante docstrings explicativos que aclaran las decisiones de diseño, el manejo de errores y las salvaguardas de seguridad, facilitando el mantenimiento y la auditoría del código.
+- `2026-08-17T13:31:46` **branding.py** (legibilidad y documentación): Se introdujeron anotaciones de tipo más precisas y se documentó la lógica de cálculo en las funciones de renderizado geométrico para mejorar la mantenibilidad del motor de diseño.
+- `2026-08-17T13:31:11` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de manejo (`handle_*`) y clases, clarificando el propósito de cada una y su relación con el flujo de datos del asistente.
 - `2026-08-17T13:22:00` **startup.py** (manejo de errores y validación de entradas): Mejora la robustez del parseo del registro integrando validación de tipo y manejo de errores ante entradas malformadas en `parse_registry_csv`, previniendo que una fila corrupta corte el procesamiento del resto.
 - `2026-08-17T13:21:15` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones heurísticas mediante la validación explícita de `path` y `entry` al inicio, evitando fallos por valores `None` o estados inconsistentes, y refiné el manejo de excepciones en `process_entry` para ser más granular.
 - `2026-08-17T13:20:49` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` al centralizar la validación de estados de error, asegurando que las excepciones capturadas contengan contexto útil y previniendo que una validación parcial (como el chequeo de integridad post-existencia) ignore errores previos en el flujo de control.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T12:51:58` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación exhaustiva de los tipos de datos y rangos de las métricas recibidas, asegurando que cualquier entrada malformada o inesperada sea descartada preventivamente antes de afectar al estado interno.
 - `2026-08-17T11:28:57` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save` verificando explícitamente que la ruta del archivo de configuración final esté protegida de escrituras malintencionadas y asegurando que las operaciones de archivo no ocurran si `safety.is_safe_to_modify` falla, evitando manipulaciones externas o bloqueos de sistema.
 - `2026-08-17T11:28:29` **scanner.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar procesar archivos bloqueados por el sistema operativo mediante el uso de una excepción en `check_recent_executable_in_downloads`, asegurando que no se intente acceder a atributos de archivos en uso o con permisos restringidos durante la recolección de metadatos, reforzando la seguridad defensiva al evitar condiciones de carrera o fallos inesperados en el hilo de escaneo.
-- `2026-08-17T11:19:27` **safety.py** (seguridad defensiva): Se añadió la validación de profundidad de directorios para evitar que el escáner intente procesar estructuras de archivos recursivas excesivamente profundas o ataques de enlaces simbólicos circulares que podrían causar desbordamientos o ciclos infinitos durante el análisis de disco.
-- `2026-08-17T11:18:20` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` y `stage_for_review` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) y garantizar que la ruta de destino no sea una suplantación, asegurando que la operación de movimiento ocurra dentro de límites de confianza validados.
-- `2026-08-17T11:08:44` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `healthscore.py` validando que los pesos y límites globales (definidos como constantes) no sean manipulados para producir valores negativos o infinitos, garantizando que el cálculo de `_WEIGHT_ITEMS` sea siempre consistente.
-- `2026-08-17T11:08:17` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` al realizar el `resolve(strict=True)` de forma previa y aislada, garantizando que cualquier error de acceso o inexistencia de la ruta ocurra antes de interactuar con el sistema de archivos, y asegurando que las validaciones de `is_safe_to_modify` se realicen siempre sobre rutas resueltas y verificadas.

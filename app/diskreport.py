@@ -189,14 +189,20 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre un árbol de directorios de forma iterativa para evitar desbordamiento de pila.
+    Recorre el árbol de directorios usando una pila para evitar desbordamientos.
+    
+    Args:
+        directory: Ruta raíz desde donde comenzar el escaneo.
+        skip_protected: Si es True, omite rutas marcadas como protegidas.
+        
+    Yields:
+        Tuplas conteniendo la ruta del archivo y su tamaño en bytes.
     """
     if not directory:
         return
 
     try:
         base_path = Path(directory).resolve(strict=False)
-        # Validar UNC y existencia básica
         if str(base_path).startswith(("\\\\", "//")):
             return
         if not base_path.exists() or not base_path.is_dir():
@@ -328,7 +334,13 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
-    """Agrega métricas de uso de disco en una única iteración."""
+    """
+    Agrega métricas de uso de disco en una única iteración.
+    
+    Returns:
+        Tupla con (bytes totales, archivos totales, mapa de tamaños por ext, 
+        mapa de conteo por ext, lista de los 8 archivos más pesados).
+    """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)

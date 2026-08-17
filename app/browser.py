@@ -96,8 +96,9 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de la ruta para prevenir Path Traversal.
-    Verifica que la ruta resuelva dentro de base_path y no contenga caracteres de control.
+    Valida que la ruta objetivo sea un subdirectorio real de base_path para evitar 
+    ataques de Path Traversal, detectando además enlaces simbólicos o junctions 
+    que podrían forzar una salida de la jerarquía permitida.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -155,8 +156,9 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """
-    Determina si un objeto debe ignorarse. Aplica capas sucesivas de seguridad:
-    lista negra, atributos del SO, enlaces simbólicos y protección global.
+    Implementa capas de seguridad restrictivas: salta elementos en la lista negra,
+    archivos de sistema, puntos de reparse (symlinks/junctions) y rutas protegidas
+    por el módulo global de seguridad para evitar accesos indebidos.
     """
     try:
         if _is_excluded_file(entry.name):
@@ -179,8 +181,9 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Calcula el peso total mediante DFS. Usa memoización para no repetir cálculos 
-    y recursión limitada (MAX_SCAN_DEPTH) para prevenir desbordamientos o bucles infinitos.
+    Calcula el peso total de una carpeta mediante DFS con recursión limitada 
+    por MAX_SCAN_DEPTH. Utiliza memoización (memo) para optimizar el rendimiento 
+    y previene el acceso a rutas protegidas mediante `is_protected_path`.
     """
     if not root_dir or not isinstance(root_dir, str):
         return 0

@@ -308,7 +308,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
     """Optimiza la serie de colores agrupando segmentos consecutivos idénticos."""
     if not colors: return ()
-    segments = []
+    segments: List[Tuple[HexColor, int, int]] = []
     start = 0
     for i in range(1, len(colors)):
         if colors[i] != colors[start]:
@@ -400,14 +400,22 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
         scale: Factor de escala (1.0 = 128px de resolución base).
     """
     if scale <= 0: return
-    franjas_count = max(6, int(28 * scale))
-    colores = gradient_colors(franjas_count)
+    franjas_count: int = max(6, int(28 * scale))
+    colores: Tuple[HexColor, ...] = gradient_colors(franjas_count)
     for color_hex, start, end in _get_grouped_segments(colores):
-        mid = (start + end) / 2
-        w = 36 * scale * (1.0 if mid / (franjas_count - 1) < 0.55 else 1.0 - (mid / (franjas_count - 1) - 0.55) * 1.9)
-        canvas.create_rectangle(canvas_x + 64*scale - w, canvas_y + 18*scale + start*(92*scale/franjas_count), 
-                                canvas_x + 64*scale + w, canvas_y + 18*scale + end*(92*scale/franjas_count) + 1, 
-                                fill=color_hex, outline="")
+        # Calcular el ancho de cada franja basado en una curva de decaimiento visual
+        mid: float = (start + end) / 2
+        progreso: float = mid / (franjas_count - 1)
+        w: float = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
+        
+        y_ini: float = canvas_y + 18 * scale + start * (92 * scale / franjas_count)
+        y_fin: float = canvas_y + 18 * scale + end * (92 * scale / franjas_count)
+        
+        canvas.create_rectangle(
+            canvas_x + 64 * scale - w, y_ini, 
+            canvas_x + 64 * scale + w, y_fin + 1, 
+            fill=color_hex, outline=""
+        )
 
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
@@ -422,22 +430,27 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
     """
     if not hasattr(canvas, "create_polygon"): return
     try:
-        scale = max(0.1, min(10.0, float(size) / 128))
-        base_coords = _get_shield_coords(scale)
-        contorno = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
+        scale: float = max(0.1, min(10.0, float(size) / 128))
+        base_coords: List[float] = _get_shield_coords(scale)
+        contorno: List[float] = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
+        
+        # Renderizado de capas de iluminación (Glow)
         for paso in range(4, 0, -1):
-            r = 56 * scale * (0.6 + paso * 0.12)
-            canvas.create_oval(canvas_x + 64*scale - r, canvas_y + 58*scale - r, 
-                               canvas_x + 64*scale + r, canvas_y + 58*scale + r, 
+            r: float = 56 * scale * (0.6 + paso * 0.12)
+            canvas.create_oval(canvas_x + 64 * scale - r, canvas_y + 58 * scale - r, 
+                               canvas_x + 64 * scale + r, canvas_y + 58 * scale + r, 
                                fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
+        
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
-        canvas.create_line(canvas_x + 41*scale, canvas_y + 75*scale, canvas_x + 75*scale, canvas_y + 41*scale, 
-                           fill=PALETTE["background"], width=max(2, int(8*scale)), capstyle="round")
-        canvas.create_polygon(canvas_x + 75*scale, canvas_y + 41*scale, canvas_x + 89*scale, canvas_y + 38*scale, 
-                              canvas_x + 92*scale, canvas_y + 52*scale, fill=PALETTE["background"], outline="")
-        canvas.create_text(canvas_x + 64*scale, canvas_y + 96*scale, text="\u03a9", 
-                           fill=PALETTE["background"], font=(UI_FONT_FAMILY, max(8, int(23*scale)), UI_FONT_BOLD))
+        
+        # Elementos de marca (corte Omega)
+        canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, 
+                           fill=PALETTE["background"], width=max(2, int(8 * scale)), capstyle="round")
+        canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, 
+                              canvas_x + 92 * scale, canvas_y + 52 * scale, fill=PALETTE["background"], outline="")
+        canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
+                           fill=PALETTE["background"], font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError):
         pass
 
@@ -458,8 +471,8 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
     """
     if not hasattr(canvas, "create_line"): return
     try:
-        ancho = max(1, int(width))
-        colores = gradient_colors(ancho, stops)
+        ancho: int = max(1, int(width))
+        colores: Tuple[HexColor, ...] = gradient_colors(ancho, stops)
         for color_hex, start, end in _get_grouped_segments(colores):
             canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
@@ -484,16 +497,24 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     """
     if not hasattr(canvas, "create_arc"): return
     try:
-        valor = float(percent)
-        diametro = max(20, int(size))
-        grosor = max(2, min(int(thickness), diametro // 2 - 1))
+        valor: float = float(percent)
+        diametro: int = max(20, int(size))
+        grosor: int = max(2, min(int(thickness), diametro // 2 - 1))
         
         valor = max(0.0, min(100.0, valor))
-        color_fondo = track or PALETTE["surface_alt"]
-        color_avance = fill or score_color(valor)
-        borde = grosor / 2
-        caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
+        color_fondo: HexColor = track or PALETTE["surface_alt"]
+        color_avance: HexColor = fill or score_color(valor)
+        borde: float = grosor / 2
+        
+        caja: Tuple[float, float, float, float] = (
+            canvas_x + borde, canvas_y + borde, 
+            canvas_x + diametro - borde, canvas_y + diametro - borde
+        )
+        
+        # Dibujar track de fondo
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
+        
+        # Dibujar progreso
         if valor > 0:
             canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),
                               style="arc", outline=color_avance, width=grosor)
