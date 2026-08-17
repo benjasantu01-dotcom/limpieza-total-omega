@@ -164,9 +164,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad del sistema de archivos.
-    
-    Filtra archivos menores a min_size y evita seguir bucles infinitos mediante
-    el seguimiento de inodos visitados. Retorna un mapa de {tamaño: [rutas]}.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -219,6 +216,20 @@ def _refine_by_hash(
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
+def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
+    """
+    Refina un grupo de archivos del mismo tamaño aplicando el filtrado por 
+    hash parcial y posteriormente el hash completo para confirmación.
+    """
+    confirmed_groups = []
+    partial_groups = _refine_by_hash(paths, partial_hash)
+    for partial_candidates in partial_groups.values():
+        full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
+        for digest, confirmed_paths in full_hash_groups.items():
+            confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
+    return confirmed_groups
+
+
 def find_duplicates(
     directories: Iterable[Union[str, Path]],
     min_size: int = 1024,
@@ -233,11 +244,7 @@ def find_duplicates(
     groups: List[DuplicateGroup] = []
     
     for size, paths_in_size_group in size_map.items():
-        partial_groups = _refine_by_hash(paths_in_size_group, partial_hash)
-        for partial_candidates in partial_groups.values():
-            full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
-            for digest, confirmed_paths in full_hash_groups.items():
-                groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
+        groups.extend(_process_size_group(size, paths_in_size_group))
 
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
@@ -262,7 +269,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path) or not p.exists():
             continue
         try:
-            # Validamos seguridad antes de sugerir conservación
             if is_protected_path(p) or not is_safe_to_modify(p):
                 continue
             stat_info = p.stat()
@@ -289,7 +295,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
     for path in group.paths:
         if not isinstance(path, Path): 
             continue
-        # Comparación robusta entre tipos Path
         is_keeper = (keeper is not None and path.resolve() == keeper.resolve())
         marca = "conservar" if is_keeper else "duplicado"
         lines.append(f"   [{marca}] {path}")

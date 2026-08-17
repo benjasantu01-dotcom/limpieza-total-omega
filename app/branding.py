@@ -33,6 +33,10 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]  # (Color, Etiqueta)
 RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 PointCoords: TypeAlias = List[float]  # Lista plana [x1, y1, x2, y2, ...]
 
+# Constantes de diseño base
+UI_FONT_FAMILY: Final[str] = "Segoe UI"
+UI_FONT_BOLD: Final[str] = "bold"
+
 class PaletteDict(TypedDict):
     """Define el contrato de colores requerido para renderizar la UI consistentemente."""
     background: HexColor
@@ -346,8 +350,8 @@ def logo_svg(size: int = 128) -> str:
         fill="url(#omegaShield)"/>
   <path d="M41 75 L75 41" stroke="{PALETTE['background']}" stroke-width="8" stroke-linecap="round"/>
   <path d="M75 41 L89 38 L92 52 Z" fill="{PALETTE['background']}"/>
-  <text x="64" y="98" font-family="Segoe UI, Arial, sans-serif" font-size="26"
-        font-weight="bold" fill="{PALETTE['background']}" text-anchor="middle">&#937;</text>
+  <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26"
+        font-weight="{UI_FONT_BOLD}" fill="{PALETTE['background']}" text-anchor="middle">&#937;</text>
 </svg>
 """
 
@@ -390,10 +394,10 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
     mediante el cálculo de segmentos de color sobre el canvas proporcionado.
     
     Args:
-        canvas: Widget Tkinter Canvas.
-        canvas_x: Offset horizontal inicial.
-        canvas_y: Offset vertical inicial.
-        scale: Factor de escala decimal respecto a la resolución base (128px).
+        canvas: Widget Tkinter Canvas donde se dibujan las formas.
+        canvas_x: Desplazamiento horizontal relativo al canvas.
+        canvas_y: Desplazamiento vertical relativo al canvas.
+        scale: Factor de escala (1.0 = 128px de resolución base).
     """
     if scale <= 0: return
     franjas_count = max(6, int(28 * scale))
@@ -412,9 +416,9 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
     
     Args:
         canvas: Widget Tkinter Canvas donde renderizar.
-        size: Tamaño en píxeles (default 56).
-        canvas_x: Offset horizontal (coordenadas de pantalla).
-        canvas_y: Offset vertical (coordenadas de pantalla).
+        size: Tamaño total del escudo en píxeles.
+        canvas_x: Coordenada X de anclaje superior izquierdo.
+        canvas_y: Coordenada Y de anclaje superior izquierdo.
     """
     if not hasattr(canvas, "create_polygon"): return
     try:
@@ -433,7 +437,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
         canvas.create_polygon(canvas_x + 75*scale, canvas_y + 41*scale, canvas_x + 89*scale, canvas_y + 38*scale, 
                               canvas_x + 92*scale, canvas_y + 52*scale, fill=PALETTE["background"], outline="")
         canvas.create_text(canvas_x + 64*scale, canvas_y + 96*scale, text="\u03a9", 
-                           fill=PALETTE["background"], font=("Segoe UI", max(8, int(23*scale)), "bold"))
+                           fill=PALETTE["background"], font=(UI_FONT_FAMILY, max(8, int(23*scale)), UI_FONT_BOLD))
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError):
         pass
 
@@ -442,15 +446,15 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
-    Renderiza una barra decorativa con gradiente en el canvas especificado.
+    Renderiza una franja decorativa con gradiente horizontal en el canvas.
     
     Args:
         canvas: Widget Tkinter Canvas.
-        width: Ancho total en píxeles.
-        height: Altura de la línea/barra (default 3px).
+        width: Longitud total de la barra en píxeles.
+        height: Espesor de la barra en píxeles.
         canvas_x: Offset horizontal inicial.
         canvas_y: Offset vertical inicial.
-        stops: Puntos de control de color para el gradiente.
+        stops: Paleta de colores para interpolar.
     """
     if not hasattr(canvas, "create_line"): return
     try:
@@ -469,14 +473,14 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     Dibuja un medidor circular tipo anillo para representar porcentajes de salud.
     
     Args:
-        canvas: Widget Tkinter Canvas.
-        percent: Porcentaje del 0 al 100.
-        size: Diámetro del anillo en píxeles.
-        canvas_x: Posición horizontal.
-        canvas_y: Posición vertical.
-        thickness: Grosor del trazo.
-        track: Color de fondo del anillo (track).
-        fill: Color de progreso del anillo.
+        canvas: Widget Tkinter Canvas donde se renderiza el medidor.
+        percent: Nivel de progreso/salud (0.0 a 100.0).
+        size: Diámetro exterior total del anillo.
+        canvas_x: Posición horizontal en el canvas.
+        canvas_y: Posición vertical en el canvas.
+        thickness: Ancho del trazo del anillo.
+        track: Color del fondo (área vacía).
+        fill: Color del segmento de progreso.
     """
     if not hasattr(canvas, "create_arc"): return
     try:

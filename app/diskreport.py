@@ -190,6 +190,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre un árbol de directorios de forma iterativa para evitar desbordamiento de pila.
+    
+    Args:
+        directory: Ruta raíz a explorar.
+        skip_protected: Si es True, evita entrar en directorios protegidos por el sistema.
     """
     if not directory:
         return
@@ -236,7 +240,13 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Encuentra los N archivos de mayor tamaño en un directorio utilizando un heap."""
+    """
+    Encuentra los N archivos de mayor tamaño en un directorio utilizando un heap.
+    
+    Args:
+        limit: Cantidad máxima de archivos a retornar.
+        skip_protected: Si es True, ignora directorios protegidos.
+    """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -258,7 +268,13 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Agrupa el uso de espacio por extensión de archivo dentro de un directorio."""
+    """
+    Agrupa el uso de espacio por extensión de archivo dentro de un directorio.
+    
+    Args:
+        limit: Cantidad máxima de tipos de extensión a mostrar.
+        skip_protected: Si es True, ignora directorios protegidos.
+    """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -286,7 +302,13 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula las subcarpetas inmediatas que ocupan más espacio."""
+    """
+    Calcula las subcarpetas inmediatas que ocupan más espacio.
+    
+    Args:
+        limit: Cantidad máxima de subcarpetas a retornar.
+        skip_protected: Si es True, ignora directorios protegidos.
+    """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -318,6 +340,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """
     Calcula el tamaño total en bytes y la cantidad de archivos.
+    
     Returns:
         Tupla (total_bytes, total_files).
     """
