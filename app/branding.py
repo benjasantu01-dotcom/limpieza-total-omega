@@ -96,6 +96,11 @@ PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "glow": "#00f0c0",
 })
 
+# Pre-computación para optimizar renderizado intensivo
+PALETTE_RGB: Final[Mapping[str, RGBTuple]] = MappingProxyType({
+    k: (int(v[1:3], 16), int(v[3:5], 16), int(v[5:7], 16)) for k, v in PALETTE.items()
+})
+
 FONT_SIZES: Final[FontSizesDict] = {
     "display": 46,
     "title": 26,
@@ -245,8 +250,11 @@ def bar(percent: Union[float, int, None], width: int = 24,
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """
     Convierte un string HEX (#RRGGBB) a una tupla RGB (r, g, b).
-    Retorna (0,0,0) ante formatos inválidos para evitar errores de renderizado.
+    Usa la tabla pre-computada para colores de paleta.
     """
+    if value in PALETTE_RGB:
+        return PALETTE_RGB[value]
+    
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
@@ -262,11 +270,6 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
     Realiza una interpolación lineal (lerp) entre dos colores HEX.
-    
-    Args:
-        start: Color de inicio (HEX).
-        end: Color final (HEX).
-        ratio: Factor de mezcla entre 0.0 y 1.0.
     """
     ratio_clamped = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)

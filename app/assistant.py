@@ -64,7 +64,6 @@ __all__ = [
     "context_as_text",
     "local_answer",
     "ask",
-    "available",
     "explain_area",
 ]
 
@@ -346,28 +345,19 @@ def explain_area(area: Any) -> str:
 def _is_criterion_triggered(ctx: SystemContext, crit: ProblemCriterion) -> bool:
     """Verifica si un criterio de salud específico se encuentra en un estado problemático."""
     val = getattr(ctx, crit.metric_key)
-    # Proteccion contra tipos no numéricos residuales o estados inválidos
     if not isinstance(val, (int, float)) or not math.isfinite(val):
         return False
-    if crit.operator == "<":
-        return val < crit.threshold
-    if crit.operator == ">":
-        return val > crit.threshold
-    return False
+    return (val < crit.threshold) if crit.operator == "<" else (val > crit.threshold)
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """
-    Identifica y devuelve un listado de problemas detectados priorizados por criticidad.
-    Se limita a un máximo de 3 elementos para mantener la respuesta concisa.
-    """
-    encontrados = []
+    """Identifica problemas detectados, priorizando y limitando a 3 elementos."""
+    problemas = []
     for crit in _CRITERIOS_SALUD:
         if _is_criterion_triggered(ctx, crit):
-            val = getattr(ctx, crit.metric_key)
-            encontrados.append(crit.message_format.format(val))
-            if len(encontrados) >= 3:
+            problemas.append(crit.message_format.format(getattr(ctx, crit.metric_key)))
+            if len(problemas) >= 3:
                 break
-    return encontrados
+    return problemas
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Maneja consultas sobre la memoria RAM basándose en niveles críticos de disponibilidad."""

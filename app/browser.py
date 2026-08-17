@@ -174,15 +174,7 @@ def _sum_directory_recursive(
     kernel32: ctypes.WinDLL | None,
     memo: Dict[str, int]
 ) -> int:
-    """
-    Calcula el peso total de una carpeta mediante un recorrido en profundidad (DFS) con memoización.
-    
-    Args:
-        root_dir: Ruta absoluta en formato cadena.
-        is_junction_fn: Función para detectar puntos de reparse (junctions).
-        kernel32: Handle de ctypes para llamadas a la API de Windows.
-        memo: Diccionario para evitar ciclos y re-procesamiento de subdirectorios.
-    """
+    """Calcula el peso total de una carpeta mediante DFS con memoización."""
     if not root_dir or not isinstance(root_dir, str):
         return 0
 
@@ -219,7 +211,7 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
-    """Valida la ruta de entrada y delega el cálculo recursivo a _sum_directory_recursive."""
+    """Valida la ruta y calcula el tamaño usando helpers optimizados."""
     if path is None:
         return 0
     try:
@@ -230,6 +222,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         if not p_path.is_dir() or is_protected_path(p_path):
             return 0
         
+        # Preparación de helpers para el recorrido
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         k32: Optional[ctypes.WinDLL] = None
         if os.name == 'nt':
@@ -244,7 +237,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Verifica si el candidato es un directorio de caché real y no una trampa o sistema."""
+    """Verifica si el candidato es un directorio de caché real."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
@@ -258,19 +251,19 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Escanea el sistema buscando cachés de navegadores, optimizando accesos con memoización."""
+    """Escanea el sistema buscando cachés de navegadores, optimizando con inyección de dependencias."""
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
-    is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
     
+    # Inyección inicial de funciones y handles para evitar re-resolución constante
+    is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
     k32: Optional[ctypes.WinDLL] = None
     if os.name == 'nt':
         try:
             k32 = ctypes.windll.kernel32
         except (AttributeError, OSError):
-            k32 = None
+            pass
     
-    # Persistencia de cálculos en el scope de la función para evitar redundancia
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     

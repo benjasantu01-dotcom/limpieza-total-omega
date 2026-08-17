@@ -22,7 +22,9 @@ import csv
 import io
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Optional, Iterator, List, Tuple, Dict, Sequence, Set
+from typing import (
+    Iterable, Optional, Iterator, List, Tuple, Dict, Sequence, Set, Union
+)
 from safety import is_protected_path
 
 __all__ = [
@@ -257,13 +259,10 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             if not isinstance(row, dict) or len(row) < 2:
                 continue
             
-            keys = list(row.keys())
-            name_raw = row.get(keys[0])
-            cmd_raw = row.get(keys[1])
+            keys: List[str] = list(row.keys())
+            name_raw: str = row.get(keys[0], "") or ""
+            cmd_raw: str = row.get(keys[1], "") or ""
             
-            if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
-                continue
-                
             name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             
@@ -274,8 +273,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
                 continue
             
             try:
-                p: Path = Path(cmd)
-                if is_protected_path(p):
+                if is_protected_path(Path(cmd)):
                     continue
             except (ValueError, TypeError, OSError):
                 continue
