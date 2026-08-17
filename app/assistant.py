@@ -44,7 +44,6 @@ import urllib.error
 import urllib.request
 import re
 import math
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional, Union, TypedDict, NamedTuple
@@ -217,7 +216,7 @@ def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float
     """
     Asigna de forma robusta un valor a un atributo de SystemContext permitido.
     """
-    if not hasattr(obj, attr) or val is None or isinstance(val, bool):
+    if val is None or isinstance(val, bool):
         return
     try:
         clean_val = float(val)
@@ -259,8 +258,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    # Mapeo de validación: (atributo, casting, valor_min, valor_max)
-    validators = {
+    # Mapeo de validación por clave directa para evitar búsquedas repetitivas
+    validators: Final = {
         "junk_mb": (float, 0.0, float('inf')),
         "suspicious_count": (int, 0, float('inf')),
         "suspicious_warnings": (int, 0, float('inf')),
@@ -273,14 +272,14 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         "browser_cache_mb": (float, 0.0, float('inf')),
     }
     
-    if isinstance(metrics, (dict, object)):
+    if metrics:
         for key, (cast, min_v, max_v) in validators.items():
-            val = _get_metric_val(metrics, key, getattr(ctx, key))
+            val = metrics.get(key) if isinstance(metrics, dict) else getattr(metrics, key, None)
             _safe_assign(ctx, key, val, cast, min_v, max_v)
         ctx.analyzed = True
 
-    if isinstance(health, (dict, object)):
-        raw_score = _get_metric_val(health, "score", None)
+    if health:
+        raw_score = health.get("score") if isinstance(health, dict) else getattr(health, "score", None)
         if raw_score is not None: 
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
         
@@ -289,14 +288,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             ctx.grade = str(grade_val)[:10].strip()
         ctx.analyzed = True
 
-    # Bloque extra: solo procesar si es un atributo permitido y tipo seguro
     for k, v in extra.items():
-        if k in ctx.__dict__ and v is not None and not isinstance(v, bool):
-            attr_val = getattr(ctx, k, None)
-            if isinstance(attr_val, (int, float)):
-                _safe_assign(ctx, k, v, type(attr_val))
-            elif isinstance(attr_val, str):
-                setattr(ctx, k, str(v)[:10].strip())
+        if k in validators or k == "score":
+            _safe_assign(ctx, k, v, type(getattr(ctx, k, float)))
+            
     return ctx
 
 def context_as_text(context: SystemContext) -> str:

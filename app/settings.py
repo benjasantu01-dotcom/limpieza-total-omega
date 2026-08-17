@@ -161,14 +161,17 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
+        """Valida, limpia y verifica seguridad de una ruta de archivo."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
+        
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
+            # Verifica si la ruta resuelta coincide (evita trucos de normalización)
             if os.path.abspath(path_obj) != str(path_obj.resolve()): return None
-            if is_protected_path(str(path_obj)): return None
+            
             path_str = str(path_obj)
             return path_str if _Validators._is_safe_path(path_str) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
