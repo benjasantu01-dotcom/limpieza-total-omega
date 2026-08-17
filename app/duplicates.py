@@ -167,9 +167,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad del sistema de archivos.
-    
-    Utiliza un set de inodos (st_dev, st_ino) para evitar el procesamiento
-    repetido de hardlinks o ciclos en el árbol de directorios.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -187,22 +184,19 @@ def _collect_candidates(
                 try:
                     if entry.is_symlink(): continue
                     
-                    st = entry.stat(follow_symlinks=False)
-                    inode = (st.st_dev, st.st_ino)
-                    if inode in visited_inodes: continue
-                    
-                    # Filtro de atributos de sistema (0x400 es FILE_ATTRIBUTE_SYSTEM)
-                    if getattr(st, 'st_file_attributes', 0) & 0x400: continue
-                    
                     if entry.is_dir():
-                        visited_inodes.add(inode)
-                        _scan(Path(entry.path))
-                    elif entry.is_file() and st.st_size >= min_size:
-                        path_obj = Path(entry.path)
-                        if skip_protected and not _is_safe_cached(path_obj):
-                            continue
-                        visited_inodes.add(inode)
-                        temp_groups[st.st_size].append(path_obj.resolve())
+                        st = entry.stat(follow_symlinks=False)
+                        inode = (st.st_dev, st.st_ino)
+                        if inode not in visited_inodes:
+                            visited_inodes.add(inode)
+                            _scan(Path(entry.path))
+                    elif entry.is_file():
+                        st = entry.stat(follow_symlinks=False)
+                        if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
+                            path_obj = Path(entry.path)
+                            if skip_protected and not _is_safe_cached(path_obj):
+                                continue
+                            temp_groups[st.st_size].append(path_obj.resolve())
                 except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 

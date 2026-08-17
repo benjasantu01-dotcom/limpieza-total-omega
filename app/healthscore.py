@@ -126,11 +126,10 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que todas las métricas sean valores numéricos reales."""
-        for field_name in self.__dataclass_fields__:
-            val = getattr(self, field_name)
-            if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
-                return False
-        return True
+        attrs = (self.junk_mb, self.suspicious_count, self.suspicious_warnings, 
+                 self.memory_available_percent, self.disk_free_percent, 
+                 self.duplicate_mb, self.startup_count, self.quarantined_count)
+        return all(math.isfinite(float(a)) for a in attrs)
 
 
 @dataclass

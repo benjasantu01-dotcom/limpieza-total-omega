@@ -26,7 +26,6 @@ from __future__ import annotations
 import os
 import re
 import subprocess
-import time
 import math
 import ctypes
 from functools import lru_cache
@@ -77,8 +76,6 @@ ERROR_ACCESS_DENIED: int = 5
 
 # PIDs reservados: 0 (System Idle), 4 (System)
 SYSTEM_CRITICAL_PIDS: Tuple[int, ...] = (0, 4)
-
-_PROCESS_CACHE: Dict[str, Tuple[float, List[ProcessMemory]]] = {"data": (0.0, [])}
 
 class MEMORYSTATUSEX(ctypes.Structure):
     """Estructura binaria para la API Win32 GlobalMemoryStatusEx."""
@@ -236,28 +233,24 @@ def read_snapshot() -> MemorySnapshot:
     return MemorySnapshot(total=0, available=0)
 
 
+@lru_cache(maxsize=1)
+def _fetch_raw_process_data() -> str:
+    """Ejecuta comando de PowerShell y devuelve el CSV crudo."""
+    cmd = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 Name,Id,WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
+    try:
+        proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
+        return proc.stdout if proc.returncode == 0 else ""
+    except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired):
+        return ""
+
+
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta los procesos más pesados vía PowerShell, con caché de 5 segundos."""
+    """Consulta los procesos más pesados vía PowerShell, con caché de resultados."""
     if os.name != "nt":
         return []
     
-    now: float = time.monotonic()
-    timestamp, cached_list = _PROCESS_CACHE["data"]
-    
-    if now - timestamp < 5.0 and cached_list:
-        return cached_list[:limit]
-    
-    cmd = f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit} Name,Id,WorkingSet | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
-    try:
-        proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
-        if proc.returncode == 0 and proc.stdout:
-            new_processes = parse_windows_process_csv(proc.stdout, limit=limit)
-            if new_processes:
-                _PROCESS_CACHE["data"] = (now, new_processes)
-                return new_processes
-    except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired):
-        pass
-    return []
+    raw_data = _fetch_raw_process_data()
+    return parse_windows_process_csv(raw_data, limit=limit)
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
