@@ -146,10 +146,11 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Determina si un archivo está en uso exclusivo mediante apertura de descriptor."""
+    """Determina si un archivo está en uso exclusivo, evitando abrirlo en modo escritura."""
     try:
-        with open(path, "rb+") as f:
-            return False
+        fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+        os.close(fd)
+        return False
     except (OSError, PermissionError):
         return True
 

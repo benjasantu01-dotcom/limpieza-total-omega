@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 0 | 0 | 0 | 0 | 10 |
+| 2026-08-15 | 0 | 0 | 0 | 0 | 6 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 74 | 4 | 10 | 5 | 51 |
+| 2026-08-17 | 76 | 4 | 11 | 5 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- robustez ante casos límite: **45**
+- robustez ante casos límite: **47**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **44**
 - seguridad defensiva: **38**
@@ -35,11 +35,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **20**
 - `memory.py`: **20**
 - `scanner.py`: **20**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `diskreport.py`: **17**
 - `settings.py`: **17**
 - `duplicates.py`: **16**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
 - `branding.py`: **14**
 - `main.py`: **9**
 - `startup.py`: **8**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T06:12:57` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que no dependa de abrir el archivo en modo escritura (`rb+`), lo cual fallaría con permisos de solo lectura legítimos o archivos del sistema; ahora utiliza una verificación más cauta con `os.open` y flags de acceso no destructivo.
+- `2026-08-17T06:12:26` **organizer.py** (robustez ante casos límite): Se ha robustecido `stage_for_review` para prevenir el intento de movimiento si el archivo original ya no existe o si ha cambiado de estado, añadiendo validaciones de existencia antes de cada operación crítica para evitar errores `FileNotFoundError` durante la ejecución del bucle.
 - `2026-08-17T06:02:39` **healthscore.py** (robustez ante casos límite): Implementé una robustez mejorada en la generación de recomendaciones, evitando que una métrica con valor infinito o no numérico en `SystemMetrics` (que podría ocurrir por lecturas fallidas del sistema) propague errores o genere recomendaciones inútiles mediante una validación explícita adicional dentro de `_generate_recommendations`.
 - `2026-08-17T05:53:21` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y las funciones que la consumen ante el caso límite de archivos corruptos o inaccesibles dentro de directorios, asegurando que `entry.stat()` sea invocado con un bloque `try-except` robusto para evitar que una entrada con permisos restringidos o error de E/S detenga todo el análisis del sistema de archivos.
 - `2026-08-17T05:52:15` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` y `_safe_assign` ante valores `NaN` o infinitos, garantizando que el asistente siempre trabaje con datos numéricos válidos incluso si las fuentes externas devuelven estados de error, y añadí una validación de longitud para `grade` en `build_context` para prevenir desbordamientos o inyecciones por cadenas inesperadamente largas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T05:12:49` **browser.py** (rendimiento): Se optimizó el recorrido de directorios mediante la inyección del handle de `kernel32` y la función `isjunction` desde el inicio en `detect_profiles`, evitando recrear objetos y resolver dinámicamente atributos repetitivos en cada llamada recursiva de `_sum_directory_recursive`.
 - `2026-08-17T05:12:37` **branding.py** (rendimiento): Se introdujo la pre-computación de los colores de la paleta en una estructura de caché local (`PALETTE_RGB`) para evitar la conversión repetitiva de HEX a RGB durante el renderizado intenso de elementos gráficos, reduciendo significativamente la carga de CPU en funciones como `blend` y `gradient_colors`.
 - `2026-08-17T05:12:02` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la iteración completa sobre criterios estáticos por una lógica que evita la creación innecesaria de listas y mejora la velocidad de ejecución al priorizar la salida temprana.
-- `2026-08-17T05:11:27` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` añadiendo tipos más precisos (específicamente `Union` y `List`), refinando docstrings con descripciones del propósito de parámetros complejos, y simplificando la lógica de filtrado en `entries_from_registry` para hacer más clara la intención del código original.
-- `2026-08-17T05:03:01` **settings.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la intención de los validadores, tipando explícitamente los retornos de las funciones de `_Validators` y añadiendo comentarios de bloque que explican las decisiones de diseño en los métodos críticos para facilitar futuras auditorías.

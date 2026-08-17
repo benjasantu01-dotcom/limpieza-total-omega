@@ -229,6 +229,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
             
         try:
+            # Re-verificar existencia antes de cualquier operación
+            if not junk_file.path.exists():
+                continue
+            
             if not _is_safe_to_move(junk_file, dest_base):
                 continue
             
