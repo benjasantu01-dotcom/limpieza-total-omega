@@ -258,18 +258,17 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    # Mapeo de validación por clave directa para evitar búsquedas repetitivas
     validators: Final = {
-        "junk_mb": (float, 0.0, float('inf')),
-        "suspicious_count": (int, 0, float('inf')),
-        "suspicious_warnings": (int, 0, float('inf')),
+        "junk_mb": (float, 0.0, 1e9),
+        "suspicious_count": (int, 0, 10000),
+        "suspicious_warnings": (int, 0, 10000),
         "memory_available_percent": (float, 0.0, 100.0),
-        "memory_total_gb": (float, 0.0, float('inf')),
+        "memory_total_gb": (float, 0.0, 2048.0),
         "disk_free_percent": (float, 0.0, 100.0),
-        "duplicate_mb": (float, 0.0, float('inf')),
-        "startup_count": (int, 0, float('inf')),
-        "quarantined_count": (int, 0, float('inf')),
-        "browser_cache_mb": (float, 0.0, float('inf')),
+        "duplicate_mb": (float, 0.0, 1e9),
+        "startup_count": (int, 0, 1000),
+        "quarantined_count": (int, 0, 10000),
+        "browser_cache_mb": (float, 0.0, 1e6),
     }
     
     if metrics:
@@ -281,7 +280,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     if health:
         raw_score = health.get("score") if isinstance(health, dict) else getattr(health, "score", None)
         if raw_score is not None: 
-            _safe_assign(ctx, "score", raw_score, int, max_val=100)
+            _safe_assign(ctx, "score", raw_score, int, 0, 100)
         
         grade_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
         if isinstance(grade_val, (str, int, float)):
@@ -289,8 +288,11 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if k in validators or k == "score":
-            _safe_assign(ctx, k, v, type(getattr(ctx, k, float)))
+        if k in validators:
+            c, min_v, max_v = validators[k]
+            _safe_assign(ctx, k, v, c, min_v, max_v)
+        elif k == "score":
+            _safe_assign(ctx, "score", v, int, 0, 100)
             
     return ctx
 

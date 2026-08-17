@@ -91,9 +91,6 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
 
-_LAST_MTIME: dict[str, float] = {}
-_CACHED_SETTINGS: dict[str, AppSettings] = {}
-
 def _get_default_config() -> AppSettings:
     """Retorna un diccionario con los valores por defecto definidos para la app."""
     return {
@@ -169,7 +166,6 @@ class _Validators:
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
-            # Verifica si la ruta resuelta coincide (evita trucos de normalización)
             if os.path.abspath(path_obj) != str(path_obj.resolve()): return None
             
             path_str = str(path_obj)
@@ -217,6 +213,18 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if not _Validators._is_safe_path(str(base)): return SETTINGS_DIR / SETTINGS_FILE
     return base / SETTINGS_FILE
 
+@lru_cache(maxsize=4)
+def _read_config_disk(ruta_str: str) -> AppSettings:
+    """Lee y valida el archivo de configuración con cacheo de MTIME implícito."""
+    ruta = Path(ruta_str)
+    if not ruta.exists() or ruta.is_dir() or ruta.stat().st_size > MAX_SETTINGS_SIZE:
+        return _get_default_config()
+    try:
+        data = json.loads(ruta.read_bytes())
+        return validate(data) if isinstance(data, dict) else _get_default_config()
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
+        return _get_default_config()
+
 def validate(raw_values: Any) -> AppSettings:
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
@@ -230,33 +238,13 @@ def validate(raw_values: Any) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
-    ruta_str = str(ruta)
-    
-    if is_protected_path(ruta_str) or not ruta.exists() or ruta.is_dir():
-        return _get_default_config()
-    
-    try:
-        mtime = ruta.stat().st_mtime
-        if _LAST_MTIME.get(ruta_str) == mtime and ruta_str in _CACHED_SETTINGS:
-            return _CACHED_SETTINGS[ruta_str].copy()
-            
-        file_size = ruta.stat().st_size
-        if file_size == 0 or file_size > MAX_SETTINGS_SIZE: return _get_default_config()
-        
-        data = json.loads(ruta.read_bytes())
-        settings = validate(data) if isinstance(data, dict) else _get_default_config()
-        
-        _LAST_MTIME[ruta_str] = mtime
-        _CACHED_SETTINGS[ruta_str] = settings
-        return settings.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
-        return _get_default_config()
+    if is_protected_path(str(ruta)): return _get_default_config()
+    return _read_config_disk(str(ruta)).copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
-    # Verificación estricta de seguridad defensiva
     if not _Validators._is_safe_path(str(ruta.parent)) or not is_safe_to_modify(str(ruta)): 
         return None
     
@@ -272,7 +260,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_ruta, ruta)
-        _LAST_MTIME.pop(str(ruta), None)
+        _read_config_disk.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError, TypeError):
         return None

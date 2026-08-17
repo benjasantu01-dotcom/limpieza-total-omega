@@ -253,12 +253,9 @@ def bar(percent: Union[float, int, None], width: int = 24,
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """Convierte un string HEX (#RRGGBB) a una tupla RGB (r, g, b) usando la cache pre-computada."""
-    # Acceso directo al índice invertido del mapa de colores por valor
-    # Como la mayoría de las llamadas son con colores de la paleta, buscamos en el mapa inverso
     try:
         return next(rgb for hex_val, rgb in PALETTE_RGB.items() if PALETTE[hex_val] == value)
     except StopIteration:
-        # Fallback para colores dinámicos fuera de PALETTE
         if isinstance(value, str) and len(value) == 7 and value.startswith("#"):
             return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
     return (0, 0, 0)
@@ -351,7 +348,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if not is_safe_to_modify(path_obj):
             return None
         target = ensure_safe_to_modify(path_obj)
-        target.parent.mkdir(parents=True, exist_ok=True)
+        if target.parent and not target.parent.exists():
+            target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(logo_svg(), encoding="utf-8")
         return target
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):

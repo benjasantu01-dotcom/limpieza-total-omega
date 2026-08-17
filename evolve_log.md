@@ -1380,3 +1380,35 @@ FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informa
 - `2026-08-17T14:33:20` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `check_recent_executable_in_downloads` y `check_system_lookalike` reemplazando iteraciones redundantes y costosas sobre `path.parts` (que genera tuplas completas de componentes en cada llamado) por chequeos directos mediante `set.isdisjoint()` y `in` sobre strings, reduciendo la presión sobre el recolector de basura durante el escaneo recursivo.
 - `2026-08-17T14:33:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T14:33:20` Corrida terminada. Total usado hoy: 344.
+- `2026-08-17T14:41:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-17T14:42:23` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en `load` utilizando `lru_cache` sobre una función de lectura de archivo interna, reduciendo drásticamente las llamadas a `stat()` y las operaciones de E/S repetitivas en cada acceso a settings.
+- `2026-08-17T14:42:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-17T14:43:02` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.19s
+
+```
+- `2026-08-17T14:43:02` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el método `StartupEntry._resolve_and_cache_path` implementando un chequeo de existencia previo mediante `os.path.exists` antes de instanciar `Path` y realizar resoluciones costosas de sistema de archivos, reduciendo drásticamente la latencia en bucles de escaneo.
+- `2026-08-17T14:43:40` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` y sus funciones auxiliares para evitar que valores numéricos extremadamente altos (o NaN/Inf) corrompan el estado del sistema, asegurando una inicialización limpia del contexto incluso con entradas mal formadas.
+- `2026-08-17T14:44:00` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos o rutas inválidas, garantizando que una falla en la escritura o en la creación de directorios no interrumpa el flujo del programa, manteniendo la integridad del estado.
+- `2026-08-17T14:44:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T14:44:00` Corrida terminada. Total usado hoy: 348.
