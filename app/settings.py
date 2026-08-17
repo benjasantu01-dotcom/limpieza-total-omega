@@ -88,8 +88,8 @@ SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
-VALID_THEMES: Final[tuple[str, ...]] = ("oscuro", "claro", "sistema")
-VALID_ACCENTS: Final[tuple[str, ...]] = ("menta", "violeta", "magenta", "cian", "ambar")
+VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
+VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
 
 _LAST_MTIME: dict[str, float] = {}
 
@@ -182,8 +182,9 @@ class _Validators:
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> str | None:
         """Valida que los strings de configuración pertenezcan a los valores permitidos."""
-        if key == ConfigKey.TEMA: return text.lower() if text.lower() in VALID_THEMES else None
-        if key == ConfigKey.ACENTO: return text.lower() if text.lower() in VALID_ACCENTS else None
+        val = text.lower()
+        if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
+        if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
         return text if len(text) <= 512 else None
 
     @staticmethod

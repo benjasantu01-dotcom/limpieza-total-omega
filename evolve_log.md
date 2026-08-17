@@ -1251,3 +1251,10 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-17T01:07:34` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-17T01:07:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T01:07:34` Corrida terminada. Total usado hoy: 28.
+- `2026-08-17T01:16:21` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-17T01:16:47` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optronicé la detección de carpetas monitorizadas en `check_recent_executable_in_downloads` sustituyendo la iteración sobre `path.parts` (que generaba tuplas y nuevas cadenas en cada ciclo) por un acceso directo `any()` con búsqueda de conjuntos, reduciendo la carga de CPU durante el recorrido masivo de archivos.
+- `2026-08-17T01:17:15` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la validación de enumeraciones reemplazando búsquedas lineales en `VALID_THEMES` y `VALID_ACCENTS` por `frozenset` para obtener búsquedas de tiempo constante O(1).
+- `2026-08-17T01:17:39` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-17T01:17:59` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez ante datos corruptos o inesperados en `build_context` y `context_as_text` mediante la validación estricta de tipos y valores, evitando fallos en la interfaz cuando los datos provienen de fuentes externas potencialmente malformadas.
+- `2026-08-17T01:17:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T01:17:59` Corrida terminada. Total usado hoy: 32.

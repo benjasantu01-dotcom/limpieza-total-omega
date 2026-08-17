@@ -246,7 +246,7 @@ def _get_metric_val(source: MetricSource, key: str, default: Any) -> Any:
     if source is None:
         return default
     
-    val = source[key] if isinstance(source, dict) else getattr(source, key, None)
+    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
     if val is None or isinstance(val, bool):
         return default
@@ -282,7 +282,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         if raw_score is not None: 
             _safe_assign(ctx, "score", raw_score, int, max_val=100)
         
-        grade_val = health["grade"] if isinstance(health, dict) else getattr(health, "grade", None)
+        grade_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
         if isinstance(grade_val, (str, int, float)):
             ctx.grade = str(grade_val)[:10]
         ctx.analyzed = True

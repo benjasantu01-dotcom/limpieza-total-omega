@@ -126,12 +126,12 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica si un archivo ejecutable se encuentra en una carpeta monitorizada y fue modificado 
-    recientemente. Requiere el objeto os.DirEntry para acceder a metadatos de tiempo sin realizar 
-    llamadas adicionales al sistema. Retorna None si no es sospechoso o si faltan atributos.
+    recientemente. Optimizado para evitar iteraciones innecesarias sobre partes de la ruta.
     """
     if not isinstance(entry, os.DirEntry):
         return None
     
+    # Comprobación de alta eficiencia mediante intersección de conjuntos
     if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
         return None
         
