@@ -979,3 +979,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-17T10:49:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré `StartupEntry._resolve_and_cache_path` añadiendo un manejo robusto de `OSError` durante la resolución de rutas, evitando que archivos bloqueados, inexistentes o con permisos restringidos interrumpan el proceso de escaneo y asegurando que la caché de existencia se mantenga consistente.
 - `2026-08-17T10:49:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T10:49:03` Corrida terminada. Total usado hoy: 256.
+- `2026-08-17T10:57:25` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-17T10:58:04` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la defensa contra la ejecución de código o manipulación de rutas añadiendo una validación explícita mediante `is_protected_path` en `_ensure_safe_text` y restringiendo el uso de `getattr` en `_safe_assign` para evitar la inyección de atributos no deseados en el objeto de contexto.
+- `2026-08-17T10:58:38` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-17T10:58:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-17T10:59:30` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_path` integrando `os.path.commonpath` para validar la contención de rutas de forma nativa, evitando el riesgo de `ValueError` por `relative_to` al tratar con rutas normalizadas y previniendo inyecciones mediante una verificación más estricta de la jerarquía de directorios.
+- `2026-08-17T10:59:42` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `all_drives_usage` bloqueando explícitamente el acceso a rutas UNC para evitar comportamientos inesperados o bloqueos en llamadas de sistema de bajo nivel, alineándolo con las restricciones de `drive_usage`.
+- `2026-08-17T10:59:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T10:59:42` Corrida terminada. Total usado hoy: 260.

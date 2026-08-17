@@ -199,7 +199,7 @@ class Answer:
 def _ensure_safe_text(text: Any) -> bool:
     """
     Verifica la integridad del texto bloqueando inyecciones de ruta,
-    caracteres de control y normalizando el path si existiera accidentalmente.
+    caracteres de control y protegiendo contra rutas del sistema.
     """
     if not isinstance(text, str) or not text:
         return False
@@ -209,17 +209,15 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     
     # Normalización defensiva para detectar rutas disfrazadas
-    normalized = os.path.normpath(text)
-    if is_protected_path(normalized) or _PATH_REGEX.search(text):
+    if is_protected_path(text) or _PATH_REGEX.search(text):
         return False
     return True
 
 def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
     """
-    Asigna de forma robusta un valor a un atributo de SystemContext.
-    Valida tipos, finitud y NaN para evitar inyección de datos corruptos.
+    Asigna de forma robusta un valor a un atributo de SystemContext permitido.
     """
-    if val is None or isinstance(val, bool):
+    if not hasattr(obj, attr) or val is None or isinstance(val, bool):
         return
     try:
         clean_val = float(val)
@@ -239,8 +237,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
 
 def _get_metric_val(source: MetricSource, key: str, default: Any) -> Any:
     """
-    Intenta extraer un valor de una fuente (dict o clase) de forma defensiva,
-    garantizando que el resultado sea procesable numéricamente y finito.
+    Intenta extraer un valor de una fuente (dict o clase) de forma defensiva.
     """
     if source is None:
         return default
@@ -292,8 +289,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             ctx.grade = str(grade_val)[:10].strip()
         ctx.analyzed = True
 
+    # Bloque extra: solo procesar si es un atributo permitido y tipo seguro
     for k, v in extra.items():
-        if v is not None and not isinstance(v, bool):
+        if k in ctx.__dict__ and v is not None and not isinstance(v, bool):
             attr_val = getattr(ctx, k, None)
             if isinstance(attr_val, (int, float)):
                 _safe_assign(ctx, k, v, type(attr_val))
@@ -331,7 +329,6 @@ def context_as_text(context: SystemContext) -> str:
 def explain_area(area: Any) -> str:
     """
     Proporciona una explicación educativa sobre los conceptos clave de la aplicación.
-    Ayuda al usuario a entender el 'porqué' detrás de las métricas.
     """
     explicaciones: Final[dict[str, str]] = {
         "basura": "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo.",
@@ -457,7 +454,6 @@ def _sanitize_query(question: str) -> str:
 def local_answer(question: str, context: SystemContext) -> Answer:
     """
     Determina la respuesta mediante heurísticas locales basadas en keywords.
-    Si no hay un área clara, ofrece un resumen de salud priorizado.
     """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
@@ -495,18 +491,13 @@ def _call_gemini(
     model: str
 ) -> Optional[str]:
     """
-    Ejecuta una solicitud POST al motor de Gemini (remoto) si la configuración está activa.
-    Las entradas están estrictamente saneadas contra inyecciones y rutas.
+    Ejecuta una solicitud POST al motor de Gemini si está habilitado.
     """
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q = _sanitize_query(question)
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
-    
-    # Defensa extra: validar que ni la pregunta ni el contexto sean paths protegidos
-    if is_protected_path(os.path.normpath(safe_q)) or is_protected_path(os.path.normpath(context_text)): 
-        return None
     
     try:
         payload = json.dumps({
@@ -526,7 +517,6 @@ def _call_gemini(
             raw_res = res.read(_MAX_RESPONSE_BYTES)
             if not raw_res: return None
             
-            # Validación de respuesta antes de procesar
             try:
                 data = json.loads(raw_res.decode("utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError):
@@ -544,7 +534,6 @@ def _call_gemini(
             text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
             final_text = text.strip()[:_MAX_TEXT_LENGTH]
             
-            # Filtrado defensivo final sobre la respuesta de la IA
             limpia_final = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", final_text))
             return limpia_final if _ensure_safe_text(limpia_final) else None
     except (urllib.error.URLError, KeyError, TypeError, ValueError):

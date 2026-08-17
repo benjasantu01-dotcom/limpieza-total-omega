@@ -180,7 +180,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     results: List[DriveUsage] = []
     if mounts:
         for mount in mounts:
-            if mount:
+            if mount and not str(mount).startswith(("\\\\", "//")):
                 usage = drive_usage(mount)
                 if usage is not None:
                     results.append(usage)

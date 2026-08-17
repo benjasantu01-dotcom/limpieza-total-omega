@@ -115,8 +115,9 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
-        # Verifica que la ruta target sea subdirectorio de la base para evitar fugas de contexto
-        real_target.relative_to(real_base)
+        # Verifica que la ruta target sea subdirectorio de la base usando commonpath para evitar fugas de contexto
+        if os.path.commonpath([str(real_base), str(real_target)]) != str(real_base):
+            return False
 
         # Verifica junctions/symlinks de Windows que podrían saltar fuera del arbol
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
