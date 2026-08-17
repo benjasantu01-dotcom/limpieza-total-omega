@@ -220,17 +220,17 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
-        if not is_safe_to_modify(dest_base): return Path(".")
+        if not dest_base.is_dir() or not is_safe_to_modify(dest_base): return Path(".")
     except (OSError, PermissionError, RuntimeError):
         return Path(".")
 
     for junk_file in files:
-        if not isinstance(junk_file, JunkFile) or junk_file.path is None:
+        if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path):
             continue
             
         try:
-            # Re-verificar existencia antes de cualquier operación
-            if not junk_file.path.exists():
+            # Re-verificar existencia y tipo antes de cualquier operación
+            if not junk_file.path.exists() or not junk_file.path.is_file():
                 continue
             
             if not _is_safe_to_move(junk_file, dest_base):

@@ -395,7 +395,7 @@ def quarantine_file(
         items.append(item)
         save_manifest(items, base)
         return item
-    except Exception as e:
+    except (Exception, OSError, ValueError) as e:
         if destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Error al finalizar el aislamiento: {e}")

@@ -799,3 +799,10 @@ assert not {'replace'}
 - `2026-08-17T08:36:37` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `parse_windows_process_csv` y `_parse_csv_row` mediante validación explícita de tipos, manejo de excepciones más granular y limpieza de datos antes de procesar para prevenir errores de parsing ante entradas inesperadas de PowerShell.
 - `2026-08-17T08:36:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T08:36:37` Corrida terminada. Total usado hoy: 204.
+- `2026-08-17T08:44:49` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-17T08:45:14` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` agregando validaciones de tipo y estado (usando `is_file()` y `exists()`) antes de las operaciones de disco para evitar excepciones innecesarias y mejorar la consistencia en el manejo de rutas.
+- `2026-08-17T08:45:43` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` envolviendo las llamadas de alto riesgo en un bloque `try-except` más granular para evitar estados inconsistentes (manifiesto desincronizado del disco) y agregué validaciones de tipo `isinstance` adicionales antes de operar sobre las rutas para prevenir excepciones no capturadas.
+- `2026-08-17T08:46:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-17T08:46:12` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-17T08:46:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T08:46:12` Corrida terminada. Total usado hoy: 208.
