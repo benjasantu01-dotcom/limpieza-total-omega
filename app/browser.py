@@ -197,12 +197,13 @@ def _sum_directory_recursive(
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file():
                             f_stat = entry.stat()
-                            if f_stat.st_size >= 0:
+                            # Validar que st_size exista y sea positivo antes de sumar
+                            if f_stat.st_size is not None and f_stat.st_size > 0:
                                 total += f_stat.st_size
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
-            pass
+            return 0
         
         memo[current_dir] = total
         return total
@@ -218,6 +219,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         p_obj = Path(path)
         if not p_obj.exists():
             return 0
+        # Uso de resolve para normalizar y evitar ambigüedades
         p_path = p_obj.resolve(strict=True)
         if not p_path.is_dir() or is_protected_path(p_path):
             return 0
@@ -255,7 +257,6 @@ def detect_profiles(
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
-    # Inyección inicial de funciones y handles para evitar re-resolución constante
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
     k32: Optional[ctypes.WinDLL] = None
     if os.name == 'nt':
