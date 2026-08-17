@@ -176,11 +176,17 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el peso total de una carpeta mediante un recorrido en profundidad (DFS).
-    Usa 'memo' para evitar duplicar el cálculo en árboles ya procesados.
+    
+    Args:
+        root_dir: Ruta absoluta a procesar (acepta prefijo \\?\ para long paths).
+        is_junction_fn: Callback para detectar puntos de reparse en Windows.
+        kernel32: Instancia de ctypes para acceso a atributos de archivo.
+        memo: Diccionario de caché para evitar re-procesar subdirectorios.
     """
     if not root_dir or not isinstance(root_dir, str):
         return 0
 
+    # Normalización para rutas de Windows (Long Path support)
     safe_root = root_dir if not (os.name == 'nt' and not root_dir.startswith(r"\\?")) else r"\\?\\" + root_dir
 
     def _walk(current_dir: str, depth: int) -> int:

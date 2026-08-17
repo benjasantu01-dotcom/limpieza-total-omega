@@ -5,47 +5,51 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **221** (44.0% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 71 | 8 | 9 | 4 | 60 |
+| 2026-08-15 | 69 | 8 | 9 | 4 | 60 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
+| 2026-08-17 | 3 | 0 | 0 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - robustez ante casos límite: **46**
+- legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **43**
-- rendimiento: **39**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
 - `scanner.py`: **20**
+- `assistant.py`: **20**
 - `healthscore.py`: **20**
-- `memory.py`: **19**
-- `assistant.py`: **19**
+- `browser.py`: **19**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
-- `browser.py`: **18**
-- `organizer.py`: **17**
+- `memory.py`: **18**
+- `organizer.py`: **16**
 - `duplicates.py`: **15**
 - `main.py`: **10**
+- `branding.py`: **10**
 - `safety.py`: **9**
-- `branding.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T00:07:03` **browser.py** (legibilidad y documentación): Se añadió un docstring detallado y tipos explícitos en `_sum_directory_recursive` para aclarar el propósito de `memo` y el manejo de rutas `long-path` (`\\?\`), mejorando la mantenibilidad técnica del recorrido recursivo.
+- `2026-08-17T00:06:52` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo docstrings descriptivos a las funciones `_draw_shield_stripes` y `_get_shield_coords`, y refiné los tipos de retorno de las funciones de pintado para mayor claridad.
+- `2026-08-17T00:06:13` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la incorporación de docstrings descriptivos, la estandarización de las anotaciones de tipo (`TypeAlias`) y la limpieza de comentarios ambiguos para mejorar la mantenibilidad del código sin alterar su lógica.
 - `2026-08-16T14:54:50` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` validando explícitamente los parámetros en `scan_directory` y `process_entry` para evitar errores de tipo o rutas vacías, y añadiendo un filtrado defensivo contra rutas nulas antes de realizar operaciones de sistema en `scan_file`.
 - `2026-08-16T14:44:37` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores potenciales en `shutil.move` y añadiendo validaciones preventivas sobre la existencia de la ruta origen antes de la operación, asegurando que el flujo no se interrumpa ante fallos de I/O específicos.
 - `2026-08-16T14:36:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` validando la integridad del PID antes de operar y asegurando que las llamadas a la API de Windows manejen correctamente los errores de sistema sin colapsar, siguiendo el enfoque de validación de entradas y captura de excepciones específicas.
@@ -58,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T12:53:36` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al asegurar que el manejo de rutas no sea vulnerable a excepciones de permisos o corrupción durante el acceso, utilizando `try-except` explícitos y validando que el objeto `Path` sea absoluto antes de cualquier comparación de padres.
 - `2026-08-16T12:43:56` **memory.py** (seguridad defensiva): Se ha endurecido la seguridad en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable del proceso objetivo antes de realizar cualquier manipulación, garantizando que no se apliquen acciones sobre procesos críticos incluso si se logran abrir sus handles.
 - `2026-08-16T12:43:29` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo un filtro explícito en `on_trim_process` para asegurar que el proceso a liberar no sea un proceso crítico del sistema (PID < 100) ni un proceso inexistente, previniendo errores de sistema y reforzando la protección sobre componentes vitales.
-- `2026-08-16T12:42:23` **healthscore.py** (seguridad defensiva): Reforcé la integridad defensiva de la función `_generate_recommendations` validando explícitamente el tipo y la finitud de los valores de las métricas antes de intentar formatear los mensajes, evitando errores de ejecución si los datos de entrada estuvieran corrompidos o fueran no numéricos.
-- `2026-08-16T12:33:19` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_collect_candidates` para prevenir la resolución de rutas mediante `resolve()` antes de realizar las comprobaciones de seguridad, evitando así vulnerabilidades de path traversal y asegurando que las validaciones de `safety.py` actúen sobre la ruta canónica después de verificar que la entrada es un archivo real y seguro.
-- `2026-08-16T12:32:44` **browser.py** (seguridad defensiva): Reforcé la seguridad de `_is_safe_path` integrando explícitamente `is_protected_path` al inicio de la validación y asegurando que las rutas resultantes sean canónicas mediante `resolve(strict=True)` antes de realizar comparaciones de profundidad, evitando así la evasión de los filtros mediante rutas relativas o aliases de sistema.

@@ -82,8 +82,8 @@ class ProblemCriterion(NamedTuple):
     message_format: str
 
 # TypeAliases para mejorar la legibilidad de las firmas de funciones
-MetricSource: TypeAlias = Any
-ScoreSource: TypeAlias = Any
+MetricSource: TypeAlias = dict[str, Any] | object
+ScoreSource: TypeAlias = dict[str, Any] | object
 
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
@@ -238,7 +238,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     if val is None or not isinstance(val, (int, float)) or not math.isfinite(val): return "N/A"
     return f"{float(val):.{decimal}f}{unit}"
 
-def _get_metric_val(source: dict[str, Any] | object, key: str, default: Any) -> Any:
+def _get_metric_val(source: MetricSource, key: str, default: Any) -> Any:
     """
     Intenta extraer un valor de una fuente (dict o clase) de forma defensiva,
     garantizando que el resultado sea procesable numéricamente y finito.

@@ -308,7 +308,10 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor,
 
 @lru_cache(maxsize=8)
 def _get_shield_coords(s: float) -> List[float]:
-    """Calcula los puntos vectoriales del escudo normalizados y escalados por 's'."""
+    """
+    Calcula las coordenadas vectoriales (x, y) de la forma geométrica base del
+    escudo, escaladas uniformemente por el factor 's'.
+    """
     base: List[float] = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [v * float(s) for v in base]
 
@@ -371,7 +374,10 @@ def logo_ascii() -> str:
 
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza el sombreado interno del escudo dentro de un canvas Tkinter."""
+    """
+    Renderiza los degradados internos de franjas decorativas del escudo 
+    mediante el cálculo de segmentos de color sobre el canvas proporcionado.
+    """
     if scale <= 0: return
     franjas_count = max(6, int(28 * scale))
     colores = gradient_colors(franjas_count)
