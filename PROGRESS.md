@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 49 | 6 | 6 | 3 | 46 |
+| 2026-08-15 | 49 | 6 | 6 | 3 | 42 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 26 | 3 | 4 | 2 | 9 |
+| 2026-08-17 | 29 | 3 | 4 | 2 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- robustez ante casos límite: **50**
+- robustez ante casos límite: **51**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **41**
-- seguridad defensiva: **38**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `scanner.py`: **21**
+- `assistant.py`: **20**
 - `memory.py`: **20**
-- `assistant.py`: **19**
+- `settings.py`: **20**
 - `browser.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
 - `diskreport.py`: **18**
 - `organizer.py`: **17**
 - `duplicates.py`: **16**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `main.py`: **10**
 - `safety.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T01:59:02` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` asegurando que la ruta destino no sea un directorio protegido antes de realizar cualquier operación de escritura, utilizando `ensure_safe_to_modify` para cumplir con las reglas de seguridad defensiva y manejo de excepciones.
+- `2026-08-17T01:58:44` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en la serialización y validación de texto añadiendo una capa de "sandboxing" lógica que evita que cualquier cadena contenga caracteres de control invisibles o secuencias de escape que podrían ser interpretadas por terminales o parsers externos.
+- `2026-08-17T01:57:36` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `load` incorporando una validación de `os.stat` para prevenir bloqueos por archivos cuyo tamaño es incompatible con la carga en memoria, y se ha reemplazado la lógica de `ruta.replace` por un manejo de errores más específico que evita fallos por estados de archivo bloqueados en sistemas de archivos con permisos restrictivos.
 - `2026-08-17T01:49:00` **scanner.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `process_entry` y `scan_directory` manejando explícitamente errores de acceso (`OSError`, `PermissionError`) y rutas malformadas que pueden ocurrir durante el recorrido del disco.
 - `2026-08-17T01:48:51` **safety.py** (robustez ante casos límite): Se introdujo la verificación `p.lstat()` en lugar de `p.stat()` dentro de `_check_file_integrity` para evitar seguir enlaces simbólicos o puntos de reparse durante la inspección, mitigando riesgos de seguridad al analizar rutas externas y mejorando la robustez frente a ciclos de directorios.
 - `2026-08-17T01:47:53` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y acceso mediante un sistema de bloqueo por nombre único (via `uuid`) para evitar colisiones en `quarantine_file` y asegurar que, ante caídas en el proceso de copia, no queden archivos parciales huérfanos o manifiestos corruptos en el sandbox.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T01:17:59` **assistant.py** (robustez ante casos límite): Se mejora la robustez ante datos corruptos o inesperados en `build_context` y `context_as_text` mediante la validación estricta de tipos y valores, evitando fallos en la interfaz cuando los datos provienen de fuentes externas potencialmente malformadas.
 - `2026-08-17T01:17:15` **settings.py** (rendimiento): Optimizé la validación de enumeraciones reemplazando búsquedas lineales en `VALID_THEMES` y `VALID_ACCENTS` por `frozenset` para obtener búsquedas de tiempo constante O(1).
 - `2026-08-17T01:16:47` **scanner.py** (rendimiento): Optronicé la detección de carpetas monitorizadas en `check_recent_executable_in_downloads` sustituyendo la iteración sobre `path.parts` (que generaba tuplas y nuevas cadenas en cada ciclo) por un acceso directo `any()` con búsqueda de conjuntos, reduciendo la carga de CPU durante el recorrido masivo de archivos.
-- `2026-08-17T01:07:05` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `list` en `set` para las búsquedas de `stored_name`, evitando una complejidad algorítmica de O(N*M) y reduciéndola a O(N), y eliminé la re-lectura innecesaria del manifiesto dentro del bucle.
-- `2026-08-17T00:57:59` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la caché simple por una lógica de `lru_cache` aplicada a la consulta de PowerShell y ajusté la firma de la función para permitir un `limit` variable sin invalidar el caché innecesariamente, reduciendo el I/O repetitivo y los forks de subprocesos.
-- `2026-08-17T00:56:46` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de `SystemMetrics` reemplazando la iteración por reflexión (`__dataclass_fields__`) por un chequeo directo de atributos fijos, evitando el costo de búsqueda en el diccionario de metadatos en cada ejecución del bucle.

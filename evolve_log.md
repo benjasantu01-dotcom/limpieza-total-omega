@@ -1280,3 +1280,10 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-17T01:49:00` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos límite en `process_entry` y `scan_directory` manejando explícitamente errores de acceso (`OSError`, `PermissionError`) y rutas malformadas que pueden ocurrir durante el recorrido del disco.
 - `2026-08-17T01:49:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T01:49:00` Corrida terminada. Total usado hoy: 44.
+- `2026-08-17T01:57:06` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-08-17T01:57:36` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en `load` incorporando una validación de `os.stat` para prevenir bloqueos por archivos cuyo tamaño es incompatible con la carga en memoria, y se ha reemplazado la lógica de `ruta.replace` por un manejo de errores más específico que evita fallos por estados de archivo bloqueados en sistemas de archivos con permisos restrictivos.
+- `2026-08-17T01:58:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-17T01:58:44` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en la serialización y validación de texto añadiendo una capa de "sandboxing" lógica que evita que cualquier cadena contenga caracteres de control invisibles o secuencias de escape que podrían ser interpretadas por terminales o parsers externos.
+- `2026-08-17T01:59:02` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó `save_logo_svg` asegurando que la ruta destino no sea un directorio protegido antes de realizar cualquier operación de escritura, utilizando `ensure_safe_to_modify` para cumplir con las reglas de seguridad defensiva y manejo de excepciones.
+- `2026-08-17T01:59:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T01:59:02` Corrida terminada. Total usado hoy: 48.

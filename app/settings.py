@@ -249,15 +249,18 @@ def _load_internal(ruta_str: str) -> AppSettings:
         if not ruta.is_file() or is_protected_path(str(ruta)) or not os.access(ruta, os.R_OK):
             return _get_default_config()
         
+        file_size = ruta.stat().st_size
+        if file_size == 0 or file_size > MAX_SETTINGS_SIZE: return _get_default_config()
+        
         content = ruta.read_bytes()
-        if not content or len(content) > MAX_SETTINGS_SIZE: return _get_default_config()
         data = json.loads(content)
         
         if not isinstance(data, dict): return _get_default_config()
         return validate(data)
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         try:
-            ruta.replace(ruta.with_suffix(".corrupt"))
+            # Marcamos como corrupto renombrando sin usar métodos recursivos destructivos
+            ruta.rename(ruta.with_suffix(f"{ruta.suffix}.corrupt"))
         except OSError: pass
         return _get_default_config()
 
@@ -270,10 +273,13 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta_str = str(ruta)
     if not ruta.exists() or ruta.is_dir(): return _get_default_config()
     
-    mtime = ruta.stat().st_mtime
-    if _LAST_MTIME.get(ruta_str) != mtime:
-        _load_internal.cache_clear()
-        _LAST_MTIME[ruta_str] = mtime
+    try:
+        mtime = ruta.stat().st_mtime
+        if _LAST_MTIME.get(ruta_str) != mtime:
+            _load_internal.cache_clear()
+            _LAST_MTIME[ruta_str] = mtime
+    except OSError:
+        return _get_default_config()
     
     return _load_internal(ruta_str)
 
