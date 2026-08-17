@@ -182,11 +182,12 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     if not isinstance(csv_line, str):
         return None
     line = csv_line.strip()
-    if not line:
+    if not line or "," not in line:
         return None
     
     parts = line.split(",")
-    if len(parts) < 3 or parts[0].strip().lower() == "name":
+    # Se esperan al menos Name, PID, WorkingSet
+    if len(parts) < 3:
         return None
         
     try:
@@ -194,6 +195,9 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
         pid_raw = parts[-2].strip().strip("'\"")
         name = ",".join(parts[:-2]).strip().strip("'\"")
         
+        if not ws_raw.isdigit() or not pid_raw.isdigit():
+            return None
+            
         return ProcessMemory(name=name, pid=int(pid_raw), working_set=int(ws_raw))
     except (ValueError, TypeError, IndexError):
         return None

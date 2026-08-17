@@ -448,6 +448,9 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not stored_file.exists() or not match.verify_integrity(stored_file):
         raise UnsafePathError("Integridad comprometida: no se puede procesar el archivo.")
     
+    if not _is_valid_quarantine_path(stored_file, quarantine_root):
+        raise UnsafePathError("Intento de borrado fuera del sandbox.")
+        
     if _safe_unlink(stored_file):
         items.remove(match)
         save_manifest(items, base)
@@ -470,9 +473,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if entry.name in item_map:
             item = item_map[entry.name]
             if item.verify_integrity(entry) and not _is_file_locked(entry):
-                if _safe_unlink(entry):
-                    purged_count += 1
-                    names_to_keep.remove(entry.name)
+                if _is_valid_quarantine_path(entry, quarantine_root):
+                    if _safe_unlink(entry):
+                        purged_count += 1
+                        names_to_keep.remove(entry.name)
             
     if purged_count > 0:
         new_manifest = [i for i in items if i.stored_name in names_to_keep]

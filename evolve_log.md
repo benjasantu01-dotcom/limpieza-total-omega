@@ -906,3 +906,11 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-17T10:28:55` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `main.py` frente a la concurrencia y cierres inesperados al añadir verificaciones de `winfo_exists()` antes de acceder a widgets de `customtkinter` en todas las tareas asíncronas, evitando así errores de `TclError` si el usuario cierra la ventana mientras una tarea está en ejecución.
 - `2026-08-17T10:28:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T10:28:55` Corrida terminada. Total usado hoy: 248.
+- `2026-08-17T10:37:04` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-08-17T10:37:34` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_parse_csv_row` añadiendo una validación explícita para evitar errores en líneas que no contienen el formato esperado (por ejemplo, cuando PowerShell devuelve encabezados o líneas vacías), asegurando que el bucle de procesamiento de `scanner` sea tolerante a fallos en el formato de salida del sistema.
+- `2026-08-17T10:37:56` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-17T10:38:27` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `purge_all` y `purge_item` al añadir una verificación explícita de confinamiento de ruta antes de llamar a `_safe_unlink`, asegurando que, ante cualquier inconsistencia en el manifiesto o el sistema de archivos, el borrado nunca escape fuera del directorio de cuarentena definido.
+- `2026-08-17T10:38:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-17T10:38:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 116): unterminated string literal (detected at line 116)
+- `2026-08-17T10:38:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T10:38:40` Corrida terminada. Total usado hoy: 252.
