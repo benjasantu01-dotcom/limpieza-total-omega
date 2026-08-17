@@ -107,7 +107,7 @@ def _has_invalid_chars(path_str: str) -> bool:
 
 
 def _is_reserved_device_name(name: str) -> bool:
-    """Comprueba si el nombre del archivo colisiona con dispositivos reservados del kernel (ej. NUL)."""
+    """Comprueba si el nombre del archivo colisiona con dispositivos reservados del kernel."""
     return bool(_RESERVED_NAMES_PATTERN.fullmatch(name))
 
 
@@ -118,7 +118,7 @@ def _has_alternate_data_stream(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Consulta atributos de archivo win32 para verificar flags de sistema u oculto."""
+    """Consulta atributos win32 para verificar flags de sistema u oculto."""
     if os.name != 'nt' or not path.exists():
         return False
     try:
@@ -143,7 +143,7 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """Verifica exclusividad de acceso intentando abrir el archivo con modo solo lectura."""
+    """Verifica exclusividad de acceso intentando abrir el archivo con modo lectura."""
     if not path.exists() or not path.is_file():
         return False
     try:
@@ -165,25 +165,24 @@ def _check_file_integrity(p: Path) -> None:
         raise UnsafePathError("Ruta demasiado profunda.")
 
     try:
-        # Usamos lstat para evitar seguir enlaces/reparse points durante la inspección
         st = p.lstat()
     except OSError:
         raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
 
-    checks = [
-        (ProtectionReason.INACCESSIBLE, lambda: not os.access(p, os.W_OK)),
-        (ProtectionReason.REPARSE_POINT, lambda: _is_reparse_point(p)),
-        (ProtectionReason.READ_ONLY, lambda: not bool(st.st_mode & stat.S_IWRITE)),
-        (ProtectionReason.IN_USE, lambda: _is_file_in_use(p)),
-        (ProtectionReason.SYSTEM_HIDDEN, lambda: _is_system_or_hidden(p)),
-        (ProtectionReason.HARD_LINK, lambda: p.is_file() and st.st_nlink > 1),
-        (ProtectionReason.ADS, lambda: _has_alternate_data_stream(p)),
-        (ProtectionReason.EMPTY_FILE, lambda: p.is_file() and st.st_size == 0)
+    checks: list[_IntegrityCheck] = [
+        _IntegrityCheck(ProtectionReason.INACCESSIBLE, lambda: not os.access(p, os.W_OK)),
+        _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda: _is_reparse_point(p)),
+        _IntegrityCheck(ProtectionReason.READ_ONLY, lambda: not bool(st.st_mode & stat.S_IWRITE)),
+        _IntegrityCheck(ProtectionReason.IN_USE, lambda: _is_file_in_use(p)),
+        _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda: _is_system_or_hidden(p)),
+        _IntegrityCheck(ProtectionReason.HARD_LINK, lambda: p.is_file() and st.st_nlink > 1),
+        _IntegrityCheck(ProtectionReason.ADS, lambda: _has_alternate_data_stream(p)),
+        _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda: p.is_file() and st.st_size == 0)
     ]
 
-    for reason, predicate in checks:
-        if predicate():
-            raise UnsafePathError(f"Operación denegada en {p.name}: {reason.value}.")
+    for check in checks:
+        if check.predicate():
+            raise UnsafePathError(f"Operación denegada en {p.name}: {check.reason.value}.")
 
 
 @lru_cache(maxsize=2048)

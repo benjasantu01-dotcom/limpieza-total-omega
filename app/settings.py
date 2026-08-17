@@ -132,7 +132,10 @@ class _Validators:
     @staticmethod
     @lru_cache(maxsize=32)
     def _is_safe_path(path_str: str) -> bool:
-        """Verifica si una ruta es segura para ser tratada o almacenada, evitando symlinks/junctions."""
+        """
+        Verifica si una ruta es segura para ser tratada o almacenada, 
+        evitando symlinks/junctions mediante resolución estricta de rutas.
+        """
         try:
             path_obj = Path(path_str)
             resolved = path_obj.resolve(strict=False)
@@ -166,7 +169,10 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """Valida la integridad de rutas de usuario, descartando caracteres maliciosos o rutas de sistema."""
+        """
+        Valida la integridad de rutas de usuario descartando caracteres de control,
+        rutas relativas (..) y rutas fuera de límites definidos por safety.py.
+        """
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
@@ -189,7 +195,7 @@ class _Validators:
 
     @staticmethod
     def str(key: ConfigKey, val: Any) -> str | None:
-        """Valida y limpia cadenas de texto evitando inyección o exceso de tamaño."""
+        """Valida cadenas de texto evitando inyección, secuencias de escape o exceso de tamaño."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -287,7 +293,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Guarda una configuración validada de forma atómica usando un archivo temporal."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    # Bloqueo estricto: evitar reparse points o rutas protegidas
+    
+    # Bloqueo estricto: evitar reparse points o rutas protegidas antes de escribir
     if (ruta.exists() and (ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()))) or is_protected_path(str(ruta)):
         return None
     if not _Validators._is_safe_path(str(ruta.parent)) or not is_safe_to_modify(str(ruta)): return None

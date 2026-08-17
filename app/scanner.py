@@ -34,9 +34,8 @@ class Suspicion:
     reason: str
     severity: str
 
-# Alias de tipo para las funciones que evalúan un archivo.
-# Se espera que reciban la ruta, opcionalmente el objeto DirEntry para evitar stat adicional,
-# y un timestamp de referencia para cálculos de antigüedad.
+# Alias de tipo para las funciones de inspección heurística.
+# Argumentos: (Ruta, Objeto DirEntry si está disponible para evitar syscalls, timestamp actual).
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 ScanResult: TypeAlias = List[Suspicion]
 
@@ -52,7 +51,7 @@ RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 class Scanner:
     """
     Controlador de estado para el escaneo recursivo del sistema de archivos.
-    Gestiona la pila de directorios pendientes y el registro de rutas visitadas.
+    Mantiene el registro de directorios visitados y resultados de sospechas.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -62,7 +61,7 @@ class Scanner:
         self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """Verifica que la ruta resuelta esté contenida dentro del directorio base de escaneo."""
+        """Valida que la ruta esté dentro del alcance del directorio base (previene escape)."""
         try:
             resolved = entry_path.resolve()
             return self.base_root == resolved or self.base_root in resolved.parents
@@ -71,8 +70,8 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Consulta los atributos de archivo mediante syscall para detectar puntos de reanálisis.
-        Evita seguir symlinks o junctions para prevenir bucles de recursión.
+        Determina si una entrada es un punto de reanálisis (Junction/Symlink) 
+        para evitar bucles de recursión mediante el bit de atributos de sistema.
         """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -81,9 +80,8 @@ class Scanner:
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
-        Ejecuta el pipeline de filtrado y procesamiento para una entrada individual.
-        Si la entrada es directorio, la agrega al stack de recorrido; si es archivo,
-        ejecuta el análisis heurístico.
+        Procesa individualmente cada entrada: filtra accesos inseguros, evita ciclos 
+        y delega el análisis heurístico si es un archivo.
         """
         if entry is None or not entry.path:
             return
@@ -113,20 +111,14 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Evalúa si el nombre del archivo contiene una doble extensión sospechosa.
-    Retorna un objeto Suspicion si coincide con DOUBLE_EXTENSION_RE, caso contrario None.
-    """
+    """Evalúa si el nombre del archivo contiene una doble extensión engañosa."""
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Verifica si un archivo ejecutable se encuentra en una carpeta monitorizada y fue modificado 
-    recientemente. Valida que el archivo no esté en una ruta protegida antes de procesar stat.
-    """
+    """Valida si un ejecutable en carpetas críticas fue modificado en las últimas 24h."""
     if not isinstance(entry, os.DirEntry) or is_protected_path(path):
         return None
     
@@ -143,10 +135,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Compara el nombre del archivo contra una lista negra de ejecutables del sistema.
-    Marca como sospechoso cualquier coincidencia que no resida dentro de 'System32'.
-    """
+    """Identifica ejecutables con nombres de sistema que residen fuera de System32."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -155,34 +144,32 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Pipeline principal para el análisis de un archivo único. Ejecuta todas las 
-    reglas registradas y retorna una lista acumulada de hallazgos (Suspicion).
+    Ejecuta el pipeline de reglas heurísticas. Primero analiza el nombre (estático),
+    luego, si es un ejecutable, aplica reglas que requieren acceso a metadatos.
     """
     if not path or not path.exists():
         return []
 
     findings: ScanResult = []
     
+    # Regla 1: Análisis rápido de nombre
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
+    # Regla 2: Análisis profundo para ejecutables
     if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-        heuristic_suite: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
-        for check in heuristic_suite:
+        for check in [check_system_lookalike, check_recent_executable_in_downloads]:
             try:
                 if (res := check(path, entry, now_ts)):
                     findings.append(res)
             except Exception as e:
-                logger.debug(f"Fallo inesperado en regla {check.__name__}: {e}")
+                logger.debug(f"Fallo en regla heurística {check.__name__}: {e}")
                 
     return findings
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Inicia el escaneo recursivo mediante un stack. Valida la existencia y 
-    seguridad de la ruta de entrada antes de procesar recursivamente.
-    """
+    """Inicia el escaneo recursivo mediante pila, filtrando rutas protegidas."""
     if not directory:
         return []
         
