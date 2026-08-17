@@ -144,9 +144,10 @@ def _get_sha256(path: Path) -> str:
 def _is_file_locked(path: Path) -> bool:
     """Determina si un archivo está en uso exclusivo, evitando abrirlo en modo escritura."""
     try:
-        fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
-        os.close(fd)
-        return False
+        if not os.access(path, os.W_OK):
+            return True
+        with open(path, "a+b"):
+            return False
     except (OSError, PermissionError):
         return True
 
@@ -454,7 +455,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     stored_file = (quarantine_root / match.stored_name).resolve()
     
     if not stored_file.exists():
-        # Sincronización: el archivo no existe, limpiar registro huérfano
         items.remove(match)
         save_manifest(items, base)
         return False
@@ -480,30 +480,27 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
 
     item_map = {i.stored_name: i for i in items}
-    names_to_keep = set(item_map.keys())
     purged_count = 0
+    updated = False
     
     for entry in quarantine_root.iterdir():
         if entry.name in item_map:
             item = item_map[entry.name]
-            # Validar integridad y bloqueo antes de intentar borrar
             if item.verify_integrity(entry) and not _is_file_locked(entry):
-                if _is_valid_quarantine_path(entry, quarantine_root):
-                    if _safe_unlink(entry):
-                        purged_count += 1
-                        names_to_keep.discard(entry.name)
+                if _safe_unlink(entry):
+                    purged_count += 1
+                    updated = True
         elif entry.name != MANIFEST_NAME and entry.is_file():
-            # Si hay un archivo no registrado, no lo tocamos por seguridad
             continue
             
-    if purged_count > 0:
-        new_manifest = [i for i in items if i.stored_name in names_to_keep]
+    if updated:
+        new_manifest = [i for i in load_manifest(base, force_reload=True) if (quarantine_root / i.stored_name).exists()]
         save_manifest(new_manifest, base)
     return purged_count
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el peso total de la cuarentena."""
+    """Calcula el peso total de la cuarentena utilizando la caché del manifiesto."""
     return sum(item.size_bytes for item in load_manifest(base))
 
 

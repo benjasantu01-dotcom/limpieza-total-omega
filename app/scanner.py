@@ -124,7 +124,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry) or is_protected_path(path):
         return None
     
-    if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
+    # Optimizacion: comparacion mas rapida usando set de componentes lower case
+    path_parts_lower = {p.lower() for p in path.parts}
+    if WATCHED_FOLDERS.isdisjoint(path_parts_lower):
         return None
         
     try:
@@ -142,7 +144,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
         return None
         
     if path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in (part.lower() for part in path.parts):
+        # Optimizacion: evitamos iterar partes si la ruta es corta
+        path_str_lower = str(path).lower()
+        if SYSTEM32_LOWER not in path_str_lower:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 

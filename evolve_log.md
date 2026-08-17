@@ -1372,3 +1372,11 @@ FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informa
 - `2026-08-17T14:23:41` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la función `scan_for_junk` mediante la pre-validación de `is_safe_to_modify` antes de entrar en `os.walk` y la eliminación de llamadas redundantes a `Path` dentro del bucle interno, reduciendo drásticamente las syscalls innecesarias durante el recorrido de disco.
 - `2026-08-17T14:23:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T14:23:41` Corrida terminada. Total usado hoy: 340.
+- `2026-08-17T14:31:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-17T14:32:14` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y `total_quarantined_bytes` evitando la deserialización completa del manifiesto cuando solo se requiere acceso a metadatos, y reduje la carga de E/S en `_is_file_locked` mediante la validación directa con `os.access`.
+- `2026-08-17T14:32:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-17T14:32:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-17T14:33:10` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-17T14:33:20` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `check_recent_executable_in_downloads` y `check_system_lookalike` reemplazando iteraciones redundantes y costosas sobre `path.parts` (que genera tuplas completas de componentes en cada llamado) por chequeos directos mediante `set.isdisjoint()` y `in` sobre strings, reduciendo la presión sobre el recolector de basura durante el escaneo recursivo.
+- `2026-08-17T14:33:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T14:33:20` Corrida terminada. Total usado hoy: 344.

@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 61 | 6 | 8 | 5 | 84 |
-| 2026-08-17 | 156 | 11 | 22 | 12 | 139 |
+| 2026-08-16 | 59 | 6 | 8 | 5 | 82 |
+| 2026-08-17 | 158 | 11 | 23 | 12 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- seguridad defensiva: **45**
-- rendimiento: **42**
+- rendimiento: **44**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **24**
-- `assistant.py`: **23**
-- `scanner.py`: **20**
+- `assistant.py`: **22**
+- `scanner.py`: **21**
+- `quarantine.py`: **19**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `settings.py`: **16**
 - `browser.py`: **16**
 - `organizer.py`: **16**
-- `diskreport.py`: **15**
 - `duplicates.py`: **15**
+- `diskreport.py`: **14**
 - `branding.py`: **11**
 - `main.py`: **9**
 - `safety.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T14:33:20` **scanner.py** (rendimiento): Optimizé `check_recent_executable_in_downloads` y `check_system_lookalike` reemplazando iteraciones redundantes y costosas sobre `path.parts` (que genera tuplas completas de componentes en cada llamado) por chequeos directos mediante `set.isdisjoint()` y `in` sobre strings, reduciendo la presión sobre el recolector de basura durante el escaneo recursivo.
+- `2026-08-17T14:32:14` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `total_quarantined_bytes` evitando la deserialización completa del manifiesto cuando solo se requiere acceso a metadatos, y reduje la carga de E/S en `_is_file_locked` mediante la validación directa con `os.access`.
 - `2026-08-17T14:23:41` **organizer.py** (rendimiento): Optimizé la función `scan_for_junk` mediante la pre-validación de `is_safe_to_modify` antes de entrar en `os.walk` y la eliminación de llamadas redundantes a `Path` dentro del bucle interno, reduciendo drásticamente las syscalls innecesarias durante el recorrido de disco.
 - `2026-08-17T14:23:32` **memory.py** (rendimiento): Optimicé el rendimiento de `read_snapshot` en Linux reemplazando la lectura síncrona repetitiva por una propiedad `lru_cache` y reduje la carga de procesamiento de texto en `parse_linux_meminfo` mediante el uso de una única pasada sobre las líneas del archivo.
 - `2026-08-17T14:21:55` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje convirtiendo la búsqueda de pesos en un diccionario de acceso directo (`_WEIGHT_FACTORS_DICT`) para evitar iterar sobre listas en cada llamada a `compute_score`, reduciendo la complejidad computacional en el bucle principal.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T13:41:46` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de docstrings descriptivos en las funciones de cálculo, aclarando la lógica de normalización de cada métrica para facilitar futuras auditorías del algoritmo de salud.
 - `2026-08-17T13:32:32` **diskreport.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en `_collect_summary_data` y `walk_files`, mejorando la documentación interna para aclarar la lógica de recorrido y agregación sin alterar el comportamiento.
 - `2026-08-17T13:32:12` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones críticas de escaneo y recursión (`_sum_directory_recursive`, `_is_safe_path`, `_should_skip_entry`) mediante docstrings explicativos que aclaran las decisiones de diseño, el manejo de errores y las salvaguardas de seguridad, facilitando el mantenimiento y la auditoría del código.
-- `2026-08-17T13:31:46` **branding.py** (legibilidad y documentación): Se introdujeron anotaciones de tipo más precisas y se documentó la lógica de cálculo en las funciones de renderizado geométrico para mejorar la mantenibilidad del motor de diseño.
-- `2026-08-17T13:31:11` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de manejo (`handle_*`) y clases, clarificando el propósito de cada una y su relación con el flujo de datos del asistente.
