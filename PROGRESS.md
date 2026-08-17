@@ -5,37 +5,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **216** (43.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 55 | 6 | 8 | 5 | 82 |
-| 2026-08-17 | 161 | 12 | 23 | 12 | 140 |
+| 2026-08-16 | 54 | 6 | 7 | 5 | 80 |
+| 2026-08-17 | 162 | 12 | 23 | 12 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - rendimiento: **45**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
 - `healthscore.py`: **23**
 - `scanner.py`: **21**
-- `quarantine.py`: **19**
+- `quarantine.py`: **18**
 - `settings.py`: **17**
+- `browser.py`: **17**
 - `memory.py`: **17**
-- `browser.py`: **16**
 - `organizer.py`: **16**
 - `diskreport.py`: **14**
 - `duplicates.py`: **14**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T14:52:34` **browser.py** (robustez ante casos límite): Se mejoró la robustez de `_sum_directory_recursive` ante archivos bloqueados o errores de lectura parcial durante el escaneo, reemplazando la validación estricta de `st_size` (que podía fallar por permisos) por un bloque `try-except` más granular y robusto que asegura que la suma avance aunque un archivo individual falle.
 - `2026-08-17T14:44:00` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos o rutas inválidas, garantizando que una falla en la escritura o en la creación de directorios no interrumpa el flujo del programa, manteniendo la integridad del estado.
 - `2026-08-17T14:43:40` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` y sus funciones auxiliares para evitar que valores numéricos extremadamente altos (o NaN/Inf) corrompan el estado del sistema, asegurando una inicialización limpia del contexto incluso con entradas mal formadas.
 - `2026-08-17T14:42:23` **settings.py** (rendimiento): Se implementó un cacheo más eficiente en `load` utilizando `lru_cache` sobre una función de lectura de archivo interna, reduciendo drásticamente las llamadas a `stat()` y las operaciones de E/S repetitivas en cada acceso a settings.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T14:02:34` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de Type Hints en los validadores y la refactorización de `_Validators.path` para separar claramente la validación lógica de la verificación de seguridad, eliminando redundancias en la cadena de llamadas.
 - `2026-08-17T14:01:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings siguiendo convenciones de Google, y se han refinado los tipos y firmas en las funciones de inspección para facilitar la mantenibilidad y claridad del flujo de trabajo heurístico.
 - `2026-08-17T13:51:54` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de docstrings técnicos detallados en funciones críticas (como `_atomic_isolate_file`, `_safe_unlink` y `quarantine_file`) para clarificar las asunciones de seguridad y el flujo lógico, cumpliendo con el enfoque de legibilidad exigido.
-- `2026-08-17T13:51:20` **organizer.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, docstrings descriptivos y la refactorización de `_is_safe_for_disk_op` para extraer la lógica de validación de rutas y jerarquías, eliminando la duplicación lógica entre funciones.

@@ -1412,3 +1412,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-17T14:44:00` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos o rutas inválidas, garantizando que una falla en la escritura o en la creación de directorios no interrumpa el flujo del programa, manteniendo la integridad del estado.
 - `2026-08-17T14:44:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T14:44:00` Corrida terminada. Total usado hoy: 348.
+- `2026-08-17T14:52:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-17T14:52:34` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_sum_directory_recursive` ante archivos bloqueados o errores de lectura parcial durante el escaneo, reemplazando la validación estricta de `st_size` (que podía fallar por permisos) por un bloque `try-except` más granular y robusto que asegura que la suma avance aunque un archivo individual falle.
+- `2026-08-17T14:52:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-17T14:53:10` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-17T14:53:10` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-17T14:53:10` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T14:53:10` Corrida terminada. Total usado hoy: 350.
