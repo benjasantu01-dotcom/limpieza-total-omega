@@ -259,13 +259,16 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
+        if not isinstance(p, Path) or not p.exists():
             continue
         try:
+            # Validamos seguridad antes de sugerir conservación
+            if is_protected_path(p) or not is_safe_to_modify(p):
+                continue
             stat_info = p.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0))
             keepers.append((mtime, len(str(p)), p))
-        except (OSError, PermissionError, AttributeError):
+        except (OSError, PermissionError, AttributeError, ValueError):
             continue
             
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
@@ -286,7 +289,8 @@ def format_group(group: DuplicateGroup) -> List[str]:
     for path in group.paths:
         if not isinstance(path, Path): 
             continue
-        is_keeper = (keeper is not None and path == keeper)
+        # Comparación robusta entre tipos Path
+        is_keeper = (keeper is not None and path.resolve() == keeper.resolve())
         marca = "conservar" if is_keeper else "duplicado"
         lines.append(f"   [{marca}] {path}")
     return lines

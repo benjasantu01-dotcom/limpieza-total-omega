@@ -761,3 +761,41 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T08:26:07` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-17T08:26:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T08:26:07` Corrida terminada. Total usado hoy: 200.
+- `2026-08-17T08:34:35` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-17T08:35:00` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo defensivo de estados nulos, asegurando que el bucle de procesamiento no se interrumpa ante datos inconsistentes.
+- `2026-08-17T08:35:24` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_generate_recommendations` mediante la validación explícita de atributos y tipos antes del acceso dinámico, evitando fallos en tiempo de ejecución si la estructura de `SystemMetrics` o los parámetros de reglas fueran inesperados.
+- `2026-08-17T08:36:24` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` validando de forma explícita que los widgets existan y que las entradas de usuario sean procesables antes de intentar operar, evitando excepciones durante la ejecución asíncrona.
+- `2026-08-17T08:36:37` Tests FALLARON:
+```
+...................... [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: memory.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: memory.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.17s
+
+```
+- `2026-08-17T08:36:37` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `parse_windows_process_csv` y `_parse_csv_row` mediante validación explícita de tipos, manejo de excepciones más granular y limpieza de datos antes de procesar para prevenir errores de parsing ante entradas inesperadas de PowerShell.
+- `2026-08-17T08:36:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T08:36:37` Corrida terminada. Total usado hoy: 204.
