@@ -199,14 +199,17 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Filtra candidatos agrupándolos según el resultado de una función de hash.
+    Filtra candidatos agrupándolos según el resultado de una función de hash,
+    usando caché local para evitar re-cálculos costosos.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
+    digest_cache: Dict[Path, str] = {}
     
     for path in paths:
         if not isinstance(path, Path): continue
-        digest = hash_func(path)
+        digest = digest_cache.get(path) or hash_func(path)
         if digest:
+            digest_cache[path] = digest
             groups_by_digest[digest].append(path)
                 
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}

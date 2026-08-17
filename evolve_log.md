@@ -1357,3 +1357,11 @@ FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informa
 - `2026-08-17T14:03:21` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `build_context` para evitar la creación innecesaria de objetos intermedios y reducir el costo de búsqueda en diccionarios mediante el acceso directo a atributos, mejorando el rendimiento en cada iteración del bucle.
 - `2026-08-17T14:03:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T14:03:21` Corrida terminada. Total usado hoy: 332.
+- `2026-08-17T14:11:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-17T14:11:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-17T14:12:19` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el acceso a colores RGB reemplazando el cálculo recursivo de `_hex_to_rgb` por un acceso directo al diccionario `PALETTE_RGB` pre-computado, eliminando la sobrecarga innecesaria de formateo de strings y validación en cada llamada a `blend`.
+- `2026-08-17T14:12:50` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-17T14:13:19` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-17T14:14:03` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso `_refine_by_hash` mediante el uso de un diccionario de caché local (`digest_cache`) para evitar recalcular múltiples veces el hash de archivos que se encuentran en varias rutas (por ejemplo, si el mismo archivo es procesado como candidato en distintas etapas de la lógica), reduciendo drásticamente las operaciones de E/S.
+- `2026-08-17T14:14:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T14:14:03` Corrida terminada. Total usado hoy: 336.
