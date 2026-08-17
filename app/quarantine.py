@@ -304,7 +304,11 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
-    """Copia protegida a cuarentena verificando hash post-escritura con nombre único para evitar colisiones."""
+    """
+    Realiza una copia protegida hacia la zona de cuarentena.
+    Utiliza un archivo temporal (.tmp_uuid) para garantizar la atomicidad:
+    solo si la copia y la verificación de hash tienen éxito, se reemplaza en el destino.
+    """
     temp_dest = destination.parent / f".tmp_{uuid.uuid4().hex}"
     try:
         shutil.copy2(source, temp_dest)
@@ -328,8 +332,10 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """
-    Ejecuta el aislamiento completo de un archivo.
-    Realiza: validación de seguridad -> copia atómica -> borrado del original -> actualización de registro.
+    Ejecuta el aislamiento completo de un archivo mediante un flujo de tres fases:
+    1. Validaciones preventivas de seguridad.
+    2. Copia atómica y verificación de integridad (hash SHA256).
+    3. Eliminación del original y registro del nuevo estado.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -399,8 +405,9 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Restaura un archivo de la cuarentena a su ubicación original tras verificar integridad.
-    Si el archivo no existe en el registro/disco, lo remueve del manifiesto.
+    Restaura un archivo de la cuarentena a su ubicación original.
+    Antes de moverlo, verifica su integridad contra el hash registrado y 
+    valida que el destino no sea una ruta de sistema protegida.
     """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido o vacío.")

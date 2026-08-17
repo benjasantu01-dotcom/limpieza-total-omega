@@ -92,7 +92,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Prepara la estructura con el tamaño necesario para el registro de memoria."""
+    """Instancia la estructura MEMORYSTATUSEX con el tamaño requerido por la API."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
@@ -312,6 +312,21 @@ def _get_process_path(handle: int) -> Optional[str]:
     return None
 
 
+def _is_valid_trim_target(proc_handle: int, target_pid: int) -> Tuple[bool, Optional[str]]:
+    """Valida si un proceso puede ser modificado mediante las reglas de seguridad."""
+    kernel32 = ctypes.windll.kernel32
+    exit_code = ctypes.c_ulong()
+    
+    if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+        return False, "El proceso seleccionado ya no está activo."
+        
+    path = _get_process_path(proc_handle)
+    if not path or is_protected_path(os.path.normpath(path)):
+        return False, "Operación denegada: ruta de ejecutable protegida."
+        
+    return True, None
+
+
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Intenta liberar RAM residente del proceso, sujeto a validaciones de seguridad."""
     if os.name != "nt":
@@ -335,13 +350,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
         
     try:
-        exit_code = ctypes.c_ulong()
-        if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return False, "El proceso seleccionado ya no está activo."
-            
-        path = _get_process_path(proc_handle)
-        if not path or is_protected_path(os.path.normpath(path)):
-            return False, "Operación denegada: ruta de ejecutable protegida."
+        valid, reason = _is_valid_trim_target(proc_handle, target_pid)
+        if not valid:
+            return False, reason or "Validación de proceso fallida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
             err = kernel32.GetLastError()

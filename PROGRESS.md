@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 215
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 23 | 2 | 2 | 1 | 14 |
+| 2026-08-15 | 21 | 1 | 2 | 0 | 14 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 54 | 4 | 6 | 3 | 45 |
+| 2026-08-17 | 57 | 4 | 6 | 4 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - seguridad defensiva: **50**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
-- `scanner.py`: **21**
-- `memory.py`: **20**
+- `memory.py`: **21**
+- `scanner.py`: **20**
 - `assistant.py`: **20**
 - `browser.py`: **20**
-- `settings.py`: **19**
+- `settings.py`: **18**
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
-- `quarantine.py`: **17**
-- `organizer.py`: **15**
+- `organizer.py`: **16**
 - `branding.py`: **14**
 - `main.py`: **11**
 - `safety.py`: **7**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T04:52:49` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings precisos en las funciones de manipulación de archivos para explicar los mecanismos de seguridad (integridad, atómica y aislamiento) que previenen la corrupción o manipulación no autorizada.
+- `2026-08-17T04:52:30` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `organizer.py` mediante la adición de docstrings estructurados (usando formato Google Style), normalización de type hints y la extracción de una función de validación de seguridad (`_is_safe_for_disk_op`) para desacoplar la lógica de integridad de las operaciones de movimiento, facilitando el mantenimiento y la auditoría.
+- `2026-08-17T04:52:03` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos, utilicé type hints más precisos y extraje la lógica de validación de procesos en `trim_working_set` hacia una función dedicada para mejorar la legibilidad.
 - `2026-08-17T04:41:44` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` añadiendo docstrings de tipo Google Style en las funciones de cálculo de ratios y estandarizando la terminología de los parámetros para garantizar que cualquier desarrollador entienda la lógica de normalización matemática sin ambigüedades.
 - `2026-08-17T04:41:32` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos (especificando tipos y excepciones en `_collect_candidates` y `hash_file`) y se han clarificado las intenciones de las funciones con type hints explícitos, facilitando la comprensión del flujo de datos en el proceso de detección.
 - `2026-08-17T04:41:08` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de la función `walk_files` mediante un docstring detallado que clarifica el mecanismo de prevención de bucles infinitos (via `visited_inodes`) y el tratamiento de enlaces simbólicos, facilitando el mantenimiento a futuro.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T04:11:12` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la inicialización de pestañas al envolver cada llamada al `constructor` en un bloque `try-except` específico, evitando que un error en el layout de una sola pestaña bloquee la carga completa de la aplicación, y además validé la existencia de los widgets antes de interactuar con ellos en métodos como `_draw_gauge` y `_set_busy`.
 - `2026-08-17T04:10:07` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del método `_generate_recommendations` validando explícitamente la presencia de atributos en `SystemMetrics` mediante `hasattr` antes de acceder a ellos, evitando posibles fallos si la estructura de datos se expande de forma incompleta en el futuro.
 - `2026-08-17T04:01:08` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y validación de parámetros en el pipeline de escaneo, garantizando que `_collect_candidates` y las funciones de escaneo no fallen ante entradas nulas, rutas inválidas o errores de sistema al acceder a atributos de archivos mediante una validación proactiva y un bloque try-except más preciso.
-- `2026-08-17T04:00:33` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente la integridad de los objetos `os.DirEntry` antes de acceder a sus atributos, evitando errores de I/O en archivos bloqueados o con metadatos inconsistentes y asegurando que `stat()` no sea llamado sobre entradas inexistentes tras el escaneo.
-- `2026-08-17T04:00:05` **branding.py** (manejo de errores y validación de entradas): Se mejora `save_logo_svg` para prevenir operaciones inválidas mediante la validación temprana de la ruta, el uso de `is_safe_to_modify` como filtro booleano previo y la captura de errores específicos para evitar que la aplicación falle al intentar persistir archivos en ubicaciones restringidas.
-- `2026-08-17T03:52:59` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_assign` y `build_context` para manejar errores de conversión de tipos de forma explícita, evitando que valores inesperados (como strings no numéricos) sean procesados erróneamente en el contexto del sistema.

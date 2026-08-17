@@ -129,31 +129,40 @@ def _is_file_locked(path: Path) -> bool:
         return True
 
 
-def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """Evalúa si es seguro mover un archivo basándose en permisos, bloqueos y ubicación."""
+def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
+    """Verifica condiciones de seguridad para operaciones de movimiento/borrado."""
     try:
-        if not junk_file.path.exists() or not junk_file.path.is_file():
+        if not src.exists() or not src.is_file():
             return False
         
-        current_abs = junk_file.path.resolve()
-        dest_abs = dest.resolve()
+        src_abs, dest_abs = src.resolve(), dest.resolve()
         
-        if current_abs.parent == current_abs:
+        # Evitar recursión o operaciones sobre sí mismo
+        if src_abs == dest_abs or dest_abs in src_abs.parents or src_abs.parent == dest_abs:
             return False
         
-        if os.name == "nt":
-            if current_abs.stat().st_file_attributes & 0x06: 
-                return False
-
-        if current_abs == dest_abs or dest_abs in current_abs.parents or current_abs.parent == dest_abs:
-            return False
-        
-        if _is_file_locked(current_abs) or current_abs.anchor != dest_abs.anchor:
+        # Bloqueos de sistema y verificación de integridad
+        if os.name == "nt" and (src_abs.stat().st_file_attributes & 0x06):
             return False
             
-        return is_safe_to_modify(current_abs) and is_safe_to_modify(dest_abs)
+        return is_safe_to_modify(src_abs)
     except (OSError, RuntimeError, AttributeError):
         return False
+
+
+def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
+    """Evalúa si es seguro mover un archivo basándose en permisos, bloqueos y ubicación."""
+    if not _is_safe_for_disk_op(junk_file.path, dest):
+        return False
+        
+    current_abs = junk_file.path.resolve()
+    dest_abs = dest.resolve()
+    
+    # Validar bloqueo y misma unidad (shutil.move suele fallar entre volúmenes)
+    if _is_file_locked(current_abs) or current_abs.anchor != dest_abs.anchor:
+        return False
+        
+    return is_safe_to_modify(dest_abs)
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
