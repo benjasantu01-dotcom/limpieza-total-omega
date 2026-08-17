@@ -122,8 +122,6 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """Determina si un archivo está en uso exclusivo mediante intento de apertura."""
-    if not path.exists():
-        return True
     try:
         with open(path, "rb"):
             return False
@@ -144,7 +142,6 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
             return False
         
         if os.name == "nt":
-            # 0x06: Hidden | System
             if current_abs.stat().st_file_attributes & 0x06: 
                 return False
 
@@ -215,7 +212,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
         if not is_safe_to_modify(dest_base): return Path(".")
-        dest = dest_base.resolve()
     except (OSError, PermissionError, RuntimeError):
         return Path(".")
 
@@ -223,23 +219,20 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile) or junk_file.path is None:
             continue
             
-        # Validar condiciones de movimiento
-        if not (junk_file.path.exists() and junk_file.path.is_file() and os.access(junk_file.path, os.R_OK)):
-            continue
-        if not _is_safe_to_move(junk_file, dest):
-            continue
-        if shutil.disk_usage(dest).free <= junk_file.size_bytes:
-            continue
-            
-        # Preparar destino único y realizar la operación
-        target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-        if is_safe_to_modify(target):
-            try:
-                ensure_safe_to_modify(target)
-                shutil.move(str(junk_file.path), str(target))
-            except (OSError, PermissionError, shutil.Error, RuntimeError):
+        try:
+            if not _is_safe_to_move(junk_file, dest_base):
                 continue
-    return dest
+            if shutil.disk_usage(dest_base).free <= junk_file.size_bytes:
+                continue
+                
+            target = _generate_unique_target(dest_base / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
+            
+            ensure_safe_to_modify(junk_file.path)
+            ensure_safe_to_modify(target)
+            shutil.move(str(junk_file.path), str(target))
+        except (OSError, PermissionError, shutil.Error, RuntimeError):
+            continue
+    return dest_base
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
@@ -257,11 +250,13 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if item.is_file() and not item.is_symlink():
-                path_to_delete = item.resolve()
-                if path_to_delete.parent == dest and is_safe_to_modify(path_to_delete):
-                    path_to_delete.unlink()
-                    count += 1
+            resolved_item = item.resolve()
+            if resolved_item.is_file() and not resolved_item.is_symlink():
+                if resolved_item.parent.resolve() == dest and is_safe_to_modify(resolved_item):
+                    if not _is_file_locked(resolved_item):
+                        ensure_safe_to_modify(resolved_item)
+                        resolved_item.unlink()
+                        count += 1
         except (PermissionError, OSError, ValueError):
             continue
     return count

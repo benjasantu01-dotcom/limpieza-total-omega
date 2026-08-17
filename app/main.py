@@ -306,14 +306,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Invoca el constructor específico (p. ej. _build_tab_salud) según el nombre de la pestaña."""
         method_name = f"_build_tab_{name.lower()}"
         constructor = getattr(self, method_name, None)
-        if constructor:
+        if constructor and name in self.tabs and self.tabs[name].winfo_exists():
             try:
                 constructor()
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
-                # Uso de try-except defensivo para asegurar que un fallo no deje la pestaña vacía permanentemente
-                if name in self.tabs and self.tabs[name].winfo_exists():
-                    self._create_styled_label(self.tabs[name], f"Error interno al cargar módulo", "caption").pack(padx=20, pady=20)
+                self._create_styled_label(self.tabs[name], f"Error al cargar módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
 
     def _build_tabs_container(self) -> None:
         """Configura el widget tabview y delega la creación de contenido interno por cada pestaña."""

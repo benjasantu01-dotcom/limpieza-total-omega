@@ -1265,3 +1265,10 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-17T01:28:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-17T01:28:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T01:28:07` Corrida terminada. Total usado hoy: 36.
+- `2026-08-17T01:36:49` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-08-17T01:37:17` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_generate_recommendations` ante valores de métricas que, aunque finitos, puedan causar errores de formato o desbordamiento al inyectar valores no previstos en las plantillas de mensajes.
+- `2026-08-17T01:38:22` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una comprobación de existencia y accesibilidad en el constructor de pestañas `_tab_factory` para evitar que el fallo inesperado de una pestaña bloquee la interfaz completa, mejorando la robustez ante estados inconsistentes.
+- `2026-08-17T01:38:48` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos que han cambiado de estado durante la ejecución y refinando el manejo de la jerarquía de procesos protegidos.
+- `2026-08-17T01:38:57` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` y `delete_reviewed` para manejar errores de archivos ocupados y condiciones de carrera, añadiendo comprobaciones de integridad de rutas mediante `path.resolve()` antes de realizar operaciones de sistema de archivos, asegurando que no se acceda fuera de las rutas permitidas.
+- `2026-08-17T01:38:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T01:38:57` Corrida terminada. Total usado hoy: 40.

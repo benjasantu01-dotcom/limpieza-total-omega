@@ -294,7 +294,8 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def _is_system_process(pid: int) -> bool:
     """Determina si el PID pertenece al núcleo o servicios protegidos."""
-    return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid <= 100
+    # Ampliado: procesos con PID < 100 suelen ser servicios críticos de sistema en Windows
+    return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid < 100
 
 
 def _get_process_path(handle: int) -> Optional[str]:
@@ -339,8 +340,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         
     try:
         exit_code = ctypes.c_ulong()
+        # Verificar estado del proceso antes de intentar cualquier operación
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return False, "El proceso seleccionado ya no está activo."
+            return False, "El proceso seleccionado ya no está activo o se ha cerrado."
             
         path = _get_process_path(proc_handle)
         if not path or is_protected_path(os.path.normpath(path)):

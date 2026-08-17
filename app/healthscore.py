@@ -224,10 +224,12 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
             if val is not None and isinstance(val, (int, float)) and math.isfinite(float(val)):
                 try:
                     if rule.expected_args > 0:
-                        recommendations.append(rule.message_format.format(val))
+                        # Asegurar que el formato no falle ante valores extremos o inesperados
+                        formatted_val = float(val)
+                        recommendations.append(rule.message_format.format(formatted_val))
                     else:
                         recommendations.append(rule.message_format)
-                except (ValueError, IndexError, TypeError):
+                except (ValueError, IndexError, TypeError, KeyError):
                     continue
     
     if isinstance(metrics.quarantined_count, int) and metrics.quarantined_count > 0:
