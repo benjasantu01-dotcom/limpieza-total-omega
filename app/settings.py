@@ -179,7 +179,6 @@ class _Validators:
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
-            # Verificación extra de normalización absoluta para evitar bypass de límites
             if os.path.abspath(path_obj) != str(path_obj.resolve()): return None
             if is_protected_path(str(path_obj)): return None
             path_str = str(path_obj)
@@ -253,7 +252,6 @@ def _load_internal(ruta_str: str) -> AppSettings:
     """
     ruta = Path(ruta_str)
     try:
-        # Validación estricta: nunca leer rutas de sistema ni archivos bloqueados
         if not ruta.is_file() or is_protected_path(str(ruta)) or not os.access(ruta, os.R_OK):
             return _get_default_config()
         
@@ -267,7 +265,6 @@ def _load_internal(ruta_str: str) -> AppSettings:
         return validate(data)
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         try:
-            # Marcamos como corrupto renombrando sin usar métodos recursivos destructivos
             ruta.rename(ruta.with_suffix(f"{ruta.suffix}.corrupt"))
         except OSError: pass
         return _get_default_config()
@@ -275,7 +272,6 @@ def _load_internal(ruta_str: str) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga, valida y cachea el archivo de configuración."""
     ruta = settings_path(custom_base)
-    # Bloqueo preventivo de seguridad antes de cualquier acceso
     if is_protected_path(str(ruta)): return _get_default_config()
     
     ruta_str = str(ruta)
@@ -296,7 +292,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
-    # Bloqueo estricto: evitar reparse points o rutas protegidas antes de escribir
     if (ruta.exists() and (ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()))) or is_protected_path(str(ruta)):
         return None
     if not _Validators._is_safe_path(str(ruta.parent)) or not is_safe_to_modify(str(ruta)): return None
@@ -315,14 +310,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             f.write(json_data)
             f.flush()
             os.fsync(f.fileno())
-        # Uso de os.replace requiere compatibilidad de sistema; garantizamos no cruzar volúmenes
         os.replace(temp_ruta, ruta)
         _load_internal.cache_clear()
         _LAST_MTIME.pop(str(ruta), None)
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError, TypeError):
-        if 'temp_ruta' in locals() and temp_ruta.exists():
-            try: temp_ruta.unlink()
+        if 'temp_ruta' in locals():
+            try: temp_ruta.unlink(missing_ok=True)
             except OSError: pass
         return None
 

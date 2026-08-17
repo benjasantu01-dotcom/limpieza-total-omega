@@ -806,3 +806,40 @@ assert not {'replace'}
 - `2026-08-17T08:46:12` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-17T08:46:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T08:46:12` Corrida terminada. Total usado hoy: 208.
+- `2026-08-17T08:55:02` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-08-17T08:55:27` Tests FALLARON:
+```
+========================
+_____________ test_scanner_flags_system_lookalike_outside_system32 _____________
+
+    def test_scanner_flags_system_lookalike_outside_system32():
+        # Se usa PureWindowsPath a propósito: los tests corren en Linux (GitHub
+        # Actions) y ahí un Path normal no reconoce las barras invertidas, así
+        # que `.name` devolvería la ruta entera y el test fallaría siempre.
+        result = scanner.check_system_lookalike(PureWindowsPath(r"C:\Users\test\Downloads\svchost.exe"))
+>       assert result is not None
+E       assert None is not None
+
+evolve/tests/test_basic.py:201: AssertionError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed in 1.07s
+
+```
+- `2026-08-17T08:55:27` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `scanner.py` implementando validaciones defensivas de tipos y estados (`None`, tipos de datos inesperados) en los puntos de entrada, previniendo excepciones no capturadas al procesar rutas malformadas o entradas de sistema inconsistentes.
+- `2026-08-17T08:55:55` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` capturando explícitamente posibles excepciones de `os.replace` y `os.fsync`, además de asegurar el cierre del descriptor de archivo mediante un bloque `finally` para evitar fugas de recursos.
+- `2026-08-17T08:56:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-17T08:56:36` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de manejo de consultas y se ha refinado el docstring de los `handlers` para explicitar su rol como lógica de presentación, facilitando la comprensión del flujo de datos en el asistente.
+- `2026-08-17T08:56:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T08:56:36` Corrida terminada. Total usado hoy: 212.

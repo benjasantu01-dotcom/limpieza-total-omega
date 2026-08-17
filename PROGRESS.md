@@ -7,38 +7,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 16
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 18
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 128 | 11 | 16 | 11 | 130 |
-| 2026-08-17 | 91 | 5 | 13 | 7 | 92 |
+| 2026-08-16 | 126 | 11 | 16 | 10 | 129 |
+| 2026-08-17 | 93 | 6 | 13 | 7 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **49**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **43**
-- rendimiento: **42**
-- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **41**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
+- `assistant.py`: **22**
+- `healthscore.py`: **22**
 - `scanner.py`: **21**
-- `assistant.py`: **21**
 - `quarantine.py`: **19**
 - `browser.py`: **19**
+- `settings.py`: **18**
 - `memory.py`: **18**
-- `settings.py`: **17**
-- `duplicates.py`: **16**
 - `organizer.py`: **15**
 - `diskreport.py`: **15**
+- `duplicates.py`: **15**
 - `branding.py`: **13**
 - `main.py`: **9**
 - `startup.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T08:56:36` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de manejo de consultas y se ha refinado el docstring de los `handlers` para explicitar su rol como lógica de presentación, facilitando la comprensión del flujo de datos en el asistente.
+- `2026-08-17T08:55:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente posibles excepciones de `os.replace` y `os.fsync`, además de asegurar el cierre del descriptor de archivo mediante un bloque `finally` para evitar fugas de recursos.
 - `2026-08-17T08:45:43` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo las llamadas de alto riesgo en un bloque `try-except` más granular para evitar estados inconsistentes (manifiesto desincronizado del disco) y agregué validaciones de tipo `isinstance` adicionales antes de operar sobre las rutas para prevenir excepciones no capturadas.
 - `2026-08-17T08:45:14` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` agregando validaciones de tipo y estado (usando `is_file()` y `exists()`) antes de las operaciones de disco para evitar excepciones innecesarias y mejorar la consistencia en el manejo de rutas.
 - `2026-08-17T08:35:24` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_generate_recommendations` mediante la validación explícita de atributos y tipos antes del acceso dinámico, evitando fallos en tiempo de ejecución si la estructura de `SystemMetrics` o los parámetros de reglas fueran inesperados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T06:43:05` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_generate_recommendations` mediante la validación explícita de `rule.metric_attr` contra los atributos reales de `SystemMetrics` usando `getattr`, evitando el acceso dinámico inseguro vía `__dict__` y garantizando que las métricas procesadas sean siempre finitas.
 - `2026-08-17T06:33:27` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_path` integrando `os.path.abspath` antes de la comparación de rutas para asegurar que la validación de `relative_to` sea efectiva incluso en entornos con rutas relativas, previniendo posibles errores de `ValueError` y garantizando que el chequeo de "subdirectorio" sea estricto.
 - `2026-08-17T06:23:55` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` añadiendo un filtro de longitud y contenido para el JSON de la respuesta antes de procesarla, asegurando que si la IA intenta retornar un payload malicioso, este sea descartado antes de entrar al sistema.
-- `2026-08-17T06:23:08` **settings.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores durante la serialización del JSON en `save()`, capturando explícitamente posibles fallos en el volcado de datos o escritura en disco para evitar que la aplicación quede en un estado inconsistente ante problemas de permisos o espacio en disco.
-- `2026-08-17T06:22:38` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una validación explícita mediante `is_file()` y `is_dir()` antes de realizar operaciones de acceso, evitando capturar excepciones innecesarias en el flujo normal y fortaleciendo la resiliencia del escáner frente a errores de E/S comunes en sistemas de archivos.
