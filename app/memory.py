@@ -149,13 +149,16 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 
 @lru_cache(maxsize=4)
-def parse_linux_meminfo(text: str) -> MemorySnapshot:
-    """Lógica pura para procesar el formato de /proc/meminfo en sistemas Unix."""
-    if not text:
+def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
+    """
+    Lógica pura para procesar el formato de /proc/meminfo en sistemas Unix.
+    Recibe el contenido crudo del archivo como parámetro para permitir pruebas unitarias.
+    """
+    if not meminfo_text:
         return MemorySnapshot(0, 0)
     
     metrics: Dict[str, int] = {}
-    for line in text.splitlines():
+    for line in meminfo_text.splitlines():
         if match := re.match(r"^(\w+):\s+(\d+)", line):
             key, value = match.groups()
             metrics[key] = int(value) * 1024
@@ -171,11 +174,11 @@ def parse_linux_meminfo(text: str) -> MemorySnapshot:
     )
 
 
-def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
-    """Helper para extraer datos de proceso desde una fila de CSV cruda."""
-    if not isinstance(line, str):
+def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
+    """Helper para extraer datos de proceso desde una fila de CSV cruda (Formato PowerShell)."""
+    if not isinstance(csv_line, str):
         return None
-    line = line.strip()
+    line = csv_line.strip()
     if not line:
         return None
     
@@ -193,18 +196,18 @@ def _parse_csv_row(line: str) -> Optional[ProcessMemory]:
         return None
 
 
-def parse_windows_process_csv(text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Transforma la salida de PowerShell en objetos ProcessMemory ordenados."""
-    if not isinstance(text, str) or not text:
+def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
+    """Transforma la salida de PowerShell en objetos ProcessMemory ordenados por consumo."""
+    if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    processes = [p for line in text.splitlines() if (p := _parse_csv_row(line))]
+    processes = [p for line in raw_csv_text.splitlines() if (p := _parse_csv_row(line))]
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Interactúa con la API de kernel32 para obtener métricas globales en Windows."""
+    """Interactúa con la API Win32 'GlobalMemoryStatusEx' para obtener métricas globales."""
     stat = _create_mem_status_ex()
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
@@ -216,7 +219,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """Función polimórfica que abstrae el origen de la info según el SO."""
+    """Función polimórfica que abstrae el origen de la info según el sistema operativo."""
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -235,12 +238,13 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def _fetch_raw_process_data() -> str:
-    """Ejecuta comando de PowerShell, con cacheo basado en tiempo para evitar sobrecarga."""
+    """Ejecuta comando de PowerShell, con cacheo basado en tiempo (ventanas de 30s) para evitar sobrecarga de E/S."""
     now = int(time.time() // 30)
     return _do_fetch_raw(now)
 
 @lru_cache(maxsize=1)
 def _do_fetch_raw(time_key: int) -> str:
+    """Cache interna para limitar la frecuencia de llamadas a la shell."""
     cmd = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 Name,Id,WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
@@ -271,7 +275,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Crea una narrativa legible sobre la salud de la memoria actual."""
+    """Crea una narrativa legible sobre la salud de la memoria actual para el informe de usuario."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     
@@ -298,12 +302,12 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Determina si el PID pertenece al núcleo o servicios protegidos."""
+    """Determina si el PID pertenece al núcleo o servicios protegidos del sistema."""
     return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid < 100
 
 
 def _get_process_path(handle: int) -> Optional[str]:
-    """Usa QueryFullProcessImageNameW para obtener la ruta del ejecutable mediante su handle."""
+    """Utiliza la Win32 API 'QueryFullProcessImageNameW' para resolver la ruta del ejecutable mediante un handle activo."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if kernel32 is None:
         return None
@@ -318,7 +322,7 @@ def _get_process_path(handle: int) -> Optional[str]:
 
 
 def _is_valid_trim_target(proc_handle: int, target_pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida si un proceso puede ser modificado mediante las reglas de seguridad."""
+    """Valida si un proceso es candidato seguro para liberación de memoria según las reglas del módulo de seguridad."""
     kernel32 = ctypes.windll.kernel32
     exit_code = ctypes.c_ulong()
     
@@ -333,7 +337,7 @@ def _is_valid_trim_target(proc_handle: int, target_pid: int) -> Tuple[bool, Opti
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta liberar RAM residente del proceso, sujeto a validaciones de seguridad."""
+    """Intenta liberar la memoria residente del proceso, sujeto a validaciones estrictas de seguridad."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     

@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 124 | 10 | 15 | 10 | 129 |
-| 2026-08-17 | 97 | 6 | 13 | 7 | 93 |
+| 2026-08-16 | 121 | 10 | 15 | 10 | 128 |
+| 2026-08-17 | 101 | 6 | 13 | 7 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **52**
 - robustez ante casos límite: **49**
-- legibilidad y documentación: **48**
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **41**
-- rendimiento: **38**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **23**
 - `assistant.py`: **22**
-- `healthscore.py`: **22**
-- `scanner.py`: **21**
 - `browser.py`: **20**
-- `settings.py`: **18**
+- `scanner.py`: **20**
+- `memory.py`: **19**
 - `quarantine.py`: **18**
-- `memory.py`: **18**
+- `settings.py`: **17**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
+- `organizer.py`: **15**
 - `branding.py`: **14**
-- `organizer.py`: **14**
-- `main.py`: **9**
-- `startup.py`: **7**
+- `main.py`: **10**
 - `safety.py`: **6**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T09:17:30` **organizer.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en colecciones), se refinó la documentación (docstrings) para aclarar las precondiciones de seguridad y se eliminó la redundancia en `JunkFile.__post_init__` para mejorar la legibilidad y mantenibilidad del flujo de datos.
+- `2026-08-17T09:17:21` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints en estructuras de datos, documentación técnica más precisa (docstrings) en las funciones críticas de la API de Windows, y la estandarización de los nombres de los parámetros en los parsers para mayor claridad.
+- `2026-08-17T09:16:55` **main.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se normalizó la nomenclatura de métodos auxiliares en `main.py` para mejorar la legibilidad y facilitar el mantenimiento, asegurando que la intención de cada componente de la interfaz sea clara sin alterar su lógica funcional.
+- `2026-08-17T09:15:55` **healthscore.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de cálculo de puntaje (`score_*`) y mejoré la claridad de `SystemMetrics.validate`, explicando explícitamente que la normalización es necesaria para evitar resultados inconsistentes en la lógica de negocio.
 - `2026-08-17T09:06:45` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad del pipeline de `find_duplicates` extrayendo la lógica de resolución de grupos a una función privada dedicada `_process_size_group`, facilitando la comprensión del flujo de tres niveles (tamaño -> hash parcial -> hash completo).
 - `2026-08-17T09:06:36` **diskreport.py** (legibilidad y documentación): He mejorado la legibilidad del código documentando los métodos y clases, y clarificado la lógica de los parámetros en las funciones de búsqueda mediante la adición de docstrings detallados que explican el propósito de `limit` y `skip_protected`.
 - `2026-08-17T09:06:10` **browser.py** (legibilidad y documentación): Documenté el propósito técnico y las restricciones de seguridad de las funciones internas del módulo para facilitar el mantenimiento y audibilidad del código ante futuras revisiones de seguridad.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T08:35:24` **healthscore.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_generate_recommendations` mediante la validación explícita de atributos y tipos antes del acceso dinámico, evitando fallos en tiempo de ejecución si la estructura de `SystemMetrics` o los parámetros de reglas fueran inesperados.
 - `2026-08-17T08:35:00` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo defensivo de estados nulos, asegurando que el bucle de procesamiento no se interrumpa ante datos inconsistentes.
 - `2026-08-17T08:25:57` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que los resultados de `st_size` sean coherentes y manejando de forma centralizada posibles errores de acceso durante la lectura, asegurando que la función no retorne valores parciales inconsistentes ante excepciones inesperadas.
-- `2026-08-17T08:25:02` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `build_context` ante entradas malformadas mediante el uso de un diccionario de validación centralizado que garantiza que los tipos de datos sean correctos antes de realizar la asignación, reduciendo el riesgo de propagar valores None o tipos incompatibles.
-- `2026-08-17T07:03:27` **settings.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `_Validators.path` para detectar si la ruta resultante después de `expanduser()` cae fuera del sistema de archivos esperado o apunta a un recurso inválido mediante `os.path.abspath` antes de aplicar los filtros de seguridad, fortaleciendo la resistencia ante ataques de recorrido de directorios o rutas malformadas.
-- `2026-08-17T06:54:11` **scanner.py** (seguridad defensiva): Mejoré `check_recent_executable_in_downloads` para validar explícitamente que la ruta del archivo sea absoluta y pertenezca al sistema de archivos esperado antes de realizar cualquier operación de acceso a metadatos, evitando posibles inyecciones de rutas externas o comportamientos inesperados en directorios mal formados.
-- `2026-08-17T06:53:19` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para asegurar que el archivo no sea un enlace simbólico o un flujo de datos alterno antes de la copia, y forcé una verificación de cierre del descriptor de archivo para evitar accesos concurrentes inesperados.

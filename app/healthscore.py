@@ -101,6 +101,11 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
+        """
+        Asegura que los datos brutos recibidos sean válidos. Aplica limpieza y
+        acotamiento (clamping) para prevenir valores negativos o fuera de rango
+        que corromperían el cálculo posterior del puntaje.
+        """
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -140,21 +145,27 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud según la cantidad de archivos basura (menor es mejor)."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Calcula el ratio de salud de seguridad penalizando hallazgos y advertencias."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud según el porcentaje de RAM disponible (mayor es mejor)."""
     return (_clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud según el porcentaje de espacio libre en disco (mayor es mejor)."""
     return (_clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud según el volumen de archivos duplicados (menor es mejor)."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
+    """Calcula el ratio de salud según la cantidad de programas en el arranque (menor es mejor)."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:

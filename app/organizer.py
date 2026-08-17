@@ -73,8 +73,8 @@ class JunkFile:
     modified: datetime
 
     def __post_init__(self) -> None:
-        if not isinstance(self.path, Path):
-            self.path = Path(self.path)
+        """Asegura que la ruta almacenada sea un objeto Path absoluto."""
+        self.path = Path(self.path).resolve()
 
     @property
     def size_mb(self) -> float:
@@ -130,7 +130,10 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Verifica condiciones de seguridad para operaciones de movimiento/borrado."""
+    """
+    Verifica precondiciones de seguridad (existencia, jerarquía y permisos) 
+    para mover o eliminar un archivo.
+    """
     try:
         if not src.exists() or not src.is_file():
             return False
@@ -141,7 +144,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if src_abs == dest_abs or dest_abs in src_abs.parents or src_abs.parent == dest_abs:
             return False
         
-        # Bloqueos de sistema y verificación de integridad
+        # Bloqueos de sistema (atributo de archivo del sistema en Windows)
         if os.name == "nt" and (src_abs.stat().st_file_attributes & 0x06):
             return False
             
@@ -155,14 +158,11 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     if not _is_safe_for_disk_op(junk_file.path, dest):
         return False
         
-    current_abs = junk_file.path.resolve()
-    dest_abs = dest.resolve()
-    
     # Validar bloqueo y misma unidad (shutil.move suele fallar entre volúmenes)
-    if _is_file_locked(current_abs) or current_abs.anchor != dest_abs.anchor:
+    if _is_file_locked(junk_file.path) or junk_file.path.anchor != dest.resolve().anchor:
         return False
         
-    return is_safe_to_modify(dest_abs)
+    return is_safe_to_modify(dest.resolve())
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
@@ -207,13 +207,12 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     criterio = by.lower() if isinstance(by, str) else "size"
     config = registry.get(criterio, registry["size"])
         
-    valid_files = [f for f in files if isinstance(f, JunkFile) and f.path is not None]
-    return sorted(valid_files, key=config.key_func, reverse=not bool(ascending))
+    return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """Mueve archivos validados a una zona de cuarentena/revisión."""
-    if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
+    if not isinstance(files, list) or not review_dir.strip():
         return Path(".")
 
     try:
@@ -225,9 +224,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return Path(".")
 
     for junk_file in files:
-        if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path):
-            continue
-            
         try:
             # Re-verificar existencia y tipo antes de cualquier operación
             if not junk_file.path.exists() or not junk_file.path.is_file():
@@ -265,7 +261,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            # Validar que el archivo existe y es realmente un archivo antes de procesar
             if not item.is_file() or item.is_symlink():
                 continue
                 
