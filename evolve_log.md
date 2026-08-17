@@ -1199,3 +1199,41 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T00:37:06` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
 - `2026-08-17T00:37:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T00:37:06` Corrida terminada. Total usado hoy: 16.
+- `2026-08-17T00:45:45` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-17T00:46:22` Tests FALLARON:
+```
+echosos' in 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura.'
+ +  where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 11% de RAM, 2400 MB de basura.', sou...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 1 archivo(s) sospechosos, 11% de ram.'
+ +  where 'con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 1 archivo(s) sospechosos, 11% de ram.' = <built-in method lower of str object at 0x7f3c0d3e1f70>()
+ +    where <built-in method lower of str object at 0x7f3c0d3e1f70> = 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 1 archivo(s) sospechosos, 11% de RAM.'.lower
+ +      where 'Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 1 archivo(s) sospechosos, 11% de RAM.' = Answer(text='Con un puntaje de 61/100, por orden de prioridad: 6% de disco libre, 1 archivo(s) sospechosos, 11% de RAM...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+2 failed, 297 passed, 7 warnings in 1.18s
+
+```
+- `2026-08-17T00:46:22` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de resolución de consultas convirtiendo el diccionario `_KEYWORD_MAP` en un `dict` con acceso pre-computado y eliminando el uso de regex innecesario en cada iteración del bucle principal, mejorando la velocidad de respuesta del motor local.
+- `2026-08-17T00:46:52` Tests FALLARON:
+```
+ence '\ '
+    root_dir: Ruta absoluta a procesar (acepta prefijo \\?\ para long paths).
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_draw_logo_paints_on_the_canvas_without_a_display - AssertionError: assert 'text' in ['oval', 'oval', 'oval', 'oval', 'polygon']
+ +  where ['oval', 'oval', 'oval', 'oval', 'polygon'] = <test_modules._CanvasFalso object at 0x7f5f515ac410>.llamadas
+FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount_of_colors - IndexError: tuple index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - IndexError: tuple index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_actually_changes_color - IndexError: tuple index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - IndexError: tuple index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - ValueError: invalid literal for int() with base 10: 'ancho'
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - AssertionError: falta el degradado del escudo
+assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
+ +  where ['oval', 'oval', 'oval', 'oval', 'polygon'] = <test_modules._CanvasFalso object at 0x7f5f514b4b30>.llamadas
+7 failed, 292 passed, 7 warnings in 1.33s
+
+```
+- `2026-08-17T00:46:52` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a valores de la paleta y configuraciones eliminando redundancias y mejorando el rendimiento de las funciones de renderizado al cachear y pre-procesar cálculos geométricos.
+- `2026-08-17T00:47:17` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios mediante la persistencia del diccionario `memo` entre las llamadas del bucle principal de `detect_profiles`, evitando el re-procesamiento redundante de subdirectorios compartidos en las jerarquías de caché.
+- `2026-08-17T00:47:26` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimizé la función `walk_files` evitando la llamada redundante a `entry.stat()` en el bucle principal, ya que `entry.stat()` es una operación de E/S costosa que se ejecutaba innecesariamente para archivos; ahora se obtiene el tamaño directamente de la entrada si el SO lo provee (o mediante un único `stat` por archivo), reduciendo drásticamente las llamadas al sistema durante el escaneo.
+- `2026-08-17T00:47:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T00:47:26` Corrida terminada. Total usado hoy: 20.

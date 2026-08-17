@@ -175,18 +175,11 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Calcula el peso total de una carpeta mediante un recorrido en profundidad (DFS).
-    
-    Args:
-        root_dir: Ruta absoluta a procesar (acepta prefijo \\?\ para long paths).
-        is_junction_fn: Callback para detectar puntos de reparse en Windows.
-        kernel32: Instancia de ctypes para acceso a atributos de archivo.
-        memo: Diccionario de caché para evitar re-procesar subdirectorios.
+    Calcula el peso total de una carpeta mediante un recorrido en profundidad (DFS) con memoización.
     """
     if not root_dir or not isinstance(root_dir, str):
         return 0
 
-    # Normalización para rutas de Windows (Long Path support)
     safe_root = root_dir if not (os.name == 'nt' and not root_dir.startswith(r"\\?")) else r"\\?\\" + root_dir
 
     def _walk(current_dir: str, depth: int) -> int:
@@ -257,7 +250,7 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Escanea el sistema buscando cachés de navegadores utilizando el diccionario BROWSER_CACHE_PATHS."""
+    """Escanea el sistema buscando cachés de navegadores, optimizando accesos con memoización."""
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
@@ -269,6 +262,7 @@ def detect_profiles(
         except (AttributeError, OSError):
             k32 = None
     
+    # Persistencia de cálculos en el scope de la función para evitar redundancia
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
