@@ -1311,3 +1311,32 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T13:32:32` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints consistentes en `_collect_summary_data` y `walk_files`, mejorando la documentación interna para aclarar la lógica de recorrido y agregación sin alterar el comportamiento.
 - `2026-08-17T13:32:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T13:32:32` Corrida terminada. Total usado hoy: 320.
+- `2026-08-17T13:40:42` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-17T13:41:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: legibilidad y documentación).
+- `2026-08-17T13:41:46` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de docstrings descriptivos en las funciones de cálculo, aclarando la lógica de normalización de cada métrica para facilitar futuras auditorías del algoritmo de salud.
+- `2026-08-17T13:42:57` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._build_single_health_bar
+- `2026-08-17T13:43:10` Tests FALLARON:
+```
+(total=0, available=0, cached=0))
+E        +    where <function pressure_level at 0x7f1799264220> = memory.pressure_level
+E        +    and   MemorySnapshot(total=0, available=0, cached=0) = <class 'memory.MemorySnapshot'>(0, 0)
+E        +      where <class 'memory.MemorySnapshot'> = memory.MemorySnapshot
+
+evolve/tests/test_modules.py:373: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_pressure_level_thresholds - AssertionError: assert <MemoryPressure.OK: 0> == 'ok'
+ +  where <MemoryPressure.OK: 0> = <function pressure_level at 0x7f1799264220>(MemorySnapshot(total=100, available=50, cached=0))
+ +    where <function pressure_level at 0x7f1799264220> = memory.pressure_level
+ +    and   MemorySnapshot(total=100, available=50, cached=0) = <class 'memory.MemorySnapshot'>(100, 50)
+ +      where <class 'memory.MemorySnapshot'> = memory.MemorySnapshot
+FAILED evolve/tests/test_modules.py::test_pressure_level_without_data_is_informative - AssertionError: assert <MemoryPressure.INFO: 1> == 'info'
+ +  where <MemoryPressure.INFO: 1> = <function pressure_level at 0x7f1799264220>(MemorySnapshot(total=0, available=0, cached=0))
+ +    where <function pressure_level at 0x7f1799264220> = memory.pressure_level
+ +    and   MemorySnapshot(total=0, available=0, cached=0) = <class 'memory.MemorySnapshot'>(0, 0)
+ +      where <class 'memory.MemorySnapshot'> = memory.MemorySnapshot
+2 failed, 297 passed in 1.18s
+
+```
+- `2026-08-17T13:43:10` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se introdujo una enumeración (IntEnum) para estandarizar los niveles de presión de memoria (`pressure_level`), reemplazando cadenas de texto arbitrarias y mejorando la legibilidad, mantenibilidad y robustez de la lógica de diagnóstico.
+- `2026-08-17T13:43:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T13:43:10` Corrida terminada. Total usado hoy: 324.

@@ -144,21 +144,27 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula salud inversa: 0 MB es perfecto (1.0), >= _LIMIT_JUNK_MB es crítico (0.0)."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """ Penaliza hallazgos (5%) y advertencias (25%) sobre la base de 1.0."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Normaliza el porcentaje de RAM disponible respecto al umbral de riesgo."""
     return (_clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Normaliza el porcentaje de espacio libre respecto al umbral de salud del disco."""
     return (_clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula salud inversa: 0 MB duplicados es perfecto (1.0)."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
+    """Calcula salud inversa: 0 programas es perfecto (1.0), >= _LIMIT_STARTUP_COUNT es crítico (0.0)."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
