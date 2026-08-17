@@ -357,8 +357,9 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     problemas = []
     for crit in _CRITERIOS_SALUD:
         if _is_criterion_triggered(ctx, crit):
-            problemas.append(crit.message_format.format(getattr(ctx, crit.metric_key)))
-            if len(problemas) >= 3:
+            val = getattr(ctx, crit.metric_key)
+            problemas.append(crit.message_format.format(val))
+            if len(problemas) == 3:
                 break
     return problemas
 

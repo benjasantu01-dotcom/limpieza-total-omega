@@ -124,18 +124,18 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
 
 class _Validators:
     """
-    Motor de validación estricta que asegura la integridad de los datos.
-    Cada método recibe el valor crudo del JSON y devuelve el valor tipado 
-    o None si el dato es malicioso, corrupto o fuera de rango.
+    Motor de validación de datos de entrada para `config.json`.
+    
+    Implementa validación de tipo, rango y seguridad de rutas. Cada método 
+    retorna el valor validado si es correcto, o `None` si el dato es malicioso,
+    corrupto o fuera de rango, permitiendo que `validate()` recurra al 
+    valor por defecto de fábrica.
     """
     
     @staticmethod
     @lru_cache(maxsize=32)
     def _is_safe_path(path_str: str) -> bool:
-        """
-        Verifica si una ruta es segura para ser tratada o almacenada, 
-        evitando symlinks/junctions mediante resolución estricta de rutas.
-        """
+        """Verifica si una ruta es segura para ser tratada mediante `safety`."""
         try:
             path_obj = Path(path_str)
             resolved = path_obj.resolve(strict=False)
@@ -149,7 +149,7 @@ class _Validators:
 
     @staticmethod
     def bool(val: Any) -> bool | None:
-        """Normaliza tipos mixtos a booleano; retorna None si es irrecuperable."""
+        """Convierte tipos mixtos a booleano; retorna None en caso de error."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -159,7 +159,7 @@ class _Validators:
 
     @staticmethod
     def int(key: ConfigKey, val: Any) -> int | None:
-        """Valida números dentro de rangos acotados para prevenir errores de lógica."""
+        """Valida enteros dentro de los rangos definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value: int = int(val)
@@ -169,10 +169,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """
-        Valida la integridad de rutas de usuario descartando caracteres de control,
-        rutas relativas (..) y rutas fuera de límites definidos por safety.py.
-        """
+        """Valida que una ruta sea absoluta, segura y no contenga caracteres inválidos."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
@@ -188,7 +185,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> str | None:
-        """Valida que los strings de configuración pertenezcan a los valores permitidos."""
+        """Valida strings restringidos por catálogo (tema/acento)."""
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
@@ -196,7 +193,7 @@ class _Validators:
 
     @staticmethod
     def str(key: ConfigKey, val: Any) -> str | None:
-        """Valida cadenas de texto evitando inyección, secuencias de escape o exceso de tamaño."""
+        """Valida strings, previniendo inyección, caracteres de control o exceso de tamaño."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -230,7 +227,12 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return base / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario arbitrario contra el esquema AppSettings, descartando claves corruptas."""
+    """
+    Valida un diccionario contra `AppSettings`.
+    
+    Cualquier clave faltante o valor mal formado se reemplaza con el valor
+    default de fábrica. La integridad del esquema se preserva.
+    """
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     
@@ -246,10 +248,7 @@ def validate(raw_values: Any) -> AppSettings:
 
 @lru_cache(maxsize=1)
 def _load_internal(ruta_str: str) -> AppSettings:
-    """
-    Carga interna cacheada: lee el disco, parsea el JSON y valida el contenido.
-    La caché se invalida externamente mediante `_LAST_MTIME` comparando el mtime del archivo.
-    """
+    """Carga interna: lee disco, parsea y valida. Invalida caché mediante mtime."""
     ruta = Path(ruta_str)
     try:
         if not ruta.is_file() or is_protected_path(str(ruta)) or not os.access(ruta, os.R_OK):

@@ -72,7 +72,7 @@ class StartupEntry:
     
     Implementa resolución perezosa para el ejecutable asociado:
     1. Sanitiza el comando crudo recibido.
-    2. Extrae la ruta del archivo ignorando argumentos.
+    2. Extrae la ruta del archivo ignorando argumentos de ejecución.
     3. Valida contra `is_protected_path` antes de confirmar su existencia.
     """
     name: str
@@ -82,14 +82,14 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la extensión es ejecutable y descarta enlaces simbólicos."""
+        """Verifica si la extensión es ejecutable y descarta enlaces simbólicos para evitar bucles."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia caracteres de control y espacios en blanco del comando crudo."""
+        """Filtra caracteres no imprimibles o de control del comando crudo."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
@@ -98,9 +98,8 @@ class StartupEntry:
         """
         Extrae la ruta contenida entre comillas.
         
-        Es necesario porque los comandos de registro suelen envolver rutas con
-        espacios en comillas dobles. Validamos que no sea una ruta protegida
-        para evitar revelar información sensible de carpetas del sistema.
+        Las rutas en registros suelen estar entre comillas si contienen espacios.
+        Se descartan rutas que contengan caracteres reservados de shell.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -122,10 +121,10 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Resuelve la ruta física y verifica su existencia usando caché global.
+        Resuelve la ruta física usando `Path.resolve()` y verifica su existencia.
         
-        Realiza `Path.resolve(strict=True)` para identificar archivos huérfanos.
-        Se detiene si la ruta cae dentro de un directorio protegido.
+        Usa una caché interna para evitar latencia excesiva por accesos constantes a disco.
+        Si la ruta es un punto de reparse o enlace, se ignora por seguridad.
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
@@ -166,7 +165,7 @@ class StartupEntry:
         """
         Selecciona la estrategia de extracción de ruta según el formato del comando.
         
-        Previene inyección de comandos rechazando cadenas con operadores shell.
+        Previene inyección de comandos rechazando cadenas con operadores shell activos.
         """
         if not cmd:
             return ""
@@ -187,7 +186,8 @@ class StartupEntry:
         """
         Acceso perezoso a la ruta absoluta del ejecutable.
         
-        Calculado solo bajo demanda y cacheado en la instancia.
+        Calculado solo bajo demanda y cacheado en la instancia para optimizar llamadas
+        repetidas en la interfaz de usuario.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -320,11 +320,10 @@ def list_startup_entries() -> List[StartupEntry]:
     seen_names: Set[str] = set()
     unique_entries: List[StartupEntry] = []
     
-    # Procesar ambas fuentes directamente para mayor rendimiento y menor overhead
-    sources = entries_from_folders() + entries_from_registry()
+    sources: List[StartupEntry] = entries_from_folders() + entries_from_registry()
 
     for entry in sources:
-        name_n = entry.name.lower()
+        name_n: str = entry.name.lower()
         if name_n not in seen_names:
             seen_names.add(name_n)
             unique_entries.append(entry)
