@@ -304,10 +304,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         
-    json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
-    temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
-    
     try:
+        json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+        temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
+        
         if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
         with open(temp_ruta, "wb") as f:
             f.write(json_data)
@@ -318,8 +318,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         _load_internal.cache_clear()
         _LAST_MTIME.pop(str(ruta), None)
         return ruta
-    except (OSError, IOError, PermissionError, RuntimeError):
-        if temp_ruta.exists():
+    except (OSError, IOError, PermissionError, RuntimeError, TypeError):
+        if 'temp_ruta' in locals() and temp_ruta.exists():
             try: temp_ruta.unlink()
             except OSError: pass
         return None

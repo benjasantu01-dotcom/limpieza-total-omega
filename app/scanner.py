@@ -87,17 +87,19 @@ class Scanner:
             return
         
         try:
-            target_path = Path(entry.path)
-            
+            # Verificación de reparse points antes de intentar cualquier acceso
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
 
+            target_path = Path(entry.path)
+            
             if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
 
             if not self._is_safe_entry(target_path):
                 return
 
+            # Uso de métodos de DirEntry para evitar llamadas extras al SO
             if entry.is_dir(follow_symlinks=False):
                 path_str = str(target_path)
                 if path_str not in self.seen:

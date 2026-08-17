@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 0 | 0 | 0 | 0 | 6 |
+| 2026-08-15 | 0 | 0 | 0 | 0 | 2 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 76 | 4 | 11 | 5 | 52 |
+| 2026-08-17 | 79 | 4 | 11 | 5 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
-- robustez ante casos límite: **47**
+- robustez ante casos límite: **49**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **44**
-- seguridad defensiva: **38**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
-- `assistant.py`: **21**
+- `assistant.py`: **22**
+- `scanner.py`: **21**
 - `browser.py`: **20**
 - `memory.py`: **20**
-- `scanner.py`: **20**
 - `quarantine.py`: **19**
+- `settings.py`: **18**
 - `diskreport.py`: **17**
-- `settings.py`: **17**
 - `duplicates.py`: **16**
 - `organizer.py`: **15**
 - `branding.py`: **14**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T06:23:55` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` añadiendo un filtro de longitud y contenido para el JSON de la respuesta antes de procesarla, asegurando que si la IA intenta retornar un payload malicioso, este sea descartado antes de entrar al sistema.
+- `2026-08-17T06:23:08` **settings.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores durante la serialización del JSON en `save()`, capturando explícitamente posibles fallos en el volcado de datos o escritura en disco para evitar que la aplicación quede en un estado inconsistente ante problemas de permisos o espacio en disco.
+- `2026-08-17T06:22:38` **scanner.py** (robustez ante casos límite): Se mejoró la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una validación explícita mediante `is_file()` y `is_dir()` antes de realizar operaciones de acceso, evitando capturar excepciones innecesarias en el flujo normal y fortaleciendo la resiliencia del escáner frente a errores de E/S comunes en sistemas de archivos.
 - `2026-08-17T06:12:57` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que no dependa de abrir el archivo en modo escritura (`rb+`), lo cual fallaría con permisos de solo lectura legítimos o archivos del sistema; ahora utiliza una verificación más cauta con `os.open` y flags de acceso no destructivo.
 - `2026-08-17T06:12:26` **organizer.py** (robustez ante casos límite): Se ha robustecido `stage_for_review` para prevenir el intento de movimiento si el archivo original ya no existe o si ha cambiado de estado, añadiendo validaciones de existencia antes de cada operación crítica para evitar errores `FileNotFoundError` durante la ejecución del bucle.
 - `2026-08-17T06:02:39` **healthscore.py** (robustez ante casos límite): Implementé una robustez mejorada en la generación de recomendaciones, evitando que una métrica con valor infinito o no numérico en `SystemMetrics` (que podría ocurrir por lecturas fallidas del sistema) propague errores o genere recomendaciones inútiles mediante una validación explícita adicional dentro de `_generate_recommendations`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T05:22:21` **healthscore.py** (rendimiento): Optimicé el rendimiento de `_calculate_breakdown` y `_generate_recommendations` eliminando la creación repetida de listas y el uso de `hasattr`/`getattr` dentro de los bucles, accediendo directamente a los atributos de las métricas mediante un mapeo pre-computado.
 - `2026-08-17T05:21:56` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar redundancia mediante la resolución de rutas (`resolve()`) desde la etapa inicial, evitando llamadas costosas a `stat().st_size` y `resolve()` múltiples veces para el mismo archivo.
 - `2026-08-17T05:21:31` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando llamadas repetitivas y costosas a `Path.resolve()` y `Path.relative_to()` por operaciones de cadena y acceso directo a los atributos del objeto `os.DirEntry`, evitando recrear objetos `Path` innecesariamente en cada iteración del bucle.
-- `2026-08-17T05:12:49` **browser.py** (rendimiento): Se optimizó el recorrido de directorios mediante la inyección del handle de `kernel32` y la función `isjunction` desde el inicio en `detect_profiles`, evitando recrear objetos y resolver dinámicamente atributos repetitivos en cada llamada recursiva de `_sum_directory_recursive`.
-- `2026-08-17T05:12:37` **branding.py** (rendimiento): Se introdujo la pre-computación de los colores de la paleta en una estructura de caché local (`PALETTE_RGB`) para evitar la conversión repetitiva de HEX a RGB durante el renderizado intenso de elementos gráficos, reduciendo significativamente la carga de CPU en funciones como `blend` y `gradient_colors`.
-- `2026-08-17T05:12:02` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la iteración completa sobre criterios estáticos por una lógica que evita la creación innecesaria de listas y mejora la velocidad de ejecución al priorizar la salida temprana.

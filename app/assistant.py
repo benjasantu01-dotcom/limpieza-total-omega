@@ -518,9 +518,13 @@ def _call_gemini(
             if res.status != 200: return None
             raw_res = res.read(_MAX_RESPONSE_BYTES)
             if not raw_res: return None
-            data = json.loads(raw_res.decode("utf-8"))
             
-            # Validación estricta de estructura de respuesta
+            # Validación de respuesta antes de procesar
+            try:
+                data = json.loads(raw_res.decode("utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return None
+            
             if not isinstance(data, dict) or "candidates" not in data: return None
             candidates = data["candidates"]
             if not isinstance(candidates, list) or not candidates: return None
@@ -536,7 +540,7 @@ def _call_gemini(
             # Filtrado defensivo final sobre la respuesta de la IA
             limpia_final = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", final_text))
             return limpia_final if _ensure_safe_text(limpia_final) else None
-    except (urllib.error.URLError, json.JSONDecodeError, KeyError, TypeError, ValueError):
+    except (urllib.error.URLError, KeyError, TypeError, ValueError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,

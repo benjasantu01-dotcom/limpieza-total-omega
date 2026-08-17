@@ -520,3 +520,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T06:13:29` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-17T06:13:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T06:13:29` Corrida terminada. Total usado hoy: 148.
+- `2026-08-17T06:22:13` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-17T06:22:38` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una validación explícita mediante `is_file()` y `is_dir()` antes de realizar operaciones de acceso, evitando capturar excepciones innecesarias en el flujo normal y fortaleciendo la resiliencia del escáner frente a errores de E/S comunes en sistemas de archivos.
+- `2026-08-17T06:23:08` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de errores durante la serialización del JSON en `save()`, capturando explícitamente posibles fallos en el volcado de datos o escritura en disco para evitar que la aplicación quede en un estado inconsistente ante problemas de permisos o espacio en disco.
+- `2026-08-17T06:23:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-17T06:23:55` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` añadiendo un filtro de longitud y contenido para el JSON de la respuesta antes de procesarla, asegurando que si la IA intenta retornar un payload malicioso, este sea descartado antes de entrar al sistema.
+- `2026-08-17T06:23:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T06:23:55` Corrida terminada. Total usado hoy: 152.
