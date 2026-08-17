@@ -77,6 +77,9 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo tras validar su seguridad.
+    
+    Aplica filtros de protección antes de la apertura: ignora enlaces simbólicos,
+    archivos de sistema (atributo 0x400), y rutas marcadas como restringidas.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -110,6 +113,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes (64KB) para comparación heurística.
+    
+    Este método permite descartar colisiones de tamaño mediante una lectura
+    limitada, optimizando significativamente el tiempo de análisis en discos HDD.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -135,6 +141,8 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Clasifica una colección de rutas según su tamaño en bytes.
+    
+    Filtra entradas no seguras o no accesibles antes de la agrupación inicial.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: 
@@ -159,6 +167,9 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad del sistema de archivos.
+    
+    Utiliza un set de inodos (st_dev, st_ino) para evitar el procesamiento
+    repetido de hardlinks o ciclos en el árbol de directorios.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -180,6 +191,7 @@ def _collect_candidates(
                     inode = (st.st_dev, st.st_ino)
                     if inode in visited_inodes: continue
                     
+                    # Filtro de atributos de sistema (0x400 es FILE_ATTRIBUTE_SYSTEM)
                     if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                     
                     if entry.is_dir():
@@ -208,6 +220,9 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Filtra candidatos agrupándolos según el resultado de una función de hash.
+    
+    Solo devuelve grupos que contienen al menos dos archivos coincidentes tras
+    la aplicación de hash_func.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     
@@ -227,6 +242,9 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Pipeline principal: filtra por tamaño -> hash parcial -> hash completo.
+    
+    Ejecuta el descubrimiento en etapas para minimizar operaciones de I/O
+    costosas, ordenando los resultados finales por bytes redundantes.
     """
     if directories is None or min_size < 0: return []
     

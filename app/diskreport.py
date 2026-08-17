@@ -147,11 +147,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad mediante `shutil.disk_usage`.
     
-    Args:
-        mount: Ruta de la unidad o punto de montaje.
-        
     Returns:
-        Objeto DriveUsage si la ruta es válida y accesible, None en caso contrario.
+        DriveUsage si la ruta es válida, None si es inaccesible o restringida.
     """
     if not mount:
         return None
@@ -170,13 +167,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
-    Obtiene el estado de uso de todas las unidades detectadas.
-    
-    Args:
-        mounts: Opcional, lista de rutas a consultar. Si es None, autodetecta unidades (Windows).
-        
-    Returns:
-        Lista de objetos DriveUsage con la información de cada unidad.
+    Obtiene el estado de uso de todas las unidades detectadas o especificadas.
     """
     if mounts is None:
         if os.name == "nt":
@@ -198,7 +189,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre recursivamente un directorio para indexar archivos y tamaños.
+    Genera tuplas (Path, size_bytes) recorriendo el árbol de directorios.
+    Ignora errores de permisos y sigue únicamente enlaces simbólicos válidos.
     """
     if not directory:
         return
@@ -227,7 +219,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
-                        # Validar que seguimos dentro de la base
                         if not entry.path.startswith(base_path_str):
                             continue
 
@@ -299,7 +290,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Calcula y lista las subcarpetas inmediatas que ocupan más espacio."""
+    """Calcula las subcarpetas inmediatas que ocupan más espacio."""
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -329,7 +320,11 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
-    """Calcula el tamaño total en bytes y la cantidad de archivos."""
+    """
+    Calcula el tamaño total en bytes y la cantidad de archivos.
+    Returns:
+        Tupla (total_bytes, total_files).
+    """
     if not directory:
         return (0, 0)
     total_bytes, file_count = 0, 0
@@ -340,7 +335,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
-    """Agrega métricas de uso de disco en una única iteración."""
+    """Agrega métricas de uso de disco en una única iteración de caminata."""
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
