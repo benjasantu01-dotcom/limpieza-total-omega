@@ -222,6 +222,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             if not _is_safe_to_move(junk_file, dest_base):
                 continue
+            
+            # Verificación explícita de disponibilidad de espacio
             if shutil.disk_usage(dest_base).free <= junk_file.size_bytes:
                 continue
                 
@@ -250,13 +252,17 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
+            # Validar que el archivo existe y es realmente un archivo antes de procesar
+            if not item.is_file() or item.is_symlink():
+                continue
+                
             resolved_item = item.resolve()
-            if resolved_item.is_file() and not resolved_item.is_symlink():
-                if resolved_item.parent.resolve() == dest and is_safe_to_modify(resolved_item):
-                    if not _is_file_locked(resolved_item):
-                        ensure_safe_to_modify(resolved_item)
-                        resolved_item.unlink()
-                        count += 1
+            # Confirmar que la ruta base coincide para evitar saltos accidentales
+            if resolved_item.parent.resolve() == dest and is_safe_to_modify(resolved_item):
+                if not _is_file_locked(resolved_item):
+                    ensure_safe_to_modify(resolved_item)
+                    resolved_item.unlink()
+                    count += 1
         except (PermissionError, OSError, ValueError):
             continue
     return count

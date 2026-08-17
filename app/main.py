@@ -308,12 +308,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Invoca el constructor específico (p. ej. _build_tab_salud) según el nombre de la pestaña."""
         method_name = f"_build_tab_{name.lower()}"
         constructor = getattr(self, method_name, None)
-        if constructor and name in self.tabs and self.tabs[name].winfo_exists():
+        if constructor and name in self.tabs:
             try:
                 constructor()
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
-                self._create_styled_label(self.tabs[name], f"Error al cargar módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
+                if self.tabs[name].winfo_exists():
+                    self._create_styled_label(self.tabs[name], f"Error al cargar módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
 
     def _build_tabs_container(self) -> None:
         """Configura el widget tabview y delega la creación de contenido interno por cada pestaña."""
@@ -830,7 +831,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _set_busy(self, busy: bool) -> None:
         """Gestiona la visibilidad y estado de la barra de progreso."""
         def actualizar() -> None:
-            if self._closing or not hasattr(self, 'activity') or self.activity is None or not self.activity.winfo_exists(): return
+            if self._closing or not hasattr(self, 'activity') or not self.activity.winfo_exists(): return
             if busy:
                 self._tasks_running += 1
             else:

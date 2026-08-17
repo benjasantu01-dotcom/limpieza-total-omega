@@ -294,7 +294,6 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 def _is_system_process(pid: int) -> bool:
     """Determina si el PID pertenece al núcleo o servicios protegidos."""
-    # Ampliado: procesos con PID < 100 suelen ser servicios críticos de sistema en Windows
     return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid < 100
 
 
@@ -328,7 +327,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     psapi = getattr(ctypes.windll, "psapi", None)
-    if kernel32 is None or psapi is None or not hasattr(psapi, "EmptyWorkingSet"):
+    if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "Error de sistema: APIs de memoria no disponibles."
 
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
@@ -337,17 +336,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         
     try:
         exit_code = ctypes.c_ulong()
-        # Verificar estado del proceso antes de intentar cualquier operación
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return False, "El proceso seleccionado ya no está activo o se ha cerrado."
+            return False, "El proceso seleccionado ya no está activo."
             
         path = _get_process_path(proc_handle)
         if not path or is_protected_path(os.path.normpath(path)):
-            return False, "Operación denegada: ruta de ejecutable protegida o inválida."
+            return False, "Operación denegada: ruta de ejecutable protegida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
             err = kernel32.GetLastError()
-            msg = f"Acceso denegado: privilegios insuficientes (error {err})." if err == ERROR_ACCESS_DENIED else f"Error al intentar liberar memoria (código {err})."
+            msg = f"Acceso denegado: privilegios insuficientes (error {err})." if err == ERROR_ACCESS_DENIED else f"Error al liberar memoria (código {err})."
             return False, msg
             
         return True, f"Working set liberado. {TRIM_WARNING}"
