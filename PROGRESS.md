@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 210
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 150 | 13 | 19 | 12 | 154 |
-| 2026-08-17 | 80 | 4 | 11 | 5 | 56 |
+| 2026-08-16 | 150 | 13 | 19 | 12 | 150 |
+| 2026-08-17 | 82 | 4 | 11 | 6 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,11 +25,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - robustez ante casos límite: **49**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **44**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
+- `healthscore.py`: **24**
 - `assistant.py`: **22**
 - `browser.py`: **21**
 - `scanner.py`: **21**
@@ -40,12 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **16**
 - `organizer.py`: **15**
 - `branding.py`: **14**
-- `main.py`: **9**
+- `main.py`: **10**
 - `startup.py`: **8**
 - `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T06:44:10` **main.py** (seguridad defensiva): Se introdujo una comprobación explícita de seguridad antes de procesar cualquier entrada de PID en la pestaña Memoria, utilizando `ensure_safe_to_modify` indirectamente mediante la validación de rango y `process_exists`, y se encapsuló la lectura del archivo de ajustes en un bloque de seguridad robusto, mitigando el riesgo de inyección o corrupción al procesar datos de usuario.
+- `2026-08-17T06:43:05` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_generate_recommendations` mediante la validación explícita de `rule.metric_attr` contra los atributos reales de `SystemMetrics` usando `getattr`, evitando el acceso dinámico inseguro vía `__dict__` y garantizando que las métricas procesadas sean siempre finitas.
 - `2026-08-17T06:33:27` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_path` integrando `os.path.abspath` antes de la comparación de rutas para asegurar que la validación de `relative_to` sea efectiva incluso en entornos con rutas relativas, previniendo posibles errores de `ValueError` y garantizando que el chequeo de "subdirectorio" sea estricto.
 - `2026-08-17T06:23:55` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` añadiendo un filtro de longitud y contenido para el JSON de la respuesta antes de procesarla, asegurando que si la IA intenta retornar un payload malicioso, este sea descartado antes de entrar al sistema.
 - `2026-08-17T06:23:08` **settings.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores durante la serialización del JSON en `save()`, capturando explícitamente posibles fallos en el volcado de datos o escritura en disco para evitar que la aplicación quede en un estado inconsistente ante problemas de permisos o espacio en disco.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T05:42:16` **scanner.py** (rendimiento): Optimizé la regla `check_recent_executable_in_downloads` para verificar la existencia de carpetas vigiladas mediante una intersección de conjuntos (`isdisjoint`), evitando el costo de iterar y convertir cada parte de la ruta a minúsculas en cada llamada, y eliminé una llamada redundante a `path.exists()` dentro del bucle de escaneo.
 - `2026-08-17T05:32:41` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` y `list_items` convirtiendo la carga del manifiesto y la validación en operaciones más eficientes mediante el uso de diccionarios (set lookups) y evitando re-procesar iterativamente la lista completa en operaciones de borrado masivo.
 - `2026-08-17T05:31:47` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` eliminando la llamada innecesaria a `_fetch_raw_process_data` cuando la lista de procesos es solicitada frecuentemente, implementando un mecanismo de expiración simple de 30 segundos sobre la caché `lru_cache` mediante el uso de un parámetro de tiempo o, en este caso, eliminando la sobrecarga innecesaria de serialización/deserialización mediante el uso de una lógica de filtrado más eficiente dentro del proceso de `parse_windows_process_csv`.
-- `2026-08-17T05:22:21` **healthscore.py** (rendimiento): Optimicé el rendimiento de `_calculate_breakdown` y `_generate_recommendations` eliminando la creación repetida de listas y el uso de `hasattr`/`getattr` dentro de los bucles, accediendo directamente a los atributos de las métricas mediante un mapeo pre-computado.
-- `2026-08-17T05:21:56` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de candidatos en `_collect_candidates` para evitar redundancia mediante la resolución de rutas (`resolve()`) desde la etapa inicial, evitando llamadas costosas a `stat().st_size` y `resolve()` múltiples veces para el mismo archivo.

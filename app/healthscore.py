@@ -170,15 +170,15 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recommendations: List[str] = []
-    d = metrics.__dict__
     for rule in _RECOMMENDATION_RULES:
         if _clamp(ratios.get(rule.area, 1.0), 0.0, 1.0) < rule.threshold:
-            val = d.get(rule.metric_attr)
-            if isinstance(val, (int, float)) and math.isfinite(float(val)):
-                if rule.expected_args > 0:
-                    try: recommendations.append(rule.message_format.format(float(val)))
-                    except (ValueError, IndexError, TypeError, KeyError): continue
-                else: recommendations.append(rule.message_format)
+            if hasattr(metrics, rule.metric_attr):
+                val = getattr(metrics, rule.metric_attr)
+                if isinstance(val, (int, float)) and math.isfinite(float(val)):
+                    if rule.expected_args > 0:
+                        try: recommendations.append(rule.message_format.format(float(val)))
+                        except (ValueError, IndexError, TypeError, KeyError): continue
+                    else: recommendations.append(rule.message_format)
     
     if metrics.quarantined_count > 0 and math.isfinite(metrics.quarantined_count):
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

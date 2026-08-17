@@ -182,8 +182,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.assistant_context = assistant.SystemContext()
         
         try:
-            raw_settings = settings_mod.load()
-            self.settings = raw_settings if isinstance(raw_settings, dict) else settings_mod.reset()
+            # Carga defensiva: asegura que los tipos de datos sean correctos antes de asignar
+            raw = settings_mod.load()
+            self.settings = raw if isinstance(raw, dict) else settings_mod.reset()
         except Exception as e:
             logging.error("Fallo al cargar ajustes, reseteando: %s", e)
             self.settings = settings_mod.reset()

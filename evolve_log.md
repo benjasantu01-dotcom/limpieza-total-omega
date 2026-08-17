@@ -534,3 +534,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T06:34:21` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-08-17T06:34:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T06:34:21` Corrida terminada. Total usado hoy: 156.
+- `2026-08-17T06:42:35` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-17T06:43:05` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_generate_recommendations` mediante la validación explícita de `rule.metric_attr` contra los atributos reales de `SystemMetrics` usando `getattr`, evitando el acceso dinámico inseguro vía `__dict__` y garantizando que las métricas procesadas sean siempre finitas.
+- `2026-08-17T06:44:10` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se introdujo una comprobación explícita de seguridad antes de procesar cualquier entrada de PID en la pestaña Memoria, utilizando `ensure_safe_to_modify` indirectamente mediante la validación de rango y `process_exists`, y se encapsuló la lectura del archivo de ajustes en un bloque de seguridad robusto, mitigando el riesgo de inyección o corrupción al procesar datos de usuario.
+- `2026-08-17T06:44:36` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva en `_is_valid_trim_target` asegurando que la ruta del ejecutable se normalize antes de verificarla con `is_protected_path`, previniendo potenciales errores de comparación por diferencias en el uso de separadores de ruta en Windows.
+- `2026-08-17T06:44:44` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-17T06:44:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T06:44:44` Corrida terminada. Total usado hoy: 160.
