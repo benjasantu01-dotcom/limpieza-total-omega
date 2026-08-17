@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 213
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 100 | 9 | 13 | 9 | 113 |
-| 2026-08-17 | 126 | 8 | 17 | 9 | 100 |
+| 2026-08-16 | 100 | 9 | 13 | 9 | 109 |
+| 2026-08-17 | 128 | 8 | 17 | 11 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,18 +25,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **45**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **41**
-- seguridad defensiva: **39**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
+- `healthscore.py`: **24**
 - `assistant.py`: **23**
-- `healthscore.py`: **23**
 - `scanner.py`: **21**
 - `memory.py`: **20**
 - `browser.py`: **19**
 - `quarantine.py`: **19**
+- `duplicates.py`: **17**
 - `settings.py`: **17**
-- `duplicates.py`: **16**
 - `diskreport.py`: **16**
 - `organizer.py`: **15**
 - `branding.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T11:08:44` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `healthscore.py` validando que los pesos y límites globales (definidos como constantes) no sean manipulados para producir valores negativos o infinitos, garantizando que el cálculo de `_WEIGHT_ITEMS` sea siempre consistente.
+- `2026-08-17T11:08:17` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` al realizar el `resolve(strict=True)` de forma previa y aislada, garantizando que cualquier error de acceso o inexistencia de la ruta ocurra antes de interactuar con el sistema de archivos, y asegurando que las validaciones de `is_safe_to_modify` se realicen siempre sobre rutas resueltas y verificadas.
 - `2026-08-17T10:59:42` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `all_drives_usage` bloqueando explícitamente el acceso a rutas UNC para evitar comportamientos inesperados o bloqueos en llamadas de sistema de bajo nivel, alineándolo con las restricciones de `drive_usage`.
 - `2026-08-17T10:59:30` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_path` integrando `os.path.commonpath` para validar la contención de rutas de forma nativa, evitando el riesgo de `ValueError` por `relative_to` al tratar con rutas normalizadas y previniendo inyecciones mediante una verificación más estricta de la jerarquía de directorios.
 - `2026-08-17T10:58:04` **assistant.py** (seguridad defensiva): Se reforzó la defensa contra la ejecución de código o manipulación de rutas añadiendo una validación explícita mediante `is_protected_path` en `_ensure_safe_text` y restringiendo el uso de `getattr` en `_safe_assign` para evitar la inyección de atributos no deseados en el objeto de contexto.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T10:17:11` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` mediante el uso de `itertools.chain` y una estructura `set` inicializada correctamente, evitando la concatenación de listas grandes en memoria y mejorando la eficiencia del filtrado de duplicados.
 - `2026-08-17T10:07:53` **settings.py** (rendimiento): Se optimizó el acceso a disco mediante una caché de segundo nivel (`_CACHED_SETTINGS`) que evita la serialización/deserialización JSON y el cálculo de `mtime` en cada llamada a `load`, mejorando drásticamente el rendimiento en bucles de lectura frecuente.
 - `2026-08-17T10:07:42` **scanner.py** (rendimiento): Se optimizó el rendimiento del escáner reemplazando la lógica de búsqueda en listas por `frozenset` en las funciones `check_recent_executable_in_downloads` y `check_system_lookalike`, evitando iteraciones innecesarias y conversiones de tipos dentro de los bucles de escaneo.
-- `2026-08-17T10:07:18` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` y `ensure_safe_to_modify` reemplazando llamadas redundantes a `Path.parts` y operaciones costosas de sistema por verificaciones de prefijo optimizadas y lógica de corto circuito, reduciendo drásticamente la carga en escaneos masivos.
-- `2026-08-17T09:58:12` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de un diccionario de caché indexado por `base_path` para evitar redundancia en llamadas multi-hilo o recursivas, y mejoré la eficiencia de `purge_all` al realizar una búsqueda en memoria O(n) basada en el conjunto de nombres del manifiesto, reduciendo significativamente las operaciones de I/O sobre el sistema de archivos durante la limpieza masiva.

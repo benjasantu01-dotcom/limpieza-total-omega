@@ -69,9 +69,13 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-_TOTAL_WEIGHTS: Final[float] = float(sum(WEIGHTS.values()))
+# Validación defensiva de constantes para asegurar consistencia del sistema de puntaje
+def _safe_sum_weights() -> float:
+    return float(sum(max(0, w) for w in WEIGHTS.values()))
+
+_TOTAL_WEIGHTS: Final[float] = _safe_sum_weights()
 _WEIGHT_FACTORS: Final[Dict[MetricKey, float]] = {
-    k: (w * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
+    k: (max(0, w) * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
     for k, w in WEIGHTS.items()
 }
 _WEIGHT_ITEMS: Final[List[Tuple[MetricKey, float]]] = [(k, _WEIGHT_FACTORS[k]) for k in WEIGHTS]
@@ -101,7 +105,6 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
-        # Forzar conversión y limpieza de tipos para evitar inyecciones de valores NaN o Inf
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
