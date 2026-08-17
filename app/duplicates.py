@@ -86,7 +86,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path)
-        if is_protected_path(file_path) or not is_safe_to_modify(file_path):
+        if not file_path.exists() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
 
         resolved_path = file_path.resolve()
@@ -113,16 +113,13 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes (64KB) para comparación heurística.
-    
-    Este método permite descartar colisiones de tamaño mediante una lectura
-    limitada, optimizando significativamente el tiempo de análisis en discos HDD.
     """
     if path is None or read_bytes <= 0: 
         return None
         
     try:
         file_path = Path(path)
-        if is_protected_path(file_path) or not is_safe_to_modify(file_path):
+        if not file_path.exists() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
             
         resolved_path = file_path.resolve()
@@ -141,15 +138,13 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Clasifica una colección de rutas según su tamaño en bytes.
-    
-    Filtra entradas no seguras o no accesibles antes de la agrupación inicial.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: 
         return groups
         
     for p in paths:
-        if not isinstance(p, Path) or is_protected_path(p) or not is_safe_to_modify(p): 
+        if not isinstance(p, Path) or not p.exists() or is_protected_path(p) or not is_safe_to_modify(p): 
             continue
         try:
             target = p.resolve()
@@ -196,7 +191,9 @@ def _collect_candidates(
     if directories is None: return {}
     for directory in directories:
         if directory:
-            _scan(Path(directory).resolve())
+            try:
+                _scan(Path(directory).resolve())
+            except (OSError, RuntimeError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
@@ -207,9 +204,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Filtra candidatos agrupándolos según el resultado de una función de hash.
-    
-    Solo devuelve grupos que contienen al menos dos archivos coincidentes tras
-    la aplicación de hash_func.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     
@@ -229,9 +223,6 @@ def find_duplicates(
 ) -> List[DuplicateGroup]:
     """
     Pipeline principal: filtra por tamaño -> hash parcial -> hash completo.
-    
-    Ejecuta el descubrimiento en etapas para minimizar operaciones de I/O
-    costosas, ordenando los resultados finales por bytes redundantes.
     """
     if directories is None or min_size < 0: return []
     
@@ -265,7 +256,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path) or is_protected_path(p) or not is_safe_to_modify(p):
+        if not isinstance(p, Path) or not p.exists() or is_protected_path(p) or not is_safe_to_modify(p):
             continue
         try:
             stat_info = p.stat()

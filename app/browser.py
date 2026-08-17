@@ -124,7 +124,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
             return False
 
         return True
-    except (OSError, ValueError, RuntimeError, PermissionError, ValueError):
+    except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
 
@@ -194,16 +194,15 @@ def _sum_directory_recursive(
                 for entry in it:
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
-                    if entry.is_dir():
-                        total += _walk(entry.path, depth + 1)
-                    else:
-                        try:
+                    try:
+                        if entry.is_dir():
+                            total += _walk(entry.path, depth + 1)
+                        elif entry.is_file():
                             f_stat = entry.stat()
-                            # Solo sumar si el archivo tiene tamaño válido (ignora errores de I/O silenciosos)
                             if f_stat.st_size >= 0:
                                 total += f_stat.st_size
-                        except (OSError, PermissionError):
-                            continue
+                    except (OSError, PermissionError):
+                        continue
         except (PermissionError, OSError, FileNotFoundError):
             pass
         

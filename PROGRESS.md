@@ -8,45 +8,48 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 35 | 5 | 4 | 1 | 17 |
+| 2026-08-15 | 32 | 5 | 3 | 1 | 17 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 40 | 3 | 5 | 2 | 42 |
+| 2026-08-17 | 43 | 3 | 5 | 2 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - seguridad defensiva: **50**
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **44**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `scanner.py`: **21**
-- `memory.py`: **20**
 - `settings.py`: **20**
-- `quarantine.py`: **19**
+- `memory.py`: **19**
 - `assistant.py`: **19**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `quarantine.py`: **18**
 - `diskreport.py`: **17**
-- `organizer.py`: **16**
-- `duplicates.py`: **15**
-- `branding.py`: **12**
+- `duplicates.py`: **16**
+- `organizer.py`: **15**
+- `branding.py`: **13**
 - `main.py`: **11**
 - `safety.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T04:01:08` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y validación de parámetros en el pipeline de escaneo, garantizando que `_collect_candidates` y las funciones de escaneo no fallen ante entradas nulas, rutas inválidas o errores de sistema al acceder a atributos de archivos mediante una validación proactiva y un bloque try-except más preciso.
+- `2026-08-17T04:00:33` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente la integridad de los objetos `os.DirEntry` antes de acceder a sus atributos, evitando errores de I/O en archivos bloqueados o con metadatos inconsistentes y asegurando que `stat()` no sea llamado sobre entradas inexistentes tras el escaneo.
+- `2026-08-17T04:00:05` **branding.py** (manejo de errores y validación de entradas): Se mejora `save_logo_svg` para prevenir operaciones inválidas mediante la validación temprana de la ruta, el uso de `is_safe_to_modify` como filtro booleano previo y la captura de errores específicos para evitar que la aplicación falle al intentar persistir archivos en ubicaciones restringidas.
 - `2026-08-17T03:52:59` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_safe_assign` y `build_context` para manejar errores de conversión de tipos de forma explícita, evitando que valores inesperados (como strings no numéricos) sean procesados erróneamente en el contexto del sistema.
 - `2026-08-17T02:38:19` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante la verificación de la existencia del archivo a través de `os.path.exists()` antes de realizar la resolución simbólica, evitando así llamadas potencialmente inestables a `resolve(strict=True)` sobre rutas inexistentes o no confiables, asegurando que el proceso no sea interceptado por errores de permisos en rutas parcialmente inválidas.
 - `2026-08-17T02:29:35` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `os.replace` (que puede tener comportamientos imprevistos al manejar bloqueos de archivos en sistemas de archivos en uso) y reemplazándolo por una verificación de acceso más estricta mediante `os.access(ruta, os.W_OK)` antes de intentar cualquier operación, además de garantizar que `temp_ruta` y `ruta` pertenezcan al mismo dispositivo para evitar excepciones de `os.replace` entre volúmenes distintos, mejorando la robustez de la escritura atómica.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T02:08:17` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `walk_files` y las funciones de consulta añadiendo una validación explícita para asegurar que las rutas resueltas sigan estando bajo el directorio raíz, previniendo posibles ataques de *path traversal* o escape de contexto mediante enlaces simbólicos maliciosos.
 - `2026-08-17T02:07:46` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_path` integrando `os.path.realpath` para prevenir ataques de desreferenciación de enlaces simbólicos mediante la validación de rutas antes de cualquier operación, asegurando que `target_path` no solo se resuelva dentro de `base_path`, sino que el camino real resulte ser un subdirectorio estricto.
 - `2026-08-17T01:59:02` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` asegurando que la ruta destino no sea un directorio protegido antes de realizar cualquier operación de escritura, utilizando `ensure_safe_to_modify` para cumplir con las reglas de seguridad defensiva y manejo de excepciones.
-- `2026-08-17T01:58:44` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en la serialización y validación de texto añadiendo una capa de "sandboxing" lógica que evita que cualquier cadena contenga caracteres de control invisibles o secuencias de escape que podrían ser interpretadas por terminales o parsers externos.
-- `2026-08-17T01:57:36` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `load` incorporando una validación de `os.stat` para prevenir bloqueos por archivos cuyo tamaño es incompatible con la carga en memoria, y se ha reemplazado la lógica de `ruta.replace` por un manejo de errores más específico que evita fallos por estados de archivo bloqueados en sistemas de archivos con permisos restrictivos.
-- `2026-08-17T01:49:00` **scanner.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `process_entry` y `scan_directory` manejando explícitamente errores de acceso (`OSError`, `PermissionError`) y rutas malformadas que pueden ocurrir durante el recorrido del disco.
