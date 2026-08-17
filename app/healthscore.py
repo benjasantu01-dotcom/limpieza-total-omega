@@ -222,15 +222,13 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         if _clamp(ratios.get(rule.area, 1.0), 0.0, 1.0) < rule.threshold:
             val = getattr(metrics, rule.metric_attr, None)
             if val is not None and isinstance(val, (int, float)) and math.isfinite(float(val)):
-                try:
-                    if rule.expected_args > 0:
-                        # Asegurar que el formato no falle ante valores extremos o inesperados
-                        formatted_val = float(val)
-                        recommendations.append(rule.message_format.format(formatted_val))
-                    else:
-                        recommendations.append(rule.message_format)
-                except (ValueError, IndexError, TypeError, KeyError):
-                    continue
+                if rule.expected_args > 0:
+                    try:
+                        recommendations.append(rule.message_format.format(float(val)))
+                    except (ValueError, IndexError, TypeError, KeyError):
+                        continue
+                else:
+                    recommendations.append(rule.message_format)
     
     if isinstance(metrics.quarantined_count, int) and metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

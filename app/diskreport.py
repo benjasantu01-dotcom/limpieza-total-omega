@@ -203,12 +203,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             return
         if skip_protected and is_protected_path(base_path):
             return
-        base_path_str = str(base_path)
     except (OSError, RuntimeError, TypeError, ValueError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[str] = [base_path_str]
+    stack: List[Path] = [base_path]
     
     while stack:
         current_dir = stack.pop()
@@ -216,13 +215,15 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Asegurar que la ruta hija esté contenida en la base
+                        entry_path = Path(entry.path).resolve(strict=False)
+                        if base_path not in entry_path.parents and entry_path != base_path:
+                            continue
+
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
-                        if not entry.path.startswith(base_path_str):
-                            continue
-
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        if skip_protected and is_protected_path(entry_path):
                             continue
 
                         if entry.is_dir():
@@ -230,9 +231,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(entry.path)
+                                stack.append(entry_path)
                         elif entry.is_file():
-                            yield Path(entry.path), entry.stat().st_size
+                            yield entry_path, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

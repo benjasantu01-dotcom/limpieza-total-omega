@@ -170,32 +170,25 @@ def _collect_candidates(
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
-    safety_cache: Dict[str, bool] = {}
 
-    def _is_safe_cached(p: Path) -> bool:
-        path_str = str(p)
-        if path_str not in safety_cache:
-            safety_cache[path_str] = not (is_protected_path(p) or not is_safe_to_modify(p))
-        return safety_cache[path_str]
-    
     def _scan(root_path: Path) -> None:
         try:
             for entry in os.scandir(root_path):
                 try:
                     if entry.is_symlink(): continue
+                    path_obj = Path(entry.path)
+                    if skip_protected and (is_protected_path(path_obj) or not is_safe_to_modify(path_obj)):
+                        continue
                     
                     if entry.is_dir():
                         st = entry.stat(follow_symlinks=False)
                         inode = (st.st_dev, st.st_ino)
                         if inode not in visited_inodes:
                             visited_inodes.add(inode)
-                            _scan(Path(entry.path))
+                            _scan(path_obj)
                     elif entry.is_file():
                         st = entry.stat(follow_symlinks=False)
                         if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
-                            path_obj = Path(entry.path)
-                            if skip_protected and not _is_safe_cached(path_obj):
-                                continue
                             temp_groups[st.st_size].append(path_obj.resolve())
                 except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
