@@ -370,7 +370,7 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     return encontrados
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Maneja consultas sobre el estado de la memoria RAM usando el motor local."""
+    """Maneja consultas sobre la memoria RAM basándose en niveles críticos de disponibilidad."""
     mem_pct = float(ctx.memory_available_percent)
     total_gb = float(ctx.memory_total_gb)
     partes = [
@@ -390,7 +390,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Maneja consultas sobre el almacenamiento local."""
+    """Calcula el espacio recuperable y evalúa el riesgo de saturación del disco."""
     recuperable = float(ctx.junk_mb) + float(ctx.duplicate_mb) + float(ctx.browser_cache_mb)
     partes = [
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
@@ -406,7 +406,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Maneja consultas de seguridad sobre archivos potencialmente riesgosos."""
+    """Evalúa la presencia de archivos sospechosos y explica el flujo de cuarentena."""
     partes = []
     if ctx.suspicious_count == 0:
         partes.append("No hay archivos sospechosos en tus Descargas.")
@@ -419,7 +419,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Maneja consultas sobre el puntaje de salud del sistema."""
+    """Explica la composición del puntaje de salud y detalla los factores de riesgo activos."""
     partes = [f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."]
     problemas = _identify_active_problems(ctx)
     
@@ -433,7 +433,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """Maneja consultas sobre programas de inicio."""
+    """Analiza la cantidad de programas de inicio y su impacto operativo."""
     partes = [f"Tenés {ctx.startup_count} programas que arrancan con Windows."]
     if ctx.startup_count > 15:
         partes.append("Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos.")

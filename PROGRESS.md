@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 27 | 3 | 3 | 1 | 16 |
+| 2026-08-15 | 25 | 2 | 3 | 1 | 15 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 48 | 3 | 6 | 3 | 44 |
+| 2026-08-17 | 50 | 4 | 6 | 3 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - robustez ante casos límite: **51**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **40**
-- legibilidad y documentación: **40**
+- legibilidad y documentación: **42**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
+- `healthscore.py`: **22**
 - `scanner.py`: **21**
 - `memory.py`: **20**
+- `assistant.py`: **20**
 - `settings.py`: **19**
-- `assistant.py`: **19**
 - `browser.py`: **19**
 - `quarantine.py`: **18**
 - `organizer.py`: **16**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
-- `branding.py`: **13**
-- `main.py`: **12**
+- `branding.py`: **14**
+- `main.py`: **11**
 - `safety.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T04:31:48` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones gráficas y de utilidades mediante el uso de docstrings estandarizados (Google Style), facilitando la lectura del código y la comprensión de las unidades esperadas para los parámetros geométricos.
+- `2026-08-17T04:31:30` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de manejo (`handle_ram`, `handle_disk`, etc.) para explicar el criterio de negocio de cada una, y se han tipado explícitamente los retornos y parámetros para mejorar la mantenibilidad y la claridad del código.
 - `2026-08-17T04:21:15` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez del manejo de errores en `process_entry` y `scan_directory` añadiendo validaciones explícitas de tipo y estado de ruta, y se mejoró la resiliencia del pipeline de escaneo al capturar excepciones específicas durante la instanciación de `Path` y el acceso a metadatos, evitando que fallos parciales en una entrada interrumpan el escaneo recursivo.
 - `2026-08-17T04:11:47` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones preventivas contra rutas inexistentes, tipos de archivo inválidos y errores de resolución de disco, asegurando que las operaciones solo procedan bajo condiciones de integridad verificables.
 - `2026-08-17T04:11:39` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` validando el handle y la integridad de las APIs de Windows antes de operar, asegurando que los fallos sean capturados y reportados de forma controlada.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T02:29:35` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `os.replace` (que puede tener comportamientos imprevistos al manejar bloqueos de archivos en sistemas de archivos en uso) y reemplazándolo por una verificación de acceso más estricta mediante `os.access(ruta, os.W_OK)` antes de intentar cualquier operación, además de garantizar que `temp_ruta` y `ruta` pertenezcan al mismo dispositivo para evitar excepciones de `os.replace` entre volúmenes distintos, mejorando la robustez de la escritura atómica.
 - `2026-08-17T02:28:56` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `check_recent_executable_in_downloads` validando mediante `is_protected_path` que la ruta del archivo no pertenezca a zonas críticas del sistema antes de procesar su antigüedad, evitando así interacciones innecesarias con archivos de sistema protegidos y alineando el módulo con las reglas de seguridad global.
 - `2026-08-17T02:19:48` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` al realizar una validación de ruta absoluta y comparación de dispositivos después de la resolución, impidiendo explícitamente cualquier intento de escape o movimiento entre particiones que pudiera ser aprovechado para manipular permisos de archivo.
-- `2026-08-17T02:19:03` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` al validar la integridad de la ruta del ejecutable antes de ejecutar la acción, aplicando `is_protected_path` sobre una ruta normalizada y verificando que el proceso no sea un proceso del sistema (mediante el PID) antes de realizar cualquier llamada a la API de Windows.
-- `2026-08-17T02:18:34` **main.py** (seguridad defensiva): Se reforzó la seguridad en el inicio de la aplicación añadiendo `ensure_safe_to_modify` sobre el directorio de usuario (home) para prevenir operaciones accidentales en rutas del sistema, garantizando que el punto de entrada principal sea validado antes de renderizar la interfaz.

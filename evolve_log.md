@@ -409,3 +409,43 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-17T04:21:15` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del manejo de errores en `process_entry` y `scan_directory` añadiendo validaciones explícitas de tipo y estado de ruta, y se mejoró la resiliencia del pipeline de escaneo al capturar excepciones específicas durante la instanciación de `Path` y el acceso a metadatos, evitando que fallos parciales en una entrada interrumpan el escaneo recursivo.
 - `2026-08-17T04:21:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T04:21:15` Corrida terminada. Total usado hoy: 104.
+- `2026-08-17T04:30:00` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-08-17T04:30:30` Tests FALLARON:
+```
+th, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed in 0.99s
+
+```
+- `2026-08-17T04:30:30` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save()` capturando explícitamente posibles excepciones durante la escritura del archivo temporal y agregué una validación de `Enum` en `update()` para prevenir que claves inexistentes en el diccionario `changes` propaguen errores inesperados.
+- `2026-08-17T04:30:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-17T04:31:30` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones de manejo (`handle_ram`, `handle_disk`, etc.) para explicar el criterio de negocio de cada una, y se han tipado explícitamente los retornos y parámetros para mejorar la mantenibilidad y la claridad del código.
+- `2026-08-17T04:31:48` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones gráficas y de utilidades mediante el uso de docstrings estandarizados (Google Style), facilitando la lectura del código y la comprensión de las unidades esperadas para los parámetros geométricos.
+- `2026-08-17T04:31:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T04:31:48` Corrida terminada. Total usado hoy: 108.
