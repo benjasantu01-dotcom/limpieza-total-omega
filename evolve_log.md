@@ -484,3 +484,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T05:23:15` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run
 - `2026-08-17T05:23:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T05:23:15` Corrida terminada. Total usado hoy: 128.
+- `2026-08-17T05:31:16` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-17T05:31:47` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` eliminando la llamada innecesaria a `_fetch_raw_process_data` cuando la lista de procesos es solicitada frecuentemente, implementando un mecanismo de expiración simple de 30 segundos sobre la caché `lru_cache` mediante el uso de un parámetro de tiempo o, en este caso, eliminando la sobrecarga innecesaria de serialización/deserialización mediante el uso de una lógica de filtrado más eficiente dentro del proceso de `parse_windows_process_csv`.
+- `2026-08-17T05:32:09` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-17T05:32:41` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y `list_items` convirtiendo la carga del manifiesto y la validación en operaciones más eficientes mediante el uso de diccionarios (set lookups) y evitando re-procesar iterativamente la lista completa en operaciones de borrado masivo.
+- `2026-08-17T05:32:45` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-08-17T05:32:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T05:32:45` Corrida terminada. Total usado hoy: 132.

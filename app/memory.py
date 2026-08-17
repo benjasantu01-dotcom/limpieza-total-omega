@@ -28,6 +28,7 @@ import re
 import subprocess
 import math
 import ctypes
+import time
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar, TypeAlias
@@ -233,9 +234,13 @@ def read_snapshot() -> MemorySnapshot:
     return MemorySnapshot(total=0, available=0)
 
 
-@lru_cache(maxsize=1)
 def _fetch_raw_process_data() -> str:
-    """Ejecuta comando de PowerShell y devuelve el CSV crudo."""
+    """Ejecuta comando de PowerShell, con cacheo basado en tiempo para evitar sobrecarga."""
+    now = int(time.time() // 30)
+    return _do_fetch_raw(now)
+
+@lru_cache(maxsize=1)
+def _do_fetch_raw(time_key: int) -> str:
     cmd = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 Name,Id,WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
     try:
         proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
@@ -245,7 +250,7 @@ def _fetch_raw_process_data() -> str:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta los procesos más pesados vía PowerShell, con caché de resultados."""
+    """Consulta los procesos más pesados vía PowerShell, con caché temporal."""
     if os.name != "nt":
         return []
     

@@ -413,7 +413,10 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem inválido o vacío.")
     
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    # Optimización: acceso directo por ID en lugar de búsqueda lineal
+    item_lookup = {i.item_id: i for i in items}
+    match = item_lookup.get(item_id)
+    
     if not match:
         raise KeyError(f"No se encontró el ítem: {item_id}")
     
@@ -454,7 +457,8 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
     
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
+    item_lookup = {i.item_id: i for i in items}
+    match = item_lookup.get(item_id)
     if not match:
         return False
         
@@ -490,25 +494,24 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
     item_map = {i.stored_name: i for i in items}
     purged_count = 0
-    remaining_names = set(item_map.keys())
+    names_to_keep = set(item_map.keys())
     
     for entry in quarantine_root.iterdir():
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
-        if entry.name not in item_map:
-            continue
+        # Solo procesamos si el archivo está en el manifiesto
+        if entry.name in item_map:
+            item = item_map[entry.name]
+            resolved_path = entry.resolve()
             
-        item = item_map[entry.name]
-        resolved_path = entry.resolve()
-        
-        if item.verify_integrity(resolved_path) and not _is_file_locked(resolved_path):
-            if _safe_unlink(resolved_path):
-                purged_count += 1
-                remaining_names.remove(entry.name)
+            if item.verify_integrity(resolved_path) and not _is_file_locked(resolved_path):
+                if _safe_unlink(resolved_path):
+                    purged_count += 1
+                    names_to_keep.remove(entry.name)
             
     if purged_count > 0:
-        new_manifest = [i for i in items if i.stored_name in remaining_names]
+        new_manifest = [i for i in items if i.stored_name in names_to_keep]
         save_manifest(new_manifest, base)
     return purged_count
 
