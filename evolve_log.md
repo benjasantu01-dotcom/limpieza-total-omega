@@ -1250,3 +1250,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-17T12:52:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-17T12:52:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T12:52:41` Corrida terminada. Total usado hoy: 304.
+- `2026-08-17T12:59:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-17T13:00:26` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y las funciones de consulta añadiendo validaciones preventivas de tipo y estado antes de procesar rutas, evitando errores en cascada por entradas inválidas o nulas.
+- `2026-08-17T13:00:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-17T13:01:24` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_generate_recommendations` mediante la validación explícita de `getattr` para evitar errores de acceso a atributos y se mejoró la integridad del sistema de puntaje agregando una verificación de valores nulos en el cálculo del desglose.
+- `2026-08-17T13:02:23` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se introdujo un manejo robusto de excepciones y validación de tipos en la recuperación de valores del formulario de ajustes en `_collect_settings`, evitando que caracteres no imprimibles o entradas corruptas afecten la persistencia, y se mejoró `_validate_environment` para capturar errores de acceso antes de que la aplicación intente interactuar con el sistema de archivos.
+- `2026-08-17T13:02:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T13:02:23` Corrida terminada. Total usado hoy: 308.

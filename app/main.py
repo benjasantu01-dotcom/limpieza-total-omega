@@ -147,12 +147,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _validate_environment(self) -> None:
         """Verifica que el directorio home sea accesible y seguro para la ejecución."""
         try:
-            home = Path.home().resolve()
-            if not home.exists() or not os.access(home, os.R_OK):
-                raise OSError(f"Directorio de usuario inaccesible: {home}")
+            home = Path.home().resolve(strict=True)
+            if not os.access(home, os.R_OK):
+                raise OSError(f"Directorio de usuario sin permisos de lectura: {home}")
             safety.ensure_safe_to_modify(home)
         except Exception as e:
-            raise OSError(f"Fallo al validar entorno: {e}")
+            raise OSError(f"Fallo al validar entorno seguro: {e}")
 
     def _init_window_properties(self) -> None:
         """Configura los parámetros iniciales de la ventana mediante branding.py."""
@@ -1542,7 +1542,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return default
 
     def _collect_settings(self) -> Dict[str, Any]:
-        """Recopila ajustes del usuario de la interfaz."""
+        """Recopila ajustes del usuario de la interfaz con validación de entradas."""
         valores = dict(self.settings)
         for clave, variable in self.setting_vars.items():
             try:
@@ -1562,7 +1562,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 )
                 
             if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
-                clave_api = "".join(c for c in self.api_key_entry.get().strip() if c.isprintable())
+                clave_raw = self.api_key_entry.get().strip()
+                clave_api = "".join(c for c in clave_raw if c.isprintable())
                 if clave_api:
                     valores["asistente_clave_api"] = clave_api
         except Exception as e:

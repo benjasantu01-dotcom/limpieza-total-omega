@@ -154,14 +154,14 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve(strict=False)
-        if not p.anchor or p.parts[0].startswith(("\\\\", "//")):
+        if not p.anchor or str(p).startswith(("\\\\", "//")):
             return None
         if not p.exists() or is_protected_path(p):
             return None
             
         usage = shutil.disk_usage(p)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, PermissionError, ValueError):
+    except (OSError, PermissionError, ValueError, RuntimeError):
         return None
 
 
@@ -190,17 +190,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre un árbol de directorios de forma iterativa para evitar desbordamiento de pila.
-    
-    Args:
-        directory: Ruta raíz a explorar.
-        skip_protected: Si es True, evita entrar en directorios protegidos por el sistema.
     """
     if not directory:
         return
 
     try:
         base_path = Path(directory).resolve(strict=False)
-        if base_path.parts[0].startswith(("\\\\", "//")):
+        # Validar UNC y existencia básica
+        if str(base_path).startswith(("\\\\", "//")):
             return
         if not base_path.exists() or not base_path.is_dir():
             return
@@ -240,13 +237,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """
-    Encuentra los N archivos de mayor tamaño en un directorio utilizando un heap.
-    
-    Args:
-        limit: Cantidad máxima de archivos a retornar.
-        skip_protected: Si es True, ignora directorios protegidos.
-    """
+    """Encuentra los N archivos de mayor tamaño."""
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -254,7 +245,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
         p = Path(directory).resolve(strict=False)
         if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
             return []
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return []
 
     try:
@@ -268,13 +259,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """
-    Agrupa el uso de espacio por extensión de archivo dentro de un directorio.
-    
-    Args:
-        limit: Cantidad máxima de tipos de extensión a mostrar.
-        skip_protected: Si es True, ignora directorios protegidos.
-    """
+    """Agrupa el uso de espacio por extensión."""
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -282,7 +267,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
         p = Path(directory).resolve(strict=False)
         if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
             return []
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return []
     
     size_map: Dict[str, int] = defaultdict(int)
@@ -302,13 +287,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """
-    Calcula las subcarpetas inmediatas que ocupan más espacio.
-    
-    Args:
-        limit: Cantidad máxima de subcarpetas a retornar.
-        skip_protected: Si es True, ignora directorios protegidos.
-    """
+    """Calcula las subcarpetas inmediatas que ocupan más espacio."""
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -322,7 +301,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                parts = path.parts[len(base.parts):]
+                parts = path.relative_to(base).parts
                 if not parts:
                     continue
                 top_level = base / parts[0]
@@ -338,12 +317,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
-    """
-    Calcula el tamaño total en bytes y la cantidad de archivos.
-    
-    Returns:
-        Tupla (total_bytes, total_files).
-    """
+    """Calcula el tamaño total en bytes y la cantidad de archivos."""
     if not directory:
         return (0, 0)
     total_bytes, file_count = 0, 0
@@ -354,7 +328,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
-    """Agrega métricas de uso de disco en una única iteración de caminata."""
+    """Agrega métricas de uso de disco en una única iteración."""
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
@@ -383,7 +357,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     
     try:
         p_input = Path(directory).resolve(strict=False)
-        if p_input.parts[0].startswith(("\\\\", "//")):
+        if str(p_input).startswith(("\\\\", "//")):
             return ["Error: No se permiten rutas de red (UNC)."]
         if not p_input.exists():
             return [f"Error: La ruta no existe: {p_input}"]
@@ -393,7 +367,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             
         total_bytes, total_files, ext_sizes, ext_counts, top_files_heap = _collect_summary_data(p_input, skip_protected)
-    except (OSError, RuntimeError, PermissionError, ValueError):
+    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
         return ["Error: Acceso denegado o error durante el análisis del disco."]
     except Exception:
         return ["Error: Fallo inesperado durante el análisis del disco."]
