@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 49 | 6 | 6 | 3 | 38 |
+| 2026-08-15 | 49 | 6 | 6 | 3 | 34 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 33 | 3 | 4 | 2 | 10 |
+| 2026-08-17 | 36 | 3 | 4 | 2 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - robustez ante casos límite: **51**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **44**
 - rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
+- `memory.py`: **21**
 - `scanner.py`: **21**
 - `assistant.py`: **20**
 - `browser.py`: **20**
-- `memory.py`: **20**
+- `quarantine.py`: **20**
 - `settings.py`: **20**
 - `diskreport.py`: **19**
-- `quarantine.py`: **19**
 - `duplicates.py`: **17**
 - `organizer.py`: **17**
 - `branding.py`: **12**
-- `main.py`: **10**
+- `main.py`: **11**
 - `safety.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T02:19:48` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` al realizar una validación de ruta absoluta y comparación de dispositivos después de la resolución, impidiendo explícitamente cualquier intento de escape o movimiento entre particiones que pudiera ser aprovechado para manipular permisos de archivo.
+- `2026-08-17T02:19:03` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` al validar la integridad de la ruta del ejecutable antes de ejecutar la acción, aplicando `is_protected_path` sobre una ruta normalizada y verificando que el proceso no sea un proceso del sistema (mediante el PID) antes de realizar cualquier llamada a la API de Windows.
+- `2026-08-17T02:18:34` **main.py** (seguridad defensiva): Se reforzó la seguridad en el inicio de la aplicación añadiendo `ensure_safe_to_modify` sobre el directorio de usuario (home) para prevenir operaciones accidentales en rutas del sistema, garantizando que el punto de entrada principal sea validado antes de renderizar la interfaz.
 - `2026-08-17T02:08:58` **healthscore.py** (seguridad defensiva): Reforcé la integridad del sistema de recomendaciones validando explícitamente que los argumentos pasados al `format` de las plantillas coincidan con las expectativas definidas en `RecommendationRule`, evitando excepciones en tiempo de ejecución ante datos de entrada mal formados.
 - `2026-08-17T02:08:41` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `suggest_keeper` al integrar una validación explícita mediante `is_safe_to_modify` antes de procesar rutas, garantizando que el acceso a metadatos no derive en interacciones con archivos protegidos o fuera del alcance permitido.
 - `2026-08-17T02:08:17` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `walk_files` y las funciones de consulta añadiendo una validación explícita para asegurar que las rutas resueltas sigan estando bajo el directorio raíz, previniendo posibles ataques de *path traversal* o escape de contexto mediante enlaces simbólicos maliciosos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T01:47:53` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y acceso mediante un sistema de bloqueo por nombre único (via `uuid`) para evitar colisiones en `quarantine_file` y asegurar que, ante caídas en el proceso de copia, no queden archivos parciales huérfanos o manifiestos corruptos en el sandbox.
 - `2026-08-17T01:38:57` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` para manejar errores de archivos ocupados y condiciones de carrera, añadiendo comprobaciones de integridad de rutas mediante `path.resolve()` antes de realizar operaciones de sistema de archivos, asegurando que no se acceda fuera de las rutas permitidas.
 - `2026-08-17T01:38:48` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita para evitar intentar manipular procesos que han cambiado de estado durante la ejecución y refinando el manejo de la jerarquía de procesos protegidos.
-- `2026-08-17T01:38:22` **main.py** (robustez ante casos límite): Se introdujo una comprobación de existencia y accesibilidad en el constructor de pestañas `_tab_factory` para evitar que el fallo inesperado de una pestaña bloquee la interfaz completa, mejorando la robustez ante estados inconsistentes.
-- `2026-08-17T01:37:17` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `_generate_recommendations` ante valores de métricas que, aunque finitos, puedan causar errores de formato o desbordamiento al inyectar valores no previstos en las plantillas de mensajes.
-- `2026-08-17T01:27:35` **browser.py** (robustez ante casos límite): Se mejora `directory_size` y `_sum_directory_recursive` para manejar correctamente rutas que contienen caracteres especiales o espacios y se añade una validación de `st_size` para descartar archivos corruptos o inexistentes durante la iteración, aumentando la robustez ante errores de I/O en sistemas de archivos complejos.

@@ -144,11 +144,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.destroy()
 
     def _validate_environment(self) -> None:
-        """Comprueba permisos de lectura en el home del usuario como requisito base."""
+        """Comprueba permisos y seguridad en el home del usuario como requisito base."""
         try:
-            home = Path.home()
+            home = Path.home().resolve()
             if not home.exists() or not os.access(home, os.R_OK):
                 raise OSError(f"Directorio de usuario inaccesible: {home}")
+            # Validación de seguridad: el directorio de trabajo no puede ser de sistema
+            safety.ensure_safe_to_modify(home)
         except Exception as e:
             raise OSError(f"Fallo al validar entorno: {e}")
 

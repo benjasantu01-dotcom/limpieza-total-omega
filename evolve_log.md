@@ -1294,3 +1294,10 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-17T02:08:58` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Reforcé la integridad del sistema de recomendaciones validando explícitamente que los argumentos pasados al `format` de las plantillas coincidan con las expectativas definidas en `RecommendationRule`, evitando excepciones en tiempo de ejecución ante datos de entrada mal formados.
 - `2026-08-17T02:08:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T02:08:58` Corrida terminada. Total usado hoy: 52.
+- `2026-08-17T02:17:28` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-17T02:18:34` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el inicio de la aplicación añadiendo `ensure_safe_to_modify` sobre el directorio de usuario (home) para prevenir operaciones accidentales en rutas del sistema, garantizando que el punto de entrada principal sea validado antes de renderizar la interfaz.
+- `2026-08-17T02:19:03` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `trim_working_set` al validar la integridad de la ruta del ejecutable antes de ejecutar la acción, aplicando `is_protected_path` sobre una ruta normalizada y verificando que el proceso no sea un proceso del sistema (mediante el PID) antes de realizar cualquier llamada a la API de Windows.
+- `2026-08-17T02:19:26` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-17T02:19:48` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine_file` al realizar una validación de ruta absoluta y comparación de dispositivos después de la resolución, impidiendo explícitamente cualquier intento de escape o movimiento entre particiones que pudiera ser aprovechado para manipular permisos de archivo.
+- `2026-08-17T02:19:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T02:19:48` Corrida terminada. Total usado hoy: 56.

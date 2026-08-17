@@ -244,11 +244,9 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if _is_valid_quarantine_path(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     
-    try:
-        if resolved_source.drive and dest_dir.drive and resolved_source.drive.lower() != dest_dir.drive.lower():
-            raise UnsafePathError("Operación prohibida entre dispositivos distintos.")
-    except OSError:
-        pass
+    # Verificación estricta de partición (impedir saltos entre unidades/dispositivos)
+    if resolved_source.drive.lower() != dest_dir.drive.lower():
+        raise UnsafePathError("Operación prohibida: origen y destino en dispositivos diferentes.")
 
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if _is_file_locked(resolved_source):
@@ -349,8 +347,6 @@ def quarantine_file(
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en recursos compartidos de red.")
-    if is_protected_path(source_path):
-        raise UnsafePathError("Operación prohibida: origen protegido.")
     
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
