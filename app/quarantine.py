@@ -445,7 +445,13 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     quarantine_root = quarantine_dir(base)
     stored_file = (quarantine_root / match.stored_name).resolve()
     
-    if not stored_file.exists() or not match.verify_integrity(stored_file):
+    if not stored_file.exists():
+        # Sincronización: el archivo no existe, limpiar registro huérfano
+        items.remove(match)
+        save_manifest(items, base)
+        return False
+
+    if not match.verify_integrity(stored_file):
         raise UnsafePathError("Integridad comprometida: no se puede procesar el archivo.")
     
     if not _is_valid_quarantine_path(stored_file, quarantine_root):
@@ -472,11 +478,15 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     for entry in quarantine_root.iterdir():
         if entry.name in item_map:
             item = item_map[entry.name]
+            # Validar integridad y bloqueo antes de intentar borrar
             if item.verify_integrity(entry) and not _is_file_locked(entry):
                 if _is_valid_quarantine_path(entry, quarantine_root):
                     if _safe_unlink(entry):
                         purged_count += 1
-                        names_to_keep.remove(entry.name)
+                        names_to_keep.discard(entry.name)
+        elif entry.name != MANIFEST_NAME and entry.is_file():
+            # Si hay un archivo no registrado, no lo tocamos por seguridad
+            continue
             
     if purged_count > 0:
         new_manifest = [i for i in items if i.stored_name in names_to_keep]

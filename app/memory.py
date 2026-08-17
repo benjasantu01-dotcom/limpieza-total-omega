@@ -157,7 +157,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     Lógica pura para procesar el formato de /proc/meminfo en sistemas Unix.
     Recibe el contenido crudo del archivo como parámetro para permitir pruebas unitarias.
     """
-    if not meminfo_text:
+    if not isinstance(meminfo_text, str) or not meminfo_text:
         return MemorySnapshot(0, 0)
     
     metrics: Dict[str, int] = {}
@@ -186,7 +186,6 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
         return None
     
     parts = line.split(",")
-    # Se esperan al menos Name, PID, WorkingSet
     if len(parts) < 3:
         return None
         
@@ -195,7 +194,7 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
         pid_raw = parts[-2].strip().strip("'\"")
         name = ",".join(parts[:-2]).strip().strip("'\"")
         
-        if not ws_raw.isdigit() or not pid_raw.isdigit():
+        if not name or not ws_raw.isdigit() or not pid_raw.isdigit():
             return None
             
         return ProcessMemory(name=name, pid=int(pid_raw), working_set=int(ws_raw))
@@ -208,9 +207,13 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    processes = [p for line in raw_csv_text.splitlines() if (p := _parse_csv_row(line))]
+    processes = []
+    for line in raw_csv_text.splitlines():
+        if proc := _parse_csv_row(line):
+            processes.append(proc)
+            
     processes.sort(key=lambda p: p.working_set, reverse=True)
-    return processes[:limit]
+    return processes[:max(0, limit)]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
