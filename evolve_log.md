@@ -871,3 +871,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-17T09:37:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-08-17T09:37:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T09:37:35` Corrida terminada. Total usado hoy: 228.
+- `2026-08-17T09:46:05` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-17T09:46:30` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Se optimizó `_sum_directory_recursive` para evitar el cálculo redundante de rutas mediante `pathlib.Path` dentro del bucle crítico, reemplazando la instanciación de objetos `Path` por comparaciones de cadenas directas y reutilizando el chequeo de `is_protected_path` al inicio de la recursión para reducir la carga de llamadas al sistema.
+- `2026-08-17T09:46:56` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` para evitar múltiples recorridos y operaciones costosas dentro del bucle principal, consolidando la lógica de agregación de extensiones y el mantenimiento del heap en una única pasada sobre el generador de archivos.
+- `2026-08-17T09:47:18` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-17T09:47:27` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje y la generación de recomendaciones eliminando llamadas redundantes a `getattr` y `math.isfinite` dentro de bucles, pre-calculando los ratios una sola vez y evitando conversiones de tipo innecesarias en cada iteración.
+- `2026-08-17T09:47:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T09:47:27` Corrida terminada. Total usado hoy: 232.

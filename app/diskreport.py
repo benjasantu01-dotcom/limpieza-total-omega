@@ -363,6 +363,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
     for path, size in walk_files(directory, skip_protected):
         total_bytes += size
         total_files += 1
+        
         ext = path.suffix.lower() or "(sin extensión)"
         ext_sizes[ext] += size
         ext_counts[ext] += 1
@@ -371,6 +372,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, path))
+            
     return total_bytes, total_files, ext_sizes, ext_counts, top_files_heap
 
 
