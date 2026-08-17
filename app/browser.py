@@ -198,7 +198,10 @@ def _sum_directory_recursive(
                         total += _walk(entry.path, depth + 1)
                     else:
                         try:
-                            total += entry.stat().st_size
+                            f_stat = entry.stat()
+                            # Solo sumar si el archivo tiene tamaño válido (ignora errores de I/O silenciosos)
+                            if f_stat.st_size >= 0:
+                                total += f_stat.st_size
                         except (OSError, PermissionError):
                             continue
         except (PermissionError, OSError, FileNotFoundError):
@@ -215,10 +218,10 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
     if path is None:
         return 0
     try:
-        target = Path(path)
-        if not target.exists():
+        p_obj = Path(path)
+        if not p_obj.exists():
             return 0
-        p_path = target.resolve(strict=True)
+        p_path = p_obj.resolve(strict=True)
         if not p_path.is_dir() or is_protected_path(p_path):
             return 0
         

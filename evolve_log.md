@@ -1258,3 +1258,10 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-17T01:17:59` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez ante datos corruptos o inesperados en `build_context` y `context_as_text` mediante la validación estricta de tipos y valores, evitando fallos en la interfaz cuando los datos provienen de fuentes externas potencialmente malformadas.
 - `2026-08-17T01:17:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T01:17:59` Corrida terminada. Total usado hoy: 32.
+- `2026-08-17T01:26:36` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-17T01:27:10` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, previniendo errores de renderizado ante entradas malformadas o entornos hostiles sin cambiar la funcionalidad actual.
+- `2026-08-17T01:27:35` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejora `directory_size` y `_sum_directory_recursive` para manejar correctamente rutas que contienen caracteres especiales o espacios y se añade una validación de `st_size` para descartar archivos corruptos o inexistentes durante la iteración, aumentando la robustez ante errores de I/O en sistemas de archivos complejos.
+- `2026-08-17T01:27:59` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-17T01:28:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-17T01:28:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T01:28:07` Corrida terminada. Total usado hoy: 36.

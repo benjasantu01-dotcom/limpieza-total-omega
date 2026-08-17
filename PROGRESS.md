@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 54 | 6 | 7 | 3 | 52 |
+| 2026-08-15 | 51 | 6 | 6 | 3 | 52 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 17 | 3 | 3 | 2 | 7 |
+| 2026-08-17 | 19 | 3 | 3 | 2 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **43**
+- robustez ante casos límite: **43**
 - rendimiento: **41**
-- robustez ante casos límite: **41**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
 - `healthscore.py`: **21**
-- `memory.py`: **20**
 - `settings.py`: **20**
-- `quarantine.py`: **19**
 - `assistant.py`: **19**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `memory.py`: **19**
 - `diskreport.py`: **18**
-- `organizer.py`: **17**
+- `quarantine.py`: **18**
 - `duplicates.py`: **16**
-- `branding.py`: **10**
+- `organizer.py`: **16**
+- `branding.py`: **11**
 - `main.py`: **9**
 - `safety.py`: **7**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T01:27:35` **browser.py** (robustez ante casos límite): Se mejora `directory_size` y `_sum_directory_recursive` para manejar correctamente rutas que contienen caracteres especiales o espacios y se añade una validación de `st_size` para descartar archivos corruptos o inexistentes durante la iteración, aumentando la robustez ante errores de I/O en sistemas de archivos complejos.
+- `2026-08-17T01:27:10` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo mediante la validación proactiva de tipos y estados, previniendo errores de renderizado ante entradas malformadas o entornos hostiles sin cambiar la funcionalidad actual.
 - `2026-08-17T01:17:59` **assistant.py** (robustez ante casos límite): Se mejora la robustez ante datos corruptos o inesperados en `build_context` y `context_as_text` mediante la validación estricta de tipos y valores, evitando fallos en la interfaz cuando los datos provienen de fuentes externas potencialmente malformadas.
 - `2026-08-17T01:17:15` **settings.py** (rendimiento): Optimizé la validación de enumeraciones reemplazando búsquedas lineales en `VALID_THEMES` y `VALID_ACCENTS` por `frozenset` para obtener búsquedas de tiempo constante O(1).
 - `2026-08-17T01:16:47` **scanner.py** (rendimiento): Optronicé la detección de carpetas monitorizadas en `check_recent_executable_in_downloads` sustituyendo la iteración sobre `path.parts` (que generaba tuplas y nuevas cadenas en cada ciclo) por un acceso directo `any()` con búsqueda de conjuntos, reduciendo la carga de CPU durante el recorrido masivo de archivos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T00:25:55` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en funciones críticas, la estandarización de type hints y la clarificación de constantes, facilitando así la auditoría de seguridad y la comprensión del flujo de datos en procesos de memoria.
 - `2026-08-17T00:16:34` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos que clarifican la lógica de normalización y el propósito de las constantes, además de añadir un tipo enumerado (TypeAlias) para las métricas internas, facilitando la legibilidad del flujo de datos en el motor de puntuación.
 - `2026-08-17T00:16:08` **duplicates.py** (legibilidad y documentación): Se han documentado mediante docstrings detallados las funciones críticas de procesamiento, explicando la lógica de los filtros de seguridad y los criterios de exclusión (inodos, symlinks, atributos de sistema), facilitando el mantenimiento y la auditoría técnica.
-- `2026-08-17T00:15:44` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `diskreport.py` mediante la implementación de type hints más precisos (específicamente en retornos de funciones y parámetros opcionales) y la adición de docstrings estructurados con los tipos de errores que pueden lanzar las funciones críticas.
-- `2026-08-17T00:07:03` **browser.py** (legibilidad y documentación): Se añadió un docstring detallado y tipos explícitos en `_sum_directory_recursive` para aclarar el propósito de `memo` y el manejo de rutas `long-path` (`\\?\`), mejorando la mantenibilidad técnica del recorrido recursivo.
