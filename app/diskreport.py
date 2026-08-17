@@ -190,23 +190,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre un árbol de directorios de forma iterativa para evitar desbordamiento de pila.
-    
-    El proceso utiliza un conjunto `visited_inodes` basado en (st_dev, st_ino) para 
-    detectar y evitar ciclos causados por enlaces simbólicos o puntos de reparse, 
-    asegurando que cada directorio físico sea procesado solo una vez.
-    
-    Args:
-        directory: Ruta raíz desde donde comenzar el recorrido.
-        skip_protected: Si es True, omite directorios marcados como protegidos por `safety.py`.
-        
-    Yields:
-        Tuplas conteniendo la ruta completa (`Path`) y su tamaño en bytes (`int`).
     """
     if not directory:
         return
 
     try:
         base_path = Path(directory).resolve(strict=False)
+        base_str = str(base_path)
         if base_path.parts[0].startswith(("\\\\", "//")):
             return
         if not base_path.exists() or not base_path.is_dir():
@@ -225,14 +215,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Asegurar que la ruta hija esté contenida en la base
-                        entry_path = Path(entry.path).resolve(strict=False)
-                        if base_path not in entry_path.parents and entry_path != base_path:
-                            continue
-
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
+                        entry_path = Path(entry.path)
                         if skip_protected and is_protected_path(entry_path):
                             continue
 
@@ -313,12 +299,14 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         sums: Dict[Path, int] = defaultdict(int)
         counts: Dict[Path, int] = defaultdict(int)
         
+        base_str = str(base)
         for path, size in walk_files(base, skip_protected):
             try:
-                rel = path.relative_to(base)
-                if not rel.parts:
+                # Evitar relative_to que es costoso, buscar nivel inmediato
+                parts = path.parts[len(base.parts):]
+                if not parts:
                     continue
-                top_level = base / rel.parts[0]
+                top_level = base / parts[0]
                 sums[top_level] += size
                 counts[top_level] += 1
             except (ValueError, IndexError): 
@@ -353,19 +341,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            total_bytes += size
-            total_files += 1
-            ext = path.suffix.lower() or "(sin extensión)"
-            ext_sizes[ext] += size
-            ext_counts[ext] += 1
-            
-            if len(top_files_heap) < 8:
-                heapq.heappush(top_files_heap, (size, path))
-            elif size > top_files_heap[0][0]:
-                heapq.heapreplace(top_files_heap, (size, path))
-        except (AttributeError, TypeError, OSError):
-            continue
+        total_bytes += size
+        total_files += 1
+        ext = path.suffix.lower() or "(sin extensión)"
+        ext_sizes[ext] += size
+        ext_counts[ext] += 1
+        
+        if len(top_files_heap) < 8:
+            heapq.heappush(top_files_heap, (size, path))
+        elif size > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (size, path))
     return total_bytes, total_files, ext_sizes, ext_counts, top_files_heap
 
 
