@@ -179,6 +179,8 @@ class _Validators:
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
+            # Verificación extra de normalización absoluta para evitar bypass de límites
+            if os.path.abspath(path_obj) != str(path_obj.resolve()): return None
             if is_protected_path(str(path_obj)): return None
             path_str = str(path_obj)
             return path_str if _Validators._is_safe_path(path_str) else None
