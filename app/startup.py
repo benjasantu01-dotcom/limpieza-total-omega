@@ -260,9 +260,10 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             if not isinstance(row, dict) or len(row) < 2:
                 continue
             
-            keys: List[str] = list(row.keys())
-            name_raw: str = row.get(keys[0], "") or ""
-            cmd_raw: str = row.get(keys[1], "") or ""
+            # Asegurar acceso seguro a las columnas esperadas
+            row_vals = list(row.values())
+            name_raw = str(row_vals[0] or "")
+            cmd_raw = str(row_vals[1] or "")
             
             name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()

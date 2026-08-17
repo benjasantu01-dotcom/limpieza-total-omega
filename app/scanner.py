@@ -92,7 +92,6 @@ class Scanner:
             return
         
         try:
-            # Verificación de reparse points antes de intentar cualquier acceso
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
 
@@ -104,7 +103,6 @@ class Scanner:
             if not self._is_safe_entry(target_path):
                 return
 
-            # Uso de métodos de DirEntry para evitar llamadas extras al SO
             if entry.is_dir(follow_symlinks=False):
                 path_str = str(target_path)
                 if path_str not in self.seen:
@@ -113,13 +111,17 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
-        except (PermissionError, OSError, ValueError, TypeError):
-            logger.debug(f"Acceso denegado o error en ruta: {entry.path}")
+        except (PermissionError, OSError) as e:
+            logger.debug(f"Acceso denegado o error en ruta {entry.path}: {e}")
+        except Exception as e:
+            logger.error(f"Error inesperado procesando {entry.path}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si el nombre del archivo contiene una doble extensión engañosa."""
-    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
+    if not path or not path.name:
+        return None
+    if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
@@ -129,26 +131,24 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry) or is_protected_path(path):
         return None
     
-    if not path.is_absolute():
-        return None
-    
-    if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
+    if not path.is_absolute() or WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
         return None
         
     try:
-        # Verificamos si el archivo está siendo usado o si tenemos permisos de lectura de metadatos
         file_stat = entry.stat()
         if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, PermissionError, AttributeError, OverflowError, ValueError, TypeError):
-        logger.debug(f"Acceso restringido a metadatos de {path}: archivo bloqueado o inaccesible")
-        return None
+    except (OSError, PermissionError, AttributeError, OverflowError):
+        logger.debug(f"Acceso restringido a metadatos de {path}")
     return None
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables con nombres de sistema que residen fuera de System32."""
-    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+    if not path or not path.name:
+        return None
+        
+    if path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in (part.lower() for part in path.parts):
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
@@ -197,7 +197,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             continue
             
     return scanner.results

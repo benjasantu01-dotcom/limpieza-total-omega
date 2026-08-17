@@ -170,8 +170,8 @@ def _check_file_integrity(p: Path) -> None:
 
     try:
         st = p.lstat()
-    except OSError:
-        raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
+    except OSError as e:
+        raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}: {e}")
 
     if not os.access(p, os.W_OK):
         raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.INACCESSIBLE.value}.")
@@ -320,19 +320,22 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
     try:
         p = normalize(path)
-    except (ValueError, TypeError) as e:
-        raise UnsafePathError(f"Ruta inválida o mal formada: {e}")
-
-    _validate_basic_path_safety(p, path_str)
-    _validate_boundary_conditions(p, base_dir)
-    
-    if p.exists():
-        _check_file_integrity(p)
-    
-    if not allow_sensitive and is_sensitive_file(p):
-        raise UnsafePathError("Extensión de archivo sensible.")
-    
-    return p
+        
+        _validate_basic_path_safety(p, path_str)
+        _validate_boundary_conditions(p, base_dir)
+        
+        if p.exists():
+            _check_file_integrity(p)
+        
+        if not allow_sensitive and is_sensitive_file(p):
+            raise UnsafePathError("Extensión de archivo sensible.")
+            
+        return p
+        
+    except (ValueError, TypeError, OSError) as e:
+        if isinstance(e, UnsafePathError):
+            raise
+        raise UnsafePathError(f"Error crítico de seguridad validando ruta: {e}")
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:

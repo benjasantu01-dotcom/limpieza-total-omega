@@ -1264,3 +1264,43 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-17T13:11:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-17T13:11:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T13:11:46` Corrida terminada. Total usado hoy: 312.
+- `2026-08-17T13:20:20` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-17T13:20:49` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` al centralizar la validación de estados de error, asegurando que las excepciones capturadas contengan contexto útil y previniendo que una validación parcial (como el chequeo de integridad post-existencia) ignore errores previos en el flujo de control.
+- `2026-08-17T13:21:15` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones heurísticas mediante la validación explícita de `path` y `entry` al inicio, evitando fallos por valores `None` o estados inconsistentes, y refiné el manejo de excepciones en `process_entry` para ser más granular.
+- `2026-08-17T13:21:49` Tests FALLARON:
+```
+th, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed in 1.18s
+
+```
+- `2026-08-17T13:21:49` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de la función `validate` evitando que una entrada de diccionario con tipos inesperados cause un error de ejecución, y añadí una comprobación explícita para evitar que `asistente_enviar_METRICAS` (presente en el TypedDict pero ausente en el `_VALIDATOR_MAP` original) quede sin validación o fuera de sincronía con las claves reales.
+- `2026-08-17T13:22:00` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del parseo del registro integrando validación de tipo y manejo de errores ante entradas malformadas en `parse_registry_csv`, previniendo que una fila corrupta corte el procesamiento del resto.
+- `2026-08-17T13:22:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T13:22:00` Corrida terminada. Total usado hoy: 316.
