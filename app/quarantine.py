@@ -307,9 +307,11 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
     """
     Realiza una copia protegida hacia la zona de cuarentena.
-    Utiliza un archivo temporal (.tmp_uuid) para garantizar la atomicidad:
-    solo si la copia y la verificación de hash tienen éxito, se reemplaza en el destino.
+    Verifica integridad de tipo y contenido antes de confirmar el reemplazo atómico.
     """
+    if source.is_symlink() or ":" in str(source):
+        raise UnsafePathError("Operación denegada: origen no es archivo regular.")
+        
     temp_dest = destination.parent / f".tmp_{uuid.uuid4().hex}"
     try:
         shutil.copy2(source, temp_dest)

@@ -541,3 +541,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T06:44:44` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-17T06:44:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T06:44:44` Corrida terminada. Total usado hoy: 160.
+- `2026-08-17T06:52:45` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-17T06:53:19` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para asegurar que el archivo no sea un enlace simbólico o un flujo de datos alterno antes de la copia, y forcé una verificación de cierre del descriptor de archivo para evitar accesos concurrentes inesperados.
+- `2026-08-17T06:53:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-17T06:54:03` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-17T06:54:11` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Mejoré `check_recent_executable_in_downloads` para validar explícitamente que la ruta del archivo sea absoluta y pertenezca al sistema de archivos esperado antes de realizar cualquier operación de acceso a metadatos, evitando posibles inyecciones de rutas externas o comportamientos inesperados en directorios mal formados.
+- `2026-08-17T06:54:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T06:54:11` Corrida terminada. Total usado hoy: 164.

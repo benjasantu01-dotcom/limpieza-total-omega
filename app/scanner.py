@@ -124,6 +124,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry) or is_protected_path(path):
         return None
     
+    # Seguridad: solo procesar rutas absolutas verificables dentro del entorno permitido
+    if not path.is_absolute():
+        return None
+    
     if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
         return None
         
