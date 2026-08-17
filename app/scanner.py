@@ -132,17 +132,16 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not path.is_absolute():
         return None
     
-    # Eficiencia: uso de set intersection para verificar partes de la ruta
     if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
         return None
         
     try:
+        # Verificamos si el archivo está siendo usado o si tenemos permisos de lectura de metadatos
         file_stat = entry.stat()
         if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, AttributeError, OverflowError, ValueError, TypeError):
-        # Caso límite: el archivo está bloqueado por otro proceso o tiene metadatos inaccesibles
-        logger.debug(f"No se pudieron leer metadatos de {path}")
+    except (OSError, PermissionError, AttributeError, OverflowError, ValueError, TypeError):
+        logger.debug(f"Acceso restringido a metadatos de {path}: archivo bloqueado o inaccesible")
         return None
     return None
 
@@ -150,7 +149,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables con nombres de sistema que residen fuera de System32."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        # Eficiencia: verificar si SYSTEM32_LOWER existe en las partes de la ruta
         if SYSTEM32_LOWER not in (part.lower() for part in path.parts):
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
@@ -163,11 +161,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     findings: ScanResult = []
     
-    # Regla 1: Análisis rápido de nombre
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # Regla 2: Análisis profundo para ejecutables
     if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in (check_system_lookalike, check_recent_executable_in_downloads):
             try:
