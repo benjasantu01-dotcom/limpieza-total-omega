@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 21
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 215
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 65 | 8 | 8 | 4 | 57 |
+| 2026-08-15 | 63 | 8 | 8 | 4 | 55 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 8 | 0 | 1 | 1 | 2 |
+| 2026-08-17 | 9 | 1 | 1 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **52**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **45**
 - manejo de errores y validación de entradas: **44**
+- robustez ante casos límite: **43**
 - rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **21**
-- `diskreport.py`: **20**
 - `settings.py`: **20**
-- `browser.py`: **19**
+- `scanner.py`: **20**
 - `quarantine.py`: **19**
 - `assistant.py`: **19**
+- `diskreport.py`: **19**
 - `memory.py`: **19**
-- `scanner.py`: **19**
+- `browser.py`: **18**
 - `organizer.py`: **17**
 - `duplicates.py`: **16**
 - `main.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T00:36:27` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las funciones de chequeo heurístico añadiendo docstrings que clarifican las precondiciones, el valor de retorno esperado y la lógica de validación, facilitando el mantenimiento y la comprensión de las reglas de seguridad.
 - `2026-08-17T00:26:19` **organizer.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `organizer.py` mediante la implementación de Type Hints explícitos, normalización de docstrings y la simplificación de la lógica condicional en `stage_for_review` para evitar anidamientos profundos.
 - `2026-08-17T00:25:55` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos en funciones críticas, la estandarización de type hints y la clarificación de constantes, facilitando así la auditoría de seguridad y la comprensión del flujo de datos en procesos de memoria.
 - `2026-08-17T00:16:34` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos que clarifican la lógica de normalización y el propósito de las constantes, además de añadir un tipo enumerado (TypeAlias) para las métricas internas, facilitando la legibilidad del flujo de datos en el motor de puntuación.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-16T14:34:57` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_generate_recommendations` mediante una validación estricta de los atributos de métricas y la inyección segura de argumentos, evitando posibles excepciones durante la generación del informe de salud.
 - `2026-08-16T14:34:27` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `_collect_candidates` mediante la validación proactiva de entradas (evitando `AttributeError` o `ValueError` si las rutas o el grupo son inválidos) y la centralización de chequeos de seguridad para prevenir fallos silenciosos durante la iteración.
 - `2026-08-16T14:25:41` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de entrada más granulares y capturando excepciones de forma específica, evitando que errores inesperados en el sistema de archivos (como estados intermitentes) interrumpan el análisis completo de manera silenciosa o abrupta.
-- `2026-08-16T14:25:27` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente la integridad de los parámetros en los puntos de entrada, asegurando que `os.scandir` no reciba rutas malformadas y evitando propagación de excepciones ante directorios inaccesibles.

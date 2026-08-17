@@ -115,7 +115,8 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta archivos con extensiones dobles engañosas.
+    Evalúa si el nombre del archivo contiene una doble extensión sospechosa.
+    Retorna un objeto Suspicion si coincide con DOUBLE_EXTENSION_RE, caso contrario None.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -124,7 +125,9 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Analiza si un ejecutable reside en carpetas temporales y fue creado recientemente.
+    Verifica si un archivo ejecutable se encuentra en una carpeta monitorizada y fue modificado 
+    recientemente. Requiere el objeto os.DirEntry para acceder a metadatos de tiempo sin realizar 
+    llamadas adicionales al sistema. Retorna None si no es sospechoso o si faltan atributos.
     """
     if not isinstance(entry, os.DirEntry):
         return None
@@ -143,7 +146,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Valida nombres de archivos contra ejecutables críticos conocidos del sistema.
+    Compara el nombre del archivo contra una lista negra de ejecutables del sistema.
+    Marca como sospechoso cualquier coincidencia que no resida dentro de 'System32'.
     """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
@@ -153,7 +157,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Pipeline principal para el análisis de un archivo único.
+    Pipeline principal para el análisis de un archivo único. Ejecuta todas las 
+    reglas registradas y retorna una lista acumulada de hallazgos (Suspicion).
     """
     if not path:
         return []
@@ -177,7 +182,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Inicia el escaneo recursivo mediante un stack.
+    Inicia el escaneo recursivo mediante un stack. Valida la existencia y 
+    seguridad de la ruta de entrada antes de procesar recursivamente.
     """
     if not directory or not str(directory).strip():
         return []

@@ -1165,3 +1165,37 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T00:26:52` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-17T00:26:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T00:26:52` Corrida terminada. Total usado hoy: 12.
+- `2026-08-17T00:35:37` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-08-17T00:36:03` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-17T00:36:27` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de las funciones de chequeo heurístico añadiendo docstrings que clarifican las precondiciones, el valor de retorno esperado y la lógica de validación, facilitando el mantenimiento y la comprensión de las reglas de seguridad.
+- `2026-08-17T00:36:56` Tests FALLARON:
+```
+ 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/browser.py:181: SyntaxWarning: invalid escape sequence '\ '
+    root_dir: Ruta absoluta a procesar (acepta prefijo \\?\ para long paths).
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed, 7 warnings in 1.20s
+
+```
+- `2026-08-17T00:36:56` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de la lógica de validación al extraer la lógica repetitiva de los límites numéricos y los validadores de configuración dentro de un mapeo cohesivo, además de documentar mediante docstrings técnicos la intención de cada paso en las funciones críticas de persistencia.
+- `2026-08-17T00:37:06` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-08-17T00:37:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T00:37:06` Corrida terminada. Total usado hoy: 16.
