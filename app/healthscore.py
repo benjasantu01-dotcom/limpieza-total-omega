@@ -170,7 +170,6 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recommendations: List[str] = []
-    # Usamos __dict__ para acceso O(1) evitando getattr repetido
     d = metrics.__dict__
     for rule in _RECOMMENDATION_RULES:
         if _clamp(ratios.get(rule.area, 1.0), 0.0, 1.0) < rule.threshold:
@@ -181,7 +180,7 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
                     except (ValueError, IndexError, TypeError, KeyError): continue
                 else: recommendations.append(rule.message_format)
     
-    if metrics.quarantined_count > 0:
+    if metrics.quarantined_count > 0 and math.isfinite(metrics.quarantined_count):
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     return recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]

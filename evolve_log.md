@@ -505,3 +505,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-17T05:53:21` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y las funciones que la consumen ante el caso límite de archivos corruptos o inaccesibles dentro de directorios, asegurando que `entry.stat()` sea invocado con un bloque `try-except` robusto para evitar que una entrada con permisos restringidos o error de E/S detenga todo el análisis del sistema de archivos.
 - `2026-08-17T05:53:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T05:53:21` Corrida terminada. Total usado hoy: 140.
+- `2026-08-17T06:01:48` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-08-17T06:02:13` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-17T06:02:39` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Implementé una robustez mejorada en la generación de recomendaciones, evitando que una métrica con valor infinito o no numérico en `SystemMetrics` (que podría ocurrir por lecturas fallidas del sistema) propague errores o genere recomendaciones inútiles mediante una validación explícita adicional dentro de `_generate_recommendations`.
+- `2026-08-17T06:02:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-17T06:04:02` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez del sistema ante posibles errores de concurrencia y limpieza de recursos al añadir validaciones de `winfo_exists` y manejo de excepciones en las actualizaciones asíncronas de la interfaz, previniendo cierres inesperados si las tareas de fondo intentan actualizar widgets que el usuario ya destruyó al cerrar la app o cambiar de pestaña.
+- `2026-08-17T06:04:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-17T06:04:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T06:04:22` Corrida terminada. Total usado hoy: 144.
