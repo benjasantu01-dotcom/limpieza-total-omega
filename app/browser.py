@@ -176,6 +176,12 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el peso total de una carpeta mediante un recorrido en profundidad (DFS) con memoización.
+    
+    Args:
+        root_dir: Ruta absoluta en formato cadena.
+        is_junction_fn: Función para detectar puntos de reparse (junctions).
+        kernel32: Handle de ctypes para llamadas a la API de Windows.
+        memo: Diccionario para evitar ciclos y re-procesamiento de subdirectorios.
     """
     if not root_dir or not isinstance(root_dir, str):
         return 0

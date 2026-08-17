@@ -189,8 +189,18 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Genera tuplas (Path, size_bytes) recorriendo el árbol de directorios.
-    Ignora errores de permisos y sigue únicamente enlaces simbólicos válidos.
+    Recorre un árbol de directorios de forma iterativa para evitar desbordamiento de pila.
+    
+    El proceso utiliza un conjunto `visited_inodes` basado en (st_dev, st_ino) para 
+    detectar y evitar ciclos causados por enlaces simbólicos o puntos de reparse, 
+    asegurando que cada directorio físico sea procesado solo una vez.
+    
+    Args:
+        directory: Ruta raíz desde donde comenzar el recorrido.
+        skip_protected: Si es True, omite directorios marcados como protegidos por `safety.py`.
+        
+    Yields:
+        Tuplas conteniendo la ruta completa (`Path`) y su tamaño en bytes (`int`).
     """
     if not directory:
         return

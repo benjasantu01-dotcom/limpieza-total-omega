@@ -168,34 +168,71 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio (0.0-1.0) comparando basura vs umbral máximo."""
+    """
+    Calcula el ratio de salud (0.0-1.0) para archivos basura.
+    Args:
+        junk_mb: Cantidad de MB de archivos basura detectados.
+    Returns:
+        Ratio donde 1.0 es sistema limpio (0 MB) y 0.0 es crítico.
+    """
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula ratio penalizando hallazgos de seguridad (5% por hallazgo, 25% por advertencia)."""
+    """
+    Calcula el ratio de salud (0.0-1.0) penalizando amenazas de seguridad.
+    Args:
+        suspicious_count: Número de archivos detectados como sospechosos.
+        warnings: Número de advertencias heurísticas adicionales.
+    Returns:
+        Ratio donde 1.0 indica ausencia de amenazas.
+    """
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio basado en la memoria disponible frente al umbral crítico."""
+    """
+    Calcula el ratio de salud (0.0-1.0) para el uso de memoria RAM.
+    Args:
+        available_percent: Porcentaje de RAM libre disponible.
+    Returns:
+        Ratio relativo al umbral definido `_LIMIT_RAM_PERCENT`.
+    """
     return (_clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) 
             if _LIMIT_RAM_PERCENT > 0 else 0.0)
 
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio basado en el espacio libre vs límite definido."""
+    """
+    Calcula el ratio de salud (0.0-1.0) para el espacio en disco.
+    Args:
+        free_percent: Porcentaje de espacio libre en la unidad.
+    Returns:
+        Ratio relativo al umbral definido `_LIMIT_DISK_PERCENT`.
+    """
     return (_clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) 
             if _LIMIT_DISK_PERCENT > 0 else 0.0)
 
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio basado en el volumen de duplicados."""
+    """
+    Calcula el ratio de salud (0.0-1.0) basado en el volumen de duplicados.
+    Args:
+        duplicate_mb: MB totales ocupados por archivos duplicados.
+    Returns:
+        Ratio donde 1.0 indica ausencia de duplicados.
+    """
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula ratio inversamente proporcional al conteo de ítems de arranque."""
+    """
+    Calcula el ratio de salud (0.0-1.0) basado en programas de inicio.
+    Args:
+        startup_count: Cantidad de aplicaciones configuradas para arrancar.
+    Returns:
+        Ratio inversamente proporcional a la carga de inicio.
+    """
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 

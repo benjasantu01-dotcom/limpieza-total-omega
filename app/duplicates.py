@@ -78,8 +78,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     Calcula el hash SHA256 completo del archivo tras validar su seguridad.
     
-    Aplica filtros de protección antes de la apertura: ignora enlaces simbólicos,
-    archivos de sistema (atributo 0x400), y rutas marcadas como restringidas.
+    Retorna el hexdigest SHA256 si es posible leer el archivo, o None si el
+    archivo es inaccesible, está protegido o ocurre un error de E/S.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -112,7 +112,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Hash rápido de los primeros bytes (64KB) para comparación heurística.
+    Hash rápido de los primeros bytes para comparación heurística.
+    
+    Usa PARTIAL_READ_BYTES (64KB por defecto) para generar un hash preliminar.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -162,6 +164,9 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad del sistema de archivos.
+    
+    Filtra archivos menores a min_size y evita seguir bucles infinitos mediante
+    el seguimiento de inodos visitados. Retorna un mapa de {tamaño: [rutas]}.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
