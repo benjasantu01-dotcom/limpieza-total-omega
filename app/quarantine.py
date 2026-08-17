@@ -487,27 +487,26 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
     item_map = {i.stored_name: i for i in items}
     purged_count = 0
-    remaining_items = []
+    remaining_names = set(item_map.keys())
     
     for entry in quarantine_root.iterdir():
         if entry.name == MANIFEST_NAME or not entry.is_file():
             continue
         
-        resolved_path = entry.resolve()
-        if not _is_valid_quarantine_path(resolved_path, quarantine_root):
+        if entry.name not in item_map:
             continue
             
-        item = item_map.get(entry.name)
-        if item and item.verify_integrity(resolved_path) and not _is_file_locked(resolved_path):
+        item = item_map[entry.name]
+        resolved_path = entry.resolve()
+        
+        if item.verify_integrity(resolved_path) and not _is_file_locked(resolved_path):
             if _safe_unlink(resolved_path):
                 purged_count += 1
-                continue
+                remaining_names.remove(entry.name)
             
-        if item:
-            remaining_items.append(item)
-    
     if purged_count > 0:
-        save_manifest(remaining_items, base)
+        new_manifest = [i for i in items if i.stored_name in remaining_names]
+        save_manifest(new_manifest, base)
     return purged_count
 
 

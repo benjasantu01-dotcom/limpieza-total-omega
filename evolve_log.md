@@ -1244,3 +1244,10 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-17T00:57:59` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `top_memory_processes` reemplazando la caché simple por una lógica de `lru_cache` aplicada a la consulta de PowerShell y ajusté la firma de la función para permitir un `limit` variable sin invalidar el caché innecesariamente, reduciendo el I/O repetitivo y los forks de subprocesos.
 - `2026-08-17T00:57:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T00:57:59` Corrida terminada. Total usado hoy: 24.
+- `2026-08-17T01:06:08` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-08-17T01:06:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-17T01:07:05` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` transformando `list` en `set` para las búsquedas de `stored_name`, evitando una complejidad algorítmica de O(N*M) y reduciéndola a O(N), y eliminé la re-lectura innecesaria del manifiesto dentro del bucle.
+- `2026-08-17T01:07:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-17T01:07:34` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-17T01:07:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T01:07:34` Corrida terminada. Total usado hoy: 28.

@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 28
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 22
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 60 | 7 | 7 | 3 | 53 |
+| 2026-08-15 | 58 | 6 | 7 | 3 | 52 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 13 | 3 | 2 | 2 | 4 |
+| 2026-08-17 | 14 | 3 | 3 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **49**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **40**
-- rendimiento: **38**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `memory.py`: **20**
 - `scanner.py`: **20**
-- `assistant.py`: **19**
-- `browser.py`: **19**
 - `diskreport.py`: **19**
+- `quarantine.py`: **19**
 - `settings.py`: **19**
-- `quarantine.py`: **18**
+- `assistant.py`: **18**
+- `browser.py`: **18**
 - `duplicates.py`: **17**
 - `organizer.py`: **17**
 - `main.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T01:07:05` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `list` en `set` para las búsquedas de `stored_name`, evitando una complejidad algorítmica de O(N*M) y reduciéndola a O(N), y eliminé la re-lectura innecesaria del manifiesto dentro del bucle.
 - `2026-08-17T00:57:59` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la caché simple por una lógica de `lru_cache` aplicada a la consulta de PowerShell y ajusté la firma de la función para permitir un `limit` variable sin invalidar el caché innecesariamente, reduciendo el I/O repetitivo y los forks de subprocesos.
 - `2026-08-17T00:56:46` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de `SystemMetrics` reemplazando la iteración por reflexión (`__dataclass_fields__`) por un chequeo directo de atributos fijos, evitando el costo de búsqueda en el diccionario de metadatos en cada ejecución del bucle.
 - `2026-08-17T00:56:20` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` utilizando `os.scandir` para obtener el tamaño de archivo directamente del objeto `DirEntry` (evitando llamadas extra a `stat()` por cada archivo) y moví la resolución de rutas después del filtro de tamaño para evitar llamadas redundantes a `Path.resolve()` en archivos pequeños o irrelevantes.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T00:06:52` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica añadiendo docstrings descriptivos a las funciones `_draw_shield_stripes` y `_get_shield_coords`, y refiné los tipos de retorno de las funciones de pintado para mayor claridad.
 - `2026-08-17T00:06:13` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la incorporación de docstrings descriptivos, la estandarización de las anotaciones de tipo (`TypeAlias`) y la limpieza de comentarios ambiguos para mejorar la mantenibilidad del código sin alterar su lógica.
 - `2026-08-16T14:54:50` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` validando explícitamente los parámetros en `scan_directory` y `process_entry` para evitar errores de tipo o rutas vacías, y añadiendo un filtrado defensivo contra rutas nulas antes de realizar operaciones de sistema en `scan_file`.
-- `2026-08-16T14:44:37` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` capturando errores potenciales en `shutil.move` y añadiendo validaciones preventivas sobre la existencia de la ruta origen antes de la operación, asegurando que el flujo no se interrumpa ante fallos de I/O específicos.
