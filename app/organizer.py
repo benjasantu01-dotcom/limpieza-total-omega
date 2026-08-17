@@ -54,12 +54,7 @@ SYSTEM_FOLDER_BLOCKLIST: Final[set[str]] = {
 
 
 def list_available_drives() -> List[str]:
-    """
-    Detecta unidades montadas en Windows.
-
-    Returns:
-        Lista de rutas raíz (ej: ['C:\\', 'D:\\']). Retorna lista vacía si no es Windows.
-    """
+    """Detecta unidades montadas en Windows. Retorna lista de rutas raíz."""
     if os.name != "nt":
         return []
     drives: List[str] = []
@@ -78,7 +73,6 @@ class JunkFile:
     modified: datetime
 
     def __post_init__(self) -> None:
-        """Normaliza la ruta a un objeto Path tras la instanciación."""
         if not isinstance(self.path, Path):
             self.path = Path(self.path)
 
@@ -89,15 +83,12 @@ class JunkFile:
 
     @property
     def is_junk_extension(self) -> bool:
-        """Retorna True si la extensión está en la lista de candidatos."""
+        """Verifica si la extensión del archivo coincide con los criterios de limpieza."""
         return _is_junk_path(self.path)
 
 
 def _is_junction(path: Path) -> bool:
-    """
-    Verifica si una entrada es un punto de reparse (Junction/Symlink).
-    Evita la recursión en estructuras de sistema fuera de control.
-    """
+    """Verifica si una entrada es un punto de reparse (Junction/Symlink)."""
     try:
         return path.is_symlink() or (os.name == "nt" and "reparse" in os.stat(path).st_file_attributes)
     except (OSError, AttributeError):
@@ -105,15 +96,12 @@ def _is_junction(path: Path) -> bool:
 
 
 def _is_junk_path(path: Path) -> bool:
-    """Valida si el archivo posee una extensión categorizada como 'basura'."""
+    """Valida si la extensión del archivo está en la lista de JUNK_EXTENSIONS."""
     return path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
 def _generate_unique_target(target: Path) -> Path:
-    """
-    Genera una ruta única para un archivo destino, añadiendo un sufijo
-    numérico si el nombre ya existe para evitar colisiones.
-    """
+    """Genera una ruta única añadiendo un sufijo numérico ante colisiones."""
     if not target.exists():
         return target
         
@@ -133,10 +121,7 @@ def _is_allowed_directory(name: str) -> bool:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """
-    Comprueba si un archivo está en uso exclusivo intentando abrirlo en modo binario.
-    Devuelve True si el archivo está bloqueado o es inaccesible.
-    """
+    """Determina si un archivo está en uso exclusivo mediante intento de apertura."""
     if not path.exists():
         return True
     try:
@@ -147,10 +132,7 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """
-    Evalúa la seguridad de una operación de movimiento: verifica existencia, 
-    permisos, estado de bloqueo, atributos de sistema y seguridad de rutas.
-    """
+    """Evalúa si es seguro mover un archivo basándose en permisos, bloqueos y ubicación."""
     try:
         if not junk_file.path.exists() or not junk_file.path.is_file():
             return False
@@ -158,20 +140,17 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
         current_abs = junk_file.path.resolve()
         dest_abs = dest.resolve()
         
-        # Evitar operaciones sobre la raíz o rutas inválidas
         if current_abs.parent == current_abs:
             return False
         
-        # Verificar atributos ocultos o de sistema en Windows (0x06 = Hidden | System)
         if os.name == "nt":
+            # 0x06: Hidden | System
             if current_abs.stat().st_file_attributes & 0x06: 
                 return False
 
-        # Prevenir movimientos circulares o recursivos entre carpetas
         if current_abs == dest_abs or dest_abs in current_abs.parents or current_abs.parent == dest_abs:
             return False
         
-        # Restricción: No mover archivos bloqueados o entre particiones distintas
         if _is_file_locked(current_abs) or current_abs.anchor != dest_abs.anchor:
             return False
             
@@ -181,9 +160,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
-    """
-    Escanea rutas recursivamente buscando archivos basura de forma eficiente.
-    """
+    """Escanea rutas recursivamente buscando archivos basura identificables."""
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     
@@ -212,9 +189,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """
-    Ordena una lista de archivos basura según un criterio.
-    """
+    """Ordena los archivos detectados según el criterio especificado."""
     if not isinstance(files, list):
         return []
         
@@ -231,9 +206,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
-    """
-    Mueve los archivos detectados a un directorio de staging tras validar seguridad.
-    """
+    """Mueve archivos validados a una zona de cuarentena/revisión."""
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
 
@@ -249,25 +222,28 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     for junk_file in files:
         if not isinstance(junk_file, JunkFile) or junk_file.path is None:
             continue
-        try:
-            if junk_file.path.exists() and junk_file.path.is_file() and os.access(junk_file.path, os.R_OK):
-                if _is_safe_to_move(junk_file, dest):
-                    usage = shutil.disk_usage(dest)
-                    if usage.free > junk_file.size_bytes:
-                        target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
-                        if is_safe_to_modify(target):
-                            ensure_safe_to_modify(target)
-                            if junk_file.path.exists():
-                                shutil.move(str(junk_file.path), str(target))
-        except (OSError, PermissionError, shutil.Error, RuntimeError):
+            
+        # Validar condiciones de movimiento
+        if not (junk_file.path.exists() and junk_file.path.is_file() and os.access(junk_file.path, os.R_OK)):
             continue
+        if not _is_safe_to_move(junk_file, dest):
+            continue
+        if shutil.disk_usage(dest).free <= junk_file.size_bytes:
+            continue
+            
+        # Preparar destino único y realizar la operación
+        target = _generate_unique_target(dest / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
+        if is_safe_to_modify(target):
+            try:
+                ensure_safe_to_modify(target)
+                shutil.move(str(junk_file.path), str(target))
+            except (OSError, PermissionError, shutil.Error, RuntimeError):
+                continue
     return dest
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """
-    Elimina archivos de la carpeta de revisión tras validar la integridad.
-    """
+    """Elimina archivos de la carpeta de revisión tras validar la integridad."""
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
