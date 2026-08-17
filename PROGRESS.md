@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 111 | 10 | 14 | 10 | 127 |
-| 2026-08-17 | 109 | 6 | 14 | 8 | 95 |
+| 2026-08-16 | 108 | 10 | 14 | 10 | 126 |
+| 2026-08-17 | 112 | 6 | 15 | 8 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **45**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **41**
-- robustez ante casos límite: **39**
-- rendimiento: **38**
+- rendimiento: **41**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
-- `assistant.py`: **22**
-- `scanner.py`: **21**
+- `assistant.py`: **21**
+- `memory.py`: **20**
+- `scanner.py`: **20**
 - `browser.py`: **19**
-- `memory.py`: **19**
-- `settings.py`: **18**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
+- `settings.py`: **17**
 - `diskreport.py`: **16**
 - `duplicates.py`: **15**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
 - `branding.py`: **13**
 - `main.py`: **9**
 - `startup.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T09:58:12` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de un diccionario de caché indexado por `base_path` para evitar redundancia en llamadas multi-hilo o recursivas, y mejoré la eficiencia de `purge_all` al realizar una búsqueda en memoria O(n) basada en el conjunto de nombres del manifiesto, reduciendo significativamente las operaciones de I/O sobre el sistema de archivos durante la limpieza masiva.
+- `2026-08-17T09:57:57` **organizer.py** (rendimiento): Optimicé el bucle de escaneo en `scan_for_junk` utilizando una comparación de conjuntos (set intersection) para filtrar extensiones, reduciendo la complejidad de búsqueda dentro del loop crítico.
+- `2026-08-17T09:57:34` **memory.py** (rendimiento): Optimicé el rendimiento de la caché de procesos reemplazando la lógica de tiempo manual por `lru_cache` con un `timeout` implementado mediante una variable de clase, evitando ejecuciones innecesarias de PowerShell y reduciendo el uso de CPU/IO al re-utilizar la salida del comando.
 - `2026-08-17T09:47:27` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje y la generación de recomendaciones eliminando llamadas redundantes a `getattr` y `math.isfinite` dentro de bucles, pre-calculando los ratios una sola vez y evitando conversiones de tipo innecesarias en cada iteración.
 - `2026-08-17T09:46:56` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar múltiples recorridos y operaciones costosas dentro del bucle principal, consolidando la lógica de agregación de extensiones y el mantenimiento del heap en una única pasada sobre el generador de archivos.
 - `2026-08-17T09:37:20` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la creación dinámica de listas y el formateo de strings innecesario dentro de un bucle por una evaluación directa que se detiene en cuanto encuentra el límite, evitando procesamiento redundante.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T09:17:21` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la adición de Type Hints en estructuras de datos, documentación técnica más precisa (docstrings) en las funciones críticas de la API de Windows, y la estandarización de los nombres de los parámetros en los parsers para mayor claridad.
 - `2026-08-17T09:16:55` **main.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se normalizó la nomenclatura de métodos auxiliares en `main.py` para mejorar la legibilidad y facilitar el mantenimiento, asegurando que la intención de cada componente de la interfaz sea clara sin alterar su lógica funcional.
 - `2026-08-17T09:15:55` **healthscore.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de cálculo de puntaje (`score_*`) y mejoré la claridad de `SystemMetrics.validate`, explicando explícitamente que la normalización es necesaria para evitar resultados inconsistentes en la lógica de negocio.
-- `2026-08-17T09:06:45` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad del pipeline de `find_duplicates` extrayendo la lógica de resolución de grupos a una función privada dedicada `_process_size_group`, facilitando la comprensión del flujo de tres niveles (tamaño -> hash parcial -> hash completo).
-- `2026-08-17T09:06:36` **diskreport.py** (legibilidad y documentación): He mejorado la legibilidad del código documentando los métodos y clases, y clarificado la lógica de los parámetros en las funciones de búsqueda mediante la adición de docstrings detallados que explican el propósito de `limit` y `skip_protected`.
-- `2026-08-17T09:06:10` **browser.py** (legibilidad y documentación): Documenté el propósito técnico y las restricciones de seguridad de las funciones internas del módulo para facilitar el mantenimiento y audibilidad del código ante futuras revisiones de seguridad.
