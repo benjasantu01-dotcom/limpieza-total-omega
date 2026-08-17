@@ -133,7 +133,7 @@ class StartupEntry:
         
         try:
             p: Path = Path(path_str)
-            if not p.parts or not p.is_absolute():
+            if not p.is_absolute():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
                 

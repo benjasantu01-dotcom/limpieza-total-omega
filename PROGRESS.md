@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 22
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-15 | 49 | 6 | 6 | 3 | 30 |
+| 2026-08-15 | 49 | 6 | 6 | 3 | 26 |
 | 2026-08-16 | 150 | 13 | 19 | 12 | 156 |
-| 2026-08-17 | 38 | 3 | 5 | 2 | 12 |
+| 2026-08-17 | 39 | 3 | 5 | 2 | 15 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - robustez ante casos límite: **51**
-- seguridad defensiva: **49**
+- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **44**
 - rendimiento: **41**
 
@@ -43,10 +43,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **12**
 - `main.py`: **11**
 - `safety.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-17T02:38:19` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante la verificación de la existencia del archivo a través de `os.path.exists()` antes de realizar la resolución simbólica, evitando así llamadas potencialmente inestables a `resolve(strict=True)` sobre rutas inexistentes o no confiables, asegurando que el proceso no sea interceptado por errores de permisos en rutas parcialmente inválidas.
 - `2026-08-17T02:29:35` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `os.replace` (que puede tener comportamientos imprevistos al manejar bloqueos de archivos en sistemas de archivos en uso) y reemplazándolo por una verificación de acceso más estricta mediante `os.access(ruta, os.W_OK)` antes de intentar cualquier operación, además de garantizar que `temp_ruta` y `ruta` pertenezcan al mismo dispositivo para evitar excepciones de `os.replace` entre volúmenes distintos, mejorando la robustez de la escritura atómica.
 - `2026-08-17T02:28:56` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `check_recent_executable_in_downloads` validando mediante `is_protected_path` que la ruta del archivo no pertenezca a zonas críticas del sistema antes de procesar su antigüedad, evitando así interacciones innecesarias con archivos de sistema protegidos y alineando el módulo con las reglas de seguridad global.
 - `2026-08-17T02:19:48` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` al realizar una validación de ruta absoluta y comparación de dispositivos después de la resolución, impidiendo explícitamente cualquier intento de escape o movimiento entre particiones que pudiera ser aprovechado para manipular permisos de archivo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T01:57:36` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en `load` incorporando una validación de `os.stat` para prevenir bloqueos por archivos cuyo tamaño es incompatible con la carga en memoria, y se ha reemplazado la lógica de `ruta.replace` por un manejo de errores más específico que evita fallos por estados de archivo bloqueados en sistemas de archivos con permisos restrictivos.
 - `2026-08-17T01:49:00` **scanner.py** (robustez ante casos límite): Se reforzó la robustez ante casos límite en `process_entry` y `scan_directory` manejando explícitamente errores de acceso (`OSError`, `PermissionError`) y rutas malformadas que pueden ocurrir durante el recorrido del disco.
 - `2026-08-17T01:48:51` **safety.py** (robustez ante casos límite): Se introdujo la verificación `p.lstat()` en lugar de `p.stat()` dentro de `_check_file_integrity` para evitar seguir enlaces simbólicos o puntos de reparse durante la inspección, mitigando riesgos de seguridad al analizar rutas externas y mejorando la robustez frente a ciclos de directorios.
-- `2026-08-17T01:47:53` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y acceso mediante un sistema de bloqueo por nombre único (via `uuid`) para evitar colisiones en `quarantine_file` y asegurar que, ante caídas en el proceso de copia, no queden archivos parciales huérfanos o manifiestos corruptos en el sandbox.
