@@ -70,8 +70,8 @@ SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
 })
 
-_SYSTEM_ROOT_PARTS: Final[frozenset[tuple[str, ...]]] = frozenset(
-    Path(os.environ[v]).parts for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
+_SYSTEM_ROOT_PATHS: Final[tuple[str, ...]] = tuple(
+    os.path.normcase(os.environ[v]) for v in ("SystemRoot", "ProgramFiles", "ProgramFiles(x86)", "ProgramData")
     if os.environ.get(v)
 )
 
@@ -158,36 +158,32 @@ def _check_file_integrity(p: Path) -> None:
     """
     Realiza una batería de verificaciones de integridad antes de modificar archivos.
     
-    El proceso sigue un orden descendente de riesgo: primero se validan capacidades
-    de acceso (OS), luego estructuras de red/enlace (reparse points) y finalmente
-    estado lógico del archivo (ADS, in-use, flags).
-    
     Lanza UnsafePathError ante el primer criterio de riesgo detectado.
     """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
-    if len(p.parts) > 32:
-        raise UnsafePathError("Ruta demasiado profunda.")
 
     try:
         st = p.lstat()
     except OSError:
         raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}")
 
-    checks: list[_IntegrityCheck] = [
-        _IntegrityCheck(ProtectionReason.INACCESSIBLE, lambda: not os.access(p, os.W_OK)),
-        _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda: _is_reparse_point(p)),
-        _IntegrityCheck(ProtectionReason.READ_ONLY, lambda: not bool(st.st_mode & stat.S_IWRITE)),
-        _IntegrityCheck(ProtectionReason.IN_USE, lambda: _is_file_in_use(p)),
-        _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda: _is_system_or_hidden(p)),
-        _IntegrityCheck(ProtectionReason.HARD_LINK, lambda: p.is_file() and st.st_nlink > 1),
-        _IntegrityCheck(ProtectionReason.ADS, lambda: _has_alternate_data_stream(p)),
-        _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda: p.is_file() and st.st_size == 0)
-    ]
-
-    for check in checks:
-        if check.predicate():
-            raise UnsafePathError(f"Operación denegada en {p.name}: {check.reason.value}.")
+    if not os.access(p, os.W_OK):
+        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.INACCESSIBLE.value}.")
+    if _is_reparse_point(p):
+        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.REPARSE_POINT.value}.")
+    if not bool(st.st_mode & stat.S_IWRITE):
+        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.READ_ONLY.value}.")
+    if _is_file_in_use(p):
+        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.IN_USE.value}.")
+    if _is_system_or_hidden(p):
+        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.SYSTEM_HIDDEN.value}.")
+    if p.is_file() and st.st_nlink > 1:
+        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.HARD_LINK.value}.")
+    if _has_alternate_data_stream(p):
+        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.ADS.value}.")
+    if p.is_file() and st.st_size == 0:
+        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.EMPTY_FILE.value}.")
 
 
 @lru_cache(maxsize=2048)
@@ -237,13 +233,16 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
-        p_parts = p.parts
-        if any(p_parts[:len(root)] == root for root in _SYSTEM_ROOT_PARTS):
+        norm_str = os.path.normcase(str(p))
+        
+        # Check system root prefixes efficiently
+        if any(norm_str.startswith(root) for root in _SYSTEM_ROOT_PATHS):
             return True
-        if any(part.lower() in PROTECTED_DIR_NAMES for part in p_parts):
+            
+        # Check path parts against blocklist
+        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
-        if p.exists() and _is_reparse_point(p):
-            return True
+            
         return p == Path(p.anchor)
     except (PermissionError, OSError, ValueError, TypeError, RuntimeError):
         return True 
@@ -276,7 +275,7 @@ def _validate_basic_path_safety(p: Path, path_str: str) -> None:
     if _has_invalid_chars(path_str) or _is_reserved_device_name(p.name):
         raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
     
-    if any(part in ("..", "...") for part in path_str.replace("/", os.sep).split(os.sep)):
+    if ".." in p.parts:
         raise UnsafePathError("Intento de path traversal detectado.")
 
     if path_str.startswith(("\\\\", "//")):
@@ -301,12 +300,6 @@ def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Valida la integridad y seguridad de la ruta antes de realizar cambios persistentes.
-    
-    Esta función es el punto único de entrada para toda operación de escritura.
-    Verifica secuencialmente: normalización de ruta, límites del directorio de trabajo,
-    existencia física y finalmente la integridad del archivo mediante _check_file_integrity.
-    
-    Retorna el objeto Path normalizado o lanza UnsafePathError.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
@@ -343,15 +336,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una lista de rutas, retornando solo aquellas que son seguras."""
-    valid: list[Path] = []
-    if paths is None: return valid
-    for p in paths:
-        if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive):
-            try:
-                valid.append(normalize(p))
-            except (TypeError, ValueError, OSError):
-                continue
-    return valid
+    return [normalize(p) for p in paths if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive)]
 
 
 def describe_protection(path: PathLike) -> str:

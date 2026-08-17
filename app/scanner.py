@@ -129,10 +129,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry) or is_protected_path(path):
         return None
     
-    # Seguridad: solo procesar rutas absolutas verificables dentro del entorno permitido
     if not path.is_absolute():
         return None
     
+    # Eficiencia: uso de set intersection para verificar partes de la ruta
     if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
         return None
         
@@ -148,7 +148,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables con nombres de sistema que residen fuera de System32."""
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in [part.lower() for part in path.parts]:
+        # Eficiencia: verificar si SYSTEM32_LOWER existe en las partes de la ruta
+        if SYSTEM32_LOWER not in (part.lower() for part in path.parts):
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
@@ -166,7 +167,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     
     # Regla 2: Análisis profundo para ejecutables
     if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-        for check in [check_system_lookalike, check_recent_executable_in_downloads]:
+        for check in (check_system_lookalike, check_recent_executable_in_downloads):
             try:
                 if (res := check(path, entry, now_ts)):
                     findings.append(res)

@@ -92,6 +92,7 @@ VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
 
 _LAST_MTIME: dict[str, float] = {}
+_CACHED_SETTINGS: dict[str, AppSettings] = {}
 
 def _get_default_config() -> AppSettings:
     """Retorna un diccionario con los valores por defecto definidos para la app."""
@@ -123,14 +124,7 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
 }
 
 class _Validators:
-    """
-    Motor de validación de datos de entrada para `config.json`.
-    
-    Implementa validación de tipo, rango y seguridad de rutas. Cada método 
-    retorna el valor validado si es correcto, o `None` si el dato es malicioso,
-    corrupto o fuera de rango, permitiendo que `validate()` recurra al 
-    valor por defecto de fábrica.
-    """
+    """Motor de validación de datos de entrada para `config.json`."""
     
     @staticmethod
     @lru_cache(maxsize=32)
@@ -149,7 +143,6 @@ class _Validators:
 
     @staticmethod
     def bool(val: Any) -> bool | None:
-        """Convierte tipos mixtos a booleano; retorna None en caso de error."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -159,7 +152,6 @@ class _Validators:
 
     @staticmethod
     def int(key: ConfigKey, val: Any) -> int | None:
-        """Valida enteros dentro de los rangos definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value: int = int(val)
@@ -169,7 +161,6 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """Valida que una ruta sea absoluta, segura y no contenga caracteres inválidos."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
@@ -185,7 +176,6 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> str | None:
-        """Valida strings restringidos por catálogo (tema/acento)."""
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
@@ -193,7 +183,6 @@ class _Validators:
 
     @staticmethod
     def str(key: ConfigKey, val: Any) -> str | None:
-        """Valida strings, previniendo inyección, caracteres de control o exceso de tamaño."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -220,108 +209,70 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 }
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Calcula la ruta absoluta del archivo de configuración, validando el directorio base."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
     if not _Validators._is_safe_path(str(base)): return SETTINGS_DIR / SETTINGS_FILE
     return base / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """
-    Valida un diccionario contra `AppSettings`.
-    
-    Cualquier clave faltante o valor mal formado se reemplaza con el valor
-    default de fábrica. La integridad del esquema se preserva.
-    """
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
-    
     for key, validator in _VALIDATOR_MAP.items():
         if key.value in raw_values:
             try:
                 val = validator(key, raw_values[key.value])
-                if val is not None: 
-                    config[key.value] = val # type: ignore
-            except (ValueError, TypeError, AttributeError): 
-                continue
+                if val is not None: config[key.value] = val
+            except (ValueError, TypeError, AttributeError): continue
     return config
 
-@lru_cache(maxsize=1)
-def _load_internal(ruta_str: str) -> AppSettings:
-    """Carga interna: lee disco, parsea y valida. Invalida caché mediante mtime."""
-    ruta = Path(ruta_str)
-    try:
-        if not ruta.is_file() or is_protected_path(str(ruta)) or not os.access(ruta, os.R_OK):
-            return _get_default_config()
-        
-        file_size = ruta.stat().st_size
-        if file_size == 0 or file_size > MAX_SETTINGS_SIZE: return _get_default_config()
-        
-        content = ruta.read_bytes()
-        data = json.loads(content)
-        
-        if not isinstance(data, dict): return _get_default_config()
-        return validate(data)
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
-        try:
-            ruta.rename(ruta.with_suffix(f"{ruta.suffix}.corrupt"))
-        except OSError: pass
-        return _get_default_config()
-
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga, valida y cachea el archivo de configuración."""
     ruta = settings_path(custom_base)
-    if is_protected_path(str(ruta)): return _get_default_config()
-    
     ruta_str = str(ruta)
-    if not ruta.exists() or ruta.is_dir(): return _get_default_config()
+    
+    if is_protected_path(ruta_str) or not ruta.exists() or ruta.is_dir():
+        return _get_default_config()
     
     try:
         mtime = ruta.stat().st_mtime
-        if _LAST_MTIME.get(ruta_str) != mtime:
-            _load_internal.cache_clear()
-            _LAST_MTIME[ruta_str] = mtime
-    except OSError:
+        if _LAST_MTIME.get(ruta_str) == mtime and ruta_str in _CACHED_SETTINGS:
+            return _CACHED_SETTINGS[ruta_str].copy()
+            
+        file_size = ruta.stat().st_size
+        if file_size == 0 or file_size > MAX_SETTINGS_SIZE: return _get_default_config()
+        
+        data = json.loads(ruta.read_bytes())
+        settings = validate(data) if isinstance(data, dict) else _get_default_config()
+        
+        _LAST_MTIME[ruta_str] = mtime
+        _CACHED_SETTINGS[ruta_str] = settings
+        return settings.copy()
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         return _get_default_config()
-    
-    return _load_internal(ruta_str)
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Guarda una configuración validada de forma atómica usando un archivo temporal."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    
-    if (ruta.exists() and (ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()))) or is_protected_path(str(ruta)):
-        return None
     if not _Validators._is_safe_path(str(ruta.parent)) or not is_safe_to_modify(str(ruta)): return None
-    if ruta.exists() and not os.access(ruta, os.W_OK): return None
     
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         
     try:
-        json_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
-        
         if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
         with open(temp_ruta, "wb") as f:
-            f.write(json_data)
+            f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_ruta, ruta)
-        _load_internal.cache_clear()
         _LAST_MTIME.pop(str(ruta), None)
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError, TypeError):
-        if 'temp_ruta' in locals():
-            try: temp_ruta.unlink(missing_ok=True)
-            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Aplica cambios parciales a la configuración actual y los persiste."""
-    current = load(custom_base).copy()
+    current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
         try:
@@ -330,34 +281,29 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
             if validator:
                 val = validator(key_enum, v)
                 if val is not None and val != current.get(k):
-                    current[k] = val # type: ignore
+                    current[k] = val
                     needs_save = True
         except ValueError: continue
     if needs_save: save(current, custom_base)
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restablece la configuración a los valores de fábrica."""
     default_config = _get_default_config()
     save(default_config, custom_base)
     return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Obtiene un valor individual de la configuración."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Prioriza la clave API desde variables de entorno sobre el archivo de configuración."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente está habilitado y posee una clave válida."""
     settings = load(custom_base)
     return bool(settings["asistente_activado"]) and bool(os.environ.get(API_KEY_ENV_VAR) or settings["asistente_clave_api"])
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera una representación textual formateada de la configuración actual para reportes."""
     current = load(custom_base)
     key = assistant_api_key(custom_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
