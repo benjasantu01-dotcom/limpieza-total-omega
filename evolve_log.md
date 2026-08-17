@@ -914,3 +914,68 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-08-17T10:38:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 116): unterminated string literal (detected at line 116)
 - `2026-08-17T10:38:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-17T10:38:40` Corrida terminada. Total usado hoy: 252.
+- `2026-08-17T10:47:13` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-17T10:47:42` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos límite en `safety.py` introduciendo una verificación estricta de longitud máxima de rutas (MAX_PATH) y validando la existencia de la unidad padre antes de normalizar, evitando errores de sistema en rutas malformadas o unidades extraíbles desconectadas.
+- `2026-08-17T10:47:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-17T10:48:15` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez ante casos de archivos bloqueados o inaccesibles integrando un bloque de manejo de errores específico (`OSError`) durante la lectura de atributos (`stat`) en `check_recent_executable_in_downloads`, evitando que el escaneo se interrumpa ante metadatos corruptos o en uso.
+- `2026-08-17T10:48:51` Tests FALLARON:
+```
+th, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed in 1.20s
+
+```
+- `2026-08-17T10:48:51` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha añadido una validación explícita para evitar que `settings.py` intente procesar archivos de configuración excesivamente grandes que podrían causar agotamiento de memoria, y se mejoró la resiliencia en la lectura ante posibles errores de encoding o sistemas de archivos bloqueados.
+- `2026-08-17T10:49:03` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.21s
+
+```
+- `2026-08-17T10:49:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré `StartupEntry._resolve_and_cache_path` añadiendo un manejo robusto de `OSError` durante la resolución de rutas, evitando que archivos bloqueados, inexistentes o con permisos restringidos interrumpan el proceso de escaneo y asegurando que la caché de existencia se mantenga consistente.
+- `2026-08-17T10:49:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-17T10:49:03` Corrida terminada. Total usado hoy: 256.

@@ -141,6 +141,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, OverflowError, ValueError, TypeError):
+        # Caso límite: el archivo está bloqueado por otro proceso o tiene metadatos inaccesibles
+        logger.debug(f"No se pudieron leer metadatos de {path}")
         return None
     return None
 

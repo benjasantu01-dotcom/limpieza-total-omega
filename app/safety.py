@@ -205,11 +205,16 @@ def normalize(path: PathLike) -> Path:
     if not path_str:
         raise ValueError("Entrada de ruta vacía.")
     
-    if len(path_str) > 260:
-        raise ValueError("Longitud de ruta excedida.")
+    # MAX_PATH en Windows es generalmente 260.
+    if len(path_str) >= 260:
+        raise ValueError("Longitud de ruta excede el límite permitido.")
         
     try:
-        return Path(path_str).expanduser().resolve(strict=False)
+        p = Path(path_str).expanduser()
+        # Verificar unidad padre antes de resolver si la ruta es relativa o sospechosa
+        if p.anchor and not os.path.exists(p.anchor):
+            raise ValueError("Unidad de disco no disponible.")
+        return p.resolve(strict=False)
     except (OSError, RuntimeError) as e:
         if _is_permission_denied(e):
             raise ValueError("Acceso denegado durante la normalización.")
