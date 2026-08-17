@@ -306,6 +306,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             f.write(json_data)
             f.flush()
             os.fsync(f.fileno())
+        # Uso de os.replace requiere compatibilidad de sistema; garantizamos no cruzar volúmenes
         os.replace(temp_ruta, ruta)
         _load_internal.cache_clear()
         _LAST_MTIME.pop(str(ruta), None)

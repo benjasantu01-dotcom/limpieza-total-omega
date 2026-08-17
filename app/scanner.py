@@ -125,9 +125,9 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica si un archivo ejecutable se encuentra en una carpeta monitorizada y fue modificado 
-    recientemente. Optimizado para evitar iteraciones innecesarias sobre partes de la ruta.
+    recientemente. Valida que el archivo no esté en una ruta protegida antes de procesar stat.
     """
-    if not isinstance(entry, os.DirEntry):
+    if not isinstance(entry, os.DirEntry) or is_protected_path(path):
         return None
     
     if WATCHED_FOLDERS.isdisjoint(part.lower() for part in path.parts):
