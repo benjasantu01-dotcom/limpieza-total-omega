@@ -162,11 +162,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo del árbol de directorios para identificar archivos candidatos.
-    
-    Args:
-        directories: Lista de rutas base a escanear.
-        min_size: Tamaño mínimo en bytes para considerar un archivo.
-        skip_protected: Si es True, ignora rutas marcadas en safety.py.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -183,7 +178,6 @@ def _collect_candidates(
                             visited_inodes.add(inode)
                             _scan(Path(entry.path))
                     elif entry.is_file():
-                        # Excluir archivos comprimidos o de sistema vía atributos Windows
                         if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
                             target = Path(entry.path).resolve(strict=True)
                             if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
@@ -207,10 +201,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Agrupa rutas aplicando una función de hash y gestionando una memoria caché local.
-    
-    Args:
-        paths: Lista de rutas candidatas a agrupar.
-        hash_func: Función de cálculo de hash (partial_hash o hash_file).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     digest_cache: Dict[Path, str] = {}
@@ -279,7 +269,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             continue
         try:
             target = p.resolve(strict=True)
-            if is_protected_path(target) or not is_safe_to_modify(target):
+            if not target.exists() or is_protected_path(target) or not is_safe_to_modify(target):
                 continue
             stat_info = target.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0))

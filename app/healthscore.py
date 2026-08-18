@@ -177,7 +177,15 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
-    return {area: int(round(_clamp(ratios.get(area, 0.0), 0.0, 1.0) * _WEIGHT_FACTORS[area])) for area in _WEIGHT_FACTORS}
+    result = {}
+    for area in _WEIGHT_FACTORS:
+        val = ratios.get(area, 0.0)
+        # Validación defensiva contra datos no finitos antes de procesar el puntaje
+        if not math.isfinite(val):
+            result[area] = 0
+        else:
+            result[area] = int(round(_clamp(val, 0.0, 1.0) * _WEIGHT_FACTORS[area]))
+    return result
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recommendations: List[str] = []

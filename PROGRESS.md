@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 8 | 1 | 2 | 1 | 22 |
+| 2026-08-16 | 8 | 1 | 2 | 1 | 18 |
 | 2026-08-17 | 162 | 12 | 23 | 12 | 141 |
-| 2026-08-18 | 54 | 5 | 7 | 3 | 51 |
+| 2026-08-18 | 57 | 5 | 7 | 4 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - rendimiento: **44**
 - robustez ante casos límite: **44**
+- seguridad defensiva: **41**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **24**
+- `healthscore.py`: **25**
 - `assistant.py`: **23**
 - `scanner.py`: **22**
 - `browser.py`: **18**
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **17**
+- `duplicates.py`: **15**
 - `organizer.py`: **15**
 - `settings.py`: **15**
-- `duplicates.py`: **14**
 - `branding.py`: **12**
 - `main.py`: **11**
 - `startup.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T05:21:41` **memory.py** (seguridad defensiva): Se ha mejorado `_get_process_path` y `trim_working_set` para prevenir la manipulación de procesos en rutas críticas mediante el uso de `os.path.normcase` para asegurar la comparación de rutas en sistemas Windows, evitando ataques de elusión de seguridad basados en mayúsculas/minúsculas.
+- `2026-08-18T05:18:12` **healthscore.py** (seguridad defensiva): Reforcé la robustez de los cálculos críticos añadiendo un chequeo explícito de finitud (`math.isfinite`) en `_calculate_breakdown` para evitar que un dato de entrada malicioso o corrompido (ej. infinito o NaN en las métricas) resulte en un puntaje final no numérico o un error de sistema.
+- `2026-08-18T05:17:22` **duplicates.py** (seguridad defensiva): Se reforzó la integridad del acceso a archivos en `_collect_candidates` y `suggest_keeper` asegurando que las rutas se validen mediante `is_safe_to_modify` antes de cualquier operación de I/O, evitando el riesgo de tocar archivos protegidos detectados durante la resolución de *symlinks* o *nombres de sistema*.
 - `2026-08-18T05:07:42` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita para evitar que `os.scandir` intente procesar rutas que excedan los límites de seguridad o sean puntos de reparse (junctions) que podrían causar bucles infinitos o fugas de contexto fuera del directorio analizado.
 - `2026-08-18T05:07:30` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_path` integrando `os.path.realpath` con `pathlib` de forma más robusta y añadiendo una validación explícita de `is_absolute()` para prevenir que rutas relativas o mal formadas evadan el chequeo jerárquico.
 - `2026-08-18T05:06:24` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor local restringiendo la longitud de las entradas procesadas por las funciones `handle_` para evitar posibles ataques de denegación de servicio (DoS) mediante strings extremadamente largos en los mensajes de los criterios.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T04:35:39` **diskreport.py** (robustez ante casos límite): Mejora la robustez en `walk_files` y `drive_usage` para manejar fallos de permisos o acceso al recorrer sistemas de archivos complejos, asegurando que el proceso no se interrumpa abruptamente al encontrar entradas bloqueadas o rutas no accesibles.
 - `2026-08-18T04:26:35` **branding.py** (robustez ante casos límite): Se robusteció `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas o nulas, evitando excepciones en tiempo de ejecución al interactuar con rutas o procesar formatos de color inesperados.
 - `2026-08-18T04:26:03` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local frente a valores de métricas inesperados o corruptos añadiendo validaciones de tipo `isinstance` y chequeos de `math.isfinite` dentro de `_identify_active_problems` y `local_answer`, asegurando que el asistente no colapse si los datos de entrada contienen valores `NaN` o tipos incorrectos.
-- `2026-08-18T04:25:28` **startup.py** (rendimiento): Se optimizó el acceso a disco en `list_startup_entries` mediante la ejecución concurrente de los escaneos de carpetas y registro, evitando el bloqueo secuencial y aprovechando que ambas fuentes son independientes.
-- `2026-08-18T04:16:13` **settings.py** (rendimiento): Optimizé `load()` para evitar accesos innecesarios al sistema de archivos y llamadas redundantes a `stat()` mediante un caché de sesión (memoria) que se invalida únicamente si el archivo original cambia, reduciendo significativamente la latencia al consultar configuraciones recurrentemente.
-- `2026-08-18T04:16:01` **scanner.py** (rendimiento): Optimizé la regla `check_recent_executable_in_downloads` para evitar la creación innecesaria de un `set` de partes de ruta (`path.parts`) en cada iteración del escáner, reemplazándolo por una verificación de pertenencia eficiente mediante `any()` y `in`.

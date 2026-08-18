@@ -322,7 +322,7 @@ def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
         return False, "El proceso seleccionado ya no está activo."
         
     path = _get_process_path(proc_handle)
-    if not path or is_protected_path(os.path.normpath(path)):
+    if not path or is_protected_path(os.path.normcase(os.path.normpath(path))):
         return False, "Operación denegada: ruta de ejecutable protegida."
         
     return True, None
