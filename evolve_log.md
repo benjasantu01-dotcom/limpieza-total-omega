@@ -856,3 +856,10 @@ FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remember
 - `2026-08-18T05:21:41` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado `_get_process_path` y `trim_working_set` para prevenir la manipulación de procesos en rutas críticas mediante el uso de `os.path.normcase` para asegurar la comparación de rutas en sistemas Windows, evitando ataques de elusión de seguridad basados en mayúsculas/minúsculas.
 - `2026-08-18T05:21:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T05:21:41` Corrida terminada. Total usado hoy: 124.
+- `2026-08-18T05:26:14` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-18T05:26:40` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_to_move` al añadir una verificación explícita mediante `is_protected_path` (desde `safety.py`) para asegurar que el archivo no solo sea seguro según los permisos del usuario, sino que no pertenezca a ninguna ruta restringida o bloqueada, añadiendo una capa extra de defensa antes de la operación de movimiento.
+- `2026-08-18T05:27:11` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo un chequeo explícito de recursión de directorios y validación de parentesco mediante `path.resolve()` antes de realizar operaciones de movimiento/borrado, mitigando el riesgo de que una ruta resuelta dinámicamente escape del sandbox o del directorio de trabajo esperado.
+- `2026-08-18T05:27:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-18T05:27:43` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-18T05:27:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T05:27:43` Corrida terminada. Total usado hoy: 128.

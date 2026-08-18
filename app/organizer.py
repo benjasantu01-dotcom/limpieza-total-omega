@@ -19,7 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Final, Callable, Union, TypeAlias, NamedTuple, Dict
 
-from safety import is_safe_to_modify, ensure_safe_to_modify
+from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 
 # Configuración de log para seguimiento de errores no críticos
 logging.basicConfig(level=logging.INFO)
@@ -168,6 +168,10 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     current_path = junk_file.path.resolve()
     dest_abs = dest.resolve()
     
+    # Verificación extra contra listas protegidas antes de realizar cualquier operación
+    if is_protected_path(current_path) or is_protected_path(dest_abs):
+        return False
+
     if not _is_safe_for_disk_op(current_path, dest_abs):
         return False
         

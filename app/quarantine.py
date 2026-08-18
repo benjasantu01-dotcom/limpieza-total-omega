@@ -352,7 +352,6 @@ def quarantine_file(
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
     
-    # Verificación final de existencia antes de operar, evitando condiciones de carrera
     if not source_path.is_file():
         raise FileNotFoundError("El archivo origen desapareció antes del aislamiento.")
         
@@ -421,6 +420,9 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     
     base_path = quarantine_dir(base)
     stored_file = (base_path / match.stored_name).resolve()
+    
+    if not _is_valid_quarantine_path(stored_file, base_path):
+        raise UnsafePathError("Acceso fuera del sandbox de cuarentena detectado.")
     
     if not stored_file.is_file():
         items.remove(match)
@@ -493,6 +495,9 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     for entry in quarantine_root.iterdir():
         if entry.name in item_map:
+            # Validar confinamiento de nuevo por seguridad en iteración
+            if not _is_valid_quarantine_path(entry.resolve(), quarantine_root):
+                continue
             item = item_map[entry.name]
             if entry.is_file() and item.verify_integrity(entry) and not _is_file_locked(entry):
                 if _safe_unlink(entry):
