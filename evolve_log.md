@@ -720,3 +720,43 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-18T03:55:56` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje pre-calculando el desglose de pesos como un diccionario de acceso directo en el ámbito global para evitar iteraciones redundantes y la recreación constante de estructuras durante `compute_score`.
 - `2026-08-18T03:55:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T03:55:56` Corrida terminada. Total usado hoy: 92.
+- `2026-08-18T04:04:39` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-18T04:05:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-18T04:06:43` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-18T04:07:49` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-18T04:09:14` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data
+- `2026-08-18T04:09:42` Tests FALLARON:
+```
+es
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:99: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not_the_goal - AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+3 failed, 296 passed, 7 warnings in 1.10s
+
+```
+- `2026-08-18T04:09:42` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de filtrado más eficiente y reduciendo la complejidad de las operaciones de string, además de mejorar la eficiencia de `parse_windows_process_csv` utilizando una lista por comprensión y una sola pasada sobre los datos.
+- `2026-08-18T04:10:08` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_for_junk` sustituyendo el método `endswith(tuple(...))` por una verificación de conjunto (`suffix.lower() in set`), evitando la creación de tuplas temporales en cada iteración y aprovechando la complejidad O(1) de las búsquedas en sets.
+- `2026-08-18T04:10:23` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimizé `summarize` y `total_quarantined_bytes` reemplazando llamadas repetitivas a `load_manifest()` (que re-procesa el JSON y recalcula hashes) por una única carga de memoria, mejorando el rendimiento en listas largas.
+- `2026-08-18T04:10:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T04:10:23` Corrida terminada. Total usado hoy: 96.
