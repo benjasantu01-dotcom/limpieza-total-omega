@@ -1330,3 +1330,37 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-18T09:02:12` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_memory` y `score_disk` añadiendo protecciones explícitas contra divisiones por cero y valores no finitos, garantizando que el sistema devuelva un puntaje conservador (0.0) en lugar de lanzar una excepción o retornar valores inesperados ante configuraciones anómalas.
 - `2026-08-18T09:02:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T09:02:12` Corrida terminada. Total usado hoy: 212.
+- `2026-08-18T09:10:56` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-08-18T09:11:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-18T09:13:05` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una gestión robusta de estados intermedios y chequeos de existencia de widgets en las tareas asíncronas para prevenir `TclError` y comportamientos erráticos cuando el usuario interactúa con la UI durante la ejecución de procesos pesados, asegurando que el estado de la aplicación no se desincronice al cerrar pestañas o limpiar logs.
+- `2026-08-18T09:13:31` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-18T09:13:55` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-18T09:14:11` Tests FALLARON:
+```
+                    valid_items.append(item)
+            return valid_items
+>       except (json.jsonDecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'jsonDecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:264: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'jsonDecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed, 7 warnings in 1.21s
+
+```
+- `2026-08-18T09:14:11` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` ante fallos en el sistema de archivos durante el proceso de aislamiento añadiendo un bloque `try-finally` para asegurar que el archivo temporal sea eliminado incluso si la copia falla, y garantizando la limpieza del estado antes de levantar la excepción.
+- `2026-08-18T09:14:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T09:14:11` Corrida terminada. Total usado hoy: 216.
