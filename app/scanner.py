@@ -208,7 +208,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
         
     try:
-        path_input = Path(directory).resolve(strict=True)
+        raw_path = Path(directory)
+        path_input = raw_path.resolve(strict=True)
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):
@@ -224,7 +225,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError) as e:
+            logger.debug(f"Error accediendo a directorio {current_dir}: {e}")
             continue
             
     return scanner.results

@@ -232,17 +232,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
-    if is_protected_path(ruta_str) or not ruta.exists() or ruta.is_dir() or ruta.stat().st_size > MAX_SETTINGS_SIZE:
-        return _get_default_config()
-
     try:
+        if is_protected_path(ruta_str) or not ruta.exists() or not ruta.is_file() or ruta.stat().st_size > MAX_SETTINGS_SIZE:
+            return _get_default_config()
+
         mtime = ruta.stat().st_mtime
         if ruta_str in _SESSION_CACHE:
             cached_mtime, cached_data = _SESSION_CACHE[ruta_str]
             if cached_mtime == mtime:
                 return cached_data.copy()
         
-        data = json.loads(ruta.read_bytes())
+        data = json.loads(ruta.read_text(encoding="utf-8"))
         config = validate(data) if isinstance(data, dict) else _get_default_config()
         _SESSION_CACHE[ruta_str] = (mtime, config)
         return config.copy()
@@ -261,10 +261,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         
-    encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
-    if len(encoded_data) > MAX_SETTINGS_SIZE: return None
-        
     try:
+        encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+        if len(encoded_data) > MAX_SETTINGS_SIZE: return None
+        
         temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
         if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
         with open(temp_ruta, "wb") as f:
