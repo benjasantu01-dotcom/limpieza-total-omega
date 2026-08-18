@@ -142,13 +142,11 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Determina si un archivo está en uso exclusivo, evitando abrirlo en modo escritura."""
-    if not path.exists():
+    """Determina si un archivo está en uso exclusivo."""
+    if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        # Intentar abrir en modo lectura exclusiva primero
         with open(path, "rb") as f:
-            # Si podemos abrir, intentamos comprobar permiso de escritura
             return not os.access(path, os.W_OK)
     except (OSError, PermissionError):
         return True
@@ -300,12 +298,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
-    """
-    Realiza una copia atómica hacia la cuarentena: 
-    1. Copia a un archivo temporal.
-    2. Valida tamaño y hash SHA256 contra el original.
-    3. Reemplaza el destino final solo si la integridad es verificada.
-    """
+    """Realiza una copia atómica hacia la cuarentena."""
     if source.is_symlink() or ":" in str(source):
         raise UnsafePathError("Operación denegada: origen no es archivo regular.")
         
@@ -331,10 +324,7 @@ def quarantine_file(
     reason: str = "Marcado como sospechoso",
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
-    """
-    Orquesta el aislamiento de un archivo: valida seguridad, calcula espacio, 
-    copia y elimina el original tras confirmar la integridad del nuevo archivo.
-    """
+    """Orquesta el aislamiento de un archivo."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
@@ -493,7 +483,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     for entry in quarantine_root.iterdir():
         if entry.name in item_map:
             item = item_map[entry.name]
-            if item.verify_integrity(entry) and not _is_file_locked(entry):
+            if entry.is_file() and item.verify_integrity(entry) and not _is_file_locked(entry):
                 if _safe_unlink(entry):
                     purged_count += 1
                     updated = True

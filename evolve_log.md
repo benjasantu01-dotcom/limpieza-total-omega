@@ -605,3 +605,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-18T02:45:14` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y `_get_process_path` validando explícitamente el tipo de retorno y la presencia de identificadores críticos, evitando fallos silenciosos por punteros nulos o malformaciones en la comunicación con la API de Windows.
 - `2026-08-18T02:45:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T02:45:14` Corrida terminada. Total usado hoy: 64.
+- `2026-08-18T02:53:07` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-18T02:53:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-18T02:54:01` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine.py` mediante la validación proactiva de tipos y estados en `_is_file_locked` y `purge_all`, previniendo excepciones innecesarias ante condiciones de carrera o archivos inexistentes.
+- `2026-08-18T02:54:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-18T02:54:30` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-18T02:54:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T02:54:30` Corrida terminada. Total usado hoy: 68.

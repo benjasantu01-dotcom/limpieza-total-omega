@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 223
+- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 37 | 4 | 5 | 3 | 41 |
+| 2026-08-16 | 35 | 3 | 5 | 2 | 41 |
 | 2026-08-17 | 162 | 12 | 23 | 12 | 141 |
-| 2026-08-18 | 18 | 1 | 2 | 2 | 41 |
+| 2026-08-18 | 19 | 1 | 3 | 2 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
-- rendimiento: **45**
 - robustez ante casos límite: **45**
+- legibilidad y documentación: **45**
+- rendimiento: **44**
 - seguridad defensiva: **44**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **24**
-- `assistant.py`: **22**
+- `assistant.py`: **21**
 - `scanner.py`: **20**
+- `quarantine.py`: **18**
 - `memory.py`: **17**
-- `quarantine.py`: **17**
 - `settings.py`: **17**
 - `browser.py`: **16**
 - `diskreport.py`: **15**
@@ -42,11 +42,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **15**
 - `branding.py`: **12**
 - `main.py`: **11**
-- `startup.py`: **9**
+- `startup.py`: **8**
 - `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T02:54:01` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de tipos y estados en `_is_file_locked` y `purge_all`, previniendo excepciones innecesarias ante condiciones de carrera o archivos inexistentes.
 - `2026-08-18T02:45:14` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_path` validando explícitamente el tipo de retorno y la presencia de identificadores críticos, evitando fallos silenciosos por punteros nulos o malformaciones en la comunicación con la API de Windows.
 - `2026-08-18T02:45:02` **main.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `on_trim_process` y `on_restore_quarantine` mediante validaciones de tipo y existencia de componentes, y se mejoró la gestión de errores en `_validate_numeric_setting` para evitar cierres inesperados al procesar entradas del usuario.
 - `2026-08-18T02:43:46` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `_generate_recommendations` mediante la validación explícita de `rule.metric_attr` y la implementación de un mecanismo de respaldo ante valores inesperados, evitando que una métrica mal configurada invalide el reporte completo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T00:31:40` **startup.py** (robustez ante casos límite): Se mejoró la robustez de `parse_registry_csv` añadiendo un manejo de excepciones más granular y defensivo al extraer las rutas desde el CSV, protegiendo al motor de análisis ante filas con estructura inesperada o valores de registro malformados que podrían causar errores durante la lectura.
 - `2026-08-18T00:31:13` **settings.py** (robustez ante casos límite): Introduje una validación robusta de `mtime` en `_read_config_disk` para detectar si el archivo de configuración fue alterado externamente desde la última lectura, asegurando que la caché no devuelva datos obsoletos o corruptos.
 - `2026-08-18T00:30:46` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`path.exists()`) y manejo de errores de acceso en `scan_file` para evitar procesar rutas que fueron eliminadas o movidas por otros procesos mientras el bucle estaba en ejecución (condición de carrera/archivos temporales).
-- `2026-08-18T00:20:57` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar archivos bloqueados de forma que no lance excepciones bloqueantes ni falsos positivos, y se mejoró la validación del espacio en `quarantine_file` para prevenir estados inconsistentes ante cuotas de disco muy ajustadas o errores de lectura.
