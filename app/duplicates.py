@@ -180,6 +180,7 @@ def _collect_candidates(
                     elif entry.is_file():
                         if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
                             target = Path(entry.path).resolve(strict=True)
+                            # Validación estricta: asegurar acceso permitido antes de procesar
                             if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
                                 temp_groups[st.st_size].append(target)
                 except (OSError, PermissionError): continue

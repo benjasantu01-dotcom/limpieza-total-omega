@@ -227,17 +227,21 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                             
                         entry_path = Path(entry.path)
-                        # Validar ruta contra seguridad antes de cualquier acceso
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
-
+                        
+                        # Si es directorio, validar antes de agregarlo al stack
                         if entry.is_dir():
+                            if skip_protected and is_protected_path(entry_path):
+                                continue
+                            
                             stat_data = entry.stat()
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
                                 stack.append(entry_path)
                         elif entry.is_file():
+                            # Validar archivo individualmente
+                            if skip_protected and is_protected_path(entry_path):
+                                continue
                             yield entry_path, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue

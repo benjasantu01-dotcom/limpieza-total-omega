@@ -1426,7 +1426,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_find_duplicates(self) -> None:
         """Buscador de archivos duplicados por hash."""
         folder = self._ask_folder("Elegí una carpeta donde buscar duplicados")
-        if not folder:
+        if not folder or not self._verify_disk_path(folder):
             return
 
         def task() -> None:

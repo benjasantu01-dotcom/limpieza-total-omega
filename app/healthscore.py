@@ -69,16 +69,11 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-def _safe_sum_weights() -> float:
-    return float(sum(max(0, w) for w in WEIGHTS.values()))
+def _validate_integrity() -> bool:
+    total = sum(WEIGHTS.values())
+    return math.isfinite(total) and total == 100 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
 
-_TOTAL_WEIGHTS: Final[float] = _safe_sum_weights()
-_WEIGHT_FACTORS: Final[Dict[MetricKey, float]] = {
-    k: (max(0, w) * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
-    for k, w in WEIGHTS.items()
-}
-_WEIGHT_FACTORS_INT: Final[Dict[MetricKey, int]] = {k: int(round(f)) for k, f in _WEIGHT_FACTORS.items()}
-_WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(_WEIGHT_FACTORS_INT.items())
+_WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
 _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),
@@ -88,9 +83,6 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
-
-def _validate_integrity() -> bool:
-    return math.isfinite(_TOTAL_WEIGHTS) and _TOTAL_WEIGHTS > 0 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
 
 @dataclass
 class SystemMetrics:
