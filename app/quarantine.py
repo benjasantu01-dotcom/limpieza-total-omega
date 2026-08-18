@@ -352,6 +352,10 @@ def quarantine_file(
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
     
+    # Verificación final de existencia antes de operar, evitando condiciones de carrera
+    if not source_path.is_file():
+        raise FileNotFoundError("El archivo origen desapareció antes del aislamiento.")
+        
     try:
         file_size = source_path.stat().st_size
     except OSError:

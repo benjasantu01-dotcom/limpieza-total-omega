@@ -68,8 +68,6 @@ TRIM_WARNING: str = (
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
 # Constantes para Win32 API: permisos mínimos necesarios para diagnóstico y gestión
-# PROCESS_QUERY_LIMITED_INFORMATION: Permite leer información básica del proceso.
-# PROCESS_SET_QUOTA: Permite invocar EmptyWorkingSet sobre el proceso.
 PROCESS_QUERY_LIMITED_INFORMATION: int = 0x1000
 PROCESS_SET_QUOTA: int = 0x0100
 SAFE_ACCESS_MASK: int = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -155,9 +153,7 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """
-    Procesa /proc/meminfo. Recibe texto crudo para facilitar testing en CI.
-    """
+    """Procesa /proc/meminfo. Recibe texto crudo para facilitar testing en CI."""
     if not meminfo_text:
         return MemorySnapshot(0, 0)
     
@@ -177,10 +173,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """
-    Extrae datos de proceso desde una fila de CSV cruda.
-    Precondición: csv_line debe seguir el formato 'Name,PID,WorkingSet'.
-    """
+    """Extrae datos de proceso desde una fila de CSV cruda."""
     if not isinstance(csv_line, str):
         return None
     line = csv_line.strip()
@@ -215,7 +208,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Interactúa con la API Win32 'GlobalMemoryStatusEx' para obtener métricas globales."""
+    """Interactúa con la API Win32 'GlobalMemoryStatusEx'."""
     stat = _create_mem_status_ex()
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
@@ -274,7 +267,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Crea una narrativa legible sobre la salud de la memoria actual para el informe de usuario."""
+    """Crea una narrativa legible sobre la salud de la memoria actual."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     
@@ -306,24 +299,22 @@ def _is_system_process(pid: int) -> bool:
 
 
 def _get_process_path(handle: int) -> Optional[str]:
-    """Utiliza la Win32 API 'QueryFullProcessImageNameW' para resolver la ruta del ejecutable mediante un handle activo."""
-    if not handle:
-        return None
+    """Resuelve la ruta del ejecutable mediante un handle activo."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
-    if kernel32 is None:
+    if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"):
         return None
     buf = ctypes.create_unicode_buffer(4096)
     size = ctypes.c_ulong(4096)
     try:
-        if hasattr(kernel32, "QueryFullProcessImageNameW") and kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
+        if kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError):
         return None
     return None
 
 
-def _is_valid_trim_target(proc_handle: int, target_pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida si un proceso es candidato seguro para liberación de memoria según las reglas del módulo de seguridad."""
+def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
+    """Valida si un proceso es candidato seguro para liberación de memoria."""
     kernel32 = ctypes.windll.kernel32
     exit_code = ctypes.c_ulong()
     
@@ -338,7 +329,7 @@ def _is_valid_trim_target(proc_handle: int, target_pid: int) -> Tuple[bool, Opti
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta liberar la memoria residente del proceso, sujeto a validaciones estrictas de seguridad."""
+    """Intenta liberar la memoria residente del proceso con validaciones estrictas."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
@@ -360,18 +351,17 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
         
     try:
-        valid, reason = _is_valid_trim_target(proc_handle, target_pid)
+        valid, reason = _is_valid_trim_target(proc_handle)
         if not valid:
             return False, reason or "Validación de proceso fallida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
             err = kernel32.GetLastError()
-            msg = f"Acceso denegado: privilegios insuficientes (error {err})." if err == ERROR_ACCESS_DENIED else f"Error al liberar memoria (código {err})."
+            msg = f"Acceso denegado (error {err})." if err == ERROR_ACCESS_DENIED else f"Error al liberar memoria (código {err})."
             return False, msg
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, MemoryError, OSError) as e:
         return False, f"Ocurrió un error técnico al gestionar el proceso: {str(e)}"
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)
