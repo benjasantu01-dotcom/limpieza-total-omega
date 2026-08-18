@@ -544,3 +544,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-08-18T13:07:24` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-18T13:07:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T13:07:24` Corrida terminada. Total usado hoy: 308.
+- `2026-08-18T13:15:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-18T13:16:31` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_file` reemplazando la creación dinámica de listas de funciones por una pre-definida a nivel de módulo, evitando la asignación de memoria innecesaria en cada iteración del escáner.
+- `2026-08-18T13:17:16` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando la copia redundante de diccionarios en casos donde el acceso es solo lectura, y consolidé la lógica de validación para reducir llamadas innecesarias al sistema de archivos al ejecutar `get()` o `assistant_enabled()`.
+- `2026-08-18T13:17:46` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-18T13:18:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-18T13:19:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del motor local ante posibles datos corruptos en el `SystemContext` mediante validaciones adicionales de finitud numérica y tipos en `_identify_active_problems`, garantizando que el asistente no falle catastróficamente ni emita resultados inválidos si alguna métrica llega inesperadamente como `NaN` o `inf`.
+- `2026-08-18T13:19:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T13:19:11` Corrida terminada. Total usado hoy: 312.

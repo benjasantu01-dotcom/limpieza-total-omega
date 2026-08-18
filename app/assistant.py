@@ -329,6 +329,7 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     problemas = []
     for crit in _CRITERIOS_SALUD:
         val = getattr(ctx, crit.metric_key)
+        # Validación estricta de finitud para evitar errores de renderizado
         if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
             continue
         
@@ -340,8 +341,8 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta educativa sobre el estado de memoria RAM basado en métricas."""
-    mem_pct = float(ctx.memory_available_percent)
-    total_gb = float(ctx.memory_total_gb)
+    mem_pct = float(ctx.memory_available_percent) if math.isfinite(ctx.memory_available_percent) else 0.0
+    total_gb = float(ctx.memory_total_gb) if math.isfinite(ctx.memory_total_gb) else 0.0
     partes = [
         f"Tenés {mem_pct:.0f}% de RAM disponible"
         f"{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."

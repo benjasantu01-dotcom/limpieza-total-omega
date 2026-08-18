@@ -245,12 +245,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if ruta_str in _SESSION_CACHE:
             cached_mtime, cached_data = _SESSION_CACHE[ruta_str]
             if cached_mtime == mtime:
-                return cached_data.copy()
+                return cached_data
         
         data = json.loads(ruta.read_text(encoding="utf-8"))
         config = validate(data) if isinstance(data, dict) else _get_default_config()
         _SESSION_CACHE[ruta_str] = (mtime, config)
-        return config.copy()
+        return config
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         return _get_default_config()
 
@@ -316,8 +316,9 @@ def assistant_api_key(custom_base: PathLike | None = None) -> str:
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     """Verifica si el asistente tiene permiso y credenciales para operar."""
+    if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
-    return bool(settings["asistente_activado"]) and bool(os.environ.get(API_KEY_ENV_VAR) or settings["asistente_clave_api"])
+    return bool(settings["asistente_activado"]) and bool(settings["asistente_clave_api"])
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
     """Retorna una representación legible de los ajustes para reportes."""

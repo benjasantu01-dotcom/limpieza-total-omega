@@ -51,6 +51,12 @@ SYSTEM32_LOWER: Final[str] = "system32"
 WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 
+# Colección pre-definida de verificaciones para ejecutables
+EXECUTABLE_CHECKS: Final[List[SuspicionCheck]] = [
+    lambda p, e, t: check_system_lookalike(p, e, t),
+    lambda p, e, t: check_recent_executable_in_downloads(p, e, t)
+]
+
 
 class Scanner:
     """
@@ -184,16 +190,14 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         return []
         
     findings: ScanResult = []
-    suffix = path.suffix.lower()
     
     # Aplicar reglas generales
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # Aplicar reglas específicas para ejecutables
-    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        rules: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
-        for check in rules:
+    # Aplicar reglas específicas para ejecutables optimizando iteración
+    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+        for check in EXECUTABLE_CHECKS:
             try:
                 if (res := check(path, entry, now_ts)):
                     findings.append(res)
