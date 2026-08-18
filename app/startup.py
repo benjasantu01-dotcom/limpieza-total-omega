@@ -150,7 +150,9 @@ class StartupEntry:
                     return ""
                 p_str: str = str(p_abs)
             except (OSError, PermissionError, RuntimeError):
-                p_str = path_str
+                # Si falló la resolución (ej. acceso denegado), devolvemos la ruta original
+                # sin marcarla como resuelta en caché negativo para reintentos.
+                return path_str
                 
             _EXISTS_CACHE[p_str] = True
             return p_str

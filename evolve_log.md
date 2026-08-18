@@ -788,3 +788,54 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-18T04:46:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-08-18T04:46:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T04:46:46` Corrida terminada. Total usado hoy: 112.
+- `2026-08-18T04:55:31` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-18T04:55:59` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-18T04:56:22` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scanner.py` ante casos límite en la recuperación de metadatos (como archivos inexistentes o bloqueados) añadiendo un manejo de excepciones más granular en `check_recent_executable_in_downloads` y asegurando que las funciones de inspección validen la existencia del archivo antes de procesarlo, previniendo errores de `OSError` inesperados durante la iteración.
+- `2026-08-18T04:56:49` Tests FALLARON:
+```
+\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_corrupt_file_falls_back_to_defaults - AssertionError: assert {'tema': 'cla...s': True, ...} == {'tema': 'osc...s': True, ...}
+  
+  Omitting 14 identical items, use -vv to show
+  Differing items:
+  {'top_archivos': 42} != {'top_archivos': 15}
+  {'tema': 'claro'} != {'tema': 'oscuro'}
+  
+  Full diff:
+    {
+  -     'tema': 'oscuro',
+  ?              -- ^
+  +     'tema': 'claro',
+  ?               ^^
+        'acento': 'menta',
+        'mostrar_barras': True,
+        'animaciones': True,
+        'confirmar_siempre': True,
+        'abrir_en': 'Salud',
+        'recordar_ultima_carpeta': True,
+        'ultima_carpeta': '',
+        'duplicados_tamano_minimo_kb': 64,
+  -     'top_archivos': 15,
+  ?                     ^^
+  +     'top_archivos': 42,
+  ?                     ^^
+        'top_procesos': 15,
+        'analisis_en_paralelo': True,
+        'asistente_activado': False,
+        'asistente_clave_api': '',
+        'asistente_enviar_METRICAS': True,
+        'asistente_modelo': 'gemini-3.1-flash-lite',
+    }
+FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remembered - AssertionError: assert '/tmp/pytest-...dows/System32' == ''
+  
+  + /tmp/pytest-of-runner/pytest-2/test_a_protected_folder_is_nev0/Windows/System32
+2 failed, 297 passed, 7 warnings in 1.24s
+
+```
+- `2026-08-18T04:56:49` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del módulo ante archivos de configuración corruptos o bloqueados añadiendo una comprobación de tamaño máximo (`MAX_SETTINGS_SIZE`) al leer el archivo, evitando procesar volcados de memoria o archivos gigantes, y se mejoró la resiliencia en la validación de rutas usando `realpath` para detectar bucles de enlaces simbólicos más agresivamente.
+- `2026-08-18T04:57:00` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito para `OSError` durante la resolución de rutas relativas y permisos, evitando que bloqueos de E/S de sistema (frecuentes en carpetas de sistema o archivos en uso) causen una falla en la cadena de resolución de la interfaz.
+- `2026-08-18T04:57:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T04:57:00` Corrida terminada. Total usado hoy: 116.

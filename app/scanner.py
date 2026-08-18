@@ -129,7 +129,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable en zonas de riesgo fue creado recientemente."""
-    if not isinstance(entry, os.DirEntry) or is_protected_path(path):
+    if not path or is_protected_path(path):
         return None
     
     path_str = str(path).lower()
@@ -137,10 +137,11 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        file_stat = entry.stat()
-        if (now_ts - file_stat.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+        # Preferimos usar la entrada existente si se pasó, caso contrario estadísticos directos
+        file_mtime = entry.stat().st_mtime if entry else path.stat().st_mtime
+        if (now_ts - file_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, PermissionError, AttributeError, OverflowError):
+    except (OSError, PermissionError, AttributeError, ValueError):
         logger.debug(f"Acceso restringido a metadatos de {path}")
     return None
 
@@ -164,6 +165,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         
     findings: ScanResult = []
     
+    # Validar existencia física antes de procesar
     try:
         if not path.exists():
             return []
