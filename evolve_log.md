@@ -402,3 +402,12 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-18T11:37:44` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-18T11:37:44` Rotación — log: 1246 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T11:37:44` Corrida terminada. Total usado hoy: 272.
+- `2026-08-18T11:44:00` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-18T11:44:19` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 1): unexpected indent
+- `2026-08-18T11:44:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-18T11:45:11` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-18T11:45:36` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `stage_for_review` y `delete_reviewed` validando que los paths sean absolutos y realizando un chequeo de sub-ruta estricto (usando `is_relative_to`) para evitar que entradas externas manipuladas o paths relativos ambiguos puedan ser procesados accidentalmente fuera del entorno controlado.
+- `2026-08-18T11:45:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-18T11:46:00` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` envolviendo la eliminación del archivo original en una verificación de existencia y manejando explícitamente posibles errores de permisos para evitar dejar archivos "huérfanos" (copiados en cuarentena pero no eliminados del origen), alineándome con el enfoque de validación de entradas.
+- `2026-08-18T11:46:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T11:46:00` Corrida terminada. Total usado hoy: 276.

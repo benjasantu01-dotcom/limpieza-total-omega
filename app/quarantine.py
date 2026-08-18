@@ -351,7 +351,8 @@ def quarantine_file(
         if not destination.exists():
             raise RuntimeError("Fallo en la confirmación de aislamiento.")
         try:
-            os.remove(source_path)
+            if source_path.exists():
+                os.remove(source_path)
         except OSError as e:
             raise RuntimeError(f"Archivo copiado a cuarentena pero error al borrar original: {e}")
         item = QuarantineItem(

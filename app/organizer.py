@@ -253,7 +253,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile):
             continue
         try:
-            if not junk_file.path.exists() or not junk_file.path.is_file() or _is_junction(junk_file.path):
+            src_path = junk_file.path.resolve()
+            if not src_path.exists() or not src_path.is_file() or _is_junction(src_path):
                 continue
             
             if not _is_safe_to_move(junk_file, dest_base):
@@ -263,11 +264,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if shutil.disk_usage(dest_base).free <= junk_file.size_bytes:
                 continue
                 
-            target = _generate_unique_target(dest_base / f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}")
+            target = _generate_unique_target(dest_base / f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}")
             
-            ensure_safe_to_modify(junk_file.path)
+            ensure_safe_to_modify(src_path)
             ensure_safe_to_modify(target)
-            shutil.move(str(junk_file.path), str(target))
+            shutil.move(str(src_path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
             continue
     return dest_base
@@ -282,7 +283,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     try:
-        dest: Path = Path(review_dir).expanduser().resolve()
+        dest = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
             return 0
     except (OSError, RuntimeError):
@@ -292,12 +293,13 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     try:
         for item in dest.iterdir():
             try:
-                if not item.is_file() or item.is_symlink() or _is_junction(item):
-                    continue
-                    
                 resolved_item = item.resolve()
                 # Validación de seguridad: el archivo debe estar físicamente bajo la carpeta de cuarentena
-                if resolved_item.parent.resolve() == dest and is_safe_to_modify(resolved_item):
+                if not resolved_item.is_file() or _is_junction(resolved_item):
+                    continue
+                
+                # Verificamos que el item esté realmente contenido en el destino usando is_relative_to (Python 3.9+)
+                if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                     if not _is_file_locked(resolved_item):
                         ensure_safe_to_modify(resolved_item)
                         resolved_item.unlink()
