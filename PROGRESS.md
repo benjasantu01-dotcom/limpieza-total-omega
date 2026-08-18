@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Rechazadas por tests: 22
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 123 | 9 | 18 | 10 | 128 |
-| 2026-08-18 | 91 | 12 | 12 | 8 | 93 |
+| 2026-08-17 | 123 | 9 | 18 | 10 | 124 |
+| 2026-08-18 | 92 | 13 | 13 | 8 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - rendimiento: **44**
 - manejo de errores y validación de entradas: **39**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **24**
 - `assistant.py`: **23**
-- `scanner.py`: **20**
+- `scanner.py`: **21**
 - `quarantine.py`: **19**
 - `organizer.py`: **16**
 - `browser.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T09:22:20` **scanner.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`path.exists()`) y una verificación de acceso (`os.access`) antes de procesar archivos o directorios, lo que evita excepciones de "file not found" en condiciones de carrera (archivos temporales que desaparecen durante el escaneo) y garantiza que el escaneo sea más robusto ante cambios en el sistema de archivos en tiempo real.
 - `2026-08-18T09:02:12` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` añadiendo protecciones explícitas contra divisiones por cero y valores no finitos, garantizando que el sistema devuelva un puntaje conservador (0.0) en lugar de lanzar una excepción o retornar valores inesperados ante configuraciones anómalas.
 - `2026-08-18T09:02:02` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `suggest_keeper` añadiendo una lógica de validación de estado más rigurosa, asegurando que la comparación de rutas maneje correctamente archivos que puedan haber desaparecido o cambiado de permisos durante el procesamiento (condición de carrera), evitando fallos en la UI al intentar determinar el "keeper".
 - `2026-08-18T09:01:09` **browser.py** (robustez ante casos límite): Se mejora la robustez de `directory_size` y `_sum_directory_recursive` ante archivos que cambian de estado durante el escaneo (race conditions) y rutas extremadamente largas, envolviendo las llamadas críticas a `os.scandir` y `st_size` en bloques `try-except` más granulares para evitar que un solo archivo inaccesible interrumpa el conteo total.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T08:13:19` **assistant.py** (rendimiento): Se optimizó `_identify_active_problems` eliminando el costo de instanciar repetidamente `getattr` y `float()` dentro del bucle mediante una pre-validación de atributos, y reemplazando la construcción dinámica de strings por un uso más eficiente de los criterios definidos, mejorando el rendimiento en cada iteración del asistente.
 - `2026-08-18T08:12:27` **settings.py** (legibilidad y documentación): He añadido docstrings detallados a las funciones públicas de alto nivel (`load`, `save`, `update`, `reset`, `get`) y tipado explícito en `_Validators` para mejorar la mantenibilidad y documentación, clarificando los efectos secundarios y el manejo de errores.
 - `2026-08-18T08:10:07` **scanner.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la incorporación de documentación (docstrings detallados), type hints consistentes en los parámetros de entrada y salida, y la clarificación de la intención del código para alinear el estilo con los estándares de un proyecto profesional.
-- `2026-08-18T08:00:38` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (siguiendo las convenciones de Google/Python) y se ha extraído la lógica de validación de integridad del archivo en `purge_all` hacia un helper interno para mejorar la legibilidad y la consistencia en el manejo de errores.

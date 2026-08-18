@@ -1364,3 +1364,38 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-18T09:14:11` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `quarantine_file` ante fallos en el sistema de archivos durante el proceso de aislamiento añadiendo un bloque `try-finally` para asegurar que el archivo temporal sea eliminado incluso si la copia falla, y garantizando la limpieza del estado antes de levantar la excepción.
 - `2026-08-18T09:14:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T09:14:11` Corrida terminada. Total usado hoy: 216.
+- `2026-08-18T09:21:08` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-08-18T09:21:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-18T09:21:56` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-18T09:22:20` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia (`path.exists()`) y una verificación de acceso (`os.access`) antes de procesar archivos o directorios, lo que evita excepciones de "file not found" en condiciones de carrera (archivos temporales que desaparecen durante el escaneo) y garantiza que el escaneo sea más robusto ante cambios en el sistema de archivos en tiempo real.
+- `2026-08-18T09:22:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-18T09:22:42` Tests FALLARON:
+```
+ MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed, 7 warnings in 1.17s
+
+```
+- `2026-08-18T09:22:42` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de integridad en `load` para capturar archivos de configuración vacíos, corruptos (incompletos) o que contengan claves inesperadas que podrían causar errores en tiempo de ejecución, asegurando que si `json.loads` devuelve algo que no satisface la estructura mínima de `AppSettings`, el sistema retorne los valores de fábrica de forma segura.
+- `2026-08-18T09:22:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T09:22:42` Corrida terminada. Total usado hoy: 220.

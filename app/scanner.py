@@ -99,6 +99,10 @@ class Scanner:
             return
         
         try:
+            # Chequeo de existencia física antes de operar
+            if not os.path.exists(entry.path) or not os.access(entry.path, os.R_OK):
+                return
+
             # Salto preventivo para evitar bucles o acceso a rutas fuera del alcance
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
@@ -145,6 +149,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
+        # Validación extra de existencia para evitar race conditions en metadatos
+        if not path.exists():
+            return None
+
         if entry and not entry.is_file():
             return None
         
@@ -171,7 +179,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     Orquesta la ejecución de reglas heurísticas sobre un archivo.
     """
-    if path is None:
+    if path is None or not path.exists():
         return []
         
     findings: ScanResult = []
