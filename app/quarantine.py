@@ -142,7 +142,7 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Determina si un archivo está en uso exclusivo."""
+    """Determina si un archivo está en uso exclusivo intentando abrirlo en modo lectura."""
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
@@ -209,16 +209,23 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """Validación estricta de la estructura del path contra caracteres y profundidad."""
+    """Validación estricta de la estructura del path: bloquea caracteres prohibidos, navegación relativa, symlinks y profundidad excesiva."""
     path_str = str(path)
+    
     if any(ord(c) < 32 for c in path_str):
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
+    
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva.")
+    
+    # Detección de flujos de datos alternos (ADS) en Windows
     if ":" in path.name.replace(path.drive, "") or ":" in str(path.parent):
         raise UnsafePathError("Ruta con flujos de datos alternos no permitida.")
+        
+    # Bloqueo de navegación superior (..) y caracteres especiales de sistema de archivos
     if ".." in path.parts or any(c in str(path.name) for c in "<>\"|?*"):
         raise UnsafePathError("Ruta con caracteres prohibidos o navegación no permitida.")
+        
     if path.is_symlink() or (hasattr(path, 'is_junction') and path.is_junction()):
         raise UnsafePathError("Operación denegada en enlace o punto de reparse.")
 
@@ -248,7 +255,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 @lru_cache(maxsize=4)
 def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
-    """Carga el manifiesto desde JSON; la caché previene lecturas redundantes en disco."""
+    """Carga interna: lee el JSON de manifiesto con caché para evitar I/O redundante."""
     base_path = Path(base_str)
     path = _manifest_path(base_path)
     if not path.exists():
@@ -298,7 +305,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
-    """Realiza una copia atómica hacia la cuarentena."""
+    """Realiza una copia atómica hacia la cuarentena verificando integridad hash."""
     if source.is_symlink() or ":" in str(source):
         raise UnsafePathError("Operación denegada: origen no es archivo regular.")
         

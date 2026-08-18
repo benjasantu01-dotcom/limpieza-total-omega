@@ -159,12 +159,12 @@ def _check_file_integrity(p: Path) -> None:
     """
     Realiza una batería de verificaciones de integridad antes de modificar archivos.
     
-    Lanza UnsafePathError ante el primer criterio de riesgo detectado.
+    Raises:
+        UnsafePathError: Si el archivo está bloqueado, en uso, o presenta riesgos de integridad.
     """
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
 
-    # Defensa contra ataques de profundidad de directorios (Límite 64 niveles)
     if len(p.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
@@ -202,7 +202,16 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """Convierte una ruta a su forma absoluta canónica, validando longitud y existencia."""
+    """
+    Convierte una ruta a su forma absoluta canónica, validando longitud y existencia.
+
+    Args:
+        path: Ruta a normalizar.
+    Returns:
+        Path resuelto como absoluto.
+    Raises:
+        ValueError: Si la ruta es nula, vacía, excede 260 caracteres o es inaccesible.
+    """
     if path is None:
         raise ValueError("Ruta nula recibida.")
     
@@ -210,13 +219,11 @@ def normalize(path: PathLike) -> Path:
     if not path_str:
         raise ValueError("Entrada de ruta vacía.")
     
-    # MAX_PATH en Windows es generalmente 260.
     if len(path_str) >= 260:
         raise ValueError("Longitud de ruta excede el límite permitido.")
         
     try:
         p = Path(path_str).expanduser()
-        # Verificar unidad padre antes de resolver si la ruta es relativa o sospechosa
         if p.anchor and not os.path.exists(p.anchor):
             raise ValueError("Unidad de disco no disponible.")
         return p.resolve(strict=False)
@@ -245,11 +252,9 @@ def is_protected_path(path: PathLike) -> bool:
         p = normalize(path)
         norm_str = os.path.normcase(str(p))
         
-        # Check system root prefixes efficiently
         if any(norm_str.startswith(root) for root in _SYSTEM_ROOT_PATHS):
             return True
             
-        # Check path parts against blocklist
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
             
@@ -310,6 +315,15 @@ def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Valida la integridad y seguridad de la ruta antes de realizar cambios persistentes.
+
+    Args:
+        path: Ruta a validar.
+        allow_sensitive: Si es True, permite archivos con extensiones críticas.
+        base_dir: Directorio base opcional que actúa como límite de contención.
+    Returns:
+        La ruta normalizada si es segura.
+    Raises:
+        UnsafePathError: Si la ruta no cumple con los estándares de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")

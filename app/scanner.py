@@ -54,8 +54,13 @@ RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 
 class Scanner:
     """
-    Controlador de estado para el escaneo recursivo del sistema de archivos.
-    Mantiene el registro de directorios visitados y resultados de sospechas.
+    Gestiona el estado y la navegación recursiva del sistema de archivos.
+    
+    Attributes:
+        results: Lista acumulada de hallazgos encontrados.
+        seen: Conjunto de rutas ya procesadas para evitar ciclos.
+        base_root: Ruta raíz resuelta desde donde se inicia el escaneo.
+        now_ts: Timestamp para cálculos de antigüedad.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -65,7 +70,7 @@ class Scanner:
         self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """Verifica si la ruta está contenida dentro del directorio base."""
+        """Verifica si la ruta está dentro del alcance del escaneo raíz."""
         try:
             resolved = entry_path.resolve()
             return self.base_root == resolved or self.base_root in resolved.parents
@@ -73,14 +78,17 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si una entrada es un punto de reanálisis (Junction/Symlink)."""
+        """Determina si la entrada es un punto de reanálisis (Junction o Symlink)."""
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
             return True 
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
-        """Gestiona la navegación del sistema de archivos y dispara el análisis de archivos."""
+        """
+        Analiza una entrada del sistema de archivos. Si es directorio, lo agrega a la 
+        pila de exploración; si es archivo, ejecuta las reglas heurísticas.
+        """
         if entry is None or not entry.path:
             return
         
