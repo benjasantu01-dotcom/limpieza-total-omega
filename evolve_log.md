@@ -599,3 +599,11 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-08-18T14:22:06` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado `_validate_isolation_request` para verificar explícitamente que la ruta original no sea un directorio del sistema (mediante `is_protected_path`) antes de iniciar cualquier operación de copiado o movimiento, reforzando la seguridad defensiva contra posibles rutas de origen malintencionadas.
 - `2026-08-18T14:22:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T14:22:06` Corrida terminada. Total usado hoy: 336.
+- `2026-08-18T14:27:26` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-18T14:27:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-18T14:28:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-18T14:28:39` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-18T14:28:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-18T14:29:08` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha corregido un error crítico de tipado en el diccionario de fábrica donde la clave `asistente_enviar_METRICAS` utilizaba mayúsculas inconsistentes, lo cual rompía la validación del esquema `AppSettings` y la recuperación de dicho valor.
+- `2026-08-18T14:29:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T14:29:08` Corrida terminada. Total usado hoy: 340.

@@ -111,7 +111,7 @@ def _get_default_config() -> AppSettings:
         "analisis_en_paralelo": True,
         "asistente_activado": False,
         "asistente_clave_api": "",
-        "asistente_enviar_METRICAS": True,
+        "asistente_enviar_metricas": True,
         "asistente_modelo": "gemini-3.1-flash-lite",
     }
 
