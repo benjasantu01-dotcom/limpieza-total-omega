@@ -639,24 +639,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             ).grid(row=i // 3, column=i % 3, padx=4, pady=4, sticky="w")
         self._make_output("Asistente", tab)
 
-    def _add_setting_label(self, parent: ctk.CTkFrame, text: str, row: int, column: int = 0) -> None:
-        """Agrega etiqueta descriptiva a un control de ajustes."""
-        self._create_styled_label(parent, text, "body", anchor="w").grid(
-            row=row, column=column, sticky="w", padx=(0, 10), pady=6
-        )
-
-    def _add_setting_switch(self, parent: ctk.CTkFrame, clave: str, texto: str, row: int, column: int) -> None:
-        """Agrega un switch para configuración booleana en el panel de ajustes."""
-        variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
-        self.setting_vars[clave] = variable
-        ctk.CTkSwitch(
-            parent, text=texto, variable=variable,
-            progress_color=branding.color("accent"),
-            button_color=branding.color("text"),
-            text_color=branding.color("text"),
-            font=ctk.CTkFont(size=branding.font_size("body")),
-        ).grid(row=row, column=column, sticky="w", padx=(0, 24), pady=6)
-
     def _build_tab_ajustes(self) -> None:
         """Construye el formulario de configuración global."""
         tab = self.tabs["Ajustes"]
@@ -690,6 +672,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.top_files_entry.insert(0, str(self.settings.get("top_archivos", 15)))
         self.top_files_entry.grid(row=2, column=3, sticky="w")
 
+        self._build_ia_settings(tab)
+        self._make_output("Ajustes", tab)
+
+    def _build_ia_settings(self, tab: ctk.CTk) -> None:
+        """Crea la sección de configuración del asistente en línea."""
         self._create_styled_label(
             tab, f"{branding.icon('Asistente')}  Asistente en línea (opcional)", "title",
             anchor="w", text_color=branding.color("accent2")
@@ -711,7 +698,24 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.api_key_entry = self._entry(ia_container, f"vacío = usar {settings_mod.API_KEY_ENV_VAR}", 260)
         self.api_key_entry.configure(show="*")
         self.api_key_entry.grid(row=0, column=2, sticky="w")
-        self._make_output("Ajustes", tab)
+
+    def _add_setting_label(self, parent: ctk.CTkFrame, text: str, row: int, column: int = 0) -> None:
+        """Agrega etiqueta descriptiva a un control de ajustes."""
+        self._create_styled_label(parent, text, "body", anchor="w").grid(
+            row=row, column=column, sticky="w", padx=(0, 10), pady=6
+        )
+
+    def _add_setting_switch(self, parent: ctk.CTkFrame, clave: str, texto: str, row: int, column: int) -> None:
+        """Agrega un switch para configuración booleana en el panel de ajustes."""
+        variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
+        self.setting_vars[clave] = variable
+        ctk.CTkSwitch(
+            parent, text=texto, variable=variable,
+            progress_color=branding.color("accent"),
+            button_color=branding.color("text"),
+            text_color=branding.color("text"),
+            font=ctk.CTkFont(size=branding.font_size("body")),
+        ).grid(row=row, column=column, sticky="w", padx=(0, 24), pady=6)
 
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
         """Verifica que la ruta sea segura (no simbólica ni en zona protegida)."""

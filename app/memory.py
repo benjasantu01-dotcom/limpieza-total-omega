@@ -68,6 +68,8 @@ TRIM_WARNING: str = (
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
 # Constantes para Win32 API: permisos mínimos necesarios para diagnóstico y gestión
+# PROCESS_QUERY_LIMITED_INFORMATION: Permite leer información básica del proceso.
+# PROCESS_SET_QUOTA: Permite invocar EmptyWorkingSet sobre el proceso.
 PROCESS_QUERY_LIMITED_INFORMATION: int = 0x1000
 PROCESS_SET_QUOTA: int = 0x0100
 SAFE_ACCESS_MASK: int = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -175,7 +177,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """Helper para extraer datos de proceso desde una fila de CSV cruda (Formato PowerShell)."""
+    """
+    Extrae datos de proceso desde una fila de CSV cruda.
+    Precondición: csv_line debe seguir el formato 'Name,PID,WorkingSet'.
+    """
     if not isinstance(csv_line, str):
         return None
     line = csv_line.strip()

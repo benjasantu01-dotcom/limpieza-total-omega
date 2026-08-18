@@ -149,19 +149,19 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """ Penaliza hallazgos (5%) y advertencias (25%) sobre la base de 1.0."""
+    """Calcula salud basada en cantidad de hallazgos y advertencias: (count * 0.05) + (warnings * 0.25)."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Normaliza el porcentaje de RAM disponible respecto al umbral de riesgo."""
+    """Calcula salud normalizada: 100% es perfecto, <= _LIMIT_RAM_PERCENT es riesgo escalonado."""
     return (_clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Normaliza el porcentaje de espacio libre respecto al umbral de salud del disco."""
+    """Calcula salud normalizada: 100% es perfecto, <= _LIMIT_DISK_PERCENT es riesgo escalonado."""
     return (_clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud inversa: 0 MB duplicados es perfecto (1.0)."""
+    """Calcula salud inversa: 0 MB duplicados es perfecto (1.0), >= _LIMIT_DUPLICATE_MB es crítico (0.0)."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
@@ -182,12 +182,12 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recommendations: List[str] = []
     for rule in _RECOMMENDATION_RULES:
-        ratio = ratios.get(rule.area, 1.0)
-        if not math.isfinite(ratio) or _clamp(ratio, 0.0, 1.0) < rule.threshold:
-            val = getattr(metrics, rule.metric_attr, None) if rule.metric_attr else None
+        current_area_ratio = ratios.get(rule.area, 1.0)
+        if not math.isfinite(current_area_ratio) or _clamp(current_area_ratio, 0.0, 1.0) < rule.threshold:
+            metric_value = getattr(metrics, rule.metric_attr, None) if rule.metric_attr else None
             if rule.expected_args > 0:
-                if val is not None and isinstance(val, (int, float)) and math.isfinite(val):
-                    try: recommendations.append(rule.message_format.format(val))
+                if metric_value is not None and isinstance(metric_value, (int, float)) and math.isfinite(metric_value):
+                    try: recommendations.append(rule.message_format.format(metric_value))
                     except (ValueError, IndexError, TypeError, KeyError): continue
             elif rule.expected_args == 0:
                 recommendations.append(rule.message_format)
