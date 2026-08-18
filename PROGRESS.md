@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 32
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 222
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 10 | 2 | 3 | 1 | 34 |
+| 2026-08-16 | 9 | 1 | 2 | 1 | 33 |
 | 2026-08-17 | 162 | 12 | 23 | 12 | 141 |
-| 2026-08-18 | 44 | 4 | 6 | 3 | 47 |
+| 2026-08-18 | 47 | 4 | 6 | 3 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - rendimiento: **44**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **23**
-- `scanner.py`: **22**
+- `healthscore.py`: **24**
 - `assistant.py`: **22**
+- `scanner.py`: **21**
 - `browser.py`: **17**
 - `quarantine.py`: **17**
 - `settings.py`: **16**
-- `diskreport.py`: **15**
+- `diskreport.py`: **16**
 - `memory.py`: **15**
 - `organizer.py`: **15**
 - `duplicates.py`: **14**
 - `branding.py`: **12**
-- `main.py`: **10**
+- `main.py`: **11**
 - `startup.py`: **10**
 - `safety.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T04:37:14` **main.py** (robustez ante casos límite): Se implementó un método `_is_safe_file_access` que encapsula la validación de archivos mediante un `try-except` robusto, asegurando que cualquier error de permiso o acceso en el sistema de archivos durante las tareas asíncronas sea capturado sin detener el flujo de trabajo ni comprometer la estabilidad del hilo principal.
+- `2026-08-18T04:36:27` **healthscore.py** (robustez ante casos límite): Reforcé la robustez en `_generate_recommendations` añadiendo una comprobación explícita para evitar divisiones por cero en el formateo de mensajes (especialmente útil si `metric_value` es inesperadamente 0 o si el formato espera un tipo distinto) y asegurando que las métricas de sistema se validen antes de cualquier acceso, previniendo errores de estado inconsistente.
+- `2026-08-18T04:35:39` **diskreport.py** (robustez ante casos límite): Mejora la robustez en `walk_files` y `drive_usage` para manejar fallos de permisos o acceso al recorrer sistemas de archivos complejos, asegurando que el proceso no se interrumpa abruptamente al encontrar entradas bloqueadas o rutas no accesibles.
 - `2026-08-18T04:26:35` **branding.py** (robustez ante casos límite): Se robusteció `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas o nulas, evitando excepciones en tiempo de ejecución al interactuar con rutas o procesar formatos de color inesperados.
 - `2026-08-18T04:26:03` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local frente a valores de métricas inesperados o corruptos añadiendo validaciones de tipo `isinstance` y chequeos de `math.isfinite` dentro de `_identify_active_problems` y `local_answer`, asegurando que el asistente no colapse si los datos de entrada contienen valores `NaN` o tipos incorrectos.
 - `2026-08-18T04:25:28` **startup.py** (rendimiento): Se optimizó el acceso a disco en `list_startup_entries` mediante la ejecución concurrente de los escaneos de carpetas y registro, evitando el bloqueo secuencial y aprovechando que ambas fuentes son independientes.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T03:45:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la creación de listas intermedias y el uso de `getattr` dentro de un bucle por una estructura más eficiente y pre-compilada, reduciendo la carga de procesamiento en cada consulta del asistente.
 - `2026-08-18T03:45:04` **startup.py** (legibilidad y documentación): He mejorado la documentación de la clase `StartupEntry` y sus métodos privados, clarificando el propósito de la resolución perezosa y la lógica de validación de seguridad para que sea más evidente cómo se protege la integridad del sistema al procesar rutas.
 - `2026-08-18T03:35:23` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `Scanner` y sus métodos principales mediante docstrings más precisos y la adición de Type Hints en la lógica de procesamiento, facilitando la comprensión del flujo de exclusiones y el uso de la pila.
-- `2026-08-18T03:35:14` **safety.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings estructurados (con secciones Args/Raises) para clarificar las responsabilidades de las funciones críticas de validación y reducir la ambigüedad en el manejo de errores del contrato de seguridad.
-- `2026-08-18T03:34:27` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a funciones internas clave y estandarizando las excepciones, además de refactorizar la lógica de `_check_path_syntax_integrity` para mejorar su legibilidad y mantenibilidad sin alterar el comportamiento.
-- `2026-08-18T03:26:00` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en las funciones críticas de validación y manipulación de disco, clarificando las precondiciones de seguridad y el comportamiento ante colisiones para facilitar el mantenimiento futuro.

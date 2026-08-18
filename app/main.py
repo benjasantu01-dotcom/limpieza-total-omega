@@ -717,6 +717,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             font=ctk.CTkFont(size=branding.font_size("body")),
         ).grid(row=row, column=column, sticky="w", padx=(0, 24), pady=6)
 
+    def _is_safe_file_access(self, path: Union[str, Path]) -> bool:
+        """Verifica que el acceso al archivo sea seguro y legible sin levantar excepciones."""
+        try:
+            return Path(path).resolve(strict=True).exists()
+        except (OSError, RuntimeError, PermissionError):
+            return False
+
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
         """Verifica que la ruta sea segura (no simbólica ni en zona protegida)."""
         try:

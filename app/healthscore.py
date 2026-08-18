@@ -186,9 +186,11 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
         if not math.isfinite(current_area_ratio) or _clamp(current_area_ratio, 0.0, 1.0) < rule.threshold:
             metric_value = getattr(metrics, rule.metric_attr, None) if rule.metric_attr else None
             if rule.expected_args > 0:
-                if metric_value is not None and isinstance(metric_value, (int, float)) and math.isfinite(metric_value):
-                    try: recommendations.append(rule.message_format.format(metric_value))
-                    except (ValueError, IndexError, TypeError, KeyError): continue
+                if metric_value is not None and isinstance(metric_value, (int, float)) and math.isfinite(float(metric_value)):
+                    try: 
+                        recommendations.append(rule.message_format.format(metric_value))
+                    except (ValueError, IndexError, TypeError, KeyError): 
+                        continue
             elif rule.expected_args == 0:
                 recommendations.append(rule.message_format)
     

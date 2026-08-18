@@ -206,7 +206,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
     try:
         base_path = Path(directory).resolve(strict=False)
-        if str(base_path).startswith(("\\\\", "//")) or not base_path.exists() or not base_path.is_dir():
+        if not base_path.exists() or not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
             return
@@ -230,19 +230,13 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
 
                         if entry.is_dir():
-                            try:
-                                stat_data = entry.stat()
-                                inode_key = (stat_data.st_dev, stat_data.st_ino)
-                                if inode_key not in visited_inodes:
-                                    visited_inodes.add(inode_key)
-                                    stack.append(entry_path)
-                            except OSError:
-                                continue
+                            stat_data = entry.stat()
+                            inode_key = (stat_data.st_dev, stat_data.st_ino)
+                            if inode_key not in visited_inodes:
+                                visited_inodes.add(inode_key)
+                                stack.append(entry_path)
                         elif entry.is_file():
-                            try:
-                                yield entry_path, entry.stat().st_size
-                            except OSError:
-                                continue
+                            yield entry_path, entry.stat().st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -359,7 +353,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
     ext_counts: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, Path]] = []
     
-    # Optimizamos evitando conversión innecesaria a Path en cada paso
     for path, size in walk_files(directory, skip_protected):
         total_bytes += size
         total_files += 1
@@ -383,8 +376,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     
     try:
         p_input = Path(directory).resolve(strict=False)
-        if str(p_input).startswith(("\\\\", "//")):
-            return ["Error: No se permiten rutas de red (UNC)."]
         if not p_input.exists():
             return [f"Error: La ruta no existe: {p_input}"]
         if not p_input.is_dir(): 

@@ -774,3 +774,10 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-18T04:26:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-08-18T04:26:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T04:26:44` Corrida terminada. Total usado hoy: 104.
+- `2026-08-18T04:35:10` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-08-18T04:35:39` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejora la robustez en `walk_files` y `drive_usage` para manejar fallos de permisos o acceso al recorrer sistemas de archivos complejos, asegurando que el proceso no se interrumpa abruptamente al encontrar entradas bloqueadas o rutas no accesibles.
+- `2026-08-18T04:36:01` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-18T04:36:27` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez en `_generate_recommendations` añadiendo una comprobación explícita para evitar divisiones por cero en el formateo de mensajes (especialmente útil si `metric_value` es inesperadamente 0 o si el formato espera un tipo distinto) y asegurando que las métricas de sistema se validen antes de cualquier acceso, previniendo errores de estado inconsistente.
+- `2026-08-18T04:37:14` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un método `_is_safe_file_access` que encapsula la validación de archivos mediante un `try-except` robusto, asegurando que cualquier error de permiso o acceso en el sistema de archivos durante las tareas asíncronas sea capturado sin detener el flujo de trabajo ni comprometer la estabilidad del hilo principal.
+- `2026-08-18T04:37:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T04:37:14` Corrida terminada. Total usado hoy: 108.
