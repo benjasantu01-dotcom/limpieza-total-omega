@@ -1504,3 +1504,30 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-18T00:52:47` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `delete_reviewed` al validar explícitamente que cada archivo sea un archivo regular antes de operar (excluyendo directorios hijos que pudieran haberse creado accidentalmente) y asegurar que el path resuelto realmente resida dentro de la carpeta de cuarentena para prevenir ataques de *path traversal* fuera de la zona de revisión.
 - `2026-08-18T00:52:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T00:52:47` Corrida terminada. Total usado hoy: 20.
+- `2026-08-18T01:00:49` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-18T01:01:25` Tests FALLARON:
+```
+    dest_dir = destination.parent
+        if not _is_valid_quarantine_path(dest_dir, dest_dir):
+>           raise UnsafePathError("Destino fuera del sandbox.")
+E           safety.UnsafePathError: Destino fuera del sandbox.
+
+app/quarantine.py:313: UnsafePathError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: Destino fuera del sandbox.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: Destino fuera del sandbox.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: Destino fuera del sandbox.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: Destino fuera del sandbox.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: Destino fuera del sandbox.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: Destino fuera del sandbox.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: Destino fuera del sandbox.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: Destino fuera del sandbox.
+8 failed, 291 passed in 1.30s
+
+```
+- `2026-08-18T01:01:25` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_atomic_isolate_file` y `purge_all` añadiendo una validación explícita mediante `is_within_directory` para garantizar que ninguna operación de E/S ocurra fuera del sandbox, protegiendo contra posibles manipulaciones de rutas maliciosas.
+- `2026-08-18T01:01:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-18T01:02:12` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-18T01:02:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-18T01:02:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T01:02:18` Corrida terminada. Total usado hoy: 24.
