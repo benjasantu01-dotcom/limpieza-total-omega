@@ -86,6 +86,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         file_path = Path(path).resolve()
+        # Verificaciones de seguridad obligatorias antes de abrir descriptores de archivo
         if not file_path.exists() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
 
@@ -160,7 +161,12 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo en profundidad del sistema de archivos.
+    Realiza un recorrido recursivo del árbol de directorios para identificar archivos candidatos.
+    
+    Args:
+        directories: Lista de rutas base a escanear.
+        min_size: Tamaño mínimo en bytes para considerar un archivo.
+        skip_protected: Si es True, ignora rutas marcadas en safety.py.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -177,6 +183,7 @@ def _collect_candidates(
                             visited_inodes.add(inode)
                             _scan(Path(entry.path))
                     elif entry.is_file():
+                        # Excluir archivos comprimidos o de sistema vía atributos Windows
                         if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
                             target = Path(entry.path).resolve(strict=True)
                             if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
@@ -199,8 +206,11 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Filtra candidatos agrupándolos según el resultado de una función de hash,
-    usando caché local para evitar re-cálculos costosos.
+    Agrupa rutas aplicando una función de hash y gestionando una memoria caché local.
+    
+    Args:
+        paths: Lista de rutas candidatas a agrupar.
+        hash_func: Función de cálculo de hash (partial_hash o hash_file).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     digest_cache: Dict[Path, str] = {}
@@ -217,8 +227,8 @@ def _refine_by_hash(
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Refina un grupo de archivos del mismo tamaño aplicando el filtrado por 
-    hash parcial y posteriormente el hash completo para confirmación.
+    Ejecuta el pipeline de refinamiento en dos etapas: hash parcial rápido,
+    seguido de verificación con hash completo sobre los colisionadores.
     """
     confirmed_groups = []
     partial_groups = _refine_by_hash(paths, partial_hash)
