@@ -142,8 +142,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Realiza una validación combinada: verifica existencia, previene recursión de directorios,
-    identifica archivos protegidos por el sistema (atributos NT) y valida permisos mediante safety.py.
+    Validación de seguridad combinada.
+    Retorna False si el archivo está protegido, es de sistema, o si viola jerarquías de seguridad.
     """
     try:
         if not src.exists() or not src.is_file():
@@ -164,7 +164,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """Verifica si el movimiento es seguro, asegurando que no cruce fronteras de unidades."""
+    """Verifica si el movimiento es seguro, asegurando que no cruce fronteras de unidades o permisos."""
     current_path = junk_file.path.resolve()
     dest_abs = dest.resolve()
     
