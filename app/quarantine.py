@@ -376,7 +376,8 @@ def quarantine_file(
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna los ítems en cuarentena, ordenados cronológicamente."""
-    return sorted(load_manifest(base), key=lambda i: i.quarantined_at, reverse=True)
+    items = load_manifest(base)
+    return sorted(items, key=lambda i: i.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
