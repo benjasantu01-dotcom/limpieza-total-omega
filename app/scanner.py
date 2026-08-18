@@ -58,7 +58,7 @@ class Scanner:
     
     Attributes:
         results: Lista acumulada de hallazgos encontrados.
-        seen: Conjunto de rutas ya procesadas para evitar ciclos.
+        seen: Conjunto de rutas ya procesadas para evitar ciclos en enlaces simbólicos.
         base_root: Ruta raíz resuelta desde donde se inicia el escaneo.
         now_ts: Timestamp para cálculos de antigüedad.
     """
@@ -70,7 +70,10 @@ class Scanner:
         self.now_ts = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """Verifica si la ruta está dentro del alcance del escaneo raíz."""
+        """
+        Valida si la ruta está dentro del alcance del escaneo raíz,
+        previniendo escapes del directorio de trabajo original.
+        """
         try:
             resolved = entry_path.resolve()
             return self.base_root == resolved or self.base_root in resolved.parents
@@ -78,7 +81,10 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si la entrada es un punto de reanálisis (Junction o Symlink)."""
+        """
+        Determina si la entrada es un punto de reanálisis (Junction o Symlink) 
+        usando atributos de archivo Win32.
+        """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError):
@@ -86,18 +92,20 @@ class Scanner:
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
-        Analiza una entrada del sistema de archivos. Si es directorio, lo agrega a la 
-        pila de exploración; si es archivo, ejecuta las reglas heurísticas.
+        Procesa una entrada del sistema de archivos, aplicando filtros de seguridad
+        antes de añadir directorios a la pila de exploración o analizar archivos.
         """
         if entry is None or not entry.path:
             return
         
         try:
+            # Salto preventivo para evitar bucles o acceso a rutas fuera del alcance
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
 
             target_path = Path(entry.path)
             
+            # Filtro de seguridad obligatorio antes de cualquier operación
             if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
 
@@ -137,7 +145,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        # Validar que sea un archivo regular antes de operar
+        # Validación explícita de archivo regular
         if entry and not entry.is_file():
             return None
         
@@ -162,13 +170,15 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Aplica la cadena de reglas heurísticas definidas para un archivo dado."""
+    """
+    Orquesta la ejecución de reglas heurísticas sobre un archivo.
+    Realiza una verificación de existencia física antes de la inspección.
+    """
     if path is None:
         return []
         
     findings: ScanResult = []
     
-    # Validar existencia física antes de procesar
     try:
         if not path.exists():
             return []
@@ -190,7 +200,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Ejecuta el análisis recursivo inicializando la pila de directorios."""
+    """
+    Inicializa y ejecuta la exploración recursiva de un directorio,
+    retornando una lista consolidada de sospechas halladas.
+    """
     if not directory:
         return []
         
@@ -218,7 +231,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """Interacción externa con PowerShell para consultar estado y disparar escaneo de Defender."""
+    """
+    Interacción externa con PowerShell para consultar estado de protección
+    en tiempo real y disparar un escaneo de Windows Defender.
+    """
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

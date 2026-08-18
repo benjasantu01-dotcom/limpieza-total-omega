@@ -323,17 +323,15 @@ def explain_area(area: Any) -> str:
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa los criterios de salud contra el contexto para identificar estados críticos."""
     problemas = []
+    # Acceso directo al diccionario de atributos del objeto para evitar múltiples getattr
+    d_ctx = ctx.__dict__
     for crit in _CRITERIOS_SALUD:
-        val = getattr(ctx, crit.metric_key)
+        val = d_ctx.get(crit.metric_key)
         if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
             continue
         
-        es_menor = (crit.operator == "<" and val < crit.threshold)
-        es_mayor = (crit.operator == ">" and val > crit.threshold)
-        
-        if es_menor or es_mayor:
-            msg = crit.message_format.format(val)[:_MAX_MSG_CHUNK]
-            problemas.append(msg)
+        if (crit.operator == "<" and val < crit.threshold) or (crit.operator == ">" and val > crit.threshold):
+            problemas.append(crit.message_format.format(val)[:_MAX_MSG_CHUNK])
             if len(problemas) >= 3:
                 break
     return problemas

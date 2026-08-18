@@ -228,6 +228,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Carga y valida la configuración desde el disco, usando caché de sesión si el archivo no cambió."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
@@ -249,6 +250,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
+    """Valida y guarda la configuración en disco mediante reemplazo atómico, retornando la ruta o None."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
@@ -273,6 +275,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
+    """Aplica cambios parciales a la configuración actual y persiste los resultados si hubo modificaciones."""
     current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
@@ -289,11 +292,13 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
+    """Restaura la configuración a los valores de fábrica y los guarda en disco."""
     default_config = _get_default_config()
     save(default_config, custom_base)
     return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
+    """Obtiene un valor específico de la configuración actual, retornando el default si falta."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:

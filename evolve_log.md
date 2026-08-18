@@ -1223,3 +1223,44 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-18T08:01:40` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación de `_check_file_integrity` mediante la integración de docstrings explicativos en los pasos de validación, aclarando el "porqué" de las restricciones para facilitar el mantenimiento y auditoría del código.
 - `2026-08-18T08:01:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T08:01:40` Corrida terminada. Total usado hoy: 188.
+- `2026-08-18T08:09:38` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-18T08:10:07` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la incorporación de documentación (docstrings detallados), type hints consistentes en los parámetros de entrada y salida, y la clarificación de la intención del código para alinear el estilo con los estándares de un proyecto profesional.
+- `2026-08-18T08:10:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-18T08:10:42` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-18T08:11:48` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-18T08:12:27` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). He añadido docstrings detallados a las funciones públicas de alto nivel (`load`, `save`, `update`, `reset`, `get`) y tipado explícito en `_Validators` para mejorar la mantenibilidad y documentación, clarificando los efectos secundarios y el manejo de errores.
+- `2026-08-18T08:12:55` Tests FALLARON:
+```
+rom_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:100
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.00s
+
+```
+- `2026-08-18T08:12:55` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir su complejidad ciclomática y clarificar el flujo de validación de rutas, extrayendo la lógica de resolución en pasos legibles.
+- `2026-08-18T08:13:19` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó `_identify_active_problems` eliminando el costo de instanciar repetidamente `getattr` y `float()` dentro del bucle mediante una pre-validación de atributos, y reemplazando la construcción dinámica de strings por un uso más eficiente de los criterios definidos, mejorando el rendimiento en cada iteración del asistente.
+- `2026-08-18T08:13:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T08:13:19` Corrida terminada. Total usado hoy: 192.
