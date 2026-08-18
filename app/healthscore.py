@@ -149,10 +149,12 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    return (_clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0)
+    val = _to_float(available_percent)
+    return (_clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 and math.isfinite(val) else 0.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    return (_clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0)
+    val = _to_float(free_percent)
+    return (_clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 and math.isfinite(val) else 0.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)

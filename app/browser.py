@@ -193,7 +193,6 @@ def _sum_directory_recursive(
         return 0
 
     def _walk(current_dir: str, depth: int) -> int:
-        # Límite de profundidad para evitar desbordamiento y chequeo de seguridad de ruta
         if depth > MAX_SCAN_DEPTH or is_protected_path(Path(current_dir)):
             return 0
             
@@ -210,8 +209,8 @@ def _sum_directory_recursive(
                         if entry.is_dir():
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file():
-                            total += entry.stat().st_size
-                    except (OSError, PermissionError):
+                            total += entry.stat(follow_symlinks=False).st_size
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
             return 0
