@@ -302,6 +302,8 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(handle: int) -> Optional[str]:
     """Utiliza la Win32 API 'QueryFullProcessImageNameW' para resolver la ruta del ejecutable mediante un handle activo."""
+    if not handle:
+        return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if kernel32 is None:
         return None

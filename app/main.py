@@ -840,7 +840,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _set_busy(self, busy: bool) -> None:
         """Gestiona el estado visual de la barra de progreso asíncrona."""
         def actualizar() -> None:
-            if self._closing or not hasattr(self, 'activity') or not self.activity.winfo_exists(): return
+            if self._closing or not hasattr(self, 'activity') or self.activity is None or not self.activity.winfo_exists(): return
             if busy:
                 self._tasks_running += 1
             else:
@@ -997,7 +997,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._last_health_state = state_key
 
         def actualizar() -> None:
-            if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
+            if self._closing or not hasattr(self, 'gauge') or self.gauge is None or not self.gauge.winfo_exists(): return
             self._draw_gauge(resultado.score, resultado.grade)
 
             valores = {
@@ -1543,12 +1543,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
         """Valida que la configuración numérica sea correcta."""
-        if not value:
-            return default
         try:
+            if not value:
+                return default
             val = int(value.strip())
             return val if val > 0 else default
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, AttributeError):
             return default
 
     def _collect_settings(self) -> Dict[str, Any]:
