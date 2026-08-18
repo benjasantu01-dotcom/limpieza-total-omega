@@ -154,8 +154,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve(strict=False)
-        # Validación de seguridad: rechazar rutas UNC y asegurar que la ruta sea una unidad montada válida
-        if not p.anchor or str(p).startswith(("\\\\", "//")) or not os.path.exists(p):
+        if not p.anchor or str(p).startswith(("\\\\", "//")) or not p.exists():
             return None
         if is_protected_path(p):
             return None
@@ -181,7 +180,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     results: List[DriveUsage] = []
     if mounts:
         for mount in mounts:
-            # Validar que no sea una ruta de red antes de procesar
             if mount and not str(mount).startswith(("\\\\", "//")):
                 usage = drive_usage(mount)
                 if usage is not None:
@@ -198,7 +196,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
     try:
         base_path = Path(directory).resolve(strict=False)
-        # Verificación defensiva contra rutas UNC o inexistentes antes de iniciar escaneo
         if str(base_path).startswith(("\\\\", "//")) or not base_path.exists() or not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
@@ -223,13 +220,19 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
 
                         if entry.is_dir():
-                            stat_data = entry.stat()
-                            inode_key = (stat_data.st_dev, stat_data.st_ino)
-                            if inode_key not in visited_inodes:
-                                visited_inodes.add(inode_key)
-                                stack.append(entry_path)
+                            try:
+                                stat_data = entry.stat()
+                                inode_key = (stat_data.st_dev, stat_data.st_ino)
+                                if inode_key not in visited_inodes:
+                                    visited_inodes.add(inode_key)
+                                    stack.append(entry_path)
+                            except OSError:
+                                continue
                         elif entry.is_file():
-                            yield entry_path, entry.stat().st_size
+                            try:
+                                yield entry_path, entry.stat().st_size
+                            except OSError:
+                                continue
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -363,7 +366,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     
     try:
         p_input = Path(directory).resolve(strict=False)
-        # Validación temprana de seguridad para evitar acceso a rutas bloqueadas o externas
         if str(p_input).startswith(("\\\\", "//")):
             return ["Error: No se permiten rutas de red (UNC)."]
         if not p_input.exists():
