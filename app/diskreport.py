@@ -249,6 +249,11 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     """
     Busca los archivos más pesados en el directorio dado.
     
+    Args:
+        directory: Ruta raíz de búsqueda.
+        limit: Cantidad de resultados a retornar.
+        skip_protected: Flag para filtrar directorios de sistema.
+    
     Returns:
         Lista de objetos FileEntry ordenada por tamaño descendente.
     """
@@ -275,6 +280,11 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
     Agrupa el uso de espacio por extensión de archivo.
+    
+    Args:
+        directory: Ruta raíz de búsqueda.
+        limit: Cantidad de extensiones principales a mostrar.
+        skip_protected: Flag para filtrar directorios de sistema.
     
     Returns:
         Lista de objetos ExtensionUsage ordenada por peso total.
@@ -308,6 +318,11 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Identifica las subcarpetas de primer nivel que consumen más espacio.
+    
+    Args:
+        directory: Ruta raíz de búsqueda.
+        limit: Cantidad de carpetas principales a mostrar.
+        skip_protected: Flag para filtrar directorios de sistema.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -349,7 +364,16 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
-    """Agrega métricas básicas en una sola pasada de recorrido."""
+    """
+    Agrega métricas básicas de uso en una sola pasada de recorrido de árbol.
+    
+    Args:
+        directory: Ruta base de análisis.
+        skip_protected: Flag para ignorar directorios de sistema.
+        
+    Returns:
+        Tupla con (bytes_totales, total_archivos, diccionario_extensiones, conteo_extensiones, lista_archivos_grandes).
+    """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)

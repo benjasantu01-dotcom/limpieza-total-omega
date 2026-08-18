@@ -71,11 +71,13 @@ class FontSizesDict(TypedDict):
     mono: int
     caption: int
 
+# Metadatos del producto
 APP_NAME: Final[str] = "Limpieza Total Omega"
 APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
+# Mapa de colores centralizado usado por toda la UI
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "background": "#0a0e17",
     "surface": "#141b2d",
@@ -100,11 +102,12 @@ PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "glow": "#00f0c0",
 })
 
-# Pre-computación para optimizar renderizado intensivo
+# Caché de conversión RGB para evitar re-cálculos costosos en ciclos de dibujo
 PALETTE_RGB: Final[Mapping[str, RGBTuple]] = MappingProxyType({
     k: (int(v[1:3], 16), int(v[3:5], 16), int(v[5:7], 16)) for k, v in PALETTE.items()
 })
 
+# Escalas tipográficas basadas en em/px ajustadas para visibilidad óptima
 FONT_SIZES: Final[FontSizesDict] = {
     "display": 46,
     "title": 26,
@@ -115,6 +118,7 @@ FONT_SIZES: Final[FontSizesDict] = {
     "caption": 10,
 }
 
+# Mapeo semántico para estados de salud de componentes
 SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType({
     "ok": ("#22e39a", "Correcto"),
     "info": ("#38bdf8", "Informativo"),
@@ -122,6 +126,7 @@ SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType
     "danger": ("#ff4757", "Peligro"),
 })
 
+# Escala de calificación tipo auditoría (Academic Grading)
 GRADE_COLORS: Final[Mapping[str, HexColor]] = MappingProxyType({
     "A": "#22e39a",
     "B": "#38bdf8",
@@ -130,6 +135,7 @@ GRADE_COLORS: Final[Mapping[str, HexColor]] = MappingProxyType({
     "F": "#ff4757",
 })
 
+# Glifos Unicode para representar módulos y funciones
 ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Salud": "\u25c9",        
     "Limpieza": "\u2726",     
@@ -145,6 +151,7 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Ajustes": "\u2699",      
 })
 
+# Secuencia de colores para gradientes de alta fidelidad
 GRADIENT_STOPS: Final[Tuple[HexColor, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
 
 def app_title() -> str:

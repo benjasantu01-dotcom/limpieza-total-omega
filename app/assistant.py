@@ -199,8 +199,8 @@ class Answer:
 
 def _ensure_safe_text(text: Any) -> bool:
     """
-    Verifica la integridad del texto bloqueando inyecciones de ruta,
-    caracteres de control y protegiendo contra rutas del sistema.
+    Verifica que el texto sea seguro: bloquea inyecciones de ruta, caracteres
+    de control invisibles y rutas prohibidas por el sistema.
     """
     if not isinstance(text, str) or not text:
         return False
@@ -215,7 +215,10 @@ def _ensure_safe_text(text: Any) -> bool:
     return True
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> None:
-    """Extrae, valida y asigna una métrica de forma defensiva."""
+    """
+    Extrae, normaliza y asigna una métrica de forma defensiva dentro de los rangos
+    permitidos definidos por el spec, evitando desbordamientos de memoria o valores inválidos.
+    """
     cast, min_v, max_v = spec
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     if val is None or isinstance(val, bool):
@@ -230,7 +233,8 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
-    Construye un objeto SystemContext validando estrictamente los datos de entrada.
+    Construye un objeto SystemContext validando estrictamente los datos de entrada
+    y centralizando el inventario de métricas permitidas fuera del equipo.
     """
     ctx = SystemContext()
     
@@ -272,8 +276,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
 def context_as_text(context: SystemContext) -> str:
     """
-    Serializa el contexto a formato texto para Gemini. Aplica una doble capa
-    de limpieza contra caracteres de control y posibles rutas disfrazadas.
+    Serializa el contexto a formato texto para Gemini, aplicando una doble capa
+    de limpieza contra caracteres de control y rutas para prevenir filtraciones.
     """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
@@ -317,15 +321,17 @@ def explain_area(area: Any) -> str:
     return "No tengo una explicación para esa área."
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """Identifica problemas detectados, priorizando y limitando a 3 elementos."""
+    """Evalúa los criterios de salud contra el contexto para identificar estados críticos."""
     problemas = []
     for crit in _CRITERIOS_SALUD:
         val = getattr(ctx, crit.metric_key)
-        # Validación robusta de tipo y finitud antes de evaluar criterios
         if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
             continue
-        if (val < crit.threshold if crit.operator == "<" else val > crit.threshold):
-            # Defensiva: truncamos el formato para evitar strings masivos
+        
+        es_menor = (crit.operator == "<" and val < crit.threshold)
+        es_mayor = (crit.operator == ">" and val > crit.threshold)
+        
+        if es_menor or es_mayor:
             msg = crit.message_format.format(val)[:_MAX_MSG_CHUNK]
             problemas.append(msg)
             if len(problemas) >= 3:
@@ -425,7 +431,8 @@ def _sanitize_query(question: str) -> str:
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """
-    Determina la respuesta mediante heurísticas locales basadas en keywords.
+    Determina la respuesta mediante heurísticas locales basadas en keywords,
+    asegurando que el sistema pueda responder aunque no se haya completado el análisis.
     """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
@@ -463,7 +470,8 @@ def _call_gemini(
     model: str
 ) -> Optional[str]:
     """
-    Ejecuta una solicitud POST al motor de Gemini si está habilitado.
+    Ejecuta una solicitud POST al motor de Gemini si está habilitado, verificando
+    que el contenido de la consulta y las métricas pasen los filtros de seguridad.
     """
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None

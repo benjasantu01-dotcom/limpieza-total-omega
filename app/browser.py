@@ -158,17 +158,21 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """
-    Filtro de seguridad para ignorar archivos protegidos, elementos del sistema,
-    puntos de reparse y datos críticos definidos en NEVER_TOUCH.
+    Filtro de seguridad para ignorar archivos protegidos, datos críticos o elementos del sistema.
+    Retorna True si la entrada debe ser omitida del escaneo.
     """
+    # 1. Chequeo por nombre (configuración definida en NEVER_TOUCH)
+    if _is_excluded_file(entry.name):
+        return True
+    
+    # 2. Chequeo de seguridad de sistema (protegidos o ocultos/sistema de Windows)
     try:
-        if _is_excluded_file(entry.name):
+        if is_protected_path(Path(entry.path)):
             return True
         if _is_system_hidden(entry.path, kernel32):
             return True
+        # 3. Prevención de recursión infinita mediante enlaces/junctions
         if entry.is_symlink() or is_junction_fn(entry.path):
-            return True
-        if is_protected_path(Path(entry.path)):
             return True
     except (OSError, PermissionError):
         return True
@@ -189,6 +193,7 @@ def _sum_directory_recursive(
         return 0
 
     def _walk(current_dir: str, depth: int) -> int:
+        # Límite de profundidad para evitar desbordamiento y chequeo de seguridad de ruta
         if depth > MAX_SCAN_DEPTH or is_protected_path(Path(current_dir)):
             return 0
             
