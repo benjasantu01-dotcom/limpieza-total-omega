@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 29
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 141 | 9 | 20 | 10 | 132 |
-| 2026-08-18 | 80 | 10 | 10 | 4 | 88 |
+| 2026-08-17 | 138 | 9 | 19 | 10 | 132 |
+| 2026-08-18 | 81 | 10 | 10 | 5 | 90 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **39**
 - manejo de errores y validación de entradas: **39**
-- rendimiento: **38**
+- rendimiento: **39**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
 - `healthscore.py`: **23**
 - `scanner.py`: **21**
-- `quarantine.py`: **20**
-- `memory.py`: **16**
-- `organizer.py`: **16**
+- `quarantine.py`: **19**
 - `diskreport.py`: **16**
 - `settings.py`: **15**
 - `browser.py`: **15**
+- `memory.py`: **15**
+- `organizer.py`: **15**
 - `duplicates.py`: **14**
+- `branding.py`: **12**
 - `main.py`: **12**
-- `branding.py`: **11**
 - `startup.py`: **11**
 - `safety.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T08:20:25` **branding.py** (rendimiento): Optimicé el cálculo de colores RGB pre-computando la tupla mediante `dict` lookup directo en `PALETTE_RGB` en lugar de iterar sobre el diccionario en cada llamada a `_hex_to_rgb`, reduciendo la complejidad de O(N) a O(1) por cada acceso.
 - `2026-08-18T08:13:19` **assistant.py** (rendimiento): Se optimizó `_identify_active_problems` eliminando el costo de instanciar repetidamente `getattr` y `float()` dentro del bucle mediante una pre-validación de atributos, y reemplazando la construcción dinámica de strings por un uso más eficiente de los criterios definidos, mejorando el rendimiento en cada iteración del asistente.
 - `2026-08-18T08:12:27` **settings.py** (legibilidad y documentación): He añadido docstrings detallados a las funciones públicas de alto nivel (`load`, `save`, `update`, `reset`, `get`) y tipado explícito en `_Validators` para mejorar la mantenibilidad y documentación, clarificando los efectos secundarios y el manejo de errores.
 - `2026-08-18T08:10:07` **scanner.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la incorporación de documentación (docstrings detallados), type hints consistentes en los parámetros de entrada y salida, y la clarificación de la intención del código para alinear el estilo con los estándares de un proyecto profesional.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T07:40:32` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las constantes y estructuras de datos, explicitando el rol de cada elemento en el sistema de diseño para facilitar el mantenimiento futuro.
 - `2026-08-18T07:39:58` **assistant.py** (legibilidad y documentación): Documenté con docstrings las funciones críticas de validación y transformación de datos, aclarando su propósito de seguridad defensiva, y mejoré la legibilidad de la lógica de evaluación en `_identify_active_problems` mediante la extracción de variables descriptivas, facilitando el mantenimiento futuro sin alterar el comportamiento.
 - `2026-08-18T07:19:56` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `quarantine_file` capturando excepciones específicas durante la manipulación de archivos y validando la existencia de la ruta después de cada operación crítica, evitando así estados inconsistentes si ocurre un error de E/S.
-- `2026-08-18T07:19:25` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas y protegiendo el iterador de `os.walk` contra posibles errores de acceso al sistema de archivos, siguiendo el enfoque de manejo de errores defensivo.

@@ -107,6 +107,9 @@ PALETTE_RGB: Final[Mapping[str, RGBTuple]] = MappingProxyType({
     k: (int(v[1:3], 16), int(v[3:5], 16), int(v[5:7], 16)) for k, v in PALETTE.items()
 })
 
+# Mapa inverso de Hex a Clave para lookup eficiente en _hex_to_rgb
+HEX_TO_KEY: Final[Mapping[HexColor, str]] = MappingProxyType({v: k for k, v in PALETTE.items()})
+
 # Escalas tipográficas basadas en em/px ajustadas para visibilidad óptima
 FONT_SIZES: Final[FontSizesDict] = {
     "display": 46,
@@ -259,13 +262,18 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte un string HEX (#RRGGBB) a una tupla RGB (r, g, b) usando la cache pre-computada."""
+    """Convierte un string HEX (#RRGGBB) a una tupla RGB (r, g, b) usando lookup directo."""
     if not isinstance(value, str) or not value.startswith("#") or len(value) != 7:
         return (0, 0, 0)
+    
+    key = HEX_TO_KEY.get(value)
+    if key:
+        return PALETTE_RGB[key]
+        
     try:
-        return next(rgb for hex_val, rgb in PALETTE_RGB.items() if PALETTE[hex_val] == value)
-    except StopIteration:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
+    except ValueError:
+        return (0, 0, 0)
 
 
 @lru_cache(maxsize=64)
