@@ -85,8 +85,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
         
     try:
-        file_path = Path(path).resolve(strict=True)
-        if is_protected_path(file_path) or not is_safe_to_modify(file_path):
+        file_path = Path(path).resolve()
+        if not file_path.exists() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
 
         if not file_path.is_file() or file_path.is_symlink():
@@ -119,8 +119,8 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
         
     try:
-        file_path = Path(path).resolve(strict=True)
-        if is_protected_path(file_path) or not is_safe_to_modify(file_path):
+        file_path = Path(path).resolve()
+        if not file_path.exists() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
             
         if not file_path.is_file() or file_path.is_symlink():
@@ -274,7 +274,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             stat_info = target.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0))
             keepers.append((mtime, len(str(target)), target))
-        except (OSError, PermissionError, AttributeError, ValueError):
+        except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError):
             continue
             
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None

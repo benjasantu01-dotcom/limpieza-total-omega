@@ -1469,3 +1469,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-17T23:39:06` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-17T23:49:16` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-17T23:59:37` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-18T00:09:51` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-18T00:10:17` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` manejando explícitamente el caso en que `resolve(strict=True)` falle por archivos eliminados o movidos durante la ejecución, evitando que el proceso se interrumpa ante cambios en el disco.
+- `2026-08-18T00:10:43` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez del sistema de puntaje ante datos inesperados añadiendo chequeos de `NaN` o valores no finitos en `_calculate_breakdown` y `_generate_recommendations`, evitando que un error de cálculo en las métricas propague un fallo en la interfaz.
+- `2026-08-18T00:11:51` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de `on_memory_processes` añadiendo una verificación de existencia de procesos antes de procesar su información, evitando errores de `AttributeError` o `PermissionError` al intentar acceder a datos de procesos que finalizaron durante la ejecución de la lista, y asegurando que la interfaz maneje gracefully listas vacías o fallidas.
+- `2026-08-18T00:12:02` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-18T00:12:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T00:12:02` Corrida terminada. Total usado hoy: 4.

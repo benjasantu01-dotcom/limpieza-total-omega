@@ -182,7 +182,8 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recommendations: List[str] = []
     for rule in _RECOMMENDATION_RULES:
-        if _clamp(ratios.get(rule.area, 1.0), 0.0, 1.0) < rule.threshold:
+        ratio = ratios.get(rule.area, 1.0)
+        if not math.isfinite(ratio) or _clamp(ratio, 0.0, 1.0) < rule.threshold:
             val = getattr(metrics, rule.metric_attr, None) if rule.metric_attr else None
             if rule.expected_args > 0 and val is not None:
                 try: recommendations.append(rule.message_format.format(val))

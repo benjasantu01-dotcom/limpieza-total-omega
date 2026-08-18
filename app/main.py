@@ -1290,9 +1290,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log_lines(["No se pudo obtener la lista de procesos en este sistema."],
                                "Memoria")
                 return
-            tope = max([p.working_set_mb for p in procesos], default=1) or 1
+            
+            # Validar que los objetos de proceso sigan siendo accesibles antes de renderizar
+            procesos_validos = [p for p in procesos if hasattr(p, 'working_set_mb')]
+            if not procesos_validos:
+                self.log_lines(["Los procesos activos cambiaron. Reintentá el diagnóstico."], "Memoria")
+                return
+
+            tope = max([p.working_set_mb for p in procesos_validos], default=1) or 1
             lineas = ["Procesos por consumo de memoria:", ""]
-            for p in procesos:
+            for p in procesos_validos:
                 relativo = p.working_set_mb / tope * 100
                 lineas.append(
                     f"  {branding.bar(relativo, 18)}  {p.working_set_mb:>9} MB  "
