@@ -253,7 +253,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     if health:
-        _validate_and_assign(ctx, health, "score", (int, 0, 100))
+        score_val = health.get("score") if isinstance(health, dict) else getattr(health, "score", None)
+        if score_val is not None:
+            _validate_and_assign(ctx, {"score": score_val}, "score", (int, 0, 100))
+        
         grade_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
         if isinstance(grade_val, (str, int, float)):
             ctx.grade = str(grade_val)[:10].strip()

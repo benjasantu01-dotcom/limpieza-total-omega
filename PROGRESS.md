@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 221
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 157 | 12 | 23 | 12 | 140 |
-| 2026-08-18 | 60 | 7 | 8 | 4 | 81 |
+| 2026-08-17 | 154 | 12 | 23 | 11 | 140 |
+| 2026-08-18 | 61 | 7 | 8 | 4 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **53**
+- legibilidad y documentación: **50**
 - rendimiento: **44**
 - robustez ante casos límite: **44**
 - seguridad defensiva: **44**
-- manejo de errores y validación de entradas: **32**
+- manejo de errores y validación de entradas: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **24**
+- `healthscore.py`: **23**
 - `scanner.py`: **22**
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `quarantine.py`: **19**
-- `memory.py`: **16**
 - `browser.py`: **16**
-- `organizer.py`: **15**
+- `memory.py`: **15**
 - `settings.py`: **15**
 - `diskreport.py`: **15**
+- `organizer.py`: **14**
 - `duplicates.py`: **13**
 - `branding.py`: **11**
 - `main.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T06:59:46` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `build_context` y sus validadores asociados mediante la implementación de una verificación explícita de `math.isfinite` en las métricas numéricas entrantes, previniendo errores de propagación de datos corruptos (`NaN`, `inf`) que podrían afectar los cálculos posteriores de salud y las respuestas del asistente.
 - `2026-08-18T05:36:51` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `check_recent_executable_in_downloads` asegurando que la comparación de rutas no sea engañada por nombres de carpetas parcialmente coincidentes y verificando que la ruta analizada sea efectivamente un archivo regular antes de acceder a sus metadatos de tiempo, siguiendo las directrices de seguridad para evitar errores de manipulación de E/S.
 - `2026-08-18T05:27:11` **quarantine.py** (seguridad defensiva): Se introdujo un chequeo explícito de recursión de directorios y validación de parentesco mediante `path.resolve()` antes de realizar operaciones de movimiento/borrado, mitigando el riesgo de que una ruta resuelta dinámicamente escape del sandbox o del directorio de trabajo esperado.
 - `2026-08-18T05:26:40` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_to_move` al añadir una verificación explícita mediante `is_protected_path` (desde `safety.py`) para asegurar que el archivo no solo sea seguro según los permisos del usuario, sino que no pertenezca a ninguna ruta restringida o bloqueada, añadiendo una capa extra de defensa antes de la operación de movimiento.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T04:46:42` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `quarantine_file` añadiendo una verificación de existencia y estado del archivo origen justo antes de la operación de copia, mitigando condiciones de carrera si el archivo es movido o eliminado por otro proceso tras el chequeo inicial.
 - `2026-08-18T04:45:48` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` y sus ayudantes ante casos límite, asegurando que el cierre de `proc_handle` sea garantizado mediante `finally` incluso si la validación del proceso falla prematuramente, y añadiendo chequeos de nulidad en las APIs de Windows.
 - `2026-08-18T04:37:14` **main.py** (robustez ante casos límite): Se implementó un método `_is_safe_file_access` que encapsula la validación de archivos mediante un `try-except` robusto, asegurando que cualquier error de permiso o acceso en el sistema de archivos durante las tareas asíncronas sea capturado sin detener el flujo de trabajo ni comprometer la estabilidad del hilo principal.
-- `2026-08-18T04:36:27` **healthscore.py** (robustez ante casos límite): Reforcé la robustez en `_generate_recommendations` añadiendo una comprobación explícita para evitar divisiones por cero en el formateo de mensajes (especialmente útil si `metric_value` es inesperadamente 0 o si el formato espera un tipo distinto) y asegurando que las métricas de sistema se validen antes de cualquier acceso, previniendo errores de estado inconsistente.
