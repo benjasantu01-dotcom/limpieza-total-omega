@@ -723,6 +723,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (OSError, RuntimeError, PermissionError):
             return False
 
+    def _verify_disk_path(self, path: str) -> bool:
+        """Valida que una ruta de disco sea segura para análisis."""
+        try:
+            p = Path(path).resolve(strict=True)
+            safety.ensure_safe_to_modify(p)
+            return True
+        except (safety.UnsafePathError, OSError, PermissionError):
+            return False
+
     def _is_safe_target_dir(self, path: Union[str, Path]) -> bool:
         """Valida que el directorio sea seguro para procesar recursivamente."""
         try:
@@ -1364,7 +1373,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_disk_analysis(self) -> None:
         """Analiza la distribución de uso de una carpeta."""
         folder = self._ask_folder("Elegí una carpeta para analizar")
-        if not folder:
+        if not folder or not self._verify_disk_path(folder):
             return
         
         self.analysis_folder = folder
@@ -1372,12 +1381,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             if not Path(folder).exists():
                 self.log(f"Error: La carpeta {folder} ya no existe.", "Disco")
-                return
-
-            try:
-                safety.ensure_safe_to_modify(Path(folder))
-            except safety.UnsafePathError as e:
-                self.log(f"Error: {e}", "Disco")
                 return
 
             if not self._is_valid_dir(folder):

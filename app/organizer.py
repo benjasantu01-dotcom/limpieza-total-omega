@@ -266,10 +266,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
+            # Solo tratar archivos regulares, saltar directorios o symlinks
             if not item.is_file() or item.is_symlink():
                 continue
                 
             resolved_item = item.resolve()
+            # Validar que el archivo resida físicamente dentro de la carpeta de revisión
             if resolved_item.parent.resolve() == dest and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)
