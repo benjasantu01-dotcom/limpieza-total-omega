@@ -173,7 +173,9 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
     result = {}
     for area, weight in _WEIGHT_ITEMS_INT:
         val = ratios.get(area, 0.0)
-        result[area] = int(round(_clamp(val) * weight))
+        # Aseguramos que los valores calculados sean números válidos antes de truncar
+        clean_val = val if math.isfinite(val) else 0.0
+        result[area] = int(round(_clamp(clean_val) * weight))
     return result
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
@@ -204,6 +206,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "duplicados": score_duplicates(metrics.duplicate_mb),
         "arranque": score_startup(metrics.startup_count)
     }
+    
+    # Verificar que todos los ratios sean numéricos finitos
+    if not all(math.isfinite(r) for r in ratios.values()):
+        return HealthResult(0, "F", {}, ["Error: Cálculo de métricas fallido."])
     
     breakdown = _calculate_breakdown(ratios)
     final_score = sum(breakdown.values())

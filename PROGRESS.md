@@ -9,35 +9,35 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 79 | 8 | 11 | 6 | 84 |
-| 2026-08-18 | 132 | 15 | 20 | 10 | 139 |
+| 2026-08-17 | 77 | 8 | 11 | 6 | 82 |
+| 2026-08-18 | 134 | 15 | 20 | 11 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **43**
-- seguridad defensiva: **38**
+- robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **37**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
-- `scanner.py`: **21**
+- `healthscore.py`: **23**
 - `assistant.py`: **21**
+- `scanner.py`: **20**
 - `quarantine.py`: **19**
-- `organizer.py`: **17**
+- `organizer.py`: **18**
 - `duplicates.py`: **16**
 - `diskreport.py`: **16**
-- `settings.py`: **15**
 - `browser.py`: **14**
+- `settings.py`: **14**
 - `memory.py`: **13**
 - `branding.py`: **11**
 - `main.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T13:38:59` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones contra rutas que apuntan a dispositivos de bloque o pipes, y añadiendo chequeos de integridad en la resolución de rutas para evitar excepciones al iterar sobre directorios con permisos denegados o archivos inexistentes.
+- `2026-08-18T13:37:02` **healthscore.py** (robustez ante casos límite): Se mejoró la robustez de `compute_score` asegurando que las métricas calculadas no solo sean finitas, sino que se verifiquen explícitamente antes de generar el resultado, evitando comportamientos indefinidos si las funciones de puntuación devolvieran valores no numéricos ante entradas extremas.
 - `2026-08-18T13:27:47` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `suggest_keeper` y `format_group` ante errores de resolución de rutas (como enlaces simbólicos rotos o permisos denegados) al comparar el `keeper` con las rutas del grupo, evitando excepciones innecesarias en la interfaz.
 - `2026-08-18T13:26:46` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo (`draw_logo`, `draw_ring`, `draw_gradient_bar`) ante condiciones de error externas (como canvas nulos, valores fuera de rango o rutas inválidas) usando chequeos preventivos y manejo de excepciones más granular para evitar fallos silenciosos en la UI.
 - `2026-08-18T13:19:11` **assistant.py** (robustez ante casos límite): Reforcé la robustez del motor local ante posibles datos corruptos en el `SystemContext` mediante validaciones adicionales de finitud numérica y tipos en `_identify_active_problems`, garantizando que el asistente no falle catastróficamente ni emita resultados inválidos si alguna métrica llega inesperadamente como `NaN` o `inf`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T12:47:26` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y las funciones de análisis al evitar llamadas redundantes a `entry.stat()` mediante el almacenamiento del resultado de `stat()` en una variable local, reduciendo drásticamente las syscalls al sistema de archivos durante la iteración.
 - `2026-08-18T12:46:13` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando la creación dinámica de un diccionario `ctx.__dict__` en cada iteración del bucle, accediendo directamente a los atributos mediante `getattr`, lo que evita la asignación de memoria innecesaria y mejora la velocidad de ejecución.
 - `2026-08-18T12:37:05` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez de los tipos mediante la adición de docstrings técnicos en las funciones críticas y la corrección de inconsistencias en los tipos de datos (normalizando `asistente_enviar_metricas`), garantizando que la documentación refleje con precisión las restricciones de seguridad y el comportamiento de la validación.
-- `2026-08-18T12:36:36` **scanner.py** (legibilidad y documentación): Se introdujo un `TypeAlias` específico para las funciones de inspección y se documentaron explícitamente las precondiciones de cada regla, mejorando la claridad del contrato entre el orquestador `scan_file` y las heurísticas individuales.
-- `2026-08-18T12:28:48` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos, actualicé las type hints en funciones clave para clarificar contratos de datos y extraje lógica de validación interna en `purge_all` para mejorar la legibilidad y mantenibilidad del flujo de limpieza.

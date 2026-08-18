@@ -148,6 +148,10 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not src.exists() or not src.is_file() or _is_junction(src):
             return False
         
+        # Ignorar dispositivos especiales (no archivos de datos)
+        if os.name == "nt" and src.stat().st_file_attributes & 0x00000040:
+            return False
+        
         src_abs, dest_abs = src.resolve(), dest.resolve()
         
         if _is_recursive_violation(src_abs, dest_abs):
@@ -290,10 +294,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     try:
         for item in dest.iterdir():
             try:
-                resolved_item = item.resolve()
-                if not resolved_item.is_file() or _is_junction(resolved_item):
+                if not item.is_file() or _is_junction(item):
                     continue
                 
+                resolved_item = item.resolve()
                 # Validación de seguridad: debe estar bajo el directorio de cuarentena
                 if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                     if not _is_file_locked(resolved_item):
