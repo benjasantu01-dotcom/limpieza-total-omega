@@ -254,7 +254,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
                 _cached_proc_output = proc.stdout
                 _last_proc_fetch = time.time()
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired):
-            _cached_proc_output = ""
+            pass # Mantiene el valor previo en caso de error
     
     return parse_windows_process_csv(_cached_proc_output, limit=limit)
 

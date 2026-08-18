@@ -202,8 +202,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                 dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
                 
                 for name in files:
-                    # Optimización: uso de set lookup en lugar de tuple creation/iteration
-                    if Path(name).suffix.lower() in _LOWER_JUNK_EXTS:
+                    # Optimización: evitar instanciar Path y llamar a .suffix si es posible
+                    dot_idx = name.rfind('.')
+                    if dot_idx != -1 and name[dot_idx:].lower() in _LOWER_JUNK_EXTS:
                         f_path = root_path / name
                         if is_safe_to_modify(f_path):
                             try:
