@@ -300,8 +300,8 @@ def format_group(group: DuplicateGroup) -> List[str]:
         if not isinstance(path, Path): 
             continue
         try:
-            is_keeper = (keeper is not None and path.resolve() == keeper)
-        except (OSError, PermissionError):
+            is_keeper = (keeper is not None and path.resolve(strict=True) == keeper)
+        except (OSError, PermissionError, FileNotFoundError):
             is_keeper = False
         marca = "conservar" if is_keeper else "duplicado"
         lines.append(f"   [{marca}] {path}")

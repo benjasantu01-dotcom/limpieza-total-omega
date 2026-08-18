@@ -361,15 +361,13 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         path_obj = Path(destination).expanduser().resolve()
         
-        # Validar ruta de destino antes de intentar crear o escribir
-        if not is_safe_to_modify(path_obj):
-            return None
-            
-        target = ensure_safe_to_modify(path_obj)
-        if target.parent and not target.parent.exists():
-            target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(logo_svg(), encoding="utf-8")
-        return target
+        # Validación de seguridad: ensure_safe_to_modify lanza error si no es seguro
+        ensure_safe_to_modify(path_obj)
+        
+        if path_obj.parent and not path_obj.parent.exists():
+            path_obj.parent.mkdir(parents=True, exist_ok=True)
+        path_obj.write_text(logo_svg(), encoding="utf-8")
+        return path_obj
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):
         return None
 
@@ -405,14 +403,9 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Dibuja el logo de la marca en un canvas de Tkinter.
-
-    Args:
-        canvas: Widget canvas de Tkinter.
-        size: Tamaño base en píxeles.
-        canvas_x, canvas_y: Coordenadas del punto superior izquierdo del logo.
+    Dibuja el logo de la marca en un canvas de Tkinter con validación de entorno.
     """
-    if not hasattr(canvas, "create_polygon"): return
+    if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128))
         base_coords: List[float] = _get_shield_coords(scale)
@@ -437,16 +430,8 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Renderiza una franja decorativa con gradiente horizontal en el canvas.
-
-    Args:
-        canvas: Widget canvas de Tkinter.
-        width: Longitud total del gradiente.
-        height: Grosor de la línea.
-        canvas_x, canvas_y: Coordenadas de origen.
-    """
-    if not hasattr(canvas, "create_line"): return
+    """Renderiza una franja decorativa con gradiente horizontal en el canvas."""
+    if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho: int = max(1, int(width))
         colores: Tuple[HexColor, ...] = gradient_colors(ancho, stops)
@@ -459,18 +444,8 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Dibuja un medidor circular tipo anillo para representar porcentajes de salud.
-
-    Args:
-        canvas: Widget canvas de Tkinter.
-        percent: Porcentaje actual (0-100).
-        size: Diámetro del anillo en píxeles.
-        thickness: Grosor del trazo.
-        track: Color de fondo del anillo (track).
-        fill: Color del segmento de progreso.
-    """
-    if not hasattr(canvas, "create_arc"): return
+    """Dibuja un medidor circular tipo anillo para representar porcentajes de salud."""
+    if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor: float = float(percent)
         diametro: int = max(20, int(size))

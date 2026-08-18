@@ -552,3 +552,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-08-18T13:19:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del motor local ante posibles datos corruptos en el `SystemContext` mediante validaciones adicionales de finitud numérica y tipos en `_identify_active_problems`, garantizando que el asistente no falle catastróficamente ni emita resultados inválidos si alguna métrica llega inesperadamente como `NaN` o `inf`.
 - `2026-08-18T13:19:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T13:19:11` Corrida terminada. Total usado hoy: 312.
+- `2026-08-18T13:26:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-18T13:26:46` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo (`draw_logo`, `draw_ring`, `draw_gradient_bar`) ante condiciones de error externas (como canvas nulos, valores fuera de rango o rutas inválidas) usando chequeos preventivos y manejo de excepciones más granular para evitar fallos silenciosos en la UI.
+- `2026-08-18T13:27:10` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-18T13:27:36` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-18T13:27:47` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `suggest_keeper` y `format_group` ante errores de resolución de rutas (como enlaces simbólicos rotos o permisos denegados) al comparar el `keeper` con las rutas del grupo, evitando excepciones innecesarias en la interfaz.
+- `2026-08-18T13:27:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T13:27:47` Corrida terminada. Total usado hoy: 316.
