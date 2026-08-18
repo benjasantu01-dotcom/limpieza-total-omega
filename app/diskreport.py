@@ -268,16 +268,13 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
         p = Path(directory).resolve(strict=False)
         if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
             return []
-    except (OSError, RuntimeError, TypeError):
-        return []
-
-    try:
+            
         return heapq.nlargest(
             limit, 
             (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
             key=lambda e: e.size_bytes
         )
-    except Exception:
+    except (OSError, RuntimeError, TypeError, ValueError):
         return []
 
 
@@ -300,23 +297,23 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
         p = Path(directory).resolve(strict=False)
         if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
             return []
-    except (OSError, RuntimeError, TypeError):
+            
+        size_map: Dict[str, int] = defaultdict(int)
+        count_map: Dict[str, int] = defaultdict(int)
+        
+        for path, size in walk_files(directory, skip_protected):
+            ext = path.suffix.lower() or "(sin extensión)"
+            size_map[ext] += size
+            count_map[ext] += 1
+        
+        usage_list: List[ExtensionUsage] = [
+            ExtensionUsage(extension=ext, size_bytes=size, count=count_map[ext])
+            for ext, size in size_map.items()
+        ]
+        
+        return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
+    except (OSError, RuntimeError, TypeError, ValueError):
         return []
-    
-    size_map: Dict[str, int] = defaultdict(int)
-    count_map: Dict[str, int] = defaultdict(int)
-    
-    for path, size in walk_files(directory, skip_protected):
-        ext = path.suffix.lower() or "(sin extensión)"
-        size_map[ext] += size
-        count_map[ext] += 1
-    
-    usage_list: List[ExtensionUsage] = [
-        ExtensionUsage(extension=ext, size_bytes=size, count=count_map[ext])
-        for ext, size in size_map.items()
-    ]
-    
-    return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
@@ -352,7 +349,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
         results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
         return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
-    except Exception:
+    except (OSError, RuntimeError, TypeError, ValueError):
         return []
 
 
@@ -360,23 +357,19 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """Calcula el tamaño total en bytes y la cuenta de archivos."""
     if not directory:
         return (0, 0)
-    total_bytes, file_count = 0, 0
-    for _, size in walk_files(directory, skip_protected):
-        total_bytes += size
-        file_count += 1
-    return total_bytes, file_count
+    try:
+        total_bytes, file_count = 0, 0
+        for _, size in walk_files(directory, skip_protected):
+            total_bytes += size
+            file_count += 1
+        return total_bytes, file_count
+    except (OSError, RuntimeError, ValueError):
+        return (0, 0)
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
     """
     Agrega métricas básicas de uso en una sola pasada de recorrido de árbol.
-    
-    Args:
-        directory: Ruta base de análisis.
-        skip_protected: Flag para ignorar directorios de sistema.
-        
-    Returns:
-        Tupla con (bytes_totales, total_archivos, diccionario_extensiones, conteo_extensiones, lista_archivos_grandes).
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -414,7 +407,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             
         total_bytes, total_files, ext_sizes, ext_counts, top_files_heap = _collect_summary_data(p_input, skip_protected)
-    except (OSError, RuntimeError, PermissionError, ValueError, TypeError):
+    except (OSError, PermissionError, ValueError, TypeError, RuntimeError):
         return ["Error: Acceso denegado o error durante el análisis del disco."]
     except Exception:
         return ["Error: Fallo inesperado durante el análisis del disco."]

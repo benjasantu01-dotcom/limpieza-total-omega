@@ -138,6 +138,10 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
+        # Prevenir ruta UNC malformada antes de llamar a la API
+        if entry_path.startswith(r"\\?") and len(entry_path) < 5:
+            return False
+            
         path_to_check = entry_path if not entry_path.startswith(r"\\?") else entry_path[4:]
         attrs = kernel32.GetFileAttributesW(path_to_check)
         if attrs == 0xFFFFFFFF:
