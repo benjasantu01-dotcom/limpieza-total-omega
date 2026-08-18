@@ -767,3 +767,10 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-18T04:16:13` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` para evitar accesos innecesarios al sistema de archivos y llamadas redundantes a `stat()` mediante un caché de sesión (memoria) que se invalida únicamente si el archivo original cambia, reduciendo significativamente la latencia al consultar configuraciones recurrentemente.
 - `2026-08-18T04:16:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T04:16:13` Corrida terminada. Total usado hoy: 100.
+- `2026-08-18T04:25:00` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-18T04:25:28` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó el acceso a disco en `list_startup_entries` mediante la ejecución concurrente de los escaneos de carpetas y registro, evitando el bloqueo secuencial y aprovechando que ambas fuentes son independientes.
+- `2026-08-18T04:26:03` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del motor local frente a valores de métricas inesperados o corruptos añadiendo validaciones de tipo `isinstance` y chequeos de `math.isfinite` dentro de `_identify_active_problems` y `local_answer`, asegurando que el asistente no colapse si los datos de entrada contienen valores `NaN` o tipos incorrectos.
+- `2026-08-18T04:26:35` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se robusteció `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas o nulas, evitando excepciones en tiempo de ejecución al interactuar con rutas o procesar formatos de color inesperados.
+- `2026-08-18T04:26:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-18T04:26:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T04:26:44` Corrida terminada. Total usado hoy: 104.

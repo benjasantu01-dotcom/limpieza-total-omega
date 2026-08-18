@@ -21,6 +21,7 @@ import subprocess
 import csv
 import io
 import itertools
+import concurrent.futures
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
@@ -311,20 +312,24 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Combina fuentes de carpetas y registro, eliminando duplicados por nombre."""
+    """Combina fuentes de carpetas y registro usando concurrencia para reducir latencia."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
 
-    seen_names: Set[str] = set()
-    unique_entries: List[StartupEntry] = []
-    
-    # Uso de itertools.chain para iterar sin crear listas intermedias innecesarias
-    for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
-        name_n: str = entry.name.lower()
-        if name_n not in seen_names:
-            seen_names.add(name_n)
-            unique_entries.append(entry)
+    # Escaneo concurrente de fuentes de I/O bloqueantes
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        f_folders = executor.submit(entries_from_folders)
+        f_registry = executor.submit(entries_from_registry)
+        
+        seen_names: Set[str] = set()
+        unique_entries: List[StartupEntry] = []
+        
+        for entry in itertools.chain(f_folders.result(), f_registry.result()):
+            name_n: str = entry.name.lower()
+            if name_n not in seen_names:
+                seen_names.add(name_n)
+                unique_entries.append(entry)
             
     _FULL_SCAN_CACHE = unique_entries
     return unique_entries

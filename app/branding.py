@@ -253,12 +253,12 @@ def bar(percent: Union[float, int, None], width: int = 24,
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """Convierte un string HEX (#RRGGBB) a una tupla RGB (r, g, b) usando la cache pre-computada."""
+    if not isinstance(value, str) or not value.startswith("#") or len(value) != 7:
+        return (0, 0, 0)
     try:
         return next(rgb for hex_val, rgb in PALETTE_RGB.items() if PALETTE[hex_val] == value)
     except StopIteration:
-        if isinstance(value, str) and len(value) == 7 and value.startswith("#"):
-            return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    return (0, 0, 0)
+        return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
 
 
 @lru_cache(maxsize=64)
@@ -345,6 +345,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).expanduser().resolve()
+        # Verificar seguridad antes de cualquier operación
         if not is_safe_to_modify(path_obj):
             return None
         target = ensure_safe_to_modify(path_obj)

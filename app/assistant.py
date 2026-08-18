@@ -312,18 +312,14 @@ def explain_area(area: Any) -> str:
         return explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área.")
     return "No tengo una explicación para esa área."
 
-def _is_criterion_triggered(ctx: SystemContext, crit: ProblemCriterion) -> bool:
-    """Verifica si un criterio de salud específico se encuentra en un estado problemático."""
-    val = getattr(ctx, crit.metric_key)
-    if not isinstance(val, (int, float)) or not math.isfinite(val):
-        return False
-    return (val < crit.threshold) if crit.operator == "<" else (val > crit.threshold)
-
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Identifica problemas detectados, priorizando y limitando a 3 elementos."""
     problemas = []
     for crit in _CRITERIOS_SALUD:
         val = getattr(ctx, crit.metric_key)
+        # Validación robusta de tipo y finitud antes de evaluar criterios
+        if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
+            continue
         if (val < crit.threshold if crit.operator == "<" else val > crit.threshold):
             problemas.append(crit.message_format.format(val))
             if len(problemas) >= 3:
@@ -439,7 +435,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
     problemas = _identify_active_problems(context)
-    puntaje_str = str(context.score) if context.score is not None else "N/A"
+    puntaje_str = str(context.score) if (context.score is not None and math.isfinite(float(context.score))) else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
                   f"{', '.join(problemas)}.")
