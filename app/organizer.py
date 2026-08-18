@@ -237,7 +237,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     Mueve una lista de objetos JunkFile a una carpeta de revisión.
     Valida espacio en disco y permisos antes de cada operación individual de movimiento.
     """
-    if not isinstance(files, list) or not review_dir.strip():
+    if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
 
     try:
@@ -249,6 +249,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return Path(".")
 
     for junk_file in files:
+        if not isinstance(junk_file, JunkFile):
+            continue
         try:
             if not junk_file.path.exists() or not junk_file.path.is_file():
                 continue
@@ -286,18 +288,21 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     count: int = 0
-    for item in dest.iterdir():
-        try:
-            if not item.is_file() or item.is_symlink():
+    try:
+        for item in dest.iterdir():
+            try:
+                if not item.is_file() or item.is_symlink():
+                    continue
+                    
+                resolved_item = item.resolve()
+                # Validación de seguridad: el archivo debe estar físicamente bajo la carpeta de cuarentena
+                if resolved_item.parent.resolve() == dest and is_safe_to_modify(resolved_item):
+                    if not _is_file_locked(resolved_item):
+                        ensure_safe_to_modify(resolved_item)
+                        resolved_item.unlink()
+                        count += 1
+            except (PermissionError, OSError, ValueError):
                 continue
-                
-            resolved_item = item.resolve()
-            # Validación de seguridad: el archivo debe estar físicamente bajo la carpeta de cuarentena
-            if resolved_item.parent.resolve() == dest and is_safe_to_modify(resolved_item):
-                if not _is_file_locked(resolved_item):
-                    ensure_safe_to_modify(resolved_item)
-                    resolved_item.unlink()
-                    count += 1
-        except (PermissionError, OSError, ValueError):
-            continue
+    except OSError:
+        pass
     return count

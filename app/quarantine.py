@@ -352,13 +352,13 @@ def quarantine_file(
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
     
-    if not source_path.is_file():
+    if not source_path.exists():
         raise FileNotFoundError("El archivo origen desapareció antes del aislamiento.")
         
     try:
         file_size = source_path.stat().st_size
-    except OSError:
-        raise RuntimeError("No se pudo determinar el tamaño del archivo origen.")
+    except OSError as e:
+        raise RuntimeError(f"No se pudo determinar el tamaño del archivo origen: {e}")
         
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
@@ -374,13 +374,13 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
-        if destination.exists() and destination.stat().st_size == file_size:
-            try:
-                os.remove(source_path)
-            except OSError as e:
-                raise RuntimeError(f"Archivo copiado a cuarentena pero error al borrar original: {e}")
-        else:
-            raise RuntimeError("Fallo en la confirmación de aislamiento.")
+        if not destination.exists():
+            raise RuntimeError("Fallo en la confirmación de aislamiento: archivo no encontrado en destino.")
+            
+        try:
+            os.remove(source_path)
+        except OSError as e:
+            raise RuntimeError(f"Archivo copiado a cuarentena pero error al borrar original: {e}")
             
         item = QuarantineItem(
             item_id=item_id,

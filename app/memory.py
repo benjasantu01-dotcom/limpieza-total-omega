@@ -300,6 +300,8 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(handle: int) -> Optional[str]:
     """Resuelve la ruta del ejecutable mediante un handle activo."""
+    if not handle:
+        return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"):
         return None
@@ -308,7 +310,7 @@ def _get_process_path(handle: int) -> Optional[str]:
     try:
         if kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
-    except (OSError, ctypes.ArgumentError):
+    except (OSError, ctypes.ArgumentError, Exception):
         return None
     return None
 
@@ -361,7 +363,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, msg
             
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, MemoryError, OSError) as e:
-        return False, f"Ocurrió un error técnico al gestionar el proceso: {str(e)}"
+    except (ctypes.ArgumentError, MemoryError, OSError, Exception) as e:
+        return False, f"Ocurrió un error técnico al gestionar el proceso: {type(e).__name__}"
     finally:
         kernel32.CloseHandle(proc_handle)
