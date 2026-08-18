@@ -82,6 +82,7 @@ class ProblemCriterion(NamedTuple):
 # TypeAliases para mejorar la legibilidad de las firmas de funciones
 MetricSource: TypeAlias = dict[str, Any] | object
 ScoreSource: TypeAlias = dict[str, Any] | object
+ValidatorSpec: TypeAlias = tuple[Callable, float, float]
 
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
@@ -212,45 +213,19 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     return True
 
-def _safe_assign(obj: SystemContext, attr: str, val: Any, cast: Callable = float, min_val: float = 0.0, max_val: float = float('inf')) -> None:
-    """
-    Asigna de forma robusta un valor a un atributo de SystemContext permitido.
-    """
+def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> None:
+    """Extrae, valida y asigna una métrica de forma defensiva."""
+    cast, min_v, max_v = spec
+    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     if val is None or isinstance(val, bool):
         return
     try:
         clean_val = float(val)
         if math.isfinite(clean_val):
-            final_val = cast(max(min_val, min(clean_val, max_val)))
-            setattr(obj, attr, final_val)
+            final_val = cast(max(min_v, min(clean_val, max_v)))
+            setattr(ctx, key, final_val)
     except (ValueError, TypeError, OverflowError):
         pass
-
-def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """
-    Convierte una métrica a string formateado, asegurando que el valor sea numérico válido.
-    Retorna 'N/A' en caso de datos corruptos para evitar que la UI falle.
-    """
-    if val is None or not isinstance(val, (int, float)) or not math.isfinite(val): return "N/A"
-    return f"{float(val):.{decimal}f}{unit}"
-
-def _get_metric_val(source: MetricSource, key: str, default: Any) -> Any:
-    """
-    Intenta extraer un valor de una fuente (dict o clase) de forma defensiva.
-    """
-    if source is None:
-        return default
-    
-    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-    
-    if val is None or isinstance(val, bool):
-        return default
-    
-    try:
-        num = float(val)
-        return num if math.isfinite(num) else default
-    except (ValueError, TypeError):
-        return default
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
@@ -258,7 +233,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    validators: Final = {
+    validators: dict[str, ValidatorSpec] = {
         "junk_mb": (float, 0.0, 1e9),
         "suspicious_count": (int, 0, 10000),
         "suspicious_warnings": (int, 0, 10000),
@@ -272,16 +247,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     }
     
     if metrics:
-        for key, (cast, min_v, max_v) in validators.items():
-            val = metrics.get(key) if isinstance(metrics, dict) else getattr(metrics, key, None)
-            _safe_assign(ctx, key, val, cast, min_v, max_v)
+        for key, spec in validators.items():
+            _validate_and_assign(ctx, metrics, key, spec)
         ctx.analyzed = True
 
     if health:
-        raw_score = health.get("score") if isinstance(health, dict) else getattr(health, "score", None)
-        if raw_score is not None: 
-            _safe_assign(ctx, "score", raw_score, int, 0, 100)
-        
+        _validate_and_assign(ctx, health, "score", (int, 0, 100))
         grade_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
         if isinstance(grade_val, (str, int, float)):
             ctx.grade = str(grade_val)[:10].strip()
@@ -289,10 +260,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     for k, v in extra.items():
         if k in validators:
-            c, min_v, max_v = validators[k]
-            _safe_assign(ctx, k, v, c, min_v, max_v)
+            _validate_and_assign(ctx, extra, k, validators[k])
         elif k == "score":
-            _safe_assign(ctx, "score", v, int, 0, 100)
+            _validate_and_assign(ctx, extra, "score", (int, 0, 100))
             
     return ctx
 
@@ -323,10 +293,13 @@ def context_as_text(context: SystemContext) -> str:
     except Exception:
         return "Error al procesar métricas para el asistente."
 
+def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
+    """Convierte una métrica a string formateado."""
+    if val is None or not isinstance(val, (int, float)) or not math.isfinite(val): return "N/A"
+    return f"{float(val):.{decimal}f}{unit}"
+
 def explain_area(area: Any) -> str:
-    """
-    Proporciona una explicación educativa sobre los conceptos clave de la aplicación.
-    """
+    """Proporciona una explicación educativa sobre los conceptos clave."""
     explicaciones: Final[dict[str, str]] = {
         "basura": "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo.",
         "seguridad": "Archivos con señales de riesgo: extensiones inusuales o ejecutables sin firma, requieren revisión manual.",

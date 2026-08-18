@@ -112,7 +112,7 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta extensiones dobles que intentan ofuscar el tipo real del ejecutable."""
-    if not path.name:
+    if not path or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -124,7 +124,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry) or is_protected_path(path):
         return None
     
-    # Optimizacion: comparacion mas rapida usando set de componentes lower case
     path_parts_lower = {p.lower() for p in path.parts}
     if WATCHED_FOLDERS.isdisjoint(path_parts_lower):
         return None
@@ -140,11 +139,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos con nombres de procesos del sistema ubicados fuera de System32."""
-    if not path.name:
+    if not path or not path.name:
         return None
         
     if path.name.lower() in SYSTEM_LOOKALIKES:
-        # Optimizacion: evitamos iterar partes si la ruta es corta
         path_str_lower = str(path).lower()
         if SYSTEM32_LOWER not in path_str_lower:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -153,20 +151,20 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Aplica la cadena de reglas heurísticas definidas para un archivo dado."""
+    if path is None:
+        return []
+        
     findings: ScanResult = []
     
-    # Verificación de robustez: el archivo podría haber sido borrado por el SO mientras escaneamos
     try:
         if not path.exists():
             return []
-    except OSError:
+    except (OSError, PermissionError):
         return []
     
-    # Reglas generales (basadas en nombre)
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # Reglas específicas para ejecutables (requieren acceso a metadatos)
     if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in (check_system_lookalike, check_recent_executable_in_downloads):
             try:

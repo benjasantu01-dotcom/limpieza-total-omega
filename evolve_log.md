@@ -612,3 +612,43 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-18T02:54:30` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-18T02:54:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T02:54:30` Corrida terminada. Total usado hoy: 68.
+- `2026-08-18T03:03:15` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-18T03:03:39` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` y `scan_file` añadiendo validaciones proactivas contra entradas vacías o rutas inválidas, asegurando que el flujo de escaneo no se interrumpa ante datos inesperados y que las excepciones de sistema se manejen de forma granular sin afectar la integridad del bucle principal.
+- `2026-08-18T03:04:05` Tests FALLARON:
+```
+th, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed in 1.13s
+
+```
+- `2026-08-18T03:04:05` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de la función `save` y `_read_config_disk` añadiendo un manejo de excepciones más granular para prevenir bloqueos por archivos corruptos, bloqueados o inaccesibles, asegurando que el estado de la aplicación sea siempre consistente.
+- `2026-08-18T03:04:31` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `StartupEntry` agregando validaciones preventivas contra entradas `None` o mal formadas en `_extract_quoted_path` y `_resolve_path_from_command`, asegurando que el acceso a atributos y métodos no lance excepciones inesperadas cuando los datos provienen de fuentes externas (Registro/OS).
+- `2026-08-18T03:04:50` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se extrajo la lógica de validación de métricas de `build_context` a una nueva función privada `_validate_and_assign` para reducir la complejidad ciclomática y mejorar la legibilidad, manteniendo la integridad de las reglas de seguridad.
+- `2026-08-18T03:04:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T03:04:50` Corrida terminada. Total usado hoy: 72.

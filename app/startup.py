@@ -168,7 +168,7 @@ class StartupEntry:
         
         Previene inyección de comandos rechazando cadenas con operadores shell activos.
         """
-        if not cmd:
+        if not cmd or not isinstance(cmd, str):
             return ""
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
             return ""
@@ -178,7 +178,9 @@ class StartupEntry:
             
         try:
             parts: List[str] = cmd.split()
-            return self._resolve_and_cache_path(parts[0]) if parts else ""
+            if not parts:
+                return ""
+            return self._resolve_and_cache_path(parts[0])
         except (AttributeError, ValueError):
             return ""
         
