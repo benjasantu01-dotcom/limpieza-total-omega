@@ -345,7 +345,7 @@ def quarantine_file(
     stored_name = _generate_safe_stored_name(source_path, item_id)
     destination = dest_dir / stored_name
     if destination.exists():
-        raise UnsafePathError("Colisión de nombres detectada.")
+        raise UnsafePathError("Colisión de nombres detectada en el almacenamiento de cuarentena.")
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     try:
         if not destination.exists():

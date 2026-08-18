@@ -146,7 +146,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Retorna False si el archivo está protegido, es de sistema, o si viola jerarquías de seguridad.
     """
     try:
-        if not src.exists() or not src.is_file():
+        if not src.exists() or not src.is_file() or _is_junction(src):
             return False
         
         src_abs, dest_abs = src.resolve(), dest.resolve()
@@ -165,7 +165,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Verifica si el movimiento es seguro, asegurando que no cruce fronteras de unidades o permisos."""
-    current_path = junk_file.path.resolve()
+    current_path = junk_file.path
     dest_abs = dest.resolve()
     
     # Verificación extra contra listas protegidas antes de realizar cualquier operación
@@ -206,7 +206,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                     dot_idx = name.rfind('.')
                     if dot_idx != -1 and name[dot_idx:].lower() in _LOWER_JUNK_EXTS:
                         f_path = root_path / name
-                        if is_safe_to_modify(f_path):
+                        if is_safe_to_modify(f_path) and not _is_junction(f_path):
                             try:
                                 s = f_path.stat()
                                 found.append(JunkFile(f_path, s.st_size, datetime.fromtimestamp(s.st_mtime)))
@@ -253,7 +253,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile):
             continue
         try:
-            if not junk_file.path.exists() or not junk_file.path.is_file():
+            if not junk_file.path.exists() or not junk_file.path.is_file() or _is_junction(junk_file.path):
                 continue
             
             if not _is_safe_to_move(junk_file, dest_base):
@@ -292,7 +292,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     try:
         for item in dest.iterdir():
             try:
-                if not item.is_file() or item.is_symlink():
+                if not item.is_file() or item.is_symlink() or _is_junction(item):
                     continue
                     
                 resolved_item = item.resolve()

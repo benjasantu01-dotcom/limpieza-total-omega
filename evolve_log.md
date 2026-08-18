@@ -1415,3 +1415,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-18T09:45:05` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `main.py` centralizando la validación de rutas mediante la integración del método `_verify_disk_path` en todas las operaciones que disparan análisis recursivos, evitando así la ejecución de tareas sobre directorios protegidos o inválidos antes de que el pool de hilos comience a procesar.
 - `2026-08-18T09:45:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T09:45:05` Corrida terminada. Total usado hoy: 228.
+- `2026-08-18T09:51:41` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-18T09:52:24` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-18T09:52:50` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_safe_to_move` y `stage_for_review` asegurando que la validación de integridad (verificar que la ruta resuelta no sea un punto de reparse/enlace) sea consistente antes de realizar operaciones de movimiento, previniendo la manipulación accidental de rutas fuera del alcance del usuario.
+- `2026-08-18T09:53:21` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `quarantine_file` añadiendo una comprobación explícita para evitar que se pongan en cuarentena archivos que ya existen en el directorio de destino, previniendo así condiciones de carrera o sobreescritura accidental de metadatos/archivos de cuarentena existentes.
+- `2026-08-18T09:53:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-18T09:53:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T09:53:26` Corrida terminada. Total usado hoy: 232.
