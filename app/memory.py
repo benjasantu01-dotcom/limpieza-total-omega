@@ -153,7 +153,12 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Procesa /proc/meminfo. Recibe texto crudo para facilitar testing en CI."""
+    """
+    Procesa /proc/meminfo. 
+    
+    Analiza el texto crudo para obtener métricas clave. El diseño permite 
+    inyectar contenido estático para pruebas unitarias en entornos Linux.
+    """
     if not meminfo_text:
         return MemorySnapshot(0, 0)
     
@@ -173,7 +178,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """Extrae datos de proceso desde una fila de CSV cruda."""
+    """Extrae datos de proceso desde una fila de CSV cruda mediante validación defensiva."""
     if not isinstance(csv_line, str):
         return None
     line = csv_line.strip()
@@ -208,7 +213,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Interactúa con la API Win32 'GlobalMemoryStatusEx'."""
+    """Interactúa con la API Win32 'GlobalMemoryStatusEx' mediante ctypes."""
     stat = _create_mem_status_ex()
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
@@ -299,7 +304,11 @@ def _is_system_process(pid: int) -> bool:
 
 
 def _get_process_path(handle: int) -> Optional[str]:
-    """Resuelve la ruta del ejecutable mediante un handle activo."""
+    """
+    Resuelve la ruta absoluta del ejecutable para un PID.
+    
+    Requiere un handle con permisos PROCESS_QUERY_LIMITED_INFORMATION.
+    """
     if not handle:
         return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
@@ -331,7 +340,12 @@ def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta liberar la memoria residente del proceso con validaciones estrictas."""
+    """
+    Intenta liberar la memoria residente del proceso (Working Set).
+    
+    Realiza verificaciones de seguridad de ruta y estado de proceso antes
+    de solicitar al sistema operativo la descarga de páginas de memoria.
+    """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     

@@ -202,7 +202,14 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Agrupa rutas aplicando una función de hash y gestionando una memoria caché local.
+    Refina un grupo de archivos agrupándolos por un hash específico.
+    
+    Args:
+        paths: Colección de rutas candidatas.
+        hash_func: Función de hash (parcial o completo) a aplicar.
+        
+    Returns:
+        Diccionario donde la clave es el hash y el valor la lista de rutas coincidentes.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     digest_cache: Dict[Path, str] = {}
@@ -219,10 +226,12 @@ def _refine_by_hash(
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de refinamiento en dos etapas: hash parcial rápido,
-    seguido de verificación con hash completo sobre los colisionadores.
+    Ejecuta el pipeline de refinamiento en dos etapas para un grupo de tamaño dado.
+    
+    1. Aplica hash parcial rápido para descartar diferencias tempranas.
+    2. Aplica hash completo solo sobre los colisionadores para confirmar.
     """
-    confirmed_groups = []
+    confirmed_groups: List[DuplicateGroup] = []
     partial_groups = _refine_by_hash(paths, partial_hash)
     for partial_candidates in partial_groups.values():
         full_hash_groups = _refine_by_hash(partial_candidates, hash_file)

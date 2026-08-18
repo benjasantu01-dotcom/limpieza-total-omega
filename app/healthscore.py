@@ -14,7 +14,7 @@ vive en los otros módulos; acá solo se puntúa.
 
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple, Annotated
+from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple, Annotated, Callable
 import math
 
 # Tipos para mejorar la claridad en el flujo de datos
@@ -24,13 +24,13 @@ MetricKey: TypeAlias = str
 
 class RecommendationRule(NamedTuple):
     """
-    Define una condición de advertencia basada en umbrales de métricas.
+    Define una condición de advertencia: el callback `check` determina si se 
+    aplica la regla basándose en el objeto SystemMetrics.
     """
     area: MetricKey
     threshold: float
-    message_format: str
-    expected_args: int = 1
-    metric_attr: str = ""
+    message_factory: Callable[[SystemMetrics], str]
+    check: Callable[[SystemMetrics, float], bool]
 
 __all__ = [
     "SystemMetrics",
@@ -69,7 +69,6 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-# Validación defensiva de constantes para asegurar consistencia del sistema de puntaje
 def _safe_sum_weights() -> float:
     return float(sum(max(0, w) for w in WEIGHTS.values()))
 
@@ -78,17 +77,16 @@ _WEIGHT_FACTORS: Final[Dict[MetricKey, float]] = {
     k: (max(0, w) * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
     for k, w in WEIGHTS.items()
 }
-# Pre-cálculo de factores enteros para rendimiento constante en cada corrida
 _WEIGHT_FACTORS_INT: Final[Dict[MetricKey, int]] = {k: int(round(f)) for k, f in _WEIGHT_FACTORS.items()}
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(_WEIGHT_FACTORS_INT.items())
 
 _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
-    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, "Revisá los {} hallazgo(s) de seguridad.", 1, "suspicious_count"),
-    RecommendationRule("disco", WARN_THRESHOLD_LOW, "Queda {:.1f}% de disco libre.", 1, "disk_free_percent"),
-    RecommendationRule("memoria", WARN_THRESHOLD_LOW, "Memoria disponible baja: cerrá procesos innecesarios.", 0, "memory_available_percent"),
-    RecommendationRule("basura", WARN_THRESHOLD_MED, "Hay {:.0f} MB de archivos temporales.", 1, "junk_mb"),
-    RecommendationRule("duplicados", WARN_THRESHOLD_MED, "Podrías recuperar {:.0f} MB eliminando duplicados.", 1, "duplicate_mb"),
-    RecommendationRule("arranque", WARN_THRESHOLD_LOW, "{} programas arrancan con Windows.", 1, "startup_count"),
+    RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),
+    RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),
+    RecommendationRule("memoria", WARN_THRESHOLD_LOW, lambda m: "Memoria disponible baja: cerrá procesos innecesarios.", lambda m, r: r < WARN_THRESHOLD_LOW),
+    RecommendationRule("basura", WARN_THRESHOLD_MED, lambda m: f"Hay {m.junk_mb:.0f} MB de archivos temporales.", lambda m, r: r < WARN_THRESHOLD_MED),
+    RecommendationRule("duplicados", WARN_THRESHOLD_MED, lambda m: f"Podrías recuperar {m.duplicate_mb:.0f} MB eliminando duplicados.", lambda m, r: r < WARN_THRESHOLD_MED),
+    RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
 def _validate_integrity() -> bool:
@@ -145,27 +143,21 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud inversa: 0 MB es perfecto (1.0), >= _LIMIT_JUNK_MB es crítico (0.0)."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula salud basada en cantidad de hallazgos y advertencias: (count * 0.05) + (warnings * 0.25)."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula salud normalizada: 100% es perfecto, <= _LIMIT_RAM_PERCENT es riesgo escalonado."""
     return (_clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 else 0.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula salud normalizada: 100% es perfecto, <= _LIMIT_DISK_PERCENT es riesgo escalonado."""
     return (_clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 else 0.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud inversa: 0 MB duplicados es perfecto (1.0), >= _LIMIT_DUPLICATE_MB es crítico (0.0)."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula salud inversa: 0 programas es perfecto (1.0), >= _LIMIT_STARTUP_COUNT es crítico (0.0)."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
@@ -180,28 +172,15 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
     result = {}
     for area in _WEIGHT_FACTORS:
         val = ratios.get(area, 0.0)
-        # Validación defensiva contra datos no finitos antes de procesar el puntaje
-        if not math.isfinite(val):
-            result[area] = 0
-        else:
-            result[area] = int(round(_clamp(val, 0.0, 1.0) * _WEIGHT_FACTORS[area]))
+        result[area] = int(round(_clamp(val, 0.0, 1.0) * _WEIGHT_FACTORS[area])) if math.isfinite(val) else 0
     return result
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recommendations: List[str] = []
     for rule in _RECOMMENDATION_RULES:
-        current_area_ratio = ratios.get(rule.area, 1.0)
-        if not math.isfinite(current_area_ratio) or _clamp(current_area_ratio, 0.0, 1.0) < rule.threshold:
-            # Validar que el atributo exista en la dataclass para evitar errores en tiempo de ejecución
-            metric_value = getattr(metrics, rule.metric_attr, None) if rule.metric_attr and hasattr(metrics, rule.metric_attr) else None
-            if rule.expected_args > 0:
-                if metric_value is not None and isinstance(metric_value, (int, float)) and math.isfinite(float(metric_value)):
-                    try: 
-                        recommendations.append(rule.message_format.format(metric_value))
-                    except (ValueError, IndexError, TypeError, KeyError): 
-                        continue
-            elif rule.expected_args == 0:
-                recommendations.append(rule.message_format)
+        ratio = ratios.get(rule.area, 1.0)
+        if math.isfinite(ratio) and rule.check(metrics, ratio):
+            recommendations.append(rule.message_factory(metrics))
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

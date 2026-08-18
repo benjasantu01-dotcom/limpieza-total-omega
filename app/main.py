@@ -208,7 +208,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._debounces[key] = self.after(delay, callback)
 
     def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs: Any) -> ctk.CTkLabel:
-        """Instancia una etiqueta con formato visual extraído del branding global."""
+        """
+        Instancia una etiqueta con formato visual extraído del branding global.
+        
+        :param parent: Widget contenedor padre.
+        :param text: Texto de la etiqueta.
+        :param style: Estilo base definido en el branding ('title', 'body', 'caption').
+        """
         font_config = {"size": branding.font_size(style)}
         if style == "title": font_config["weight"] = "bold"
         if style == "caption": font_config["weight"] = "bold"
@@ -247,7 +253,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _action(self, parent: ctk.CTk, text: str, command: Callable[[], Any], 
                 danger: bool = False, column: int = 0, secondary: bool = False) -> ctk.CTkButton:
-        """Crea un botón con colores semánticos basados en el riesgo de la operación."""
+        """
+        Crea un botón con colores semánticos basados en el riesgo de la operación.
+        
+        :param parent: Widget contenedor padre.
+        :param text: Texto del botón.
+        :param command: Función a ejecutar.
+        :param danger: Define si es una operación destructiva (rojo).
+        """
         if danger:
             fondo, hover, texto = ("danger", "danger_hover", "text")
         elif secondary:
@@ -305,7 +318,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._build_footer()
 
     def _tab_factory(self, name: str) -> None:
-        """Delega la construcción del contenido de cada pestaña a sus métodos específicos."""
+        """
+        Delega la construcción del contenido de cada pestaña a sus métodos específicos.
+        
+        :param name: Nombre de la pestaña a construir (ej. 'Salud').
+        """
         method_name = f"_build_tab_{name.lower()}"
         constructor = getattr(self, method_name, None)
         if constructor and name in self.tabs:
