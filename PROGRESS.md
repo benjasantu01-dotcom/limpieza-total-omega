@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 222
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 24 | 3 | 4 | 1 | 38 |
+| 2026-08-16 | 21 | 3 | 4 | 1 | 37 |
 | 2026-08-17 | 162 | 12 | 23 | 12 | 141 |
-| 2026-08-18 | 33 | 2 | 4 | 2 | 43 |
+| 2026-08-18 | 35 | 3 | 4 | 2 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
+- legibilidad y documentación: **58**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **40**
-- rendimiento: **36**
+- robustez ante casos límite: **39**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **24**
+- `healthscore.py`: **23**
 - `scanner.py`: **22**
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `quarantine.py`: **18**
-- `memory.py`: **17**
 - `browser.py`: **17**
 - `settings.py`: **16**
+- `memory.py`: **16**
 - `organizer.py`: **15**
 - `duplicates.py`: **15**
 - `diskreport.py`: **14**
-- `main.py`: **12**
 - `branding.py`: **12**
+- `main.py`: **11**
+- `startup.py`: **9**
 - `safety.py`: **8**
-- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T03:45:38` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la creación de listas intermedias y el uso de `getattr` dentro de un bucle por una estructura más eficiente y pre-compilada, reduciendo la carga de procesamiento en cada consulta del asistente.
+- `2026-08-18T03:45:04` **startup.py** (legibilidad y documentación): He mejorado la documentación de la clase `StartupEntry` y sus métodos privados, clarificando el propósito de la resolución perezosa y la lógica de validación de seguridad para que sea más evidente cómo se protege la integridad del sistema al procesar rutas.
 - `2026-08-18T03:35:23` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `Scanner` y sus métodos principales mediante docstrings más precisos y la adición de Type Hints en la lógica de procesamiento, facilitando la comprensión del flujo de exclusiones y el uso de la pila.
 - `2026-08-18T03:35:14` **safety.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings estructurados (con secciones Args/Raises) para clarificar las responsabilidades de las funciones críticas de validación y reducir la ambigüedad en el manejo de errores del contrato de seguridad.
 - `2026-08-18T03:34:27` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a funciones internas clave y estandarizando las excepciones, además de refactorizar la lógica de `_check_path_syntax_integrity` para mejorar su legibilidad y mantenibilidad sin alterar el comportamiento.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T03:14:03` **branding.py** (legibilidad y documentación): Documenté con mayor precisión el contrato de las funciones de dibujo (`draw_logo`, `draw_gradient_bar`, `draw_ring`) mediante docstrings estructurados, mejorando la legibilidad técnica necesaria para colaboradores senior y aclarando cómo se gestionan las coordenadas relativas y el escalado en el canvas.
 - `2026-08-18T03:04:50` **assistant.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se extrajo la lógica de validación de métricas de `build_context` a una nueva función privada `_validate_and_assign` para reducir la complejidad ciclomática y mejorar la legibilidad, manteniendo la integridad de las reglas de seguridad.
 - `2026-08-18T03:04:31` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `StartupEntry` agregando validaciones preventivas contra entradas `None` o mal formadas en `_extract_quoted_path` y `_resolve_path_from_command`, asegurando que el acceso a atributos y métodos no lance excepciones inesperadas cuando los datos provienen de fuentes externas (Registro/OS).
-- `2026-08-18T03:03:39` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `scan_file` añadiendo validaciones proactivas contra entradas vacías o rutas inválidas, asegurando que el flujo de escaneo no se interrumpa ante datos inesperados y que las excepciones de sistema se manejen de forma granular sin afectar la integridad del bucle principal.
-- `2026-08-18T02:54:01` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine.py` mediante la validación proactiva de tipos y estados en `_is_file_locked` y `purge_all`, previniendo excepciones innecesarias ante condiciones de carrera o archivos inexistentes.

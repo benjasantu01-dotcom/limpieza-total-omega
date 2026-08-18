@@ -673,3 +673,43 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-18T03:35:23` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de la clase `Scanner` y sus métodos principales mediante docstrings más precisos y la adición de Type Hints en la lógica de procesamiento, facilitando la comprensión del flujo de exclusiones y el uso de la pila.
 - `2026-08-18T03:35:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T03:35:23` Corrida terminada. Total usado hoy: 84.
+- `2026-08-18T03:44:10` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-08-18T03:44:39` Tests FALLARON:
+```
+th, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+E       AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+E         
+E         '2400' is contained here:
+E           Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+E         ?                                     ++++
+
+evolve/tests/test_assistant.py:418: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert '2400' not in 'Puntaje de ...io: 19 items'
+  
+  '2400' is contained here:
+    Puntaje de salud: 61 nota C Basura: 2400 MB Sospechosos: 3 RAM disponible: 11 percent Disco libre: 6 percent Duplicados: 900 MB Inicio: 19 items
+  ?                                     ++++
+1 failed, 298 passed in 1.21s
+
+```
+- `2026-08-18T03:44:39` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad al extraer la lógica de validación de rutas complejas de `_Validators` hacia funciones privadas con nombres descriptivos, documentando explícitamente las restricciones de seguridad aplicadas a la ruta.
+- `2026-08-18T03:45:04` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). He mejorado la documentación de la clase `StartupEntry` y sus métodos privados, clarificando el propósito de la resolución perezosa y la lógica de validación de seguridad para que sea más evidente cómo se protege la integridad del sistema al procesar rutas.
+- `2026-08-18T03:45:38` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` reemplazando la creación de listas intermedias y el uso de `getattr` dentro de un bucle por una estructura más eficiente y pre-compilada, reduciendo la carga de procesamiento en cada consulta del asistente.
+- `2026-08-18T03:45:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-18T03:45:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T03:45:54` Corrida terminada. Total usado hoy: 88.

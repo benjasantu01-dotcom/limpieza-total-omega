@@ -323,10 +323,10 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Identifica problemas detectados, priorizando y limitando a 3 elementos."""
     problemas = []
     for crit in _CRITERIOS_SALUD:
-        if _is_criterion_triggered(ctx, crit):
-            val = getattr(ctx, crit.metric_key)
+        val = getattr(ctx, crit.metric_key)
+        if (val < crit.threshold if crit.operator == "<" else val > crit.threshold):
             problemas.append(crit.message_format.format(val))
-            if len(problemas) == 3:
+            if len(problemas) >= 3:
                 break
     return problemas
 

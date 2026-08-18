@@ -71,10 +71,9 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada, sea de carpetas o registro.
     
-    Implementa resolución perezosa para el ejecutable asociado:
-    1. Sanitiza el comando crudo recibido.
-    2. Extrae la ruta del archivo ignorando argumentos de ejecución.
-    3. Valida contra `is_protected_path` antes de confirmar su existencia.
+    La clase utiliza resolución perezosa para el ejecutable (`executable`) con el fin 
+    de minimizar llamadas costosas al sistema de archivos hasta que la interfaz 
+    realmente necesite mostrar la ruta completa.
     """
     name: str
     command: str
@@ -83,24 +82,22 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la extensión es ejecutable y descarta enlaces simbólicos para evitar bucles."""
+        """Determina si la ruta apunta a un ejecutable válido y es segura de inspeccionar."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Filtra caracteres no imprimibles o de control del comando crudo."""
+        """Elimina caracteres de control y espacios en blanco extremos del comando crudo."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta contenida entre comillas.
-        
-        Las rutas en registros suelen estar entre comillas si contienen espacios.
-        Se descartan rutas que contengan caracteres reservados de shell.
+        Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+        Valida mediante `is_protected_path` que la ruta no sea un objetivo prohibido.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -122,10 +119,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Resuelve la ruta física usando `Path.resolve()` y verifica su existencia.
-        
-        Usa una caché interna para evitar latencia excesiva por accesos constantes a disco.
-        Si la ruta es un punto de reparse o enlace, se ignora por seguridad.
+        Resuelve la ruta absoluta, verificando existencia y seguridad.
+        Utiliza _EXISTS_CACHE para evitar el impacto de performance de múltiples `Path.exists()`.
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
@@ -164,9 +159,8 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, cmd: str) -> str:
         """
-        Selecciona la estrategia de extracción de ruta según el formato del comando.
-        
-        Previene inyección de comandos rechazando cadenas con operadores shell activos.
+        Selecciona la estrategia de resolución de ruta: modo comando directo o 
+        modo ruta entrecomillada, mitigando intentos de inyección de shell.
         """
         if not cmd or not isinstance(cmd, str):
             return ""
@@ -189,8 +183,8 @@ class StartupEntry:
         """
         Acceso perezoso a la ruta absoluta del ejecutable.
         
-        Calculado solo bajo demanda y cacheado en la instancia para optimizar llamadas
-        repetidas en la interfaz de usuario.
+        Calculado solo bajo demanda y cacheado para asegurar que la UI no bloquee el 
+        hilo principal consultando repetidamente al disco.
         """
         if self._checked_exists:
             return self._exec_cache or ""
