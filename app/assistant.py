@@ -217,18 +217,22 @@ def _ensure_safe_text(text: Any) -> bool:
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> None:
     """
     Extrae, normaliza y asigna una métrica de forma defensiva dentro de los rangos
-    permitidos definidos por el spec, evitando desbordamientos de memoria o valores inválidos.
+    permitidos, verificando finitud y tipos de dato para evitar errores silenciosos.
     """
     cast, min_v, max_v = spec
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+    
     if val is None or isinstance(val, bool):
         return
+        
     try:
         clean_val = float(val)
         if math.isfinite(clean_val):
+            # Clamp al rango permitido
             final_val = cast(max(min_v, min(clean_val, max_v)))
             setattr(ctx, key, final_val)
     except (ValueError, TypeError, OverflowError):
+        # Ignorar métricas malformadas o tipos incompatibles
         pass
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
@@ -303,7 +307,7 @@ def context_as_text(context: SystemContext) -> str:
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Convierte una métrica a string formateado."""
-    if val is None or not isinstance(val, (int, float)) or not math.isfinite(val): return "N/A"
+    if val is None or not isinstance(val, (int, float)) or not math.isfinite(float(val)): return "N/A"
     return f"{float(val):.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:

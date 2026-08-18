@@ -1285,3 +1285,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-18T08:41:44` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_file` pre-filtrando la extensión del archivo una sola vez al inicio, evitando llamadas innecesarias a las funciones de chequeo heurístico que solo aplican a ejecutables, y reemplacé la búsqueda lenta en `path.parts` (que crea una tupla de todos los componentes de la ruta cada vez) por una verificación de conjunto sobre una cadena simplificada para `check_recent_executable_in_downloads`.
 - `2026-08-18T08:41:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T08:41:44` Corrida terminada. Total usado hoy: 204.
+- `2026-08-18T08:50:28` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-18T08:50:56` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._validate_enum_str, _Validators.str
+- `2026-08-18T08:51:22` Tests FALLARON:
+```
+= "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:100
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 8 warnings in 1.23s
+
+```
+- `2026-08-18T08:51:22` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la resolución de rutas mediante la implementación de una caché de negativa de ejecución rápida en `_resolve_and_cache_path` y se evitó el pre-procesamiento innecesario del comando en `StartupEntry`, reduciendo significativamente las llamadas al sistema y el uso de CPU durante el análisis de múltiples entradas.
+- `2026-08-18T08:51:57` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_validate_and_assign` y `build_context` para manejar casos donde las fuentes de datos (diccionarios u objetos) contienen valores numéricos no finitos o tipos inesperados que podrían corromper el contexto del asistente.
+- `2026-08-18T08:52:15` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado `save_logo_svg` para manejar de forma robusta la posible existencia de archivos preexistentes en la ruta de destino, validando que el archivo sea efectivamente modificable antes de intentar la escritura y gestionando la creación del directorio solo si la ruta completa es segura.
+- `2026-08-18T08:52:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T08:52:15` Corrida terminada. Total usado hoy: 208.

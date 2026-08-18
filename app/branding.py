@@ -360,9 +360,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).expanduser().resolve()
-        # Verificar seguridad antes de cualquier operación
-        if not is_safe_to_modify(path_obj):
+        # Verificar que la ruta no sea un directorio y sea modificable
+        if path_obj.exists() and not is_safe_to_modify(path_obj):
             return None
+        
+        # ensure_safe_to_modify valida que la carpeta padre sea segura antes de crear
         target = ensure_safe_to_modify(path_obj)
         if target.parent and not target.parent.exists():
             target.parent.mkdir(parents=True, exist_ok=True)
