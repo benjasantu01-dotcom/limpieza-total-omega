@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 22
-- Rechazadas por guardia de seguridad: 32
+- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Rechazadas por tests: 23
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 86 | 8 | 13 | 7 | 90 |
-| 2026-08-18 | 122 | 14 | 19 | 10 | 135 |
+| 2026-08-17 | 84 | 8 | 12 | 7 | 89 |
+| 2026-08-18 | 125 | 15 | 19 | 10 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **43**
+- rendimiento: **39**
 - manejo de errores y validación de entradas: **37**
-- rendimiento: **36**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
-- `scanner.py`: **21**
+- `healthscore.py`: **23**
 - `assistant.py`: **21**
+- `scanner.py`: **20**
 - `quarantine.py`: **19**
 - `organizer.py`: **16**
 - `diskreport.py`: **16**
-- `settings.py`: **15**
 - `browser.py`: **15**
-- `duplicates.py`: **14**
+- `duplicates.py`: **15**
+- `settings.py`: **14**
 - `memory.py`: **13**
-- `main.py`: **11**
+- `main.py`: **12**
 - `branding.py`: **10**
 - `startup.py`: **9**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T12:58:00` **main.py** (rendimiento): Optimicé el manejo de la cola de logs y el redibujo de la interfaz eliminando `after_idle` innecesarios y consolidando las actualizaciones de estado en una sola pasada lógica dentro del hilo principal, lo que reduce drásticamente el overhead de redibujo y evita la saturación del loop de eventos durante tareas intensivas.
+- `2026-08-18T12:56:51` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje final eliminando el uso de `round()` y `int()` repetidos mediante la creación de un acumulador pre-redondeado, y eliminé la verificación redundante de `math.isfinite` dentro de `_calculate_breakdown` dado que `_clamp` ya garantiza la integridad del valor, mejorando ligeramente el rendimiento en cada iteración del bucle de análisis.
+- `2026-08-18T12:56:10` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar llamadas redundantes a `resolve(strict=True)` durante el escaneo recursivo, moviendo esta validación costosa solo al momento de procesar archivos individuales, lo cual mejora significativamente el rendimiento en árboles de directorios grandes.
 - `2026-08-18T12:47:26` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y las funciones de análisis al evitar llamadas redundantes a `entry.stat()` mediante el almacenamiento del resultado de `stat()` en una variable local, reduciendo drásticamente las syscalls al sistema de archivos durante la iteración.
 - `2026-08-18T12:46:13` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando la creación dinámica de un diccionario `ctx.__dict__` en cada iteración del bucle, accediendo directamente a los atributos mediante `getattr`, lo que evita la asignación de memoria innecesaria y mejora la velocidad de ejecución.
 - `2026-08-18T12:37:05` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez de los tipos mediante la adición de docstrings técnicos en las funciones críticas y la corrección de inconsistencias en los tipos de datos (normalizando `asistente_enviar_metricas`), garantizando que la documentación refleje con precisión las restricciones de seguridad y el comportamiento de la validación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T12:15:15` **diskreport.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la intención de los algoritmos críticos, estandarizando el manejo de excepciones en las funciones de análisis y añadiendo anotaciones de tipo más precisas para clarificar los retornos de las operaciones.
 - `2026-08-18T12:07:53` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento mediante la adición de docstrings estructurados y type hints precisos, además de consolidar la lógica de inicialización de `kernel32` para reducir la redundancia y mejorar la claridad en el flujo de ejecución de `browser.py`.
 - `2026-08-18T11:57:07` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save` y `load` encapsulando la manipulación del disco en bloques `try-except` más específicos y añadiendo una validación explícita para evitar que `json.loads` procese archivos excesivamente grandes o mal formados, previniendo estados inconsistentes de la configuración.
-- `2026-08-18T11:56:54` **scanner.py** (manejo de errores y validación de entradas): Reforcé `scan_directory` validando la entrada y la recursión para evitar `RecursionError` o intentos de acceso a rutas nulas/invalidas antes de instanciar el escáner, asegurando que `path_input` sea siempre una ruta absoluta y válida.
-- `2026-08-18T11:46:00` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la eliminación del archivo original en una verificación de existencia y manejando explícitamente posibles errores de permisos para evitar dejar archivos "huérfanos" (copiados en cuarentena pero no eliminados del origen), alineándome con el enfoque de validación de entradas.
-- `2026-08-18T11:45:36` **organizer.py** (manejo de errores y validación de entradas): Reforcé la robustez de `stage_for_review` y `delete_reviewed` validando que los paths sean absolutos y realizando un chequeo de sub-ruta estricto (usando `is_relative_to`) para evitar que entradas externas manipuladas o paths relativos ambiguos puedan ser procesados accidentalmente fuera del entorno controlado.

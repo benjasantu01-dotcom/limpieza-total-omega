@@ -492,3 +492,48 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-08-18T12:47:26` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y las funciones de análisis al evitar llamadas redundantes a `entry.stat()` mediante el almacenamiento del resultado de `stat()` en una variable local, reduciendo drásticamente las syscalls al sistema de archivos durante la iteración.
 - `2026-08-18T12:47:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T12:47:26` Corrida terminada. Total usado hoy: 300.
+- `2026-08-18T12:55:42` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-18T12:56:10` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para evitar llamadas redundantes a `resolve(strict=True)` durante el escaneo recursivo, moviendo esta validación costosa solo al momento de procesar archivos individuales, lo cual mejora significativamente el rendimiento en árboles de directorios grandes.
+- `2026-08-18T12:56:51` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje final eliminando el uso de `round()` y `int()` repetidos mediante la creación de un acumulador pre-redondeado, y eliminé la verificación redundante de `math.isfinite` dentro de `_calculate_breakdown` dado que `_clamp` ya garantiza la integridad del valor, mejorando ligeramente el rendimiento en cada iteración del bucle de análisis.
+- `2026-08-18T12:58:00` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el manejo de la cola de logs y el redibujo de la interfaz eliminando `after_idle` innecesarios y consolidando las actualizaciones de estado en una sola pasada lógica dentro del hilo principal, lo que reduce drásticamente el overhead de redibujo y evita la saturación del loop de eventos durante tareas intensivas.
+- `2026-08-18T12:58:13` Tests FALLARON:
+```
+E         Full diff:
+E           [
+E         +     'chico',
+E               'grande',
+E               'medio',
+E         -     'chico',
+E           ]
+
+evolve/tests/test_modules.py:346: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert ['chico', 'grande', 'medio'] == ['grande', 'medio', 'chico']
+  
+  At index 0 diff: 'chico' != 'grande'
+  
+  Full diff:
+    [
+  +     'chico',
+        'grande',
+        'medio',
+  -     'chico',
+    ]
+1 failed, 298 passed, 7 warnings in 1.44s
+
+```
+- `2026-08-18T12:58:13` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de caché más eficiente y reduciendo la cantidad de datos procesados mediante el filtrado de nombres y PIDs antes de la ordenación.
+- `2026-08-18T12:58:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T12:58:13` Corrida terminada. Total usado hoy: 304.

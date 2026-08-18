@@ -126,6 +126,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._log_lock = threading.Lock()
         self._task_lock = threading.Lock()
         self._closing = False
+        self._log_scheduled = False
         try:
             self._validate_environment()
             self._init_window_properties()
@@ -822,13 +823,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return self.outputs.get(tab)
 
     def log(self, text: str, tab: str = "Limpieza") -> None:
-        """Encola logs para ser renderizados de forma segura en la UI."""
+        """Encola logs para ser renderizados de forma eficiente en la UI."""
         with self._log_lock:
             self._log_queue.append((tab, text))
-        self.after_idle(self._flush_logs)
+            if not self._log_scheduled:
+                self._log_scheduled = True
+                self.after_idle(self._flush_logs)
 
     def _flush_logs(self) -> None:
         """Vuelca la cola de mensajes acumulados en la interfaz visual."""
+        self._log_scheduled = False
         if self._closing: return
         
         with self._log_lock:
@@ -836,11 +840,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pendientes = list(self._log_queue)
             self._log_queue.clear()
         
-        tab_messages = {}
-        for tab, text in pendientes:
-            tab_messages.setdefault(tab, []).append(text)
-            
-        for tab, msgs in tab_messages.items():
+        for tab, msgs in {t: [m[1] for m in pendientes if m[0] == t] for t in set(p[0] for p in pendientes)}.items():
             box = self._box(tab)
             if box and box.winfo_exists():
                 box.insert("end", "\n".join(msgs) + "\n")
@@ -850,38 +850,35 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Limpia todo el texto del log de la pestaña especificada."""
         box = self._box(tab)
         if box and box.winfo_exists():
-            self.after(0, lambda: box.delete("1.0", "end"))
+            box.delete("1.0", "end")
 
     def set_status(self, text: str) -> None:
         """Actualiza el mensaje de estado en el pie de página."""
         if not self._closing and hasattr(self, 'status') and self.status.winfo_exists():
-            self.after_idle(lambda: self.status.configure(text=text))
+            self.status.configure(text=text)
 
     def log_lines(self, lines: List[str], tab: str) -> None:
         """Reemplaza el log de la pestaña con una lista de líneas nuevas."""
         self.clear(tab)
         box = self._box(tab)
         if box and box.winfo_exists():
-            self.after(0, lambda: (box.insert("1.0", "\n".join(lines)), box.see("1.0")))
+            box.insert("1.0", "\n".join(lines))
+            box.see("1.0")
         self.report_data[tab.lower()] = list(lines)
 
     def _set_busy(self, busy: bool) -> None:
         """Gestiona el estado visual de la barra de progreso asíncrona."""
-        def actualizar() -> None:
-            if self._closing or not hasattr(self, 'activity') or self.activity is None or not self.activity.winfo_exists(): return
-            if busy:
-                self._tasks_running += 1
-            else:
-                self._tasks_running = max(0, self._tasks_running - 1)
-            
-            if self._tasks_running > 0:
+        if self._closing or not hasattr(self, 'activity'): return
+        if busy:
+            self._tasks_running += 1
+            if self._tasks_running == 1:
                 self.activity.pack(side="right")
                 self.activity.start()
-            else:
+        else:
+            self._tasks_running = max(0, self._tasks_running - 1)
+            if self._tasks_running == 0:
                 self.activity.stop()
                 self.activity.pack_forget()
-
-        self.after_idle(actualizar)
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
         """Traduce excepciones de bajo nivel en mensajes claros para el log de la UI."""
@@ -912,8 +909,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._safe_run(fn, tab)
         finally:
             if not self._closing:
-                self._set_busy(False)
-                self.set_status("Listo.")
+                self.after_idle(lambda: self._set_busy(False))
+                self.after_idle(lambda: self.set_status("Listo."))
 
     def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:
         """Envía tareas intensivas a un pool de hilos de forma no bloqueante."""
@@ -1025,7 +1022,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._last_health_state = state_key
 
         def actualizar() -> None:
-            if self._closing or not hasattr(self, 'gauge') or self.gauge is None or not self.gauge.winfo_exists(): return
+            if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
             self._draw_gauge(resultado.score, resultado.grade)
 
             valores = {
@@ -1108,7 +1105,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.report_data["limpieza"] = lines
         box = self._box("Limpieza")
         if box and box.winfo_exists():
-            self.after_idle(lambda: (box.delete("1.0", "end"), box.insert("1.0", "\n".join(lines))))
+            box.delete("1.0", "end")
+            box.insert("1.0", "\n".join(lines))
 
     def on_stage(self) -> None:
         """Mueve los candidatos a revisión segura."""
@@ -1328,7 +1326,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                "Memoria")
                 return
             
-            # Validar que los objetos de proceso sigan siendo accesibles antes de renderizar
             procesos_validos = [p for p in procesos if hasattr(p, 'working_set_mb')]
             if not procesos_validos:
                 self.log_lines(["Los procesos activos cambiaron. Reintentá el diagnóstico."], "Memoria")
@@ -1359,7 +1356,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         
         pid = int(raw)
-        # Verificación básica para evitar procesos críticos del sistema
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return

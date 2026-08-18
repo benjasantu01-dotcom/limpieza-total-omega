@@ -173,7 +173,7 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
     result = {}
     for area, weight in _WEIGHT_ITEMS_INT:
         val = ratios.get(area, 0.0)
-        result[area] = int(round(_clamp(val, 0.0, 1.0) * weight)) if math.isfinite(val) else 0
+        result[area] = int(round(_clamp(val) * weight))
     return result
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
@@ -206,7 +206,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     }
     
     breakdown = _calculate_breakdown(ratios)
-    final_score = int(round(_clamp(float(sum(breakdown.values())), 0.0, 100.0)))
+    final_score = sum(breakdown.values())
     
     return HealthResult(final_score, grade_for_score(final_score), breakdown, _generate_recommendations(metrics, ratios))
 

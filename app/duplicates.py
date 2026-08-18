@@ -165,23 +165,22 @@ def _collect_candidates(
 
     def _scan(root_path: Path) -> None:
         try:
-            for entry in os.scandir(root_path):
-                try:
-                    if entry.is_symlink(): continue
-                    st = entry.stat(follow_symlinks=False)
-                    if entry.is_dir():
-                        inode: Tuple[int, int] = (st.st_dev, st.st_ino)
-                        if inode not in visited_inodes:
-                            visited_inodes.add(inode)
-                            _scan(Path(entry.path))
-                    elif entry.is_file():
-                        # Excluir archivos pequeños y atributos especiales (reparse points)
-                        if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
-                            target = Path(entry.path).resolve(strict=True)
-                            # Aplicar lógica de seguridad solo si se solicita
-                            if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
-                                temp_groups[st.st_size].append(target)
-                except (OSError, PermissionError): continue
+            with os.scandir(root_path) as it:
+                for entry in it:
+                    try:
+                        if entry.is_symlink(): continue
+                        st = entry.stat(follow_symlinks=False)
+                        if entry.is_dir():
+                            inode: Tuple[int, int] = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                _scan(Path(entry.path))
+                        elif entry.is_file():
+                            if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
+                                target = Path(entry.path)
+                                if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
+                                    temp_groups[st.st_size].append(target.resolve())
+                    except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
     if directories is None: return {}
