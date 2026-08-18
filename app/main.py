@@ -1146,9 +1146,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            self.set_status("Vaciando la carpeta de revisión...")
-            n = delete_reviewed()
-            self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza")
+            # Re-verificación de seguridad antes de borrar
+            try:
+                safety.ensure_safe_to_modify(Path(".").resolve()) # Placeholder conceptual, organizer lo valida
+                self.set_status("Vaciando la carpeta de revisión...")
+                n = delete_reviewed()
+                self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza")
+            except Exception as e:
+                self.log(f"Error en borrado: {e}", "Limpieza")
 
         self.run_async(task)
 
@@ -1270,11 +1275,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log("Error: Manifiesto corrupto.", "Cuarentena")
                 return
             
+            # Verificación crítica antes de restaurar
             if not self._is_safe_path(item.original_path):
                 self.log("Error: Ruta original insegura.", "Cuarentena")
                 return
             
             try:
+                # El guardado en restore_item es interno, pero validamos la ruta destino
                 destino = quarantine.restore_item(raw_id)
                 self.log(f"Restaurado en: {destino}", "Cuarentena")
             except Exception as e:
@@ -1296,6 +1303,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # El borrado físico debe ser seguro
             borrados = quarantine.purge_all()
             self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
 

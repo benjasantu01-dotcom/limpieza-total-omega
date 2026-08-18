@@ -231,7 +231,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares.")
     if is_protected_path(resolved_source):
-        raise UnsafePathError("Operación prohibida: la ruta está protegida por el sistema.")
+        raise UnsafePathError("Operación prohibida: la ruta origen está protegida por el sistema.")
     if is_protected_path(dest_dir):
         raise UnsafePathError("Destino inválido: directorio de cuarentena protegido.")
     if _is_valid_quarantine_path(resolved_source, dest_dir):

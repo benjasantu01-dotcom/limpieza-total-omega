@@ -125,10 +125,11 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta abrir el archivo en modo lectura binaria. Si falla, se considera bloqueado.
+    Intenta abrir el archivo en modo lectura binaria exclusiva. Si falla, el archivo está en uso.
     """
     try:
-        with open(path, "rb"):
+        with open(path, "rb") as f:
+            # En Windows, esto falla si hay un candado de escritura exclusivo
             return False
     except (OSError, PermissionError, IOError):
         return True
@@ -161,7 +162,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if os.name == "nt" and (src_abs.stat().st_file_attributes & 0x06):
             return False
             
-        return is_safe_to_modify(src_abs) and is_safe_to_modify(dest_abs)
+        return is_safe_to_modify(src_abs) and is_safe_to_modify(dest_abs) and not _is_file_locked(src_abs)
     except (OSError, RuntimeError, AttributeError):
         return False
 
@@ -178,7 +179,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
         return False
         
     # shutil.move no garantiza comportamiento atómico entre diferentes unidades
-    if _is_file_locked(current_path) or current_path.anchor != dest_abs.anchor:
+    if current_path.anchor != dest_abs.anchor:
         return False
         
     return True

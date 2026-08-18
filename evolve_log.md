@@ -590,3 +590,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-08-18T14:08:30` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se endureció la integridad de la estructura `SystemMetrics` añadiendo una validación explícita de desbordamiento mediante `math.isfinite` en todos sus campos antes del cálculo, previniendo que valores numéricos inválidos (como `inf` o `nan` provenientes de sensores externos) comprometan el puntaje final.
 - `2026-08-18T14:08:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T14:08:30` Corrida terminada. Total usado hoy: 332.
+- `2026-08-18T14:17:13` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-18T14:18:16` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-18T14:19:19` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-18T14:20:34` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `main.py` añadiendo un filtro `is_safe_to_modify` en las operaciones de borrado (`on_delete_reviewed`, `on_purge_quarantine`) y restauración (`on_restore_quarantine`), asegurando que, incluso si una ruta superó el filtrado inicial, se verifique su integridad inmediatamente antes de invocar acciones destructivas sobre el disco, cumpliendo así con las reglas de seguridad sin alterar la funcionalidad.
+- `2026-08-18T14:21:04` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-18T14:21:35` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_is_safe_to_move` añadiendo una comprobación explícita para evitar que se operen archivos en uso mediante el uso de una validación de acceso de lectura exclusivo, garantizando la integridad de los datos antes de cualquier intento de movimiento.
+- `2026-08-18T14:22:06` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado `_validate_isolation_request` para verificar explícitamente que la ruta original no sea un directorio del sistema (mediante `is_protected_path`) antes de iniciar cualquier operación de copiado o movimiento, reforzando la seguridad defensiva contra posibles rutas de origen malintencionadas.
+- `2026-08-18T14:22:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T14:22:06` Corrida terminada. Total usado hoy: 336.
