@@ -239,14 +239,15 @@ def validate(raw_values: Any) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     if is_protected_path(str(ruta)): return _get_default_config()
-    mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
+    if not ruta.exists() or ruta.is_dir(): return _get_default_config()
+    mtime = ruta.stat().st_mtime
     return _read_config_disk(str(ruta), mtime).copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
-    if not _Validators._is_safe_path(str(ruta.parent)) or not is_safe_to_modify(str(ruta)): 
+    if is_protected_path(str(ruta)) or not _Validators._is_safe_path(str(ruta.parent)): 
         return None
     
     cleaned_settings = validate(values)
