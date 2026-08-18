@@ -219,21 +219,22 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        # Cacheamos el stat para evitar múltiples llamadas al sistema
                         stat_data = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir():
-                            if skip_protected and is_protected_path(Path(entry.path)):
+                            path_obj = Path(entry.path)
+                            if skip_protected and is_protected_path(path_obj):
                                 continue
                             
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(Path(entry.path))
+                                stack.append(path_obj)
                         elif entry.is_file():
-                            if skip_protected and is_protected_path(Path(entry.path)):
+                            path_obj = Path(entry.path)
+                            if skip_protected and is_protected_path(path_obj):
                                 continue
-                            yield Path(entry.path), stat_data.st_size
+                            yield path_obj, stat_data.st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -312,6 +313,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 if not parts:
                     continue
                 top_level = base / parts[0]
+                if skip_protected and is_protected_path(top_level):
+                    continue
                 sums[top_level] += size
                 counts[top_level] += 1
             except (ValueError, IndexError): 
@@ -346,18 +349,24 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
     ext_counts: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, Path]] = []
     
-    for path, size in walk_files(directory, skip_protected):
-        total_bytes += size
-        total_files += 1
-        
-        ext = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[ext] += size
-        ext_counts[ext] += 1
-        
-        if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, path))
-        elif size > top_files_heap[0][0]:
-            heapq.heapreplace(top_files_heap, (size, path))
+    try:
+        for path, size in walk_files(directory, skip_protected):
+            if skip_protected and is_protected_path(path):
+                continue
+                
+            total_bytes += size
+            total_files += 1
+            
+            ext = path.suffix.lower() or "(sin extensión)"
+            ext_sizes[ext] += size
+            ext_counts[ext] += 1
+            
+            if len(top_files_heap) < 8:
+                heapq.heappush(top_files_heap, (size, path))
+            elif size > top_files_heap[0][0]:
+                heapq.heapreplace(top_files_heap, (size, path))
+    except (OSError, PermissionError):
+        pass
             
     return total_bytes, total_files, ext_sizes, ext_counts, top_files_heap
 

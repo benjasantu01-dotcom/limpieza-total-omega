@@ -173,7 +173,6 @@ def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
     result = {}
     for area, weight in _WEIGHT_ITEMS_INT:
         val = ratios.get(area, 0.0)
-        # Aseguramos que los valores calculados sean números válidos antes de truncar
         clean_val = val if math.isfinite(val) else 0.0
         result[area] = int(round(_clamp(clean_val) * weight))
     return result
@@ -207,7 +206,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    # Verificar que todos los ratios sean numéricos finitos
     if not all(math.isfinite(r) for r in ratios.values()):
         return HealthResult(0, "F", {}, ["Error: Cálculo de métricas fallido."])
     
