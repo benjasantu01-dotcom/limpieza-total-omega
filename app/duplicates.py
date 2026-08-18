@@ -155,7 +155,10 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo del árbol de directorios para identificar archivos candidatos.
+    Recorre el árbol de directorios identificando archivos candidatos aptos.
+    
+    Usa un conjunto de inodos visitados para evitar ciclos en sistemas de 
+    archivos complejos y aplica filtros de seguridad en cada entrada.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -167,14 +170,15 @@ def _collect_candidates(
                     if entry.is_symlink(): continue
                     st = entry.stat(follow_symlinks=False)
                     if entry.is_dir():
-                        inode = (st.st_dev, st.st_ino)
+                        inode: Tuple[int, int] = (st.st_dev, st.st_ino)
                         if inode not in visited_inodes:
                             visited_inodes.add(inode)
                             _scan(Path(entry.path))
                     elif entry.is_file():
+                        # Excluir archivos pequeños y atributos especiales (reparse points)
                         if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
                             target = Path(entry.path).resolve(strict=True)
-                            # Validación estricta: asegurar acceso permitido antes de procesar
+                            # Aplicar lógica de seguridad solo si se solicita
                             if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
                                 temp_groups[st.st_size].append(target)
                 except (OSError, PermissionError): continue
@@ -197,14 +201,10 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Refina un grupo de archivos agrupándolos por un hash específico.
+    Agrupa rutas que comparten un hash calculado por hash_func.
     
-    Args:
-        paths: Colección de rutas candidatas.
-        hash_func: Función de hash (parcial o completo) a aplicar.
-        
-    Returns:
-        Diccionario donde la clave es el hash y el valor la lista de rutas coincidentes.
+    Implementa un caché temporal de digest para evitar recalcular hashes
+    en caso de ser invocado sobre el mismo conjunto.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     digest_cache: Dict[Path, str] = {}
@@ -223,8 +223,8 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline de refinamiento en dos etapas para un grupo de tamaño dado.
     
-    1. Aplica hash parcial rápido para descartar diferencias tempranas.
-    2. Aplica hash completo solo sobre los colisionadores para confirmar.
+    1. Hash parcial para descartar colisiones accidentales por tamaño.
+    2. Hash completo para confirmar la identidad del contenido.
     """
     confirmed_groups: List[DuplicateGroup] = []
     partial_groups = _refine_by_hash(paths, partial_hash)
