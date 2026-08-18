@@ -154,9 +154,10 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve(strict=False)
-        if not p.anchor or str(p).startswith(("\\\\", "//")):
+        # Validación de seguridad: rechazar rutas UNC y asegurar que la ruta sea una unidad montada válida
+        if not p.anchor or str(p).startswith(("\\\\", "//")) or not os.path.exists(p):
             return None
-        if not p.exists() or is_protected_path(p):
+        if is_protected_path(p):
             return None
             
         usage = shutil.disk_usage(p)
@@ -180,6 +181,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     results: List[DriveUsage] = []
     if mounts:
         for mount in mounts:
+            # Validar que no sea una ruta de red antes de procesar
             if mount and not str(mount).startswith(("\\\\", "//")):
                 usage = drive_usage(mount)
                 if usage is not None:
@@ -190,22 +192,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el árbol de directorios usando una pila para evitar desbordamientos.
-    
-    Args:
-        directory: Ruta raíz desde donde comenzar el escaneo.
-        skip_protected: Si es True, omite rutas marcadas como protegidas.
-        
-    Yields:
-        Tuplas conteniendo la ruta del archivo y su tamaño en bytes.
     """
     if not directory:
         return
 
     try:
         base_path = Path(directory).resolve(strict=False)
-        if str(base_path).startswith(("\\\\", "//")):
-            return
-        if not base_path.exists() or not base_path.is_dir():
+        # Verificación defensiva contra rutas UNC o inexistentes antes de iniciar escaneo
+        if str(base_path).startswith(("\\\\", "//")) or not base_path.exists() or not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
             return
@@ -369,6 +363,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     
     try:
         p_input = Path(directory).resolve(strict=False)
+        # Validación temprana de seguridad para evitar acceso a rutas bloqueadas o externas
         if str(p_input).startswith(("\\\\", "//")):
             return ["Error: No se permiten rutas de red (UNC)."]
         if not p_input.exists():

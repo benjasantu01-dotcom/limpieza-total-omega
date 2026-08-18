@@ -1490,3 +1490,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-18T00:32:01` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` al validar la longitud y el formato del payload JSON antes de la transmisión, y añadí una validación explícita sobre el `Content-Length` de la respuesta para prevenir ataques de denegación de servicio por desbordamiento de búfer.
 - `2026-08-18T00:32:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T00:32:01` Corrida terminada. Total usado hoy: 12.
+- `2026-08-18T00:40:26` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-08-18T00:41:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-18T00:41:28` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha robustecido el escaneo defensivo en `_sum_directory_recursive` implementando una validación de seguridad contra ataques de "Path Traversal" (fugas fuera de la raíz permitida) mediante `os.path.commonpath` y detectando puntos de reparse (junctions) antes de descender recursivamente, asegurando que el escáner no pueda ser engañado para leer fuera del directorio de caché designado.
+- `2026-08-18T00:42:16` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `drive_usage` centralizando la validación de rutas mediante una verificación estricta de prefijos y disponibilidad antes de iniciar cualquier operación de I/O, evitando el acceso accidental a rutas fuera del scope permitido o no locales.
+- `2026-08-18T00:42:31` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-18T00:42:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T00:42:31` Corrida terminada. Total usado hoy: 16.
