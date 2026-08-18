@@ -96,29 +96,21 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida la integridad de la ruta para prevenir Path Traversal.
-    Comprueba que target_path sea un hijo jerárquico de base_path y no un enlace/junction.
+    Valida la integridad de la ruta para prevenir Path Traversal usando
+    la jerarquía de componentes de Pathlib, evitando trucos de string.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
-    if not target_path.is_absolute() or not base_path.is_absolute():
-        return False
-
-    # Pre-filtro de caracteres de control o invisibles para evitar confusiones de ruta
-    path_str = str(target_path)
-    if "\0" in path_str or any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
-        return False
-        
     try:
-        real_base = Path(os.path.realpath(base_path))
-        real_target = Path(os.path.realpath(target_path))
+        real_base = base_path.resolve(strict=True)
+        real_target = target_path.resolve(strict=True)
         
-        if is_protected_path(real_target) or is_protected_path(real_base):
+        # Comprobación de prefijo mediante componentes para evitar spoofing de strings
+        if real_base not in real_target.parents and real_base != real_target:
             return False
 
-        # Verifica que la ruta target sea subdirectorio de la base
-        if not str(real_target).startswith(str(real_base) + os.sep):
+        if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
         # Verifica junctions/symlinks de Windows

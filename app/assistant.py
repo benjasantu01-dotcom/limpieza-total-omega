@@ -228,11 +228,11 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     try:
         clean_val = float(val)
         if math.isfinite(clean_val):
-            # Clamp al rango permitido
             final_val = cast(max(min_v, min(clean_val, max_v)))
-            setattr(ctx, key, final_val)
+            # Re-verificar el tipo tras el cast para asegurar integridad numérica
+            if isinstance(final_val, (int, float)) and math.isfinite(float(final_val)):
+                setattr(ctx, key, final_val)
     except (ValueError, TypeError, OverflowError):
-        # Ignorar métricas malformadas o tipos incompatibles
         pass
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
@@ -327,7 +327,6 @@ def explain_area(area: Any) -> str:
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa los criterios de salud contra el contexto para identificar estados críticos."""
     problemas = []
-    # Acceso directo al diccionario de atributos del objeto para evitar múltiples getattr
     d_ctx = ctx.__dict__
     for crit in _CRITERIOS_SALUD:
         val = d_ctx.get(crit.metric_key)
@@ -484,7 +483,7 @@ def _call_gemini(
     try:
         payload_data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
-        if len(payload) > 5000: return None # Límite de tamaño preventivo
+        if len(payload) > 5000: return None
         
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
@@ -495,7 +494,6 @@ def _call_gemini(
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
             
-            # Validación de tamaño de respuesta antes de leer
             length = res.getheader("Content-Length")
             if length and int(length) > _MAX_RESPONSE_BYTES: return None
             

@@ -139,19 +139,17 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
             
-            if not p.exists():
+            if not os.path.lexists(p):
                 _EXISTS_CACHE[path_str] = False
                 return path_str
                 
             try:
                 p_abs: Path = p.resolve(strict=True)
-                if is_protected_path(p_abs):
+                if not p_abs.exists() or is_protected_path(p_abs):
                     _EXISTS_CACHE[path_str] = False
                     return ""
                 p_str: str = str(p_abs)
             except (OSError, PermissionError, RuntimeError):
-                # Si falló la resolución (ej. acceso denegado), devolvemos la ruta original
-                # sin marcarla como resuelta en caché negativo para reintentos.
                 return path_str
                 
             _EXISTS_CACHE[p_str] = True
