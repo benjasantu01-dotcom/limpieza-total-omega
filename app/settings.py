@@ -232,7 +232,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
-    if is_protected_path(ruta_str) or not ruta.exists() or ruta.is_dir():
+    if is_protected_path(ruta_str) or not ruta.exists() or ruta.is_dir() or ruta.stat().st_size > MAX_SETTINGS_SIZE:
         return _get_default_config()
 
     try:
@@ -261,11 +261,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         
+    encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+    if len(encoded_data) > MAX_SETTINGS_SIZE: return None
+        
     try:
         temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
         if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
         with open(temp_ruta, "wb") as f:
-            f.write(json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8"))
+            f.write(encoded_data)
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_ruta, ruta)

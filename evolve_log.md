@@ -1422,3 +1422,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-18T09:53:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-18T09:53:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T09:53:26` Corrida terminada. Total usado hoy: 232.
+- `2026-08-18T10:01:50` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-18T10:02:18` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-18T10:02:50` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado `check_recent_executable_in_downloads` para verificar que la ruta sea un archivo ejecutable antes de procesar sus metadatos, utilizando `SUSPICIOUS_EXECUTABLE_EXT` para asegurar consistencia heurística y prevenir errores en tipos de archivo inesperados.
+- `2026-08-18T10:02:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-18T10:03:28` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad crítica en `save()` y `load()` para asegurar que el tamaño del archivo de configuración no exceda `MAX_SETTINGS_SIZE`, previniendo ataques de agotamiento de memoria o denegación de servicio por archivos de configuración maliciosamente grandes antes de procesarlos.
+- `2026-08-18T10:03:38` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-18T10:03:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T10:03:38` Corrida terminada. Total usado hoy: 236.

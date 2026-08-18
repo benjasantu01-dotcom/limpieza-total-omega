@@ -141,7 +141,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable en zonas de riesgo fue creado recientemente."""
-    if not path or is_protected_path(path):
+    if not path or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     
     path_lower = str(path).lower()
