@@ -222,10 +222,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Defensa estricta contra symlinks y junctions
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                             
                         entry_path = Path(entry.path)
+                        # Validar ruta contra seguridad antes de cualquier acceso
                         if skip_protected and is_protected_path(entry_path):
                             continue
 

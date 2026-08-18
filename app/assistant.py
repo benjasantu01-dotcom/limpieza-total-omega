@@ -86,6 +86,7 @@ ValidatorSpec: TypeAlias = tuple[Callable, float, float]
 
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
+_MAX_MSG_CHUNK: Final[int] = 200 # Límite defensivo para trozos de texto
 
 SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
     "rutas de archivos",
@@ -321,7 +322,9 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
         if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
             continue
         if (val < crit.threshold if crit.operator == "<" else val > crit.threshold):
-            problemas.append(crit.message_format.format(val))
+            # Defensiva: truncamos el formato para evitar strings masivos
+            msg = crit.message_format.format(val)[:_MAX_MSG_CHUNK]
+            problemas.append(msg)
             if len(problemas) >= 3:
                 break
     return problemas
@@ -344,7 +347,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     if ctx.startup_count > 12:
         partes.append(f"Sí te conviene mirar los {ctx.startup_count} programas de inicio: cada uno arranca con Windows.")
         
-    return Answer(" ".join(partes), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
+    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta educativa sobre el uso de almacenamiento y espacio recuperable."""
@@ -360,7 +363,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     
     partes.append("Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra.")
     
-    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
+    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta explicativa sobre archivos sospechosos y el flujo de aislamiento."""
@@ -373,7 +376,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     
     partes.append("La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación.")
     
-    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
+    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta aclaratoria sobre el puntaje global de salud del sistema."""
@@ -387,7 +390,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
         
     partes.append("El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio, con la seguridad pesando más.")
     
-    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
+    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta explicativa sobre el impacto de los programas de inicio."""
@@ -401,7 +404,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     
     partes.append("La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows.")
     
-    return Answer(" ".join(partes), notice=OFFLINE_NOTICE)
+    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE)
 
 _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram,
@@ -441,7 +444,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
                   f"{', '.join(problemas)}.")
     else:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
-    return Answer(cuerpo, notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
+    return Answer(cuerpo[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si la configuración del sistema permite el uso del asistente en línea."""

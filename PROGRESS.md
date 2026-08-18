@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 8 | 1 | 2 | 1 | 26 |
+| 2026-08-16 | 8 | 1 | 2 | 1 | 22 |
 | 2026-08-17 | 162 | 12 | 23 | 12 | 141 |
-| 2026-08-18 | 51 | 5 | 7 | 3 | 50 |
+| 2026-08-18 | 54 | 5 | 7 | 3 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,16 +26,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **44**
 - robustez ante casos límite: **44**
 - manejo de errores y validación de entradas: **40**
-- seguridad defensiva: **35**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **24**
-- `assistant.py`: **22**
+- `assistant.py`: **23**
 - `scanner.py`: **22**
+- `browser.py`: **18**
 - `quarantine.py`: **18**
-- `browser.py`: **17**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
 - `memory.py`: **16**
 - `organizer.py`: **15**
 - `settings.py`: **15**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T05:07:42` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` implementando una validación explícita para evitar que `os.scandir` intente procesar rutas que excedan los límites de seguridad o sean puntos de reparse (junctions) que podrían causar bucles infinitos o fugas de contexto fuera del directorio analizado.
+- `2026-08-18T05:07:30` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_path` integrando `os.path.realpath` con `pathlib` de forma más robusta y añadiendo una validación explícita de `is_absolute()` para prevenir que rutas relativas o mal formadas evadan el chequeo jerárquico.
+- `2026-08-18T05:06:24` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva del motor local restringiendo la longitud de las entradas procesadas por las funciones `handle_` para evitar posibles ataques de denegación de servicio (DoS) mediante strings extremadamente largos en los mensajes de los criterios.
 - `2026-08-18T04:57:00` **startup.py** (robustez ante casos límite): Mejoré la robustez de `_resolve_and_cache_path` añadiendo un manejo explícito para `OSError` durante la resolución de rutas relativas y permisos, evitando que bloqueos de E/S de sistema (frecuentes en carpetas de sistema o archivos en uso) causen una falla en la cadena de resolución de la interfaz.
 - `2026-08-18T04:56:22` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante casos límite en la recuperación de metadatos (como archivos inexistentes o bloqueados) añadiendo un manejo de excepciones más granular en `check_recent_executable_in_downloads` y asegurando que las funciones de inspección validen la existencia del archivo antes de procesarlo, previniendo errores de `OSError` inesperados durante la iteración.
 - `2026-08-18T04:46:42` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `quarantine_file` añadiendo una verificación de existencia y estado del archivo origen justo antes de la operación de copia, mitigando condiciones de carrera si el archivo es movido o eliminado por otro proceso tras el chequeo inicial.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T04:25:28` **startup.py** (rendimiento): Se optimizó el acceso a disco en `list_startup_entries` mediante la ejecución concurrente de los escaneos de carpetas y registro, evitando el bloqueo secuencial y aprovechando que ambas fuentes son independientes.
 - `2026-08-18T04:16:13` **settings.py** (rendimiento): Optimizé `load()` para evitar accesos innecesarios al sistema de archivos y llamadas redundantes a `stat()` mediante un caché de sesión (memoria) que se invalida únicamente si el archivo original cambia, reduciendo significativamente la latencia al consultar configuraciones recurrentemente.
 - `2026-08-18T04:16:01` **scanner.py** (rendimiento): Optimizé la regla `check_recent_executable_in_downloads` para evitar la creación innecesaria de un `set` de partes de ruta (`path.parts`) en cada iteración del escáner, reemplazándolo por una verificación de pertenencia eficiente mediante `any()` y `in`.
-- `2026-08-18T04:10:08` **organizer.py** (rendimiento): Optimicé el rendimiento de `scan_for_junk` sustituyendo el método `endswith(tuple(...))` por una verificación de conjunto (`suffix.lower() in set`), evitando la creación de tuplas temporales en cada iteración y aprovechando la complejidad O(1) de las búsquedas en sets.
-- `2026-08-18T03:55:56` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje pre-calculando el desglose de pesos como un diccionario de acceso directo en el ámbito global para evitar iteraciones redundantes y la recreación constante de estructuras durante `compute_score`.
-- `2026-08-18T03:55:21` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` para evitar recrear objetos `Path` innecesarios dentro del bucle de recorrido, reduciendo el consumo de memoria y ciclos de CPU al realizar la conversión a `str` o procesar la extensión directamente desde el objeto `DirEntry` que ya ofrece `os.scandir`.

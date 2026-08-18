@@ -102,20 +102,23 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
+    if not target_path.is_absolute() or not base_path.is_absolute():
+        return False
+
     # Pre-filtro de caracteres de control o invisibles para evitar confusiones de ruta
     path_str = str(target_path)
     if "\0" in path_str or any(ord(char) < 32 or ord(char) in (0x200E, 0x200F, 0x202A, 0x202E) for char in path_str):
         return False
         
     try:
-        real_base = Path(os.path.abspath(os.path.realpath(str(base_path))))
-        real_target = Path(os.path.abspath(os.path.realpath(str(target_path))))
+        real_base = Path(os.path.realpath(base_path))
+        real_target = Path(os.path.realpath(target_path))
         
         if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
         # Verifica que la ruta target sea subdirectorio de la base
-        if os.path.commonpath([str(real_base), str(real_target)]) != str(real_base):
+        if not str(real_target).startswith(str(real_base) + os.sep):
             return False
 
         # Verifica junctions/symlinks de Windows
