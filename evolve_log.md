@@ -1278,3 +1278,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-18T08:32:17` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `scan_for_junk` para evitar llamadas redundantes a `Path` y `suffix` dentro del loop interno, realizando la comparación directamente sobre el string de nombre de archivo para mejorar el rendimiento durante recorridos extensos por disco.
 - `2026-08-18T08:32:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T08:32:17` Corrida terminada. Total usado hoy: 200.
+- `2026-08-18T08:40:16` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-18T08:40:50` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y `list_items` evitando recrear el diccionario de manifiesto y la carga redundante del archivo JSON mediante el uso de la caché existente `load_manifest`, logrando una iteración más eficiente sobre los archivos del sistema.
+- `2026-08-18T08:41:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-18T08:41:36` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-18T08:41:44` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_file` pre-filtrando la extensión del archivo una sola vez al inicio, evitando llamadas innecesarias a las funciones de chequeo heurístico que solo aplican a ejecutables, y reemplacé la búsqueda lenta en `path.parts` (que crea una tupla de todos los componentes de la ruta cada vez) por una verificación de conjunto sobre una cadena simplificada para `check_recent_executable_in_downloads`.
+- `2026-08-18T08:41:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T08:41:44` Corrida terminada. Total usado hoy: 204.

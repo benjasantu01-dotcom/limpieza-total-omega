@@ -468,6 +468,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         elif entry.name != MANIFEST_NAME and entry.is_file():
             continue
     if updated:
+        # Usamos force_reload=True para asegurar coherencia tras los cambios en disco
         new_manifest = [i for i in load_manifest(base, force_reload=True) if (quarantine_root / i.stored_name).exists()]
         save_manifest(new_manifest, base)
     return purged_count

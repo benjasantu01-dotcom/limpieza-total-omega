@@ -140,12 +140,11 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not path or is_protected_path(path):
         return None
     
-    parts = set(path.parts)
-    if not any(folder in parts for folder in WATCHED_FOLDERS):
+    path_lower = str(path).lower()
+    if not any(f"\\{folder}\\" in path_lower for folder in WATCHED_FOLDERS):
         return None
         
     try:
-        # Validación explícita de archivo regular
         if entry and not entry.is_file():
             return None
         
@@ -163,8 +162,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
         return None
         
     if path.name.lower() in SYSTEM_LOOKALIKES:
-        path_str_lower = str(path).lower()
-        if SYSTEM32_LOWER not in path_str_lower:
+        if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
@@ -172,23 +170,17 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Orquesta la ejecución de reglas heurísticas sobre un archivo.
-    Realiza una verificación de existencia física antes de la inspección.
     """
     if path is None:
         return []
         
     findings: ScanResult = []
-    
-    try:
-        if not path.exists():
-            return []
-    except (OSError, PermissionError):
-        return []
+    suffix = path.suffix.lower()
     
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
         for check in (check_system_lookalike, check_recent_executable_in_downloads):
             try:
                 if (res := check(path, entry, now_ts)):
