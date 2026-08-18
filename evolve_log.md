@@ -1483,3 +1483,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-18T00:21:27` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-18T00:21:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T00:21:27` Corrida terminada. Total usado hoy: 8.
+- `2026-08-18T00:30:13` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-08-18T00:30:46` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia (`path.exists()`) y manejo de errores de acceso en `scan_file` para evitar procesar rutas que fueron eliminadas o movidas por otros procesos mientras el bucle estaba en ejecución (condición de carrera/archivos temporales).
+- `2026-08-18T00:31:13` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Introduje una validación robusta de `mtime` en `_read_config_disk` para detectar si el archivo de configuración fue alterado externamente desde la última lectura, asegurando que la caché no devuelva datos obsoletos o corruptos.
+- `2026-08-18T00:31:40` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `parse_registry_csv` añadiendo un manejo de excepciones más granular y defensivo al extraer las rutas desde el CSV, protegiendo al motor de análisis ante filas con estructura inesperada o valores de registro malformados que podrían causar errores durante la lectura.
+- `2026-08-18T00:32:01` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` al validar la longitud y el formato del payload JSON antes de la transmisión, y añadí una validación explícita sobre el `Content-Length` de la respuesta para prevenir ataques de denegación de servicio por desbordamiento de búfer.
+- `2026-08-18T00:32:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T00:32:01` Corrida terminada. Total usado hoy: 12.

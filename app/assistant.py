@@ -497,11 +497,9 @@ def _call_gemini(
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
     
     try:
-        payload = json.dumps({
-            "contents": [{
-                "parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"}]
-            }]
-        }).encode("utf-8")
+        payload_data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"}]}]}
+        payload = json.dumps(payload_data).encode("utf-8")
+        if len(payload) > 5000: return None # Límite de tamaño preventivo
         
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
@@ -511,8 +509,13 @@ def _call_gemini(
         )
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
-            raw_res = res.read(_MAX_RESPONSE_BYTES)
-            if not raw_res: return None
+            
+            # Validación de tamaño de respuesta antes de leer
+            length = res.getheader("Content-Length")
+            if length and int(length) > _MAX_RESPONSE_BYTES: return None
+            
+            raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
+            if len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
             try:
                 data = json.loads(raw_res.decode("utf-8"))

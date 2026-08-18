@@ -155,6 +155,13 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Aplica la cadena de reglas heurísticas definidas para un archivo dado."""
     findings: ScanResult = []
     
+    # Verificación de robustez: el archivo podría haber sido borrado por el SO mientras escaneamos
+    try:
+        if not path.exists():
+            return []
+    except OSError:
+        return []
+    
     # Reglas generales (basadas en nombre)
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)

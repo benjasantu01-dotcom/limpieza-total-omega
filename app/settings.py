@@ -214,8 +214,8 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return base / SETTINGS_FILE
 
 @lru_cache(maxsize=4)
-def _read_config_disk(ruta_str: str) -> AppSettings:
-    """Lee y valida el archivo de configuración con cacheo de MTIME implícito."""
+def _read_config_disk(ruta_str: str, mtime: float) -> AppSettings:
+    """Lee y valida el archivo con chequeo de tiempo de modificación para invalidar caché."""
     ruta = Path(ruta_str)
     if not ruta.exists() or ruta.is_dir() or ruta.stat().st_size > MAX_SETTINGS_SIZE:
         return _get_default_config()
@@ -239,7 +239,8 @@ def validate(raw_values: Any) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     if is_protected_path(str(ruta)): return _get_default_config()
-    return _read_config_disk(str(ruta)).copy()
+    mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
+    return _read_config_disk(str(ruta), mtime).copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
