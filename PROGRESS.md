@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 23
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 77 | 8 | 11 | 6 | 78 |
-| 2026-08-18 | 136 | 15 | 21 | 11 | 141 |
+| 2026-08-17 | 77 | 8 | 11 | 6 | 74 |
+| 2026-08-18 | 139 | 15 | 21 | 11 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **43**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **37**
-- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `scanner.py`: **21**
 - `quarantine.py`: **20**
 - `organizer.py`: **18**
 - `duplicates.py`: **16**
 - `diskreport.py`: **16**
+- `settings.py`: **15**
 - `browser.py`: **14**
-- `settings.py`: **14**
 - `memory.py`: **13**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `main.py`: **11**
 - `startup.py`: **9**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T13:59:32` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` reemplazando la creación implícita de directorios y escritura directa por un flujo que verifica la seguridad de la ruta resultante antes de cualquier manipulación de I/O, evitando condiciones de carrera o escrituras fuera de áreas permitidas.
+- `2026-08-18T13:58:57` **assistant.py** (seguridad defensiva): Se endurece el filtrado defensivo en `context_as_text` para garantizar que, ante cualquier error inesperado en la generación de la cadena, se devuelva un mensaje de error seguro en lugar de una salida potencialmente malformada o sensible.
+- `2026-08-18T13:57:19` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` y `save` ante situaciones donde el directorio de configuración o el archivo mismo presentan estados inesperados (como ser un directorio en lugar de un archivo), evitando excepciones no capturadas al realizar operaciones de sistema.
 - `2026-08-18T13:48:47` **scanner.py** (robustez ante casos límite): Se ha añadido un filtro de validación de rutas mediante `is_protected_path` en `scan_directory` y `process_entry` para garantizar que los permisos denegados o rutas de sistema no causen excepciones no controladas durante la resolución, mejorando la robustez frente a errores de acceso al sistema de archivos.
 - `2026-08-18T13:47:27` **quarantine.py** (robustez ante casos límite): Mejora la resiliencia ante errores de concurrencia y estados inconsistentes del sistema de archivos al añadir una validación de existencia `stored_file.exists()` dentro de `restore_item`, evitando excepciones innecesarias si el archivo fue movido o borrado manualmente durante la ejecución.
 - `2026-08-18T13:38:59` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones contra rutas que apuntan a dispositivos de bloque o pipes, y añadiendo chequeos de integridad en la resolución de rutas para evitar excepciones al iterar sobre directorios con permisos denegados o archivos inexistentes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T13:06:49` **quarantine.py** (rendimiento): Optimicé `list_items` y `summarize` para evitar la sobrecarga de múltiples llamados a `load_manifest` mediante el uso de una lista local, reduciendo la carga de I/O y el procesamiento del JSON.
 - `2026-08-18T13:06:17` **organizer.py** (rendimiento): Optimizé el escaneo en `scan_for_junk` y `_is_allowed_directory` reemplazando iteraciones redundantes y verificaciones de cadenas por búsquedas en sets de complejidad O(1), además de consolidar la lógica de filtrado de extensiones para evitar llamadas innecesarias a `rfind` y `lower` dentro del bucle.
 - `2026-08-18T12:58:00` **main.py** (rendimiento): Optimicé el manejo de la cola de logs y el redibujo de la interfaz eliminando `after_idle` innecesarios y consolidando las actualizaciones de estado en una sola pasada lógica dentro del hilo principal, lo que reduce drásticamente el overhead de redibujo y evita la saturación del loop de eventos durante tareas intensivas.
-- `2026-08-18T12:56:51` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje final eliminando el uso de `round()` y `int()` repetidos mediante la creación de un acumulador pre-redondeado, y eliminé la verificación redundante de `math.isfinite` dentro de `_calculate_breakdown` dado que `_clamp` ya garantiza la integridad del valor, mejorando ligeramente el rendimiento en cada iteración del bucle de análisis.
-- `2026-08-18T12:56:10` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar llamadas redundantes a `resolve(strict=True)` durante el escaneo recursivo, moviendo esta validación costosa solo al momento de procesar archivos individuales, lo cual mejora significativamente el rendimiento en árboles de directorios grandes.
-- `2026-08-18T12:47:26` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y las funciones de análisis al evitar llamadas redundantes a `entry.stat()` mediante el almacenamiento del resultado de `stat()` en una variable local, reduciendo drásticamente las syscalls al sistema de archivos durante la iteración.

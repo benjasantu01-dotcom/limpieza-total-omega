@@ -360,12 +360,13 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).expanduser().resolve()
-        
-        # Validación de seguridad: ensure_safe_to_modify lanza error si no es seguro
-        ensure_safe_to_modify(path_obj)
-        
+        # Ensure parent exists before validation if needed, then validate
         if path_obj.parent and not path_obj.parent.exists():
             path_obj.parent.mkdir(parents=True, exist_ok=True)
+            
+        # Validación: garantiza que la ruta sea segura antes de cualquier escritura
+        ensure_safe_to_modify(path_obj)
+        
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):

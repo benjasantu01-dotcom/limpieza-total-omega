@@ -574,3 +574,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-08-18T13:48:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un filtro de validación de rutas mediante `is_protected_path` en `scan_directory` y `process_entry` para garantizar que los permisos denegados o rutas de sistema no causen excepciones no controladas durante la resolución, mejorando la robustez frente a errores de acceso al sistema de archivos.
 - `2026-08-18T13:48:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T13:48:47` Corrida terminada. Total usado hoy: 324.
+- `2026-08-18T13:56:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-18T13:57:19` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `load` y `save` ante situaciones donde el directorio de configuración o el archivo mismo presentan estados inesperados (como ser un directorio en lugar de un archivo), evitando excepciones no capturadas al realizar operaciones de sistema.
+- `2026-08-18T13:57:22` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-18T13:58:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-18T13:58:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-18T13:58:57` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endurece el filtrado defensivo en `context_as_text` para garantizar que, ante cualquier error inesperado en la generación de la cadena, se devuelva un mensaje de error seguro en lugar de una salida potencialmente malformada o sensible.
+- `2026-08-18T13:59:32` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `save_logo_svg` reemplazando la creación implícita de directorios y escritura directa por un flujo que verifica la seguridad de la ruta resultante antes de cualquier manipulación de I/O, evitando condiciones de carrera o escrituras fuera de áreas permitidas.
+- `2026-08-18T13:59:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T13:59:32` Corrida terminada. Total usado hoy: 328.

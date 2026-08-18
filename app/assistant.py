@@ -300,10 +300,10 @@ def context_as_text(context: SystemContext) -> str:
         texto_unificado = "\n".join(lines)
         texto_limpio = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", texto_unificado))
         if not _ensure_safe_text(texto_limpio):
-            return "Error de seguridad en la serialización de contexto."
+            return "Error: el contexto generado no cumple los estándares de seguridad."
         return texto_limpio
     except Exception:
-        return "Error al procesar métricas para el asistente."
+        return "Error crítico al procesar métricas de seguridad."
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Convierte una métrica a string formateado."""

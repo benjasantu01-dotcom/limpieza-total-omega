@@ -111,7 +111,7 @@ def _get_default_config() -> AppSettings:
         "analisis_en_paralelo": True,
         "asistente_activado": False,
         "asistente_clave_api": "",
-        "asistente_enviar_metricas": True,
+        "asistente_enviar_METRICAS": True,
         "asistente_modelo": "gemini-3.1-flash-lite",
     }
 
@@ -259,7 +259,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
-    if is_protected_path(str(ruta)) or not _Validators._is_safe_path(str(ruta.parent)): 
+    if is_protected_path(str(ruta)) or (ruta.exists() and not ruta.is_file()):
+        return None
+        
+    if not _Validators._is_safe_path(str(ruta.parent)): 
         return None
     
     cleaned_settings = validate(values)
