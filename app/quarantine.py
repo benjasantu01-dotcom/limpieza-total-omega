@@ -191,7 +191,7 @@ def _manifest_path(base_dir: Path) -> Path:
 
 
 def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
-    """Valida que la ruta esté dentro del directorio raíz de cuarentena."""
+    """Valida que la ruta esté estrictamente dentro del directorio raíz de cuarentena."""
     return is_within_directory(path, root)
 
 
@@ -456,7 +456,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items = load_manifest(base)
     if not items:
         return 0
-    item_map = {i.stored_name: i for i in items}
+    item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
     purged_count = 0
     updated = False
     for entry in quarantine_root.iterdir():
@@ -467,6 +467,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                     purged_count += 1
                     updated = True
         elif entry.name != MANIFEST_NAME and entry.is_file():
+            # Archivo no listado en el manifiesto: ignorar por precaución
             continue
     if updated:
         # Usamos force_reload=True para asegurar coherencia tras los cambios en disco

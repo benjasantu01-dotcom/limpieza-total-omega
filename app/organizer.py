@@ -88,7 +88,7 @@ class JunkFile:
 
 
 def _is_junction(path: Path) -> bool:
-    """Verifica si una entrada es un punto de reparse (Junction/Symlink)."""
+    """Detecta si la ruta es un punto de reparse (Junction/Symlink) para evitar recursión circular."""
     try:
         return path.is_symlink() or (os.name == "nt" and "reparse" in os.stat(path).st_file_attributes)
     except (OSError, AttributeError):
@@ -96,14 +96,14 @@ def _is_junction(path: Path) -> bool:
 
 
 def _is_junk_path(path: Path) -> bool:
-    """Valida si la extensión del archivo está en la lista de JUNK_EXTENSIONS."""
+    """Verifica la extensión contra la lista global de extensiones temporales."""
     return path.suffix.lower() in _LOWER_JUNK_EXTS
 
 
 def _generate_unique_target(target: Path) -> Path:
     """
-    Genera un nombre de archivo único para evitar colisiones en destino.
-    Si 'archivo.tmp' existe, intenta 'archivo_1.tmp', 'archivo_2.tmp', etc.
+    Resuelve colisiones de nombres añadiendo un contador incremental al nombre base.
+    Ejemplo: 'archivo.tmp' -> 'archivo_1.tmp' si ya existe.
     """
     if not target.exists():
         return target
@@ -119,14 +119,13 @@ def _generate_unique_target(target: Path) -> Path:
 
 
 def _is_allowed_directory(name: str) -> bool:
-    """Valida si el nombre del directorio no está en la lista de bloqueo del sistema."""
+    """Filtra directorios basándose en la lista negra de sistemas críticos."""
     return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado por otro proceso intentando abrirlo en modo lectura.
-    Retorna True si el acceso es denegado o el archivo está en uso exclusivo.
+    Intenta abrir el archivo en modo lectura binaria. Si falla, se considera bloqueado.
     """
     try:
         with open(path, "rb"):
@@ -136,14 +135,14 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Verifica si el destino es una subcarpeta o el mismo origen para evitar bucles de archivo."""
+    """Verifica si la operación de movimiento causaría una referencia circular en el sistema de archivos."""
     return src == dest or src == dest.parent or dest in src.parents
 
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Validación de seguridad combinada.
-    Retorna False si el archivo está protegido, es de sistema, o si viola jerarquías de seguridad.
+    Validación de seguridad centralizada para operaciones de disco.
+    Verifica existencia, bloqueos de sistema, junction points y jerarquía de rutas.
     """
     try:
         if not src.exists() or not src.is_file() or _is_junction(src):
@@ -164,18 +163,17 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """Verifica si el movimiento es seguro, asegurando que no cruce fronteras de unidades o permisos."""
+    """Encapsula las reglas de seguridad y condiciones técnicas previas a mover un archivo."""
     current_path = junk_file.path
     dest_abs = dest.resolve()
     
-    # Verificación extra contra listas protegidas antes de realizar cualquier operación
     if is_protected_path(current_path) or is_protected_path(dest_abs):
         return False
 
     if not _is_safe_for_disk_op(current_path, dest_abs):
         return False
         
-    # shutil.move no garantiza comportamiento atómico entre diferentes puntos de montaje
+    # shutil.move no garantiza comportamiento atómico entre diferentes unidades
     if _is_file_locked(current_path) or current_path.anchor != dest_abs.anchor:
         return False
         
@@ -184,8 +182,8 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Escanea rutas recursivamente buscando archivos basura identificables.
-    Aplica exclusión de junctions y directorios bloqueados para evitar escaneos infinitos.
+    Escanea directorios buscando candidatos de limpieza de forma recursiva.
+    Filtra directorios no permitidos y junctions para mantener integridad.
     """
     raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -202,7 +200,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
                 dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
                 
                 for name in files:
-                    # Optimización: evitar instanciar Path y llamar a .suffix si es posible
                     dot_idx = name.rfind('.')
                     if dot_idx != -1 and name[dot_idx:].lower() in _LOWER_JUNK_EXTS:
                         f_path = root_path / name
@@ -218,7 +215,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena los archivos detectados según el criterio especificado en SortConfig."""
+    """Ordena una lista de archivos basura según un criterio configurado."""
     if not isinstance(files, list):
         return []
         
@@ -235,8 +232,8 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve una lista de objetos JunkFile a una carpeta de revisión.
-    Valida espacio en disco y permisos antes de cada operación individual de movimiento.
+    Mueve los archivos a una carpeta intermedia de revisión tras validar espacio y permisos.
+    Retorna la ruta de la carpeta de revisión utilizada.
     """
     if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
@@ -245,7 +242,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
-        if not dest_base.is_dir() or not is_safe_to_modify(dest_base): return Path(".")
+        if not dest_base.is_dir() or not is_safe_to_modify(dest_base): 
+            return Path(".")
     except (OSError, PermissionError, RuntimeError):
         return Path(".")
 
@@ -254,13 +252,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
         try:
             src_path = junk_file.path.resolve()
-            if not src_path.exists() or not src_path.is_file() or _is_junction(src_path):
-                continue
             
             if not _is_safe_to_move(junk_file, dest_base):
                 continue
             
-            # Verificación preventiva de espacio para evitar fallos intermedios
+            # Verificación preventiva de espacio en disco
             if shutil.disk_usage(dest_base).free <= junk_file.size_bytes:
                 continue
                 
@@ -276,8 +272,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina archivos de la carpeta de revisión después de validar que residan exclusivamente
-    dentro del directorio de cuarentena y no estén bloqueados.
+    Elimina archivos de forma permanente tras verificar que residan en la zona de cuarentena.
+    Retorna la cantidad total de archivos eliminados.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -294,11 +290,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         for item in dest.iterdir():
             try:
                 resolved_item = item.resolve()
-                # Validación de seguridad: el archivo debe estar físicamente bajo la carpeta de cuarentena
                 if not resolved_item.is_file() or _is_junction(resolved_item):
                     continue
                 
-                # Verificamos que el item esté realmente contenido en el destino usando is_relative_to (Python 3.9+)
+                # Validación de seguridad: debe estar bajo el directorio de cuarentena
                 if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                     if not _is_file_locked(resolved_item):
                         ensure_safe_to_modify(resolved_item)
