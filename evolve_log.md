@@ -760,3 +760,10 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-18T04:10:23` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimizé `summarize` y `total_quarantined_bytes` reemplazando llamadas repetitivas a `load_manifest()` (que re-procesa el JSON y recalcula hashes) por una única carga de memoria, mejorando el rendimiento en listas largas.
 - `2026-08-18T04:10:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T04:10:23` Corrida terminada. Total usado hoy: 96.
+- `2026-08-18T04:14:49` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-18T04:15:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-18T04:15:37` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-18T04:16:01` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la regla `check_recent_executable_in_downloads` para evitar la creación innecesaria de un `set` de partes de ruta (`path.parts`) en cada iteración del escáner, reemplazándolo por una verificación de pertenencia eficiente mediante `any()` y `in`.
+- `2026-08-18T04:16:13` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` para evitar accesos innecesarios al sistema de archivos y llamadas redundantes a `stat()` mediante un caché de sesión (memoria) que se invalida únicamente si el archivo original cambia, reduciendo significativamente la latencia al consultar configuraciones recurrentemente.
+- `2026-08-18T04:16:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T04:16:13` Corrida terminada. Total usado hoy: 100.

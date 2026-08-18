@@ -132,8 +132,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not isinstance(entry, os.DirEntry) or is_protected_path(path):
         return None
     
-    path_parts_lower = {p.lower() for p in path.parts}
-    if WATCHED_FOLDERS.isdisjoint(path_parts_lower):
+    path_str = str(path).lower()
+    if not any(folder in path_str for folder in WATCHED_FOLDERS):
         return None
         
     try:

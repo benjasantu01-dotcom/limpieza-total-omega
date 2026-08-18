@@ -38,6 +38,9 @@ from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
 
+# Caché interno para evitar I/O repetido en la misma ejecución
+_SESSION_CACHE: dict[str, tuple[float, AppSettings]] = {}
+
 class ConfigKey(Enum):
     """Enumeración de claves permitidas en el diccionario de configuración."""
     TEMA = "tema"
@@ -213,18 +216,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if not _Validators._is_safe_path(str(base)): return SETTINGS_DIR / SETTINGS_FILE
     return base / SETTINGS_FILE
 
-@lru_cache(maxsize=4)
-def _read_config_disk(ruta_str: str, mtime: float) -> AppSettings:
-    """Lee y valida el archivo con chequeo de tiempo de modificación para invalidar caché."""
-    ruta = Path(ruta_str)
-    if not ruta.exists() or ruta.is_dir() or ruta.stat().st_size > MAX_SETTINGS_SIZE:
-        return _get_default_config()
-    try:
-        data = json.loads(ruta.read_bytes())
-        return validate(data) if isinstance(data, dict) else _get_default_config()
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
-        return _get_default_config()
-
 def validate(raw_values: Any) -> AppSettings:
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
@@ -238,10 +229,24 @@ def validate(raw_values: Any) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
-    if is_protected_path(str(ruta)): return _get_default_config()
-    if not ruta.exists() or ruta.is_dir(): return _get_default_config()
-    mtime = ruta.stat().st_mtime
-    return _read_config_disk(str(ruta), mtime).copy()
+    ruta_str = str(ruta)
+    
+    if is_protected_path(ruta_str) or not ruta.exists() or ruta.is_dir():
+        return _get_default_config()
+
+    try:
+        mtime = ruta.stat().st_mtime
+        if ruta_str in _SESSION_CACHE:
+            cached_mtime, cached_data = _SESSION_CACHE[ruta_str]
+            if cached_mtime == mtime:
+                return cached_data.copy()
+        
+        data = json.loads(ruta.read_bytes())
+        config = validate(data) if isinstance(data, dict) else _get_default_config()
+        _SESSION_CACHE[ruta_str] = (mtime, config)
+        return config.copy()
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
+        return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
@@ -262,7 +267,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_ruta, ruta)
-        _read_config_disk.cache_clear()
+        if str(ruta) in _SESSION_CACHE: del _SESSION_CACHE[str(ruta)]
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError, TypeError):
         return None
