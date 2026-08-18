@@ -672,3 +672,4 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption
 - `2026-08-18T15:00:22` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-08-18T15:00:22` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T15:00:22` Corrida terminada. Total usado hoy: 350.
+- `2026-08-18T15:08:20` Presupuesto diario agotado (350 usados). Corte hasta mañana.
