@@ -713,3 +713,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-18T03:45:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-08-18T03:45:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T03:45:54` Corrida terminada. Total usado hoy: 88.
+- `2026-08-18T03:54:24` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-18T03:54:53` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la recursión en `_sum_directory_recursive` pasando el `memo` por referencia para evitar el cálculo redundante del tamaño de subdirectorios compartidos, mejorando significativamente el rendimiento en estructuras de perfiles con carpetas anidadas.
+- `2026-08-18T03:55:21` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `_collect_summary_data` para evitar recrear objetos `Path` innecesarios dentro del bucle de recorrido, reduciendo el consumo de memoria y ciclos de CPU al realizar la conversión a `str` o procesar la extensión directamente desde el objeto `DirEntry` que ya ofrece `os.scandir`.
+- `2026-08-18T03:55:45` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-18T03:55:56` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje pre-calculando el desglose de pesos como un diccionario de acceso directo en el ámbito global para evitar iteraciones redundantes y la recreación constante de estructuras durante `compute_score`.
+- `2026-08-18T03:55:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T03:55:56` Corrida terminada. Total usado hoy: 92.

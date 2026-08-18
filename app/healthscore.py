@@ -78,9 +78,9 @@ _WEIGHT_FACTORS: Final[Dict[MetricKey, float]] = {
     k: (max(0, w) * 100.0 / _TOTAL_WEIGHTS) if _TOTAL_WEIGHTS > 0 else 0.0 
     for k, w in WEIGHTS.items()
 }
-_WEIGHT_ITEMS: Final[List[Tuple[MetricKey, float]]] = [(k, _WEIGHT_FACTORS[k]) for k in WEIGHTS]
-_WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = [(k, int(round(_WEIGHT_FACTORS[k]))) for k in WEIGHTS]
-_WEIGHT_FACTORS_DICT: Final[Dict[MetricKey, float]] = _WEIGHT_FACTORS
+# Pre-cálculo de factores enteros para rendimiento constante en cada corrida
+_WEIGHT_FACTORS_INT: Final[Dict[MetricKey, int]] = {k: int(round(f)) for k, f in _WEIGHT_FACTORS.items()}
+_WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(_WEIGHT_FACTORS_INT.items())
 
 _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, "Revisá los {} hallazgo(s) de seguridad.", 1, "suspicious_count"),
@@ -177,7 +177,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
-    return {area: int(round(_clamp(ratios.get(area, 0.0) or 0.0, 0.0, 1.0) * factor)) for area, factor in _WEIGHT_FACTORS_DICT.items()}
+    return {area: int(round(_clamp(ratios.get(area, 0.0), 0.0, 1.0) * _WEIGHT_FACTORS[area])) for area in _WEIGHT_FACTORS}
 
 def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
     recommendations: List[str] = []

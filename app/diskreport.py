@@ -359,6 +359,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
     ext_counts: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, Path]] = []
     
+    # Optimizamos evitando conversión innecesaria a Path en cada paso
     for path, size in walk_files(directory, skip_protected):
         total_bytes += size
         total_files += 1

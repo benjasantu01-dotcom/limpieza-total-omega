@@ -182,15 +182,11 @@ def _sum_directory_recursive(
     Calcula el peso total de una carpeta mediante DFS con recursión limitada 
     por MAX_SCAN_DEPTH. Utiliza 'memo' para evitar procesamiento redundante.
     """
-    root_path = Path(root_dir).resolve()
     if not root_dir or not isinstance(root_dir, str):
         return 0
 
     def _walk(current_dir: str, depth: int) -> int:
         if depth > MAX_SCAN_DEPTH or is_protected_path(Path(current_dir)):
-            return 0
-            
-        if os.path.commonpath([str(root_path), str(Path(current_dir).resolve())]) != str(root_path):
             return 0
             
         if current_dir in memo:
@@ -215,7 +211,7 @@ def _sum_directory_recursive(
         memo[current_dir] = total
         return total
 
-    return _walk(str(root_path), 0)
+    return _walk(root_dir, 0)
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
