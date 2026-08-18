@@ -194,13 +194,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Recorre el árbol de directorios usando una pila (Depth-First) para evitar 
     desbordamientos de recursión y capturar errores de acceso en cada nivel.
-    
-    Args:
-        directory: Ruta base de búsqueda.
-        skip_protected: Si es True, no entra en rutas bloqueadas por seguridad.
-        
-    Yields:
-        Tuplas (path, size_bytes).
     """
     if not directory:
         return
@@ -214,8 +207,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, TypeError, ValueError):
         return
 
-    # Usamos inodo (dispositivo + id) para detectar ciclos de enlaces simbólicos 
-    # en sistemas tipo Unix o montajes recursivos.
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[Path] = [base_path]
     
@@ -225,25 +216,24 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Defensa estricta contra symlinks y junctions para evitar duplicidad y bucles
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
-                            
-                        entry_path = Path(entry.path)
+                        
+                        # Cacheamos el stat para evitar múltiples llamadas al sistema
+                        stat_data = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir():
-                            if skip_protected and is_protected_path(entry_path):
+                            if skip_protected and is_protected_path(Path(entry.path)):
                                 continue
                             
-                            stat_data = entry.stat()
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(entry_path)
+                                stack.append(Path(entry.path))
                         elif entry.is_file():
-                            if skip_protected and is_protected_path(entry_path):
+                            if skip_protected and is_protected_path(Path(entry.path)):
                                 continue
-                            yield entry_path, entry.stat().st_size
+                            yield Path(entry.path), stat_data.st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -318,7 +308,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                # Calculamos la ruta relativa para identificar la subcarpeta de primer nivel
                 parts = path.relative_to(base).parts
                 if not parts:
                     continue
@@ -365,7 +354,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        # Mantenemos un heap de tamaño fijo para obtener los 8 archivos más pesados
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:

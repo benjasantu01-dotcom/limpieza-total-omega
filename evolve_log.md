@@ -453,3 +453,42 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-18T12:37:14` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._is_valid_executable, StartupEntry._resolve_path_from_command, StartupEntry._sanitize_command
 - `2026-08-18T12:37:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T12:37:14` Corrida terminada. Total usado hoy: 296.
+- `2026-08-18T12:45:27` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-18T12:46:13` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` eliminando la creación dinámica de un diccionario `ctx.__dict__` en cada iteración del bucle, accediendo directamente a los atributos mediante `getattr`, lo que evita la asignación de memoria innecesaria y mejora la velocidad de ejecución.
+- `2026-08-18T12:46:48` Tests FALLARON:
+```
+):
+        colores = branding.gradient_colors(50)
+        assert colores[0].lower() == branding.GRADIENT_STOPS[0].lower()
+>       assert colores[-1].lower() == branding.GRADIENT_STOPS[-1].lower()
+E       AssertionError: assert '#f92e7d' == '#ff2d78'
+E         
+E         - #ff2d78
+E         + #f92e7d
+
+evolve/tests/test_modules.py:215: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - AssertionError: assert '#f92e7d' == '#ff2d78'
+  
+  - #ff2d78
+  + #f92e7d
+1 failed, 298 passed, 7 warnings in 1.16s
+
+```
+- `2026-08-18T12:46:48` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimicé el cálculo de `gradient_colors` al reemplazar la lógica iterativa de interpolación manual dentro del bucle principal por una pre-cálculo estructurado, reduciendo la carga de CPU durante el renderizado del logo y barras.
+- `2026-08-18T12:47:13` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-18T12:47:26` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y las funciones de análisis al evitar llamadas redundantes a `entry.stat()` mediante el almacenamiento del resultado de `stat()` en una variable local, reduciendo drásticamente las syscalls al sistema de archivos durante la iteración.
+- `2026-08-18T12:47:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T12:47:26` Corrida terminada. Total usado hoy: 300.

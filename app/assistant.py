@@ -327,9 +327,8 @@ def explain_area(area: Any) -> str:
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa los criterios de salud contra el contexto para identificar estados críticos."""
     problemas = []
-    d_ctx = ctx.__dict__
     for crit in _CRITERIOS_SALUD:
-        val = d_ctx.get(crit.metric_key)
+        val = getattr(ctx, crit.metric_key)
         if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
             continue
         
