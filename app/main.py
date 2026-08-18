@@ -1342,6 +1342,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
         
         pid = int(raw)
+        # Verificación básica para evitar procesos críticos del sistema
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return

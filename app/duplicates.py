@@ -186,11 +186,13 @@ def _collect_candidates(
         except (OSError, PermissionError): pass
 
     if directories is None: return {}
-    for directory in directories:
-        if directory:
-            try:
-                _scan(Path(directory).resolve(strict=True))
-            except (OSError, RuntimeError): continue
+    for item in directories:
+        if not item: continue
+        try:
+            path_item = Path(item).resolve(strict=True)
+            if path_item.is_dir():
+                _scan(path_item)
+        except (OSError, RuntimeError, ValueError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 

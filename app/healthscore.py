@@ -192,7 +192,8 @@ def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[
     for rule in _RECOMMENDATION_RULES:
         current_area_ratio = ratios.get(rule.area, 1.0)
         if not math.isfinite(current_area_ratio) or _clamp(current_area_ratio, 0.0, 1.0) < rule.threshold:
-            metric_value = getattr(metrics, rule.metric_attr, None) if rule.metric_attr else None
+            # Validar que el atributo exista en la dataclass para evitar errores en tiempo de ejecución
+            metric_value = getattr(metrics, rule.metric_attr, None) if rule.metric_attr and hasattr(metrics, rule.metric_attr) else None
             if rule.expected_args > 0:
                 if metric_value is not None and isinstance(metric_value, (int, float)) and math.isfinite(float(metric_value)):
                     try: 

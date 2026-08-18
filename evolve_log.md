@@ -1134,3 +1134,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-18T07:00:32` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-18T07:00:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T07:00:32` Corrida terminada. Total usado hoy: 164.
+- `2026-08-18T07:08:17` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-08-18T07:08:43` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-18T07:09:08` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `find_duplicates` añadiendo validación de tipo y contenido para los directorios de entrada, evitando que llamadas con entradas inválidas propaguen errores inesperados hacia la lógica de escaneo.
+- `2026-08-18T07:09:33` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_generate_recommendations` validando la existencia del atributo en `SystemMetrics` antes de intentar acceder a él, evitando posibles errores de `AttributeError` si la configuración de reglas se desincroniza con el modelo de datos.
+- `2026-08-18T07:10:27` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `on_trim_process` y `on_restore_quarantine` mediante la validación proactiva de entradas antes de invocar operaciones de sistema, previniendo errores en tiempo de ejecución y mejorando el manejo de datos malformados.
+- `2026-08-18T07:10:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T07:10:27` Corrida terminada. Total usado hoy: 168.
