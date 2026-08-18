@@ -105,18 +105,18 @@ class Scanner:
             return
         
         try:
+            target_path = Path(entry.path)
+            
+            # Chequeo de seguridad preventivo
+            if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
+                return
+
             # Chequeo de existencia física antes de operar
             if not os.path.exists(entry.path) or not os.access(entry.path, os.R_OK):
                 return
 
             # Salto preventivo para evitar bucles o acceso a rutas fuera del alcance
             if entry.is_symlink() or self._is_reparse_point(entry):
-                return
-
-            target_path = Path(entry.path)
-            
-            # Filtro de seguridad obligatorio antes de cualquier operación
-            if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
 
             if not self._is_safe_entry(target_path):
@@ -218,6 +218,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     try:
         raw_path = Path(directory)
         path_input = raw_path.resolve(strict=True)
+        # Filtro de seguridad inicial crítico antes de iniciar el escaneo
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):

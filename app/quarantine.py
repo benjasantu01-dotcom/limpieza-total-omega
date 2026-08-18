@@ -393,10 +393,10 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     stored_file = (base_path / match.stored_name).resolve()
     if not _is_valid_quarantine_path(stored_file, base_path):
         raise UnsafePathError("Acceso fuera del sandbox de cuarentena detectado.")
-    if not stored_file.is_file():
+    if not stored_file.exists() or not stored_file.is_file():
         items.remove(match)
         save_manifest(items, base)
-        raise FileNotFoundError("Archivo en cuarentena no localizado.")
+        raise FileNotFoundError("Archivo en cuarentena no localizado en disco.")
     if not match.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida.")
     destination = Path(match.original_path).resolve()

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 77 | 8 | 11 | 6 | 82 |
-| 2026-08-18 | 134 | 15 | 20 | 11 | 140 |
+| 2026-08-17 | 77 | 8 | 11 | 6 | 78 |
+| 2026-08-18 | 136 | 15 | 21 | 11 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **43**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
 - manejo de errores y validación de entradas: **37**
 - seguridad defensiva: **36**
 
@@ -31,8 +31,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `healthscore.py`: **23**
 - `assistant.py`: **21**
-- `scanner.py`: **20**
-- `quarantine.py`: **19**
+- `scanner.py`: **21**
+- `quarantine.py`: **20**
 - `organizer.py`: **18**
 - `duplicates.py`: **16**
 - `diskreport.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T13:48:47` **scanner.py** (robustez ante casos límite): Se ha añadido un filtro de validación de rutas mediante `is_protected_path` en `scan_directory` y `process_entry` para garantizar que los permisos denegados o rutas de sistema no causen excepciones no controladas durante la resolución, mejorando la robustez frente a errores de acceso al sistema de archivos.
+- `2026-08-18T13:47:27` **quarantine.py** (robustez ante casos límite): Mejora la resiliencia ante errores de concurrencia y estados inconsistentes del sistema de archivos al añadir una validación de existencia `stored_file.exists()` dentro de `restore_item`, evitando excepciones innecesarias si el archivo fue movido o borrado manualmente durante la ejecución.
 - `2026-08-18T13:38:59` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones contra rutas que apuntan a dispositivos de bloque o pipes, y añadiendo chequeos de integridad en la resolución de rutas para evitar excepciones al iterar sobre directorios con permisos denegados o archivos inexistentes.
 - `2026-08-18T13:37:02` **healthscore.py** (robustez ante casos límite): Se mejoró la robustez de `compute_score` asegurando que las métricas calculadas no solo sean finitas, sino que se verifiquen explícitamente antes de generar el resultado, evitando comportamientos indefinidos si las funciones de puntuación devolvieran valores no numéricos ante entradas extremas.
 - `2026-08-18T13:27:47` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `suggest_keeper` y `format_group` ante errores de resolución de rutas (como enlaces simbólicos rotos o permisos denegados) al comparar el `keeper` con las rutas del grupo, evitando excepciones innecesarias en la interfaz.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T12:56:51` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje final eliminando el uso de `round()` y `int()` repetidos mediante la creación de un acumulador pre-redondeado, y eliminé la verificación redundante de `math.isfinite` dentro de `_calculate_breakdown` dado que `_clamp` ya garantiza la integridad del valor, mejorando ligeramente el rendimiento en cada iteración del bucle de análisis.
 - `2026-08-18T12:56:10` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar llamadas redundantes a `resolve(strict=True)` durante el escaneo recursivo, moviendo esta validación costosa solo al momento de procesar archivos individuales, lo cual mejora significativamente el rendimiento en árboles de directorios grandes.
 - `2026-08-18T12:47:26` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y las funciones de análisis al evitar llamadas redundantes a `entry.stat()` mediante el almacenamiento del resultado de `stat()` en una variable local, reduciendo drásticamente las syscalls al sistema de archivos durante la iteración.
-- `2026-08-18T12:46:13` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando la creación dinámica de un diccionario `ctx.__dict__` en cada iteración del bucle, accediendo directamente a los atributos mediante `getattr`, lo que evita la asignación de memoria innecesaria y mejora la velocidad de ejecución.
-- `2026-08-18T12:37:05` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez de los tipos mediante la adición de docstrings técnicos en las funciones críticas y la corrección de inconsistencias en los tipos de datos (normalizando `asistente_enviar_metricas`), garantizando que la documentación refleje con precisión las restricciones de seguridad y el comportamiento de la validación.
