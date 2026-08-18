@@ -76,6 +76,16 @@ class BrowserCache:
         return round(self.size_bytes / (1024 * 1024), 2)
 
 
+def _get_kernel32() -> Optional[ctypes.WinDLL]:
+    """Retorna una referencia al kernel32 de Windows si está disponible."""
+    if os.name != 'nt':
+        return None
+    try:
+        return ctypes.windll.kernel32
+    except (AttributeError, OSError):
+        return None
+
+
 def base_directories() -> List[Path]:
     """Retorna la lista de directorios base del sistema para buscar perfiles."""
     if os.name != "nt":
@@ -230,14 +240,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
             return 0
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
-        k32: Optional[ctypes.WinDLL] = None
-        if os.name == 'nt':
-            try:
-                k32 = ctypes.windll.kernel32
-            except (AttributeError, OSError):
-                k32 = None
-                
-        return _sum_directory_recursive(str(p_path), is_junction, k32, {})
+        return _sum_directory_recursive(str(p_path), is_junction, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -262,12 +265,7 @@ def detect_profiles(
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
-    k32: Optional[ctypes.WinDLL] = None
-    if os.name == 'nt':
-        try:
-            k32 = ctypes.windll.kernel32
-        except (AttributeError, OSError):
-            pass
+    k32 = _get_kernel32()
     
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
