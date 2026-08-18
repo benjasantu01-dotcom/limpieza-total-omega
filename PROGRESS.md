@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-16 | 53 | 6 | 7 | 5 | 79 |
+| 2026-08-16 | 53 | 6 | 7 | 5 | 75 |
 | 2026-08-17 | 162 | 12 | 23 | 12 | 141 |
-| 2026-08-18 | 3 | 0 | 0 | 0 | 1 |
+| 2026-08-18 | 4 | 0 | 1 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - rendimiento: **45**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **42**
 - manejo de errores y validación de entradas: **40**
 - seguridad defensiva: **37**
 
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **24**
 - `assistant.py`: **23**
 - `scanner.py`: **21**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `browser.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-18T00:20:57` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `_is_file_locked` para manejar archivos bloqueados de forma que no lance excepciones bloqueantes ni falsos positivos, y se mejoró la validación del espacio en `quarantine_file` para prevenir estados inconsistentes ante cuotas de disco muy ajustadas o errores de lectura.
 - `2026-08-18T00:11:51` **main.py** (robustez ante casos límite): Mejoré la robustez de `on_memory_processes` añadiendo una verificación de existencia de procesos antes de procesar su información, evitando errores de `AttributeError` o `PermissionError` al intentar acceder a datos de procesos que finalizaron durante la ejecución de la lista, y asegurando que la interfaz maneje gracefully listas vacías o fallidas.
 - `2026-08-18T00:10:43` **healthscore.py** (robustez ante casos límite): Reforcé la robustez del sistema de puntaje ante datos inesperados añadiendo chequeos de `NaN` o valores no finitos en `_calculate_breakdown` y `_generate_recommendations`, evitando que un error de cálculo en las métricas propague un fallo en la interfaz.
 - `2026-08-18T00:10:17` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` manejando explícitamente el caso en que `resolve(strict=True)` falle por archivos eliminados o movidos durante la ejecución, evitando que el proceso se interrumpa ante cambios en el disco.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-17T14:21:55` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje convirtiendo la búsqueda de pesos en un diccionario de acceso directo (`_WEIGHT_FACTORS_DICT`) para evitar iterar sobre listas en cada llamada a `compute_score`, reduciendo la complejidad computacional en el bucle principal.
 - `2026-08-17T14:14:03` **duplicates.py** (rendimiento): Se optimizó el proceso `_refine_by_hash` mediante el uso de un diccionario de caché local (`digest_cache`) para evitar recalcular múltiples veces el hash de archivos que se encuentran en varias rutas (por ejemplo, si el mismo archivo es procesado como candidato en distintas etapas de la lógica), reduciendo drásticamente las operaciones de E/S.
 - `2026-08-17T14:12:19` **branding.py** (rendimiento): Se optimizó el acceso a colores RGB reemplazando el cálculo recursivo de `_hex_to_rgb` por un acceso directo al diccionario `PALETTE_RGB` pre-computado, eliminando la sobrecarga innecesaria de formateo de strings y validación en cada llamada a `blend`.
-- `2026-08-17T14:03:21` **assistant.py** (rendimiento): Optimizé `build_context` para evitar la creación innecesaria de objetos intermedios y reducir el costo de búsqueda en diccionarios mediante el acceso directo a atributos, mejorando el rendimiento en cada iteración del bucle.

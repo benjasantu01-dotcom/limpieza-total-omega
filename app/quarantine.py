@@ -143,11 +143,13 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """Determina si un archivo está en uso exclusivo, evitando abrirlo en modo escritura."""
+    if not path.exists():
+        return False
     try:
-        if not os.access(path, os.W_OK):
-            return True
-        with open(path, "a+b"):
-            return False
+        # Intentar abrir en modo lectura exclusiva primero
+        with open(path, "rb") as f:
+            # Si podemos abrir, intentamos comprobar permiso de escritura
+            return not os.access(path, os.W_OK)
     except (OSError, PermissionError):
         return True
 
@@ -352,7 +354,12 @@ def quarantine_file(
     
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
-    file_size = source_path.stat().st_size
+    
+    try:
+        file_size = source_path.stat().st_size
+    except OSError:
+        raise RuntimeError("No se pudo determinar el tamaño del archivo origen.")
+        
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
         raise RuntimeError("Espacio insuficiente en disco.")
