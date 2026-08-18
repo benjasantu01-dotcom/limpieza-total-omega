@@ -444,3 +444,12 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-18T12:29:27` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-18T12:29:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-18T12:29:27` Corrida terminada. Total usado hoy: 292.
+- `2026-08-18T12:35:08` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-08-18T12:35:40` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _IntegrityCheck
+- `2026-08-18T12:35:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-18T12:36:04` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-18T12:36:36` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujo un `TypeAlias` específico para las funciones de inspección y se documentaron explícitamente las precondiciones de cada regla, mejorando la claridad del contrato entre el orquestador `scan_file` y las heurísticas individuales.
+- `2026-08-18T12:37:05` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la robustez de los tipos mediante la adición de docstrings técnicos en las funciones críticas y la corrección de inconsistencias en los tipos de datos (normalizando `asistente_enviar_metricas`), garantizando que la documentación refleje con precisión las restricciones de seguridad y el comportamiento de la validación.
+- `2026-08-18T12:37:14` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._is_valid_executable, StartupEntry._resolve_path_from_command, StartupEntry._sanitize_command
+- `2026-08-18T12:37:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-18T12:37:14` Corrida terminada. Total usado hoy: 296.

@@ -33,11 +33,11 @@ class Suspicion:
     reason: str
     severity: str
 
-# Alias de tipo para las funciones de inspección heurística.
+# Alias para funciones que evalúan un archivo y retornan una sospecha o None.
 # Argumentos: 
-#   path: Ruta completa del archivo.
-#   entry: Objeto DirEntry opcional para aprovechar datos de stat previos.
-#   now_ts: Timestamp actual (epoch) para comparar antigüedad.
+#   path: Ruta del archivo.
+#   entry: Objeto DirEntry opcional (usar para evitar llamadas a stat si está disponible).
+#   now_ts: Timestamp actual (epoch) para cálculos de antigüedad.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
 # Alias para representar una colección de hallazgos.
@@ -178,6 +178,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Orquesta la ejecución de reglas heurísticas sobre un archivo.
+    Requiere una ruta absoluta o resuelta y un timestamp de referencia.
     """
     if path is None or not path.exists():
         return []
@@ -185,11 +186,14 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     findings: ScanResult = []
     suffix = path.suffix.lower()
     
+    # Aplicar reglas generales
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
+    # Aplicar reglas específicas para ejecutables
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
-        for check in (check_system_lookalike, check_recent_executable_in_downloads):
+        rules: List[SuspicionCheck] = [check_system_lookalike, check_recent_executable_in_downloads]
+        for check in rules:
             try:
                 if (res := check(path, entry, now_ts)):
                     findings.append(res)
