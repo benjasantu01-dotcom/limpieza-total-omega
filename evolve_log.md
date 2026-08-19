@@ -997,3 +997,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T02:36:32` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `scan_for_junk` para reducir llamadas costosas a `stat` y `resolve` mediante la extracción previa de la extensión y el uso de `path.suffix` directamente, evitando instanciar `Path(name)` innecesariamente dentro del loop de archivos.
 - `2026-08-19T02:36:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T02:36:32` Corrida terminada. Total usado hoy: 60.
+- `2026-08-19T02:42:05` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-19T02:42:37` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `list_items` para evitar una carga redundante del manifiesto y reemplacé la construcción manual de diccionarios en `restore_item` y `purge_item` por accesos directos al manifiesto cargado, reduciendo ciclos de CPU y operaciones de I/O innecesarias.
+- `2026-08-19T02:42:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-19T02:43:22` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-19T02:43:31` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_file` y `check_recent_executable_in_downloads` evitando llamadas redundantes a `os.path.exists()` y `path.stat()` al aprovechar el objeto `os.DirEntry` ya presente en el ciclo de escaneo.
+- `2026-08-19T02:43:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T02:43:31` Corrida terminada. Total usado hoy: 64.

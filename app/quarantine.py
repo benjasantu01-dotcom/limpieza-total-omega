@@ -376,8 +376,7 @@ def quarantine_file(
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna los ítems en cuarentena, ordenados cronológicamente."""
-    items = load_manifest(base)
-    return sorted(items, key=lambda i: i.quarantined_at, reverse=True)
+    return sorted(load_manifest(base), key=lambda i: i.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -385,8 +384,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido o vacío.")
     items = load_manifest(base)
-    item_lookup = {i.item_id: i for i in items}
-    match = item_lookup.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     if not match:
         raise KeyError(f"No se encontró el ítem: {item_id}")
     base_path = quarantine_dir(base)
@@ -420,8 +418,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not isinstance(item_id, str) or not item_id.strip():
         return False
     items = load_manifest(base)
-    item_lookup = {i.item_id: i for i in items}
-    match = item_lookup.get(item_id)
+    match = next((i for i in items if i.item_id == item_id), None)
     if not match:
         return False
     quarantine_root = quarantine_dir(base)

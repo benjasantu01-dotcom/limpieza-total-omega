@@ -111,10 +111,6 @@ class Scanner:
             if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
 
-            # Verificación de permisos y existencia física
-            if not os.path.exists(entry.path) or not os.access(entry.path, os.R_OK):
-                return
-
             # Control de navegación: evitar punteros que puedan causar bucles infinitos
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
@@ -156,9 +152,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        if entry and not entry.is_file():
-            return None
-        
         stats = entry.stat() if entry else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
@@ -183,9 +176,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
     Utiliza un objeto `DirEntry` opcional para minimizar llamadas a `stat()`.
     """
-    if path is None or not path.exists():
-        return []
-        
+    # Se confía en la validación previa de process_entry, evitando re-validar con exists()
     findings: ScanResult = []
     
     # Reglas independientes del tipo de archivo
