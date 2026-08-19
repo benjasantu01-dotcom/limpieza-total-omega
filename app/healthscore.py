@@ -149,7 +149,9 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """Puntúa la seguridad penalizando hallazgos y advertencias con pesos fijos."""
-    return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
+    s_count = max(0, _to_int(suspicious_count))
+    s_warn = max(0, _to_int(warnings))
+    return _clamp(1.0 - ((s_count * 0.05) + (s_warn * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Evalúa la salud de la memoria según el porcentaje disponible."""

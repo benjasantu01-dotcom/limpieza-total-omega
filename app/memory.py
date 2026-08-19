@@ -377,7 +377,7 @@ def _get_process_path(handle: int) -> Optional[str]:
     try:
         if kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
-    except (OSError, ctypes.ArgumentError, Exception):
+    except (OSError, ctypes.ArgumentError):
         return None
     return None
 
@@ -432,8 +432,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        err = kernel32.GetLastError()
-        return False, f"Acceso denegado (error {err})."
+        return False, "Acceso denegado al proceso (podría haber finalizado)."
         
     try:
         valid, reason = _is_valid_trim_target(proc_handle)
@@ -441,11 +440,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, reason or "Validación de proceso fallida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
-            err = kernel32.GetLastError()
-            return False, f"Error al liberar memoria (código {err})."
+            return False, f"Error al liberar memoria (código {kernel32.GetLastError()})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (ctypes.ArgumentError, MemoryError, OSError, Exception) as e:
-        return False, f"Ocurrió un error técnico al gestionar el proceso: {type(e).__name__}"
+    except (ctypes.ArgumentError, Exception):
+        return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
         kernel32.CloseHandle(proc_handle)

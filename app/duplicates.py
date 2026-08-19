@@ -181,8 +181,8 @@ def _collect_candidates(
 
     if directories is None: return {}
     for item in directories:
-        if not item: continue
         try:
+            if not item: continue
             path_item = Path(item).resolve(strict=True)
             if path_item.is_dir():
                 _scan(path_item)

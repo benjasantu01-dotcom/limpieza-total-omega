@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 87 | 10 | 15 | 7 | 105 |
-| 2026-08-19 | 120 | 10 | 16 | 11 | 123 |
+| 2026-08-18 | 86 | 9 | 14 | 7 | 104 |
+| 2026-08-19 | 124 | 10 | 16 | 11 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **40**
 - rendimiento: **40**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
+- `duplicates.py`: **20**
+- `healthscore.py`: **20**
 - `diskreport.py`: **20**
-- `scanner.py`: **19**
-- `duplicates.py`: **19**
-- `healthscore.py`: **19**
 - `organizer.py`: **18**
+- `scanner.py`: **18**
 - `settings.py`: **18**
 - `quarantine.py`: **16**
+- `main.py`: **15**
 - `browser.py`: **15**
-- `main.py`: **14**
+- `memory.py`: **11**
 - `branding.py`: **11**
-- `memory.py`: **10**
 - `safety.py`: **5**
 - `startup.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T12:16:09` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus ayudantes ante casos donde los procesos se cierran durante la ejecución, añadiendo una limpieza de excepciones y asegurando que `_get_process_path` no trabaje con handles inválidos o cerrados, evitando cierres inesperados al gestionar procesos volátiles.
+- `2026-08-19T12:15:48` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios en la UI (método `_safe_run_ui_callback`) para prevenir errores de concurrencia y fallos en widgets destruidos mientras una tarea asíncrona intenta actualizar la interfaz tras una operación, mitigando el riesgo de excepciones al cerrar o cambiar de pestaña.
+- `2026-08-19T12:14:34` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas negativas o no finitas, aplicando la lógica de normalización consistente con el resto de los módulos mediante el uso de `_clamp` y `_to_int`, evitando así resultados de puntaje fuera del rango esperado.
+- `2026-08-19T12:14:08` **duplicates.py** (robustez ante casos límite): Se mejoró la robustez de `find_duplicates` añadiendo una validación explícita para asegurar que la lista de directorios no sea `None` y que cada elemento sea una ruta válida, evitando excepciones en el flujo de escaneo ante entradas malformadas o inesperadas.
 - `2026-08-19T12:06:15` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de entrada, añadiendo una validación explícita para rutas que no existen o son inaccesibles, evitando que `os.scandir` o `shutil.disk_usage` lancen excepciones no capturadas al encontrar volúmenes montados bloqueados o removibles.
 - `2026-08-19T12:05:04` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera validando la existencia y el tipo de archivo de la ruta destino antes de intentar la escritura.
 - `2026-08-19T12:04:01` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas mal formadas o tipos inesperados mediante una validación más estricta en el bucle principal, evitando que valores inesperados (como listas o diccionarios vacíos donde se esperan números) puedan causar errores en el flujo de inferencia.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T11:33:42` **duplicates.py** (rendimiento): Se ha optimizado la función `_process_size_group` para evitar el cálculo redundante de hashes completos cuando todos los archivos en un grupo de tamaño ya fueron descartados por el hash parcial, reduciendo drásticamente las operaciones de I/O en discos HDD.
 - `2026-08-19T11:33:15` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar llamadas redundantes a `is_protected_path` dentro del bucle de recolección, mejorando el rendimiento en directorios profundos al validar la ruta raíz una sola vez y usando una estructura de acceso más directa.
 - `2026-08-19T11:24:02` **assistant.py** (rendimiento): Se optimizó el proceso de identificación de problemas mediante la pre-compilación de los criterios y el uso de un buscador eficiente (búsqueda posicional directa), eliminando la necesidad de iterar sobre el diccionario de criterios en cada llamada a `local_answer`.
-- `2026-08-19T11:13:59` **settings.py** (legibilidad y documentación): Se introdujo un `TypedDict` interno (`_ConfigDict`) para corregir una inconsistencia crítica en el esquema: `asistente_enviar_metrics` (con error de tipeo) se cambió a `asistente_enviar_metricas` para coincidir con `_get_default_config`, mejorando la robustez de los tipos y la legibilidad del esquema de configuración.
-- `2026-08-19T11:13:39` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez del código mediante la adición de docstrings detallados en las funciones de validación de heurísticas, la especificación de tipos de retorno mediante `Optional[Suspicion]`, y la centralización de la lógica de guardas en `scan_file` para clarificar qué condiciones disparan el análisis heurístico.
-- `2026-08-19T11:04:36` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (estándar Google/NumPy) y tipos explícitos para clarificar la lógica de las funciones auxiliares de seguridad (`_check_windows_file_attributes` y `_check_path_syntax_integrity`), facilitando su mantenimiento futuro.
-- `2026-08-19T11:04:13` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `organizer.py` para clarificar las responsabilidades de las funciones de seguridad y las heurísticas, siguiendo estrictamente el enfoque de legibilidad.

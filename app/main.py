@@ -153,6 +153,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._executor.shutdown(wait=False)
         self.destroy()
 
+    def _safe_run_ui_callback(self, callback: Callable[[], None]) -> None:
+        """Ejecuta una actualización de UI solo si la ventana sigue abierta."""
+        if not self._closing:
+            self.after_idle(callback)
+
     def _validate_environment(self) -> None:
         """
         Verifica que el directorio home sea accesible y seguro para la 
@@ -920,8 +925,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._safe_run(fn, tab)
         finally:
             if not self._closing:
-                self.after_idle(lambda: self._set_busy(False))
-                self.after_idle(lambda: self.set_status("Listo."))
+                self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
 
     def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:
         """Envía tareas intensivas a un pool de hilos de forma no bloqueante."""
@@ -1063,7 +1067,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     barra.set(proporcion)
                     label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
 
-        self.after_idle(actualizar)
+        self._safe_run_ui_callback(actualizar)
 
     def on_target_choice_changed(self, choice: str) -> None:
         """Maneja el selector de destinos del escaneo."""
@@ -1104,7 +1108,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             total_mb = round(sum(j.size_bytes for j in junk) / (1024 * 1024), 2)
             self.log(f"Encontrados {len(junk)} candidatos ({total_mb} MB).", "Limpieza")
-            self.refresh_list()
+            self._safe_run_ui_callback(self.refresh_list)
 
         self.run_async(task, check_safety=True)
 
