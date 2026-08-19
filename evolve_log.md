@@ -669,3 +669,11 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-19T11:35:05` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado `_flush_logs` eliminando la creación innecesaria de diccionarios y listas intermedias dentro del bucle de logs, además de asegurar que la interfaz solo procese actualizaciones si hay contenido pendiente, mejorando el rendimiento del hilo principal.
 - `2026-08-19T11:35:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T11:35:05` Corrida terminada. Total usado hoy: 268.
+- `2026-08-19T11:42:51` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-19T11:43:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T11:43:50` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-19T11:44:30` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento de `scan_for_junk` eliminando llamadas redundantes a `path.exists()` y `path.is_file()` mediante el uso de los atributos ya obtenidos por `os.walk`, y reduje el costo de las comparaciones de extensiones usando el conjunto precalculado `_LOWER_JUNK_EXTS`.
+- `2026-08-19T11:45:09` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Se optimizó `total_quarantined_bytes` y `summarize` para evitar llamadas redundantes a `load_manifest` (que dispara la lógica de carga y validación del JSON) cuando ya se tiene acceso a la lista de ítems, reduciendo drásticamente las operaciones I/O en cada consulta del estado.
+- `2026-08-19T11:45:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-19T11:45:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T11:45:24` Corrida terminada. Total usado hoy: 272.

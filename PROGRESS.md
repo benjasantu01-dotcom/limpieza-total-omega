@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 18
+- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 96 | 11 | 15 | 8 | 106 |
-| 2026-08-19 | 114 | 10 | 15 | 10 | 119 |
+| 2026-08-18 | 94 | 10 | 15 | 8 | 105 |
+| 2026-08-19 | 115 | 10 | 16 | 11 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **48**
+- seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **37**
-- robustez ante casos límite: **30**
+- rendimiento: **38**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **22**
+- `assistant.py`: **21**
 - `diskreport.py`: **20**
 - `duplicates.py`: **20**
 - `healthscore.py`: **20**
-- `organizer.py`: **18**
+- `organizer.py`: **19**
 - `scanner.py`: **18**
 - `quarantine.py`: **17**
 - `settings.py`: **17**
@@ -42,10 +42,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **11**
 - `branding.py`: **10**
 - `safety.py`: **5**
-- `startup.py`: **2**
+- `startup.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T11:44:30` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` eliminando llamadas redundantes a `path.exists()` y `path.is_file()` mediante el uso de los atributos ya obtenidos por `os.walk`, y reduje el costo de las comparaciones de extensiones usando el conjunto precalculado `_LOWER_JUNK_EXTS`.
 - `2026-08-19T11:35:05` **main.py** (rendimiento): Se ha optimizado `_flush_logs` eliminando la creación innecesaria de diccionarios y listas intermedias dentro del bucle de logs, además de asegurar que la interfaz solo procese actualizaciones si hay contenido pendiente, mejorando el rendimiento del hilo principal.
 - `2026-08-19T11:34:10` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje final y la generación de recomendaciones transformando las consultas de diccionarios en accesos directos y pre-calculando el desglose, reduciendo el overhead de búsqueda en cada iteración de `compute_score`.
 - `2026-08-19T11:33:42` **duplicates.py** (rendimiento): Se ha optimizado la función `_process_size_group` para evitar el cálculo redundante de hashes completos cuando todos los archivos en un grupo de tamaño ya fueron descartados por el hash parcial, reduciendo drásticamente las operaciones de I/O en discos HDD.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T10:53:23` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la unificación del manejo de excepciones en bloques `try/except` más granulares y la adición de docstrings técnicos que explican la lógica detrás de las heurísticas de filtrado.
 - `2026-08-19T10:52:56` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, documentación estructurada (Google Style) en las funciones principales y la clarificación de la lógica de `walk_files` para asegurar que el manejo de errores sea explícito.
 - `2026-08-19T10:52:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones de utilidad interna, aclarando la lógica de filtrado, el uso de dependencias (como `kernel32`) y las garantías de seguridad del recorrido de archivos, facilitando así el mantenimiento.
-- `2026-08-19T10:43:31` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la implementación de `Docstrings` explicativos en las funciones de manejo de respuestas y la estandarización de las firmas de los `handlers` de contenido, asegurando que cada función documente claramente su propósito, los parámetros que recibe y el comportamiento esperado según el enfoque de documentación solicitado.
