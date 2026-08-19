@@ -267,8 +267,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
         try:
             src_path = junk_file.path.resolve()
-            
-            if not _is_safe_to_move(junk_file, dest_base):
+            if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
             # Verificación preventiva de espacio en disco
@@ -301,21 +300,18 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     count: int = 0
-    try:
-        for item in dest.iterdir():
-            try:
-                if not item.is_file() or _is_junction(item):
-                    continue
-                
-                resolved_item = item.resolve()
-                # Validación de seguridad: debe estar bajo el directorio de cuarentena
-                if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
-                    if not _is_file_locked(resolved_item):
-                        ensure_safe_to_modify(resolved_item)
-                        resolved_item.unlink()
-                        count += 1
-            except (PermissionError, OSError, ValueError):
+    for item in dest.iterdir():
+        try:
+            if not item.is_file() or _is_junction(item):
                 continue
-    except OSError:
-        pass
+            
+            resolved_item = item.resolve()
+            # Validación de seguridad: debe estar bajo el directorio de cuarentena
+            if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
+                if not _is_file_locked(resolved_item):
+                    ensure_safe_to_modify(resolved_item)
+                    resolved_item.unlink()
+                    count += 1
+        except (PermissionError, OSError, ValueError):
+            continue
     return count

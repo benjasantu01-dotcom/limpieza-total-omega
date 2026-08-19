@@ -179,6 +179,8 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
         path = Path(base).expanduser().resolve()
+        if path.name.strip() == "":
+            raise UnsafePathError("Ruta de cuarentena inválida o vacía.")
         path.mkdir(parents=True, exist_ok=True)
         return path
     except (OSError, RuntimeError) as e:
@@ -211,7 +213,7 @@ def _check_windows_file_attributes(path_str: str) -> None:
 def _check_path_syntax_integrity(path: Path) -> None:
     """Verifica que la ruta no contenga estructuras o caracteres maliciosos."""
     path_str = str(path)
-    if any(ord(c) < 32 for c in path_str):
+    if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
     if len(path.parts) > 32:
         raise UnsafePathError("Profundidad de ruta excesiva.")
@@ -283,6 +285,8 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     try:
         with os.fdopen(temp_fd, 'w', encoding='utf-8') as f:
             json.dump([item.to_dict() for item in items], f, indent=2, ensure_ascii=False)
+            f.flush()
+            os.fsync(f.fileno())
         os.replace(temp_path, target_path)
         _load_manifest_internal.cache_clear()
     except (OSError, PermissionError, TypeError, IOError) as e:

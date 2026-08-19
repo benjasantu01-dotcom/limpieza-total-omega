@@ -1019,3 +1019,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T03:05:04` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
 - `2026-08-19T03:05:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T03:05:04` Corrida terminada. Total usado hoy: 72.
+- `2026-08-19T03:12:57` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-08-19T03:14:00` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en la carga de pestañas mediante la adición de un chequeo de existencia (`winfo_exists`) antes de intentar manipular widgets en métodos asíncronos y durante la construcción dinámica, previniendo excepciones si el usuario cierra la ventana mientras una tarea aún está en cola.
+- `2026-08-19T03:14:26` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-19T03:14:51` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura antes de operar, evitando errores ante entradas mal formadas y garantizando que el escaneo de seguridad (usando `is_safe_to_modify`) preceda a cualquier intento de acceso al disco.
+- `2026-08-19T03:15:06` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha robustecido `quarantine.py` ante casos límite mediante la implementación de `os.fsync` tras operaciones de escritura crítica y una validación de rutas más estricta que impide que archivos con nombres engañosos (espacios en blanco o caracteres nulos) evadan las comprobaciones de seguridad, garantizando la atomicidad y fiabilidad en el manejo del manifiesto y los archivos en cuarentena.
+- `2026-08-19T03:15:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T03:15:06` Corrida terminada. Total usado hoy: 76.
