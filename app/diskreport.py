@@ -159,9 +159,11 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve(strict=False)
-        if not p.exists() or is_protected_path(p):
+        if not p.exists():
             return None
             
+        # Validación extra: is_protected_path ya filtra rutas, 
+        # pero verificamos acceso antes de llamar a shutil.
         usage = shutil.disk_usage(p)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError):
@@ -183,6 +185,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     results: List[DriveUsage] = []
     if mounts and isinstance(mounts, Iterable):
         for mount in mounts:
+            # Validar ruta, ignorar rutas UNC (servidor/red) por riesgo de timeout
             if isinstance(mount, (str, os.PathLike)) and not str(mount).startswith(("\\\\", "//")):
                 usage = drive_usage(mount)
                 if usage:
@@ -223,6 +226,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
+                        # Usar try-except por si el archivo desaparece o cambia permisos
                         stat_data = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir():

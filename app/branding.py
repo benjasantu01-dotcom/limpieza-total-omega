@@ -416,13 +416,12 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
 
         # Validación de directorio y escritura segura
         parent = path_obj.parent
-        if parent:
-            if parent.exists() and not parent.is_dir():
+        if not parent.exists():
+            if is_protected_path(parent):
                 return None
-            if not parent.exists():
-                if is_protected_path(parent):
-                    return None
-                parent.mkdir(parents=True, exist_ok=True)
+            parent.mkdir(parents=True, exist_ok=True)
+        elif not parent.is_dir():
+            return None
             
         # ensures_safe_to_modify valida que la ruta no sea bloqueada
         ensure_safe_to_modify(path_obj)

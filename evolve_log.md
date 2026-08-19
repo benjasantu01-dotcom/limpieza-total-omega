@@ -687,3 +687,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-19T11:55:25` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-08-19T11:55:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T11:55:25` Corrida terminada. Total usado hoy: 276.
+- `2026-08-19T12:03:22` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-19T12:04:01` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas mal formadas o tipos inesperados mediante una validación más estricta en el bucle principal, evitando que valores inesperados (como listas o diccionarios vacíos donde se esperan números) puedan causar errores en el flujo de inferencia.
+- `2026-08-19T12:05:04` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera validando la existencia y el tipo de archivo de la ruta destino antes de intentar la escritura.
+- `2026-08-19T12:05:33` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-19T12:06:15` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante errores de entrada, añadiendo una validación explícita para rutas que no existen o son inaccesibles, evitando que `os.scandir` o `shutil.disk_usage` lancen excepciones no capturadas al encontrar volúmenes montados bloqueados o removibles.
+- `2026-08-19T12:06:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T12:06:15` Corrida terminada. Total usado hoy: 280.

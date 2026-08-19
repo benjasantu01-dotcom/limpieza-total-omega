@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 227
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 90 | 10 | 15 | 8 | 105 |
-| 2026-08-19 | 117 | 10 | 16 | 11 | 122 |
+| 2026-08-18 | 87 | 10 | 15 | 7 | 105 |
+| 2026-08-19 | 120 | 10 | 16 | 11 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **40**
 - rendimiento: **40**
-- robustez ante casos límite: **29**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `organizer.py`: **19**
+- `assistant.py`: **22**
+- `diskreport.py`: **20**
 - `scanner.py`: **19**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
-- `diskreport.py`: **19**
+- `organizer.py`: **18**
 - `settings.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **16**
 - `browser.py`: **15**
 - `main.py`: **14**
-- `memory.py`: **11**
-- `branding.py`: **10**
+- `branding.py`: **11**
+- `memory.py`: **10**
 - `safety.py`: **5**
 - `startup.py`: **1**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T12:06:15` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de entrada, añadiendo una validación explícita para rutas que no existen o son inaccesibles, evitando que `os.scandir` o `shutil.disk_usage` lancen excepciones no capturadas al encontrar volúmenes montados bloqueados o removibles.
+- `2026-08-19T12:05:04` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera validando la existencia y el tipo de archivo de la ruta destino antes de intentar la escritura.
+- `2026-08-19T12:04:01` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas mal formadas o tipos inesperados mediante una validación más estricta en el bucle principal, evitando que valores inesperados (como listas o diccionarios vacíos donde se esperan números) puedan causar errores en el flujo de inferencia.
 - `2026-08-19T11:55:03` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración eliminando llamadas redundantes a `os.path.exists()` y `stat()` mediante una validación de caché proactiva y el uso de `try-except` para evitar comprobaciones innecesarias de estado de archivo antes de la lectura.
 - `2026-08-19T11:54:35` **scanner.py** (rendimiento): Se optimizó el escaneo de directorios reemplazando la búsqueda repetitiva por `any()` con `in` sobre un `set` de carpetas para mejorar la eficiencia en cada iteración de archivos.
 - `2026-08-19T11:44:30` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` eliminando llamadas redundantes a `path.exists()` y `path.is_file()` mediante el uso de los atributos ya obtenidos por `os.walk`, y reduje el costo de las comparaciones de extensiones usando el conjunto precalculado `_LOWER_JUNK_EXTS`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T11:13:39` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez del código mediante la adición de docstrings detallados en las funciones de validación de heurísticas, la especificación de tipos de retorno mediante `Optional[Suspicion]`, y la centralización de la lógica de guardas en `scan_file` para clarificar qué condiciones disparan el análisis heurístico.
 - `2026-08-19T11:04:36` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (estándar Google/NumPy) y tipos explícitos para clarificar la lógica de las funciones auxiliares de seguridad (`_check_windows_file_attributes` y `_check_path_syntax_integrity`), facilitando su mantenimiento futuro.
 - `2026-08-19T11:04:13` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `organizer.py` para clarificar las responsabilidades de las funciones de seguridad y las heurísticas, siguiendo estrictamente el enfoque de legibilidad.
-- `2026-08-19T11:03:48` **memory.py** (legibilidad y documentación): Mejoré la documentación de la API Win32 en `memory.py` añadiendo tipos explícitos en los `_fields_` de `MEMORYSTATUSEX` y documentando mediante docstrings técnicos la naturaleza de los handles y flags utilizados, facilitando el mantenimiento a futuro.
-- `2026-08-19T11:03:20` **main.py** (legibilidad y documentación): Se ha mejorado la documentación del archivo `main.py` mediante la adición de docstrings detallados en las funciones de construcción de pestañas y métodos de utilidad, aclarando el propósito y la naturaleza de solo lectura de las operaciones críticas para facilitar el mantenimiento y la auditoría del código.
-- `2026-08-19T10:53:23` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la unificación del manejo de excepciones en bloques `try/except` más granulares y la adición de docstrings técnicos que explican la lógica detrás de las heurísticas de filtrado.

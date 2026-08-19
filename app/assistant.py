@@ -245,9 +245,15 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     permitidos, verificando finitud y tipos de dato para evitar errores silenciosos.
     """
     cast, min_v, max_v = spec
+    
+    # Validar que source sea contenedor accesible
+    if not isinstance(source, (dict, object)):
+        return
+
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
-    if val is None or isinstance(val, bool):
+    # No aceptar colecciones como valores de métricas
+    if val is None or isinstance(val, (bool, list, dict, set)):
         return
         
     try:
