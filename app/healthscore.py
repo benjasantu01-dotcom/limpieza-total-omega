@@ -135,59 +135,32 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de basura normalizando el espacio usado contra el límite _LIMIT_JUNK_MB."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula salud de seguridad penalizando cada hallazgo (5%) y advertencia (25%) encontrada."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de RAM normalizando el % disponible respecto al umbral crítico _LIMIT_RAM_PERCENT."""
     val = _to_float(available_percent)
     return (_clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 and math.isfinite(val) else 0.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de disco normalizando el % libre respecto al umbral crítico _LIMIT_DISK_PERCENT."""
     val = _to_float(free_percent)
     return (_clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 and math.isfinite(val) else 0.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de duplicados normalizando el espacio redundante contra _LIMIT_DUPLICATE_MB."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula salud de arranque penalizando la cantidad de programas en el inicio sobre _LIMIT_STARTUP_COUNT."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Mapea un valor numérico (0-100) a una categoría de letra estándar."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
     if s >= 65: return "C"
     if s >= 50: return "D"
     return "F"
-
-def _calculate_breakdown(ratios: ScoreMap) -> Dict[MetricKey, int]:
-    result = {}
-    for area, weight in _WEIGHT_ITEMS_INT:
-        val = ratios.get(area, 0.0)
-        clean_val = val if math.isfinite(val) else 0.0
-        result[area] = int(round(_clamp(clean_val) * weight))
-    return result
-
-def _generate_recommendations(metrics: SystemMetrics, ratios: ScoreMap) -> List[str]:
-    recommendations: List[str] = []
-    for rule in _RECOMMENDATION_RULES:
-        ratio = ratios.get(rule.area, 1.0)
-        if math.isfinite(ratio) and rule.check(metrics, ratio):
-            recommendations.append(rule.message_factory(metrics))
-    
-    if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
-    
-    return recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not _validate_integrity():
@@ -197,25 +170,36 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
 
-    try:
-        ratios: ScoreMap = {
-            "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-            "disco": score_disk(metrics.disk_free_percent),
-            "memoria": score_memory(metrics.memory_available_percent),
-            "basura": score_junk(metrics.junk_mb),
-            "duplicados": score_duplicates(metrics.duplicate_mb),
-            "arranque": score_startup(metrics.startup_count)
-        }
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error crítico en cálculo de métricas."])
+    ratios: ScoreMap = {
+        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+        "disco": score_disk(metrics.disk_free_percent),
+        "memoria": score_memory(metrics.memory_available_percent),
+        "basura": score_junk(metrics.junk_mb),
+        "duplicados": score_duplicates(metrics.duplicate_mb),
+        "arranque": score_startup(metrics.startup_count)
+    }
     
-    if not all(math.isfinite(r) for r in ratios.values()):
-        return HealthResult(0, "F", {}, ["Error: Cálculo de métricas fallido."])
+    breakdown: Dict[MetricKey, int] = {}
+    final_score = 0
+    for area, weight in _WEIGHT_ITEMS_INT:
+        val = ratios.get(area, 0.0)
+        puntos = int(round(_clamp(val if math.isfinite(val) else 0.0) * weight))
+        breakdown[area] = puntos
+        final_score += puntos
     
-    breakdown = _calculate_breakdown(ratios)
-    final_score = sum(breakdown.values())
+    recommendations: List[str] = []
+    for rule in _RECOMMENDATION_RULES:
+        ratio = ratios.get(rule.area, 1.0)
+        if math.isfinite(ratio) and rule.check(metrics, ratio):
+            recommendations.append(rule.message_factory(metrics))
     
-    return HealthResult(final_score, grade_for_score(final_score), breakdown, _generate_recommendations(metrics, ratios))
+    if metrics.quarantined_count > 0:
+        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
+    
+    if not recommendations:
+        recommendations = ["No hay nada urgente para hacer. El sistema está en buen estado."]
+
+    return HealthResult(final_score, grade_for_score(final_score), breakdown, recommendations)
 
 def summarize(result: HealthResult) -> List[str]:
     if not isinstance(result, HealthResult): return ["Error: Formato inválido."]

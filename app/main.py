@@ -840,7 +840,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._log_queue.append((tab, text))
             if not self._log_scheduled:
                 self._log_scheduled = True
-                self.after_idle(self._flush_logs)
+                self.after(50, self._flush_logs)
 
     def _flush_logs(self) -> None:
         """Vuelca la cola de mensajes acumulados en la interfaz visual."""
@@ -852,7 +852,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pendientes = list(self._log_queue)
             self._log_queue.clear()
         
-        for tab, msgs in {t: [m[1] for m in pendientes if m[0] == t] for t in set(p[0] for p in pendientes)}.items():
+        # Agrupamos por pestaña para reducir operaciones de inserción en UI
+        logs_por_tab = {}
+        for tab, msg in pendientes:
+            logs_por_tab.setdefault(tab, []).append(msg)
+            
+        for tab, msgs in logs_por_tab.items():
             box = self._box(tab)
             if box and box.winfo_exists():
                 box.insert("end", "\n".join(msgs) + "\n")

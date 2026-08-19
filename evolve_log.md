@@ -988,3 +988,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T02:23:18` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el proceso de recolección de archivos (`_collect_candidates`) evitando llamadas redundantes a `Path.resolve()` dentro del bucle principal, moviendo la resolución solo a aquellos archivos que ya han sido confirmados como duplicados por tamaño, reduciendo drásticamente el impacto de E/S en sistemas de archivos grandes.
 - `2026-08-19T02:23:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T02:23:18` Corrida terminada. Total usado hoy: 56.
+- `2026-08-19T02:31:53` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-19T02:32:33` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el rendimiento de `compute_score` eliminando la creación de diccionarios intermedios y el cálculo redundante de ratios dentro de los bucles, accediendo directamente a las funciones de puntuación en una sola pasada.
+- `2026-08-19T02:33:33` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-19T02:34:36` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-19T02:35:51` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado la gestión de la cola de logs en `main.py` eliminando el uso de `after_idle` dentro del bucle de procesamiento de logs y reemplazándolo por una estructura de consolidación más eficiente que reduce significativamente el número de llamadas al hilo de la interfaz gráfica durante escaneos masivos, previniendo la saturación del hilo principal.
+- `2026-08-19T02:36:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-19T02:36:32` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `scan_for_junk` para reducir llamadas costosas a `stat` y `resolve` mediante la extracción previa de la extensión y el uso de `path.suffix` directamente, evitando instanciar `Path(name)` innecesariamente dentro del loop de archivos.
+- `2026-08-19T02:36:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T02:36:32` Corrida terminada. Total usado hoy: 60.
