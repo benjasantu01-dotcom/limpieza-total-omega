@@ -1026,3 +1026,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T03:15:06` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha robustecido `quarantine.py` ante casos límite mediante la implementación de `os.fsync` tras operaciones de escritura crítica y una validación de rutas más estricta que impide que archivos con nombres engañosos (espacios en blanco o caracteres nulos) evadan las comprobaciones de seguridad, garantizando la atomicidad y fiabilidad en el manejo del manifiesto y los archivos en cuarentena.
 - `2026-08-19T03:15:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T03:15:06` Corrida terminada. Total usado hoy: 76.
+- `2026-08-19T03:22:59` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-08-19T03:23:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-19T03:23:45` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-19T03:24:08` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de archivos vacíos y rutas inválidas dentro de `process_entry` y las funciones de escaneo, añadiendo comprobaciones de existencia previas para evitar excepciones innecesarias en sistemas de archivos volátiles.
+- `2026-08-19T03:24:19` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante fallos de I/O o permisos denegados al escribir en el disco mediante la implementación de un método de guardado atómico (reemplazo seguro vía `os.replace`), garantizando que la configuración nunca quede corrupta aunque la app falle durante el proceso de escritura o el sistema se quede sin espacio.
+- `2026-08-19T03:24:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T03:24:19` Corrida terminada. Total usado hoy: 80.

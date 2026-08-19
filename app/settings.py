@@ -250,11 +250,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     try:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
-        temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        with open(temp_ruta, "wb") as f:
+        temp_path = ruta.with_suffix(f"{ruta.suffix}.{os.getpid()}.tmp")
+        with open(temp_path, "wb") as f:
             f.write(encoded_data); f.flush(); os.fsync(f.fileno())
-        os.replace(temp_ruta, ruta)
+        os.replace(temp_path, ruta)
         _SESSION_CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError, TypeError): return None

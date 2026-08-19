@@ -119,6 +119,10 @@ class Scanner:
             if not self._is_safe_entry(target_path):
                 return
 
+            # Verificación de existencia para evitar errores con archivos eliminados durante el escaneo
+            if not target_path.exists():
+                return
+
             if entry.is_dir(follow_symlinks=False):
                 path_str = str(target_path)
                 if path_str not in self.seen:
@@ -174,16 +178,15 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
-    Utiliza un objeto `DirEntry` opcional para minimizar llamadas a `stat()`.
     """
-    # Se confía en la validación previa de process_entry, evitando re-validar con exists()
+    if not path.exists():
+        return []
+
     findings: ScanResult = []
     
-    # Reglas independientes del tipo de archivo
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # Reglas específicas para ejecutables: optimiza evitando procesamiento innecesario
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECKS:
             try:
