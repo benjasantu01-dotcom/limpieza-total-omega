@@ -1494,3 +1494,11 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-19T08:10:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-08-19T08:10:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T08:10:29` Corrida terminada. Total usado hoy: 188.
+- `2026-08-19T08:18:54` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-19T08:19:22` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la validación explícita de que cada subdirectorio visitado no sea un punto de reparse ni un enlace simbólico, previniendo el escape de la jerarquía de caché objetivo y evitando bucles lógicos en estructuras de archivo complejas.
+- `2026-08-19T08:19:53` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita de `is_protected_path` al procesar subdirectorios y rutas base, asegurando que no se sigan o analicen rutas restringidas incluso si el sistema operativo reporta comportamientos inusuales en la estructura de directorios.
+- `2026-08-19T08:20:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T08:20:51` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-19T08:21:01` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `compute_score` asegurando que las métricas recibidas no solo sean del tipo correcto, sino que tengan sentido semántico (evitando divisiones por cero o valores negativos inesperados en los cálculos de ratio) mediante la validación estricta antes del procesamiento.
+- `2026-08-19T08:21:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T08:21:01` Corrida terminada. Total usado hoy: 192.

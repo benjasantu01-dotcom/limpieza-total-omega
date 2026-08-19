@@ -217,7 +217,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        # stat() puede fallar si el archivo es bloqueado o eliminado durante el escaneo
                         stat_data = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir():
@@ -280,6 +279,9 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     
     try:
         base = Path(directory).resolve(strict=False)
+        if skip_protected and is_protected_path(base):
+            return []
+
         sums: Dict[Path, int] = defaultdict(int)
         counts: Dict[Path, int] = defaultdict(int)
         

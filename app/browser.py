@@ -194,7 +194,8 @@ def _sum_directory_recursive(
     
     try:
         abs_root = Path(root_dir).resolve(strict=True)
-        if not abs_root.is_dir() or is_protected_path(abs_root):
+        # Validación de seguridad: no seguir puntos de reparse o symlinks iniciales
+        if not abs_root.is_dir() or is_protected_path(abs_root) or abs_root.is_symlink() or is_junction_fn(str(abs_root)):
             return 0
         root_key = str(abs_root)
     except (OSError, PermissionError, RuntimeError):
@@ -207,7 +208,6 @@ def _sum_directory_recursive(
         if depth > MAX_SCAN_DEPTH:
             return 0
         
-        # Consultar memo antes de procesar
         if current_dir in memo:
             return memo[current_dir]
         
