@@ -124,10 +124,6 @@ class Scanner:
             if RTL_CHAR_RE.search(target_path.name):
                 self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
 
-            # Verificación de existencia para evitar errores con archivos eliminados durante el escaneo
-            if not target_path.exists():
-                return
-
             if entry.is_dir(follow_symlinks=False):
                 path_str = str(target_path)
                 if path_str not in self.seen:
@@ -184,7 +180,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
     """
-    if path is None or not path.exists():
+    if path is None:
         return []
 
     findings: ScanResult = []

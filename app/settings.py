@@ -257,6 +257,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         ruta.parent.mkdir(parents=True, exist_ok=True)
+        # Limpieza de temporales huérfanos antes de crear uno nuevo
+        for tmp in ruta.parent.glob(f"{ruta.name}.*.tmp"): tmp.unlink(missing_ok=True)
         temp_path = ruta.with_suffix(f"{ruta.suffix}.{os.getpid()}.tmp")
         with open(temp_path, "wb") as f:
             f.write(encoded_data); f.flush(); os.fsync(f.fileno())

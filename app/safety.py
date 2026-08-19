@@ -322,6 +322,9 @@ def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
     if is_drive_root(p) or is_protected_path(p):
         raise UnsafePathError("Ruta de sistema protegida.")
 
+    if _is_reparse_point(p):
+        raise UnsafePathError("Seguridad denegada: nodo de reparse detectado.")
+
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
