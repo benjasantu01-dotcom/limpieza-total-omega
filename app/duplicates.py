@@ -131,7 +131,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     for p in paths:
         try:
-            target = Path(p)
+            target = Path(p).resolve()
             if not target.is_file() or target.is_symlink(): continue
             if is_protected_path(target) or not is_safe_to_modify(target): continue
             groups[target.stat().st_size].append(target)
@@ -147,7 +147,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Recorre el árbol de directorios identificando archivos candidatos aptos.
-    Retorna un diccionario mapeando tamaño (bytes) a lista de rutas Path.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -166,7 +165,7 @@ def _collect_candidates(
                                 _scan(Path(entry.path))
                         elif entry.is_file():
                             if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
-                                target = Path(entry.path)
+                                target = Path(entry.path).resolve()
                                 if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
                                     temp_groups[st.st_size].append(target)
                     except (OSError, PermissionError): continue
@@ -181,8 +180,7 @@ def _collect_candidates(
                 _scan(path_item)
         except (OSError, RuntimeError, ValueError): continue
             
-    # Resolvemos rutas solo si hay más de un archivo con el mismo tamaño
-    return {size: [p.resolve() for p in paths] for size, paths in temp_groups.items() if len(paths) > 1}
+    return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
 
 def _refine_by_hash(
@@ -196,11 +194,12 @@ def _refine_by_hash(
     digest_cache: Dict[Path, str] = {}
     
     for path in paths:
-        if not isinstance(path, Path) or not path.is_file(): continue
-        digest = digest_cache.get(path) or hash_func(path)
+        target = path.resolve()
+        if not target.is_file(): continue
+        digest = digest_cache.get(target) or hash_func(target)
         if digest:
-            digest_cache[path] = digest
-            groups_by_digest[digest].append(path)
+            digest_cache[target] = digest
+            groups_by_digest[digest].append(target)
                 
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -254,7 +253,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
         try:
             target = p.resolve(strict=True)
             if not target.is_file() or is_protected_path(target) or not is_safe_to_modify(target):
@@ -281,10 +279,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
     
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
-        if not isinstance(path, Path): 
-            continue
         try:
-            is_keeper = (keeper is not None and path.resolve(strict=True) == keeper)
+            target = path.resolve(strict=True)
+            is_keeper = (keeper is not None and target == keeper)
         except (OSError, PermissionError, FileNotFoundError):
             is_keeper = False
         marca = "conservar" if is_keeper else "duplicado"

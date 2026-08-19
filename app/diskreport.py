@@ -186,9 +186,11 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     if mounts and isinstance(mounts, Iterable):
         for mount in mounts:
             if mount and isinstance(mount, (str, os.PathLike)) and not str(mount).startswith(("\\\\", "//")):
-                usage = drive_usage(mount)
-                if usage is not None:
-                    results.append(usage)
+                p = Path(mount)
+                if not is_protected_path(p):
+                    usage = drive_usage(p)
+                    if usage is not None:
+                        results.append(usage)
     return results
 
 

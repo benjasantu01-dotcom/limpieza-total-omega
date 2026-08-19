@@ -70,10 +70,10 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 }
 
 def _validate_integrity() -> bool:
-    total = sum(WEIGHTS.values())
-    return math.isfinite(total) and total == 100 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
+    return math.isfinite(sum(WEIGHTS.values())) and sum(WEIGHTS.values()) == 100 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
 
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
+_IS_INTEGRITY_VALID: Final[bool] = _validate_integrity()
 
 _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),
@@ -163,7 +163,7 @@ def grade_for_score(score: float | int) -> str:
     return "F"
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics) or not _validate_integrity():
+    if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
         return HealthResult(0, "F", {}, ["Error: Sistema de evaluación inestable."])
     
     metrics.validate()
