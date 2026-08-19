@@ -716,3 +716,11 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-19T12:35:36` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` integrando `is_protected_path` al validar el contexto y la consulta antes de construir el payload, asegurando que ningún dato del sistema que pase por `build_context` pueda ser malinterpretado por la API remota.
 - `2026-08-19T12:35:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T12:35:36` Corrida terminada. Total usado hoy: 292.
+- `2026-08-19T12:44:20` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-08-19T12:45:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-19T12:45:47` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-19T12:46:23` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre los elementos encontrados durante el escaneo, evitando así que una ruta que contenga un punto de reparse malicioso o un acceso no autorizado pueda ser procesada aunque la carpeta raíz haya sido validada.
+- `2026-08-19T12:46:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T12:46:45` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-19T12:46:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T12:46:45` Corrida terminada. Total usado hoy: 296.

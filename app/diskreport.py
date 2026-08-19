@@ -226,20 +226,20 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        # Usar try-except por si el archivo desaparece o cambia permisos
+                        path_obj = Path(entry.path)
+                        # Defensa adicional: verificar protección en cada nivel
+                        if skip_protected and is_protected_path(path_obj):
+                            continue
+                        
                         stat_data = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir():
-                            path_obj = Path(entry.path)
-                            if skip_protected and is_protected_path(path_obj):
-                                continue
-                            
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
                                 stack.append(path_obj)
                         elif entry.is_file():
-                            yield Path(entry.path), stat_data.st_size
+                            yield path_obj, stat_data.st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -297,6 +297,10 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 # Obtenemos la parte de la ruta inmediatamente inferior a base
                 relative = path.relative_to(base)
                 top_folder = base / relative.parts[0]
+                
+                # Defensa: asegurar que la subcarpeta no sea protegida antes de procesar
+                if skip_protected and is_protected_path(top_folder):
+                    continue
                 
                 sums[top_folder] += size
                 counts[top_folder] += 1

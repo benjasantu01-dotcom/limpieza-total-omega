@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 86 | 8 | 14 | 7 | 97 |
-| 2026-08-19 | 127 | 10 | 17 | 11 | 127 |
+| 2026-08-18 | 86 | 8 | 14 | 7 | 93 |
+| 2026-08-19 | 128 | 10 | 17 | 11 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **43**
+- seguridad defensiva: **41**
 - rendimiento: **40**
-- seguridad defensiva: **40**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
+- `diskreport.py`: **21**
 - `duplicates.py`: **20**
 - `healthscore.py`: **20**
-- `diskreport.py`: **20**
 - `settings.py`: **19**
 - `organizer.py`: **18**
 - `scanner.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T12:46:23` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre los elementos encontrados durante el escaneo, evitando así que una ruta que contenga un punto de reparse malicioso o un acceso no autorizado pueda ser procesada aunque la carpeta raíz haya sido validada.
 - `2026-08-19T12:35:36` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` integrando `is_protected_path` al validar el contexto y la consulta antes de construir el payload, asegurando que ningún dato del sistema que pase por `build_context` pueda ser malinterpretado por la API remota.
 - `2026-08-19T12:34:49` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load()` para detectar y prevenir situaciones de archivos de configuración truncados (estratégicamente vacíos o incompletos tras una escritura interrumpida), asegurando que si `json.loads` devuelve un objeto vacío, se trate como error y se recupere el estado de fábrica.
 - `2026-08-19T12:24:48` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante situaciones de concurrencia y estados inconsistentes al añadir una validación de existencia explícita antes del borrado y asegurar que el manifiesto se actualice solo con lo que realmente se eliminó, evitando desincronizaciones entre el sistema de archivos y el JSON.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T11:54:35` **scanner.py** (rendimiento): Se optimizó el escaneo de directorios reemplazando la búsqueda repetitiva por `any()` con `in` sobre un `set` de carpetas para mejorar la eficiencia en cada iteración de archivos.
 - `2026-08-19T11:44:30` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` eliminando llamadas redundantes a `path.exists()` y `path.is_file()` mediante el uso de los atributos ya obtenidos por `os.walk`, y reduje el costo de las comparaciones de extensiones usando el conjunto precalculado `_LOWER_JUNK_EXTS`.
 - `2026-08-19T11:35:05` **main.py** (rendimiento): Se ha optimizado `_flush_logs` eliminando la creación innecesaria de diccionarios y listas intermedias dentro del bucle de logs, además de asegurar que la interfaz solo procese actualizaciones si hay contenido pendiente, mejorando el rendimiento del hilo principal.
-- `2026-08-19T11:34:10` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje final y la generación de recomendaciones transformando las consultas de diccionarios en accesos directos y pre-calculando el desglose, reduciendo el overhead de búsqueda en cada iteración de `compute_score`.
