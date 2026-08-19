@@ -251,6 +251,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     ruta_str = str(ruta)
     if is_protected_path(ruta_str) or (ruta.exists() and not ruta.is_file()): return None
     if not _Validators._is_safe_path(str(ruta.parent)): return None
+    
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False

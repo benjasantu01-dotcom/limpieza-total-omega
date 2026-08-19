@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 86 | 8 | 14 | 7 | 85 |
-| 2026-08-19 | 131 | 11 | 18 | 13 | 131 |
+| 2026-08-18 | 86 | 8 | 14 | 7 | 81 |
+| 2026-08-19 | 133 | 11 | 18 | 13 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
-- seguridad defensiva: **44**
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **40**
 - robustez ante casos límite: **38**
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **21**
 - `diskreport.py`: **21**
 - `duplicates.py`: **20**
+- `settings.py`: **20**
 - `organizer.py`: **19**
 - `scanner.py`: **19**
-- `settings.py`: **19**
 - `quarantine.py`: **17**
 - `main.py`: **15**
 - `browser.py`: **15**
 - `memory.py`: **11**
 - `branding.py`: **11**
 - `safety.py`: **5**
-- `startup.py`: **1**
+- `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T13:16:00` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante el uso de `os.path.realpath` (resuelto contra `os.path.lexists`) antes de la validación final, asegurando que cualquier ruta simbólica o reparse point sea expuesto antes de ser procesado, protegiendo así contra el seguimiento accidental de enlaces fuera de las zonas permitidas.
+- `2026-08-19T13:15:32` **settings.py** (seguridad defensiva): Se endurece la validación en `save()` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta final del archivo de configuración antes de cualquier operación de escritura, garantizando que ni siquiera un error lógico en la resolución de rutas pueda permitir la sobreescritura de ubicaciones protegidas.
 - `2026-08-19T13:06:22` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del proceso de escaneo integrando `is_protected_path` en `check_recent_executable_in_downloads` para evitar el acceso a metadatos de rutas críticas incluso si el escáner alcanza una carpeta protegida por un error de resolución, y se añadieron chequeos de integridad para prevenir seguimientos a enlaces simbólicos o puntos de reanálisis durante la obtención de `st_mtime`.
 - `2026-08-19T12:56:55` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` al asegurar que cualquier operación de movimiento o eliminación verifique explícitamente que la ruta resuelta no esté fuera del árbol de directorios de destino (evitando ataques de "path traversal" o movimientos accidentales fuera de la cuarentena).
 - `2026-08-19T12:55:03` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación explícita en `compute_score` para asegurar que `SystemMetrics` contenga solo tipos de datos esperados, previniendo inyecciones de objetos maliciosos o inesperados antes de procesar las métricas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T12:14:08` **duplicates.py** (robustez ante casos límite): Se mejoró la robustez de `find_duplicates` añadiendo una validación explícita para asegurar que la lista de directorios no sea `None` y que cada elemento sea una ruta válida, evitando excepciones en el flujo de escaneo ante entradas malformadas o inesperadas.
 - `2026-08-19T12:06:15` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de entrada, añadiendo una validación explícita para rutas que no existen o son inaccesibles, evitando que `os.scandir` o `shutil.disk_usage` lancen excepciones no capturadas al encontrar volúmenes montados bloqueados o removibles.
 - `2026-08-19T12:05:04` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera validando la existencia y el tipo de archivo de la ruta destino antes de intentar la escritura.
-- `2026-08-19T12:04:01` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas mal formadas o tipos inesperados mediante una validación más estricta en el bucle principal, evitando que valores inesperados (como listas o diccionarios vacíos donde se esperan números) puedan causar errores en el flujo de inferencia.
-- `2026-08-19T11:55:03` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración eliminando llamadas redundantes a `os.path.exists()` y `stat()` mediante una validación de caché proactiva y el uso de `try-except` para evitar comprobaciones innecesarias de estado de archivo antes de la lectura.

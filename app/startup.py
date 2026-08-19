@@ -135,25 +135,19 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
                 
+            # Verificación de integridad antes de resolución
             if is_protected_path(p) or p.is_symlink():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
             
-            if not os.path.lexists(p):
+            # Resolver ruta real para detectar ocultamientos mediante reparse points
+            real_path = os.path.realpath(str(p))
+            if not os.path.lexists(real_path) or is_protected_path(Path(real_path)):
                 _EXISTS_CACHE[path_str] = False
-                return path_str
+                return ""
                 
-            try:
-                p_abs: Path = p.resolve(strict=True)
-                if not p_abs.exists() or is_protected_path(p_abs):
-                    _EXISTS_CACHE[path_str] = False
-                    return ""
-                p_str: str = str(p_abs)
-            except (OSError, PermissionError, RuntimeError):
-                return path_str
-                
-            _EXISTS_CACHE[p_str] = True
-            return p_str
+            _EXISTS_CACHE[real_path] = True
+            return real_path
         except (OSError, ValueError, RuntimeError, TypeError):
             _EXISTS_CACHE[path_str] = False
             return path_str
