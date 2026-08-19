@@ -1047,3 +1047,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T03:45:30` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `main.py` encapsulando la validación de rutas dentro de `_safe_run` para evitar que excepciones no controladas en el pool de hilos provoquen comportamientos inesperados, y utilicé `is_safe_to_modify` en `on_stage` para asegurar el filtrado preventivo antes de procesar archivos.
 - `2026-08-19T03:45:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T03:45:30` Corrida terminada. Total usado hoy: 88.
+- `2026-08-19T03:53:42` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-19T03:54:08` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva en `memory.py` mediante la validación explícita de rutas de ejecutables usando `is_protected_path` antes de cualquier interacción con procesos, asegurando que no se operen procesos del sistema o protegidos, además de normalizar el manejo de handles en el bloque `finally` para evitar fugas de recursos.
+- `2026-08-19T03:54:32` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-19T03:54:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T03:55:24` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-19T03:56:01` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha robustecido el aislamiento mediante una verificación explícita de `is_protected_path` sobre el directorio padre de destino antes de realizar la copia, asegurando que no se pueda inyectar la cuarentena en ubicaciones críticas ni mediante rutas mal formadas.
+- `2026-08-19T03:56:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-19T03:56:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T03:56:05` Corrida terminada. Total usado hoy: 92.

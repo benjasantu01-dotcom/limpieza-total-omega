@@ -181,6 +181,8 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
         path = Path(base).expanduser().resolve()
         if path.name.strip() == "":
             raise UnsafePathError("Ruta de cuarentena inválida o vacía.")
+        if is_protected_path(path):
+            raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
         path.mkdir(parents=True, exist_ok=True)
         return path
     except (OSError, RuntimeError) as e:
@@ -234,8 +236,8 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("Solo se aceptan archivos regulares.")
     if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta origen está protegida por el sistema.")
-    if is_protected_path(dest_dir):
-        raise UnsafePathError("Destino inválido: directorio de cuarentena protegido.")
+    if is_protected_path(dest_dir) or is_protected_path(dest_dir.parent):
+        raise UnsafePathError("Destino inválido: directorio de cuarentena en ruta protegida.")
     if _is_valid_quarantine_path(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     if resolved_source.drive.lower() != dest_dir.drive.lower():

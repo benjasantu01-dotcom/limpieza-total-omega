@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 217
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 30 | 3 | 5 | 1 | 27 |
+| 2026-08-17 | 30 | 3 | 5 | 1 | 23 |
 | 2026-08-18 | 146 | 15 | 22 | 11 | 156 |
-| 2026-08-19 | 44 | 2 | 4 | 4 | 34 |
+| 2026-08-19 | 45 | 2 | 5 | 5 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - robustez ante casos límite: **43**
+- seguridad defensiva: **43**
 - rendimiento: **42**
-- seguridad defensiva: **42**
 - manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
 - `assistant.py`: **22**
+- `quarantine.py`: **21**
 - `scanner.py`: **21**
-- `quarantine.py`: **20**
 - `diskreport.py`: **19**
 - `organizer.py`: **18**
 - `settings.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T03:56:01` **quarantine.py** (seguridad defensiva): Se ha robustecido el aislamiento mediante una verificación explícita de `is_protected_path` sobre el directorio padre de destino antes de realizar la copia, asegurando que no se pueda inyectar la cuarentena en ubicaciones críticas ni mediante rutas mal formadas.
 - `2026-08-19T03:44:42` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del sistema mejorando la validación de los datos de entrada en `compute_score`, asegurando que `metrics.validate()` sea llamado antes de realizar cualquier cálculo para prevenir el uso de estados inválidos, y encapsulando la lógica de validación de pesos en una constante computada para evitar errores en tiempo de ejecución.
 - `2026-08-19T03:44:18` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `suggest_keeper` añadiendo una resolución previa de rutas (`resolve`) y verificaciones consistentes con `is_safe_to_modify` antes de procesar cualquier entrada, asegurando que no se operen rutas fuera de los límites permitidos incluso ante accesos concurrentes o errores de permisos.
 - `2026-08-19T03:43:55` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva en `all_drives_usage` añadiendo un chequeo explícito `is_protected_path` para cada unidad detectada, evitando que el escáner intente siquiera procesar rutas de sistema raíz que puedan ser inaccesibles o críticas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T03:04:56` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_file()` en el pipeline de refinamiento de hash para manejar de forma robusta los casos donde un archivo es borrado, movido o bloqueado por otro proceso entre las etapas de escaneo y procesamiento, evitando excepciones innecesarias en entornos concurrentes.
 - `2026-08-19T03:03:47` **diskreport.py** (robustez ante casos límite): Se ha robustecido la función `_bytes_to_mb` para manejar casos límite como tipos de entrada inesperados o valores negativos mediante validación explícita, evitando posibles errores de cálculo o excepciones en el reporte.
 - `2026-08-19T02:54:07` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos o rutas inválidas, asegurando que la validación `ensure_safe_to_modify` se aplique sobre una ruta absoluta validada y capturando explícitamente errores de escritura, evitando que la app falle si el disco está lleno o los permisos son denegados.
-- `2026-08-19T02:53:48` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor local ante valores inesperados en el contexto (como `NaN` o `inf`) durante la identificación de problemas, evitando que el formateo de mensajes falle y rompa la respuesta del asistente.
