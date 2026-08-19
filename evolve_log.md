@@ -1002,3 +1002,4 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-19T15:08:24` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-08-19T15:08:24` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T15:08:24` Corrida terminada. Total usado hoy: 350.
+- `2026-08-19T15:17:42` Presupuesto diario agotado (350 usados). Corte hasta mañana.
