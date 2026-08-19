@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
-- Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 86 | 9 | 14 | 7 | 104 |
-| 2026-08-19 | 124 | 10 | 16 | 11 | 123 |
+| 2026-08-18 | 86 | 8 | 14 | 7 | 101 |
+| 2026-08-19 | 125 | 10 | 17 | 11 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **40**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,7 +36,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **18**
 - `scanner.py`: **18**
 - `settings.py`: **18**
-- `quarantine.py`: **16**
+- `quarantine.py`: **17**
 - `main.py`: **15**
 - `browser.py`: **15**
 - `memory.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T12:24:48` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante situaciones de concurrencia y estados inconsistentes al añadir una validación de existencia explícita antes del borrado y asegurar que el manifiesto se actualice solo con lo que realmente se eliminó, evitando desincronizaciones entre el sistema de archivos y el JSON.
 - `2026-08-19T12:16:09` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus ayudantes ante casos donde los procesos se cierran durante la ejecución, añadiendo una limpieza de excepciones y asegurando que `_get_process_path` no trabaje con handles inválidos o cerrados, evitando cierres inesperados al gestionar procesos volátiles.
 - `2026-08-19T12:15:48` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios en la UI (método `_safe_run_ui_callback`) para prevenir errores de concurrencia y fallos en widgets destruidos mientras una tarea asíncrona intenta actualizar la interfaz tras una operación, mitigando el riesgo de excepciones al cerrar o cambiar de pestaña.
 - `2026-08-19T12:14:34` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas negativas o no finitas, aplicando la lógica de normalización consistente con el resto de los módulos mediante el uso de `_clamp` y `_to_int`, evitando así resultados de puntaje fuera del rango esperado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T11:34:10` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje final y la generación de recomendaciones transformando las consultas de diccionarios en accesos directos y pre-calculando el desglose, reduciendo el overhead de búsqueda en cada iteración de `compute_score`.
 - `2026-08-19T11:33:42` **duplicates.py** (rendimiento): Se ha optimizado la función `_process_size_group` para evitar el cálculo redundante de hashes completos cuando todos los archivos en un grupo de tamaño ya fueron descartados por el hash parcial, reduciendo drásticamente las operaciones de I/O en discos HDD.
 - `2026-08-19T11:33:15` **diskreport.py** (rendimiento): Optimizé la función `largest_folders` para evitar llamadas redundantes a `is_protected_path` dentro del bucle de recolección, mejorando el rendimiento en directorios profundos al validar la ruta raíz una sola vez y usando una estructura de acceso más directa.
-- `2026-08-19T11:24:02` **assistant.py** (rendimiento): Se optimizó el proceso de identificación de problemas mediante la pre-compilación de los criterios y el uso de un buscador eficiente (búsqueda posicional directa), eliminando la necesidad de iterar sobre el diccionario de criterios en cada llamada a `local_answer`.

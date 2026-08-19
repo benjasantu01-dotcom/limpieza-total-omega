@@ -492,23 +492,25 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     if not items:
         return 0
     item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
-    purged_count = 0
-    updated = False
+    purged_items: List[QuarantineItem] = []
+    
     for entry in quarantine_root.iterdir():
         if entry.name in item_map:
             item = item_map[entry.name]
-            if _is_item_purgable(entry, item, quarantine_root):
+            # Validar existencia real y elegibilidad antes de intentar el borrado
+            if entry.exists() and _is_item_purgable(entry, item, quarantine_root):
                 if _safe_unlink(entry):
-                    purged_count += 1
-                    updated = True
+                    purged_items.append(item)
         elif entry.name != MANIFEST_NAME and entry.is_file():
-            # Archivo no listado en el manifiesto: ignorar por precaución
             continue
-    if updated:
-        # Usamos force_reload=True para asegurar coherencia tras los cambios en disco
-        new_manifest = [i for i in load_manifest(base, force_reload=True) if (quarantine_root / i.stored_name).exists()]
-        save_manifest(new_manifest, base)
-    return purged_count
+            
+    if purged_items:
+        # Mantener solo los items que NO fueron borrados del sistema
+        purged_ids = {p.item_id for p in purged_items}
+        remaining_items = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purged_ids]
+        save_manifest(remaining_items, base)
+        
+    return len(purged_items)
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
