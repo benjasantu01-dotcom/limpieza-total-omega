@@ -277,7 +277,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 
             target = _generate_unique_target(dest_base / f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}")
             
-            # ensure_safe_to_modify lanza excepción si la ruta no es segura (Requerimiento de seguridad)
+            # Verificar que el destino final sigue dentro de los límites esperados (path traversal)
+            if not target.resolve().is_relative_to(dest_base):
+                continue
+
             ensure_safe_to_modify(src_path)
             ensure_safe_to_modify(target)
             
@@ -310,9 +313,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 continue
             
             resolved_item = item.resolve()
+            # Asegurar que el ítem realmente está bajo el directorio de revisión antes de borrar
             if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
-                    # Validar seguridad antes de invocar unlink
                     ensure_safe_to_modify(resolved_item)
                     if resolved_item.exists():
                         resolved_item.unlink()

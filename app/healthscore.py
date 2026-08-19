@@ -190,8 +190,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
         return HealthResult(0, "F", {}, ["Error: Sistema de evaluación inestable."])
     
-    metrics.validate()
-    if not metrics.is_finite():
+    # Validación defensiva estricta sobre las propiedades de la instancia
+    try:
+        metrics.validate()
+        if not metrics.is_finite():
+            raise ValueError("Datos no finitos")
+    except Exception:
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
 
     ratios: ScoreMap = {

@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 86 | 8 | 14 | 7 | 93 |
-| 2026-08-19 | 128 | 10 | 17 | 11 | 130 |
+| 2026-08-18 | 86 | 8 | 14 | 7 | 89 |
+| 2026-08-19 | 130 | 10 | 17 | 13 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **41**
+- seguridad defensiva: **43**
 - rendimiento: **40**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
+- `healthscore.py`: **21**
 - `diskreport.py`: **21**
 - `duplicates.py`: **20**
-- `healthscore.py`: **20**
+- `organizer.py`: **19**
 - `settings.py`: **19**
-- `organizer.py`: **18**
 - `scanner.py`: **18**
 - `quarantine.py`: **17**
 - `main.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T12:56:55` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` al asegurar que cualquier operación de movimiento o eliminación verifique explícitamente que la ruta resuelta no esté fuera del árbol de directorios de destino (evitando ataques de "path traversal" o movimientos accidentales fuera de la cuarentena).
+- `2026-08-19T12:55:03` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación explícita en `compute_score` para asegurar que `SystemMetrics` contenga solo tipos de datos esperados, previniendo inyecciones de objetos maliciosos o inesperados antes de procesar las métricas.
 - `2026-08-19T12:46:23` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre los elementos encontrados durante el escaneo, evitando así que una ruta que contenga un punto de reparse malicioso o un acceso no autorizado pueda ser procesada aunque la carpeta raíz haya sido validada.
 - `2026-08-19T12:35:36` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` integrando `is_protected_path` al validar el contexto y la consulta antes de construir el payload, asegurando que ningún dato del sistema que pase por `build_context` pueda ser malinterpretado por la API remota.
 - `2026-08-19T12:34:49` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load()` para detectar y prevenir situaciones de archivos de configuración truncados (estratégicamente vacíos o incompletos tras una escritura interrumpida), asegurando que si `json.loads` devuelve un objeto vacío, se trate como error y se recupere el estado de fábrica.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T12:04:01` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas mal formadas o tipos inesperados mediante una validación más estricta en el bucle principal, evitando que valores inesperados (como listas o diccionarios vacíos donde se esperan números) puedan causar errores en el flujo de inferencia.
 - `2026-08-19T11:55:03` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración eliminando llamadas redundantes a `os.path.exists()` y `stat()` mediante una validación de caché proactiva y el uso de `try-except` para evitar comprobaciones innecesarias de estado de archivo antes de la lectura.
 - `2026-08-19T11:54:35` **scanner.py** (rendimiento): Se optimizó el escaneo de directorios reemplazando la búsqueda repetitiva por `any()` con `in` sobre un `set` de carpetas para mejorar la eficiencia en cada iteración de archivos.
-- `2026-08-19T11:44:30` **organizer.py** (rendimiento): Optimizé el rendimiento de `scan_for_junk` eliminando llamadas redundantes a `path.exists()` y `path.is_file()` mediante el uso de los atributos ya obtenidos por `os.walk`, y reduje el costo de las comparaciones de extensiones usando el conjunto precalculado `_LOWER_JUNK_EXTS`.
-- `2026-08-19T11:35:05` **main.py** (rendimiento): Se ha optimizado `_flush_logs` eliminando la creación innecesaria de diccionarios y listas intermedias dentro del bucle de logs, además de asegurar que la interfaz solo procese actualizaciones si hay contenido pendiente, mejorando el rendimiento del hilo principal.
