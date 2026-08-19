@@ -196,13 +196,18 @@ def _sum_directory_recursive(
         abs_root = Path(root_dir).resolve(strict=True)
         if not abs_root.is_dir() or is_protected_path(abs_root):
             return 0
+        root_key = str(abs_root)
     except (OSError, PermissionError, RuntimeError):
         return 0
+
+    if root_key in memo:
+        return memo[root_key]
 
     def _walk(current_dir: str, depth: int) -> int:
         if depth > MAX_SCAN_DEPTH:
             return 0
-            
+        
+        # Consultar memo antes de procesar
         if current_dir in memo:
             return memo[current_dir]
         
@@ -225,7 +230,9 @@ def _sum_directory_recursive(
         memo[current_dir] = total
         return total
 
-    return _walk(str(abs_root), 0)
+    result = _walk(root_key, 0)
+    memo[root_key] = result
+    return result
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:

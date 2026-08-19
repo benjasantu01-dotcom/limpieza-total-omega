@@ -343,14 +343,14 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
         val = getattr(ctx, crit.metric_key)
         f_val = _safe_float(val, -1.0)
         
-        # Ignorar si la métrica no está definida (f_val < 0) o no es finita
-        if f_val < 0:
-            continue
+        if f_val < 0: continue
             
-        if (crit.operator == "<" and f_val < crit.threshold) or (crit.operator == ">" and f_val > crit.threshold):
+        is_triggered = (crit.operator == "<" and f_val < crit.threshold) or \
+                       (crit.operator == ">" and f_val > crit.threshold)
+        
+        if is_triggered:
             problemas.append(crit.message_format.format(val)[:_MAX_MSG_CHUNK])
-            if len(problemas) >= 3:
-                break
+            if len(problemas) >= 3: break
     return problemas
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:

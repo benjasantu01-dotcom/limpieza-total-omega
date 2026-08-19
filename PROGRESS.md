@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 144 | 15 | 22 | 11 | 156 |
-| 2026-08-19 | 67 | 5 | 9 | 7 | 68 |
+| 2026-08-18 | 142 | 15 | 22 | 11 | 154 |
+| 2026-08-19 | 70 | 5 | 9 | 7 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **40**
-- robustez ante casos límite: **38**
-- rendimiento: **33**
+- robustez ante casos límite: **36**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **21**
 - `healthscore.py`: **21**
 - `scanner.py`: **20**
-- `assistant.py`: **20**
-- `quarantine.py`: **19**
-- `diskreport.py`: **19**
+- `diskreport.py`: **20**
 - `organizer.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **16**
+- `browser.py`: **16**
 - `duplicates.py`: **16**
-- `main.py`: **15**
-- `browser.py`: **15**
+- `main.py`: **14**
 - `memory.py`: **11**
 - `branding.py`: **11**
 - `startup.py`: **6**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T06:59:13` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` (usada por `summarize`) para evitar el doble acceso a `path.suffix` y `path.stat().st_size` moviendo la lógica a una estructura de datos más eficiente, reduciendo el overhead en el loop principal.
+- `2026-08-19T06:59:02` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` para aprovechar el diccionario `memo` ya existente en las llamadas sucesivas dentro del mismo escaneo, evitando recalcular el peso de directorios compartidos y reduciendo significativamente las llamadas al sistema de archivos.
+- `2026-08-19T06:57:48` **assistant.py** (rendimiento): Optimizé `_identify_active_problems` reemplazando la construcción dinámica de strings mediante formato dentro del bucle principal por una pre-evaluación de condiciones, evitando procesamientos innecesarios y reduciendo la carga de trabajo en el motor local al realizar consultas frecuentes sobre el estado de salud.
 - `2026-08-19T06:38:30` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con las precondiciones, argumentos y excepciones de las funciones críticas para facilitar el mantenimiento y la comprensión de las salvaguardas de seguridad.
 - `2026-08-19T06:37:59` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de validación y lógica interna, clarificando las precondiciones y el propósito de las salvaguardas de seguridad implementadas.
 - `2026-08-19T06:37:34` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de entrada y retorno de las funciones públicas `format_bytes`, `parse_windows_process_csv`, `read_snapshot`, `top_memory_processes`, `pressure_level` y `diagnose`, y se documentaron con docstrings mejoradas para clarificar los contratos de datos, facilitando el mantenimiento y la legibilidad para futuros colaboradores.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T06:08:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.path` y `_Validators.str` para evitar inyecciones de rutas peligrosas y mejorar el manejo de errores ante entradas malformadas, asegurando que las validaciones de `safety` no sean omitidas ante excepciones inesperadas.
 - `2026-08-19T06:08:17` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones en `check_recent_executable_in_downloads` y `check_double_extension` implementando verificaciones de entrada nula/vacía más estrictas y manejando explícitamente excepciones en el acceso a metadatos, evitando que el escáner aborte ante archivos inaccesibles o bloqueados.
 - `2026-08-19T06:07:45` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema al utilizar un bloque `try-except` más granular en `_check_file_integrity`, permitiendo capturar errores de acceso específicos y convertirlos en `UnsafePathError` con mensajes descriptivos, evitando que excepciones genéricas interrumpan el flujo de trabajo del usuario.
-- `2026-08-19T05:57:57` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura antes de operar, asegurando que las rutas base sean absolutas y evitando procesar listas vacías o entradas inválidas que podrían disparar excepciones innecesarias.
-- `2026-08-19T05:57:32` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `trim_working_set` y sus ayudantes capturando errores de forma más específica, validando la integridad del handle antes de cualquier operación y asegurando que `_is_valid_trim_target` maneje correctamente casos donde el handle no esté disponible, siguiendo estrictamente el enfoque de manejo de errores y validación.
-- `2026-08-19T05:57:03` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en el método `_build_tabs_container` envolviendo la construcción de cada pestaña en un bloque `try-except` robusto y validando la existencia de los widgets antes de intentar acceder a ellos, evitando que un error en una pestaña individual impida que la aplicación arranque o se renderice correctamente.

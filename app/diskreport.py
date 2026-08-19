@@ -350,7 +350,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
     """
-    Recolección interna de métricas en una sola pasada.
+    Recolección interna de métricas en una sola pasada optimizada.
     
     Returns:
         Tupla con (bytes totales, cuenta total, mapa de tamaños, mapa de conteos, lista de top 8 archivos).
@@ -373,7 +373,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, path))
             
-    return total_bytes, total_files, ext_sizes, ext_counts, top_files_heap
+    return total_bytes, total_files, dict(ext_sizes), dict(ext_counts), top_files_heap
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
@@ -398,7 +398,9 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Acceso denegado o error durante el análisis del disco."]
 
     lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
-    for ext, size in heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1]):
+    # Convertir a lista de tuplas para el ordenamiento
+    sorted_exts = heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1])
+    for ext, size in sorted_exts:
         lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_counts[ext]} archivos)")
         
     lines.extend(["", "Archivos más grandes:"])

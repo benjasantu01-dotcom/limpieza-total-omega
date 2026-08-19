@@ -1397,3 +1397,11 @@ assert 'oval' in ['polygon']
 - `2026-08-19T06:48:26` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-08-19T06:48:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T06:48:26` Corrida terminada. Total usado hoy: 156.
+- `2026-08-19T06:57:12` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-19T06:57:48` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `_identify_active_problems` reemplazando la construcción dinámica de strings mediante formato dentro del bucle principal por una pre-evaluación de condiciones, evitando procesamientos innecesarios y reduciendo la carga de trabajo en el motor local al realizar consultas frecuentes sobre el estado de salud.
+- `2026-08-19T06:58:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T06:58:36` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-19T06:59:02` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `_sum_directory_recursive` para aprovechar el diccionario `memo` ya existente en las llamadas sucesivas dentro del mismo escaneo, evitando recalcular el peso de directorios compartidos y reduciendo significativamente las llamadas al sistema de archivos.
+- `2026-08-19T06:59:13` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `_collect_summary_data` (usada por `summarize`) para evitar el doble acceso a `path.suffix` y `path.stat().st_size` moviendo la lógica a una estructura de datos más eficiente, reduciendo el overhead en el loop principal.
+- `2026-08-19T06:59:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T06:59:13` Corrida terminada. Total usado hoy: 160.
