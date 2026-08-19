@@ -138,7 +138,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raise
 
     def _on_closing(self) -> None:
-        """Finaliza las operaciones pendientes, cierra el pool de hilos y destruye la UI."""
+        """
+        Finaliza las operaciones pendientes, cierra de forma limpia el 
+        pool de hilos y destruye la instancia de la interfaz.
+        """
         self._closing = True
         with self._task_lock:
             if self._executor:
@@ -146,7 +149,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.destroy()
 
     def _validate_environment(self) -> None:
-        """Verifica que el directorio home sea accesible y seguro para la ejecución."""
+        """
+        Verifica que el directorio home sea accesible y seguro para la 
+        ejecución del proceso.
+        """
         try:
             home = Path.home().resolve(strict=True)
             if not os.access(home, os.R_OK):
@@ -171,7 +177,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.error("Fallo al aplicar colores de branding: %s", e)
 
     def _init_state(self) -> None:
-        """Inicializa los cachés, hilos, estructuras de persistencia y variables de control."""
+        """Inicializa cachés, hilos, estructuras de persistencia y flags."""
         self._cache: OrderedDict = OrderedDict()
         self._cache_ttl = 300
         self._cache_max_size = 20
@@ -199,7 +205,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._debounces: Dict[str, str] = {}
         
     def _debounce_action(self, key: str, delay: int, callback: Callable[[], Any]) -> None:
-        """Retrasa la ejecución de un callback para consolidar eventos rápidos (debounce)."""
+        """
+        Retrasa la ejecución de un callback para consolidar eventos rápidos 
+        (ej. redimensionado de ventana o redibujo de canvas).
+        """
         if key in self._debounces:
             try:
                 self.after_cancel(self._debounces[key])
@@ -215,6 +224,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         :param parent: Widget contenedor padre.
         :param text: Texto de la etiqueta.
         :param style: Estilo base definido en el branding ('title', 'body', 'caption').
+        :return: Etiqueta configurada (ctk.CTkLabel).
         """
         font_config = {"size": branding.font_size(style)}
         if style == "title": font_config["weight"] = "bold"
@@ -260,7 +270,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         :param parent: Widget contenedor padre.
         :param text: Texto del botón.
         :param command: Función a ejecutar.
-        :param danger: Define si es una operación destructiva (rojo).
+        :param danger: Define si es una operación destructiva (color rojo).
+        :param secondary: Define si es una acción secundaria (color secundario).
+        :return: Botón configurado (ctk.CTkButton).
         """
         if danger:
             fondo, hover, texto = ("danger", "danger_hover", "text")
@@ -322,7 +334,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         Delega la construcción del contenido de cada pestaña a sus métodos específicos.
         
-        :param name: Nombre de la pestaña a construir (ej. 'Salud').
+        :param name: Nombre de la pestaña a construir.
         """
         method_name = f"_build_tab_{name.lower()}"
         constructor = getattr(self, method_name, None)
@@ -1146,9 +1158,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Re-verificación de seguridad antes de borrar
             try:
-                safety.ensure_safe_to_modify(Path(".").resolve()) # Placeholder conceptual, organizer lo valida
+                safety.ensure_safe_to_modify(Path(".").resolve())
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()
                 self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza")
@@ -1275,13 +1286,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log("Error: Manifiesto corrupto.", "Cuarentena")
                 return
             
-            # Verificación crítica antes de restaurar
             if not self._is_safe_path(item.original_path):
                 self.log("Error: Ruta original insegura.", "Cuarentena")
                 return
             
             try:
-                # El guardado en restore_item es interno, pero validamos la ruta destino
                 destino = quarantine.restore_item(raw_id)
                 self.log(f"Restaurado en: {destino}", "Cuarentena")
             except Exception as e:
@@ -1303,7 +1312,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # El borrado físico debe ser seguro
             borrados = quarantine.purge_all()
             self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
 

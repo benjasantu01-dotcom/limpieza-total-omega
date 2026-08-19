@@ -2,17 +2,14 @@
 duplicates.py — detección de archivos duplicados.
 
 SOLO LECTURA: este módulo encuentra y agrupa duplicados, y sugiere cuál
-conservar, pero **nunca borra ni mueve nada**. La decisión de qué hacer con
-un duplicado queda en la interfaz, y pasa por la cuarentena o por la
-carpeta de revisión, nunca por un borrado directo.
+conservar, pero **nunca borra ni mueve nada**.
 
-Estrategia en tres pasos, de lo barato a lo caro, para no leer gigas al
-vacío:
-  1. Agrupar por tamaño exacto (dos archivos de distinto tamaño no pueden
-     ser iguales; esto descarta la enorme mayoría sin leer nada).
-  2. Dentro de cada grupo, hash de los primeros KB (descarta casi todo el
-     resto leyendo muy poco).
-  3. Solo a los que siguen coincidiendo, hash completo para confirmar.
+Estrategia en tres pasos:
+| Paso | Técnica | Propósito |
+| :--- | :--- | :--- |
+| 1 | Tamaño (stat) | Descarta archivos únicos rápidamente. |
+| 2 | Hash Parcial | Filtra falsos positivos (igual tamaño, distinto contenido). |
+| 3 | Hash Completo | Confirmación final de identidad (SHA256). |
 """
 
 from __future__ import annotations
@@ -77,16 +74,12 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo tras validar su seguridad.
-    
-    Retorna el hexdigest SHA256 si es posible leer el archivo, o None si el
-    archivo es inaccesible, está protegido o ocurre un error de E/S.
     """
     if path is None or chunk_size <= 0: 
         return None
         
     try:
         file_path = Path(path).resolve()
-        # Validar existencia y seguridad antes de operar
         if not file_path.is_file() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
 
@@ -110,8 +103,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes para comparación heurística.
-    
-    Usa PARTIAL_READ_BYTES (64KB por defecto) para generar un hash preliminar.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -156,9 +147,7 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Recorre el árbol de directorios identificando archivos candidatos aptos.
-    
-    Usa un conjunto de inodos visitados para evitar ciclos en sistemas de 
-    archivos complejos y aplica filtros de seguridad en cada entrada.
+    Retorna un diccionario mapeando tamaño (bytes) a lista de rutas Path.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -201,9 +190,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Agrupa rutas que comparten un hash calculado por hash_func.
-    
-    Implementa un caché temporal de digest para evitar recalcular hashes
-    en caso de ser invocado sobre el mismo conjunto.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     digest_cache: Dict[Path, str] = {}
@@ -221,9 +207,6 @@ def _refine_by_hash(
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline de refinamiento en dos etapas para un grupo de tamaño dado.
-    
-    1. Hash parcial para descartar colisiones accidentales por tamaño.
-    2. Hash completo para confirmar la identidad del contenido.
     """
     confirmed_groups: List[DuplicateGroup] = []
     partial_groups = _refine_by_hash(paths, partial_hash)
