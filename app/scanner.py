@@ -155,15 +155,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        # Validación extra de existencia para evitar race conditions en metadatos
-        if not path.exists():
-            return None
-
         if entry and not entry.is_file():
             return None
         
-        file_mtime = entry.stat().st_mtime if entry else path.stat().st_mtime
-        if (now_ts - file_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+        # Uso de .stat() seguro capturando excepciones de acceso
+        stats = entry.stat() if entry else path.stat()
+        if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, PermissionError, AttributeError, ValueError):
         logger.debug(f"Acceso restringido a metadatos de {path}")
@@ -217,6 +214,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         raw_path = Path(directory)
+        if not raw_path.exists():
+            return []
         path_input = raw_path.resolve(strict=True)
         # Filtro de seguridad inicial crítico antes de iniciar el escaneo
         if not path_input.is_dir() or is_protected_path(path_input):

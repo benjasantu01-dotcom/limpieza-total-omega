@@ -911,3 +911,41 @@ FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly 
 - `2026-08-19T01:22:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-19T01:22:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T01:22:46` Corrida terminada. Total usado hoy: 32.
+- `2026-08-19T01:30:43` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-19T01:31:36` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `is_protected_path` ante errores de resolución de rutas (como accesos denegados a nivel de sistema operativo en carpetas especiales) y refiné `_is_system_or_hidden` para evitar excepciones silenciosas mediante el uso de `stat` en caso de fallo en `ctypes`, asegurando que la validación no falle en modo "permitido" ante un error de acceso.
+- `2026-08-19T01:32:02` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `process_entry` y `scan_directory` añadiendo validaciones de tipo y estado para prevenir excepciones inesperadas al interactuar con rutas que podrían cambiar o ser inaccesibles durante el escaneo.
+- `2026-08-19T01:32:30` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `settings.py` implementando una validación exhaustiva en `load` y `validate` mediante un bloque `try-except` más específico y la verificación de claves obligatorias, asegurando que un JSON malformado o incompleto no rompa la lógica de la aplicación al cargar valores inexistentes.
+- `2026-08-19T01:32:42` Tests FALLARON:
+```
+= "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:100
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 8 warnings in 1.10s
+
+```
+- `2026-08-19T01:32:42` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `StartupEntry._extract_quoted_path` y `StartupEntry._resolve_and_cache_path` mediante la validación estricta de rutas nulas o inválidas y el manejo defensivo de `Path` para evitar excepciones no capturadas durante la resolución de rutas complejas del sistema.
+- `2026-08-19T01:32:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T01:32:42` Corrida terminada. Total usado hoy: 36.

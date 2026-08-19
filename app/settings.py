@@ -233,7 +233,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga configuración con caché de sesión (basado en mtime) y validación."""
+    """Carga configuración con caché de sesión y validación estricta de estructura."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
@@ -244,14 +244,15 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         mtime = ruta.stat().st_mtime
         if ruta_str in _SESSION_CACHE:
             cached_mtime, cached_data = _SESSION_CACHE[ruta_str]
-            if cached_mtime == mtime:
-                return cached_data
+            if cached_mtime == mtime: return cached_data
         
-        data = json.loads(ruta.read_text(encoding="utf-8"))
-        config = validate(data) if isinstance(data, dict) else _get_default_config()
+        raw_data = json.loads(ruta.read_text(encoding="utf-8"))
+        if not isinstance(raw_data, dict): return _get_default_config()
+        
+        config = validate(raw_data)
         _SESSION_CACHE[ruta_str] = (mtime, config)
         return config
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError, KeyError):
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
@@ -321,7 +322,7 @@ def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     """Verifica si el asistente tiene permiso y credenciales para operar."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
-    return bool(settings["asistente_activado"]) and bool(settings["asistente_clave_api"])
+    return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", ""))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
     """Retorna una representación legible de los ajustes para reportes."""

@@ -124,9 +124,13 @@ def _is_system_or_hidden(path: Path) -> bool:
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        return attrs != -1 and bool(attrs & (0x02 | 0x04))
+        if attrs != -1:
+            return bool(attrs & (0x02 | 0x04))
+        # Fallback a modo POSIX si falla la API Win32
+        return bool(path.stat().st_file_attributes & (0x02 | 0x04)) if hasattr(path.stat(), 'st_file_attributes') else False
     except (OSError, AttributeError, TypeError, PermissionError):
-        return False
+        return True # Asumir riesgo en caso de error de acceso
+    return False
 
 
 @lru_cache(maxsize=2048)
@@ -140,7 +144,8 @@ def _is_reparse_point(path: Path) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return attrs != -1 and bool(attrs & 0x400)
     except (OSError, AttributeError, TypeError, PermissionError):
-        return False
+        return True # Por seguridad ante error de acceso, tratar como reparse
+    return False
 
 
 def _is_file_in_use(path: Path) -> bool:
