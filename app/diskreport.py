@@ -254,18 +254,11 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
-    try:
-        p = Path(directory).resolve(strict=False)
-        if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
-            return []
-            
-        return heapq.nlargest(
-            limit, 
-            (FileEntry(path=p, size_bytes=s) for p, s in walk_files(directory, skip_protected)),
-            key=lambda e: e.size_bytes
-        )
-    except (OSError, RuntimeError, TypeError, ValueError):
-        return []
+    return [FileEntry(path=p, size_bytes=s) for s, p in heapq.nlargest(
+        limit, 
+        ((s, p) for p, s in walk_files(directory, skip_protected)),
+        key=lambda x: x[0]
+    )]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
@@ -274,28 +267,21 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
+        
+    size_map: Dict[str, int] = defaultdict(int)
+    count_map: Dict[str, int] = defaultdict(int)
     
-    try:
-        p = Path(directory).resolve(strict=False)
-        if not p.exists() or not p.is_dir() or (skip_protected and is_protected_path(p)):
-            return []
-            
-        size_map: Dict[str, int] = defaultdict(int)
-        count_map: Dict[str, int] = defaultdict(int)
-        
-        for path, size in walk_files(directory, skip_protected):
-            ext = path.suffix.lower() or "(sin extensión)"
-            size_map[ext] += size
-            count_map[ext] += 1
-        
-        usage_list: List[ExtensionUsage] = [
-            ExtensionUsage(extension=ext, size_bytes=size, count=count_map[ext])
-            for ext, size in size_map.items()
-        ]
-        
-        return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
-    except (OSError, RuntimeError, TypeError, ValueError):
-        return []
+    for path, size in walk_files(directory, skip_protected):
+        ext = path.suffix.lower() or "(sin extensión)"
+        size_map[ext] += size
+        count_map[ext] += 1
+    
+    usage_list: List[ExtensionUsage] = [
+        ExtensionUsage(extension=ext, size_bytes=size, count=count_map[ext])
+        for ext, size in size_map.items()
+    ]
+    
+    return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
@@ -307,9 +293,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     
     try:
         base = Path(directory).resolve(strict=False)
-        if not base.exists() or not base.is_dir() or (skip_protected and is_protected_path(base)):
-            return []
-        
         sums: Dict[Path, int] = defaultdict(int)
         counts: Dict[Path, int] = defaultdict(int)
         
@@ -334,16 +317,11 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """Calcula el tamaño total en bytes y la cantidad total de archivos."""
-    if not directory:
-        return (0, 0)
-    try:
-        total_bytes, file_count = 0, 0
-        for _, size in walk_files(directory, skip_protected):
-            total_bytes += size
-            file_count += 1
-        return total_bytes, file_count
-    except (OSError, RuntimeError, ValueError):
-        return (0, 0)
+    total_bytes, file_count = 0, 0
+    for _, size in walk_files(directory, skip_protected):
+        total_bytes += size
+        file_count += 1
+    return total_bytes, file_count
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
@@ -355,21 +333,18 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
     ext_counts: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, Path]] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
-            total_bytes += size
-            total_files += 1
-            
-            ext = path.suffix.lower() or "(sin extensión)"
-            ext_sizes[ext] += size
-            ext_counts[ext] += 1
-            
-            if len(top_files_heap) < 8:
-                heapq.heappush(top_files_heap, (size, path))
-            elif size > top_files_heap[0][0]:
-                heapq.heapreplace(top_files_heap, (size, path))
-    except (OSError, PermissionError):
-        pass
+    for path, size in walk_files(directory, skip_protected):
+        total_bytes += size
+        total_files += 1
+        
+        ext = path.suffix.lower() or "(sin extensión)"
+        ext_sizes[ext] += size
+        ext_counts[ext] += 1
+        
+        if len(top_files_heap) < 8:
+            heapq.heappush(top_files_heap, (size, path))
+        elif size > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (size, path))
             
     return total_bytes, total_files, ext_sizes, ext_counts, top_files_heap
 
@@ -386,18 +361,14 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     
     try:
         p_input = Path(directory).resolve(strict=False)
-        if not p_input.exists():
-            return [f"Error: La ruta no existe: {p_input}"]
-        if not p_input.is_dir(): 
-            return [f"Error: No es un directorio: {p_input}"]
+        if not p_input.exists() or not p_input.is_dir():
+            return [f"Error: Ruta no válida: {p_input}"]
         if skip_protected and is_protected_path(p_input):
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             
         total_bytes, total_files, ext_sizes, ext_counts, top_files_heap = _collect_summary_data(p_input, skip_protected)
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError):
         return ["Error: Acceso denegado o error durante el análisis del disco."]
-    except Exception:
-        return ["Error: Fallo inesperado durante el análisis del disco."]
 
     lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     for ext, size in heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1]):

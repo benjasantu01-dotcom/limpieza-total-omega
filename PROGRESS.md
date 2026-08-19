@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 23
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 43 | 6 | 7 | 3 | 43 |
+| 2026-08-17 | 41 | 6 | 6 | 3 | 42 |
 | 2026-08-18 | 146 | 15 | 22 | 11 | 156 |
-| 2026-08-19 | 21 | 2 | 2 | 3 | 24 |
+| 2026-08-19 | 23 | 2 | 2 | 3 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **38**
 - manejo de errores y validación de entradas: **38**
-- rendimiento: **34**
+- robustez ante casos límite: **36**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
 - `scanner.py`: **21**
 - `assistant.py`: **21**
-- `quarantine.py`: **19**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `organizer.py`: **17**
 - `browser.py`: **15**
+- `duplicates.py`: **15**
 - `settings.py`: **15**
-- `duplicates.py`: **14**
-- `memory.py`: **12**
 - `main.py`: **12**
 - `branding.py`: **12**
+- `memory.py`: **11**
 - `startup.py`: **7**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T02:23:18` **duplicates.py** (rendimiento): Optimizé el proceso de recolección de archivos (`_collect_candidates`) evitando llamadas redundantes a `Path.resolve()` dentro del bucle principal, moviendo la resolución solo a aquellos archivos que ya han sido confirmados como duplicados por tamaño, reduciendo drásticamente el impacto de E/S en sistemas de archivos grandes.
+- `2026-08-19T02:23:09` **diskreport.py** (rendimiento): Optimizé la función `summarize` y sus helpers consolidando los cálculos en una sola iteración de `walk_files`, eliminando el exceso de llamadas redundantemente costosas a `os.scandir` que ocurrían al llamar a `total_size`, `usage_by_extension` y `largest_files` por separado.
 - `2026-08-19T02:13:20` **assistant.py** (rendimiento): Se optimizó el proceso de construcción del contexto y la evaluación de criterios mediante la pre-compilación de estructuras de búsqueda, evitando iteraciones repetitivas y llamadas a `getattr` en bucles críticos.
 - `2026-08-19T02:12:34` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos, anotaciones de tipo específicas para los validadores y estructurando mejor las constantes de configuración para facilitar futuras extensiones.
 - `2026-08-19T02:12:00` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo documentando explícitamente las responsabilidades de las funciones de escaneo y el motor `Scanner`, además de añadir type hints y docstrings aclaratorios en los métodos internos para guiar futuras contribuciones.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T01:42:52` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` documentando los parámetros de las funciones internas y refinando los docstrings para clarificar la lógica de exclusión y seguridad, permitiendo que otros desarrolladores entiendan rápidamente el flujo de filtrado sin necesidad de análisis profundo.
 - `2026-08-19T01:42:27` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `branding.py` mediante docstrings detallados en todas las funciones y constantes críticas, clarificando los contratos de tipos, las dependencias de los parámetros y la lógica interna para asegurar la mantenibilidad del proyecto.
 - `2026-08-19T01:41:39` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo docstrings descriptivos a los métodos de manejo (`handle_ram`, `handle_disk`, etc.) y normalizando la estructura de las funciones de respuesta para que cada una documente claramente su propósito y dependencias de métricas.
-- `2026-08-19T01:32:30` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `settings.py` implementando una validación exhaustiva en `load` y `validate` mediante un bloque `try-except` más específico y la verificación de claves obligatorias, asegurando que un JSON malformado o incompleto no rompa la lógica de la aplicación al cargar valores inexistentes.
-- `2026-08-19T01:32:02` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `process_entry` y `scan_directory` añadiendo validaciones de tipo y estado para prevenir excepciones inesperadas al interactuar con rutas que podrían cambiar o ser inaccesibles durante el escaneo.

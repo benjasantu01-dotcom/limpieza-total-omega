@@ -981,3 +981,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T02:13:20` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el proceso de construcción del contexto y la evaluación de criterios mediante la pre-compilación de estructuras de búsqueda, evitando iteraciones repetitivas y llamadas a `getattr` en bucles críticos.
 - `2026-08-19T02:13:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T02:13:20` Corrida terminada. Total usado hoy: 52.
+- `2026-08-19T02:21:42` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-19T02:22:17` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-19T02:22:42` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-19T02:23:09` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `summarize` y sus helpers consolidando los cálculos en una sola iteración de `walk_files`, eliminando el exceso de llamadas redundantemente costosas a `os.scandir` que ocurrían al llamar a `total_size`, `usage_by_extension` y `largest_files` por separado.
+- `2026-08-19T02:23:18` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el proceso de recolección de archivos (`_collect_candidates`) evitando llamadas redundantes a `Path.resolve()` dentro del bucle principal, moviendo la resolución solo a aquellos archivos que ya han sido confirmados como duplicados por tamaño, reduciendo drásticamente el impacto de E/S en sistemas de archivos grandes.
+- `2026-08-19T02:23:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T02:23:18` Corrida terminada. Total usado hoy: 56.

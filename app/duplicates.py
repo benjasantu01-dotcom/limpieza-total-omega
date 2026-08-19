@@ -131,7 +131,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     for p in paths:
         try:
-            target = Path(p).resolve(strict=True)
+            target = Path(p)
             if not target.is_file() or target.is_symlink(): continue
             if is_protected_path(target) or not is_safe_to_modify(target): continue
             groups[target.stat().st_size].append(target)
@@ -168,7 +168,7 @@ def _collect_candidates(
                             if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
                                 target = Path(entry.path)
                                 if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
-                                    temp_groups[st.st_size].append(target.resolve())
+                                    temp_groups[st.st_size].append(target)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -181,7 +181,8 @@ def _collect_candidates(
                 _scan(path_item)
         except (OSError, RuntimeError, ValueError): continue
             
-    return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
+    # Resolvemos rutas solo si hay más de un archivo con el mismo tamaño
+    return {size: [p.resolve() for p in paths] for size, paths in temp_groups.items() if len(paths) > 1}
 
 
 def _refine_by_hash(
