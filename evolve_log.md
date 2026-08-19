@@ -647,3 +647,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-19T11:04:36` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (estándar Google/NumPy) y tipos explícitos para clarificar la lógica de las funciones auxiliares de seguridad (`_check_windows_file_attributes` y `_check_path_syntax_integrity`), facilitando su mantenimiento futuro.
 - `2026-08-19T11:04:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T11:04:36` Corrida terminada. Total usado hoy: 256.
+- `2026-08-19T11:12:21` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-19T11:12:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 117): unterminated string literal (detected at line 117)
+- `2026-08-19T11:13:14` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _IntegrityCheck
+- `2026-08-19T11:13:39` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la robustez del código mediante la adición de docstrings detallados en las funciones de validación de heurísticas, la especificación de tipos de retorno mediante `Optional[Suspicion]`, y la centralización de la lógica de guardas en `scan_file` para clarificar qué condiciones disparan el análisis heurístico.
+- `2026-08-19T11:13:59` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujo un `TypedDict` interno (`_ConfigDict`) para corregir una inconsistencia crítica en el esquema: `asistente_enviar_metrics` (con error de tipeo) se cambió a `asistente_enviar_metricas` para coincidir con `_get_default_config`, mejorando la robustez de los tipos y la legibilidad del esquema de configuración.
+- `2026-08-19T11:13:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T11:13:59` Corrida terminada. Total usado hoy: 260.

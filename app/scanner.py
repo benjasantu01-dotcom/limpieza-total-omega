@@ -140,8 +140,8 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta extensiones dobles que intentan ofuscar el tipo real del ejecutable."""
-    if path is None or not path.name:
+    """Detecta si el nombre del archivo contiene extensiones anidadas que sugieran ofuscación."""
+    if not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -149,8 +149,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Evalúa si un archivo ejecutable en zonas de riesgo fue creado recientemente."""
-    if path is None or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    """Evalúa la antigüedad de un ejecutable mediante su timestamp de modificación (mtime)."""
+    if is_protected_path(path):
         return None
     
     path_lower = str(path).lower()
@@ -167,8 +167,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta archivos con nombres de procesos del sistema ubicados fuera de System32."""
-    if path is None or not path.name:
+    """Verifica si el nombre de archivo coincide con procesos críticos del sistema fuera de su ruta legítima."""
+    if not path.name:
         return None
         
     if path.name.lower() in SYSTEM_LOOKALIKES:
@@ -180,15 +180,18 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
+    Aplica filtros de extensiones sospechosas antes de ejecutar tests de comportamiento.
     """
     if path is None:
         return []
 
     findings: ScanResult = []
     
+    # 1. Reglas generales (no dependen de la extensión)
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
+    # 2. Reglas específicas para ejecutables
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECKS:
             try:
