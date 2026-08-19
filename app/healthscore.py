@@ -192,7 +192,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
 
-    # Pre-cálculo de ratios con verificación de límites para prevenir errores numéricos
     ratios: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
@@ -205,12 +204,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[MetricKey, int] = {}
     final_score = 0
     for area, weight in _WEIGHT_ITEMS_INT:
-        ratio = ratios.get(area, 0.0)
+        ratio = ratios[area]
         puntos = int(round(_clamp(ratio, 0.0, 1.0) * weight))
         breakdown[area] = puntos
         final_score += puntos
     
-    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios.get(rule.area, 0.0))]
+    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios[rule.area])]
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

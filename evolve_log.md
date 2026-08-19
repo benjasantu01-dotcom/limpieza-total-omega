@@ -662,3 +662,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-19T11:24:54` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-08-19T11:24:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T11:24:54` Corrida terminada. Total usado hoy: 264.
+- `2026-08-19T11:32:40` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-19T11:33:15` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `largest_folders` para evitar llamadas redundantes a `is_protected_path` dentro del bucle de recolección, mejorando el rendimiento en directorios profundos al validar la ruta raíz una sola vez y usando una estructura de acceso más directa.
+- `2026-08-19T11:33:42` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se ha optimizado la función `_process_size_group` para evitar el cálculo redundante de hashes completos cuando todos los archivos en un grupo de tamaño ya fueron descartados por el hash parcial, reduciendo drásticamente las operaciones de I/O en discos HDD.
+- `2026-08-19T11:34:10` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje final y la generación de recomendaciones transformando las consultas de diccionarios en accesos directos y pre-calculando el desglose, reduciendo el overhead de búsqueda en cada iteración de `compute_score`.
+- `2026-08-19T11:35:05` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado `_flush_logs` eliminando la creación innecesaria de diccionarios y listas intermedias dentro del bucle de logs, además de asegurar que la interfaz solo procese actualizaciones si hay contenido pendiente, mejorando el rendimiento del hilo principal.
+- `2026-08-19T11:35:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T11:35:05` Corrida terminada. Total usado hoy: 268.

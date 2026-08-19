@@ -841,13 +841,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         with self._log_lock:
             if not self._log_queue: return
-            pendientes = list(self._log_queue)
-            self._log_queue.clear()
+            pendientes = self._log_queue
+            self._log_queue = []
         
-        # Agrupamos por pestaña para reducir operaciones de inserción en UI
+        # Agrupamos por pestaña directamente sobre la lista de pendientes
         logs_por_tab = {}
         for tab, msg in pendientes:
-            logs_por_tab.setdefault(tab, []).append(msg)
+            if tab not in logs_por_tab:
+                logs_por_tab[tab] = []
+            logs_por_tab[tab].append(msg)
             
         for tab, msgs in logs_por_tab.items():
             box = self._box(tab)

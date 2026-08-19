@@ -216,10 +216,13 @@ def _refine_by_hash(
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline de refinamiento (Hash Parcial -> Hash Completo).
+    Solo computa el hash completo si el grupo parcial tiene múltiples candidatos.
     """
     confirmed_groups: List[DuplicateGroup] = []
     partial_groups = _refine_by_hash(paths, partial_hash)
     for partial_candidates in partial_groups.values():
+        if len(partial_candidates) < 2:
+            continue
         full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
             confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
