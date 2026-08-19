@@ -242,7 +242,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    if is_protected_path(str(ruta)) or (ruta.exists() and not ruta.is_file()): return None
+    ruta_str = str(ruta)
+    # Seguridad adicional: validar que la ruta final no sea protegida ni comprometa el sistema
+    if is_protected_path(ruta_str) or (ruta.exists() and not ruta.is_file()): return None
     if not _Validators._is_safe_path(str(ruta.parent)): return None
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
@@ -255,7 +257,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         with open(temp_path, "wb") as f:
             f.write(encoded_data); f.flush(); os.fsync(f.fileno())
         os.replace(temp_path, ruta)
-        _SESSION_CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
+        _SESSION_CACHE[ruta_str] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError, TypeError): return None
 

@@ -1056,3 +1056,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T03:56:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-19T03:56:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T03:56:05` Corrida terminada. Total usado hoy: 92.
+- `2026-08-19T04:03:55` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-19T04:04:24` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-19T04:04:53` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad del escáner en `process_entry` al validar explícitamente que las rutas no contengan caracteres de control RTL (Right-to-Left), mitigando una técnica común de ofuscación de nombres de archivo que puede engañar a los usuarios sobre la extensión real del archivo.
+- `2026-08-19T04:05:21` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que la política de seguridad centralizada sea respetada incluso si los validadores de rutas fueran eludidos por entradas maliciosas.
+- `2026-08-19T04:05:36` Tests FALLARON:
+```
+rom_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:100
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.27s
+
+```
+- `2026-08-19T04:05:36` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha implementado una validación de seguridad proactiva en `_resolve_and_cache_path` mediante la verificación estricta de la presencia de puntos de reparse (junctions/symlinks) y la validación de la existencia real del archivo utilizando `resolve(strict=True)` dentro de un bloque protegido, evitando que el escáner sea engañado por rutas maliciosas o enlaces simbólicos que apunten fuera de las zonas permitidas.
+- `2026-08-19T04:05:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T04:05:36` Corrida terminada. Total usado hoy: 96.

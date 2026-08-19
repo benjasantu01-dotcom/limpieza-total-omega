@@ -45,6 +45,7 @@ ScanResult: TypeAlias = List[Suspicion]
 
 # Expresiones regulares y constantes de configuración
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
+RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d]")
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 SYSTEM32_LOWER: Final[str] = "system32"
@@ -118,6 +119,10 @@ class Scanner:
             # Restricción de alcance al directorio raíz definido
             if not self._is_safe_entry(target_path):
                 return
+            
+            # Detectar ofuscación por caracteres de control RTL en el nombre
+            if RTL_CHAR_RE.search(target_path.name):
+                self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
 
             # Verificación de existencia para evitar errores con archivos eliminados durante el escaneo
             if not target_path.exists():
