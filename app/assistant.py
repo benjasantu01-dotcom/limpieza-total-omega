@@ -267,12 +267,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    if isinstance(metrics, dict) or metrics is not None:
+    if isinstance(metrics, (dict, object)):
         for key, spec in _VALIDATORS.items():
             _validate_and_assign(ctx, metrics, key, spec)
         ctx.analyzed = True
 
-    if health:
+    if isinstance(health, (dict, object)):
         score_val = health.get("score") if isinstance(health, dict) else getattr(health, "score", None)
         if score_val is not None:
             _validate_and_assign(ctx, {"score": score_val}, "score", (int, 0, 100))

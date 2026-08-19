@@ -1419,3 +1419,31 @@ assert 'oval' in ['polygon']
 - `2026-08-19T07:19:07` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-19T07:19:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T07:19:07` Corrida terminada. Total usado hoy: 168.
+- `2026-08-19T07:27:54` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-19T07:28:20` Tests FALLARON:
+```
+olve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file - AssertionError: assert Suspicion(path=PureWindowsPath('C:/Windows/System32/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity='warning') is None
+ +  where Suspicion(path=PureWindowsPath('C:/Windows/System32/svchost.exe'), reason='Nombre de proceso de sistema fuera de System32', severity='warning') = <function check_system_lookalike at 0x7f5c1df823e0>(PureWindowsPath('C:/Windows/System32/svchost.exe'))
+ +    where <function check_system_lookalike at 0x7f5c1df823e0> = scanner.check_system_lookalike
+ +    and   PureWindowsPath('C:/Windows/System32/svchost.exe') = PureWindowsPath('C:\\Windows\\System32\\svchost.exe')
+1 failed, 298 passed, 7 warnings in 1.11s
+
+```
+- `2026-08-19T07:28:20` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escáner reemplazando la lógica de búsqueda de cadenas (`any` con formateo de strings en cada iteración) por una verificación de conjuntos (set membership) más eficiente, y evitando llamadas redundantes a `path.exists()` y `str()` mediante el uso directo del objeto `path` ya validado.
+- `2026-08-19T07:29:10` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se ha optimizado el acceso a `ConfigKey` mediante el uso de un diccionario de búsqueda indexado por nombre de clave en lugar de iterar sobre el mapa de validadores, eliminando el re-mapeo innecesario en cada validación y mejorando la eficiencia de las consultas frecuentes.
+- `2026-08-19T07:29:40` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-19T07:30:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T07:31:11` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-19T07:32:10` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `build_context` implementando una validación exhaustiva de los tipos de datos de entrada mediante `isinstance`, asegurando que cualquier entrada malformada sea ignorada silenciosamente en lugar de disparar excepciones inesperadas.
+- `2026-08-19T07:32:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T07:32:10` Corrida terminada. Total usado hoy: 172.

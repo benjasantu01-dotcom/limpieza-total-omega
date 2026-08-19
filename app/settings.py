@@ -167,7 +167,6 @@ class _Validators:
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
-            # Validar integridad contra resolved para evitar redirecciones ocultas
             resolved = path_obj.resolve(strict=False)
             if str(path_obj.absolute()) != str(resolved): return None
             path_str = str(resolved)
@@ -209,6 +208,9 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
     ConfigKey.TOP_PROCESOS: _Validators.int
 }
 
+# Lookup rápido por string para evitar llamar a ConfigKey(k) repetidamente
+_STRING_TO_KEY: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
+
 def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
@@ -218,10 +220,11 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 def validate(raw_values: Any) -> AppSettings:
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
-    for key, validator in _VALIDATOR_MAP.items():
-        if key.value in raw_values:
-            val = validator(key, raw_values[key.value])
-            if val is not None: config[key.value] = val
+    for key_str, val in raw_values.items():
+        key = _STRING_TO_KEY.get(key_str)
+        if key and key in _VALIDATOR_MAP:
+            validated = _VALIDATOR_MAP[key](key, val)
+            if validated is not None: config[key.value] = validated
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -266,15 +269,14 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
-        try:
-            key_enum = ConfigKey(k)
+        key_enum = _STRING_TO_KEY.get(k)
+        if key_enum:
             validator = _VALIDATOR_MAP.get(key_enum)
             if validator:
                 val = validator(key_enum, v)
                 if val is not None and val != current.get(k):
                     current[k] = val
                     needs_save = True
-        except ValueError: continue
     if needs_save: save(current, custom_base)
     return current
 
