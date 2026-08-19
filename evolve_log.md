@@ -970,3 +970,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-19T14:30:46` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-19T14:30:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T14:30:46` Corrida terminada. Total usado hoy: 336.
+- `2026-08-19T14:36:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-19T14:37:38` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_validate_and_assign` y `_ensure_safe_text` añadiendo validaciones de tipo explícitas y chequeos de integridad para prevenir que valores inesperados (como listas o diccionarios vacíos) causen comportamientos indefinidos en el contexto del sistema.
+- `2026-08-19T14:38:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-19T14:38:42` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-19T14:38:57` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-19T14:38:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T14:38:57` Corrida terminada. Total usado hoy: 340.

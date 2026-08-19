@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **203** (40.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 73 | 7 | 13 | 7 | 68 |
-| 2026-08-19 | 133 | 11 | 18 | 13 | 161 |
+| 2026-08-18 | 69 | 7 | 13 | 7 | 68 |
+| 2026-08-19 | 134 | 11 | 18 | 13 | 164 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
 - seguridad defensiva: **46**
+- legibilidad y documentación: **42**
 - rendimiento: **40**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `settings.py`: **20**
 - `diskreport.py`: **20**
 - `scanner.py`: **19**
 - `healthscore.py`: **19**
-- `organizer.py`: **18**
 - `duplicates.py`: **18**
-- `quarantine.py`: **16**
-- `main.py`: **14**
+- `organizer.py`: **17**
+- `quarantine.py`: **15**
 - `browser.py`: **14**
-- `memory.py`: **10**
+- `main.py`: **13**
 - `branding.py`: **10**
+- `memory.py`: **9**
 - `safety.py`: **5**
 - `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T14:37:38` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_validate_and_assign` y `_ensure_safe_text` añadiendo validaciones de tipo explícitas y chequeos de integridad para prevenir que valores inesperados (como listas o diccionarios vacíos) causen comportamientos indefinidos en el contexto del sistema.
 - `2026-08-19T13:16:00` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante el uso de `os.path.realpath` (resuelto contra `os.path.lexists`) antes de la validación final, asegurando que cualquier ruta simbólica o reparse point sea expuesto antes de ser procesado, protegiendo así contra el seguimiento accidental de enlaces fuera de las zonas permitidas.
 - `2026-08-19T13:15:32` **settings.py** (seguridad defensiva): Se endurece la validación en `save()` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta final del archivo de configuración antes de cualquier operación de escritura, garantizando que ni siquiera un error lógico en la resolución de rutas pueda permitir la sobreescritura de ubicaciones protegidas.
 - `2026-08-19T13:06:22` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del proceso de escaneo integrando `is_protected_path` en `check_recent_executable_in_downloads` para evitar el acceso a metadatos de rutas críticas incluso si el escáner alcanza una carpeta protegida por un error de resolución, y se añadieron chequeos de integridad para prevenir seguimientos a enlaces simbólicos o puntos de reanálisis durante la obtención de `st_mtime`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T12:14:34` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas negativas o no finitas, aplicando la lógica de normalización consistente con el resto de los módulos mediante el uso de `_clamp` y `_to_int`, evitando así resultados de puntaje fuera del rango esperado.
 - `2026-08-19T12:14:08` **duplicates.py** (robustez ante casos límite): Se mejoró la robustez de `find_duplicates` añadiendo una validación explícita para asegurar que la lista de directorios no sea `None` y que cada elemento sea una ruta válida, evitando excepciones en el flujo de escaneo ante entradas malformadas o inesperadas.
 - `2026-08-19T12:06:15` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de entrada, añadiendo una validación explícita para rutas que no existen o son inaccesibles, evitando que `os.scandir` o `shutil.disk_usage` lancen excepciones no capturadas al encontrar volúmenes montados bloqueados o removibles.
-- `2026-08-19T12:05:04` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera validando la existencia y el tipo de archivo de la ruta destino antes de intentar la escritura.

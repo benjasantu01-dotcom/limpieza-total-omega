@@ -178,6 +178,8 @@ _VALIDATORS: Final[dict[str, ValidatorSpec]] = {
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Conversión defensiva de tipos numéricos evitando excepciones y valores no finitos."""
+    if isinstance(val, (list, dict, set, tuple)):
+        return default
     try:
         f = float(val)
         return f if math.isfinite(f) else default
@@ -246,14 +248,13 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     """
     cast, min_v, max_v = spec
     
-    # Validar que source sea contenedor accesible
     if not isinstance(source, (dict, object)):
         return
 
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
-    # No aceptar colecciones como valores de métricas
-    if val is None or isinstance(val, (bool, list, dict, set)):
+    # Prohibir contenedores como métricas; aceptar solo escalares numéricos o strings
+    if val is None or isinstance(val, (list, dict, set, tuple, bool)):
         return
         
     try:
