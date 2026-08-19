@@ -143,7 +143,13 @@ class ProcessMemory:
 
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte una magnitud de bytes a formato human-readable (ej: 1.5 MB)."""
+    """
+    Convierte una magnitud de bytes a formato human-readable (ej: 1.5 MB).
+    Args:
+        num: Cantidad de bytes a formatear.
+    Returns:
+        String legible con la unidad correspondiente.
+    """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -215,6 +221,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     Args:
         raw_csv_text: Multi-line string con datos de procesos.
         limit: Máximo de procesos a retornar.
+    Returns:
+        Lista de instancias ProcessMemory, ordenadas por consumo de mayor a menor.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
@@ -241,7 +249,11 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """Función polimórfica que abstrae el origen de la info según el sistema operativo."""
+    """
+    Función polimórfica que abstrae el origen de la info según el sistema operativo.
+    Returns:
+        MemorySnapshot con el estado actual del sistema o 0s en caso de error.
+    """
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -256,7 +268,13 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Consulta procesos pesados vía PowerShell. Implementa caché de 30s."""
+    """
+    Consulta procesos pesados vía PowerShell. Implementa caché de 30s.
+    Args:
+        limit: Cantidad de procesos a recuperar.
+    Returns:
+        Lista de procesos más pesados según el WorkingSet.
+    """
     global _last_proc_fetch, _cached_proc_output
     
     if os.name != "nt":
@@ -276,7 +294,13 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Categoriza el estado de presión de memoria en etiquetas: 'ok', 'info', 'warning', 'danger'."""
+    """
+    Categoriza el estado de presión de memoria en etiquetas: 'ok', 'info', 'warning', 'danger'.
+    Args:
+        snapshot: Instancia de MemorySnapshot a evaluar.
+    Returns:
+        Etiqueta de texto descriptiva del nivel de presión.
+    """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     
@@ -292,7 +316,9 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     Genera un informe narrativo de salud de memoria.
     Args:
         snapshot: El estado de memoria actual.
-        processes: Lista opcional de procesos principales.
+        processes: Lista opcional de procesos principales (usualmente top_memory_processes).
+    Returns:
+        Lista de strings formateados listos para mostrar al usuario.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]

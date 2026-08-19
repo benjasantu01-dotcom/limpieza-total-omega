@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 225
 
@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 4 | 1 | 0 | 0 | 1 |
+| 2026-08-17 | 1 | 0 | 0 | 0 | 1 |
 | 2026-08-18 | 146 | 15 | 22 | 11 | 156 |
-| 2026-08-19 | 64 | 5 | 6 | 5 | 68 |
+| 2026-08-19 | 67 | 5 | 7 | 5 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **55**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **41**
 - manejo de errores y validación de entradas: **40**
-- rendimiento: **34**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
-- `assistant.py`: **21**
 - `scanner.py`: **20**
+- `assistant.py`: **20**
+- `quarantine.py`: **19**
 - `diskreport.py`: **19**
-- `quarantine.py`: **18**
-- `settings.py`: **17**
+- `organizer.py`: **18**
 - `duplicates.py`: **17**
-- `organizer.py`: **17**
 - `browser.py`: **16**
+- `settings.py`: **16**
 - `main.py`: **15**
-- `branding.py`: **12**
-- `memory.py`: **10**
+- `memory.py`: **11**
+- `branding.py`: **11**
 - `startup.py`: **6**
 - `safety.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T06:38:30` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con las precondiciones, argumentos y excepciones de las funciones críticas para facilitar el mantenimiento y la comprensión de las salvaguardas de seguridad.
+- `2026-08-19T06:37:59` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de validación y lógica interna, clarificando las precondiciones y el propósito de las salvaguardas de seguridad implementadas.
+- `2026-08-19T06:37:34` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de entrada y retorno de las funciones públicas `format_bytes`, `parse_windows_process_csv`, `read_snapshot`, `top_memory_processes`, `pressure_level` y `diagnose`, y se documentaron con docstrings mejoradas para clarificar los contratos de datos, facilitando el mantenimiento y la legibilidad para futuros colaboradores.
 - `2026-08-19T06:29:05` **main.py** (legibilidad y documentación): Se refactorizó la lógica de inicialización de la ventana (`__init__`) y el método `_build_tabs_container` para mejorar la legibilidad y robustez, encapsulando la creación de componentes complejos en un formato más declarativo y eliminando el riesgo de dejar la aplicación en un estado inconsistente ante errores de UI.
 - `2026-08-19T06:28:10` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `healthscore.py` incluyendo docstrings detallados en todas las funciones y tipos, explicando la lógica de normalización y el propósito de cada umbral para facilitar el mantenimiento y la comprensión de las reglas de negocio.
 - `2026-08-19T06:27:37` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de Type Hints explícitos para mejorar la legibilidad y el autocompletado, y se han añadido docstrings de estilo Google más detallados en funciones críticas (como `_collect_candidates` y `_refine_by_hash`) para esclarecer la lógica de filtrado y el flujo de trabajo del pipeline.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T05:57:57` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura antes de operar, asegurando que las rutas base sean absolutas y evitando procesar listas vacías o entradas inválidas que podrían disparar excepciones innecesarias.
 - `2026-08-19T05:57:32` **memory.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `trim_working_set` y sus ayudantes capturando errores de forma más específica, validando la integridad del handle antes de cualquier operación y asegurando que `_is_valid_trim_target` maneje correctamente casos donde el handle no esté disponible, siguiendo estrictamente el enfoque de manejo de errores y validación.
 - `2026-08-19T05:57:03` **main.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en el método `_build_tabs_container` envolviendo la construcción de cada pestaña en un bloque `try-except` robusto y validando la existencia de los widgets antes de intentar acceder a ellos, evitando que un error en una pestaña individual impida que la aplicación arranque o se renderice correctamente.
-- `2026-08-19T05:48:33` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `compute_score` implementando un chequeo preventivo contra objetos `SystemMetrics` mal inicializados o con valores no finitos, evitando que el cálculo de `breakdown` o `final_score` produzca resultados inesperados.
-- `2026-08-19T05:47:37` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash (`hash_file`, `partial_hash`) y `suggest_keeper` añadiendo validaciones preventivas sobre la existencia y el tipo de archivo, asegurando que cualquier error inesperado al acceder a metadatos de archivos inaccesibles o en estado de transición sea capturado de forma silenciosa y segura mediante un bloque `try-except` más granular.
-- `2026-08-19T05:47:13` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_bytes_to_mb` y `format_size` para que manejen correctamente valores negativos o tipos inesperados mediante validaciones tempranas (`early returns`), evitando excepciones en tiempo de ejecución durante reportes de disco.

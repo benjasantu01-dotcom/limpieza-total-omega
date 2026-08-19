@@ -386,7 +386,19 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un ítem desde el sandbox a su ubicación original validando seguridad."""
+    """
+    Restaura un ítem desde el sandbox a su ubicación original.
+    
+    Args:
+        item_id: ID único del ítem a restaurar.
+        base: Directorio base de la cuarentena.
+    Returns:
+        La ruta donde se restauró el archivo.
+    Raises:
+        KeyError: Si el item_id no existe.
+        UnsafePathError: Si hay intentos de escritura fuera de los límites.
+        RuntimeError: Si la integridad del archivo está dañada o falla la operación de disco.
+    """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido o vacío.")
     items = load_manifest(base)

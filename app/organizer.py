@@ -90,6 +90,7 @@ class JunkFile:
 def _is_junction(path: Path) -> bool:
     """
     Detecta si la ruta es un punto de reparse (Junction/Symlink).
+    Retorna True si la ruta es un vínculo simbólico o un punto de unión de Windows.
     """
     try:
         return path.is_symlink() or (os.name == "nt" and "reparse" in os.stat(path).st_file_attributes)
@@ -105,6 +106,7 @@ def _is_junk_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo un contador incremental.
+    Utiliza el patrón: nombre_1.ext, nombre_2.ext, etc.
     """
     if not target.exists():
         return target
@@ -127,6 +129,7 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado intentando abrirlo en modo exclusivo.
+    Útil para evitar mover archivos que están en uso por el sistema o procesos.
     """
     try:
         with open(path, "rb") as f:
@@ -138,6 +141,7 @@ def _is_file_locked(path: Path) -> bool:
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
     Previene que el destino de un movimiento sea padre o ancestro de la fuente.
+    Evita riesgos de recursión accidental en el sistema de archivos.
     """
     return src == dest or src == dest.parent or dest in src.parents
 
@@ -145,6 +149,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Validación de seguridad integral antes de cualquier operación de I/O.
+    Verifica que la fuente exista, no sea un enlace, no sea archivo de sistema
+    protegido, no esté bloqueado y que la operación no rompa la estructura jerárquica.
     """
     try:
         if not src.exists() or not src.is_file() or _is_junction(src):
@@ -188,6 +194,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea directorios buscando candidatos de limpieza de forma recursiva.
+    Filtra automáticamente carpetas protegidas y enlaces simbólicos.
     """
     raw_dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -236,7 +243,8 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
-    Mueve los archivos a una carpeta intermedia de revisión.
+    Mueve de forma segura los archivos a una carpeta intermedia para su posterior revisión.
+    Utiliza chequeos de seguridad antes de cada operación individual.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
@@ -274,6 +282,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de forma permanente tras verificar que residan en la zona de cuarentena.
+    El borrado solo es posible para archivos validados por is_safe_to_modify.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0

@@ -1382,3 +1382,11 @@ assert 'oval' in ['polygon']
 - `2026-08-19T06:29:05` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Se refactorizó la lógica de inicialización de la ventana (`__init__`) y el método `_build_tabs_container` para mejorar la legibilidad y robustez, encapsulando la creación de componentes complejos en un formato más declarativo y eliminando el riesgo de dejar la aplicación en un estado inconsistente ante errores de UI.
 - `2026-08-19T06:29:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T06:29:05` Corrida terminada. Total usado hoy: 148.
+- `2026-08-19T06:36:50` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-19T06:37:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T06:37:34` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los parámetros de entrada y retorno de las funciones públicas `format_bytes`, `parse_windows_process_csv`, `read_snapshot`, `top_memory_processes`, `pressure_level` y `diagnose`, y se documentaron con docstrings mejoradas para clarificar los contratos de datos, facilitando el mantenimiento y la legibilidad para futuros colaboradores.
+- `2026-08-19T06:37:59` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de validación y lógica interna, clarificando las precondiciones y el propósito de las salvaguardas de seguridad implementadas.
+- `2026-08-19T06:38:30` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con las precondiciones, argumentos y excepciones de las funciones críticas para facilitar el mantenimiento y la comprensión de las salvaguardas de seguridad.
+- `2026-08-19T06:38:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-19T06:38:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T06:38:34` Corrida terminada. Total usado hoy: 152.
