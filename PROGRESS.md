@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 226
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 22
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 58 | 6 | 9 | 5 | 48 |
+| 2026-08-17 | 55 | 6 | 9 | 5 | 47 |
 | 2026-08-18 | 146 | 15 | 22 | 11 | 156 |
-| 2026-08-19 | 4 | 0 | 0 | 2 | 22 |
+| 2026-08-19 | 5 | 1 | 1 | 3 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
 - seguridad defensiva: **45**
-- rendimiento: **43**
+- legibilidad y documentación: **43**
+- rendimiento: **42**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **23**
-- `assistant.py`: **21**
 - `scanner.py`: **20**
+- `assistant.py`: **20**
 - `quarantine.py`: **19**
 - `diskreport.py`: **17**
 - `organizer.py`: **17**
-- `settings.py`: **15**
+- `settings.py`: **14**
 - `duplicates.py`: **14**
 - `browser.py`: **14**
-- `memory.py`: **12**
+- `memory.py`: **13**
 - `main.py`: **11**
 - `branding.py`: **11**
-- `startup.py`: **9**
+- `startup.py`: **8**
 - `safety.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T01:21:15` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes al implementar una validación estricta de tipos y estados, sustituyendo chequeos laxos por capturas de errores específicas (como el `GetLastError` de Win32) y evitando operaciones sobre handles nulos o procesos inactivos, cumpliendo con el enfoque de seguridad y manejo de errores.
 - `2026-08-19T01:11:36` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando un manejo de excepciones explícito para prevenir fallos silenciosos durante el cálculo de ratios, asegurando que cualquier error inesperado en las funciones de score devuelva una evaluación degradada en lugar de romper la ejecución.
 - `2026-08-19T01:10:49` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de tipo `isinstance` y chequeos de existencia en la entrada de las funciones públicas, además de estandarizar el manejo de errores en el iterador `os.scandir` para asegurar que el generador nunca se interrumpa ante nombres de archivo o permisos inesperados.
 - `2026-08-19T01:02:35` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_is_system_hidden` y `_should_skip_entry` al centralizar el manejo de errores y evitar que la propagación de excepciones inesperadas (como `OSError` al acceder a atributos de archivos) corte prematuramente el escaneo del directorio.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-18T13:59:32` **branding.py** (seguridad defensiva): Se ha mejorado la robustez de `save_logo_svg` reemplazando la creación implícita de directorios y escritura directa por un flujo que verifica la seguridad de la ruta resultante antes de cualquier manipulación de I/O, evitando condiciones de carrera o escrituras fuera de áreas permitidas.
 - `2026-08-18T13:58:57` **assistant.py** (seguridad defensiva): Se endurece el filtrado defensivo en `context_as_text` para garantizar que, ante cualquier error inesperado en la generación de la cadena, se devuelva un mensaje de error seguro en lugar de una salida potencialmente malformada o sensible.
 - `2026-08-18T13:57:19` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `load` y `save` ante situaciones donde el directorio de configuración o el archivo mismo presentan estados inesperados (como ser un directorio en lugar de un archivo), evitando excepciones no capturadas al realizar operaciones de sistema.
-- `2026-08-18T13:48:47` **scanner.py** (robustez ante casos límite): Se ha añadido un filtro de validación de rutas mediante `is_protected_path` en `scan_directory` y `process_entry` para garantizar que los permisos denegados o rutas de sistema no causen excepciones no controladas durante la resolución, mejorando la robustez frente a errores de acceso al sistema de archivos.

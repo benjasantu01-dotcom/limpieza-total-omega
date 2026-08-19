@@ -327,8 +327,6 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(handle: int) -> Optional[str]:
     """
     Resuelve la ruta absoluta del ejecutable desde un handle de proceso.
-    Returns:
-        Ruta como string si tiene permisos de lectura, None si falla.
     """
     if not handle:
         return None
@@ -348,8 +346,6 @@ def _get_process_path(handle: int) -> Optional[str]:
 def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """
     Verifica si un proceso es candidato seguro para trim según su estado y ruta.
-    Returns:
-        (bool, reason_string_o_None)
     """
     kernel32 = ctypes.windll.kernel32
     exit_code = ctypes.c_ulong()
@@ -367,10 +363,6 @@ def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al S.O. liberar memoria del Working Set de un proceso.
-    Args:
-        pid: ID del proceso a limpiar.
-    Returns:
-        (Éxito booleano, mensaje explicativo para el usuario).
     """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
