@@ -157,7 +157,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
             return False
         
         # Ignorar archivos con atributo 'System' o 'Device' en Windows
-        if os.name == "nt" and src.stat().st_file_attributes & 0x00000040:
+        if os.name == "nt" and hasattr(src.stat(), 'st_file_attributes') and (src.stat().st_file_attributes & 0x00000040):
             return False
         
         src_abs, dest_abs = src.resolve(), dest.resolve()
@@ -166,7 +166,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
             return False
         
         # Bloqueos de sistema (atributo de archivo del sistema en Windows)
-        if os.name == "nt" and (src_abs.stat().st_file_attributes & 0x06):
+        if os.name == "nt" and hasattr(src_abs.stat(), 'st_file_attributes') and (src_abs.stat().st_file_attributes & 0x06):
             return False
             
         return is_safe_to_modify(src_abs) and is_safe_to_modify(dest_abs) and not _is_file_locked(src_abs)
@@ -176,6 +176,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Valida si el movimiento es seguro, cruzando metadatos y reglas de sistema."""
+    if not isinstance(junk_file, JunkFile): return False
     current_path = junk_file.path
     dest_abs = dest.resolve()
     
@@ -196,11 +197,13 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     Escanea directorios buscando candidatos de limpieza de forma recursiva.
     Filtra automáticamente carpetas protegidas y enlaces simbólicos.
     """
-    raw_dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
+    raw_dirs = directories if directories is not None else DEFAULT_SCAN_DIRS
+    if not isinstance(raw_dirs, list): return []
+    
     found: List[JunkFile] = []
     
     for d in raw_dirs:
-        if not d: continue
+        if not d or not isinstance(d, str): continue
         try:
             base = Path(d).expanduser().resolve()
             if not base.exists() or not base.is_dir() or not is_safe_to_modify(base): 
@@ -208,12 +211,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             
             for root, dirs, files in os.walk(base):
                 root_path = Path(root)
-                dirs[:] = [d for d in dirs if _is_allowed_directory(d) and not _is_junction(root_path / d)]
+                dirs[:] = [d_name for d_name in dirs if _is_allowed_directory(d_name) and not _is_junction(root_path / d_name)]
                 
                 for name in files:
-                    ext = os.path.splitext(name)[1].lower()
-                    if ext in _LOWER_JUNK_EXTS:
-                        f_path = root_path / name
+                    f_path = root_path / name
+                    if f_path.suffix.lower() in _LOWER_JUNK_EXTS:
                         if is_safe_to_modify(f_path) and not _is_junction(f_path):
                             try:
                                 s = f_path.stat()
@@ -263,7 +265,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
         try:
             src_path = junk_file.path.resolve()
-            # Validación doble: existencia post-loop y seguridad
             if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
@@ -275,7 +276,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             ensure_safe_to_modify(src_path)
             ensure_safe_to_modify(target)
             
-            # Verificación final antes de mover para evitar TOCTOU
             if src_path.exists():
                 shutil.move(str(src_path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
@@ -301,7 +301,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            # Re-verificar existencia y tipo en cada iteración
             if not item.exists() or not item.is_file() or _is_junction(item):
                 continue
             
@@ -309,7 +308,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)
-                    # Verificación final antes de unlink
                     if resolved_item.exists():
                         resolved_item.unlink()
                         count += 1

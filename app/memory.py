@@ -238,14 +238,22 @@ def _read_windows_snapshot() -> MemorySnapshot:
     Returns:
         Snapshot con datos físicos o 0s ante errores de acceso.
     """
-    stat = _create_mem_status_ex()
     kernel32 = getattr(ctypes.windll, "kernel32", None)
-    if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx") or not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
-        return MemorySnapshot(total=0, available=0)
+    if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx"):
+        return MemorySnapshot(0, 0)
     
-    total = int(stat.ullTotalPhys)
-    avail = int(stat.ullAvailPhys)
-    return MemorySnapshot(total=total, available=min(avail, total) if total > 0 else 0)
+    stat = _create_mem_status_ex()
+    if not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+        return MemorySnapshot(0, 0)
+    
+    try:
+        total = int(stat.ullTotalPhys)
+        avail = int(stat.ullAvailPhys)
+        if total <= 0:
+            return MemorySnapshot(0, 0)
+        return MemorySnapshot(total=total, available=min(avail, total))
+    except (ValueError, TypeError, OverflowError):
+        return MemorySnapshot(0, 0)
 
 
 def read_snapshot() -> MemorySnapshot:

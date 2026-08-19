@@ -566,3 +566,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T10:13:56` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `format_group` agregando validaciones preventivas ante posibles excepciones de acceso a disco y estados inesperados durante la resolución de rutas, evitando que fallos menores silencien el reporte completo.
 - `2026-08-19T10:13:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T10:13:56` Corrida terminada. Total usado hoy: 236.
+- `2026-08-19T10:21:27` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-19T10:22:19` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-19T10:23:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-19T10:24:30` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se introdujo una validación robusta y defensiva en `on_trim_process` y `on_restore_quarantine` para asegurar que las entradas de texto (PID y ID) no solo sean tratadas como strings vacíos o inválidos, sino que se verifiquen antes de ser utilizadas en operaciones de sistema, previniendo errores de conversión y accesos a rutas inesperadas.
+- `2026-08-19T10:25:06` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `_read_windows_snapshot` agregando validaciones de tipo y estructura antes de invocar la API nativa, además de un manejo de errores más específico para evitar cierres inesperados al interactuar con `ctypes`.
+- `2026-08-19T10:25:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T10:26:02` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez del manejo de errores en `scan_for_junk` y `stage_for_review` validando explícitamente los parámetros de entrada y capturando excepciones de sistema que podrían interrumpir el proceso de escaneo o movimiento de archivos.
+- `2026-08-19T10:26:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T10:26:02` Corrida terminada. Total usado hoy: 240.
