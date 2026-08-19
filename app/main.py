@@ -509,7 +509,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             logging.error("Error al renderizar gauge: %s", e)
 
     def _build_tab_limpieza(self) -> None:
-        """Crea la interfaz de limpieza: búsqueda, revisión y borrado de basura."""
+        """Construye la interfaz de limpieza: búsqueda, revisión y borrado de basura."""
         tab = self.tabs["Limpieza"]
         row = self._button_row(tab)
         self._action(row, "Buscar basura", self.on_scan_junk, column=0)

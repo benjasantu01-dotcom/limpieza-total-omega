@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 107 | 11 | 16 | 8 | 110 |
-| 2026-08-19 | 103 | 10 | 13 | 10 | 116 |
+| 2026-08-18 | 103 | 11 | 16 | 8 | 110 |
+| 2026-08-19 | 107 | 10 | 13 | 10 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **50**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **38**
-- rendimiento: **35**
+- robustez ante casos límite: **37**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **22**
+- `assistant.py`: **21**
 - `diskreport.py`: **20**
 - `healthscore.py`: **20**
-- `scanner.py`: **19**
 - `duplicates.py`: **19**
-- `settings.py`: **17**
-- `quarantine.py`: **17**
-- `organizer.py`: **17**
+- `quarantine.py`: **18**
+- `scanner.py`: **18**
+- `organizer.py`: **18**
 - `browser.py`: **16**
-- `main.py`: **13**
+- `settings.py`: **16**
+- `main.py`: **14**
+- `memory.py`: **12**
 - `branding.py`: **11**
-- `memory.py`: **11**
 - `safety.py`: **5**
-- `startup.py`: **3**
+- `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T11:04:36` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (estándar Google/NumPy) y tipos explícitos para clarificar la lógica de las funciones auxiliares de seguridad (`_check_windows_file_attributes` y `_check_path_syntax_integrity`), facilitando su mantenimiento futuro.
+- `2026-08-19T11:04:13` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `organizer.py` para clarificar las responsabilidades de las funciones de seguridad y las heurísticas, siguiendo estrictamente el enfoque de legibilidad.
+- `2026-08-19T11:03:48` **memory.py** (legibilidad y documentación): Mejoré la documentación de la API Win32 en `memory.py` añadiendo tipos explícitos en los `_fields_` de `MEMORYSTATUSEX` y documentando mediante docstrings técnicos la naturaleza de los handles y flags utilizados, facilitando el mantenimiento a futuro.
+- `2026-08-19T11:03:20` **main.py** (legibilidad y documentación): Se ha mejorado la documentación del archivo `main.py` mediante la adición de docstrings detallados en las funciones de construcción de pestañas y métodos de utilidad, aclarando el propósito y la naturaleza de solo lectura de las operaciones críticas para facilitar el mantenimiento y la auditoría del código.
 - `2026-08-19T10:53:23` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la unificación del manejo de excepciones en bloques `try/except` más granulares y la adición de docstrings técnicos que explican la lógica detrás de las heurísticas de filtrado.
 - `2026-08-19T10:52:56` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, documentación estructurada (Google Style) en las funciones principales y la clarificación de la lógica de `walk_files` para asegurar que el manejo de errores sea explícito.
 - `2026-08-19T10:52:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones de utilidad interna, aclarando la lógica de filtrado, el uso de dependencias (como `kernel32`) y las garantías de seguridad del recorrido de archivos, facilitando así el mantenimiento.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T10:25:06` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `_read_windows_snapshot` agregando validaciones de tipo y estructura antes de invocar la API nativa, además de un manejo de errores más específico para evitar cierres inesperados al interactuar con `ctypes`.
 - `2026-08-19T10:13:56` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `format_group` agregando validaciones preventivas ante posibles excepciones de acceso a disco y estados inesperados durante la resolución de rutas, evitando que fallos menores silencien el reporte completo.
 - `2026-08-19T10:13:14` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y las funciones de consulta integrando validación temprana de tipos y manejo explícito de errores en la iteración sobre `os.scandir`, evitando que excepciones inesperadas durante el recorrido silencien el proceso completo.
-- `2026-08-19T10:12:43` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_path` integrando un chequeo explícito de `is_protected_path` al inicio y refinando el manejo de errores en `directory_size` para evitar fallos silenciosos ante rutas inexistentes o inaccesibles, alineándome con el enfoque de validación de entradas.
-- `2026-08-19T10:11:54` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` validando la existencia y el tipo del directorio padre antes de intentar crearlo, previniendo errores de sistema al manejar rutas malformadas o permisos denegados de forma más explícita, siguiendo el enfoque de manejo de errores y validación.
-- `2026-08-19T10:04:40` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_validate_and_assign` mediante la validación explícita de `float` y `math.isfinite` antes de cualquier operación de comparación o truncamiento, evitando que valores inesperados (como `float('inf')` o `nan`) corrompan el contexto del asistente.
-- `2026-08-19T08:40:46` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `settings.save` añadiendo una limpieza de archivos temporales huérfanos antes de la escritura y una validación de seguridad explícita sobre la existencia de la ruta padre, garantizando que no se intenten crear directorios en zonas protegidas o bloqueadas por `safety`.

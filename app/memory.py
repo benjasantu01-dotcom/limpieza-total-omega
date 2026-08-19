@@ -68,6 +68,8 @@ TRIM_WARNING: str = (
 BYTE_UNITS: Tuple[str, ...] = ("B", "KB", "MB", "GB", "TB")
 
 # Constantes para Win32 API: permisos mínimos necesarios para diagnóstico y gestión
+# PROCESS_QUERY_LIMITED_INFORMATION (0x1000): Obtener info básica sin permisos de admin.
+# PROCESS_SET_QUOTA (0x0100): Permiso requerido para invocar EmptyWorkingSet.
 PROCESS_QUERY_LIMITED_INFORMATION: int = 0x1000
 PROCESS_SET_QUOTA: int = 0x0100
 SAFE_ACCESS_MASK: int = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -82,8 +84,11 @@ _last_proc_fetch: float = 0.0
 _cached_proc_output: str = ""
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura binaria para la API Win32 GlobalMemoryStatusEx."""
-    _fields_: List[Tuple[str, ctypes._SimpleCData]] = [
+    """
+    Estructura binaria para la API Win32 GlobalMemoryStatusEx.
+    Define el estado actual de la memoria física y virtual del sistema.
+    """
+    _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
         ("ullTotalPhys", ctypes.c_ulonglong),

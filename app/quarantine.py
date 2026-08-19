@@ -200,7 +200,14 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 
 
 def _check_windows_file_attributes(path_str: str) -> None:
-    """Bloquea archivos con atributos de sistema o solo lectura en Windows."""
+    """
+    Verifica atributos de archivo (sistema, oculto, solo lectura) en Windows.
+    
+    Args:
+        path_str: Ruta absoluta del archivo a inspeccionar.
+    Raises:
+        UnsafePathError: Si el archivo posee atributos restringidos.
+    """
     if os.name != 'nt':
         return
     import ctypes
@@ -213,7 +220,14 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """Verifica que la ruta no contenga estructuras o caracteres maliciosos."""
+    """
+    Valida la sintaxis de la ruta para prevenir inyecciones o navegación maliciosa.
+    
+    Args:
+        path: Objeto Path a verificar.
+    Raises:
+        UnsafePathError: Si la ruta contiene caracteres, longitud o estructuras prohibidas.
+    """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
