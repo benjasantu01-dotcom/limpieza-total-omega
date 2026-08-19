@@ -196,7 +196,7 @@ def _refine_by_hash(
     digest_cache: Dict[Path, str] = {}
     
     for path in paths:
-        if not isinstance(path, Path): continue
+        if not isinstance(path, Path) or not path.is_file(): continue
         digest = digest_cache.get(path) or hash_func(path)
         if digest:
             digest_cache[path] = digest

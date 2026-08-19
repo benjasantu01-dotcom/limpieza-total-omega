@@ -53,9 +53,11 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
     Returns:
         Valor resultante en MB redondeado a dos decimales.
     """
-    if isinstance(size_bytes, (int, float)) and size_bytes > 0:
-        return round(size_bytes / (1024 * 1024), 2)
-    return 0.0
+    if not isinstance(size_bytes, (int, float)):
+        return 0.0
+    if size_bytes <= 0:
+        return 0.0
+    return round(float(size_bytes) / (1024 * 1024), 2)
 
 
 @dataclass

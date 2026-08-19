@@ -1011,3 +1011,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T02:54:07` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos o rutas inválidas, asegurando que la validación `ensure_safe_to_modify` se aplique sobre una ruta absoluta validada y capturando explícitamente errores de escritura, evitando que la app falle si el disco está lleno o los permisos son denegados.
 - `2026-08-19T02:54:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T02:54:07` Corrida terminada. Total usado hoy: 68.
+- `2026-08-19T03:02:31` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-19T03:03:21` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-19T03:03:47` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha robustecido la función `_bytes_to_mb` para manejar casos límite como tipos de entrada inesperados o valores negativos mediante validación explícita, evitando posibles errores de cálculo o excepciones en el reporte.
+- `2026-08-19T03:04:04` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T03:04:56` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de `is_file()` en el pipeline de refinamiento de hash para manejar de forma robusta los casos donde un archivo es borrado, movido o bloqueado por otro proceso entre las etapas de escaneo y procesamiento, evitando excepciones innecesarias en entornos concurrentes.
+- `2026-08-19T03:05:04` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-19T03:05:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T03:05:04` Corrida terminada. Total usado hoy: 72.

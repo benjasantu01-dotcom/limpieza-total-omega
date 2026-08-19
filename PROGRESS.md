@@ -7,26 +7,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **211** (41.9% de aceptación)
-- Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por tests: 20
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 34 | 4 | 6 | 1 | 41 |
+| 2026-08-17 | 32 | 3 | 5 | 1 | 41 |
 | 2026-08-18 | 146 | 15 | 22 | 11 | 156 |
-| 2026-08-19 | 31 | 2 | 3 | 3 | 29 |
+| 2026-08-19 | 33 | 2 | 3 | 3 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - rendimiento: **42**
-- seguridad defensiva: **40**
+- seguridad defensiva: **38**
 - manejo de errores y validación de entradas: **38**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **21**
 - `assistant.py`: **21**
 - `quarantine.py`: **19**
-- `organizer.py`: **18**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `organizer.py`: **17**
 - `settings.py`: **16**
+- `duplicates.py`: **15**
 - `browser.py`: **14**
-- `duplicates.py`: **14**
 - `main.py`: **13**
 - `branding.py`: **13**
 - `memory.py`: **11**
 - `startup.py`: **7**
-- `safety.py`: **5**
+- `safety.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T03:04:56` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_file()` en el pipeline de refinamiento de hash para manejar de forma robusta los casos donde un archivo es borrado, movido o bloqueado por otro proceso entre las etapas de escaneo y procesamiento, evitando excepciones innecesarias en entornos concurrentes.
+- `2026-08-19T03:03:47` **diskreport.py** (robustez ante casos límite): Se ha robustecido la función `_bytes_to_mb` para manejar casos límite como tipos de entrada inesperados o valores negativos mediante validación explícita, evitando posibles errores de cálculo o excepciones en el reporte.
 - `2026-08-19T02:54:07` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos o rutas inválidas, asegurando que la validación `ensure_safe_to_modify` se aplique sobre una ruta absoluta validada y capturando explícitamente errores de escritura, evitando que la app falle si el disco está lleno o los permisos son denegados.
 - `2026-08-19T02:53:48` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor local ante valores inesperados en el contexto (como `NaN` o `inf`) durante la identificación de problemas, evitando que el formateo de mensajes falle y rompa la respuesta del asistente.
 - `2026-08-19T02:52:49` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la consolidación de `_SESSION_CACHE` y `_VALIDATOR_MAP` para evitar re-validaciones y accesos redundantes a disco, mejorando el rendimiento en llamadas repetidas a `get` o `load`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T02:13:20` **assistant.py** (rendimiento): Se optimizó el proceso de construcción del contexto y la evaluación de criterios mediante la pre-compilación de estructuras de búsqueda, evitando iteraciones repetitivas y llamadas a `getattr` en bucles críticos.
 - `2026-08-19T02:12:34` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos, anotaciones de tipo específicas para los validadores y estructurando mejor las constantes de configuración para facilitar futuras extensiones.
 - `2026-08-19T02:12:00` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo documentando explícitamente las responsabilidades de las funciones de escaneo y el motor `Scanner`, además de añadir type hints y docstrings aclaratorios en los métodos internos para guiar futuras contribuciones.
-- `2026-08-19T02:02:55` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings técnicos específicos que explican las limitaciones de hardware (límite MAX_PATH de Windows) y los mecanismos de fallback de seguridad utilizados en las funciones de acceso a bajo nivel.
-- `2026-08-19T02:02:24` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manipulación de rutas y una reestructuración de los docstrings para clarificar el contrato de seguridad y los pre-requisitos de cada operación crítica.
