@@ -677,3 +677,13 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-19T11:45:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-19T11:45:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T11:45:24` Corrida terminada. Total usado hoy: 272.
+- `2026-08-19T11:53:06` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-19T11:53:42` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-19T11:53:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T11:53:58` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-19T11:54:35` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el escaneo de directorios reemplazando la búsqueda repetitiva por `any()` con `in` sobre un `set` de carpetas para mejorar la eficiencia en cada iteración de archivos.
+- `2026-08-19T11:55:03` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuración eliminando llamadas redundantes a `os.path.exists()` y `stat()` mediante una validación de caché proactiva y el uso de `try-except` para evitar comprobaciones innecesarias de estado de archivo antes de la lectura.
+- `2026-08-19T11:55:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T11:55:25` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-19T11:55:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T11:55:25` Corrida terminada. Total usado hoy: 276.

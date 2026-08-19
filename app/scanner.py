@@ -153,8 +153,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if is_protected_path(path):
         return None
     
-    path_lower = str(path).lower()
-    if not any(f"\\{folder}\\" in path_lower for folder in WATCHED_FOLDERS):
+    parts = set(path.parts)
+    if not WATCHED_FOLDERS.intersection(parts):
         return None
         
     try:

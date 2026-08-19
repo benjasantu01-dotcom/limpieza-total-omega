@@ -230,12 +230,13 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     try:
-        if is_protected_path(ruta_str) or not ruta.exists() or not ruta.is_file() or ruta.stat().st_size > MAX_SETTINGS_SIZE:
-            return _get_default_config()
-        mtime = ruta.stat().st_mtime
+        stats = ruta.stat()
+        mtime = stats.st_mtime
         if ruta_str in _SESSION_CACHE:
             cached_mtime, cached_data = _SESSION_CACHE[ruta_str]
             if cached_mtime == mtime: return cached_data
+        if is_protected_path(ruta_str) or stats.st_size > MAX_SETTINGS_SIZE:
+            return _get_default_config()
         raw_data = json.loads(ruta.read_text(encoding="utf-8"))
         config = validate(raw_data)
         _SESSION_CACHE[ruta_str] = (mtime, config)
