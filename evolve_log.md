@@ -1468,3 +1468,29 @@ FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file -
 - `2026-08-19T08:00:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-08-19T08:00:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T08:00:08` Corrida terminada. Total usado hoy: 184.
+- `2026-08-19T08:08:41` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-08-19T08:09:11` Tests FALLARON:
+```
+': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_assistant_is_off_by_default - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_save_then_load_keeps_the_values - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_env_var_wins_over_the_config_file - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - KeyError: 'asistente_activado'
+14 failed, 285 passed, 7 warnings in 1.40s
+
+```
+- `2026-08-19T08:09:11` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de integridad en `load` para asegurar que el archivo `config.json` no contenga claves huérfanas o maliciosas que no pertenezcan a `ConfigKey`, previniendo errores de lógica y garantizando una configuración limpia tras la carga.
+- `2026-08-19T08:09:36` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-19T08:10:11` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al serializar las métricas para el asistente remoto, forzando la desinfección explícita de cada valor numérico contra posibles inyecciones mediante una función centralizada antes de la construcción del string.
+- `2026-08-19T08:10:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-19T08:10:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T08:10:29` Corrida terminada. Total usado hoy: 188.

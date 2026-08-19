@@ -290,6 +290,11 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             
     return ctx
 
+def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
+    """Serializa una métrica como texto limpio, eliminando cualquier caracter peligroso."""
+    raw = _fmt_metric(val, unit, decimal)
+    return _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
+
 def context_as_text(context: SystemContext) -> str:
     """
     Serializa el contexto a formato texto para Gemini, aplicando una doble capa
@@ -298,22 +303,21 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
-        score_val = _fmt_metric(context.score)
+        score_val = _fmt_metric_sanitized(context.score)
         grade_val = str(context.grade)[:5] if isinstance(context.grade, str) else ""
         lines = (
             f"Puntaje de salud: {score_val}{f' nota {grade_val}' if grade_val else ''}",
-            f"Basura: {_fmt_metric(context.junk_mb, ' MB')}",
-            f"Sospechosos: {context.suspicious_count}",
-            f"RAM disponible: {_fmt_metric(context.memory_available_percent, ' percent')}",
-            f"Disco libre: {_fmt_metric(context.disk_free_percent, ' percent')}",
-            f"Duplicados: {_fmt_metric(context.duplicate_mb, ' MB')}",
-            f"Inicio: {context.startup_count} items"
+            f"Basura: {_fmt_metric_sanitized(context.junk_mb, ' MB')}",
+            f"Sospechosos: {_fmt_metric_sanitized(context.suspicious_count)}",
+            f"RAM disponible: {_fmt_metric_sanitized(context.memory_available_percent, ' percent')}",
+            f"Disco libre: {_fmt_metric_sanitized(context.disk_free_percent, ' percent')}",
+            f"Duplicados: {_fmt_metric_sanitized(context.duplicate_mb, ' MB')}",
+            f"Inicio: {_fmt_metric_sanitized(context.startup_count)} items"
         )
         texto_unificado = "\n".join(lines)
-        texto_limpio = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", texto_unificado))
-        if not _ensure_safe_text(texto_limpio):
+        if not _ensure_safe_text(texto_unificado):
             return "Error: el contexto generado no cumple los estándares de seguridad."
-        return texto_limpio
+        return texto_unificado
     except Exception:
         return "Error crítico al procesar métricas de seguridad."
 

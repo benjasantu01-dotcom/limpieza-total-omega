@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 132 | 14 | 20 | 10 | 144 |
-| 2026-08-19 | 79 | 6 | 11 | 9 | 79 |
+| 2026-08-18 | 132 | 14 | 20 | 10 | 140 |
+| 2026-08-19 | 80 | 7 | 11 | 9 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **40**
 - rendimiento: **40**
+- seguridad defensiva: **39**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **22**
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `diskreport.py`: **20**
 - `scanner.py`: **19**
 - `quarantine.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T08:10:11` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al serializar las métricas para el asistente remoto, forzando la desinfección explícita de cada valor numérico contra posibles inyecciones mediante una función centralizada antes de la construcción del string.
 - `2026-08-19T07:50:27` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` para evitar condiciones de carrera y fallos por archivos que desaparecen entre la validación y la acción (TOCTOU), añadiendo validaciones de existencia inmediata antes de cada operación crítica.
 - `2026-08-19T07:48:43` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones inesperadas (umbrales igual a cero), garantizando que el sistema siempre devuelva un valor válido en lugar de un error de cómputo.
 - `2026-08-19T07:39:37` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos infinitos en `_collect_candidates` mediante la detección de puntos de reparse (reparse points/junctions) usando `stat().st_file_attributes` y se añadió robustez ante errores de acceso en el recorrido de directorios.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T06:57:48` **assistant.py** (rendimiento): Optimizé `_identify_active_problems` reemplazando la construcción dinámica de strings mediante formato dentro del bucle principal por una pre-evaluación de condiciones, evitando procesamientos innecesarios y reduciendo la carga de trabajo en el motor local al realizar consultas frecuentes sobre el estado de salud.
 - `2026-08-19T06:38:30` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos con las precondiciones, argumentos y excepciones de las funciones críticas para facilitar el mantenimiento y la comprensión de las salvaguardas de seguridad.
 - `2026-08-19T06:37:59` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de validación y lógica interna, clarificando las precondiciones y el propósito de las salvaguardas de seguridad implementadas.
-- `2026-08-19T06:37:34` **memory.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de entrada y retorno de las funciones públicas `format_bytes`, `parse_windows_process_csv`, `read_snapshot`, `top_memory_processes`, `pressure_level` y `diagnose`, y se documentaron con docstrings mejoradas para clarificar los contratos de datos, facilitando el mantenimiento y la legibilidad para futuros colaboradores.
