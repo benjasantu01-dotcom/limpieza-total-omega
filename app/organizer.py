@@ -263,6 +263,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
         try:
             src_path = junk_file.path.resolve()
+            # Validación doble: existencia post-loop y seguridad
             if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
@@ -273,7 +274,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             ensure_safe_to_modify(src_path)
             ensure_safe_to_modify(target)
-            shutil.move(str(src_path), str(target))
+            
+            # Verificación final antes de mover para evitar TOCTOU
+            if src_path.exists():
+                shutil.move(str(src_path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
             continue
     return dest_base
@@ -297,15 +301,18 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if not item.is_file() or _is_junction(item):
+            # Re-verificar existencia y tipo en cada iteración
+            if not item.exists() or not item.is_file() or _is_junction(item):
                 continue
             
             resolved_item = item.resolve()
             if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)
-                    resolved_item.unlink()
-                    count += 1
+                    # Verificación final antes de unlink
+                    if resolved_item.exists():
+                        resolved_item.unlink()
+                        count += 1
         except (PermissionError, OSError, ValueError):
             continue
     return count

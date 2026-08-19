@@ -154,12 +154,14 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Evalúa la salud de la memoria según el porcentaje disponible."""
     val = _to_float(available_percent)
-    return (_clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0) if _LIMIT_RAM_PERCENT > 0 and math.isfinite(val) else 0.0)
+    if _LIMIT_RAM_PERCENT <= 0: return 0.0
+    return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Evalúa el estado del disco basado en el porcentaje de espacio libre."""
     val = _to_float(free_percent)
-    return (_clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0) if _LIMIT_DISK_PERCENT > 0 and math.isfinite(val) else 0.0)
+    if _LIMIT_DISK_PERCENT <= 0: return 0.0
+    return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud según el volumen de archivos duplicados."""

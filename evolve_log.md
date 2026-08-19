@@ -1454,3 +1454,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file -
 - `2026-08-19T07:39:37` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar ciclos infinitos en `_collect_candidates` mediante la detección de puntos de reparse (reparse points/junctions) usando `stat().st_file_attributes` y se añadió robustez ante errores de acceso en el recorrido de directorios.
 - `2026-08-19T07:39:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T07:39:37` Corrida terminada. Total usado hoy: 176.
+- `2026-08-19T07:48:17` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-08-19T07:48:43` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones inesperadas (umbrales igual a cero), garantizando que el sistema siempre devuelva un valor válido en lugar de un error de cómputo.
+- `2026-08-19T07:49:51` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de la aplicación ante cierres inesperados o estados de widgets inconsistentes (específicamente durante la finalización del proceso) al añadir verificaciones de `winfo_exists()` y flags de estado en los métodos de renderizado y logueo, evitando así que tareas asíncronas intenten manipular widgets que ya han sido destruidos.
+- `2026-08-19T07:50:18` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-19T07:50:27` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` para evitar condiciones de carrera y fallos por archivos que desaparecen entre la validación y la acción (TOCTOU), añadiendo validaciones de existencia inmediata antes de cada operación crítica.
+- `2026-08-19T07:50:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T07:50:27` Corrida terminada. Total usado hoy: 180.
