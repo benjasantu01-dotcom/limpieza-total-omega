@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **204** (40.5% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 233
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 67 | 6 | 12 | 7 | 68 |
-| 2026-08-19 | 137 | 11 | 18 | 13 | 165 |
+| 2026-08-18 | 65 | 5 | 12 | 7 | 67 |
+| 2026-08-19 | 139 | 11 | 19 | 13 | 166 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
-- rendimiento: **40**
-- manejo de errores y validación de entradas: **40**
+- manejo de errores y validación de entradas: **42**
 - legibilidad y documentación: **40**
+- rendimiento: **38**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **22**
+- `assistant.py`: **21**
 - `healthscore.py`: **20**
 - `diskreport.py`: **20**
 - `duplicates.py`: **19**
 - `settings.py`: **19**
+- `organizer.py`: **18**
 - `scanner.py`: **18**
-- `organizer.py`: **17**
 - `quarantine.py`: **15**
 - `browser.py`: **14**
 - `main.py`: **13**
-- `branding.py`: **10**
 - `memory.py`: **10**
-- `safety.py`: **5**
+- `branding.py`: **9**
+- `safety.py`: **6**
 - `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T15:00:56` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, asegurando que `_check_file_integrity` maneje correctamente la inexistencia súbita de archivos entre validaciones sucesivas, y agregué una validación de longitud máxima al `Path` resultante para prevenir errores de la API de Windows antes de que ocurran.
+- `2026-08-19T14:57:58` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `stage_for_review` y `delete_reviewed` para evitar errores de tipo o rutas mal formadas (como `Path(".")` en caso de error) y se añadieron chequeos de `None` más explícitos para mejorar la robustez ante estados inesperados del bucle.
 - `2026-08-19T14:52:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_process` y `trim_working_set` añadiendo validaciones explícitas de entrada, asegurando que el PID sea un entero positivo y capturando fallos de acceso a la API mediante un manejo de errores más preciso en la gestión de handles.
 - `2026-08-19T14:47:51` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `compute_score` implementando una validación de tipo y estado más temprana, evitando el procesamiento de objetos `SystemMetrics` mal inicializados antes de llegar a la lógica de negocio.
 - `2026-08-19T14:47:26` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `find_duplicates` añadiendo una validación explícita para evitar errores de tipo si `directories` es un iterable vacío o contiene elementos `None`, y se ha centralizado la limpieza de parámetros en `_collect_candidates` para prevenir excepciones inesperadas durante la inicialización del bucle.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T12:35:36` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` integrando `is_protected_path` al validar el contexto y la consulta antes de construir el payload, asegurando que ningún dato del sistema que pase por `build_context` pueda ser malinterpretado por la API remota.
 - `2026-08-19T12:34:49` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load()` para detectar y prevenir situaciones de archivos de configuración truncados (estratégicamente vacíos o incompletos tras una escritura interrumpida), asegurando que si `json.loads` devuelve un objeto vacío, se trate como error y se recupere el estado de fábrica.
 - `2026-08-19T12:24:48` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante situaciones de concurrencia y estados inconsistentes al añadir una validación de existencia explícita antes del borrado y asegurar que el manifiesto se actualice solo con lo que realmente se eliminó, evitando desincronizaciones entre el sistema de archivos y el JSON.
-- `2026-08-19T12:16:09` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus ayudantes ante casos donde los procesos se cierran durante la ejecución, añadiendo una limpieza de excepciones y asegurando que `_get_process_path` no trabaje con handles inválidos o cerrados, evitando cierres inesperados al gestionar procesos volátiles.
-- `2026-08-19T12:15:48` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios en la UI (método `_safe_run_ui_callback`) para prevenir errores de concurrencia y fallos en widgets destruidos mientras una tarea asíncrona intenta actualizar la interfaz tras una operación, mitigando el riesgo de excepciones al cerrar o cambiar de pestaña.

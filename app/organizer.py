@@ -246,22 +246,22 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 
-def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
+def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Mueve de forma segura los archivos a una carpeta intermedia para su revisión.
     Realiza validaciones de seguridad antes de cada operación individual.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
-        return Path(".")
+        return None
 
     try:
         dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
         if not dest_base.is_dir() or not is_safe_to_modify(dest_base): 
-            return Path(".")
+            return None
     except (OSError, PermissionError, RuntimeError):
-        return Path(".")
+        return None
 
     for junk_file in files:
         if not isinstance(junk_file, JunkFile):
@@ -309,7 +309,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if not item.exists() or not item.is_file() or _is_junction(item):
+            if not item or not item.exists() or not item.is_file() or _is_junction(item):
                 continue
             
             resolved_item = item.resolve()

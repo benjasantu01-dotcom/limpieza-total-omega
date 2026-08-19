@@ -175,8 +175,10 @@ def _check_file_integrity(p: Path) -> None:
     """
     if p is None:
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
+    
+    # Verificación de existencia re-evaluada ante condiciones de carrera
     if not p.exists():
-        raise UnsafePathError(f"El archivo {p.name} ya no existe.")
+        raise UnsafePathError(f"El archivo {p.name} no existe.")
 
     if len(p.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
@@ -184,24 +186,24 @@ def _check_file_integrity(p: Path) -> None:
     try:
         st = p.lstat()
     except (OSError, PermissionError) as e:
-        raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}: {e}")
+        raise UnsafePathError(f"No se pudo acceder a metadatos: {e}")
 
     if not os.access(p, os.W_OK):
-        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.INACCESSIBLE.value}.")
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}.")
     if _is_reparse_point(p):
-        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.REPARSE_POINT.value}.")
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.REPARSE_POINT.value}.")
     if not bool(st.st_mode & stat.S_IWRITE):
-        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.READ_ONLY.value}.")
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.READ_ONLY.value}.")
     if _is_file_in_use(p):
-        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.IN_USE.value}.")
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.IN_USE.value}.")
     if _is_system_or_hidden(p):
-        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.SYSTEM_HIDDEN.value}.")
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.SYSTEM_HIDDEN.value}.")
     if p.is_file() and st.st_nlink > 1:
-        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.HARD_LINK.value}.")
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.HARD_LINK.value}.")
     if _has_alternate_data_stream(p):
-        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.ADS.value}.")
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.ADS.value}.")
     if p.is_file() and st.st_size == 0:
-        raise UnsafePathError(f"Operación denegada en {p.name}: {ProtectionReason.EMPTY_FILE.value}.")
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.EMPTY_FILE.value}.")
 
 
 @lru_cache(maxsize=2048)
@@ -220,13 +222,6 @@ def normalize(path: PathLike) -> Path:
     
     Nota: Aplica límite de 260 caracteres para garantizar compatibilidad con 
     versiones de Windows previas a la habilitación de rutas largas (MAX_PATH).
-
-    Args:
-        path: Ruta a normalizar.
-    Returns:
-        Path resuelto como absoluto.
-    Raises:
-        ValueError: Si la ruta es nula, vacía, excede 260 caracteres o es inaccesible.
     """
     if path is None:
         raise ValueError("Ruta nula recibida.")
@@ -314,6 +309,9 @@ def _validate_basic_path_safety(p: Path, path_str: str) -> None:
 
     if p.anchor and not os.path.exists(p.anchor):
         raise UnsafePathError("Unidad o punto de montaje no disponible.")
+    
+    if len(str(p)) >= 260:
+        raise UnsafePathError("La ruta resultante excede la longitud máxima permitida.")
 
 
 def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
@@ -334,15 +332,6 @@ def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Valida la integridad y seguridad de la ruta antes de realizar cambios persistentes.
-
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si es True, permite archivos con extensiones críticas.
-        base_dir: Directorio base opcional que actúa como límite de contención.
-    Returns:
-        La ruta normalizada si es segura.
-    Raises:
-        UnsafePathError: Si la ruta no cumple con los estándares de seguridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")

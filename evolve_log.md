@@ -987,3 +987,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-19T14:52:31` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_system_process` y `trim_working_set` añadiendo validaciones explícitas de entrada, asegurando que el PID sea un entero positivo y capturando fallos de acceso a la API mediante un manejo de errores más preciso en la gestión de handles.
 - `2026-08-19T14:52:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T14:52:31` Corrida terminada. Total usado hoy: 344.
+- `2026-08-19T14:57:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-19T14:57:58` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de los parámetros de entrada en `stage_for_review` y `delete_reviewed` para evitar errores de tipo o rutas mal formadas (como `Path(".")` en caso de error) y se añadieron chequeos de `None` más explícitos para mejorar la robustez ante estados inesperados del bucle.
+- `2026-08-19T14:58:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-19T14:59:39` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-19T15:00:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-19T15:00:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-19T15:00:56` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, asegurando que `_check_file_integrity` maneje correctamente la inexistencia súbita de archivos entre validaciones sucesivas, y agregué una validación de longitud máxima al `Path` resultante para prevenir errores de la API de Windows antes de que ocurran.
+- `2026-08-19T15:00:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T15:00:56` Corrida terminada. Total usado hoy: 348.
