@@ -388,8 +388,10 @@ def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
     path = _get_process_path(proc_handle)
     if not path:
         return False, "No se pudo verificar la ubicación del ejecutable."
-        
-    if is_protected_path(os.path.normcase(os.path.normpath(path))):
+    
+    # Normalización defensiva antes de la validación de seguridad
+    normalized_path = os.path.normcase(os.path.normpath(path))
+    if is_protected_path(normalized_path):
         return False, "Operación denegada: ruta de ejecutable protegida."
         
     return True, None

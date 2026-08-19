@@ -344,6 +344,11 @@ def quarantine_file(
         file_size = source_path.stat().st_size
     except OSError as e:
         raise RuntimeError(f"No se pudo determinar el tamaño del archivo origen: {e}")
+    
+    # Verificación final post-validación (evitar cambios de naturaleza TOCTOU)
+    if source_path.is_symlink():
+        raise UnsafePathError("El archivo ha cambiado su naturaleza (enlace detectado).")
+
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
         raise RuntimeError("Espacio insuficiente en disco.")

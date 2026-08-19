@@ -740,7 +740,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _is_safe_file_access(self, path: Union[str, Path]) -> bool:
         """Verifica que el acceso al archivo sea seguro y legible sin levantar excepciones."""
         try:
-            return Path(path).resolve(strict=True).exists()
+            p = Path(path).resolve(strict=True)
+            return p.exists() and safety.is_safe_to_modify(p)
         except (OSError, RuntimeError, PermissionError):
             return False
 
@@ -750,7 +751,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             p = Path(path).resolve(strict=True)
             if p.is_symlink():
                 return False
-            return not safety.is_protected_path(p)
+            return safety.is_safe_to_modify(p)
         except (OSError, RuntimeError, PermissionError):
             return False
 
@@ -767,7 +768,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Valida que el directorio sea seguro para procesar recursivamente."""
         try:
             p = Path(path).resolve(strict=True)
-            return p.is_dir() and not safety.is_protected_path(p)
+            return p.is_dir() and safety.is_safe_to_modify(p)
         except (OSError, PermissionError):
             return False
 
