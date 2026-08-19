@@ -181,9 +181,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
             mounts = ["/"]
     
     results: List[DriveUsage] = []
-    if mounts:
+    if mounts and isinstance(mounts, Iterable):
         for mount in mounts:
-            if mount and not str(mount).startswith(("\\\\", "//")):
+            if mount and isinstance(mount, (str, os.PathLike)) and not str(mount).startswith(("\\\\", "//")):
                 usage = drive_usage(mount)
                 if usage is not None:
                     results.append(usage)
@@ -195,7 +195,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Recorre el árbol de directorios usando una pila (Depth-First) para evitar 
     desbordamientos de recursión y capturar errores de acceso en cada nivel.
     """
-    if not directory:
+    if not directory or not isinstance(directory, (str, os.PathLike)):
         return
 
     try:
@@ -351,9 +351,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
     
     try:
         for path, size in walk_files(directory, skip_protected):
-            if skip_protected and is_protected_path(path):
-                continue
-                
             total_bytes += size
             total_files += 1
             
@@ -373,7 +370,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """Genera un informe textual unificado de uso de disco."""
-    if not directory: 
+    if not directory or not isinstance(directory, (str, os.PathLike)): 
         return ["Error: Ruta no proporcionada."]
     
     try:

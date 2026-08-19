@@ -197,14 +197,17 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
 
-    ratios: ScoreMap = {
-        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-        "disco": score_disk(metrics.disk_free_percent),
-        "memoria": score_memory(metrics.memory_available_percent),
-        "basura": score_junk(metrics.junk_mb),
-        "duplicados": score_duplicates(metrics.duplicate_mb),
-        "arranque": score_startup(metrics.startup_count)
-    }
+    try:
+        ratios: ScoreMap = {
+            "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
+            "disco": score_disk(metrics.disk_free_percent),
+            "memoria": score_memory(metrics.memory_available_percent),
+            "basura": score_junk(metrics.junk_mb),
+            "duplicados": score_duplicates(metrics.duplicate_mb),
+            "arranque": score_startup(metrics.startup_count)
+        }
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error crítico en cálculo de métricas."])
     
     if not all(math.isfinite(r) for r in ratios.values()):
         return HealthResult(0, "F", {}, ["Error: Cálculo de métricas fallido."])
