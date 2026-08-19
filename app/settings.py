@@ -143,7 +143,6 @@ class _Validators:
 
     @staticmethod
     def bool(val: Any) -> bool | None:
-        """Convierte entradas laxas a booleano estricto o retorna None si es inválido."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -153,7 +152,6 @@ class _Validators:
 
     @staticmethod
     def int(key: ConfigKey, val: Any) -> int | None:
-        """Valida valores numéricos contra límites predefinidos por clave."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value: int = int(val)
@@ -163,17 +161,13 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """Limpia y verifica la integridad de una ruta de archivo."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
-        
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
-            # Asegura que la ruta no sea un truco de resolución de path transversal
             if os.path.abspath(path_obj) != str(path_obj.resolve()): return None
-            
             path_str = str(path_obj)
             return path_str if _Validators._is_safe_path(path_str) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
@@ -181,7 +175,6 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> str | None:
-        """Valida que un string pertenezca al conjunto de valores permitidos (enums)."""
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
@@ -189,7 +182,6 @@ class _Validators:
 
     @staticmethod
     def str(key: ConfigKey, val: Any) -> str | None:
-        """Validación general de cadenas: limpia espacios y verifica seguridad."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -216,42 +208,31 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 }
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Calcula la ruta absoluta del archivo de configuración, asegurando seguridad."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
     if not _Validators._is_safe_path(str(base)): return SETTINGS_DIR / SETTINGS_FILE
     return base / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario arbitrario contra el esquema `AppSettings`."""
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     for key, validator in _VALIDATOR_MAP.items():
         if key.value in raw_values:
-            try:
-                val = validator(key, raw_values[key.value])
-                if val is not None: config[key.value] = val
-            except (ValueError, TypeError, AttributeError): continue
+            val = validator(key, raw_values[key.value])
+            if val is not None: config[key.value] = val
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga configuración con caché de sesión y validación estricta de estructura."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
-    
     try:
-        # Validación de seguridad de archivo
         if is_protected_path(ruta_str) or not ruta.exists() or not ruta.is_file() or ruta.stat().st_size > MAX_SETTINGS_SIZE:
             return _get_default_config()
-
         mtime = ruta.stat().st_mtime
         if ruta_str in _SESSION_CACHE:
             cached_mtime, cached_data = _SESSION_CACHE[ruta_str]
             if cached_mtime == mtime: return cached_data
-        
         raw_data = json.loads(ruta.read_text(encoding="utf-8"))
-        if not isinstance(raw_data, dict): return _get_default_config()
-        
         config = validate(raw_data)
         _SESSION_CACHE[ruta_str] = (mtime, config)
         return config
@@ -259,40 +240,26 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste configuración de forma atómica. Retorna la ruta en caso de éxito."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    
-    if is_protected_path(str(ruta)) or (ruta.exists() and not ruta.is_file()):
-        return None
-        
-    if not _Validators._is_safe_path(str(ruta.parent)): 
-        return None
-    
+    if is_protected_path(str(ruta)) or (ruta.exists() and not ruta.is_file()): return None
+    if not _Validators._is_safe_path(str(ruta.parent)): return None
     cleaned_settings = validate(values)
-    # Seguridad adicional para claves de API
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
-        
     try:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
-        
-        # Escritura atómica usando archivos temporales
         temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
-        if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
+        ruta.parent.mkdir(parents=True, exist_ok=True)
         with open(temp_ruta, "wb") as f:
-            f.write(encoded_data)
-            f.flush()
-            os.fsync(f.fileno())
+            f.write(encoded_data); f.flush(); os.fsync(f.fileno())
         os.replace(temp_ruta, ruta)
-        if str(ruta) in _SESSION_CACHE: del _SESSION_CACHE[str(ruta)]
+        _SESSION_CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
-    except (OSError, IOError, PermissionError, RuntimeError, TypeError):
-        return None
+    except (OSError, IOError, PermissionError, RuntimeError, TypeError): return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Actualiza configuración existente con cambios parciales validados."""
     current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
@@ -309,28 +276,23 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura valores por defecto y persiste."""
     default_config = _get_default_config()
     save(default_config, custom_base)
     return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Obtiene valor por clave, con fallback al default."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Recupera la clave API, priorizando la variable de entorno sobre el JSON."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente tiene permiso y credenciales para operar."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", ""))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Retorna una representación legible de los ajustes para reportes."""
     current = load(custom_base)
     key = assistant_api_key(custom_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")

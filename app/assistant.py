@@ -336,8 +336,12 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     problemas = []
     for crit in _CRITERIOS_SALUD:
         val = getattr(ctx, crit.metric_key)
-        f_val = _safe_float(val, 0.0)
+        f_val = _safe_float(val, -1.0)
         
+        # Ignorar si la métrica no está definida (f_val < 0) o no es finita
+        if f_val < 0:
+            continue
+            
         if (crit.operator == "<" and f_val < crit.threshold) or (crit.operator == ">" and f_val > crit.threshold):
             problemas.append(crit.message_format.format(val)[:_MAX_MSG_CHUNK])
             if len(problemas) >= 3:
