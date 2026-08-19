@@ -107,21 +107,23 @@ def base_directories() -> List[Path]:
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Valida la integridad de la ruta para prevenir Path Traversal usando
-    la jerarquía de componentes de Pathlib, evitando trucos de string.
-    
-    Args:
-        target_path: Ruta del candidato a escaneo.
-        base_path: Directorio raíz permitido (LOCALAPPDATA).
+    la comparación de componentes de Pathlib.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
     
     try:
+        if not target_path.is_absolute() or not base_path.is_absolute():
+            return False
+
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Comprobación de prefijo mediante componentes para evitar spoofing de strings
-        if real_base not in real_target.parents and real_base != real_target:
+        # Validar que la base sea un prefijo absoluto de la ruta objetivo mediante componentes
+        base_parts = real_base.parts
+        target_parts = real_target.parts
+        
+        if len(target_parts) < len(base_parts) or target_parts[:len(base_parts)] != base_parts:
             return False
 
         if is_protected_path(real_target) or is_protected_path(real_base):
@@ -167,11 +169,6 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """
     Filtro de seguridad para ignorar archivos protegidos, datos críticos o elementos del sistema.
-    
-    Args:
-        entry: Entrada de directorio a evaluar.
-        kernel32: Instancia de ctypes para llamadas al sistema.
-        is_junction_fn: Función para detectar reparse points.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -184,7 +181,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
     except (OSError, PermissionError):
-        # Ante error de acceso, por seguridad, se saltea la entrada.
         return True
     return False
 

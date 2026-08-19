@@ -184,6 +184,10 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError):
         return default
 
+def _validate_response_length(text: str) -> str:
+    """Asegura que el texto retornado esté dentro de los límites de seguridad definidos."""
+    return text[:_MAX_TEXT_LENGTH]
+
 @dataclass
 class SystemContext:
     """
@@ -328,7 +332,7 @@ def explain_area(area: Any) -> str:
         "inicio": "Programas que arrancan con Windows: cada entrada incrementa el tiempo de inicio y el consumo base de memoria.",
     }
     if isinstance(area, str):
-        return explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área.")
+        return _validate_response_length(explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área."))
     return "No tengo una explicación para esa área."
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
@@ -366,7 +370,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     if ctx.startup_count > 12:
         partes.append(f"Sí te conviene mirar los {ctx.startup_count} programas de inicio: cada uno arranca con Windows.")
         
-    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
+    return Answer(_validate_response_length(" ".join(partes)), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta sobre el almacenamiento y espacio recuperable mediante SystemContext."""
@@ -382,7 +386,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     
     partes.append("Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra.")
     
-    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE)
+    return Answer(_validate_response_length(" ".join(partes)), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta sobre archivos sospechosos detectados mediante el análisis de seguridad."""
@@ -395,7 +399,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     
     partes.append("La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación.")
     
-    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE)
+    return Answer(_validate_response_length(" ".join(partes)), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta sobre el puntaje de salud global procesando SystemContext."""
@@ -409,7 +413,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
         
     partes.append("El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio, con la seguridad pesando más.")
     
-    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE)
+    return Answer(_validate_response_length(" ".join(partes)), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta sobre el impacto de programas al inicio usando métricas de SystemContext."""
@@ -423,7 +427,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     
     partes.append("La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows.")
     
-    return Answer(" ".join(partes)[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE)
+    return Answer(_validate_response_length(" ".join(partes)), notice=OFFLINE_NOTICE)
 
 _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram,
@@ -464,7 +468,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
                   f"{', '.join(problemas)}.")
     else:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
-    return Answer(cuerpo[:_MAX_TEXT_LENGTH], notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
+    return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
 def available(base: Union[str, Path, None] = None) -> bool:
     """Verifica si la configuración del sistema permite el uso del asistente en línea."""
@@ -524,7 +528,7 @@ def _call_gemini(
             if not isinstance(parts, list): return None
             
             text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
-            final_text = text.strip()[:_MAX_TEXT_LENGTH]
+            final_text = _validate_response_length(text.strip())
             
             limpia_final = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", final_text))
             return limpia_final if _ensure_safe_text(limpia_final) else None

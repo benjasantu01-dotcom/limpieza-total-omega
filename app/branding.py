@@ -23,7 +23,7 @@ from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optiona
 from types import MappingProxyType
 from functools import lru_cache
 import os
-from safety import is_safe_to_modify, ensure_safe_to_modify
+from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 
 # Type Aliases semánticos para el sistema de diseño
 HexColor: TypeAlias = str  # Formato: "#RRGGBB"
@@ -410,8 +410,15 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         path_obj = Path(destination).expanduser().resolve()
         
+        # Validación de seguridad: no permitir rutas protegidas
+        if is_protected_path(path_obj):
+            return None
+
         # Validación de directorio y escritura segura
         if path_obj.parent and not path_obj.parent.exists():
+            # Si el padre es una ruta protegida, no crear nada
+            if is_protected_path(path_obj.parent):
+                return None
             path_obj.parent.mkdir(parents=True, exist_ok=True)
             
         # ensures_safe_to_modify valida que la ruta no sea bloqueada
