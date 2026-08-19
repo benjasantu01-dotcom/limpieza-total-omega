@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 122 | 13 | 19 | 9 | 113 |
-| 2026-08-19 | 89 | 8 | 12 | 9 | 110 |
+| 2026-08-18 | 118 | 13 | 19 | 9 | 113 |
+| 2026-08-19 | 90 | 8 | 12 | 9 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **48**
 - rendimiento: **40**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **33**
+- manejo de errores y validación de entradas: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
-- `assistant.py`: **21**
-- `diskreport.py`: **20**
+- `assistant.py`: **22**
+- `healthscore.py`: **21**
 - `scanner.py`: **19**
-- `duplicates.py`: **18**
+- `diskreport.py`: **19**
 - `organizer.py`: **18**
 - `quarantine.py`: **18**
+- `duplicates.py`: **17**
 - `settings.py`: **16**
 - `browser.py`: **15**
-- `main.py`: **14**
+- `main.py`: **13**
 - `memory.py`: **11**
 - `branding.py`: **10**
 - `safety.py`: **5**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T10:04:40` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_validate_and_assign` mediante la validación explícita de `float` y `math.isfinite` antes de cualquier operación de comparación o truncamiento, evitando que valores inesperados (como `float('inf')` o `nan`) corrompan el contexto del asistente.
 - `2026-08-19T08:40:46` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `settings.save` añadiendo una limpieza de archivos temporales huérfanos antes de la escritura y una validación de seguridad explícita sobre la existencia de la ruta padre, garantizando que no se intenten crear directorios en zonas protegidas o bloqueadas por `safety`.
 - `2026-08-19T08:40:34` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` reemplazando el uso de `path.exists()` (que puede devolver `False` por un `race condition` entre el escaneo y el acceso al disco) por un manejo robusto de excepciones al obtener metadatos, evitando que el escáner se detenga o procese rutas inconsistentes sin validación previa.
 - `2026-08-19T08:40:10` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "nodos de reparse" (puntos de montaje o junctions) a la función `_validate_boundary_conditions` para asegurar que, además de los enlaces simbólicos simples, no se sigan puntos de reparse que podrían escapar del directorio permitido o causar ciclos, alineándose con el enfoque de seguridad defensiva.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T07:48:43` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones inesperadas (umbrales igual a cero), garantizando que el sistema siempre devuelva un valor válido en lugar de un error de cómputo.
 - `2026-08-19T07:39:37` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar ciclos infinitos en `_collect_candidates` mediante la detección de puntos de reparse (reparse points/junctions) usando `stat().st_file_attributes` y se añadió robustez ante errores de acceso en el recorrido de directorios.
 - `2026-08-19T07:39:28` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso (como `PermissionError` o unidades extraíbles sin medio) mediante el uso de `try-except` más granulares y verificaciones de estado preventivas, garantizando que el escaneo no se detenga bruscamente ni retorne valores inconsistentes.
-- `2026-08-19T07:32:10` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `build_context` implementando una validación exhaustiva de los tipos de datos de entrada mediante `isinstance`, asegurando que cualquier entrada malformada sea ignorada silenciosamente en lugar de disparar excepciones inesperadas.

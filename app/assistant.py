@@ -253,8 +253,9 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     try:
         clean_val = float(val)
         if math.isfinite(clean_val):
-            final_val = cast(max(min_v, min(clean_val, max_v)))
-            # Re-verificación estricta tras conversión
+            # Clamping defensivo
+            clamped = max(float(min_v), min(clean_val, float(max_v)))
+            final_val = cast(clamped)
             if isinstance(final_val, (int, float)) and math.isfinite(float(final_val)):
                 setattr(ctx, key, final_val)
     except (ValueError, TypeError, OverflowError):
