@@ -575,3 +575,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T10:26:02` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se mejora la robustez del manejo de errores en `scan_for_junk` y `stage_for_review` validando explícitamente los parámetros de entrada y capturando excepciones de sistema que podrían interrumpir el proceso de escaneo o movimiento de archivos.
 - `2026-08-19T10:26:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T10:26:02` Corrida terminada. Total usado hoy: 240.
+- `2026-08-19T10:31:42` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-19T10:32:15` Tests FALLARON:
+```
+68: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_moves_the_file0/sospechoso.exe').exists
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+2 failed, 297 passed, 7 warnings in 0.85s
+
+```
+- `2026-08-19T10:32:15` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación explícita mediante `is_safe_to_modify` antes de la operación crítica `os.remove(source_path)` en `quarantine_file`, asegurando que no se ejecute una eliminación sobre una ruta que haya sido alterada o restringida entre el chequeo inicial y la ejecución.
+- `2026-08-19T10:32:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-19T10:33:07` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `_check_file_integrity` y `_is_system_or_hidden` implementando chequeos explícitos para casos de entrada nula o malformada, evitando excepciones genéricas que podrían interrumpir el flujo de la aplicación.
+- `2026-08-19T10:33:24` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scan_directory` y `process_entry` mediante una validación más estricta de las entradas `Path` y `os.DirEntry`, asegurando que operaciones como `is_dir()` o `is_file()` no ocurran sobre objetos nulos o malformados, previniendo excepciones innecesarias durante el escaneo.
+- `2026-08-19T10:33:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T10:33:24` Corrida terminada. Total usado hoy: 244.

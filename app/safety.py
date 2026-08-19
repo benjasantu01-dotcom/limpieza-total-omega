@@ -104,6 +104,7 @@ def _is_permission_denied(e: Exception) -> bool:
 
 def _has_invalid_chars(path_str: str) -> bool:
     """Detecta caracteres ilegales en rutas (null bytes, control chars, RTL marks)."""
+    if not path_str: return True
     return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str))
 
 
@@ -123,9 +124,11 @@ def _is_system_or_hidden(path: Path) -> bool:
     Consulta atributos win32 para verificar flags de sistema u oculto.
     Si la API de Windows falla, asume riesgo (True) por principio de seguridad conservadora.
     """
-    if os.name != 'nt' or not path.exists():
+    if os.name != 'nt' or path is None:
         return False
     try:
+        if not path.exists():
+            return False
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs != -1:
             return bool(attrs & (0x02 | 0x04))
@@ -142,7 +145,7 @@ def _is_reparse_point(path: Path) -> bool:
     """
     if os.name != 'nt':
         return path.is_symlink()
-    if not path.exists():
+    if path is None or not path.exists():
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -153,7 +156,7 @@ def _is_reparse_point(path: Path) -> bool:
 
 def _is_file_in_use(path: Path) -> bool:
     """Verifica exclusividad de acceso intentando abrir el archivo con modo lectura."""
-    if not path.exists() or not path.is_file():
+    if path is None or not path.exists() or not path.is_file():
         return False
     try:
         handle = os.open(path, os.O_RDONLY | getattr(os, 'O_BINARY', 0))
@@ -170,6 +173,8 @@ def _check_file_integrity(p: Path) -> None:
     Raises:
         UnsafePathError: Si el archivo está bloqueado, en uso, o presenta riesgos de integridad.
     """
+    if p is None:
+        raise UnsafePathError("Ruta no definida para chequeo de integridad.")
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} ya no existe.")
 
