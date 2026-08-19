@@ -127,6 +127,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._task_lock = threading.Lock()
         self._closing = False
         self._log_scheduled = False
+        
+        self._setup_application()
+
+    def _setup_application(self) -> None:
+        """Inicialización protegida del entorno, estado y layout."""
         try:
             self._validate_environment()
             self._init_window_properties()
@@ -164,17 +169,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _init_window_properties(self) -> None:
         """Configura los parámetros iniciales de la ventana mediante branding.py."""
         self.title(branding.app_title())
-        try:
-            self.geometry("1120x780")
-            self.minsize(980, 680)
-        except Exception as e:
-            logging.warning("Configuración de geometría ignorada: %s", e)
-        try:
-            bg_color = branding.color("background")
-            if bg_color:
-                self.configure(fg_color=bg_color)
-        except Exception as e:
-            logging.error("Fallo al aplicar colores de branding: %s", e)
+        self.geometry("1120x780")
+        self.minsize(980, 680)
+        bg_color = branding.color("background")
+        if bg_color:
+            self.configure(fg_color=bg_color)
 
     def _init_state(self) -> None:
         """Inicializa cachés, hilos, estructuras de persistencia y flags."""
@@ -227,8 +226,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         :return: Etiqueta configurada (ctk.CTkLabel).
         """
         font_config = {"size": branding.font_size(style)}
-        if style == "title": font_config["weight"] = "bold"
-        if style == "caption": font_config["weight"] = "bold"
+        if style in ("title", "caption"): font_config["weight"] = "bold"
         
         color_map = {
             "title": "text", "body": "text_muted", "caption": "text_dim", "accent": "accent"
@@ -333,8 +331,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _tab_factory(self, name: str) -> None:
         """
         Delega la construcción del contenido de cada pestaña a sus métodos específicos.
-        
-        :param name: Nombre de la pestaña a construir.
         """
         method_name = f"_build_tab_{name.lower()}"
         constructor = getattr(self, method_name, None)
@@ -344,8 +340,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
                 tab_frame = self.tabs[name]
-                if tab_frame and hasattr(tab_frame, "winfo_exists") and tab_frame.winfo_exists():
-                    self._create_styled_label(tab_frame, f"Error al cargar módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
+                if tab_frame and tab_frame.winfo_exists():
+                    self._create_styled_label(tab_frame, f"Error cargando módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
 
     def _build_tabs_container(self) -> None:
         """Genera el contenedor de pestañas (tabview) e inicializa cada una."""
@@ -365,14 +361,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
         for name in TABS:
-            try:
-                label = branding.tab_label(name)
-                frame = self.tabview.add(label)
-                if frame:
-                    self.tabs[name] = frame
-                    self._tab_factory(name)
-            except Exception as e:
-                logging.error("Error al registrar la pestaña %s: %s", name, e)
+            frame = self.tabview.add(branding.tab_label(name))
+            if frame:
+                self.tabs[name] = frame
+                self._tab_factory(name)
 
     def _build_header(self) -> None:
         """Renderiza la cabecera con el logo, título y versión de la aplicación."""
@@ -385,10 +377,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             highlightthickness=0, bd=0,
         )
         canvas.grid(row=0, column=0, rowspan=2, padx=(0, 16))
-        try:
-            branding.draw_logo(canvas, size=72)
-        except Exception as e:
-            logging.error("Fallo al renderizar logo: %s", e)
+        branding.draw_logo(canvas, size=72)
 
         self._create_styled_label(header, branding.APP_NAME, "title").grid(row=0, column=1, sticky="sw")
         self._create_styled_label(header, branding.APP_TAGLINE, "body").grid(row=1, column=1, sticky="nw")

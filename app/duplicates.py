@@ -146,7 +146,15 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Recorre el árbol de directorios identificando archivos candidatos aptos.
+    Recorre recursivamente los directorios proporcionados para agrupar archivos por tamaño.
+
+    Args:
+        directories: Lista de rutas raíz a escanear.
+        min_size: Tamaño mínimo en bytes para considerar un archivo candidato.
+        skip_protected: Si es True, omite rutas marcadas como protegidas por safety.py.
+
+    Returns:
+        Diccionario donde la clave es el tamaño en bytes y el valor es la lista de archivos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -188,7 +196,14 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Agrupa rutas que comparten un hash calculado por hash_func.
+    Refina un grupo de archivos agrupándolos por el hash resultante de la función proveída.
+
+    Args:
+        paths: Lista de rutas de archivos candidatos.
+        hash_func: Función (hash_file o partial_hash) para calcular el identificador de contenido.
+
+    Returns:
+        Diccionario mapeando el hash resultante a listas de archivos duplicados confirmados.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     digest_cache: Dict[Path, str] = {}
