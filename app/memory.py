@@ -347,14 +347,23 @@ def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
     """
     Verifica si un proceso es candidato seguro para trim según su estado y ruta.
     """
+    if not proc_handle:
+        return False, "Handle inválido."
+
     kernel32 = ctypes.windll.kernel32
     exit_code = ctypes.c_ulong()
     
-    if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+    if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
+        return False, "No se pudo obtener el estado del proceso."
+    
+    if exit_code.value != STILL_ACTIVE_EXIT_CODE:
         return False, "El proceso seleccionado ya no está activo."
         
     path = _get_process_path(proc_handle)
-    if not path or is_protected_path(os.path.normcase(os.path.normpath(path))):
+    if not path:
+        return False, "No se pudo verificar la ubicación del ejecutable."
+        
+    if is_protected_path(os.path.normcase(os.path.normpath(path))):
         return False, "Operación denegada: ruta de ejecutable protegida."
         
     return True, None
@@ -382,7 +391,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
 
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        return False, "Acceso denegado: no se pudo obtener control sobre el proceso."
+        err = kernel32.GetLastError()
+        return False, f"Acceso denegado (error {err})."
         
     try:
         valid, reason = _is_valid_trim_target(proc_handle)
@@ -391,8 +401,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             
         if not psapi.EmptyWorkingSet(proc_handle):
             err = kernel32.GetLastError()
-            msg = f"Acceso denegado (error {err})." if err == ERROR_ACCESS_DENIED else f"Error al liberar memoria (código {err})."
-            return False, msg
+            return False, f"Error al liberar memoria (código {err})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, MemoryError, OSError, Exception) as e:

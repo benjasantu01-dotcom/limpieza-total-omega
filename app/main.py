@@ -344,7 +344,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
                 tab_frame = self.tabs[name]
-                if tab_frame.winfo_exists():
+                if tab_frame and hasattr(tab_frame, "winfo_exists") and tab_frame.winfo_exists():
                     self._create_styled_label(tab_frame, f"Error al cargar módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
 
     def _build_tabs_container(self) -> None:

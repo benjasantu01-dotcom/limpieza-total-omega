@@ -1307,3 +1307,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-19T05:48:33` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `compute_score` implementando un chequeo preventivo contra objetos `SystemMetrics` mal inicializados o con valores no finitos, evitando que el cálculo de `breakdown` o `final_score` produzca resultados inesperados.
 - `2026-08-19T05:48:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T05:48:33` Corrida terminada. Total usado hoy: 132.
+- `2026-08-19T05:55:54` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-19T05:57:03` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en el método `_build_tabs_container` envolviendo la construcción de cada pestaña en un bloque `try-except` robusto y validando la existencia de los widgets antes de intentar acceder a ellos, evitando que un error en una pestaña individual impida que la aplicación arranque o se renderice correctamente.
+- `2026-08-19T05:57:32` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `trim_working_set` y sus ayudantes capturando errores de forma más específica, validando la integridad del handle antes de cualquier operación y asegurando que `_is_valid_trim_target` maneje correctamente casos donde el handle no esté disponible, siguiendo estrictamente el enfoque de manejo de errores y validación.
+- `2026-08-19T05:57:57` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura antes de operar, asegurando que las rutas base sean absolutas y evitando procesar listas vacías o entradas inválidas que podrían disparar excepciones innecesarias.
+- `2026-08-19T05:58:13` Tests FALLARON:
+```
+            raise UnsafePathError("No se tiene permiso de escritura en la carpeta destino original.")
+        if _is_file_locked(destination.parent):
+>           raise IOError("La carpeta destino original está bloqueada o inaccesible.")
+E           OSError: La carpeta destino original está bloqueada o inaccesible.
+
+app/quarantine.py:416: OSError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - OSError: La carpeta destino original está bloqueada o inaccesible.
+1 failed, 298 passed, 7 warnings in 1.19s
+
+```
+- `2026-08-19T05:58:13` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se mejora la robustez de `restore_item` añadiendo validaciones de seguridad previas a la operación de restauración, asegurando explícitamente que la carpeta destino sea accesible y no esté bloqueada, mitigando el riesgo de dejar el sistema en un estado inconsistente ante fallos de permisos.
+- `2026-08-19T05:58:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T05:58:13` Corrida terminada. Total usado hoy: 136.

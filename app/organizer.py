@@ -90,8 +90,6 @@ class JunkFile:
 def _is_junction(path: Path) -> bool:
     """
     Detecta si la ruta es un punto de reparse (Junction/Symlink).
-    Necesario para prevenir la recursión infinita en bucles de escaneo y evitar
-    que el buscador salga del árbol de directorios esperado.
     """
     try:
         return path.is_symlink() or (os.name == "nt" and "reparse" in os.stat(path).st_file_attributes)
@@ -107,8 +105,6 @@ def _is_junk_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo un contador incremental.
-    Crucial para evitar sobreescrituras accidentales durante el proceso de movimiento
-    a la zona de cuarentena.
     """
     if not target.exists():
         return target
@@ -131,8 +127,6 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado intentando abrirlo en modo exclusivo.
-    Si el sistema deniega el acceso, asumimos que está en uso (locked) y no debe
-    moverse para evitar errores de integridad en la aplicación origen.
     """
     try:
         with open(path, "rb") as f:
@@ -143,8 +137,7 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Previene que el destino de un movimiento sea padre o ancestro de la fuente,
-    evitando que la operación de 'revisión' corrompa la estructura del disco.
+    Previene que el destino de un movimiento sea padre o ancestro de la fuente.
     """
     return src == dest or src == dest.parent or dest in src.parents
 
@@ -152,8 +145,6 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Validación de seguridad integral antes de cualquier operación de I/O.
-    Combina verificaciones de: existencia, tipo de archivo, recursión,
-    atributos de sistema en Windows y bloqueos de acceso por parte del SO.
     """
     try:
         if not src.exists() or not src.is_file() or _is_junction(src):
@@ -188,7 +179,6 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     if not _is_safe_for_disk_op(current_path, dest_abs):
         return False
         
-    # shutil.move no garantiza comportamiento atómico entre diferentes unidades
     if current_path.anchor != dest_abs.anchor:
         return False
         
@@ -198,7 +188,6 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Escanea directorios buscando candidatos de limpieza de forma recursiva.
-    Filtra directorios no permitidos y junctions para mantener integridad.
     """
     raw_dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -248,9 +237,8 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Path:
     """
     Mueve los archivos a una carpeta intermedia de revisión.
-    Valida permisos y espacio disponible antes de ejecutar cualquier movimiento.
     """
-    if not isinstance(files, list) or not isinstance(review_dir, str) or not review_dir.strip():
+    if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return Path(".")
 
     try:
@@ -270,7 +258,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
-            # Verificación preventiva de espacio en disco
             if shutil.disk_usage(dest_base).free <= junk_file.size_bytes:
                 continue
                 
@@ -287,7 +274,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de forma permanente tras verificar que residan en la zona de cuarentena.
-    Utiliza validación de rutas relativas para asegurar que solo se borre dentro del directorio permitido.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -306,7 +292,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 continue
             
             resolved_item = item.resolve()
-            # Validación de seguridad: debe estar bajo el directorio de cuarentena
             if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)
