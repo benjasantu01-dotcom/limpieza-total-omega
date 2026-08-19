@@ -79,7 +79,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
         
     try:
-        file_path = Path(path).resolve()
+        file_path = Path(path).resolve(strict=True)
         if not file_path.is_file() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
 
@@ -108,7 +108,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
         
     try:
-        file_path = Path(path).resolve()
+        file_path = Path(path).resolve(strict=True)
         if not file_path.is_file() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
             
@@ -131,7 +131,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     for p in paths:
         try:
-            target = Path(p).resolve()
+            target = Path(p).resolve(strict=True)
             if not target.is_file() or target.is_symlink(): continue
             if is_protected_path(target) or not is_safe_to_modify(target): continue
             groups[target.stat().st_size].append(target)
@@ -194,12 +194,15 @@ def _refine_by_hash(
     digest_cache: Dict[Path, str] = {}
     
     for path in paths:
-        target = path.resolve()
-        if not target.is_file(): continue
-        digest = digest_cache.get(target) or hash_func(target)
-        if digest:
-            digest_cache[target] = digest
-            groups_by_digest[digest].append(target)
+        try:
+            target = path.resolve(strict=True)
+            if not target.is_file(): continue
+            digest = digest_cache.get(target) or hash_func(target)
+            if digest:
+                digest_cache[target] = digest
+                groups_by_digest[digest].append(target)
+        except (OSError, PermissionError, FileNotFoundError):
+            continue
                 
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 

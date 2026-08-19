@@ -243,7 +243,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         if not p_obj.exists():
             return 0
         p_path = p_obj.resolve(strict=True)
-        if not p_path.is_dir() or is_protected_path(p_path):
+        if not p_path.is_absolute() or not p_path.is_dir() or is_protected_path(p_path):
             return 0
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
@@ -271,6 +271,9 @@ def detect_profiles(
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
+    if not isinstance(raw_bases, (list, tuple)) or not isinstance(cache_paths, dict):
+        return []
+
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
@@ -284,6 +287,7 @@ def detect_profiles(
         except (OSError, PermissionError): continue
             
         for browser_name, rel_str in cache_paths.items():
+            if not isinstance(rel_str, str): continue
             try:
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base):

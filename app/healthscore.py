@@ -183,7 +183,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     final_score = 0
     for area, weight in _WEIGHT_ITEMS_INT:
         val = ratios.get(area, 0.0)
-        puntos = int(round(_clamp(val if math.isfinite(val) else 0.0) * weight))
+        # Aseguramos que 'puntos' siempre sea un entero finito
+        val_clean = val if math.isfinite(val) else 0.0
+        puntos = int(round(_clamp(val_clean, 0.0, 1.0) * weight))
         breakdown[area] = puntos
         final_score += puntos
     

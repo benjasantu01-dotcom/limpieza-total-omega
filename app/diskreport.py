@@ -55,9 +55,10 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
     """
     if not isinstance(size_bytes, (int, float)):
         return 0.0
-    if size_bytes <= 0:
+    val = float(size_bytes)
+    if val <= 0:
         return 0.0
-    return round(float(size_bytes) / (1024 * 1024), 2)
+    return round(val / (1024 * 1024), 2)
 
 
 @dataclass
@@ -129,14 +130,13 @@ def format_size(num: Union[int, float, None]) -> str:
     Returns:
         String formateado. Retorna '0 B' si la entrada es inválida o nula.
     """
-    if num is None:
+    if num is None or not isinstance(num, (int, float)):
         return "0 B"
-    try:
-        value = float(num)
-    except (TypeError, ValueError):
-        return "0 B"
+    
+    value = float(num)
     if value < 0:
-        value = 0.0
+        return "0 B"
+        
     for unit in ("B", "KB", "MB", "GB", "TB"):
         if value < 1024 or unit == "TB":
             decimals = 0 if unit == "B" else 1
