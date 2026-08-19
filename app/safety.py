@@ -119,23 +119,28 @@ def _has_alternate_data_stream(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Consulta atributos win32 para verificar flags de sistema u oculto."""
+    """
+    Consulta atributos win32 para verificar flags de sistema u oculto.
+    Si la API de Windows falla, asume riesgo (True) por principio de seguridad conservadora.
+    """
     if os.name != 'nt' or not path.exists():
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs != -1:
             return bool(attrs & (0x02 | 0x04))
-        # Fallback a modo POSIX si falla la API Win32
         return bool(path.stat().st_file_attributes & (0x02 | 0x04)) if hasattr(path.stat(), 'st_file_attributes') else False
     except (OSError, AttributeError, TypeError, PermissionError):
-        return True # Asumir riesgo en caso de error de acceso
+        return True 
     return False
 
 
 @lru_cache(maxsize=2048)
 def _is_reparse_point(path: Path) -> bool:
-    """Detecta puntos de reparse (junctions/symlinks) mediante atributos win32 para evitar recursión."""
+    """
+    Detecta puntos de reparse (junctions/symlinks) para prevenir recursión infinita
+    y evitar seguir enlaces hacia áreas protegidas del sistema.
+    """
     if os.name != 'nt':
         return path.is_symlink()
     if not path.exists():
@@ -144,7 +149,7 @@ def _is_reparse_point(path: Path) -> bool:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return attrs != -1 and bool(attrs & 0x400)
     except (OSError, AttributeError, TypeError, PermissionError):
-        return True # Por seguridad ante error de acceso, tratar como reparse
+        return True 
     return False
 
 
@@ -208,7 +213,10 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
     """
-    Convierte una ruta a su forma absoluta canónica, validando longitud y existencia.
+    Convierte una ruta a su forma absoluta canónica.
+    
+    Nota: Aplica límite de 260 caracteres para garantizar compatibilidad con 
+    versiones de Windows previas a la habilitación de rutas largas (MAX_PATH).
 
     Args:
         path: Ruta a normalizar.

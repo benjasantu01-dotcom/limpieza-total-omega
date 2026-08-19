@@ -163,7 +163,7 @@ def _safe_unlink(path: Path) -> bool:
         return False
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
-    """Genera un nombre de archivo seguro para el almacenamiento en cuarentena."""
+    """Genera un nombre de archivo seguro evitando colisiones y nombres reservados."""
     safe_chars = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
     parts = safe_chars.split('.')
     name_base = parts[0] if parts[0] else "q_file"
@@ -224,7 +224,7 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Valida los prerrequisitos antes de mover un archivo a cuarentena."""
+    """Verifica pre-requisitos de seguridad antes de mover un archivo."""
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     resolved_source = source_path.resolve()
@@ -381,7 +381,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un ítem desde el sandbox a su ubicación original."""
+    """Restaura un ítem desde el sandbox a su ubicación original validando seguridad."""
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido o vacío.")
     items = load_manifest(base)
@@ -416,7 +416,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Borra un archivo de la cuarentena permanentemente."""
+    """Borra un archivo de la cuarentena permanentemente tras verificar su integridad."""
     if not isinstance(item_id, str) or not item_id.strip():
         return False
     items = load_manifest(base)
