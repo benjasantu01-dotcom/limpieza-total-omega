@@ -192,8 +192,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorre el árbol de directorios usando una pila (Depth-First) para evitar 
-    desbordamientos de recursión y capturar errores de acceso en cada nivel.
+    Recorre el árbol de directorios de forma iterativa (evitando recursión profunda).
+    
+    Args:
+        directory: Ruta raíz desde donde comenzar el escaneo.
+        skip_protected: Si es True, omite rutas marcadas como críticas por `safety.is_protected_path`.
+        
+    Yields:
+        Tuplas (Path, int) conteniendo la ruta del archivo y su tamaño en bytes.
     """
     if not directory or not isinstance(directory, (str, os.PathLike)):
         return
@@ -369,7 +375,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
-    """Genera un informe textual unificado de uso de disco."""
+    """
+    Genera un informe textual unificado de uso de disco para el directorio raíz especificado.
+    
+    Realiza un análisis completo del contenido, incluyendo el cálculo del tamaño total,
+    la distribución por tipos de archivo y la identificación de los archivos más grandes.
+    """
     if not directory or not isinstance(directory, (str, os.PathLike)): 
         return ["Error: Ruta no proporcionada."]
     

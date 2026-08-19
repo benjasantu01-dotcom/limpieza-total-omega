@@ -108,6 +108,10 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
     """
     Valida la integridad de la ruta para prevenir Path Traversal usando
     la jerarquía de componentes de Pathlib, evitando trucos de string.
+    
+    Args:
+        target_path: Ruta del candidato a escaneo.
+        base_path: Directorio raíz permitido (LOCALAPPDATA).
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -143,7 +147,7 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
     """
     Usa la API nativa de Windows (GetFileAttributesW) para verificar si un archivo/carpeta
-    posee atributos de sistema o oculto, retornando False ante errores para no bloquear el escaneo.
+    posee atributos de sistema o oculto.
     """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
@@ -163,7 +167,11 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """
     Filtro de seguridad para ignorar archivos protegidos, datos críticos o elementos del sistema.
-    Retorna True si la entrada debe ser omitida del escaneo.
+    
+    Args:
+        entry: Entrada de directorio a evaluar.
+        kernel32: Instancia de ctypes para llamadas al sistema.
+        is_junction_fn: Función para detectar reparse points.
     """
     if _is_excluded_file(entry.name):
         return True
