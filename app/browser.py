@@ -116,14 +116,15 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.is_absolute() or not base_path.is_absolute():
             return False
 
+        # Chequeo defensivo inmediato antes de resolver
+        if is_protected_path(target_path) or is_protected_path(base_path):
+            return False
+
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
         # Comparación estricta de componentes para validar jerarquía de directorios
         if not str(real_target).startswith(str(real_base)):
-            return False
-
-        if is_protected_path(real_target) or is_protected_path(real_base):
             return False
 
         # Los puntos de reparse (junctions) en Windows deben ser evitados para evitar bucles o duplicados
@@ -241,6 +242,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         return 0
     try:
         p_obj = Path(path)
+        # Verificación explícita de existencia antes de resolve()
         if not p_obj.exists():
             return 0
         p_path = p_obj.resolve(strict=True)

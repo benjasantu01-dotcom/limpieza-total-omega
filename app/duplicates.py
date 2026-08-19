@@ -259,10 +259,11 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         try:
             target = p.resolve(strict=True)
+            # Validar integridad del archivo candidato
             if not target.is_file() or is_protected_path(target) or not is_safe_to_modify(target):
                 continue
             stat_info = target.stat()
-            mtime = float(getattr(stat_info, 'st_mtime', 0))
+            mtime = float(getattr(stat_info, 'st_mtime', 0.0))
             keepers.append((mtime, len(str(target)), target))
         except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError):
             continue

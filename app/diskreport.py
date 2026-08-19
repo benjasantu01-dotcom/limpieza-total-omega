@@ -153,12 +153,9 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve(strict=False)
-        if not p.exists():
-            return None
-        if is_protected_path(p):
+        if not p.exists() or is_protected_path(p):
             return None
             
-        # shutil.disk_usage puede fallar en unidades removibles sin medio
         usage = shutil.disk_usage(p)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError):
@@ -180,12 +177,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     results: List[DriveUsage] = []
     if mounts and isinstance(mounts, Iterable):
         for mount in mounts:
-            if mount and isinstance(mount, (str, os.PathLike)) and not str(mount).startswith(("\\\\", "//")):
-                p = Path(mount)
-                if not is_protected_path(p):
-                    usage = drive_usage(p)
-                    if usage is not None:
-                        results.append(usage)
+            if isinstance(mount, (str, os.PathLike)) and not str(mount).startswith(("\\\\", "//")):
+                usage = drive_usage(mount)
+                if usage:
+                    results.append(usage)
     return results
 
 
@@ -229,10 +224,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_inodes.add(inode_key)
                                 stack.append(path_obj)
                         elif entry.is_file():
-                            path_obj = Path(entry.path)
-                            if skip_protected and is_protected_path(path_obj):
-                                continue
-                            yield path_obj, stat_data.st_size
+                            yield Path(entry.path), stat_data.st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -287,10 +279,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                parts = path.relative_to(base).parts
-                if not parts:
-                    continue
-                top_level = base / parts[0]
+                rel = path.relative_to(base)
+                top_level = base / rel.parts[0]
                 if skip_protected and is_protected_path(top_level):
                     continue
                 sums[top_level] += size
