@@ -143,12 +143,11 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
     """
     Usa la API nativa de Windows (GetFileAttributesW) para verificar si un archivo/carpeta
-    posee atributos de sistema o oculto.
+    posee atributos de sistema o oculto, retornando False ante errores para no bloquear el escaneo.
     """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Prevenir ruta UNC malformada antes de llamar a la API
         if entry_path.startswith(r"\\?") and len(entry_path) < 5:
             return False
             
@@ -156,7 +155,6 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
         attrs = kernel32.GetFileAttributesW(path_to_check)
         if attrs == 0xFFFFFFFF:
             return False
-        # FILE_ATTRIBUTE_SYSTEM (0x04) | FILE_ATTRIBUTE_HIDDEN (0x02)
         return bool(attrs & 0x04 or attrs & 0x02)
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False
@@ -167,20 +165,18 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
     Filtro de seguridad para ignorar archivos protegidos, datos críticos o elementos del sistema.
     Retorna True si la entrada debe ser omitida del escaneo.
     """
-    # 1. Chequeo por nombre (configuración definida en NEVER_TOUCH)
     if _is_excluded_file(entry.name):
         return True
     
-    # 2. Chequeo de seguridad de sistema (protegidos o ocultos/sistema de Windows)
     try:
         if is_protected_path(Path(entry.path)):
             return True
         if _is_system_hidden(entry.path, kernel32):
             return True
-        # 3. Prevención de recursión infinita mediante enlaces/junctions
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
     except (OSError, PermissionError):
+        # Ante error de acceso, por seguridad, se saltea la entrada.
         return True
     return False
 
@@ -198,7 +194,6 @@ def _sum_directory_recursive(
     if not root_dir or not isinstance(root_dir, str):
         return 0
     
-    # Seguridad: Resolver ruta absoluta y validar protección antes de cualquier operación
     try:
         abs_root = Path(root_dir).resolve(strict=True)
         if not abs_root.is_dir() or is_protected_path(abs_root):

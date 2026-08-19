@@ -163,6 +163,21 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
+def _safe_float(val: Any, default: float = 0.0) -> float:
+    """Conversión defensiva de tipos numéricos evitando excepciones y valores no finitos."""
+    try:
+        f = float(val)
+        return f if math.isfinite(f) else default
+    except (TypeError, ValueError):
+        return default
+
+def _safe_int(val: Any, default: int = 0) -> int:
+    """Conversión defensiva a entero."""
+    try:
+        return int(float(val))
+    except (TypeError, ValueError):
+        return default
+
 @dataclass
 class SystemContext:
     """
@@ -229,7 +244,6 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
         clean_val = float(val)
         if math.isfinite(clean_val):
             final_val = cast(max(min_v, min(clean_val, max_v)))
-            # Re-verificar el tipo tras el cast para asegurar integridad numérica
             if isinstance(final_val, (int, float)) and math.isfinite(float(final_val)):
                 setattr(ctx, key, final_val)
     except (ValueError, TypeError, OverflowError):
@@ -307,8 +321,8 @@ def context_as_text(context: SystemContext) -> str:
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Convierte una métrica a string formateado."""
-    if val is None or not isinstance(val, (int, float)) or not math.isfinite(float(val)): return "N/A"
-    return f"{float(val):.{decimal}f}{unit}"
+    f = _safe_float(val, -1.0)
+    return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
     """Proporciona una explicación educativa sobre los conceptos clave."""
@@ -329,11 +343,9 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     problemas = []
     for crit in _CRITERIOS_SALUD:
         val = getattr(ctx, crit.metric_key)
-        # Validación estricta de finitud para evitar errores de renderizado
-        if not isinstance(val, (int, float)) or not math.isfinite(float(val)):
-            continue
+        f_val = _safe_float(val, 0.0)
         
-        if (crit.operator == "<" and val < crit.threshold) or (crit.operator == ">" and val > crit.threshold):
+        if (crit.operator == "<" and f_val < crit.threshold) or (crit.operator == ">" and f_val > crit.threshold):
             problemas.append(crit.message_format.format(val)[:_MAX_MSG_CHUNK])
             if len(problemas) >= 3:
                 break
@@ -341,8 +353,8 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta educativa sobre el estado de memoria RAM basado en métricas."""
-    mem_pct = float(ctx.memory_available_percent) if math.isfinite(ctx.memory_available_percent) else 0.0
-    total_gb = float(ctx.memory_total_gb) if math.isfinite(ctx.memory_total_gb) else 0.0
+    mem_pct = _safe_float(ctx.memory_available_percent)
+    total_gb = _safe_float(ctx.memory_total_gb)
     partes = [
         f"Tenés {mem_pct:.0f}% de RAM disponible"
         f"{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
@@ -361,7 +373,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Genera respuesta educativa sobre el uso de almacenamiento y espacio recuperable."""
-    recuperable = float(ctx.junk_mb) + float(ctx.duplicate_mb) + float(ctx.browser_cache_mb)
+    recuperable = _safe_float(ctx.junk_mb) + _safe_float(ctx.duplicate_mb) + _safe_float(ctx.browser_cache_mb)
     partes = [
         f"Tenés {ctx.disk_free_percent:.0f}% libre en disco.",
         f"Podés recuperar cerca de {recuperable:.0f} MB:",
@@ -449,7 +461,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
     problemas = _identify_active_problems(context)
-    puntaje_str = str(context.score) if (context.score is not None and math.isfinite(float(context.score))) else "N/A"
+    puntaje_str = str(context.score) if context.score is not None else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
                   f"{', '.join(problemas)}.")
