@@ -76,7 +76,7 @@ class AppSettings(TypedDict):
     analisis_en_paralelo: bool
     asistente_activado: bool
     asistente_clave_api: str
-    asistente_enviar_metricas: bool
+    asistente_enviar_metrics: bool
     asistente_modelo: str
 
 __all__ = [
@@ -208,7 +208,6 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
     ConfigKey.TOP_PROCESOS: _Validators.int
 }
 
-# Lookup rápido por string para evitar llamar a ConfigKey(k) repetidamente
 _STRING_TO_KEY: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
@@ -253,19 +252,23 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
+    
+    temp_path = ruta.with_suffix(f"{ruta.suffix}.{os.getpid()}.tmp")
     try:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        # Limpieza de temporales huérfanos antes de crear uno nuevo
         for tmp in ruta.parent.glob(f"{ruta.name}.*.tmp"): tmp.unlink(missing_ok=True)
-        temp_path = ruta.with_suffix(f"{ruta.suffix}.{os.getpid()}.tmp")
         with open(temp_path, "wb") as f:
-            f.write(encoded_data); f.flush(); os.fsync(f.fileno())
+            f.write(encoded_data)
+            f.flush()
+            os.fsync(f.fileno())
         os.replace(temp_path, ruta)
         _SESSION_CACHE[ruta_str] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
-    except (OSError, IOError, PermissionError, RuntimeError, TypeError): return None
+    except (OSError, IOError, PermissionError, RuntimeError) as e:
+        if temp_path.exists(): temp_path.unlink(missing_ok=True)
+        return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     current = load(custom_base)

@@ -359,7 +359,10 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     return problemas
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta educativa sobre el estado de memoria RAM usando métricas de SystemContext."""
+    """
+    Genera respuesta educativa sobre el estado de memoria RAM usando métricas de SystemContext.
+    Calcula el impacto de la RAM libre y sugiere acciones de limpieza seguras.
+    """
     mem_pct = _safe_float(ctx.memory_available_percent)
     total_gb = _safe_float(ctx.memory_total_gb)
     
@@ -372,7 +375,10 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre el almacenamiento y espacio recuperable mediante SystemContext."""
+    """
+    Genera respuesta sobre el almacenamiento y espacio recuperable mediante SystemContext.
+    Suma fuentes de basura y caché para estimar el espacio total recuperable.
+    """
     recuperable = _safe_float(ctx.junk_mb) + _safe_float(ctx.duplicate_mb) + _safe_float(ctx.browser_cache_mb)
     
     linea1 = f"Tenés {ctx.disk_free_percent:.0f}% libre en disco."
@@ -383,7 +389,10 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{linea1} {linea2}{alerta}{cierre}"), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre archivos sospechosos detectados mediante el análisis de seguridad."""
+    """
+    Genera respuesta sobre archivos sospechosos detectados mediante el análisis de seguridad.
+    Refuerza la naturaleza informativa y no destructiva de la herramienta.
+    """
     if ctx.suspicious_count == 0:
         texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación."
     else:
@@ -395,7 +404,10 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre el puntaje de salud global procesando SystemContext."""
+    """
+    Genera respuesta sobre el puntaje de salud global procesando SystemContext.
+    Prioriza problemas detectados basándose en los criterios de salud definidos.
+    """
     score_display = f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
     problemas = _identify_active_problems(ctx)
     resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente para arreglar."
@@ -404,7 +416,10 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """Genera respuesta sobre el impacto de programas al inicio usando métricas de SystemContext."""
+    """
+    Genera respuesta sobre el impacto de programas al inicio usando métricas de SystemContext.
+    Advierte que el control debe ejercerse desde las herramientas nativas de Windows.
+    """
     estado = f"Tenés {ctx.startup_count} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos." if ctx.startup_count > 15 else ("Es una cantidad normal, aunque se puede recortar." if ctx.startup_count > 8 else "Está bien así.")
     cierre = " La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows."
