@@ -147,14 +147,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Recorre recursivamente los directorios proporcionados para agrupar archivos por tamaño.
-
-    Args:
-        directories: Lista de rutas raíz a escanear.
-        min_size: Tamaño mínimo en bytes para considerar un archivo candidato.
-        skip_protected: Si es True, omite rutas marcadas como protegidas por safety.py.
-
-    Returns:
-        Diccionario donde la clave es el tamaño en bytes y el valor es la lista de archivos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -164,15 +156,18 @@ def _collect_candidates(
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
-                        if entry.is_symlink(): continue
+                        # Identificar puntos de reparse (Junctions/Symlinks de sistema)
                         st = entry.stat(follow_symlinks=False)
-                        if entry.is_dir():
+                        if getattr(st, 'st_file_attributes', 0) & 0x400:
+                            continue
+                            
+                        if entry.is_dir(follow_symlinks=False):
                             inode: Tuple[int, int] = (st.st_dev, st.st_ino)
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
                                 _scan(Path(entry.path))
                         elif entry.is_file():
-                            if st.st_size >= min_size and not (getattr(st, 'st_file_attributes', 0) & 0x400):
+                            if st.st_size >= min_size:
                                 target = Path(entry.path).resolve()
                                 if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
                                     temp_groups[st.st_size].append(target)
@@ -197,13 +192,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Refina un grupo de archivos agrupándolos por el hash resultante de la función proveída.
-
-    Args:
-        paths: Lista de rutas de archivos candidatos.
-        hash_func: Función (hash_file o partial_hash) para calcular el identificador de contenido.
-
-    Returns:
-        Diccionario mapeando el hash resultante a listas de archivos duplicados confirmados.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     

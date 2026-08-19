@@ -1447,3 +1447,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file -
 - `2026-08-19T07:32:10` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `build_context` implementando una validación exhaustiva de los tipos de datos de entrada mediante `isinstance`, asegurando que cualquier entrada malformada sea ignorada silenciosamente en lugar de disparar excepciones inesperadas.
 - `2026-08-19T07:32:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T07:32:10` Corrida terminada. Total usado hoy: 172.
+- `2026-08-19T07:38:04` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-19T07:38:39` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-19T07:39:03` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-19T07:39:28` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante errores de acceso (como `PermissionError` o unidades extraíbles sin medio) mediante el uso de `try-except` más granulares y verificaciones de estado preventivas, garantizando que el escaneo no se detenga bruscamente ni retorne valores inconsistentes.
+- `2026-08-19T07:39:37` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar ciclos infinitos en `_collect_candidates` mediante la detección de puntos de reparse (reparse points/junctions) usando `stat().st_file_attributes` y se añadió robustez ante errores de acceso en el recorrido de directorios.
+- `2026-08-19T07:39:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T07:39:37` Corrida terminada. Total usado hoy: 176.
