@@ -144,7 +144,7 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta extensiones dobles que intentan ofuscar el tipo real del ejecutable."""
-    if not path or not path.name:
+    if path is None or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -153,7 +153,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable en zonas de riesgo fue creado recientemente."""
-    if not path or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
+    if path is None or is_protected_path(path) or path.suffix.lower() not in SUSPICIOUS_EXECUTABLE_EXT:
         return None
     
     path_lower = str(path).lower()
@@ -161,7 +161,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        stats = entry.stat() if entry else path.stat()
+        stats = entry.stat() if (entry and hasattr(entry, 'stat')) else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, PermissionError, AttributeError, ValueError):
@@ -171,7 +171,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta archivos con nombres de procesos del sistema ubicados fuera de System32."""
-    if not path or not path.name:
+    if path is None or not path.name:
         return None
         
     if path.name.lower() in SYSTEM_LOOKALIKES:
@@ -184,7 +184,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
     """
-    if not path.exists():
+    if path is None or not path.exists():
         return []
 
     findings: ScanResult = []

@@ -167,8 +167,10 @@ class _Validators:
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
-            if os.path.abspath(path_obj) != str(path_obj.resolve()): return None
-            path_str = str(path_obj)
+            # Validar integridad contra resolved para evitar redirecciones ocultas
+            resolved = path_obj.resolve(strict=False)
+            if str(path_obj.absolute()) != str(resolved): return None
+            path_str = str(resolved)
             return path_str if _Validators._is_safe_path(path_str) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None
@@ -243,7 +245,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
-    # Seguridad adicional: validar que la ruta final no sea protegida ni comprometa el sistema
     if is_protected_path(ruta_str) or (ruta.exists() and not ruta.is_file()): return None
     if not _Validators._is_safe_path(str(ruta.parent)): return None
     cleaned_settings = validate(values)

@@ -132,7 +132,6 @@ def _is_system_or_hidden(path: Path) -> bool:
         return bool(path.stat().st_file_attributes & (0x02 | 0x04)) if hasattr(path.stat(), 'st_file_attributes') else False
     except (OSError, AttributeError, TypeError, PermissionError):
         return True 
-    return False
 
 
 @lru_cache(maxsize=2048)
@@ -150,7 +149,6 @@ def _is_reparse_point(path: Path) -> bool:
         return attrs != -1 and bool(attrs & 0x400)
     except (OSError, AttributeError, TypeError, PermissionError):
         return True 
-    return False
 
 
 def _is_file_in_use(path: Path) -> bool:
@@ -180,7 +178,7 @@ def _check_file_integrity(p: Path) -> None:
 
     try:
         st = p.lstat()
-    except OSError as e:
+    except (OSError, PermissionError) as e:
         raise UnsafePathError(f"No se pudo acceder a metadatos de {p.name}: {e}")
 
     if not os.access(p, os.W_OK):
