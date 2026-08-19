@@ -148,6 +148,12 @@ def format_size(num: Union[int, float, None]) -> str:
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad específica.
+    
+    Args:
+        mount: Ruta o letra de la unidad.
+        
+    Returns:
+        Instancia de DriveUsage o None si no es accesible.
     """
     if not mount:
         return None
@@ -187,6 +193,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorre el árbol de directorios de forma iterativa, evitando recursión.
+    
+    Args:
+        directory: Ruta base de inicio.
+        skip_protected: Si se debe verificar `is_protected_path`.
     """
     if not directory:
         return
@@ -209,6 +219,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Evitar reparse points y enlaces simbólicos para prevenir ciclos
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         

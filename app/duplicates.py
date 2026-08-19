@@ -74,6 +74,7 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo tras validar su seguridad.
+    Verifica atributos del sistema para evitar errores de acceso en metadatos.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -84,6 +85,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             return None
 
         stat_initial = file_path.stat()
+        # 0x400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT (Junctions/Symlinks)
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -103,6 +105,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes para comparación heurística.
+    Es una optimización para evitar leer archivos grandes que difieren al inicio.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -124,6 +127,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Clasifica una colección de rutas según su tamaño en bytes.
+    Filtra symlinks y rutas protegidas antes del procesamiento.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: 
@@ -146,7 +150,8 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Recorre recursivamente los directorios proporcionados para agrupar archivos por tamaño.
+    Recorre recursivamente los directorios para agrupar archivos por tamaño.
+    Utiliza el número de inodo/dev para evitar ciclos en sistemas de archivos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -156,8 +161,8 @@ def _collect_candidates(
             with os.scandir(root_path) as it:
                 for entry in it:
                     try:
-                        # Identificar puntos de reparse (Junctions/Symlinks de sistema)
                         st = entry.stat(follow_symlinks=False)
+                        # Identificar puntos de reparse (Junctions/Symlinks de sistema)
                         if getattr(st, 'st_file_attributes', 0) & 0x400:
                             continue
                             
@@ -210,7 +215,7 @@ def _refine_by_hash(
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de refinamiento en dos etapas para un grupo de tamaño dado.
+    Ejecuta el pipeline de refinamiento (Hash Parcial -> Hash Completo).
     """
     confirmed_groups: List[DuplicateGroup] = []
     partial_groups = _refine_by_hash(paths, partial_hash)
@@ -249,8 +254,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Heurística para selección: conserva el archivo más antiguo (mtime) 
-    y, ante empate, el de ruta más corta (menos profundidad).
+    Selecciona el 'archivo maestro' conservando el más antiguo (mtime).
+    Ante igualdad, se prioriza la ruta más corta (menor profundidad).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -259,7 +264,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         try:
             target = p.resolve(strict=True)
-            # Validar integridad del archivo candidato
             if not target.is_file() or is_protected_path(target) or not is_safe_to_modify(target):
                 continue
             stat_info = target.stat()

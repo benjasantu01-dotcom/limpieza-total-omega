@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **208** (41.3% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 227
+- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Rechazadas por tests: 21
+- Rechazadas por guardia de seguridad: 29
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 108 | 11 | 17 | 9 | 111 |
-| 2026-08-19 | 100 | 9 | 13 | 10 | 116 |
+| 2026-08-18 | 107 | 11 | 16 | 8 | 110 |
+| 2026-08-19 | 103 | 10 | 13 | 10 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
+- legibilidad y documentación: **46**
 - manejo de errores y validación de entradas: **43**
-- legibilidad y documentación: **43**
 - robustez ante casos límite: **38**
-- rendimiento: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
+- `diskreport.py`: **20**
 - `healthscore.py`: **20**
 - `scanner.py`: **19**
-- `diskreport.py`: **19**
-- `organizer.py`: **18**
-- `duplicates.py`: **18**
+- `duplicates.py`: **19**
 - `settings.py`: **17**
 - `quarantine.py`: **17**
-- `browser.py`: **15**
+- `organizer.py`: **17**
+- `browser.py`: **16**
 - `main.py`: **13**
 - `branding.py`: **11**
 - `memory.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T10:53:23` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints detallados, la unificación del manejo de excepciones en bloques `try/except` más granulares y la adición de docstrings técnicos que explican la lógica detrás de las heurísticas de filtrado.
+- `2026-08-19T10:52:56` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, documentación estructurada (Google Style) en las funciones principales y la clarificación de la lógica de `walk_files` para asegurar que el manejo de errores sea explícito.
+- `2026-08-19T10:52:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones de utilidad interna, aclarando la lógica de filtrado, el uso de dependencias (como `kernel32`) y las garantías de seguridad del recorrido de archivos, facilitando así el mantenimiento.
 - `2026-08-19T10:43:31` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la implementación de `Docstrings` explicativos en las funciones de manejo de respuestas y la estandarización de las firmas de los `handlers` de contenido, asegurando que cada función documente claramente su propósito, los parámetros que recibe y el comportamiento esperado según el enfoque de documentación solicitado.
 - `2026-08-19T10:42:19` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` envolviendo la escritura en un bloque `try-except` más específico y añadiendo una validación de `os.fsync` para asegurar que el archivo se escriba correctamente en disco, evitando corrupción ante cierres inesperados.
 - `2026-08-19T10:33:24` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `process_entry` mediante una validación más estricta de las entradas `Path` y `os.DirEntry`, asegurando que operaciones como `is_dir()` o `is_file()` no ocurran sobre objetos nulos o malformados, previniendo excepciones innecesarias durante el escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T10:11:54` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` validando la existencia y el tipo del directorio padre antes de intentar crearlo, previniendo errores de sistema al manejar rutas malformadas o permisos denegados de forma más explícita, siguiendo el enfoque de manejo de errores y validación.
 - `2026-08-19T10:04:40` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_validate_and_assign` mediante la validación explícita de `float` y `math.isfinite` antes de cualquier operación de comparación o truncamiento, evitando que valores inesperados (como `float('inf')` o `nan`) corrompan el contexto del asistente.
 - `2026-08-19T08:40:46` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `settings.save` añadiendo una limpieza de archivos temporales huérfanos antes de la escritura y una validación de seguridad explícita sobre la existencia de la ruta padre, garantizando que no se intenten crear directorios en zonas protegidas o bloqueadas por `safety`.
-- `2026-08-19T08:40:34` **scanner.py** (seguridad defensiva): Mejoré la seguridad defensiva en `scanner.py` reemplazando el uso de `path.exists()` (que puede devolver `False` por un `race condition` entre el escaneo y el acceso al disco) por un manejo robusto de excepciones al obtener metadatos, evitando que el escáner se detenga o procese rutas inconsistentes sin validación previa.
-- `2026-08-19T08:40:10` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "nodos de reparse" (puntos de montaje o junctions) a la función `_validate_boundary_conditions` para asegurar que, además de los enlaces simbólicos simples, no se sigan puntos de reparse que podrían escapar del directorio permitido o causar ciclos, alineándose con el enfoque de seguridad defensiva.
-- `2026-08-19T08:31:26` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para prevenir intentos de secuestro de ruta mediante ataques de enlace simbólico o *TOCTOU* (Time-of-Check Time-of-Use) al verificar que el archivo original no haya cambiado su naturaleza (como convertirse en un symlink) justo antes de ser movido.

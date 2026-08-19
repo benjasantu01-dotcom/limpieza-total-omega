@@ -77,7 +77,10 @@ class BrowserCache:
 
 
 def _get_kernel32() -> Optional[ctypes.WinDLL]:
-    """Retorna una referencia al kernel32 de Windows si está disponible."""
+    """
+    Intenta cargar kernel32.dll para acceder a atributos de archivo de bajo nivel.
+    Retorna None si no es Windows o si la carga falla por políticas de sistema.
+    """
     if os.name != 'nt':
         return None
     try:
@@ -87,7 +90,10 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
 
 
 def base_directories() -> List[Path]:
-    """Retorna la lista de directorios base del sistema (LOCALAPPDATA) para buscar perfiles."""
+    """
+    Identifica la ruta LOCALAPPDATA del usuario actual.
+    Valida la existencia y seguridad de la ruta antes de retornarla.
+    """
     if os.name != "nt":
         return []
     
@@ -106,8 +112,8 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida que target_path sea un subdirectorio real de base_path para prevenir 
-    ataques de Path Traversal fuera de los límites esperados.
+    Valida mediante resolución absoluta y chequeos de seguridad (is_protected_path)
+    que la ruta objetivo resida dentro de la base permitida, previniendo escalada de directorios.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -116,18 +122,15 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.is_absolute() or not base_path.is_absolute():
             return False
 
-        # Chequeo defensivo inmediato antes de resolver
         if is_protected_path(target_path) or is_protected_path(base_path):
             return False
 
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Comparación estricta de componentes para validar jerarquía de directorios
         if not str(real_target).startswith(str(real_base)):
             return False
 
-        # Los puntos de reparse (junctions) en Windows deben ser evitados para evitar bucles o duplicados
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
@@ -138,7 +141,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Retorna True si el nombre del archivo coincide con un componente crítico protegido."""
+    """Verifica si un nombre de archivo está en la lista negra de componentes críticos (NEVER_TOUCH)."""
     if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
@@ -146,13 +149,12 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
     """
-    Verifica mediante GetFileAttributesW si un objeto tiene el atributo 'oculto' o 'sistema'.
-    Requiere acceso a la API nativa de Windows.
+    Consulta los atributos de archivo de Windows (GetFileAttributesW) para descartar 
+    objetos con banderas de SISTEMA o HIDDEN, evitando procesar archivos protegidos del SO.
     """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Normalización de ruta para APIs Win32
         path_to_check = entry_path if not entry_path.startswith(r"\\?") else entry_path[4:]
         attrs = kernel32.GetFileAttributesW(path_to_check)
         if attrs == 0xFFFFFFFF:
@@ -164,7 +166,10 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
-    """Determina si un objeto del sistema de archivos debe omitirse por razones de seguridad o jerarquía."""
+    """
+    Determina si un objeto del sistema de archivos es inseguro de procesar 
+    basándose en su nombre, atributos de sistema o tipo (symlinks/junctions).
+    """
     if _is_excluded_file(entry.name):
         return True
     
@@ -187,15 +192,14 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Realiza un recorrido en profundidad (DFS) para calcular el tamaño de una carpeta,
-    aplicando restricciones de profundidad y reuso de resultados (memoization).
+    Realiza un recorrido DFS para sumar el tamaño de los archivos, usando memoization
+    para evitar redundancia y MAX_SCAN_DEPTH para limitar la recursión.
     """
     if not root_dir or not isinstance(root_dir, str):
         return 0
     
     try:
         abs_root = Path(root_dir).resolve(strict=True)
-        # Validación de seguridad: no seguir puntos de reparse o symlinks iniciales
         if not abs_root.is_dir() or is_protected_path(abs_root) or abs_root.is_symlink() or is_junction_fn(str(abs_root)):
             return 0
         root_key = str(abs_root)
@@ -237,12 +241,11 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
-    """Calcula el peso total de un directorio de forma segura y normalizada."""
+    """Calcula el tamaño total en bytes de un directorio, aplicando validaciones de seguridad."""
     if path is None:
         return 0
     try:
         p_obj = Path(path)
-        # Verificación explícita de existencia antes de resolve()
         if not p_obj.exists():
             return 0
         p_path = p_obj.resolve(strict=True)
@@ -256,7 +259,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Valida si un candidato es una ruta de caché existente, no protegida y segura."""
+    """Valida si un candidato es una ruta de caché existente y segura."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
@@ -271,8 +274,8 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea las ubicaciones base en busca de cachés definidas.
-    Inyecta dependencias para facilitar pruebas unitarias aisladas.
+    Escanea las ubicaciones base buscando las rutas definidas en BROWSER_CACHE_PATHS.
+    Utiliza inyección de dependencias para permitir pruebas en entornos CI.
     """
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -313,7 +316,7 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera una lista de cadenas con el resumen del análisis para el usuario."""
+    """Genera un reporte legible por humanos de las cachés encontradas y su peso."""
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
