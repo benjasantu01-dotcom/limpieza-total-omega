@@ -158,7 +158,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        stats = entry.stat() if (entry and hasattr(entry, 'stat')) else path.stat()
+        # Usar follow_symlinks=False para evitar lectura accidental de puntos de montaje
+        stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'stat')) else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, PermissionError, AttributeError, ValueError):

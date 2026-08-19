@@ -731,3 +731,36 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-19T12:56:55` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` al asegurar que cualquier operación de movimiento o eliminación verifique explícitamente que la ruta resuelta no esté fuera del árbol de directorios de destino (evitando ataques de "path traversal" o movimientos accidentales fuera de la cuarentena).
 - `2026-08-19T12:56:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T12:56:55` Corrida terminada. Total usado hoy: 300.
+- `2026-08-19T13:04:48` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-19T13:05:25` Tests FALLARON:
+```
+ror) as e:
+            if destination.exists():
+                _safe_unlink(destination)
+>           raise RuntimeError(f"Error al finalizar el aislamiento: {e}")
+E           RuntimeError: Error al finalizar el aislamiento: No se pudo confirmar el borrado seguro del original.
+
+app/quarantine.py:397: RuntimeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - RuntimeError: Error al finalizar el aislamiento: No se pudo confirmar el borrado seguro del original.
+1 failed, 298 passed, 7 warnings in 1.17s
+
+```
+- `2026-08-19T13:05:25` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `quarantine_file` al reemplazar `os.remove` por un uso más robusto de `_safe_unlink`, evitando posibles condiciones de carrera o fallos de permisos inesperados tras el movimiento atómico al sandbox.
+- `2026-08-19T13:05:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-19T13:06:12` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-19T13:06:22` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad del proceso de escaneo integrando `is_protected_path` en `check_recent_executable_in_downloads` para evitar el acceso a metadatos de rutas críticas incluso si el escáner alcanza una carpeta protegida por un error de resolución, y se añadieron chequeos de integridad para prevenir seguimientos a enlaces simbólicos o puntos de reanálisis durante la obtención de `st_mtime`.
+- `2026-08-19T13:06:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T13:06:22` Corrida terminada. Total usado hoy: 304.

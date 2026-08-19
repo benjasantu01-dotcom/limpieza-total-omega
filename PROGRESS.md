@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 86 | 8 | 14 | 7 | 89 |
-| 2026-08-19 | 130 | 10 | 17 | 13 | 130 |
+| 2026-08-18 | 86 | 8 | 14 | 7 | 85 |
+| 2026-08-19 | 131 | 11 | 18 | 13 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
+- seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **43**
 - rendimiento: **40**
 - robustez ante casos límite: **38**
 
@@ -34,8 +34,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **21**
 - `duplicates.py`: **20**
 - `organizer.py`: **19**
+- `scanner.py`: **19**
 - `settings.py`: **19**
-- `scanner.py`: **18**
 - `quarantine.py`: **17**
 - `main.py`: **15**
 - `browser.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T13:06:22` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del proceso de escaneo integrando `is_protected_path` en `check_recent_executable_in_downloads` para evitar el acceso a metadatos de rutas críticas incluso si el escáner alcanza una carpeta protegida por un error de resolución, y se añadieron chequeos de integridad para prevenir seguimientos a enlaces simbólicos o puntos de reanálisis durante la obtención de `st_mtime`.
 - `2026-08-19T12:56:55` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` al asegurar que cualquier operación de movimiento o eliminación verifique explícitamente que la ruta resuelta no esté fuera del árbol de directorios de destino (evitando ataques de "path traversal" o movimientos accidentales fuera de la cuarentena).
 - `2026-08-19T12:55:03` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación explícita en `compute_score` para asegurar que `SystemMetrics` contenga solo tipos de datos esperados, previniendo inyecciones de objetos maliciosos o inesperados antes de procesar las métricas.
 - `2026-08-19T12:46:23` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre los elementos encontrados durante el escaneo, evitando así que una ruta que contenga un punto de reparse malicioso o un acceso no autorizado pueda ser procesada aunque la carpeta raíz haya sido validada.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T12:05:04` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera validando la existencia y el tipo de archivo de la ruta destino antes de intentar la escritura.
 - `2026-08-19T12:04:01` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas mal formadas o tipos inesperados mediante una validación más estricta en el bucle principal, evitando que valores inesperados (como listas o diccionarios vacíos donde se esperan números) puedan causar errores en el flujo de inferencia.
 - `2026-08-19T11:55:03` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración eliminando llamadas redundantes a `os.path.exists()` y `stat()` mediante una validación de caché proactiva y el uso de `try-except` para evitar comprobaciones innecesarias de estado de archivo antes de la lectura.
-- `2026-08-19T11:54:35` **scanner.py** (rendimiento): Se optimizó el escaneo de directorios reemplazando la búsqueda repetitiva por `any()` con `in` sobre un `set` de carpetas para mejorar la eficiencia en cada iteración de archivos.
