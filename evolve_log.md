@@ -1461,3 +1461,10 @@ FAILED evolve/tests/test_basic.py::test_scanner_does_not_flag_real_system_file -
 - `2026-08-19T07:50:27` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` para evitar condiciones de carrera y fallos por archivos que desaparecen entre la validación y la acción (TOCTOU), añadiendo validaciones de existencia inmediata antes de cada operación crítica.
 - `2026-08-19T07:50:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T07:50:27` Corrida terminada. Total usado hoy: 180.
+- `2026-08-19T07:58:30` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-08-19T07:59:07` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: robustez ante casos límite).
+- `2026-08-19T07:59:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-19T07:59:59` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-19T08:00:08` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-19T08:00:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T08:00:08` Corrida terminada. Total usado hoy: 184.
