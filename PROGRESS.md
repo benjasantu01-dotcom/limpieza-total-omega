@@ -7,33 +7,33 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **210** (41.7% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 17 | 2 | 4 | 1 | 6 |
+| 2026-08-17 | 16 | 1 | 3 | 1 | 5 |
 | 2026-08-18 | 146 | 15 | 22 | 11 | 156 |
-| 2026-08-19 | 47 | 3 | 5 | 5 | 64 |
+| 2026-08-19 | 48 | 3 | 5 | 5 | 67 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **45**
 - robustez ante casos límite: **43**
 - rendimiento: **42**
-- manejo de errores y validación de entradas: **29**
+- manejo de errores y validación de entradas: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
 - `scanner.py`: **21**
+- `assistant.py`: **21**
+- `healthscore.py`: **21**
 - `quarantine.py`: **20**
-- `assistant.py`: **20**
 - `organizer.py`: **18**
 - `settings.py`: **17**
 - `diskreport.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T05:28:11` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_validate_and_assign` y `build_context` para prevenir errores ante entradas mal formadas o tipos inesperados, asegurando que `SystemContext` mantenga siempre valores válidos y predecibles.
 - `2026-08-19T04:05:21` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que la política de seguridad centralizada sea respetada incluso si los validadores de rutas fueran eludidos por entradas maliciosas.
 - `2026-08-19T04:04:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escáner en `process_entry` al validar explícitamente que las rutas no contengan caracteres de control RTL (Right-to-Left), mitigando una técnica común de ofuscación de nombres de archivo que puede engañar a los usuarios sobre la extensión real del archivo.
 - `2026-08-19T03:56:01` **quarantine.py** (seguridad defensiva): Se ha robustecido el aislamiento mediante una verificación explícita de `is_protected_path` sobre el directorio padre de destino antes de realizar la copia, asegurando que no se pueda inyectar la cuarentena en ubicaciones críticas ni mediante rutas mal formadas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T03:15:06` **quarantine.py** (robustez ante casos límite): Se ha robustecido `quarantine.py` ante casos límite mediante la implementación de `os.fsync` tras operaciones de escritura crítica y una validación de rutas más estricta que impide que archivos con nombres engañosos (espacios en blanco o caracteres nulos) evadan las comprobaciones de seguridad, garantizando la atomicidad y fiabilidad en el manejo del manifiesto y los archivos en cuarentena.
 - `2026-08-19T03:14:51` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estructura antes de operar, evitando errores ante entradas mal formadas y garantizando que el escaneo de seguridad (usando `is_safe_to_modify`) preceda a cualquier intento de acceso al disco.
 - `2026-08-19T03:14:00` **main.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en la carga de pestañas mediante la adición de un chequeo de existencia (`winfo_exists`) antes de intentar manipular widgets en métodos asíncronos y durante la construcción dinámica, previniendo excepciones si el usuario cierra la ventana mientras una tarea aún está en cola.
-- `2026-08-19T03:04:56` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_file()` en el pipeline de refinamiento de hash para manejar de forma robusta los casos donde un archivo es borrado, movido o bloqueado por otro proceso entre las etapas de escaneo y procesamiento, evitando excepciones innecesarias en entornos concurrentes.

@@ -254,6 +254,7 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
         clean_val = float(val)
         if math.isfinite(clean_val):
             final_val = cast(max(min_v, min(clean_val, max_v)))
+            # Re-verificación estricta tras conversión
             if isinstance(final_val, (int, float)) and math.isfinite(float(final_val)):
                 setattr(ctx, key, final_val)
     except (ValueError, TypeError, OverflowError):
@@ -266,7 +267,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    if metrics:
+    if isinstance(metrics, dict) or metrics is not None:
         for key, spec in _VALIDATORS.items():
             _validate_and_assign(ctx, metrics, key, spec)
         ctx.analyzed = True
