@@ -206,15 +206,13 @@ def _refine_by_hash(
         Diccionario mapeando el hash resultante a listas de archivos duplicados confirmados.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
-    digest_cache: Dict[Path, str] = {}
     
     for path in paths:
         try:
             target = path.resolve(strict=True)
             if not target.is_file(): continue
-            digest = digest_cache.get(target) or hash_func(target)
+            digest = hash_func(target)
             if digest:
-                digest_cache[target] = digest
                 groups_by_digest[digest].append(target)
         except (OSError, PermissionError, FileNotFoundError):
             continue

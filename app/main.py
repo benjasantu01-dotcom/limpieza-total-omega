@@ -788,6 +788,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _get_cached(self, key: str, provider: Optional[Callable[[], Any]] = None, force: bool = False) -> Any:
         """Recupera datos del caché LRU o ejecuta el provider si el TTL expiró."""
         now = time.time()
+        # Invalidation check: Si el provider es None y no forzamos, solo leemos
         if not force and key in self._cache:
             data, timestamp = self._cache[key]
             if now - timestamp < self._cache_ttl:
