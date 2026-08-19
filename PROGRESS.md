@@ -5,37 +5,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **205** (40.8% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 233
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 65 | 5 | 12 | 7 | 67 |
-| 2026-08-19 | 139 | 11 | 19 | 13 | 166 |
+| 2026-08-18 | 64 | 5 | 12 | 5 | 66 |
+| 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **44**
 - legibilidad y documentación: **40**
-- rendimiento: **38**
 - robustez ante casos límite: **38**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `healthscore.py`: **20**
 - `diskreport.py`: **20**
+- `settings.py`: **20**
+- `scanner.py`: **19**
 - `duplicates.py`: **19**
-- `settings.py`: **19**
+- `healthscore.py`: **19**
 - `organizer.py`: **18**
-- `scanner.py`: **18**
 - `quarantine.py`: **15**
 - `browser.py`: **14**
 - `main.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T15:08:24` **settings.py** (manejo de errores y validación de entradas): Reforcé la validación de entrada en la función `save` y `load` mediante la captura explícita de errores durante la manipulación de archivos y la consolidación de `_Validators.str` para evitar inyecciones o lecturas fuera de rango, asegurando que la configuración nunca quede en estado inconsistente.
+- `2026-08-19T15:07:56` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las verificaciones de metadatos en `check_recent_executable_in_downloads` y `process_entry`, asegurando que `entry.stat()` se llame de forma defensiva y capturando explícitamente errores de acceso sin interrumpir el flujo del escáner.
 - `2026-08-19T15:00:56` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, asegurando que `_check_file_integrity` maneje correctamente la inexistencia súbita de archivos entre validaciones sucesivas, y agregué una validación de longitud máxima al `Path` resultante para prevenir errores de la API de Windows antes de que ocurran.
 - `2026-08-19T14:57:58` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `stage_for_review` y `delete_reviewed` para evitar errores de tipo o rutas mal formadas (como `Path(".")` en caso de error) y se añadieron chequeos de `None` más explícitos para mejorar la robustez ante estados inesperados del bucle.
 - `2026-08-19T14:52:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_process` y `trim_working_set` añadiendo validaciones explícitas de entrada, asegurando que el PID sea un entero positivo y capturando fallos de acceso a la API mediante un manejo de errores más preciso en la gestión de handles.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T12:55:03` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación explícita en `compute_score` para asegurar que `SystemMetrics` contenga solo tipos de datos esperados, previniendo inyecciones de objetos maliciosos o inesperados antes de procesar las métricas.
 - `2026-08-19T12:46:23` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre los elementos encontrados durante el escaneo, evitando así que una ruta que contenga un punto de reparse malicioso o un acceso no autorizado pueda ser procesada aunque la carpeta raíz haya sido validada.
 - `2026-08-19T12:35:36` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` integrando `is_protected_path` al validar el contexto y la consulta antes de construir el payload, asegurando que ningún dato del sistema que pase por `build_context` pueda ser malinterpretado por la API remota.
-- `2026-08-19T12:34:49` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load()` para detectar y prevenir situaciones de archivos de configuración truncados (estratégicamente vacíos o incompletos tras una escritura interrumpida), asegurando que si `json.loads` devuelve un objeto vacío, se trate como error y se recupere el estado de fábrica.
-- `2026-08-19T12:24:48` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante situaciones de concurrencia y estados inconsistentes al añadir una validación de existencia explícita antes del borrado y asegurar que el manifiesto se actualice solo con lo que realmente se eliminó, evitando desincronizaciones entre el sistema de archivos y el JSON.

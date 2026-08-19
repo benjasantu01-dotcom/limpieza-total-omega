@@ -996,3 +996,9 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-19T15:00:56` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, asegurando que `_check_file_integrity` maneje correctamente la inexistencia súbita de archivos entre validaciones sucesivas, y agregué una validación de longitud máxima al `Path` resultante para prevenir errores de la API de Windows antes de que ocurran.
 - `2026-08-19T15:00:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T15:00:56` Corrida terminada. Total usado hoy: 348.
+- `2026-08-19T15:07:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-19T15:07:56` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las verificaciones de metadatos en `check_recent_executable_in_downloads` y `process_entry`, asegurando que `entry.stat()` se llame de forma defensiva y capturando explícitamente errores de acceso sin interrumpir el flujo del escáner.
+- `2026-08-19T15:08:24` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la validación de entrada en la función `save` y `load` mediante la captura explícita de errores durante la manipulación de archivos y la consolidación de `_Validators.str` para evitar inyecciones o lecturas fuera de rango, asegurando que la configuración nunca quede en estado inconsistente.
+- `2026-08-19T15:08:24` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-19T15:08:24` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T15:08:24` Corrida terminada. Total usado hoy: 350.

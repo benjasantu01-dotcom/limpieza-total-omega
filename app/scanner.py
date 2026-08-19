@@ -158,12 +158,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        # Usar follow_symlinks=False para evitar lectura accidental de puntos de montaje
+        # Validación robusta de existencia y acceso a metadatos
         stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'stat')) else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, PermissionError, AttributeError, ValueError):
-        logger.debug(f"Acceso restringido a metadatos de {path}")
+    except (OSError, PermissionError, AttributeError, ValueError) as e:
+        logger.debug(f"Acceso restringido a metadatos de {path}: {e}")
     return None
 
 
@@ -183,7 +183,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
     Aplica filtros de extensiones sospechosas antes de ejecutar tests de comportamiento.
     """
-    if path is None:
+    if not path:
         return []
 
     findings: ScanResult = []
@@ -193,7 +193,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
         findings.append(res)
     
     # 2. Reglas específicas para ejecutables
-    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECKS:
             try:
                 if (res := check(path, entry, now_ts)):

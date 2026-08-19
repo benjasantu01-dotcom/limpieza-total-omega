@@ -230,6 +230,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     try:
+        if not ruta.exists(): return _get_default_config()
         stats = ruta.stat()
         mtime = stats.st_mtime
         if ruta_str in _SESSION_CACHE:
@@ -237,19 +238,21 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if cached_mtime == mtime: return cached_data
         if is_protected_path(ruta_str) or stats.st_size > MAX_SETTINGS_SIZE:
             return _get_default_config()
-        data = json.loads(ruta.read_text(encoding="utf-8"))
-        if not data: return _get_default_config()
+        
+        with open(ruta, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            
+        if not isinstance(data, dict): return _get_default_config()
         config = validate(data)
         _SESSION_CACHE[ruta_str] = (mtime, config)
         return config
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError, KeyError):
+    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    ruta_str = str(ruta)
-    if is_protected_path(ruta_str) or (ruta.exists() and not ruta.is_file()): return None
+    if is_protected_path(str(ruta)) or (ruta.exists() and not ruta.is_file()): return None
     if not _Validators._is_safe_path(str(ruta.parent)): return None
     
     cleaned_settings = validate(values)
@@ -261,16 +264,18 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        for tmp in ruta.parent.glob(f"{ruta.name}.*.tmp"): tmp.unlink(missing_ok=True)
+        
         with open(temp_path, "wb") as f:
             f.write(encoded_data)
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_path, ruta)
-        _SESSION_CACHE[ruta_str] = (ruta.stat().st_mtime, cleaned_settings)
+        _SESSION_CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
-    except (OSError, IOError, PermissionError, RuntimeError) as e:
-        if temp_path.exists(): temp_path.unlink(missing_ok=True)
+    except (OSError, IOError, PermissionError, RuntimeError):
+        if temp_path.exists():
+            try: temp_path.unlink()
+            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
