@@ -77,8 +77,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """
-        Valida si la ruta está dentro del alcance del escaneo raíz,
-        previniendo escapes del directorio de trabajo original.
+        Verifica que la ruta resuelta se mantenga dentro de la jerarquía de `base_root`
+        para evitar escapes de directorio durante la recursión.
         """
         try:
             resolved = entry_path.resolve()
@@ -88,8 +88,8 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Determina si la entrada es un punto de reanálisis (Junction o Symlink) 
-        usando atributos de archivo Win32.
+        Detecta puntos de reanálisis (reparse points) como Junctions o Symlinks
+        evitando el procesamiento recursivo de carpetas fuera del sistema de archivos local.
         """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -98,8 +98,8 @@ class Scanner:
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
-        Procesa una entrada del sistema de archivos, aplicando filtros de seguridad
-        antes de añadir directorios a la pila de exploración o analizar archivos.
+        Analiza un elemento del sistema de archivos, aplicando filtros de seguridad
+        y determinando si debe ser explorado (directorio) o analizado (archivo).
         """
         if entry is None or not entry.path:
             return
@@ -107,18 +107,19 @@ class Scanner:
         try:
             target_path = Path(entry.path)
             
-            # Chequeo de seguridad preventivo
+            # Chequeo de seguridad preventivo contra rutas protegidas o rutas UNC
             if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
 
-            # Chequeo de existencia física antes de operar
+            # Verificación de permisos y existencia física
             if not os.path.exists(entry.path) or not os.access(entry.path, os.R_OK):
                 return
 
-            # Salto preventivo para evitar bucles o acceso a rutas fuera del alcance
+            # Control de navegación: evitar punteros que puedan causar bucles infinitos
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
 
+            # Restricción de alcance al directorio raíz definido
             if not self._is_safe_entry(target_path):
                 return
 
@@ -158,7 +159,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         if entry and not entry.is_file():
             return None
         
-        # Uso de .stat() seguro capturando excepciones de acceso
         stats = entry.stat() if entry else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
@@ -180,19 +180,19 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Orquesta la ejecución de reglas heurísticas sobre un archivo.
-    Requiere una ruta absoluta o resuelta y un timestamp de referencia.
+    Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
+    Utiliza un objeto `DirEntry` opcional para minimizar llamadas a `stat()`.
     """
     if path is None or not path.exists():
         return []
         
     findings: ScanResult = []
     
-    # Aplicar reglas generales
+    # Reglas independientes del tipo de archivo
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # Aplicar reglas específicas para ejecutables optimizando iteración
+    # Reglas específicas para ejecutables: optimiza evitando procesamiento innecesario
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECKS:
             try:
@@ -206,8 +206,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Inicializa y ejecuta la exploración recursiva de un directorio,
-    retornando una lista consolidada de sospechas halladas.
+    Inicializa el motor de escaneo, valida la raíz y gestiona la cola de directorios
+    para una exploración profunda no recursiva (iterativa) del sistema de archivos.
     """
     if not directory:
         return []

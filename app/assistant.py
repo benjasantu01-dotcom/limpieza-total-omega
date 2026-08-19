@@ -163,18 +163,24 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
+_VALIDATORS: Final[dict[str, ValidatorSpec]] = {
+    "junk_mb": (float, 0.0, 1e9),
+    "suspicious_count": (int, 0, 10000),
+    "suspicious_warnings": (int, 0, 10000),
+    "memory_available_percent": (float, 0.0, 100.0),
+    "memory_total_gb": (float, 0.0, 2048.0),
+    "disk_free_percent": (float, 0.0, 100.0),
+    "duplicate_mb": (float, 0.0, 1e9),
+    "startup_count": (int, 0, 1000),
+    "quarantined_count": (int, 0, 10000),
+    "browser_cache_mb": (float, 0.0, 1e6),
+}
+
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Conversión defensiva de tipos numéricos evitando excepciones y valores no finitos."""
     try:
         f = float(val)
         return f if math.isfinite(f) else default
-    except (TypeError, ValueError):
-        return default
-
-def _safe_int(val: Any, default: int = 0) -> int:
-    """Conversión defensiva a entero."""
-    try:
-        return int(float(val))
     except (TypeError, ValueError):
         return default
 
@@ -256,21 +262,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    validators: dict[str, ValidatorSpec] = {
-        "junk_mb": (float, 0.0, 1e9),
-        "suspicious_count": (int, 0, 10000),
-        "suspicious_warnings": (int, 0, 10000),
-        "memory_available_percent": (float, 0.0, 100.0),
-        "memory_total_gb": (float, 0.0, 2048.0),
-        "disk_free_percent": (float, 0.0, 100.0),
-        "duplicate_mb": (float, 0.0, 1e9),
-        "startup_count": (int, 0, 1000),
-        "quarantined_count": (int, 0, 10000),
-        "browser_cache_mb": (float, 0.0, 1e6),
-    }
-    
     if metrics:
-        for key, spec in validators.items():
+        for key, spec in _VALIDATORS.items():
             _validate_and_assign(ctx, metrics, key, spec)
         ctx.analyzed = True
 
@@ -285,8 +278,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         ctx.analyzed = True
 
     for k, v in extra.items():
-        if k in validators:
-            _validate_and_assign(ctx, extra, k, validators[k])
+        if k in _VALIDATORS:
+            _validate_and_assign(ctx, extra, k, _VALIDATORS[k])
         elif k == "score":
             _validate_and_assign(ctx, extra, "score", (int, 0, 100))
             

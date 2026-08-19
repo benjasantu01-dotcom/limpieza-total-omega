@@ -38,7 +38,7 @@ from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
 
-# Caché interno para evitar I/O repetido en la misma ejecución
+# Caché interno para evitar I/O repetido en la misma ejecución: (mtime, datos)
 _SESSION_CACHE: dict[str, tuple[float, AppSettings]] = {}
 
 class ConfigKey(Enum):
@@ -153,7 +153,7 @@ class _Validators:
 
     @staticmethod
     def int(key: ConfigKey, val: Any) -> int | None:
-        """Valida enteros contra límites predefinidos."""
+        """Valida valores numéricos contra límites predefinidos por clave."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value: int = int(val)
@@ -163,7 +163,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> str | None:
-        """Valida, limpia y verifica seguridad de una ruta de archivo."""
+        """Limpia y verifica la integridad de una ruta de archivo."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
@@ -171,6 +171,7 @@ class _Validators:
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
+            # Asegura que la ruta no sea un truco de resolución de path transversal
             if os.path.abspath(path_obj) != str(path_obj.resolve()): return None
             
             path_str = str(path_obj)
@@ -180,6 +181,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> str | None:
+        """Valida que un string pertenezca al conjunto de valores permitidos (enums)."""
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
@@ -187,7 +189,7 @@ class _Validators:
 
     @staticmethod
     def str(key: ConfigKey, val: Any) -> str | None:
-        """Validación de cadenas: limpia espacios y verifica seguridad si es ruta."""
+        """Validación general de cadenas: limpia espacios y verifica seguridad."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -238,6 +240,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta_str = str(ruta)
     
     try:
+        # Validación de seguridad de archivo
         if is_protected_path(ruta_str) or not ruta.exists() or not ruta.is_file() or ruta.stat().st_size > MAX_SETTINGS_SIZE:
             return _get_default_config()
 
@@ -256,7 +259,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste configuración de forma atómica. Retorna ruta si tiene éxito."""
+    """Persiste configuración de forma atómica. Retorna la ruta en caso de éxito."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
@@ -267,6 +270,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
     
     cleaned_settings = validate(values)
+    # Seguridad adicional para claves de API
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         
@@ -274,6 +278,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         
+        # Escritura atómica usando archivos temporales
         temp_ruta = ruta.with_suffix(f".{os.getpid()}.tmp")
         if not ruta.parent.exists(): ruta.parent.mkdir(parents=True, exist_ok=True)
         with open(temp_ruta, "wb") as f:
