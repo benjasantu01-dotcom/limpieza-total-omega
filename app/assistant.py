@@ -497,7 +497,9 @@ def _call_gemini(
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q = _sanitize_query(question)
+    # Seguridad defensiva: verificar que ni el contexto ni la pregunta contengan rutas disfrazadas
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
+    if is_protected_path(safe_q) or is_protected_path(context_text): return None
     
     try:
         payload_data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"}]}]}

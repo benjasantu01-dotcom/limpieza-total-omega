@@ -709,3 +709,10 @@ FAILED evolve/tests/test_modules.py::test_a_healthy_system_still_gets_a_recommen
 - `2026-08-19T12:25:20` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-19T12:25:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T12:25:20` Corrida terminada. Total usado hoy: 288.
+- `2026-08-19T12:33:55` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-19T12:34:21` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-19T12:34:49` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `load()` para detectar y prevenir situaciones de archivos de configuración truncados (estratégicamente vacíos o incompletos tras una escritura interrumpida), asegurando que si `json.loads` devuelve un objeto vacío, se trate como error y se recupere el estado de fábrica.
+- `2026-08-19T12:35:14` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-19T12:35:36` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` integrando `is_protected_path` al validar el contexto y la consulta antes de construir el payload, asegurando que ningún dato del sistema que pase por `build_context` pueda ser malinterpretado por la API remota.
+- `2026-08-19T12:35:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T12:35:36` Corrida terminada. Total usado hoy: 292.

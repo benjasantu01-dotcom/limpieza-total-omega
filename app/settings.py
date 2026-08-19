@@ -237,8 +237,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if cached_mtime == mtime: return cached_data
         if is_protected_path(ruta_str) or stats.st_size > MAX_SETTINGS_SIZE:
             return _get_default_config()
-        raw_data = json.loads(ruta.read_text(encoding="utf-8"))
-        config = validate(raw_data)
+        data = json.loads(ruta.read_text(encoding="utf-8"))
+        if not data: return _get_default_config()
+        config = validate(data)
         _SESSION_CACHE[ruta_str] = (mtime, config)
         return config
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError, KeyError):
