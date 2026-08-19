@@ -977,3 +977,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-19T14:38:57` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-19T14:38:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-19T14:38:57` Corrida terminada. Total usado hoy: 340.
+- `2026-08-19T14:46:59` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-19T14:47:26` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `find_duplicates` añadiendo una validación explícita para evitar errores de tipo si `directories` es un iterable vacío o contiene elementos `None`, y se ha centralizado la limpieza de parámetros en `_collect_candidates` para prevenir excepciones inesperadas durante la inicialización del bucle.
+- `2026-08-19T14:47:51` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `compute_score` implementando una validación de tipo y estado más temprana, evitando el procesamiento de objetos `SystemMetrics` mal inicializados antes de llegar a la lógica de negocio.
+- `2026-08-19T14:48:51` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-19T14:49:54` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-19T14:51:00` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-19T14:52:17` Gemini no devolvió un bloque de archivo válido para main.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-19T14:52:31` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_system_process` y `trim_working_set` añadiendo validaciones explícitas de entrada, asegurando que el PID sea un entero positivo y capturando fallos de acceso a la API mediante un manejo de errores más preciso en la gestión de handles.
+- `2026-08-19T14:52:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-19T14:52:31` Corrida terminada. Total usado hoy: 344.

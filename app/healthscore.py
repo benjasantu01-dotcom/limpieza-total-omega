@@ -187,16 +187,19 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     Procesa las métricas del sistema para generar un informe de salud completo.
     Coordina la normalización, aplicación de pesos y generación de recomendaciones.
     """
-    if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
-        return HealthResult(0, "F", {}, ["Error: Sistema de evaluación inestable."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Entrada no válida."])
+    
+    if not _IS_INTEGRITY_VALID:
+        return HealthResult(0, "F", {}, ["Error: Configuración del sistema de evaluación inestable."])
     
     # Validación defensiva estricta sobre las propiedades de la instancia
     try:
         metrics.validate()
         if not metrics.is_finite():
-            raise ValueError("Datos no finitos")
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
+            raise ValueError("Datos no finitos detectados")
+    except (ValueError, TypeError, AttributeError):
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos o incompletos."])
 
     ratios: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),

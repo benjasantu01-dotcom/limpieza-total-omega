@@ -359,8 +359,10 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Valida si un PID es crítico para el núcleo."""
-    return pid <= 0 or pid in SYSTEM_CRITICAL_PIDS or pid < 100
+    """Valida si un PID es crítico para el núcleo o inválido."""
+    if not isinstance(pid, int) or pid <= 0:
+        return True
+    return pid in SYSTEM_CRITICAL_PIDS or pid < 100
 
 
 def _get_process_path(handle: int) -> Optional[str]:
@@ -446,4 +448,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

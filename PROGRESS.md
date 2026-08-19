@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **203** (40.3% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 69 | 7 | 13 | 7 | 68 |
-| 2026-08-19 | 134 | 11 | 18 | 13 | 164 |
+| 2026-08-18 | 67 | 6 | 12 | 7 | 68 |
+| 2026-08-19 | 137 | 11 | 18 | 13 | 165 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
-- legibilidad y documentación: **42**
 - rendimiento: **40**
+- manejo de errores y validación de entradas: **40**
+- legibilidad y documentación: **40**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
-- `settings.py`: **20**
+- `healthscore.py`: **20**
 - `diskreport.py`: **20**
-- `scanner.py`: **19**
-- `healthscore.py`: **19**
-- `duplicates.py`: **18**
+- `duplicates.py`: **19**
+- `settings.py`: **19**
+- `scanner.py`: **18**
 - `organizer.py`: **17**
 - `quarantine.py`: **15**
 - `browser.py`: **14**
 - `main.py`: **13**
 - `branding.py`: **10**
-- `memory.py`: **9**
+- `memory.py`: **10**
 - `safety.py`: **5**
 - `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T14:52:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_process` y `trim_working_set` añadiendo validaciones explícitas de entrada, asegurando que el PID sea un entero positivo y capturando fallos de acceso a la API mediante un manejo de errores más preciso en la gestión de handles.
+- `2026-08-19T14:47:51` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `compute_score` implementando una validación de tipo y estado más temprana, evitando el procesamiento de objetos `SystemMetrics` mal inicializados antes de llegar a la lógica de negocio.
+- `2026-08-19T14:47:26` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `find_duplicates` añadiendo una validación explícita para evitar errores de tipo si `directories` es un iterable vacío o contiene elementos `None`, y se ha centralizado la limpieza de parámetros en `_collect_candidates` para prevenir excepciones inesperadas durante la inicialización del bucle.
 - `2026-08-19T14:37:38` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_validate_and_assign` y `_ensure_safe_text` añadiendo validaciones de tipo explícitas y chequeos de integridad para prevenir que valores inesperados (como listas o diccionarios vacíos) causen comportamientos indefinidos en el contexto del sistema.
 - `2026-08-19T13:16:00` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante el uso de `os.path.realpath` (resuelto contra `os.path.lexists`) antes de la validación final, asegurando que cualquier ruta simbólica o reparse point sea expuesto antes de ser procesado, protegiendo así contra el seguimiento accidental de enlaces fuera de las zonas permitidas.
 - `2026-08-19T13:15:32` **settings.py** (seguridad defensiva): Se endurece la validación en `save()` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta final del archivo de configuración antes de cualquier operación de escritura, garantizando que ni siquiera un error lógico en la resolución de rutas pueda permitir la sobreescritura de ubicaciones protegidas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T12:24:48` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante situaciones de concurrencia y estados inconsistentes al añadir una validación de existencia explícita antes del borrado y asegurar que el manifiesto se actualice solo con lo que realmente se eliminó, evitando desincronizaciones entre el sistema de archivos y el JSON.
 - `2026-08-19T12:16:09` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus ayudantes ante casos donde los procesos se cierran durante la ejecución, añadiendo una limpieza de excepciones y asegurando que `_get_process_path` no trabaje con handles inválidos o cerrados, evitando cierres inesperados al gestionar procesos volátiles.
 - `2026-08-19T12:15:48` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios en la UI (método `_safe_run_ui_callback`) para prevenir errores de concurrencia y fallos en widgets destruidos mientras una tarea asíncrona intenta actualizar la interfaz tras una operación, mitigando el riesgo de excepciones al cerrar o cambiar de pestaña.
-- `2026-08-19T12:14:34` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas negativas o no finitas, aplicando la lógica de normalización consistente con el resto de los módulos mediante el uso de `_clamp` y `_to_int`, evitando así resultados de puntaje fuera del rango esperado.
-- `2026-08-19T12:14:08` **duplicates.py** (robustez ante casos límite): Se mejoró la robustez de `find_duplicates` añadiendo una validación explícita para asegurar que la lista de directorios no sea `None` y que cada elemento sea una ruta válida, evitando excepciones en el flujo de escaneo ante entradas malformadas o inesperadas.
-- `2026-08-19T12:06:15` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante errores de entrada, añadiendo una validación explícita para rutas que no existen o son inaccesibles, evitando que `os.scandir` o `shutil.disk_usage` lancen excepciones no capturadas al encontrar volúmenes montados bloqueados o removibles.

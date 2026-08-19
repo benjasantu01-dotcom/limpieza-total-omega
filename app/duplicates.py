@@ -135,11 +135,12 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     for p in paths:
         try:
+            if not p: continue
             target = Path(p).resolve(strict=True)
             if not target.is_file() or target.is_symlink(): continue
             if is_protected_path(target) or not is_safe_to_modify(target): continue
             groups[target.stat().st_size].append(target)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, TypeError):
             continue
     return groups
 
@@ -186,7 +187,7 @@ def _collect_candidates(
             path_item = Path(item).resolve(strict=True)
             if path_item.is_dir():
                 _scan(path_item)
-        except (OSError, RuntimeError, ValueError): continue
+        except (OSError, RuntimeError, ValueError, TypeError): continue
             
     return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
 
@@ -207,7 +208,7 @@ def _refine_by_hash(
             digest = hash_func(target)
             if digest:
                 groups_by_digest[digest].append(target)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, TypeError):
             continue
                 
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -272,7 +273,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             stat_info = target.stat()
             mtime = float(getattr(stat_info, 'st_mtime', 0.0))
             keepers.append((mtime, len(str(target)), target))
-        except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError):
+        except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError, TypeError):
             continue
             
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
@@ -294,7 +295,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
         try:
             target = path.resolve(strict=True)
             is_keeper = (keeper is not None and target == keeper)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, TypeError):
             is_keeper = False
         marca = "conservar" if is_keeper else "duplicado"
         lines.append(f"   [{marca}] {path}")
