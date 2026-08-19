@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 20
+- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 225
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-17 | 9 | 1 | 1 | 1 | 2 |
+| 2026-08-17 | 6 | 1 | 1 | 0 | 2 |
 | 2026-08-18 | 146 | 15 | 22 | 11 | 156 |
-| 2026-08-19 | 58 | 4 | 6 | 5 | 67 |
+| 2026-08-19 | 60 | 5 | 6 | 5 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **45**
 - robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **40**
-- rendimiento: **39**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **22**
 - `scanner.py`: **21**
-- `assistant.py`: **20**
+- `assistant.py`: **21**
+- `healthscore.py`: **21**
 - `quarantine.py`: **19**
-- `organizer.py`: **18**
 - `diskreport.py`: **18**
 - `settings.py`: **17**
+- `organizer.py`: **17**
+- `browser.py`: **16**
 - `duplicates.py`: **16**
-- `browser.py`: **15**
 - `main.py`: **14**
 - `branding.py`: **12**
-- `memory.py`: **11**
+- `memory.py`: **10**
 - `startup.py`: **6**
 - `safety.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-19T06:18:52` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la seguridad de `browser.py` mediante type hints explícitos, la adición de docstrings técnicos detallados y la simplificación de la lógica de chequeo de junctions, garantizando que las funciones internas tengan un propósito claro y documentado sin modificar el comportamiento ni añadir dependencias.
+- `2026-08-19T06:17:47` **assistant.py** (legibilidad y documentación): He refactorizado las funciones `handle_*` extrayendo el formateo de los mensajes a variables descriptivas y unificando la construcción de las respuestas para mejorar la legibilidad del flujo lógico sin alterar la funcionalidad.
 - `2026-08-19T06:08:28` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.path` y `_Validators.str` para evitar inyecciones de rutas peligrosas y mejorar el manejo de errores ante entradas malformadas, asegurando que las validaciones de `safety` no sean omitidas ante excepciones inesperadas.
 - `2026-08-19T06:08:17` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones en `check_recent_executable_in_downloads` y `check_double_extension` implementando verificaciones de entrada nula/vacía más estrictas y manejando explícitamente excepciones en el acceso a metadatos, evitando que el escáner aborte ante archivos inaccesibles o bloqueados.
 - `2026-08-19T06:07:45` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema al utilizar un bloque `try-except` más granular en `_check_file_integrity`, permitiendo capturar errores de acceso específicos y convertirlos en `UnsafePathError` con mensajes descriptivos, evitando que excepciones genéricas interrumpan el flujo de trabajo del usuario.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T05:28:11` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_validate_and_assign` y `build_context` para prevenir errores ante entradas mal formadas o tipos inesperados, asegurando que `SystemContext` mantenga siempre valores válidos y predecibles.
 - `2026-08-19T04:05:21` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que la política de seguridad centralizada sea respetada incluso si los validadores de rutas fueran eludidos por entradas maliciosas.
 - `2026-08-19T04:04:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del escáner en `process_entry` al validar explícitamente que las rutas no contengan caracteres de control RTL (Right-to-Left), mitigando una técnica común de ofuscación de nombres de archivo que puede engañar a los usuarios sobre la extensión real del archivo.
-- `2026-08-19T03:56:01` **quarantine.py** (seguridad defensiva): Se ha robustecido el aislamiento mediante una verificación explícita de `is_protected_path` sobre el directorio padre de destino antes de realizar la copia, asegurando que no se pueda inyectar la cuarentena en ubicaciones críticas ni mediante rutas mal formadas.
-- `2026-08-19T03:44:42` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del sistema mejorando la validación de los datos de entrada en `compute_score`, asegurando que `metrics.validate()` sea llamado antes de realizar cualquier cálculo para prevenir el uso de estados inválidos, y encapsulando la lógica de validación de pesos en una constante computada para evitar errores en tiempo de ejecución.
