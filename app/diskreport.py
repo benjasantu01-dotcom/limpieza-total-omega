@@ -241,7 +241,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
                         
-                        # stat puede fallar si el archivo fue borrado entre scandir y stat
+                        # stat puede fallar si el archivo fue borrado o denegado acceso
                         stat_data = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir():

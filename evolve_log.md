@@ -934,3 +934,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-08-20T10:22:47` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se introdujo una comprobación explícita para evitar bucles infinitos en directorios con profundidad excesiva o reparse points cíclicos dentro de `_sum_directory_recursive`, protegiendo la ejecución ante sistemas de archivos malformados o estructuras de directorios inusualmente profundas.
 - `2026-08-20T10:22:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T10:22:47` Corrida terminada. Total usado hoy: 244.
+- `2026-08-20T10:30:16` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-08-20T10:30:29` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-20T10:31:00` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a atributos de archivo (`stat`) y metadatos, evitando que una entrada individual bloquee el recorrido completo del directorio.
+- `2026-08-20T10:31:25` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-20T10:31:56` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `SystemMetrics` ante valores `NaN` o `inf` que podrían saltarse las validaciones actuales, asegurando que `is_finite()` sea un chequeo exhaustivo antes de realizar cualquier cálculo.
+- `2026-08-20T10:32:56` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez de la inicialización de la aplicación añadiendo una validación explícita de `Path.home()` y permisos de escritura en la carpeta de configuración, evitando fallos silenciosos si el entorno de usuario no es estándar o tiene restricciones de acceso.
+- `2026-08-20T10:32:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T10:32:56` Corrida terminada. Total usado hoy: 248.

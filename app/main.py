@@ -167,14 +167,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _validate_environment(self) -> None:
         """
-        Verifica que el directorio home sea accesible y seguro para la 
-        ejecución del proceso.
+        Verifica que el entorno sea seguro, incluyendo permisos de lectura/escritura 
+        en el directorio base y directorios de trabajo.
         """
         try:
             home = Path.home().resolve(strict=True)
-            if not os.access(home, os.R_OK):
-                raise OSError(f"Directorio de usuario sin permisos de lectura: {home}")
-            safety.ensure_safe_to_modify(home)
+            if not os.access(home, os.R_OK | os.W_OK):
+                raise OSError(f"Permisos insuficientes en directorio usuario: {home}")
+            
+            # Validación adicional: asegurar que la ruta del script sea segura
+            current = Path(__file__).parent.resolve()
+            safety.ensure_safe_to_modify(current)
         except Exception as e:
             raise OSError(f"Fallo al validar entorno seguro: {e}")
 

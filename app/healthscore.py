@@ -113,7 +113,7 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        return all(math.isfinite(float(getattr(self, a))) for a in self.__dataclass_fields__)
+        return all(isinstance(v, (int, float)) and math.isfinite(float(v)) for v in self.__dict__.values())
 
 @dataclass
 class HealthResult:
