@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 94 | 8 | 14 | 8 | 124 |
-| 2026-08-20 | 128 | 9 | 18 | 3 | 98 |
+| 2026-08-19 | 94 | 8 | 14 | 8 | 120 |
+| 2026-08-20 | 131 | 9 | 18 | 3 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,27 +25,30 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **51**
 - rendimiento: **41**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **36**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `settings.py`: **22**
-- `assistant.py`: **20**
+- `assistant.py`: **21**
 - `healthscore.py`: **20**
 - `organizer.py`: **20**
 - `duplicates.py`: **19**
+- `browser.py`: **17**
 - `main.py`: **17**
 - `memory.py`: **17**
-- `browser.py`: **16**
 - `scanner.py`: **15**
 - `quarantine.py`: **15**
+- `branding.py`: **8**
 - `safety.py`: **7**
-- `branding.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T11:02:40` **browser.py** (seguridad defensiva): Se ha implementado `is_safe_to_modify` en las funciones críticas de detección y navegación de directorios, asegurando que cualquier acceso a rutas esté filtrado por `is_protected_path` de forma explícita y coherente, eliminando la ambigüedad en el manejo de permisos durante la recursión.
+- `2026-08-20T11:02:13` **branding.py** (seguridad defensiva): Se endureció la seguridad en `save_logo_svg` reemplazando la verificación simple de `is_safe_to_modify` por una validación explícita de `is_protected_path` sobre el directorio padre antes de realizar operaciones de escritura, mitigando riesgos de inyección de ruta o escritura en áreas protegidas del sistema.
+- `2026-08-20T11:01:36` **assistant.py** (seguridad defensiva): He endurecido la seguridad defensiva al reemplazar el chequeo de rutas mediante `is_protected_path` (que solo bloquea directorios conocidos) por una validación integral que bloquea cualquier texto que contenga estructuras de directorios (letras de unidad, separadores o puntos de navegación), evitando así el riesgo de que el asistente procese o devuelva rutas de archivo accidentalmente, incluso si el usuario intenta inyectarlas en su consulta.
 - `2026-08-20T10:52:11` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de la persistencia de configuración agregando una verificación de integridad del JSON mediante una comparación de claves permitidas y el manejo de excepciones durante la serialización, evitando que un archivo parcialmente escrito o corrupto rompa el estado de la aplicación.
 - `2026-08-20T10:42:03` **quarantine.py** (robustez ante casos límite): Se ha mejorado `quarantine.py` para prevenir la corrupción de datos y bloqueos en condiciones de carrera, añadiendo una validación de existencia persistente durante `quarantine_file` para evitar que un archivo borrado o movido por otro proceso durante la ejecución de la lógica interna provoque inconsistencias en el manifiesto.
 - `2026-08-20T10:41:28` **organizer.py** (robustez ante casos límite): He robustecido la función `stage_for_review` y sus auxiliares para manejar de forma segura el caso límite donde la ruta de destino es una subcarpeta de la ruta de origen, evitando movimientos que podrían corromper la estructura de directorios o causar recursión infinita en el escaneo futuro, además de añadir validación de `exists()` en la lectura de atributos para evitar excepciones en archivos que desaparecen entre la detección y el procesamiento.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T10:11:06` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `scan_file` para evitar llamadas redundantes a `path.exists()` y `path.is_file()` (que ya fueron validadas por `os.scandir` y `process_entry`), utilizando el objeto `DirEntry` ya existente para realizar comprobaciones sin acceder al disco nuevamente.
 - `2026-08-20T10:02:05` **quarantine.py** (rendimiento): Optimicé `purge_all` para evitar lecturas redundantes del manifiesto y recorridos O(n*m) mediante el uso de un diccionario de búsqueda indexado por nombre de archivo, mejorando la eficiencia algorítmica durante limpiezas masivas.
 - `2026-08-20T10:01:48` **organizer.py** (rendimiento): Se optimizó el escaneo inicial implementando un filtro de directorios preventivo y reduciendo el uso de `resolve()` y `expanduser()` dentro del bucle de recorrido, evitando así llamadas innecesarias al sistema de archivos para rutas que ya fueron validadas.
-- `2026-08-20T10:00:53` **main.py** (rendimiento): Optimicé el manejo de la caché de datos de salud (`_compile_metrics`) para evitar recalcular múltiples veces los mismos resultados durante un único ciclo de análisis, consolidando la lógica de invalidación y reduciendo la presión sobre el sistema de archivos al centralizar el acceso a los datos.
-- `2026-08-20T09:51:17` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje transformando `_RECOMMENDATION_RULES` en un diccionario indexado por `area`, evitando iteraciones innecesarias y búsquedas lineales en cada llamado a `compute_score`.
-- `2026-08-20T09:51:06` **duplicates.py** (rendimiento): Optimicé el proceso de recolección de candidatos utilizando `os.scandir` para obtener el tamaño y el estado del archivo en una sola llamada de sistema, eliminando las redundantes llamadas a `p.stat()` dentro del bucle de `group_by_size` y `_collect_candidates`.

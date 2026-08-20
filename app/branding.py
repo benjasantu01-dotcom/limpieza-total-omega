@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict
 from types import MappingProxyType
 from functools import lru_cache
-from safety import is_safe_to_modify, ensure_safe_to_modify
+from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
 
 # Type Aliases semánticos para el sistema de diseño
 HexColor: TypeAlias = str  # Formato: "#RRGGBB"
@@ -380,11 +380,12 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).expanduser().resolve()
-        if not is_safe_to_modify(path_obj):
+        # Verificar que el destino no sea un archivo protegido y que la carpeta sea segura
+        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         parent = path_obj.parent
         if not parent.exists():
-            if not is_safe_to_modify(parent):
+            if is_protected_path(parent) or not is_safe_to_modify(parent):
                 return None
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():

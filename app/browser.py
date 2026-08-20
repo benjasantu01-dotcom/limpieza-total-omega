@@ -22,7 +22,7 @@ import ctypes
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Sequence, Dict, List, Optional, Callable, Set, Union
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 __all__ = [
     "BrowserCache",
@@ -103,7 +103,7 @@ def base_directories() -> List[Path]:
     
     try:
         path_local = Path(local).resolve()
-        if path_local.is_absolute() and path_local.is_dir() and not is_protected_path(path_local):
+        if path_local.is_absolute() and path_local.is_dir() and is_safe_to_modify(path_local):
             return [path_local]
         return []
     except (OSError, RuntimeError, ValueError):
@@ -112,7 +112,7 @@ def base_directories() -> List[Path]:
 
 def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida mediante resolución absoluta y chequeos de seguridad (is_protected_path)
+    Valida mediante resolución absoluta y chequeos de seguridad (is_safe_to_modify)
     que la ruta objetivo resida dentro de la base permitida, previniendo escalada de directorios.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
@@ -122,7 +122,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         if not target_path.is_absolute() or not base_path.is_absolute():
             return False
 
-        if is_protected_path(target_path) or is_protected_path(base_path):
+        if not is_safe_to_modify(target_path) or not is_safe_to_modify(base_path):
             return False
 
         real_base = base_path.resolve(strict=True)
@@ -179,7 +179,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
     
     try:
         # Validación de seguridad defensiva previa a cualquier acceso profundo
-        if is_protected_path(Path(entry.path)):
+        if not is_safe_to_modify(Path(entry.path)):
             return True
         if _is_system_hidden(entry.path, kernel32):
             return True
@@ -205,7 +205,7 @@ def _sum_directory_recursive(
     
     try:
         abs_root = Path(root_dir).resolve(strict=True)
-        if not abs_root.is_dir() or is_protected_path(abs_root) or abs_root.is_symlink() or is_junction_fn(str(abs_root)):
+        if not abs_root.is_dir() or not is_safe_to_modify(abs_root) or abs_root.is_symlink() or is_junction_fn(str(abs_root)):
             return 0
         root_key = str(abs_root)
     except (OSError, PermissionError, RuntimeError):
@@ -255,7 +255,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         if not p_obj.exists():
             return 0
         p_path = p_obj.resolve(strict=True)
-        if not p_path.is_absolute() or not p_path.is_dir() or is_protected_path(p_path):
+        if not p_path.is_absolute() or not p_path.is_dir() or not is_safe_to_modify(p_path):
             return 0
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
@@ -269,7 +269,7 @@ def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
-        return (candidate.exists() and candidate.is_dir() and not is_protected_path(candidate) and
+        return (candidate.exists() and candidate.is_dir() and is_safe_to_modify(candidate) and
                 _is_safe_path(candidate, base_path) and not _is_excluded_file(candidate.name))
     except (OSError, PermissionError, RuntimeError):
         return False

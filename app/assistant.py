@@ -141,7 +141,7 @@ SYSTEM_PROMPT: Final[str] = (
 
 _ENDPOINT: Final[str] = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 _TIMEOUT_SECONDS: Final[int] = 30
-_PATH_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:\\|/|\\|\.\.|\0|[\u202e\u202d])")
+_PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d])")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u200b-\u200f]")
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]+$")
@@ -232,7 +232,7 @@ class Answer:
 def _ensure_safe_text(text: Any) -> bool:
     """
     Verifica que el texto sea seguro: bloquea inyecciones de ruta, caracteres
-    de control invisibles y rutas prohibidas por el sistema.
+    de control invisibles y cualquier rastro de estructuras de directorio.
     """
     if not isinstance(text, str) or not text:
         return False
@@ -240,9 +240,8 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if _CONTROL_CHARS_REGEX.search(text):
         return False
-    
-    # Normalización defensiva para detectar rutas disfrazadas
-    if is_protected_path(text) or _PATH_REGEX.search(text):
+    # Bloquea explícitamente cualquier rastro de rutas (C:\, /, ..)
+    if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text):
         return False
     return True
 
@@ -307,7 +306,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Serializa una métrica como texto limpio, eliminando cualquier caracter peligroso."""
     raw = _fmt_metric(val, unit, decimal)
-    return _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
+    return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 def context_as_text(context: SystemContext) -> str:
     """
@@ -507,7 +506,6 @@ def _call_gemini(
     safe_q = _sanitize_query(question)
     # Seguridad defensiva: verificar que ni el contexto ni la pregunta contengan rutas disfrazadas
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
-    if is_protected_path(safe_q) or is_protected_path(context_text): return None
     
     try:
         prompt_full = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"
@@ -548,7 +546,7 @@ def _call_gemini(
             text = "".join(str(p.get("text", "")) for p in content["parts"] if isinstance(p, dict))
             final_text = _validate_response_length(text.strip())
             
-            limpia_final = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", final_text))
+            limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", final_text))
             return limpia_final if _ensure_safe_text(limpia_final) else None
     except (urllib.error.URLError, KeyError, TypeError, ValueError):
         return None
