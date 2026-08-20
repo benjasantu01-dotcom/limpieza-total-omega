@@ -1358,3 +1358,10 @@ FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount
 - `2026-08-20T14:29:19` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-20T14:29:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T14:29:19` Corrida terminada. Total usado hoy: 340.
+- `2026-08-20T14:35:42` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-20T14:36:16` ➖ Sin cambios en quarantine.py (enfoque: rendimiento). Motivo: Optimicé `list_items` y `summarize` para evitar la carga redundante del manifiesto y la sobrecarga de consultas I/O, sustituyendo la re-lectura constante por el uso de la lista ya cargada en memoria, y mejoré `total_quarantined_bytes` para usar el resultado de `load_manifest()` en lugar de invocar la caché de forma repetida.
+- `2026-08-20T14:36:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated f-string literal (detected at line 106)
+- `2026-08-20T14:37:02` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-20T14:37:12` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de filtrado inicial en `process_entry` moviendo la validación de extensiones y rutas de sistema al principio para evitar el acceso al sistema de archivos (`stat`) en archivos que claramente no son sospechosos ni ejecutables, reduciendo drásticamente las llamadas a I/O innecesarias durante el recorrido recursivo.
+- `2026-08-20T14:37:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T14:37:12` Corrida terminada. Total usado hoy: 344.

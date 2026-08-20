@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 8
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 9
 - Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 62 | 4 | 8 | 4 | 86 |
-| 2026-08-20 | 162 | 11 | 22 | 4 | 141 |
+| 2026-08-19 | 59 | 4 | 8 | 4 | 85 |
+| 2026-08-20 | 163 | 11 | 23 | 5 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **52**
-- seguridad defensiva: **43**
-- rendimiento: **39**
+- seguridad defensiva: **40**
+- rendimiento: **40**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `diskreport.py`: **21**
-- `assistant.py`: **20**
+- `diskreport.py`: **20**
 - `healthscore.py`: **19**
+- `assistant.py`: **19**
 - `organizer.py`: **19**
 - `memory.py`: **18**
+- `scanner.py`: **18**
 - `duplicates.py`: **18**
-- `scanner.py`: **17**
 - `quarantine.py`: **16**
-- `browser.py`: **15**
 - `main.py`: **15**
+- `browser.py`: **14**
 - `branding.py`: **9**
 - `safety.py`: **7**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T14:37:12` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `process_entry` moviendo la validación de extensiones y rutas de sistema al principio para evitar el acceso al sistema de archivos (`stat`) en archivos que claramente no son sospechosos ni ejecutables, reduciendo drásticamente las llamadas a I/O innecesarias durante el recorrido recursivo.
 - `2026-08-20T14:29:02` **memory.py** (rendimiento): Se implementó un filtrado preventivo en `parse_windows_process_csv` para descartar procesos irrelevantes (PIDs críticos y procesos con 0 MB de consumo) antes de realizar el ordenamiento, reduciendo la carga de trabajo en el `sort` y la lista final.
 - `2026-08-20T14:26:02` **healthscore.py** (rendimiento): Se optimizó el proceso de cómputo en `compute_score` eliminando la recreación innecesaria de objetos y iteraciones redundantes, utilizando una estructura de datos más eficiente para el acceso a las reglas de recomendación.
 - `2026-08-20T14:18:06` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando un generador y procesando el `os.scandir` de forma más eficiente para reducir el impacto en I/O, además de transformar la lógica de agrupado por tamaño para evitar reconstruir listas innecesarias, aprovechando que `defaultdict` ya maneja la memoria de forma eficiente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T13:37:11` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los argumentos, retornos y el propósito de las funciones internas que carecían de docstrings detallados, y estandarizando las anotaciones de tipo para mayor claridad.
 - `2026-08-20T13:36:57` **browser.py** (legibilidad y documentación): Se documentó la jerarquía de funciones y el propósito de los filtros de seguridad mediante docstrings descriptivos, se añadieron type hints ausentes en funciones internas clave y se renombró `_is_safe_path` por `_is_path_inside_base` para clarificar su intención específica de prevenir el escape del directorio base.
 - `2026-08-20T13:36:30` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` añadiendo docstrings técnicos a las estructuras de datos y a las funciones de acceso, clarificando el propósito de cada constante y su rol en la arquitectura visual del proyecto.
-- `2026-08-20T13:35:23` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos de datos internos y se han añadido `Type Hints` a los retornos de funciones críticas como `_identify_active_problems` y los manejadores de área para clarificar la estructura de datos que fluye por la aplicación, facilitando la legibilidad para futuros colaboradores.

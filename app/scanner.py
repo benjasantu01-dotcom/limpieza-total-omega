@@ -113,10 +113,6 @@ class Scanner:
         """
         Analiza un elemento del sistema de archivos. Aplica filtros de seguridad,
         detecta ofuscación y gestiona la recursión en directorios.
-
-        Args:
-            entry: Objeto DirEntry a procesar.
-            stack: Pila de directorios pendientes por explorar.
         """
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
@@ -124,26 +120,30 @@ class Scanner:
         try:
             target_path = Path(entry.path)
             
-            # Verificación defensiva usando booleano para no romper el flujo
+            # Filtrado temprano de seguridad y estructura
             if not is_safe_to_modify(target_path) or str(target_path).startswith("\\\\"):
                 return
-
-            if entry.is_symlink() or self._is_reparse_point(entry):
-                return
-
             if not self._is_safe_entry(target_path):
                 return
-            
-            if RTL_CHAR_RE.search(target_path.name):
-                self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
 
+            # Manejo de directorios
             if entry.is_dir(follow_symlinks=False):
-                path_str = str(target_path)
-                if path_str not in self.seen:
-                    self.seen.add(path_str)
-                    stack.append(path_str)
-            elif entry.is_file(follow_symlinks=False):
-                self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
+                if not self._is_reparse_point(entry):
+                    path_str = str(target_path)
+                    if path_str not in self.seen:
+                        self.seen.add(path_str)
+                        stack.append(path_str)
+                return
+
+            # Manejo de archivos (solo procesar si es relevante)
+            if entry.is_file(follow_symlinks=False):
+                if RTL_CHAR_RE.search(target_path.name):
+                    self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
+                
+                # Ejecutar escaneo profundo solo si cumple filtros de extensión
+                suffix = target_path.suffix.lower()
+                if suffix in SUSPICIOUS_EXECUTABLE_EXT or DOUBLE_EXTENSION_RE.search(target_path.name):
+                    self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
         except (PermissionError, OSError) as e:
             logger.debug(f"Acceso denegado o error en ruta {entry.path}: {e}")
@@ -190,21 +190,14 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """
-    Ejecuta todas las reglas heurísticas sobre un archivo.
-    
-    Returns:
-        Lista de hallazgos (Suspicion) encontrados en el archivo.
-    """
+    """Ejecuta todas las reglas heurísticas sobre un archivo."""
     if path is None:
         return []
     findings: ScanResult = []
     
-    # 1. Reglas generales
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # 2. Reglas específicas para ejecutables
     suffix = path.suffix.lower() if path.suffix else ""
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECKS:
@@ -218,14 +211,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Inicia el escaneo recursivo en la ruta especificada.
-    
-    Args:
-        directory: Ruta raíz de inicio.
-    Returns:
-        Resultados acumulados de todas las detecciones.
-    """
+    """Inicia el escaneo recursivo en la ruta especificada."""
     if not directory:
         return []
         
