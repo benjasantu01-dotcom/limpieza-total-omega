@@ -180,7 +180,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     """
-    Extrae un objeto ProcessMemory a partir de una línea CSV proveniente de PowerShell.
+    Extrae un objeto ProcessMemory a partir de una línea CSV (Name,PID,WorkingSet).
     """
     if not isinstance(csv_line, str):
         return None
@@ -188,14 +188,15 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     if not line or "," not in line:
         return None
     
+    # Formato esperado: Nombre,PID,WorkingSet
     parts = line.rsplit(",", 2)
     if len(parts) < 3:
         return None
         
     try:
-        ws_raw = parts[2].strip().strip("'\"")
-        pid_raw = parts[1].strip().strip("'\"")
         name = parts[0].strip().strip("'\"")
+        pid_raw = parts[1].strip().strip("'\"")
+        ws_raw = parts[2].strip().strip("'\"")
         
         if not name or not ws_raw.isdigit() or not pid_raw.isdigit():
             return None

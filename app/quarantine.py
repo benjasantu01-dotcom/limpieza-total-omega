@@ -117,6 +117,12 @@ class QuarantineItem:
         """
         Verifica que el archivo físico coincida con el tamaño y hash registrados.
         Las fallas de integridad impiden cualquier operación destructiva.
+        
+        Args:
+            stored_path: Ruta del archivo dentro de la cuarentena.
+        Returns:
+            True si la integridad es correcta, False si el archivo no existe,
+            ha sido alterado o los permisos impiden su lectura.
         """
         if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
             return False
@@ -149,11 +155,9 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        # Intenta abrir para escritura para comprobar si el SO permite acceso exclusivo
         with open(path, "rb+") as f:
             return False
     except (IOError, OSError, PermissionError):
-        # Si falla, asumimos que está bloqueado o tenemos permisos denegados
         return True
 
 
@@ -398,7 +402,6 @@ def quarantine_file(
             save_manifest(items, base)
             return item
         except (Exception, OSError) as e:
-            # Fallback si el manifiesto falla pero el archivo ya fue movido
             raise RuntimeError(f"Aislamiento físico exitoso, pero fallo al actualizar manifiesto: {e}")
             
     except (Exception, OSError, ValueError) as e:
@@ -513,7 +516,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             continue
             
     if purged_items:
-        # Mantener solo los items que NO fueron borrados del sistema
         purged_ids = {p.item_id for p in purged_items}
         remaining_items = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purged_ids]
         save_manifest(remaining_items, base)

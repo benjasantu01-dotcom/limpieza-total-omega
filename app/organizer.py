@@ -90,11 +90,12 @@ class JunkFile:
 def _is_junction(path: Path) -> bool:
     """
     Detecta si la ruta es un punto de reparse (Junction/Symlink).
-    Retorna True si la ruta es un vínculo simbólico o un punto de unión de Windows.
+    Previene bucles infinitos y operaciones accidentales sobre redirecciones de sistema.
     """
     try:
         if not path.exists(): return False
-        return path.is_symlink() or (os.name == "nt" and "reparse" in os.stat(path).st_file_attributes)
+        # Windows: Verifica atributo FILE_ATTRIBUTE_REPARSE_POINT (0x400) o si es symlink
+        return path.is_symlink() or (os.name == "nt" and bool(path.stat().st_file_attributes & 0x400))
     except (OSError, AttributeError):
         return False
 
@@ -107,7 +108,7 @@ def _is_junk_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Resuelve colisiones de nombres añadiendo un contador incremental.
-    Utiliza el patrón: nombre_1.ext, nombre_2.ext, etc.
+    Evita sobrescritura accidental durante la fase de movimiento a revisión.
     """
     if not target.exists():
         return target
@@ -130,8 +131,8 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado intentando abrirlo en modo exclusivo.
-    Útil para evitar mover archivos que están en uso por el sistema o procesos.
+    Intenta abrir el archivo en modo escritura exclusiva. 
+    Si falla, se asume ocupado por el sistema o por otro proceso.
     """
     try:
         with open(path, "rb") as f:
@@ -141,24 +142,29 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Valida que la operación no cause recursión accidental (ej. mover un padre a un hijo)."""
+    """
+    Valida que el destino no sea un contenedor del origen, lo que causaría
+    una recursión infinita o un bucle lógico al mover archivos.
+    """
     try:
         src_abs = src.resolve()
         dest_abs = dest.resolve()
-        # Verificamos si el origen es igual al destino o si el destino es un subdirectorio del origen
         return src_abs == dest_abs or dest_abs.is_relative_to(src_abs)
     except (OSError, RuntimeError, ValueError):
         return True
 
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Validación de seguridad integral antes de cualquier operación de I/O."""
+    """
+    Validación de seguridad integral antes de cualquier operación de I/O.
+    Filtra atributos ocultos/sistema (Win) y verifica permisos de escritura.
+    """
     try:
         if not src.exists() or not src.is_file() or _is_junction(src):
             return False
-        # Verificación estricta de atributos de archivo en Windows
         if os.name == "nt":
             attrs = src.stat().st_file_attributes
+            # 0x02: Hidden, 0x04: System, 0x40: Reparse point
             if (attrs & 0x02) or (attrs & 0x04) or (attrs & 0x40):
                 return False
         if _is_recursive_violation(src, dest):
@@ -177,9 +183,8 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
             return False
         if not _is_safe_for_disk_op(current_path, dest):
             return False
-        if current_path.anchor != dest.resolve().anchor:
-            return False
-        return True
+        # No permitir cruce entre diferentes volúmenes para evitar errores de copia
+        return current_path.anchor == dest.resolve().anchor
     except (OSError, RuntimeError):
         return False
 
@@ -234,7 +239,10 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve de forma segura los archivos a una carpeta intermedia para su revisión."""
+    """
+    Mueve los archivos a una carpeta intermedia de revisión.
+    Utiliza el motor de seguridad para asegurar que no se manipule fuera del scope permitido.
+    """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
 
@@ -242,7 +250,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
-        # Validar tipo de ruta destino antes de continuar
         if not dest_base.is_dir() or not is_safe_to_modify(dest_base): 
             return None
     except (OSError, PermissionError, RuntimeError):
@@ -252,7 +259,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile): continue
         try:
             src_path: Path = junk_file.path.resolve()
-            # Validar existencia de src antes de operar
             if not src_path.is_file() or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
@@ -266,7 +272,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina archivos de forma permanente tras verificar que residan en la zona de cuarentena."""
+    """
+    Elimina archivos tras verificar que residen exclusivamente en la zona de cuarentena.
+    Solo se permiten archivos; se ignoran subcarpetas por seguridad.
+    """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
@@ -283,7 +292,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not item.is_file() or _is_junction(item):
                 continue
             resolved_item: Path = item.resolve()
-            # Confirmar que está bajo la carpeta revisión y seguro para operar
+            # Validar que el archivo no haya sido movido fuera del directorio de revisión
             if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)
