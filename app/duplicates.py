@@ -151,8 +151,10 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Recorre recursivamente los directorios para agrupar archivos por tamaño.
-    Utiliza el número de inodo/dev para evitar ciclos en sistemas de archivos.
+    Realiza un recorrido recursivo del sistema de archivos para agrupar archivos por tamaño.
+    
+    Emplea un conjunto 'visited_inodes' para detectar ciclos en enlaces simbólicos o 
+    montajes recursivos, evitando la duplicación de procesamiento y bloqueos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -197,7 +199,10 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Refina un grupo de archivos agrupándolos por el hash resultante de la función proveída.
+    Agrupa candidatos basándose en el resultado de una función de hash específica.
+    
+    Esta función es el motor de refinamiento utilizado para pasar de agrupaciones 
+    por tamaño a agrupaciones por contenido (parcial o completo).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     
@@ -217,7 +222,9 @@ def _refine_by_hash(
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline de refinamiento (Hash Parcial -> Hash Completo).
-    Solo computa el hash completo si el grupo parcial tiene múltiples candidatos.
+    
+    Reduce drásticamente las I/O al realizar el hash completo de 256 bits 
+    únicamente sobre aquellos archivos que ya demostraron coincidencia parcial.
     """
     confirmed_groups: List[DuplicateGroup] = []
     partial_groups = _refine_by_hash(paths, partial_hash)

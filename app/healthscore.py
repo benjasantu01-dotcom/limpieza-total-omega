@@ -24,8 +24,13 @@ MetricKey: TypeAlias = str
 
 class RecommendationRule(NamedTuple):
     """
-    Define una condición de advertencia: el callback `check` determina si se 
-    aplica la regla basándose en el objeto SystemMetrics.
+    Regla de negocio que evalúa si una métrica requiere una recomendación al usuario.
+    
+    Attributes:
+        area: La clave de la métrica (de `WEIGHTS`) a evaluar.
+        threshold: Ratio crítico por debajo del cual se dispara la advertencia.
+        message_factory: Función que genera un mensaje humano según el contexto de SystemMetrics.
+        check: Predicado que compara el ratio actual contra el umbral.
     """
     area: MetricKey
     threshold: float
@@ -144,37 +149,37 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud para archivos basura basado en el umbral predefinido."""
+    """Calcula el ratio (0.0-1.0) de salud relativo al umbral de basura acumulada."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa la seguridad penalizando hallazgos y advertencias con pesos fijos."""
+    """Puntúa la seguridad penalizando hallazgos (pesados) y advertencias (leves)."""
     s_count = max(0, _to_int(suspicious_count))
     s_warn = max(0, _to_int(warnings))
     return _clamp(1.0 - ((s_count * 0.05) + (s_warn * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Evalúa la salud de la memoria según el porcentaje disponible."""
+    """Evalúa la salud de la memoria: 1.0 si supera el umbral, proporcional si es menor."""
     val = _to_float(available_percent)
     if _LIMIT_RAM_PERCENT <= 0: return 0.0
     return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Evalúa el estado del disco basado en el porcentaje de espacio libre."""
+    """Evalúa el estado del disco: 1.0 si el espacio libre es óptimo según el umbral."""
     val = _to_float(free_percent)
     if _LIMIT_DISK_PERCENT <= 0: return 0.0
     return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud según el volumen de archivos duplicados."""
+    """Calcula el ratio de salud basado en el espacio desperdiciado por duplicados."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Puntúa negativamente el exceso de programas de arranque."""
+    """Puntúa negativamente el conteo de programas de arranque según el umbral configurado."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Asigna una letra de calificación (A-F) basada en un puntaje numérico."""
+    """Asigna una letra de calificación (A-F) basada en un puntaje numérico (0-100)."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
