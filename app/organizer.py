@@ -54,7 +54,12 @@ SYSTEM_FOLDER_BLOCKLIST: Final[set[str]] = {
 
 
 def list_available_drives() -> List[str]:
-    """Detecta unidades montadas en Windows. Retorna lista de rutas raíz."""
+    """
+    Detecta unidades montadas en Windows.
+    
+    Returns:
+        List[str]: Lista de rutas raíz (ej. ['C:\\', 'D:\\']). Retorna lista vacía si no es Windows.
+    """
     if os.name != "nt":
         return []
     drives: List[str] = []
@@ -196,7 +201,15 @@ def _is_valid_junk_candidate(path: Path) -> bool:
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
-    """Recorre recursivamente los directorios buscando archivos clasificados como basura."""
+    """
+    Recorre recursivamente los directorios buscando archivos clasificados como basura.
+    
+    Args:
+        directories: Lista de rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+        
+    Returns:
+        List[JunkFile]: Lista de objetos JunkFile encontrados.
+    """
     raw_dirs: List[str] = directories if directories is not None else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     
@@ -225,7 +238,14 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena los archivos encontrados según un criterio definido (tamaño o fecha)."""
+    """
+    Ordena los archivos encontrados según un criterio definido (tamaño o fecha).
+    
+    Args:
+        files: Lista de JunkFile a ordenar.
+        by: 'size' para tamaño, 'date' para fecha de modificación.
+        ascending: True para orden ascendente, False para descendente.
+    """
     if not isinstance(files, list): return []
         
     registry: Dict[str, SortConfig] = {
@@ -238,8 +258,14 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
-    Mueve los archivos a una carpeta de revisión. Utiliza `ensure_safe_to_modify`
-    en la operación crítica de movimiento.
+    Mueve los archivos a una carpeta de revisión.
+    
+    Args:
+        files: Lista de objetos JunkFile.
+        review_dir: Ruta destino donde se moverán los archivos.
+        
+    Returns:
+        Path: Ruta de la carpeta donde se almacenaron los archivos, o None si falló.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
@@ -273,8 +299,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
-    Elimina archivos de forma segura. Solo procesa archivos dentro de la carpeta de revisión
-    verificada, evitando el borrado recursivo de directorios.
+    Elimina archivos de forma segura. 
+    Solo procesa archivos dentro de la carpeta de revisión verificada.
+    
+    Returns:
+        int: Cantidad de archivos eliminados con éxito.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
