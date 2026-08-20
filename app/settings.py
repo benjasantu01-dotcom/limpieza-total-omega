@@ -247,6 +247,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
             
+        if not isinstance(data, dict): return _get_default_config()
         config = validate(data)
         _SESSION_CACHE[ruta_str] = (stats.st_mtime, config)
         return config

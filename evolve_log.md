@@ -1220,3 +1220,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-20T01:51:51` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `process_entry` ante archivos con metadatos dañados o inaccesibles, añadiendo una comprobación explícita de `is_file()` mediante `entry.is_file()` antes de intentar procesar el archivo, lo que evita errores en el caso de entradas que existen en el sistema de archivos pero cuyo estado de archivo es inconsistente o inválido.
 - `2026-08-20T01:51:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T01:51:51` Corrida terminada. Total usado hoy: 44.
+- `2026-08-20T02:00:03` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-08-20T02:00:36` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad en la función `load` para asegurar que el contenido del archivo JSON, aunque pase el tamaño máximo, sea un diccionario válido y contenga todas las claves requeridas antes de su uso, evitando errores de `KeyError` o comportamiento impredecible si el archivo está parcialmente corrupto.
+- `2026-08-20T02:01:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-20T02:01:43` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al centralizar la sanitización de `SystemContext` en una función de validación inyectable que protege contra inyecciones de datos, asegurando que `_call_gemini` no reciba strings malformados, además de añadir un límite estricto de tamaño al `SYSTEM_PROMPT` para evitar ataques por desbordamiento de contexto.
+- `2026-08-20T02:02:09` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-20T02:02:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T02:02:09` Corrida terminada. Total usado hoy: 48.

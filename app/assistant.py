@@ -87,6 +87,7 @@ ValidatorSpec: TypeAlias = tuple[Callable, float, float]
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200 # Límite defensivo para trozos de texto
+_MAX_PROMPT_LIMIT: Final[int] = 4000 # Límite estricto para evitar ataques de contexto
 
 SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
     "rutas de archivos",
@@ -505,9 +506,11 @@ def _call_gemini(
     if is_protected_path(safe_q) or is_protected_path(context_text): return None
     
     try:
-        payload_data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"}]}]}
+        prompt_full = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"
+        if len(prompt_full) > _MAX_PROMPT_LIMIT: return None
+        
+        payload_data = {"contents": [{"parts": [{"text": prompt_full}]}]}
         payload = json.dumps(payload_data).encode("utf-8")
-        if len(payload) > 5000: return None
         
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
