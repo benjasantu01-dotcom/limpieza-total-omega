@@ -198,7 +198,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not _IS_INTEGRITY_VALID:
         return HealthResult(0, "F", {}, ["Error: Configuración del sistema de evaluación inestable."])
     
-    # Validación defensiva estricta sobre las propiedades de la instancia
     try:
         metrics.validate()
         if not metrics.is_finite():
@@ -218,12 +217,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[MetricKey, int] = {}
     final_score = 0
     for area, weight in _WEIGHT_ITEMS_INT:
-        ratio = ratios[area]
+        # Validación defensiva: asegurar que el área existe en los resultados calculados
+        ratio = ratios.get(area, 0.0)
         puntos = int(round(_clamp(ratio, 0.0, 1.0) * weight))
         breakdown[area] = puntos
         final_score += puntos
     
-    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios[rule.area])]
+    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.area in ratios and rule.check(metrics, ratios[rule.area])]
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

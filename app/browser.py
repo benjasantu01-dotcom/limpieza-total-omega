@@ -227,6 +227,9 @@ def _sum_directory_recursive(
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     try:
+                        # Validación defensiva extra: verificar protección de la sub-ruta antes de entrar
+                        if is_protected_path(Path(entry.path)):
+                            continue
                         if entry.is_dir():
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file():

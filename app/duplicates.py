@@ -183,14 +183,14 @@ def _collect_candidates(
             if path_item.is_dir(): _scan(path_item)
         except (OSError, RuntimeError, ValueError, TypeError): continue
             
-    # Filtrado de seguridad diferido a cuando ya tenemos candidatos por tamaño
     final_groups = defaultdict(list)
     for size, paths in temp_groups.items():
-        if len(paths) < 2: continue
         for p in paths:
-            target = p.resolve()
-            if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
-                final_groups[size].append(target)
+            try:
+                target = p.resolve(strict=True)
+                if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
+                    final_groups[size].append(target)
+            except (OSError, RuntimeError): continue
                 
     return {size: paths for size, paths in final_groups.items() if len(paths) > 1}
 

@@ -231,7 +231,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        path_obj = Path(entry.path)
+                        path_obj = Path(entry.path).resolve(strict=False)
                         if skip_protected and is_protected_path(path_obj):
                             continue
                         
