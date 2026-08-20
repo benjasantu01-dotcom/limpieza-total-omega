@@ -225,7 +225,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     # Asegurar que el puntaje final se mantenga en rango 0-100
     final_score = int(_clamp(float(final_score), 0.0, 100.0))
     
-    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios.get(rule.area, 0.0))]
+    # Uso de get con default para evitar errores si una regla referencia un área inexistente
+    recommendations = [
+        rule.message_factory(metrics) 
+        for rule in _RECOMMENDATION_RULES 
+        if rule.check(metrics, ratios.get(rule.area, 0.0))
+    ]
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

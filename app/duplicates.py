@@ -174,8 +174,13 @@ def _collect_candidates(
 
     if not directories: return {}
     for item in directories:
-        if item and (path_item := Path(item)).is_dir():
-            _scan(path_item.resolve())
+        try:
+            if item:
+                path_item = Path(item)
+                if path_item.exists() and path_item.is_dir():
+                    _scan(path_item.resolve())
+        except (OSError, TypeError, ValueError):
+            continue
             
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 

@@ -1391,11 +1391,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
             
         raw = self.pid_entry.get().strip()
-        if not raw.isdigit():
+        try:
+            pid = int(raw)
+        except ValueError:
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
         
-        pid = int(raw)
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return
@@ -1407,8 +1408,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not memory_mod.process_exists(pid):
                 self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
                 return
-            ok, mensaje = memory_mod.trim_working_set(pid)
-            self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
+            try:
+                ok, mensaje = memory_mod.trim_working_set(pid)
+                self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
+            except Exception as e:
+                self.log(f"Error al intentar liberar proceso: {e}", "Memoria")
 
         self.run_async(task)
 

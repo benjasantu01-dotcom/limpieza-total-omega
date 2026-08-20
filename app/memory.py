@@ -180,7 +180,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     """
-    Extrae un objeto ProcessMemory a partir de una línea CSV (Name,PID,WorkingSet).
+    Extracts a ProcessMemory object from a CSV line (Name,PID,WorkingSet).
     """
     if not isinstance(csv_line, str):
         return None
@@ -207,7 +207,7 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Procesa múltiples líneas CSV de procesos y los ordena por mayor uso de RAM.
+    Processes multiple CSV process lines and sorts them by memory usage.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
@@ -331,7 +331,7 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     """Resuelve la ruta absoluta del ejecutable desde un handle de Win32."""
-    if not handle:
+    if not handle or handle == -1:
         return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"):
@@ -350,7 +350,7 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 
 def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
     """Realiza chequeos de seguridad antes de permitir la liberación de RAM."""
-    if not proc_handle:
+    if not proc_handle or proc_handle == -1:
         return False, "Handle inválido."
 
     kernel32 = ctypes.windll.kernel32
@@ -363,7 +363,7 @@ def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[
         return False, "El proceso seleccionado ya no está activo."
         
     path = _get_process_path(proc_handle)
-    if not path:
+    if not path or not isinstance(path, str):
         return False, "No se pudo verificar la ubicación del ejecutable."
     
     normalized_path = os.path.normcase(os.path.normpath(path))
@@ -392,7 +392,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Error de sistema: APIs de memoria no disponibles."
 
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
-    if not proc_handle:
+    if not proc_handle or proc_handle == -1:
         return False, "Acceso denegado al proceso (podría haber finalizado)."
         
     try:
