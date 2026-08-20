@@ -178,6 +178,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
         return True
     
     try:
+        # Validación de seguridad defensiva previa a cualquier acceso profundo
         if is_protected_path(Path(entry.path)):
             return True
         if _is_system_hidden(entry.path, kernel32):
@@ -207,6 +208,7 @@ def _sum_directory_recursive(
     
     try:
         abs_root = Path(root_dir).resolve(strict=True)
+        # Validación de seguridad defensiva en el nivel raíz
         if not abs_root.is_dir() or is_protected_path(abs_root) or abs_root.is_symlink() or is_junction_fn(str(abs_root)):
             return 0
         root_key = str(abs_root)
@@ -230,6 +232,9 @@ def _sum_directory_recursive(
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     try:
+                        # Re-validación de seguridad por cada entrada encontrada
+                        if is_protected_path(Path(entry.path)):
+                            continue
                         if entry.is_dir():
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file():

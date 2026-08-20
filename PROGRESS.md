@@ -6,19 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 0 | 0 | 0 | 0 | 2 |
-| 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 79 | 4 | 13 | 1 | 55 |
+| 2026-08-19 | 141 | 11 | 19 | 13 | 164 |
+| 2026-08-20 | 81 | 4 | 13 | 1 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,18 +25,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **42**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **36**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `diskreport.py`: **23**
 - `assistant.py`: **22**
-- `diskreport.py`: **22**
 - `settings.py`: **22**
 - `duplicates.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **18**
+- `browser.py`: **17**
 - `scanner.py`: **17**
-- `browser.py`: **16**
 - `main.py`: **15**
 - `quarantine.py`: **15**
 - `memory.py`: **14**
@@ -47,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T06:37:34` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `all_drives_usage` bloqueando explícitamente el procesamiento de rutas UNC (`\\servidor\recurso`) mediante una validación de formato antes de intentar acceder al disco, previniendo errores de red o bloqueos de I/O en recursos de red no deseados.
+- `2026-08-20T06:37:02` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación estricta de cada entrada de directorio con `is_protected_path` antes de intentar cualquier acceso a metadatos, garantizando que el escáner sea incapaz de seguir enlaces a volúmenes o rutas fuera de la jerarquía permitida.
 - `2026-08-20T06:27:02` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva del asistente al implementar una validación estricta del tamaño de la respuesta recibida desde la API, usando `_validate_response_length` antes de procesar el texto y asegurando que las llaves JSON (`candidates`, `parts`, etc.) sean validadas para evitar excepciones de tipo, reforzando la robustez ante respuestas malformadas o inesperadas del motor externo.
 - `2026-08-20T06:26:14` **settings.py** (robustez ante casos límite): Se añadió una validación explícita para evitar que la aplicación entre en un estado de error o inconsistencia si el archivo de configuración, aunque sea JSON válido, contiene claves inesperadas o está truncado, mediante una verificación robusta del tamaño y la integridad estructural antes de procesarlo.
 - `2026-08-20T06:16:26` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` al introducir un chequeo de existencia previo al borrado del original, evitando errores innecesarios si la operación de copia falló parcialmente o si el archivo fue eliminado externamente entre la validación y el movimiento.
@@ -60,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T05:46:06` **startup.py** (rendimiento): Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y llamadas a `is_protected_path` dentro del bucle, procesando los nombres de archivo mediante `os.path` (más ligero) y aplicando la validación de seguridad solo una vez sobre la ruta completa.
 - `2026-08-20T05:45:51` **settings.py** (rendimiento): Optimicé el acceso a configuraciones frecuentes implementando una caché de tipo `lru_cache` sobre `load()`, reduciendo drásticamente las llamadas redundantes a disco y el parseo de JSON en operaciones repetitivas de lectura.
 - `2026-08-20T05:35:58` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `item_map` en un conjunto de nombres de archivos registrados para evitar iteraciones redundantes y permitiendo un filtrado más eficiente de los archivos en disco que no pertenecen al manifiesto.
-- `2026-08-20T05:35:19` **organizer.py** (rendimiento): Optimizé `scan_for_junk` para reducir llamadas redundantes al sistema de archivos cacheando el resultado de `is_safe_to_modify(base)` y eliminando llamadas innecesarias a `is_safe_to_modify(path)` dentro del loop interno, ya que el estado de seguridad de los archivos dentro de un directorio ya validado se controla con `is_valid_junk_candidate`.
-- `2026-08-20T05:34:47` **memory.py** (rendimiento): Se implementó un mecanismo de caché para el resultado de `pressure_level` (basado en la referencia del snapshot) y se eliminó el cálculo redundante de `available_percent` dentro de `diagnose`, utilizando en su lugar el cálculo ya existente en el objeto `MemorySnapshot`, reduciendo ciclos de CPU.

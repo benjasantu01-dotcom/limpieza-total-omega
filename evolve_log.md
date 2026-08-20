@@ -495,3 +495,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T06:27:02` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva del asistente al implementar una validación estricta del tamaño de la respuesta recibida desde la API, usando `_validate_response_length` antes de procesar el texto y asegurando que las llaves JSON (`candidates`, `parts`, etc.) sean validadas para evitar excepciones de tipo, reforzando la robustez ante respuestas malformadas o inesperadas del motor externo.
 - `2026-08-20T06:27:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T06:27:02` Corrida terminada. Total usado hoy: 152.
+- `2026-08-20T06:35:32` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-08-20T06:36:10` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-20T06:37:02` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación estricta de cada entrada de directorio con `is_protected_path` antes de intentar cualquier acceso a metadatos, garantizando que el escáner sea incapaz de seguir enlaces a volúmenes o rutas fuera de la jerarquía permitida.
+- `2026-08-20T06:37:34` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `all_drives_usage` bloqueando explícitamente el procesamiento de rutas UNC (`\\servidor\recurso`) mediante una validación de formato antes de intentar acceder al disco, previniendo errores de red o bloqueos de I/O en recursos de red no deseados.
+- `2026-08-20T06:37:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-20T06:37:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T06:37:46` Corrida terminada. Total usado hoy: 156.
