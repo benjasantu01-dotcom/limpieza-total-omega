@@ -192,7 +192,13 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
     Filtra por extensión para aplicar solo las reglas de seguridad relevantes.
     """
-    if not path or not path.is_file():
+    if path is None or not path.exists():
+        return []
+
+    try:
+        if not path.is_file():
+            return []
+    except (OSError, PermissionError):
         return []
 
     findings: ScanResult = []

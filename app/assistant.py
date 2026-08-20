@@ -178,7 +178,11 @@ _VALIDATORS: Final[dict[str, ValidatorSpec]] = {
 }
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
-    """Conversión defensiva de tipos numéricos evitando excepciones y valores no finitos."""
+    """
+    Conversión defensiva de tipos numéricos. 
+    Evita que valores no finitos (inf, nan) o tipos incompatibles 
+    contaminen el motor de lógica o el reporte de métricas.
+    """
     if isinstance(val, (list, dict, set, tuple, bool)):
         return default
     try:
@@ -244,8 +248,9 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
     """
-    Extrae, normaliza y asigna una métrica de forma defensiva dentro de los rangos
-    permitidos, verificando finitud y tipos de dato para evitar errores silenciosos.
+    Extrae y asigna una métrica validando: tipo, finitud y rangos (min/max).
+    El uso de especificaciones (ValidatorSpec) evita inyecciones de datos 
+    fuera de rango y garantiza que el objeto SystemContext sea inerte.
     """
     if not isinstance(spec, tuple) or len(spec) != 3:
         return False
@@ -492,8 +497,9 @@ def _call_gemini(
     model: str
 ) -> Optional[str]:
     """
-    Ejecuta una solicitud POST al motor de Gemini si está habilitado, verificando
-    que el contenido de la consulta y las métricas pasen los filtros de seguridad.
+    Ejecuta una solicitud POST al motor de Gemini. Aplica filtros de seguridad 
+    en el prompt enviado y valida la respuesta recibida para asegurar que 
+    no se expongan rutas ni se inyecten comandos, abortando ante cualquier anomalía.
     """
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
@@ -549,7 +555,12 @@ def _call_gemini(
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """Orquestador de alto nivel: elige entre el motor local o remoto según disponibilidad."""
+    """
+    Orquestador de alto nivel: elige entre motor local o remoto. 
+    Aplica una política de 'fallo seguro': si la validación de configuración, 
+    contexto o la comunicación con la API falla, siempre retorna la respuesta del
+    motor local para mantener la funcionalidad básica garantizada.
+    """
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     

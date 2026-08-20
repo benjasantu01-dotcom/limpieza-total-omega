@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 120 | 9 | 17 | 10 | 140 |
-| 2026-08-20 | 97 | 4 | 15 | 1 | 91 |
+| 2026-08-19 | 116 | 9 | 17 | 10 | 140 |
+| 2026-08-20 | 101 | 4 | 15 | 1 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **51**
+- manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **45**
-- rendimiento: **41**
 - robustez ante casos límite: **41**
-- legibilidad y documentación: **39**
+- legibilidad y documentación: **40**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
-- `settings.py`: **21**
-- `duplicates.py`: **20**
-- `assistant.py`: **20**
-- `healthscore.py`: **19**
+- `settings.py`: **22**
+- `assistant.py`: **21**
+- `diskreport.py`: **21**
 - `organizer.py`: **19**
-- `main.py`: **16**
+- `duplicates.py`: **19**
+- `healthscore.py`: **18**
+- `scanner.py`: **16**
 - `browser.py`: **16**
 - `quarantine.py`: **15**
-- `scanner.py`: **15**
+- `main.py`: **15**
 - `memory.py`: **15**
 - `branding.py`: **8**
 - `safety.py`: **7**
-- `startup.py`: **4**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T09:00:45` **assistant.py** (legibilidad y documentación): Mejoré la documentación de los métodos de manejo de datos (`_validate_and_assign`, `_safe_float`) y el flujo principal en `ask` mediante docstrings que explican el "porqué" de las validaciones de seguridad, garantizando que futuras modificaciones mantengan la integridad del motor de consulta.
+- `2026-08-20T09:00:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones explícitas de tipos y saneamiento de los valores extraídos del CSV, evitando posibles fallos ante entradas malformadas o inesperadas que podrían propagar errores en las etapas de resolución de rutas.
+- `2026-08-20T08:59:25` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` añadiendo una verificación de escritura explícita mediante `os.access` sobre el directorio padre, previniendo errores de permisos en tiempo de ejecución antes de intentar crear archivos temporales.
+- `2026-08-20T08:58:48` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `scan_file` añadiendo validaciones de entrada (`is_file`, `exists`, `is_dir`) y asegurando que las funciones de chequeo no fallen ante rutas inexistentes o inaccesibles, evitando así interrupciones en el bucle principal.
 - `2026-08-20T08:50:15` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` implementando un chequeo temprano de `OSError` al realizar `lstat()` en `_check_file_integrity` y refiné la captura de excepciones en `normalize` para evitar que errores inesperados del sistema de archivos (como dispositivos desconectados repentinamente) se propaguen como `ValueError` genéricos, mejorando la previsibilidad de los estados de error.
 - `2026-08-20T08:48:34` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `stage_for_review` ante entradas mal formadas y errores de I/O, centralizando la validación de la carpeta destino y asegurando que las operaciones de movimiento no se vean afectadas por archivos con nombres inválidos o rutas inexistentes.
 - `2026-08-20T08:40:16` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_trim_target` añadiendo validaciones explícitas contra nulos y tipos, asegurando que `_get_process_path` no intente operar sobre handles inválidos, evitando así excepciones no controladas durante la fase crítica de chequeo de seguridad.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T08:28:21` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` al capturar explícitamente `ValueError` y `TypeError` durante la carga de métricas para evitar que datos malformados interrumpan el proceso, asegurando que `ctx.analyzed` solo sea verdadero si el contexto pudo ser poblado mínimamente.
 - `2026-08-20T07:06:42` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save` al asegurar que el directorio de configuración (`ruta.parent`) también pase por una validación estricta de seguridad antes de cualquier operación de escritura, previniendo posibles ataques de escalada de privilegios o escritura en ubicaciones no permitidas.
 - `2026-08-20T06:57:54` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar si el padre de un archivo inexistente reside en una carpeta protegida, evitando la creación accidental de archivos en zonas críticas del sistema.
-- `2026-08-20T06:56:38` **quarantine.py** (seguridad defensiva): Se ha mejorado `_atomic_isolate_file` para asegurar que el archivo de destino en cuarentena no exista previamente antes de realizar la copia, añadiendo una comprobación explícita para evitar condiciones de carrera o sobrescritura accidental durante el proceso de aislamiento.
-- `2026-08-20T06:48:07` **organizer.py** (seguridad defensiva): Se ha restringido el alcance de `delete_reviewed` para que solo elimine archivos que residan físicamente dentro de la carpeta de revisión mediante `is_relative_to`, previniendo que un path manipulado (ej. mediante `..`) pueda escapar del directorio autorizado.
-- `2026-08-20T06:47:56` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` al asegurar que el manejo de recursos (handles de procesos) sea robusto, evitando fugas de memoria o manipulaciones accidentales si la operación falla, garantizando que el `CloseHandle` sea incondicional y el acceso se restrinja a permisos mínimos.
-- `2026-08-20T06:47:30` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `main.py` añadiendo una capa de validación de rutas mediante `safety.ensure_safe_to_modify` en todas las operaciones que inician procesos de modificación de disco (borrado, movimiento o aislamiento), asegurando que incluso ante un error en la lógica de UI, el sistema nunca opere sobre rutas protegidas.

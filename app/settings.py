@@ -239,7 +239,6 @@ def _load_internal(ruta_str: str) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
         if not isinstance(data, dict): return _get_default_config()
-        # Verificación de integridad: asegurar que no haya desbordamiento de claves corruptas
         if len(data) > (len(ConfigKey) * 2): return _get_default_config()
         return validate(data)
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError):
@@ -253,8 +252,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Persiste configuración de forma atómica. Falla silenciosamente si no es posible escribir."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    # Refuerzo: validar parent directory antes de cualquier acceso de escritura
-    if not _Validators._is_safe_path(str(ruta.parent.resolve(strict=False))): return None
+    parent = ruta.parent
+    
+    # Validar seguridad y permisos de escritura en directorio
+    if not _Validators._is_safe_path(str(parent.resolve(strict=False))): return None
+    if parent.exists() and not os.access(parent, os.W_OK): return None
     
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
@@ -264,7 +266,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     try:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
-        ruta.parent.mkdir(parents=True, exist_ok=True)
+        parent.mkdir(parents=True, exist_ok=True)
         with open(temp_path, "wb") as f:
             f.write(encoded_data)
             f.flush()

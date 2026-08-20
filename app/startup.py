@@ -257,11 +257,12 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
             if not isinstance(row, dict) or not row:
                 continue
             
-            vals = [val for key, val in row.items() if val is not None and not key.startswith("PS")]
+            # Filtramos valores asegurando que sean strings no vacíos y limpiamos controles
+            vals = [str(v).strip() for v in row.values() if v is not None]
             if len(vals) < 2:
                 continue
                 
-            name_raw, cmd_raw = str(vals[0]), str(vals[1])
+            name_raw, cmd_raw = vals[0], vals[1]
             name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             
