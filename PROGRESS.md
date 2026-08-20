@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 79 | 6 | 13 | 8 | 98 |
-| 2026-08-20 | 135 | 10 | 19 | 4 | 132 |
+| 2026-08-19 | 75 | 6 | 13 | 8 | 98 |
+| 2026-08-20 | 136 | 10 | 19 | 4 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- manejo de errores y validación de entradas: **44**
+- legibilidad y documentación: **43**
 - seguridad defensiva: **43**
-- manejo de errores y validación de entradas: **43**
 - rendimiento: **41**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `healthscore.py`: **20**
+- `assistant.py`: **20**
 - `diskreport.py`: **20**
-- `organizer.py`: **19**
-- `assistant.py`: **19**
-- `memory.py`: **17**
+- `healthscore.py`: **19**
+- `organizer.py`: **18**
 - `duplicates.py`: **17**
-- `main.py`: **16**
+- `memory.py`: **16**
 - `quarantine.py`: **15**
 - `browser.py`: **15**
+- `main.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **8**
 - `safety.py`: **6**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T12:55:02` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` agregando una validación explícita para evitar que tipos de datos mutables (listas o diccionarios malformados) pasen los chequeos de `_validate_and_assign`, asegurando que `SystemContext` mantenga su integridad incluso ante entradas de datos inesperadas en el diccionario de métricas.
 - `2026-08-20T11:32:34` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta del directorio de configuración mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, previniendo así intentos de manipulación de archivos en ubicaciones protegidas por parte de terceros o configuraciones erróneas.
 - `2026-08-20T11:32:01` **scanner.py** (seguridad defensiva): Se ha implementado `is_safe_to_modify` en `process_entry` antes de realizar operaciones de análisis para garantizar que la ruta sea segura, siguiendo estrictamente la recomendación del bucle autónomo de no usar funciones que lancen excepciones dentro de flujos de control.
 - `2026-08-20T11:13:21` **memory.py** (seguridad defensiva): Se ha añadido una validación de seguridad adicional en `_is_valid_trim_target` para prevenir intentos de manipulación sobre procesos con nombres o rutas que contengan caracteres de control RTL (Right-to-Left), mitigando posibles ataques de confusión de rutas o spoofing visual.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T10:32:56` **main.py** (robustez ante casos límite): Mejoré la robustez de la inicialización de la aplicación añadiendo una validación explícita de `Path.home()` y permisos de escritura en la carpeta de configuración, evitando fallos silenciosos si el entorno de usuario no es estándar o tiene restricciones de acceso.
 - `2026-08-20T10:31:56` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante valores `NaN` o `inf` que podrían saltarse las validaciones actuales, asegurando que `is_finite()` sea un chequeo exhaustivo antes de realizar cualquier cálculo.
 - `2026-08-20T10:31:00` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a atributos de archivo (`stat`) y metadatos, evitando que una entrada individual bloquee el recorrido completo del directorio.
-- `2026-08-20T10:21:47` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `build_context` implementando una validación exhaustiva de los tipos de entrada y asegurando que `extra` no contenga datos arbitrarios mediante la restricción estricta al inventario de `_VALIDATORS`.

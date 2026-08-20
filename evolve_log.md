@@ -1236,3 +1236,15 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-20T12:47:17` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-20T12:47:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T12:47:17` Corrida terminada. Total usado hoy: 300.
+- `2026-08-20T12:53:16` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-20T12:53:19` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-20T12:53:19` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-20T12:53:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-20T12:53:39` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-20T12:54:09` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-20T12:54:09` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-20T12:55:02` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` agregando una validación explícita para evitar que tipos de datos mutables (listas o diccionarios malformados) pasen los chequeos de `_validate_and_assign`, asegurando que `SystemContext` mantenga su integridad incluso ante entradas de datos inesperadas en el diccionario de métricas.
+- `2026-08-20T12:55:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-20T12:55:45` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-20T12:55:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T12:55:45` Corrida terminada. Total usado hoy: 304.

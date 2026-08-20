@@ -257,6 +257,7 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     cast, min_v, max_v = spec
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
+    # Filtro estricto: rechaza tipos mutables o booleanos inesperados
     if val is None or isinstance(val, (list, dict, set, tuple, bool)):
         return False
         
@@ -293,7 +294,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             ctx.grade = str(g_val)[:10].strip()
 
     for k, v in extra.items():
-        if k in _VALIDATORS and isinstance(v, (int, float)):
+        if k in _VALIDATORS and isinstance(v, (int, float, str)):
             if _validate_and_assign(ctx, extra, k, _VALIDATORS[k]):
                 found_data = True
         elif k == "score" and isinstance(v, (int, float)):
