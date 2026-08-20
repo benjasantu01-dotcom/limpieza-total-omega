@@ -146,42 +146,37 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo del sistema de archivos para agrupar candidatos,
-    evitando seguir puntos de reparse mediante el chequeo de atributos.
+    Realiza un recorrido recursivo eficiente usando os.scandir.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
 
     def _scan(root_path: Path) -> None:
         try:
-            with os.scandir(root_path) as it:
-                for entry in it:
-                    try:
-                        st = entry.stat(follow_symlinks=False)
-                        # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT (Junctions, Symlinks)
-                        if getattr(st, 'st_file_attributes', 0) & 0x400: continue
+            for entry in os.scandir(root_path):
+                try:
+                    # Usamos atributos directos para evitar syscalls innecesarias
+                    st = entry.stat(follow_symlinks=False)
+                    if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                             
-                        if entry.is_dir(follow_symlinks=False):
-                            inode: Tuple[int, int] = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
-                                _scan(Path(entry.path))
-                        elif entry.is_file() and st.st_size >= min_size:
-                            p = Path(entry.path)
-                            if not skip_protected or (not is_protected_path(p) and is_safe_to_modify(p)):
-                                temp_groups[st.st_size].append(p)
-                    except (OSError, PermissionError): continue
+                    if entry.is_dir(follow_symlinks=False):
+                        inode = (st.st_dev, st.st_ino)
+                        if inode not in visited_inodes:
+                            visited_inodes.add(inode)
+                            _scan(Path(entry.path))
+                    elif entry.is_file() and st.st_size >= min_size:
+                        p = Path(entry.path)
+                        if not skip_protected or (not is_protected_path(p) and is_safe_to_modify(p)):
+                            temp_groups[st.st_size].append(p)
+                except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
     if not directories: return {}
     for item in directories:
-        try:
-            if item:
-                path_item = Path(item)
-                if path_item.exists() and path_item.is_dir():
-                    _scan(path_item.resolve())
-        except (OSError, TypeError, ValueError):
-            continue
+        if item:
+            path_item = Path(item)
+            if path_item.exists() and path_item.is_dir():
+                _scan(path_item.resolve())
             
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
@@ -192,15 +187,11 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Agrupa rutas que comparten el mismo hash generado por la función provista.
-    Solo se incluyen grupos con 2 o más elementos.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
-    
     for path in paths:
-        digest = hash_func(path)
-        if digest:
+        if (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
-                
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
@@ -234,13 +225,11 @@ def find_duplicates(
     if directories is None or min_size < 0: return []
     
     groups: List[DuplicateGroup] = []
-    # Primero agrupamos candidatos por tamaño
     size_candidates = _collect_candidates(directories, min_size, skip_protected)
     
     for size, paths in size_candidates.items():
         groups.extend(_process_size_group(size, paths))
 
-    # Ordenar grupos por mayor impacto de ahorro de espacio
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
 

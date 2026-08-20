@@ -1303,3 +1303,48 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-20T14:07:02` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el mapeo de palabras clave (`_KEYWORD_MAP`) convirtiéndolo en un conjunto de búsqueda eficiente y reestructuré el bucle de coincidencia para evitar iteraciones redundantes sobre tokens, mejorando el rendimiento de la detección de intenciones.
 - `2026-08-20T14:07:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T14:07:02` Corrida terminada. Total usado hoy: 332.
+- `2026-08-20T14:15:19` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-20T14:15:55` Tests FALLARON:
+```
+============= FAILURES ===================================
+____________ test_gradient_produces_the_requested_amount_of_colors _____________
+
+    def test_gradient_produces_the_requested_amount_of_colors():
+        for cantidad in (1, 2, 7, 300):
+>           colores = branding.gradient_colors(cantidad)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:207: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+steps = 1, stops = ('#00f0c0', '#7c5cff', '#ff2d78')
+
+    @lru_cache(maxsize=32)
+    def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
+        """Genera una tupla de colores interpolados basada en puntos de parada."""
+        n = max(1, int(steps))
+        if not stops: return (PALETTE["accent"],) * n
+        if len(stops) < 2: return (stops[0],) * n
+    
+        # Pre-calcular mapeo RGB para evitar conversión repetida en loop
+        rgb_stops = [_hex_to_rgb(c) for c in stops]
+        res = []
+        tramos = len(stops) - 1
+        for i in range(n):
+>           pos = (i * tramos) / (n - 1)
+                  ^^^^^^^^^^^^^^^^^^^^^^
+E           ZeroDivisionError: division by zero
+
+app/branding.py:300: ZeroDivisionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount_of_colors - ZeroDivisionError: division by zero
+1 failed, 298 passed in 1.26s
+
+```
+- `2026-08-20T14:15:55` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Optimizé la generación de gradientes evitando cálculos redundantes de conversión RGB y llamadas a `blend` en cada iteración, aprovechando que los colores pueden ser pre-calculados o cacheados por segmentos.
+- `2026-08-20T14:16:41` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-20T14:17:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-20T14:17:51` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y conversiones de tipo en cada iteración del bucle, procesando la extensión una única vez por archivo para mejorar el rendimiento en directorios masivos.
+- `2026-08-20T14:18:06` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` utilizando un generador y procesando el `os.scandir` de forma más eficiente para reducir el impacto en I/O, además de transformar la lógica de agrupado por tamaño para evitar reconstruir listas innecesarias, aprovechando que `defaultdict` ya maneja la memoria de forma eficiente.
+- `2026-08-20T14:18:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T14:18:06` Corrida terminada. Total usado hoy: 336.

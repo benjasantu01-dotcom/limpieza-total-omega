@@ -388,6 +388,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
         total_bytes += size
         total_files += 1
         
+        # Procesar extensión una vez por archivo
         ext = path.suffix.lower() or "(sin extensión)"
         ext_sizes[ext] += size
         ext_counts[ext] += 1

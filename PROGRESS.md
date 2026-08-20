@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 8
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 63 | 5 | 9 | 4 | 91 |
-| 2026-08-20 | 158 | 10 | 21 | 4 | 139 |
+| 2026-08-19 | 62 | 5 | 8 | 4 | 89 |
+| 2026-08-20 | 160 | 11 | 21 | 4 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **52**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **36**
-- rendimiento: **35**
+- rendimiento: **37**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `organizer.py`: **20**
+- `diskreport.py`: **21**
 - `assistant.py`: **20**
-- `diskreport.py`: **20**
+- `organizer.py`: **19**
 - `healthscore.py`: **18**
+- `duplicates.py`: **18**
 - `memory.py`: **17**
 - `scanner.py`: **17**
-- `duplicates.py`: **17**
 - `quarantine.py`: **16**
 - `browser.py`: **15**
 - `main.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T14:18:06` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando un generador y procesando el `os.scandir` de forma más eficiente para reducir el impacto en I/O, además de transformar la lógica de agrupado por tamaño para evitar reconstruir listas innecesarias, aprovechando que `defaultdict` ya maneja la memoria de forma eficiente.
+- `2026-08-20T14:17:51` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y conversiones de tipo en cada iteración del bucle, procesando la extensión una única vez por archivo para mejorar el rendimiento en directorios masivos.
 - `2026-08-20T14:07:02` **assistant.py** (rendimiento): Optimicé el mapeo de palabras clave (`_KEYWORD_MAP`) convirtiéndolo en un conjunto de búsqueda eficiente y reestructuré el bucle de coincidencia para evitar iteraciones redundantes sobre tokens, mejorando el rendimiento de la detección de intenciones.
 - `2026-08-20T14:06:29` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en métodos clave, aclarando las responsabilidades de resolución de rutas y el manejo del ciclo de vida de los datos (`cache`, `security checks`), facilitando el mantenimiento futuro y la comprensión de la lógica de seguridad.
 - `2026-08-20T14:06:00` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para mejorar la legibilidad del motor de validación, garantizando que la intención técnica de cada restricción sea clara para futuros desarrolladores sin alterar el comportamiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T13:35:23` **assistant.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos de datos internos y se han añadido `Type Hints` a los retornos de funciones críticas como `_identify_active_problems` y los manejadores de área para clarificar la estructura de datos que fluye por la aplicación, facilitando la legibilidad para futuros colaboradores.
 - `2026-08-20T13:25:53` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para evitar fallos por filas incompletas o malformadas y agregué un manejo de excepciones más granular al procesar cada entrada del CSV para asegurar que un registro corrupto no detenga la lectura completa.
 - `2026-08-20T13:25:37` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la validación de archivos integrando `ensure_safe_to_modify` en el chequeo de la ruta de configuración (`settings_path`) para garantizar que la ubicación de guardado sea legítima y segura antes de cualquier operación de escritura, previniendo excepciones innecesarias en el flujo principal.
-- `2026-08-20T13:25:08` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las verificaciones de entrada en `scan_directory` y `process_entry` mediante la validación explícita de tipos, capturando posibles valores `None` o errores de conversión antes de interactuar con el sistema de archivos.
-- `2026-08-20T13:24:40` **safety.py** (manejo de errores y validación de entradas): He mejorado la robustez de `ensure_safe_to_modify` ante entradas no alfanuméricas o rutas con caracteres de control, unificando la lógica de validación de caracteres (antes dispersa) en un paso previo crítico y asegurando que las excepciones capturadas sean explícitas para evitar silenciamiento de errores operativos.
