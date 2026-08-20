@@ -114,7 +114,10 @@ class QuarantineItem:
             return None
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Verifica que el archivo físico coincida con los metadatos registrados."""
+        """
+        Verifica que el archivo físico coincida con el tamaño y hash registrados.
+        Las fallas de integridad impiden cualquier operación destructiva.
+        """
         if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
             return False
         try:
@@ -153,7 +156,10 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_unlink(path: Path) -> bool:
-    """Elimina un archivo tras validar que es un archivo regular seguro."""
+    """
+    Elimina un archivo tras validar seguridad.
+    Precondición: La ruta ya fue validada como parte del sandbox en el caller.
+    """
     try:
         if path.is_file() and not path.is_symlink() and is_safe_to_modify(path):
             path.unlink()
@@ -222,11 +228,6 @@ def _check_windows_file_attributes(path_str: str) -> None:
 def _check_path_syntax_integrity(path: Path) -> None:
     """
     Valida la sintaxis de la ruta para prevenir inyecciones o navegación maliciosa.
-    
-    Args:
-        path: Objeto Path a verificar.
-    Raises:
-        UnsafePathError: Si la ruta contiene caracteres, longitud o estructuras prohibidas.
     """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
@@ -272,7 +273,7 @@ def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
             raw_data = json.load(f)
         if not isinstance(raw_data, list):
             return []
-        valid_items = []
+        valid_items: List[QuarantineItem] = []
         for entry in raw_data:
             if isinstance(entry, dict):
                 item = QuarantineItem.from_dict(entry)
@@ -359,7 +360,6 @@ def quarantine_file(
     except OSError as e:
         raise RuntimeError(f"No se pudo determinar el tamaño del archivo origen: {e}")
     
-    # Verificación final post-validación (evitar cambios de naturaleza TOCTOU)
     if source_path.is_symlink():
         raise UnsafePathError("El archivo ha cambiado su naturaleza (enlace detectado).")
 
@@ -406,7 +406,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Restaura un ítem desde el sandbox a su ubicación original.
+    Restaura un ítem desde el sandbox a su ubicación original tras verificar integridad.
     
     Args:
         item_id: ID único del ítem a restaurar.

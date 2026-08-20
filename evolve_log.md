@@ -1084,3 +1084,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T00:21:45` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._metric_card
 - `2026-08-20T00:21:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T00:21:45` Corrida terminada. Total usado hoy: 8.
+- `2026-08-20T00:28:16` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-08-20T00:28:20` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-20T00:29:03` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (usando `Final` para constantes) y se documentó mejor la lógica interna del módulo siguiendo el enfoque de legibilidad, clarificando el propósito técnico de las interacciones con `ctypes` y las restricciones de los procesos.
+- `2026-08-20T00:29:34` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y robustez de `scan_for_junk` mediante la extracción de la lógica de filtrado de archivos en un método dedicado y añadiendo type hints explícitos para clarificar el flujo de procesamiento de directorios.
+- `2026-08-20T00:30:14` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (específicamente en el manejo de rutas y listas) y se documentaron los métodos críticos con docstrings estructurados según el estilo de "colaborador senior" para aclarar las invariantes de seguridad y la lógica de validación de cada función.
+- `2026-08-20T00:30:26` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-20T00:30:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T00:30:26` Corrida terminada. Total usado hoy: 12.
