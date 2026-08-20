@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 0 | 0 | 0 | 0 | 10 |
+| 2026-08-18 | 0 | 0 | 0 | 0 | 6 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 76 | 4 | 12 | 1 | 51 |
+| 2026-08-20 | 77 | 4 | 13 | 1 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **42**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
@@ -39,14 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **17**
 - `browser.py`: **16**
 - `main.py`: **15**
+- `quarantine.py`: **15**
 - `memory.py`: **14**
-- `quarantine.py`: **14**
 - `branding.py`: **9**
 - `safety.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T06:16:26` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` al introducir un chequeo de existencia previo al borrado del original, evitando errores innecesarios si la operación de copia falló parcialmente o si el archivo fue eliminado externamente entre la validación y el movimiento.
 - `2026-08-20T06:07:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante casos límite mediante la gestión explícita de tipos, verificaciones de existencias de APIs y una limpieza más segura de los recursos (`proc_handle`) incluso ante fallos inesperados de la API de Windows.
 - `2026-08-20T06:06:55` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante hilos huérfanos y condiciones de carrera al cerrar la ventana, asegurando que `_executor` se apague correctamente y se limpien los recursos de la UI antes de que el proceso principal finalice.
 - `2026-08-20T06:05:50` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas maliciosas o errores de programación inyectando una protección explícita contra divisiones por cero en el cálculo de ratios y añadiendo una validación de integridad para el mapa de `ratios` en caso de que alguna función falle o devuelva un valor fuera de rango.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T05:34:47` **memory.py** (rendimiento): Se implementó un mecanismo de caché para el resultado de `pressure_level` (basado en la referencia del snapshot) y se eliminó el cálculo redundante de `available_percent` dentro de `diagnose`, utilizando en su lugar el cálculo ya existente en el objeto `MemorySnapshot`, reduciendo ciclos de CPU.
 - `2026-08-20T05:25:27` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje en `compute_score` cacheando las llamadas a `ratios.get` y eliminando la redundancia de `_clamp` dentro del loop, aprovechando además que las llaves de `_WEIGHT_ITEMS_INT` ya garantizan orden y existencia en `ratios`.
 - `2026-08-20T05:25:00` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar realizar múltiples llamadas de `resolve()` y verificaciones de seguridad sobre el mismo archivo, integrando los filtros `is_protected_path` e `is_safe_to_modify` directamente dentro del primer escaneo de `os.scandir` para reducir drásticamente el overhead de I/O.
-- `2026-08-20T05:24:36` **diskreport.py** (rendimiento): Optimizamos `walk_files` reemplazando la creación innecesaria de objetos `Path` mediante `path_obj = Path(entry.path).resolve(strict=False)` por el uso directo de `entry.path` (string), reduciendo drásticamente la creación de objetos y las llamadas al sistema en cada iteración del bucle principal.

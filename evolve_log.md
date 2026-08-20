@@ -481,3 +481,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T06:07:08` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_process_path` y `trim_working_set` ante casos límite mediante la gestión explícita de tipos, verificaciones de existencias de APIs y una limpieza más segura de los recursos (`proc_handle`) incluso ante fallos inesperados de la API de Windows.
 - `2026-08-20T06:07:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T06:07:08` Corrida terminada. Total usado hoy: 144.
+- `2026-08-20T06:15:12` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-08-20T06:15:50` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-20T06:16:26` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine_file` al introducir un chequeo de existencia previo al borrado del original, evitando errores innecesarios si la operación de copia falló parcialmente o si el archivo fue eliminado externamente entre la validación y el movimiento.
+- `2026-08-20T06:16:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-20T06:17:01` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-20T06:17:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T06:17:01` Corrida terminada. Total usado hoy: 148.
