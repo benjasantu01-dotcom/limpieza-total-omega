@@ -183,7 +183,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
     Aplica filtros de extensiones sospechosas antes de ejecutar tests de comportamiento.
     """
-    if not path:
+    if not path or not path.is_file():
         return []
 
     findings: ScanResult = []

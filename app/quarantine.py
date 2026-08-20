@@ -380,19 +380,25 @@ def quarantine_file(
                 os.remove(source_path)
         except OSError as e:
             raise RuntimeError(f"Archivo copiado a cuarentena pero error al borrar original: {e}")
-        item = QuarantineItem(
-            item_id=item_id,
-            original_path=str(source_path),
-            stored_name=stored_name,
-            size_bytes=file_size,
-            reason=str(reason) if reason else "Sin motivo",
-            quarantined_at=datetime.now().isoformat(timespec="seconds"),
-            sha256=file_hash,
-        )
-        items = load_manifest(base)
-        items.append(item)
-        save_manifest(items, base)
-        return item
+        
+        try:
+            items = load_manifest(base)
+            item = QuarantineItem(
+                item_id=item_id,
+                original_path=str(source_path),
+                stored_name=stored_name,
+                size_bytes=file_size,
+                reason=str(reason) if reason else "Sin motivo",
+                quarantined_at=datetime.now().isoformat(timespec="seconds"),
+                sha256=file_hash,
+            )
+            items.append(item)
+            save_manifest(items, base)
+            return item
+        except (Exception, OSError) as e:
+            # Fallback si el manifiesto falla pero el archivo ya fue movido
+            raise RuntimeError(f"Aislamiento físico exitoso, pero fallo al actualizar manifiesto: {e}")
+            
     except (Exception, OSError, ValueError) as e:
         if destination.exists():
             _safe_unlink(destination)

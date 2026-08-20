@@ -1185,3 +1185,38 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder
 - `2026-08-20T01:42:17` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `organizer.py` ante errores de entrada y condiciones de carrera, integrando validaciones de tipo y estructura más estrictas para prevenir que rutas inexistentes o malformadas interrumpan el proceso de escaneo o limpieza.
 - `2026-08-20T01:42:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T01:42:17` Corrida terminada. Total usado hoy: 40.
+- `2026-08-20T01:49:50` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-20T01:50:34` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos de escritura (como interrupciones de disco o falta de permisos durante la copia atómica) envolviendo la persistencia del manifiesto en un bloque de control de errores para asegurar que el sistema no quede en un estado inconsistente donde el archivo existe en disco pero no está registrado.
+- `2026-08-20T01:50:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-20T01:51:33` Tests FALLARON:
+```
+ytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:100: SyntaxWarning: invalid escape sequence '\R'
+    Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed, 7 warnings in 1.20s
+
+```
+- `2026-08-20T01:51:33` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo una verificación de "disponibilidad de padre" en `ensure_safe_to_modify` para detectar casos donde la ruta padre es un punto de montaje desvinculado o un dispositivo extraíble desconectado durante la ejecución, evitando errores de E/S inesperados que podrían colapsar el bucle principal.
+- `2026-08-20T01:51:51` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `process_entry` ante archivos con metadatos dañados o inaccesibles, añadiendo una comprobación explícita de `is_file()` mediante `entry.is_file()` antes de intentar procesar el archivo, lo que evita errores en el caso de entradas que existen en el sistema de archivos pero cuyo estado de archivo es inconsistente o inválido.
+- `2026-08-20T01:51:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T01:51:51` Corrida terminada. Total usado hoy: 44.
