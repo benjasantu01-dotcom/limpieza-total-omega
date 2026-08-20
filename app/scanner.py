@@ -114,7 +114,7 @@ class Scanner:
             entry: Objeto DirEntry a procesar.
             stack: Pila de directorios pendientes por explorar.
         """
-        if entry is None or not entry.path:
+        if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
         
         try:
@@ -149,7 +149,7 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta nombres con extensiones múltiples para ocultar ejecutables."""
-    if not path.name:
+    if not path or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -158,7 +158,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Analiza la antigüedad de ejecutables en carpetas de riesgo (Descargas, Temp)."""
-    if is_protected_path(path):
+    if not path or is_protected_path(path):
         return None
     
     parts = set(path.parts)
@@ -176,7 +176,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Verifica si un ejecutable intenta suplantar procesos críticos del sistema."""
-    if not path.name:
+    if not path or not path.name:
         return None
         
     if path.name.lower() in SYSTEM_LOOKALIKES:
@@ -189,6 +189,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     Ejecuta todas las reglas heurísticas sobre un archivo.
     """
+    if path is None:
+        return []
     findings: ScanResult = []
     
     # 1. Reglas generales
@@ -240,7 +242,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry:
+                    if entry is not None:
                         scanner.process_entry(entry, stack)
         except (PermissionError, OSError) as e:
             logger.debug(f"Error accediendo a directorio {current_dir}: {e}")

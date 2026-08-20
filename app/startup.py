@@ -254,32 +254,30 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         reader: csv.DictReader = csv.DictReader(f)
         
         for row in reader:
-            if not isinstance(row, dict) or not row:
-                continue
-            
-            # Filtramos valores asegurando que sean strings no vacíos y limpiamos controles
-            vals = [str(v).strip() for v in row.values() if v is not None]
-            if len(vals) < 2:
-                continue
-                
-            name_raw, cmd_raw = vals[0], vals[1]
-            name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
-            cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
-            
-            if not name or not cmd or name.upper().startswith("PS"):
-                continue
-            
-            if any(c in cmd for c in '<>|?*'):
-                continue
-            
             try:
+                if not isinstance(row, dict) or len(row) < 2:
+                    continue
+                
+                # Extraemos y validamos valores del registro
+                vals = [str(v).strip() for v in row.values() if v is not None]
+                name_raw, cmd_raw = vals[0], vals[1]
+                
+                name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
+                cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
+                
+                if not name or not cmd or name.upper().startswith("PS"):
+                    continue
+                
+                if any(c in cmd for c in '<>|?*'):
+                    continue
+                
                 if is_protected_path(Path(cmd)):
                     continue
-            except (ValueError, TypeError, OSError):
+                    
+                parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
+            except (KeyError, ValueError, TypeError, OSError):
                 continue
                 
-            parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
-            
     except (csv.Error, OSError, ValueError, TypeError):
         return []
             

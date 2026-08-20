@@ -215,8 +215,11 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ruta del archivo de configuración, asegurando que el directorio sea seguro."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
-    if not _Validators._is_safe_path(str(base)): return SETTINGS_DIR / SETTINGS_FILE
-    return base / SETTINGS_FILE
+    try:
+        ensure_safe_to_modify(str(base))
+        return base / SETTINGS_FILE
+    except (OSError, RuntimeError, PermissionError):
+        return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida el diccionario bruto recibido y aplica valores de fábrica para cualquier campo inválido."""

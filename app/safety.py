@@ -331,6 +331,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
 
+    # Validación preventiva de caracteres antes de la normalización
+    if _has_invalid_chars(str(path)):
+        raise UnsafePathError("Ruta contiene caracteres inválidos o de control.")
+
     try:
         p = normalize(path)
         path_str = str(p)
@@ -353,9 +357,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             
         return p
         
+    except (UnsafePathError):
+        raise
     except (ValueError, TypeError, OSError) as e:
-        if isinstance(e, UnsafePathError):
-            raise
         raise UnsafePathError(f"Error crítico de seguridad validando ruta: {e}")
 
 
