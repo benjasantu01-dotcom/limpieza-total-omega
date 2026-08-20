@@ -110,10 +110,10 @@ def base_directories() -> List[Path]:
         return []
 
 
-def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
+def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Valida mediante resolución absoluta y chequeos de seguridad (is_safe_to_modify)
-    que la ruta objetivo resida dentro de la base permitida, previniendo escalada de directorios.
+    Verifica si 'target_path' reside efectivamente dentro de 'base_path' evitando 
+    ataques de path traversal, symlinks o junctions inseguros.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -128,6 +128,7 @@ def _is_safe_path(target_path: Optional[Path], base_path: Optional[Path]) -> boo
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
+        # Comprobación de contención física en disco
         if not str(real_target).startswith(str(real_base)):
             return False
 
@@ -171,14 +172,13 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """
-    Determina si un objeto del sistema de archivos es inseguro de procesar 
-    basándose en su nombre, atributos de sistema o tipo (symlinks/junctions).
+    Filtro selector para el recorrido del sistema de archivos: descarta rutas
+    inseguras, archivos críticos o punteros (symlinks/junctions).
     """
     if _is_excluded_file(entry.name):
         return True
     
     try:
-        # Validación de seguridad defensiva previa a cualquier acceso profundo
         if not is_safe_to_modify(Path(entry.path)):
             return True
         if _is_system_hidden(entry.path, kernel32):
@@ -197,8 +197,9 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Suma el tamaño de archivos en una jerarquía aplicando límites de seguridad y profundidad.
-    Retorna 0 si la ruta es inaccesible o si se detecta un riesgo de seguridad.
+    Ejecuta un recorrido recursivo con límite de profundidad (MAX_SCAN_DEPTH)
+    para sumar el peso de archivos, usando un diccionario de memoización para
+    evitar re-procesar subdirectorios ya visitados.
     """
     if not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -265,12 +266,12 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Valida si un candidato es una ruta de caché existente y segura."""
+    """Valida si un candidato es una ruta de caché existente y segura dentro de la base."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
         return (candidate.exists() and candidate.is_dir() and is_safe_to_modify(candidate) and
-                _is_safe_path(candidate, base_path) and not _is_excluded_file(candidate.name))
+                _is_path_inside_base(candidate, base_path) and not _is_excluded_file(candidate.name))
     except (OSError, PermissionError, RuntimeError):
         return False
 
@@ -280,7 +281,7 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea las ubicaciones base buscando las rutas definidas en BROWSER_CACHE_PATHS.
+    Escanea las ubicaciones base buscando las rutas de caché definidas.
     Utiliza inyección de dependencias para permitir pruebas en entornos CI.
     """
     raw_bases = bases if bases is not None else base_directories()

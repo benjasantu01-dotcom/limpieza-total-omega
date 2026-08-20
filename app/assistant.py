@@ -356,7 +356,7 @@ def explain_area(area: Any) -> str:
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa los criterios de salud contra el contexto para identificar estados críticos."""
-    problemas = []
+    problemas: list[str] = []
     for crit in _CRITERIOS_SALUD:
         val = getattr(ctx, crit.metric_key)
         f_val = _safe_float(val, -1.0)
