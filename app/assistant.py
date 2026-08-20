@@ -248,10 +248,15 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     """
     cast, min_v, max_v = spec
     
+    # Solo procesar si es un contenedor navegable
     if not isinstance(source, (dict, object)):
         return
 
-    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+    # Extracción segura según tipo de origen
+    if isinstance(source, dict):
+        val = source.get(key)
+    else:
+        val = getattr(source, key, None)
     
     # Prohibir contenedores como métricas; aceptar solo escalares numéricos o strings
     if val is None or isinstance(val, (list, dict, set, tuple, bool)):
@@ -275,16 +280,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     
-    if isinstance(metrics, (dict, object)):
+    if metrics is not None:
         for key, spec in _VALIDATORS.items():
             _validate_and_assign(ctx, metrics, key, spec)
         ctx.analyzed = True
 
-    if isinstance(health, (dict, object)):
-        score_val = health.get("score") if isinstance(health, dict) else getattr(health, "score", None)
-        if score_val is not None:
-            _validate_and_assign(ctx, {"score": score_val}, "score", (int, 0, 100))
-        
+    if health is not None:
+        _validate_and_assign(ctx, health, "score", (int, 0, 100))
         grade_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
         if isinstance(grade_val, (str, int, float)):
             ctx.grade = str(grade_val)[:10].strip()

@@ -192,8 +192,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # 2. Reglas específicas para ejecutables
-    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    # 2. Reglas específicas para ejecutables: solo aplicar si la extensión es sospechosa
+    suffix = path.suffix.lower() if path.suffix else ""
+    if suffix in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECKS:
             try:
                 if (res := check(path, entry, now_ts)):

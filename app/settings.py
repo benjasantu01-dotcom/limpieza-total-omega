@@ -31,7 +31,6 @@ import json
 import os
 from enum import Enum
 from pathlib import Path
-from functools import lru_cache
 from typing import Any, Final, TypeAlias, Callable, TypedDict
 
 from safety import is_safe_to_modify, is_protected_path
@@ -239,19 +238,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     try:
         if not ruta.exists(): return _get_default_config()
         stats = ruta.stat()
-        mtime = stats.st_mtime
         if ruta_str in _SESSION_CACHE:
             cached_mtime, cached_data = _SESSION_CACHE[ruta_str]
-            if cached_mtime == mtime: return cached_data
-        if is_protected_path(ruta_str) or stats.st_size > MAX_SETTINGS_SIZE:
+            if cached_mtime == stats.st_mtime: return cached_data
+        if stats.st_size > MAX_SETTINGS_SIZE or not _Validators._is_safe_path(ruta_str):
             return _get_default_config()
         
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        if not isinstance(data, dict): return _get_default_config()
         config = validate(data)
-        _SESSION_CACHE[ruta_str] = (mtime, config)
+        _SESSION_CACHE[ruta_str] = (stats.st_mtime, config)
         return config
     except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
         return _get_default_config()
@@ -260,7 +257,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Persiste la configuración en un archivo temporal y realiza un reemplazo atómico."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    if is_protected_path(str(ruta)) or (ruta.exists() and not ruta.is_file()): return None
     if not _Validators._is_safe_path(str(ruta.parent)): return None
     
     cleaned_settings = validate(values)

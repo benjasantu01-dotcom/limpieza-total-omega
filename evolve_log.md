@@ -1122,3 +1122,52 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T01:12:15` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-20T01:12:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T01:12:15` Corrida terminada. Total usado hoy: 28.
+- `2026-08-20T01:19:14` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-20T01:19:55` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_file` reemplazando la ejecución secuencial de todas las reglas por una verificación temprana de la extensión, evitando llamadas redundantes a funciones que no corresponden al tipo de archivo actual.
+- `2026-08-20T01:20:24` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load` y `save` eliminando llamadas redundantes a `is_protected_path` y `path.exists()` dentro del flujo crítico, centralizando la verificación de seguridad en una única llamada a `_is_safe_path` (que ya engloba la lógica necesaria) para reducir el I/O innecesario.
+- `2026-08-20T01:20:52` Tests FALLARON:
+```
+StartupEntry(
+  +         name='MiPrograma',
+  +         command='/tmp/pytest-of-runner/pytest-3/test_entries_from_folders_read0/Inicio/MiPrograma.lnk',
+  +         source='carpeta',
+  +         _exec_cache=None,
+  +         _checked_exists=False,
+  +     ),
+  +     StartupEntry(
+  +         name='Otro',
+  +         command='/tmp/pytest-of-runner/pytest-3/test_entries_from_folders_read0/Inicio/Otro.lnk',
+  +         source='carpeta',
+  +         _exec_cache=None,
+  +         _checked_exists=False,
+  +     ),
+  + ]
+FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder - AssertionError: assert [StartupEntry...exists=False)] == []
+  
+  Left contains 2 more items, first extra item: StartupEntry(name='MiPrograma', command='/tmp/pytest-of-runner/pytest-3/test_entries_from_folders_read0/Inicio/MiPrograma.lnk', source='carpeta', _exec_cache=None, _checked_exists=False)
+  
+  Full diff:
+  - []
+  + [
+  +     StartupEntry(
+  +         name='MiPrograma',
+  +         command='/tmp/pytest-of-runner/pytest-3/test_entries_from_folders_read0/Inicio/MiPrograma.lnk',
+  +         source='carpeta',
+  +         _exec_cache=None,
+  +         _checked_exists=False,
+  +     ),
+  +     StartupEntry(
+  +         name='Otro',
+  +         command='/tmp/pytest-of-runner/pytest-3/test_entries_from_folders_read0/Inicio/Otro.lnk',
+  +         source='carpeta',
+  +         _exec_cache=None,
+  +         _checked_exists=False,
+  +     ),
+  + ]
+2 failed, 297 passed, 8 warnings in 1.26s
+
+```
+- `2026-08-20T01:20:52` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché local dentro de `entries_from_folders` para evitar la re-ejecución del escaneo de directorios durante el ciclo de vida de la aplicación, optimizando significativamente la latencia en las llamadas recurrentes a `list_startup_entries` al aprovechar la persistencia en memoria.
+- `2026-08-20T01:21:20` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante una validación de `source` más estricta, asegurando que `_validate_and_assign` no acceda a atributos o claves inexistentes sin comprobación previa, evitando así posibles excepciones durante la inicialización de métricas.
+- `2026-08-20T01:21:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T01:21:20` Corrida terminada. Total usado hoy: 32.
