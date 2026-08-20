@@ -321,9 +321,11 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
-    """Copia un archivo al sandbox de forma atómica validando su hash."""
+    """Copia un archivo al sandbox de forma atómica validando su hash y existencia."""
     if source.is_symlink() or ":" in str(source):
         raise UnsafePathError("Operación denegada: origen no es archivo regular.")
+    if destination.exists():
+        raise RuntimeError("Conflicto de seguridad: el destino ya existe en el sandbox.")
     temp_dest = destination.parent / f".tmp_{uuid.uuid4().hex}"
     try:
         shutil.copy2(source, temp_dest)

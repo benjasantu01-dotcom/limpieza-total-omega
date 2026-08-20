@@ -342,8 +342,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if p.exists():
             _check_file_integrity(p)
         else:
-            # Validación preventiva para rutas no existentes
+            # Validación preventiva: si el archivo no existe, el padre no debe estar en zona protegida.
             parent = p.parent
+            if parent.exists() and is_protected_path(parent):
+                raise UnsafePathError("Intento de escritura en directorio protegido.")
             if parent.exists() and not os.access(parent, os.W_OK):
                 raise UnsafePathError("Directorio padre sin permisos de escritura.")
         

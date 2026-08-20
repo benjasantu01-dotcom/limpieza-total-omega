@@ -509,3 +509,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T06:48:07` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha restringido el alcance de `delete_reviewed` para que solo elimine archivos que residan físicamente dentro de la carpeta de revisión mediante `is_relative_to`, previniendo que un path manipulado (ej. mediante `..`) pueda escapar del directorio autorizado.
 - `2026-08-20T06:48:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T06:48:07` Corrida terminada. Total usado hoy: 160.
+- `2026-08-20T06:55:58` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-20T06:56:38` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado `_atomic_isolate_file` para asegurar que el archivo de destino en cuarentena no exista previamente antes de realizar la copia, añadiendo una comprobación explícita para evitar condiciones de carrera o sobrescritura accidental durante el proceso de aislamiento.
+- `2026-08-20T06:56:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-20T06:57:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-20T06:57:54` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó `ensure_safe_to_modify` para detectar si el padre de un archivo inexistente reside en una carpeta protegida, evitando la creación accidental de archivos en zonas críticas del sistema.
+- `2026-08-20T06:58:06` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-20T06:58:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T06:58:06` Corrida terminada. Total usado hoy: 164.

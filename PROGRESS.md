@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 141 | 11 | 19 | 13 | 160 |
-| 2026-08-20 | 85 | 4 | 13 | 1 | 57 |
+| 2026-08-19 | 141 | 11 | 19 | 13 | 156 |
+| 2026-08-20 | 87 | 4 | 14 | 1 | 58 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **50**
+- seguridad defensiva: **44**
 - rendimiento: **42**
-- seguridad defensiva: **42**
 - robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
@@ -38,14 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `scanner.py`: **17**
 - `main.py`: **16**
+- `quarantine.py`: **16**
 - `memory.py`: **15**
-- `quarantine.py`: **15**
 - `branding.py`: **9**
-- `safety.py`: **7**
+- `safety.py`: **8**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T06:57:54` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para detectar si el padre de un archivo inexistente reside en una carpeta protegida, evitando la creación accidental de archivos en zonas críticas del sistema.
+- `2026-08-20T06:56:38` **quarantine.py** (seguridad defensiva): Se ha mejorado `_atomic_isolate_file` para asegurar que el archivo de destino en cuarentena no exista previamente antes de realizar la copia, añadiendo una comprobación explícita para evitar condiciones de carrera o sobrescritura accidental durante el proceso de aislamiento.
 - `2026-08-20T06:48:07` **organizer.py** (seguridad defensiva): Se ha restringido el alcance de `delete_reviewed` para que solo elimine archivos que residan físicamente dentro de la carpeta de revisión mediante `is_relative_to`, previniendo que un path manipulado (ej. mediante `..`) pueda escapar del directorio autorizado.
 - `2026-08-20T06:47:56` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` al asegurar que el manejo de recursos (handles de procesos) sea robusto, evitando fugas de memoria o manipulaciones accidentales si la operación falla, garantizando que el `CloseHandle` sea incondicional y el acceso se restrinja a permisos mínimos.
 - `2026-08-20T06:47:30` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `main.py` añadiendo una capa de validación de rutas mediante `safety.ensure_safe_to_modify` en todas las operaciones que inician procesos de modificación de disco (borrado, movimiento o aislamiento), asegurando que incluso ante un error en la lógica de UI, el sistema nunca opere sobre rutas protegidas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T06:06:55` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante hilos huérfanos y condiciones de carrera al cerrar la ventana, asegurando que `_executor` se apague correctamente y se limpien los recursos de la UI antes de que el proceso principal finalice.
 - `2026-08-20T06:05:50` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas maliciosas o errores de programación inyectando una protección explícita contra divisiones por cero en el cálculo de ratios y añadiendo una validación de integridad para el mapa de `ratios` en caso de que alguna función falle o devuelva un valor fuera de rango.
 - `2026-08-20T06:05:24` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `hash_file` y `partial_hash` ante errores de lectura bloqueante o archivos que cambian de estado durante la ejecución mediante un bloque `try-except` más granular y una verificación estricta de la integridad del archivo antes de la lectura.
-- `2026-08-20T05:56:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` ante archivos que desaparecen durante la iteración (concurrencia) y mejoré el manejo de errores en `all_drives_usage` para evitar cuelgues al acceder a unidades externas o sin formato que pueden lanzar errores inesperados al intentar obtener su estado de uso.
-- `2026-08-20T05:56:36` **browser.py** (robustez ante casos límite): Se ha mejorado `_should_skip_entry` para capturar errores `FileNotFoundError` durante la evaluación de atributos, evitando que una entrada eliminada o renombrada externamente durante el escaneo detenga el proceso completo del módulo.
