@@ -208,6 +208,12 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Inicializa el motor de escaneo, valida la raíz y gestiona la cola de directorios
     para una exploración profunda no recursiva (iterativa) del sistema de archivos.
+
+    Args:
+        directory: La ruta inicial desde donde comenzar el escaneo (str o Path).
+
+    Returns:
+        Una lista de objetos Suspicion encontrados durante el recorrido.
     """
     if not directory:
         return []
