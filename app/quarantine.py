@@ -115,14 +115,9 @@ class QuarantineItem:
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """
-        Verifica que el archivo físico coincida con el tamaño y hash registrados.
-        Las fallas de integridad impiden cualquier operación destructiva.
-        
-        Args:
-            stored_path: Ruta del archivo dentro de la cuarentena.
-        Returns:
-            True si la integridad es correcta, False si el archivo no existe,
-            ha sido alterado o los permisos impiden su lectura.
+        Verifica que el archivo físico en el sandbox sea bit-a-bit idéntico al original.
+        Previene la ejecución o restauración de archivos que hayan sido alterados mientras 
+        estaban en cuarentena, invalidando la operación si el hash o tamaño no coinciden.
         """
         if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
             return False
@@ -151,7 +146,11 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva."""
+    """
+    Intenta abrir un archivo para determinar si está bloqueado por otro proceso.
+    Crucial antes de mover archivos para evitar dejar el sistema en un estado 
+    inconsistente o perder datos durante la copia.
+    """
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
@@ -164,7 +163,8 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """
     Elimina un archivo tras validar seguridad.
-    Precondición: La ruta ya fue validada como parte del sandbox en el caller.
+    Esta función es el único punto de salida destructivo, asegurando que solo se 
+    borre el archivo si este reside realmente en el sandbox autorizado.
     """
     try:
         if path.is_file() and not path.is_symlink() and is_safe_to_modify(path):
@@ -186,7 +186,11 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
 
 
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Retorna la ruta absoluta al directorio de cuarentena, creándolo si es necesario."""
+    """
+    Retorna la ruta absoluta al directorio de cuarentena, creándolo si es necesario.
+    Implementa validación de seguridad contra rutas protegidas del sistema antes de 
+    cualquier operación de disco.
+    """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
@@ -214,11 +218,8 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 def _check_windows_file_attributes(path_str: str) -> None:
     """
     Verifica atributos de archivo (sistema, oculto, solo lectura) en Windows.
-    
-    Args:
-        path_str: Ruta absoluta del archivo a inspeccionar.
-    Raises:
-        UnsafePathError: Si el archivo posee atributos restringidos.
+    Previene manipular archivos críticos marcados como 'sistema' que, de ser 
+    movidos, causarían inestabilidad inmediata en el OS.
     """
     if os.name != 'nt':
         return
@@ -233,7 +234,8 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """
-    Valida la sintaxis de la ruta para prevenir inyecciones o navegación maliciosa.
+    Valida la sintaxis de la ruta para prevenir ataques de inyección o navegación 
+    maliciosa de directorios (Directory Traversal).
     """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
@@ -299,7 +301,11 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando un archivo temporal para asegurar atomicidad."""
+    """
+    Persiste el manifiesto usando un archivo temporal para asegurar atomicidad.
+    Garantiza que, ante un fallo eléctrico o de proceso, el manifiesto antiguo no 
+    se corrompa, manteniendo la integridad de la base de datos de cuarentena.
+    """
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     base_path = quarantine_dir(base)
@@ -321,7 +327,11 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
-    """Copia un archivo al sandbox de forma atómica validando su hash y existencia."""
+    """
+    Copia un archivo al sandbox de forma atómica validando su hash y existencia.
+    Asegura que el archivo en cuarentena sea una copia exacta antes de permitir 
+    el borrado del original, mitigando pérdida de datos.
+    """
     if source.is_symlink() or ":" in str(source):
         raise UnsafePathError("Operación denegada: origen no es archivo regular.")
     if destination.exists():
@@ -421,16 +431,8 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un ítem desde el sandbox a su ubicación original tras verificar integridad.
-    
-    Args:
-        item_id: ID único del ítem a restaurar.
-        base: Directorio base de la cuarentena.
-    Returns:
-        La ruta donde se restauró el archivo.
-    Raises:
-        KeyError: Si el item_id no existe.
-        UnsafePathError: Si hay intentos de escritura fuera de los límites.
-        RuntimeError: Si la integridad del archivo está dañada o falla la operación de disco.
+    Implementa validaciones estrictas para asegurar que el usuario no pueda restaurar 
+    un archivo a una ubicación protegida o sobrescribir archivos existentes peligrosamente.
     """
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido o vacío.")
@@ -465,7 +467,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """Borra un archivo de la cuarentena permanentemente tras verificar su integridad."""
+    """
+    Borra un archivo de la cuarentena permanentemente tras verificar su integridad.
+    La verificación previa asegura que no se están borrando archivos en mal estado o 
+    modificados fuera del flujo de control de la app.
+    """
     if not isinstance(item_id, str) or not item_id.strip():
         return False
     items = load_manifest(base)

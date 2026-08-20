@@ -34,9 +34,9 @@ class Suspicion:
     severity: str
 
 # Alias para funciones que evalúan un archivo y retornan una sospecha o None.
-# Argumentos: 
-#   path: Ruta del archivo.
-#   entry: Objeto DirEntry opcional (usar para evitar llamadas a stat si está disponible).
+# Args:
+#   path: Ruta del archivo a inspeccionar.
+#   entry: Objeto DirEntry opcional (se usa para evitar llamadas adicionales a stat).
 #   now_ts: Timestamp actual (epoch) para cálculos de antigüedad.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
@@ -67,7 +67,7 @@ class Scanner:
         results: Lista acumulada de hallazgos encontrados.
         seen: Conjunto de rutas ya procesadas para evitar ciclos en enlaces simbólicos.
         base_root: Ruta raíz resuelta desde donde se inicia el escaneo.
-        now_ts: Timestamp para cálculos de antigüedad.
+        now_ts: Timestamp capturado al inicio para consistencia en cálculos de antigüedad.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -78,8 +78,12 @@ class Scanner:
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """
-        Verifica que la ruta resuelta se mantenga dentro de la jerarquía de `base_root`
-        para evitar escapes de directorio durante la recursión.
+        Valida que una ruta resuelta esté dentro de la jerarquía de `base_root`.
+        
+        Args:
+            entry_path: Ruta a verificar.
+        Returns:
+            True si la ruta está contenida en la raíz, False en caso contrario.
         """
         try:
             resolved = entry_path.resolve()
@@ -89,8 +93,12 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta puntos de reanálisis (reparse points) como Junctions o Symlinks
-        evitando el procesamiento recursivo de carpetas fuera del sistema de archivos local.
+        Detecta puntos de reanálisis (reparse points) como Junctions o Symlinks.
+        
+        Args:
+            entry: Objeto DirEntry de la entrada a evaluar.
+        Returns:
+            True si es un punto de reanálisis, False si es un directorio estándar.
         """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -99,8 +107,12 @@ class Scanner:
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
-        Analiza un elemento del sistema de archivos, aplicando filtros de seguridad
-        y determinando si debe ser explorado (directorio) o analizado (archivo).
+        Analiza un elemento del sistema de archivos. Aplica filtros de seguridad,
+        detecta ofuscación y gestiona la recursión en directorios.
+
+        Args:
+            entry: Objeto DirEntry a procesar.
+            stack: Pila de directorios pendientes por explorar.
         """
         if entry is None or not entry.path:
             return
@@ -108,23 +120,18 @@ class Scanner:
         try:
             target_path = Path(entry.path)
             
-            # Chequeo de seguridad preventivo contra rutas protegidas o rutas UNC
             if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
 
-            # Control de navegación: evitar punteros que puedan causar bucles infinitos
             if entry.is_symlink() or self._is_reparse_point(entry):
                 return
 
-            # Restricción de alcance al directorio raíz definido
             if not self._is_safe_entry(target_path):
                 return
             
-            # Detectar ofuscación por caracteres de control RTL en el nombre
             if RTL_CHAR_RE.search(target_path.name):
                 self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
 
-            # Validar tipo de entrada antes de operar
             if entry.is_dir(follow_symlinks=False):
                 path_str = str(target_path)
                 if path_str not in self.seen:
@@ -140,10 +147,7 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Detecta nombres con extensiones múltiples, técnica común para ocultar ejecutables maliciosos.
-    Retorna un objeto Suspicion si se detecta el patrón, caso contrario None.
-    """
+    """Detecta nombres con extensiones múltiples para ocultar ejecutables."""
     if not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -152,10 +156,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Analiza ejecutables en directorios de alto riesgo (Descargas, Temp) comparando el 
-    timestamp de modificación contra el umbral RECENT_FILE_THRESHOLD_HOURS.
-    """
+    """Analiza la antigüedad de ejecutables en carpetas de riesgo (Descargas, Temp)."""
     if is_protected_path(path):
         return None
     
@@ -164,7 +165,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        # Validación robusta de existencia y acceso a metadatos
         stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'stat')) else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
@@ -174,10 +174,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """
-    Compara el nombre del archivo con una lista blanca de procesos del sistema.
-    Si coincide pero no reside en system32, marca sospecha de suplantación.
-    """
+    """Verifica si un ejecutable intenta suplantar procesos críticos del sistema."""
     if not path.name:
         return None
         
@@ -189,8 +186,14 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
-    Filtra por extensión para aplicar solo las reglas de seguridad relevantes.
+    Ejecuta todas las reglas heurísticas sobre un archivo.
+    
+    Args:
+        path: Ruta del archivo.
+        now_ts: Timestamp actual.
+        entry: Objeto DirEntry opcional asociado.
+    Returns:
+        Lista de objetos Suspicion encontrados.
     """
     if path is None or not path.exists():
         return []
@@ -203,11 +206,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
     findings: ScanResult = []
     
-    # 1. Reglas generales (no dependen de la extensión)
+    # 1. Reglas generales
     if (res := check_double_extension(path, entry, now_ts)):
         findings.append(res)
     
-    # 2. Reglas específicas para ejecutables: solo aplicar si la extensión es sospechosa
+    # 2. Reglas específicas para ejecutables
     suffix = path.suffix.lower() if path.suffix else ""
     if suffix in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECKS:
@@ -222,13 +225,12 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Inicializa el motor de escaneo y realiza la iteración profunda del sistema de archivos.
+    Inicia el escaneo recursivo en la ruta especificada.
     
     Args:
-        directory: Ruta base de inicio. Validada contra protección y existencia.
-
+        directory: Ruta raíz de inicio.
     Returns:
-        Lista de hallazgos (ScanResult) encontrados durante el recorrido iterativo.
+        Resultados acumulados de todas las detecciones.
     """
     if not directory:
         return []
@@ -237,7 +239,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         raw_path = Path(directory)
         if not raw_path.exists():
             return []
-        # Validación explícita de la ruta base
         path_input = raw_path.resolve(strict=True)
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
@@ -264,10 +265,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
-    """
-    Interacción externa con PowerShell para consultar estado de protección
-    en tiempo real y disparar un escaneo de Windows Defender.
-    """
+    """Ejecuta consulta de estado y escaneo rápido mediante PowerShell."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
