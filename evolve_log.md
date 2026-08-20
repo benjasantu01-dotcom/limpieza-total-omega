@@ -1171,3 +1171,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder
 - `2026-08-20T01:21:20` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante una validación de `source` más estricta, asegurando que `_validate_and_assign` no acceda a atributos o claves inexistentes sin comprobación previa, evitando así posibles excepciones durante la inicialización de métricas.
 - `2026-08-20T01:21:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T01:21:20` Corrida terminada. Total usado hoy: 32.
+- `2026-08-20T01:29:29` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-20T01:30:30` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado `save_logo_svg` para manejar robustamente la creación de rutas, incluyendo la validación explícita mediante `is_safe_to_modify` antes de intentar crear directorios o escribir el archivo, previniendo errores en casos límite de permisos o rutas de sistema.
+- `2026-08-20T01:31:03` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_system_hidden` para evitar falsos positivos y errores ante rutas inexistentes o inaccesibles, asegurando que la validación de archivos ocultos/sistema sea resiliente ante cambios inesperados en el sistema de archivos durante la iteración.
+- `2026-08-20T01:31:37` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-20T01:32:01` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-20T01:32:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T01:32:01` Corrida terminada. Total usado hoy: 36.
