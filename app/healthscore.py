@@ -160,15 +160,13 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Evalúa la salud de la memoria: 1.0 si supera el umbral, proporcional si es menor."""
-    val = _to_float(available_percent)
     if _LIMIT_RAM_PERCENT <= 0: return 0.0
-    return _clamp(val / _LIMIT_RAM_PERCENT, 0.0, 1.0)
+    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Evalúa el estado del disco: 1.0 si el espacio libre es óptimo según el umbral."""
-    val = _to_float(free_percent)
     if _LIMIT_DISK_PERCENT <= 0: return 0.0
-    return _clamp(val / _LIMIT_DISK_PERCENT, 0.0, 1.0)
+    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud basado en el espacio desperdiciado por duplicados."""
@@ -217,7 +215,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[MetricKey, int] = {}
     final_score = 0
     for area, weight in _WEIGHT_ITEMS_INT:
-        # Validación defensiva: asegurar que el área existe en los resultados calculados
         ratio = ratios.get(area, 0.0)
         puntos = int(round(_clamp(ratio, 0.0, 1.0) * weight))
         breakdown[area] = puntos

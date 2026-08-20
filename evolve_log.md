@@ -1462,3 +1462,12 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-20T04:06:15` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las funciones de hash y el buscador de candidatos añadiendo validación explícita para asegurar que los objetos `Path` sean válidos antes de su uso, mitigando riesgos de `NoneType` o errores de sistema al iterar sobre entradas inválidas.
 - `2026-08-20T04:06:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T04:06:15` Corrida terminada. Total usado hoy: 96.
+- `2026-08-20T04:12:39` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-20T04:13:13` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` agregando una validación explícita para evitar divisiones por cero en los cálculos de los ratios si las constantes globales llegaran a alterarse accidentalmente, y asegurando que `summarize` maneje de forma segura métricas faltantes en el desglose.
+- `2026-08-20T04:14:13` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-20T04:15:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-20T04:16:25` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la carga de pestañas agregando un chequeo de existencia de los widgets en el método `_tab_factory`, evitando excepciones si el usuario cambia de pestaña rápidamente antes de que el layout termine de construirse.
+- `2026-08-20T04:16:56` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-20T04:17:08` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas de origen y destino sean efectivamente archivos o directorios reales antes de proceder, previniendo errores de `OSError` al intentar operar sobre rutas inexistentes o mal formadas.
+- `2026-08-20T04:17:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T04:17:08` Corrida terminada. Total usado hoy: 100.

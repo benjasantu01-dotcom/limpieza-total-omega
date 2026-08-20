@@ -242,6 +242,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
+        # Validar tipo de ruta destino antes de continuar
         if not dest_base.is_dir() or not is_safe_to_modify(dest_base): 
             return None
     except (OSError, PermissionError, RuntimeError):
@@ -251,14 +252,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile): continue
         try:
             src_path: Path = junk_file.path.resolve()
-            if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base):
+            # Validar existencia de src antes de operar
+            if not src_path.is_file() or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
             target: Path = _generate_unique_target(dest_base / f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}")
             
             ensure_safe_to_modify(src_path)
-            if src_path.exists():
-                shutil.move(str(src_path), str(target))
+            shutil.move(str(src_path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
             continue
     return dest_base
@@ -282,6 +283,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not item.is_file() or _is_junction(item):
                 continue
             resolved_item: Path = item.resolve()
+            # Confirmar que está bajo la carpeta revisión y seguro para operar
             if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)
