@@ -106,7 +106,6 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        # Validación estricta de tipos y rangos
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -149,9 +148,7 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    s_count = max(0, _to_int(suspicious_count))
-    s_warn = max(0, _to_int(warnings))
-    return _clamp(1.0 - ((s_count * 0.05) + (s_warn * 0.25)), 0.0, 1.0)
+    return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     return 0.0 if _LIMIT_RAM_PERCENT <= 0 else _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0)
@@ -177,15 +174,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
         return HealthResult(0, "F", {}, ["Error: Configuración inestable."])
     
-    # Pre-validación defensiva
     try:
         metrics.validate()
-        if not metrics.is_finite():
-            raise ValueError("Datos no numéricos detectados")
+        if not metrics.is_finite(): raise ValueError
     except (ValueError, TypeError, AttributeError):
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
 
-    ratios: ScoreMap = {
+    ratios = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
         "disco": score_disk(metrics.disk_free_percent),
         "memoria": score_memory(metrics.memory_available_percent),
@@ -194,29 +189,18 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         "arranque": score_startup(metrics.startup_count)
     }
     
-    breakdown: Dict[MetricKey, int] = {}
-    final_score: int = 0
+    breakdown = {}
+    final_score = 0
     for area, weight in _WEIGHT_ITEMS_INT:
-        ratio = ratios.get(area, 0.0)
-        puntos = int(round(_clamp(ratio, 0.0, 1.0) * weight))
+        puntos = int(round(_clamp(ratios[area], 0.0, 1.0) * weight))
         breakdown[area] = puntos
         final_score += puntos
     
-    final_score = int(_clamp(float(final_score), 0.0, 100.0))
-    
-    recommendations: List[str] = [
-        rule.message_factory(metrics) 
-        for rule in _RECOMMENDATION_RULES 
-        if rule.check(metrics, ratios.get(rule.area, 0.0))
-    ]
-    
+    recommendations = [r.message_factory(metrics) for r in _RECOMMENDATION_RULES if r.check(metrics, ratios[r.area])]
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
-    if not recommendations:
-        recommendations = ["No hay nada urgente para hacer. El sistema está en buen estado."]
-
-    return HealthResult(final_score, grade_for_score(final_score), breakdown, recommendations)
+    return HealthResult(final_score, grade_for_score(final_score), breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def summarize(result: HealthResult) -> List[str]:
     if not isinstance(result, HealthResult): return ["Error: Formato inválido."]

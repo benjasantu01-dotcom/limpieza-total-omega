@@ -206,7 +206,12 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    processes = [proc for line in raw_csv_text.splitlines() if (proc := _parse_csv_row(line))]
+    processes = []
+    for line in raw_csv_text.splitlines():
+        proc = _parse_csv_row(line)
+        if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
+            processes.append(proc)
+            
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:max(0, limit)]
 
