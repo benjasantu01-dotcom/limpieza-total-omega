@@ -80,7 +80,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         return None
         
     try:
-        file_path = Path(path).resolve(strict=True)
+        p = Path(path)
+        if not p.exists(): return None
+        file_path = p.resolve(strict=True)
         if not file_path.is_file() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
 
@@ -111,7 +113,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
         
     try:
-        file_path = Path(path).resolve(strict=True)
+        p = Path(path)
+        if not p.exists(): return None
+        file_path = p.resolve(strict=True)
         if not file_path.is_file() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
             return None
             
@@ -179,8 +183,8 @@ def _collect_candidates(
     for item in directories:
         try:
             if not item: continue
-            path_item = Path(item).resolve(strict=True)
-            if path_item.is_dir(): _scan(path_item)
+            path_item = Path(item)
+            if path_item.exists() and path_item.is_dir(): _scan(path_item.resolve())
         except (OSError, RuntimeError, ValueError, TypeError): continue
             
     final_groups = defaultdict(list)
@@ -206,7 +210,7 @@ def _refine_by_hash(
     
     for path in paths:
         try:
-            target = path.resolve(strict=True)
+            target = Path(path).resolve(strict=True)
             if not target.is_file(): continue
             digest = hash_func(target)
             if digest:
@@ -269,7 +273,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            target = p.resolve(strict=True)
+            target = Path(p).resolve(strict=True)
             if not target.is_file() or is_protected_path(target) or not is_safe_to_modify(target):
                 continue
             stat_info = target.stat()
@@ -295,7 +299,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
         try:
-            target = path.resolve(strict=True)
+            target = Path(path).resolve(strict=True)
             is_keeper = (keeper is not None and target == keeper)
         except (OSError, PermissionError, FileNotFoundError, TypeError):
             is_keeper = False

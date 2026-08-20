@@ -97,8 +97,8 @@ def base_directories() -> List[Path]:
     if os.name != "nt":
         return []
     
-    local: Optional[str] = os.environ.get("LOCALAPPDATA")
-    if not local or not isinstance(local, str):
+    local = os.environ.get("LOCALAPPDATA")
+    if not isinstance(local, str) or not local:
         return []
     
     try:
@@ -199,7 +199,7 @@ def _sum_directory_recursive(
     Realiza un recorrido DFS para sumar el tamaño de los archivos, usando memoization
     para evitar redundancia y MAX_SCAN_DEPTH para limitar la recursión.
     """
-    if not root_dir or not isinstance(root_dir, str):
+    if not isinstance(root_dir, str) or not root_dir:
         return 0
     
     try:
@@ -227,7 +227,6 @@ def _sum_directory_recursive(
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     try:
-                        # Validación defensiva extra: verificar protección de la sub-ruta antes de entrar
                         if is_protected_path(Path(entry.path)):
                             continue
                         if entry.is_dir():
@@ -303,14 +302,15 @@ def detect_profiles(
         except (OSError, PermissionError): continue
             
         for browser_name, rel_str in cache_paths.items():
-            if not isinstance(rel_str, str): continue
+            if not isinstance(browser_name, str) or not isinstance(rel_str, str): 
+                continue
             try:
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base):
                     c_path = candidate.resolve()
                     size = _sum_directory_recursive(str(c_path), is_junction, k32, perf_cache)
                     if size > 0:
-                        found.append(BrowserCache(str(browser_name), c_path, size))
+                        found.append(BrowserCache(browser_name, c_path, size))
             except (OSError, PermissionError): continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)

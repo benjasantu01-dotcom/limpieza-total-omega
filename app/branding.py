@@ -415,7 +415,7 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el logo en disco previa validación de seguridad estricta."""
-    if not destination:
+    if destination is None or str(destination).strip() == "":
         return None
     try:
         path_obj = Path(destination).expanduser().resolve()
@@ -526,6 +526,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
+        if percent is None: return
         valor: float = float(percent)
         diametro: int = max(20, int(size))
         grosor: int = max(2, min(int(thickness), diametro // 2 - 1))

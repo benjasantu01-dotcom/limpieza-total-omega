@@ -159,6 +159,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve(strict=False)
+        # Verificar existencia antes de consultar para evitar errores en unidades removibles
         if not p.exists():
             return None
             
@@ -189,7 +190,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     results: List[DriveUsage] = []
     if mounts and isinstance(mounts, Iterable):
         for mount in mounts:
-            if isinstance(mount, (str, os.PathLike)) and not str(mount).startswith(("\\\\", "//")):
+            # Validar que la cadena no sea vacía y no sea una ruta UNC problemática
+            if mount and isinstance(mount, (str, os.PathLike)) and not str(mount).startswith(("\\\\", "//")):
                 usage = drive_usage(mount)
                 if usage:
                     results.append(usage)
