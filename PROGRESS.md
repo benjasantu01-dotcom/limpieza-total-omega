@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **210** (41.7% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 229
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 34 | 2 | 6 | 2 | 22 |
+| 2026-08-18 | 31 | 2 | 6 | 1 | 22 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 37 | 3 | 6 | 1 | 41 |
+| 2026-08-20 | 38 | 3 | 6 | 1 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **46**
 - seguridad defensiva: **44**
 - rendimiento: **41**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **23**
 - `settings.py`: **22**
-- `assistant.py`: **22**
-- `diskreport.py`: **21**
-- `duplicates.py`: **19**
-- `healthscore.py`: **19**
+- `diskreport.py`: **20**
 - `organizer.py`: **19**
 - `scanner.py`: **18**
+- `duplicates.py`: **18**
+- `healthscore.py`: **18**
 - `quarantine.py`: **15**
 - `main.py`: **15**
 - `browser.py`: **13**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T03:55:54` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de errores en `build_context` y `_validate_and_assign` mediante la validación explícita de `spec` y el tipo de dato recibido, evitando que valores inesperados pasen silenciosamente y asegurando que las métricas procesadas sean siempre numéricas y finitas, cumpliendo con el enfoque de manejo de errores.
 - `2026-08-20T02:32:26` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.path` y `_Validators._is_safe_path` para garantizar que la resolución de rutas mediante `path.resolve(strict=False)` no sea vulnerada por enlaces simbólicos o junctions que apunten fuera de los directorios permitidos, previniendo el "path traversal" incluso si el usuario intenta configurar una ruta malintencionada.
 - `2026-08-20T02:22:44` **organizer.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_is_safe_for_disk_op` para validar explícitamente que la ruta de destino no sea una subcarpeta del origen, evitando así operaciones de movimiento lógico o físico que podrían corromper la jerarquía de archivos o inducir errores de recursión profunda en sistemas de archivos complejos.
 - `2026-08-20T02:22:19` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` asegurando que el buffer de memoria sea gestionado y validado correctamente antes de intentar convertirlo a string, evitando lecturas fuera de rango o manipulación insegura de punteros en la interacción con la API de Windows.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T01:50:34` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos de escritura (como interrupciones de disco o falta de permisos durante la copia atómica) envolviendo la persistencia del manifiesto en un bloque de control de errores para asegurar que el sistema no quede en un estado inconsistente donde el archivo existe en disco pero no está registrado.
 - `2026-08-20T01:42:17` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `organizer.py` ante errores de entrada y condiciones de carrera, integrando validaciones de tipo y estructura más estrictas para prevenir que rutas inexistentes o malformadas interrumpan el proceso de escaneo o limpieza.
 - `2026-08-20T01:41:58` **memory.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `_parse_csv_row` para manejar fallos en la división de cadenas y entradas malformadas, evitando que el proceso de parsing del CSV se interrumpa ante datos inesperados del sistema, mejorando así la resiliencia del módulo ante procesos con nombres complejos o caracteres no estándar.
-- `2026-08-20T01:41:21` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta en el método `on_delete_reviewed` para garantizar que la carpeta de revisión sea una ruta válida y segura antes de intentar cualquier operación de borrado, evitando fallos si el directorio no existe o fue manipulado externamente.

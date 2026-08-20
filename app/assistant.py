@@ -179,7 +179,7 @@ _VALIDATORS: Final[dict[str, ValidatorSpec]] = {
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Conversión defensiva de tipos numéricos evitando excepciones y valores no finitos."""
-    if isinstance(val, (list, dict, set, tuple)):
+    if isinstance(val, (list, dict, set, tuple, bool)):
         return default
     try:
         f = float(val)
@@ -247,6 +247,9 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     Extrae, normaliza y asigna una métrica de forma defensiva dentro de los rangos
     permitidos, verificando finitud y tipos de dato para evitar errores silenciosos.
     """
+    if not isinstance(spec, tuple) or len(spec) != 3:
+        return
+
     cast, min_v, max_v = spec
     
     # Solo procesar si es un contenedor navegable
