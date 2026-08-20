@@ -153,29 +153,29 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio (0.0-1.0) de salud basado en la proximidad al límite de basura."""
+    """Calcula el ratio (0.0-1.0) normalizando según _LIMIT_JUNK_MB."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa la seguridad: penalización fija por hallazgos críticos y advertencias."""
+    """Calcula el ratio de seguridad aplicando penalizaciones fijas por incidencia."""
     s_count = max(0, _to_int(suspicious_count))
     s_warn = max(0, _to_int(warnings))
     return _clamp(1.0 - ((s_count * 0.05) + (s_warn * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Evalúa la salud de la memoria según el porcentaje disponible respecto al umbral."""
+    """Calcula el ratio de salud de memoria respecto al umbral definido."""
     return 0.0 if _LIMIT_RAM_PERCENT <= 0 else _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Evalúa la salud del disco según el espacio libre disponible respecto al umbral."""
+    """Calcula el ratio de salud de disco respecto al umbral definido."""
     return 0.0 if _LIMIT_DISK_PERCENT <= 0 else _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud basado en el espacio desperdiciado por duplicados."""
+    """Calcula el ratio de salud normalizando respecto a _LIMIT_DUPLICATE_MB."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Puntúa el arranque: mayor conteo de programas resulta en una penalización lineal."""
+    """Calcula el ratio de salud de arranque normalizando respecto a _LIMIT_STARTUP_COUNT."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
@@ -215,7 +215,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     }
     
     breakdown: Dict[MetricKey, int] = {}
-    final_score = 0
+    final_score: int = 0
     for area, weight in _WEIGHT_ITEMS_INT:
         ratio = ratios.get(area, 0.0)
         puntos = int(round(_clamp(ratio, 0.0, 1.0) * weight))
@@ -226,7 +226,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     final_score = int(_clamp(float(final_score), 0.0, 100.0))
     
     # Uso de get con default para evitar errores si una regla referencia un área inexistente
-    recommendations = [
+    recommendations: List[str] = [
         rule.message_factory(metrics) 
         for rule in _RECOMMENDATION_RULES 
         if rule.check(metrics, ratios.get(rule.area, 0.0))

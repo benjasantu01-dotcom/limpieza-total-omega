@@ -231,7 +231,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except tk.TclError:
                 pass
 
-    def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs: Any) -> ctk.CTkLabel:
+    def _create_styled_label(self, parent: ctk.CTk, text: str, style: str, **kwargs: Any) -> ctk.CTkLabel:
         """
         Instancia una etiqueta con formato visual extraído del branding global.
         
@@ -345,7 +345,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _tab_factory(self, name: str) -> None:
         """
-        Delega la construcción del contenido de cada pestaña a sus métodos específicos.
+        Delega la construcción del contenido de cada pestaña a sus métodos específicos
+        bajo un esquema de carga perezosa para optimizar el inicio.
         """
         if self._initialized_tabs.get(name):
             return

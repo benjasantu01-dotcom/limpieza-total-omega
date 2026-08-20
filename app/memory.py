@@ -81,10 +81,7 @@ _last_proc_fetch: float = 0.0
 _cached_proc_output: str = ""
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """
-    Estructura binaria para la API Win32 GlobalMemoryStatusEx.
-    Utilizada para consultar el estado global de la memoria física y virtual.
-    """
+    """Estructura interna para la llamada Win32 GlobalMemoryStatusEx."""
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -98,33 +95,33 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Instancia la estructura MEMORYSTATUSEX configurando su tamaño requerido."""
+    """Crea e inicializa la estructura de estado de memoria con su tamaño."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
 
 @dataclass(frozen=True)
 class MemorySnapshot:
-    """Representa el estado global de la memoria física y virtual del sistema."""
+    """Instantánea inmutable del estado global de memoria del sistema."""
     total: BytesValue
     available: BytesValue
     cached: BytesValue = 0
 
     @property
     def used(self) -> BytesValue:
-        """Calcula el uso real restando la memoria disponible al total."""
+        """Calcula los bytes en uso restando los disponibles al total."""
         return max(0, self.total - self.available)
 
     @property
     def used_percent(self) -> float:
-        """Retorna el porcentaje de ocupación física actual (0-100)."""
+        """Porcentaje de ocupación física (0-100)."""
         if self.total <= 0:
             return 0.0
         return round((self.used / self.total) * 100, 1)
 
     @property
     def available_percent(self) -> float:
-        """Retorna el porcentaje de disponibilidad de memoria (0-100)."""
+        """Porcentaje de disponibilidad física (0-100)."""
         if self.total <= 0:
             return 0.0
         return round((self.available / self.total) * 100, 1)
@@ -132,7 +129,7 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Metadatos de consumo de memoria de un proceso individual."""
+    """Modelo de datos para el consumo de memoria de un proceso individual."""
     name: str
     pid: int
     working_set: BytesValue
@@ -140,14 +137,12 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Retorna el Working Set normalizado en Megabytes."""
+        """Representa el Working Set del proceso convertido a MB."""
         return round(self.working_set / BYTES_IN_MB, 1)
 
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """
-    Formatea una cantidad de bytes a una cadena legible (ej: 1.5 MB).
-    """
+    """Convierte bytes a una representación legible por humanos."""
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -158,7 +153,10 @@ def format_bytes(num: Optional[int | float]) -> str:
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     """
-    Analiza el contenido crudo de /proc/meminfo en sistemas Linux.
+    Parsea el contenido de /proc/meminfo a MemorySnapshot.
+    
+    Args:
+        meminfo_text: Contenido crudo del archivo /proc/meminfo.
     """
     if not meminfo_text:
         return MemorySnapshot(0, 0)
@@ -179,9 +177,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """
-    Extracts a ProcessMemory object from a CSV line (Name,PID,WorkingSet).
-    """
+    """Extrae un objeto ProcessMemory desde una línea CSV con formato Nombre,PID,WorkingSet."""
     if not isinstance(csv_line, str):
         return None
     line = csv_line.strip()
@@ -207,7 +203,11 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Processes multiple CSV process lines and sorts them by memory usage.
+    Convierte una salida multilínea de PowerShell en una lista ordenada de ProcessMemory.
+    
+    Args:
+        raw_csv_text: Salida de texto cruda desde PowerShell.
+        limit: Cantidad máxima de procesos a retornar.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
@@ -218,9 +218,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """
-    Obtiene el estado de memoria vía llamada nativa GlobalMemoryStatusEx.
-    """
+    """Llama a la Win32 API para obtener el estado global de RAM física."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return MemorySnapshot(0, 0)
@@ -240,9 +238,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 
 def read_snapshot() -> MemorySnapshot:
-    """
-    Función de acceso unificada para obtener una instantánea de memoria del host.
-    """
+    """Lee el estado del sistema actual, diferenciando entre NT (Windows) y Linux."""
     if os.name == "nt":
         try:
             return _read_windows_snapshot()
@@ -258,7 +254,7 @@ def read_snapshot() -> MemorySnapshot:
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
-    Obtiene los procesos más pesados mediante una consulta PowerShell cacheada.
+    Consulta procesos pesados vía PowerShell con caché de 30 segundos.
     """
     global _last_proc_fetch, _cached_proc_output
     
@@ -280,9 +276,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=2)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """
-    Clasifica el nivel de estrés de memoria según el porcentaje disponible.
-    """
+    """Clasifica el nivel de estrés del sistema basándose en la disponibilidad."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     
@@ -294,9 +288,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """
-    Genera un diagnóstico narrativo sobre el estado de la RAM.
-    """
+    """Genera una serie de mensajes narrativos sobre la salud de la memoria."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     
@@ -323,14 +315,14 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
 
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si un proceso dado es crítico para la estabilidad del SO."""
+    """Valida si un PID es crítico para el SO o un PID de bajo nivel."""
     if not isinstance(pid, int) or pid <= 0:
         return True
     return pid in SYSTEM_CRITICAL_PIDS or pid < 100
 
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
-    """Resuelve la ruta absoluta del ejecutable desde un handle de Win32."""
+    """Resuelve la ruta absoluta del ejecutable usando la Win32 QueryFullProcessImageNameW."""
     if not handle or handle == -1:
         return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
@@ -349,7 +341,10 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 
 
 def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
-    """Realiza chequeos de seguridad antes de permitir la liberación de RAM."""
+    """
+    Chequeos de seguridad previos a la liberación de memoria.
+    Verifica estado, existencia y que la ruta del ejecutable no sea protegida.
+    """
     if not proc_handle or proc_handle == -1:
         return False, "Handle inválido."
 
@@ -374,7 +369,14 @@ def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita al S.O. liberar el Working Set (RAM residente) de un proceso."""
+    """
+    Solicita al S.O. liberar el Working Set (RAM residente) de un proceso.
+    
+    Args:
+        pid: Identificador del proceso a liberar.
+    Returns:
+        Tupla (éxito, mensaje explicativo).
+    """
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
