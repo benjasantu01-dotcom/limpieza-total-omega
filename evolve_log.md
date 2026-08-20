@@ -1406,3 +1406,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-20T14:48:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-08-20T14:48:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T14:48:13` Corrida terminada. Total usado hoy: 348.
+- `2026-08-20T14:56:13` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-20T14:56:42` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejora la robustez ante errores de E/S y permisos denegados al invocar `stat()` en archivos durante el recorrido, asegurando que `total` sea un acumulador resiliente que no interrumpa el escaneo si un archivo individual no puede ser leído.
+- `2026-08-20T14:57:09` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-20T14:57:09` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-20T14:57:09` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T14:57:09` Corrida terminada. Total usado hoy: 350.

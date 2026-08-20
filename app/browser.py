@@ -233,8 +233,8 @@ def _sum_directory_recursive(
                         total += _walk(entry.path, depth + 1)
                     elif entry.is_file():
                         try:
-                            file_size = entry.stat(follow_symlinks=False).st_size
-                            total += max(0, file_size)
+                            # Captura de errores individual para archivos bloqueados o inaccesibles
+                            total += max(0, entry.stat(follow_symlinks=False).st_size)
                         except (OSError, PermissionError):
                             continue
         except (PermissionError, OSError, FileNotFoundError):

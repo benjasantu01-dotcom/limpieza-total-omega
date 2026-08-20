@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **220** (43.8% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 9
 - Sin respuesta de la IA (error o límite): 227
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 56 | 4 | 8 | 4 | 84 |
-| 2026-08-20 | 165 | 12 | 23 | 5 | 143 |
+| 2026-08-19 | 54 | 4 | 7 | 4 | 83 |
+| 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **52**
 - rendimiento: **41**
-- seguridad defensiva: **37**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,15 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **17**
-- `quarantine.py`: **16**
-- `browser.py`: **14**
+- `browser.py`: **15**
+- `quarantine.py`: **15**
 - `main.py`: **14**
 - `branding.py`: **9**
-- `safety.py`: **7**
 - `startup.py`: **7**
+- `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T14:56:42` **browser.py** (robustez ante casos límite): Se mejora la robustez ante errores de E/S y permisos denegados al invocar `stat()` en archivos durante el recorrido, asegurando que `total` sea un acumulador resiliente que no interrumpa el escaneo si un archivo individual no puede ser leído.
 - `2026-08-20T14:47:40` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor local ante valores nulos, vacíos o mal formados en `handle_ram` y `handle_disk`, evitando comportamientos inesperados o cálculos erróneos si el contexto de sistema llega con datos incompletos.
 - `2026-08-20T14:46:30` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `update()` evitando la serialización completa de datos en el caché y utilizando un diccionario de `Enum` para evitar la búsqueda constante por strings durante las validaciones.
 - `2026-08-20T14:37:12` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `process_entry` moviendo la validación de extensiones y rutas de sistema al principio para evitar el acceso al sistema de archivos (`stat`) en archivos que claramente no son sospechosos ni ejecutables, reduciendo drásticamente las llamadas a I/O innecesarias durante el recorrido recursivo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T13:56:33` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y type hints consistentes en funciones internas, además de asegurar que las advertencias de seguridad y responsabilidades de las funciones estén claramente declaradas para facilitar su mantenimiento.
 - `2026-08-20T13:55:19` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones de Args y Returns) y tipos más explícitos, facilitando la comprensión del flujo de datos en operaciones críticas como el movimiento y borrado de archivos, sin alterar la lógica de seguridad.
 - `2026-08-20T13:45:08` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings más precisos, se han añadido type hints que faltaban en funciones internas y se ha extraído la lógica de cálculo de hash en el pipeline de `_refine_by_hash` a un flujo más explícito, facilitando la legibilidad sobre cómo los archivos se descartan durante el proceso de escaneo.
-- `2026-08-20T13:37:11` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los argumentos, retornos y el propósito de las funciones internas que carecían de docstrings detallados, y estandarizando las anotaciones de tipo para mayor claridad.
