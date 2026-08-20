@@ -453,3 +453,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T05:26:17` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data
 - `2026-08-20T05:26:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T05:26:17` Corrida terminada. Total usado hoy: 128.
+- `2026-08-20T05:34:16` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-20T05:34:47` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se implementó un mecanismo de caché para el resultado de `pressure_level` (basado en la referencia del snapshot) y se eliminó el cálculo redundante de `available_percent` dentro de `diagnose`, utilizando en su lugar el cálculo ya existente en el objeto `MemorySnapshot`, reduciendo ciclos de CPU.
+- `2026-08-20T05:35:19` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `scan_for_junk` para reducir llamadas redundantes al sistema de archivos cacheando el resultado de `is_safe_to_modify(base)` y eliminando llamadas innecesarias a `is_safe_to_modify(path)` dentro del loop interno, ya que el estado de seguridad de los archivos dentro de un directorio ya validado se controla con `is_valid_junk_candidate`.
+- `2026-08-20T05:35:58` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` transformando `item_map` en un conjunto de nombres de archivos registrados para evitar iteraciones redundantes y permitiendo un filtrado más eficiente de los archivos en disco que no pertenecen al manifiesto.
+- `2026-08-20T05:36:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-20T05:36:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T05:36:05` Corrida terminada. Total usado hoy: 132.

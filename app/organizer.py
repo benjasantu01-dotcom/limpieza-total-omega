@@ -192,7 +192,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def _is_valid_junk_candidate(path: Path) -> bool:
     """Determina si un archivo es un candidato legítimo para ser clasificado como basura."""
     try:
-        return _is_junk_path(path) and is_safe_to_modify(path) and not _is_junction(path) and path.is_file()
+        return _is_junk_path(path) and not _is_junction(path) and path.is_file()
     except (OSError, RuntimeError):
         return False
 
@@ -206,6 +206,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
         if not isinstance(d, str) or not d: continue
         try:
             base: Path = Path(d).expanduser().resolve()
+            # Validación única inicial del directorio base para evitar re-chequeos innecesarios
             if not base.exists() or not base.is_dir() or not is_safe_to_modify(base): 
                 continue
             

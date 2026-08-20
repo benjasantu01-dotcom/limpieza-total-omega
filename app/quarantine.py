@@ -503,17 +503,15 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     if not items:
         return 0
     item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
+    item_names = set(item_map.keys())
     purged_items: List[QuarantineItem] = []
     
     for entry in quarantine_root.iterdir():
-        if entry.name in item_map:
+        if entry.name in item_names:
             item = item_map[entry.name]
-            # Validar existencia real y elegibilidad antes de intentar el borrado
             if entry.exists() and _is_item_purgable(entry, item, quarantine_root):
                 if _safe_unlink(entry):
                     purged_items.append(item)
-        elif entry.name != MANIFEST_NAME and entry.is_file():
-            continue
             
     if purged_items:
         purged_ids = {p.item_id for p in purged_items}

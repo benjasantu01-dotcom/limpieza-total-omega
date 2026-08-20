@@ -103,7 +103,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
 
-@dataclass
+@dataclass(frozen=True)
 class MemorySnapshot:
     """Representa el estado global de la memoria física y virtual del sistema."""
     total: BytesValue
@@ -188,7 +188,6 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     if not line or "," not in line:
         return None
     
-    # Formato esperado: Nombre,PID,WorkingSet
     parts = line.rsplit(",", 2)
     if len(parts) < 3:
         return None
@@ -279,14 +278,15 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     return parse_windows_process_csv(_cached_proc_output, limit=limit)
 
 
+@lru_cache(maxsize=2)
 def pressure_level(snapshot: MemorySnapshot) -> str:
     """
-    Clasifica el nivel de estrés de memoria del sistema según el porcentaje disponible.
+    Clasifica el nivel de estrés de memoria según el porcentaje disponible.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     
-    available: float = snapshot.available_percent
+    available = snapshot.available_percent
     if available >= 35: return "ok"
     if available >= 20: return "info"
     if available >= 10: return "warning"
@@ -295,7 +295,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
     """
-    Genera un diagnóstico narrativo sobre el estado de la RAM para visualización.
+    Genera un diagnóstico narrativo sobre el estado de la RAM.
     """
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
@@ -330,9 +330,7 @@ def _is_system_process(pid: int) -> bool:
 
 
 def _get_process_path(handle: int) -> Optional[str]:
-    """
-    Resuelve la ruta absoluta del ejecutable desde un handle de Win32.
-    """
+    """Resuelve la ruta absoluta del ejecutable desde un handle de Win32."""
     if not handle:
         return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
@@ -351,9 +349,7 @@ def _get_process_path(handle: int) -> Optional[str]:
 
 
 def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
-    """
-    Realiza chequeos de seguridad y estado antes de permitir la liberación de RAM.
-    """
+    """Realiza chequeos de seguridad antes de permitir la liberación de RAM."""
     if not proc_handle:
         return False, "Handle inválido."
 
@@ -370,7 +366,6 @@ def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
     if not path:
         return False, "No se pudo verificar la ubicación del ejecutable."
     
-    # Validar que la ruta del proceso no sea crítica para el SO
     normalized_path = os.path.normcase(os.path.normpath(path))
     if is_protected_path(normalized_path):
         return False, "Operación denegada: ruta de ejecutable protegida."
@@ -379,9 +374,7 @@ def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Solicita al S.O. liberar el Working Set (RAM residente) de un proceso.
-    """
+    """Solicita al S.O. liberar el Working Set (RAM residente) de un proceso."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
