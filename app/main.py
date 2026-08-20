@@ -1612,11 +1612,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
         """Valida que la configuración numérica sea correcta."""
         try:
-            if not value:
+            if value is None or not str(value).strip():
                 return default
-            val = int(value.strip())
+            val = int(str(value).strip())
             return val if val > 0 else default
-        except (ValueError, TypeError, AttributeError):
+        except (ValueError, TypeError):
             return default
 
     def _collect_settings(self) -> Dict[str, Any]:

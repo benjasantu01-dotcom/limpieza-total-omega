@@ -74,19 +74,13 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo tras validar su seguridad.
-    
-    Raises:
-        Ignora errores de acceso a disco (PermissionError, OSError) retornando None.
     """
     if path is None or chunk_size <= 0: 
         return None
         
     try:
         p = Path(path)
-        if not p.is_file(): return None
-        
-        # Validaciones de seguridad externas: verificar integridad antes de procesar
-        if is_protected_path(p) or not is_safe_to_modify(p):
+        if not p.is_file() or is_protected_path(p) or not is_safe_to_modify(p):
             return None
 
         stat_initial = p.stat()
@@ -113,8 +107,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         p = Path(path)
-        if not p.is_file(): return None
-        if is_protected_path(p) or not is_safe_to_modify(p):
+        if not p.is_file() or is_protected_path(p) or not is_safe_to_modify(p):
             return None
             
         with open(p, "rb") as f:
@@ -137,9 +130,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         try:
             target = Path(p)
+            if not target.is_file(): continue
             st = target.stat()
-            if not st.st_size > 0 or target.is_symlink(): continue
-            if is_protected_path(target) or not is_safe_to_modify(target): continue
+            if st.st_size <= 0 or is_protected_path(target) or not is_safe_to_modify(target): 
+                continue
             groups[st.st_size].append(target)
         except (OSError, PermissionError, FileNotFoundError, TypeError):
             continue
@@ -163,7 +157,6 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         st = entry.stat(follow_symlinks=False)
-                        # Ignorar reparse points (0x400) para prevenir bucles de recursión
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                             
                         if entry.is_dir(follow_symlinks=False):
@@ -201,7 +194,7 @@ def _refine_by_hash(
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     
     for path in paths:
-        if (digest := hash_func(path)):
+        if path and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
                 
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -245,8 +238,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Selecciona el 'archivo maestro' (keeper) basado en:
-    1. Menor fecha de modificación (más antiguo es más probable que sea el original).
-    2. Longitud de la ruta (ruta más corta es preferible como desempate).
+    1. Menor fecha de modificación.
+    2. Longitud de la ruta.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -254,7 +247,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            if not p.is_file() or is_protected_path(p) or not is_safe_to_modify(p):
+            if not isinstance(p, Path) or not p.is_file() or is_protected_path(p) or not is_safe_to_modify(p):
                 continue
             stat_info = p.stat()
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))

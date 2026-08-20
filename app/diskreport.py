@@ -238,7 +238,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
                             continue
                         
                         # stat puede fallar si el archivo fue borrado o denegado acceso
@@ -250,7 +251,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_inodes.add(inode_key)
                                 stack.append(entry.path)
                         elif entry.is_file():
-                            yield Path(entry.path), stat_data.st_size
+                            yield entry_path, stat_data.st_size
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (OSError, PermissionError, FileNotFoundError):
@@ -332,12 +333,14 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                relative = path.relative_to(base)
-                if len(relative.parts) > 1:
-                    top_folder = base / relative.parts[0]
-                    sums[top_folder] += size
-                    counts[top_folder] += 1
-            except (ValueError, IndexError): 
+                # Validar que path pertenezca a base antes de invocar relative_to
+                if base in path.parents or path == base:
+                    relative = path.relative_to(base)
+                    if len(relative.parts) > 0:
+                        top_folder = base / relative.parts[0]
+                        sums[top_folder] += size
+                        counts[top_folder] += 1
+            except (ValueError, IndexError, RuntimeError): 
                 continue
 
         results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]

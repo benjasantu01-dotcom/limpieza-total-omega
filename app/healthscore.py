@@ -106,6 +106,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
+        # Validación estricta de tipos y rangos
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -176,11 +177,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
         return HealthResult(0, "F", {}, ["Error: Configuración inestable."])
     
+    # Pre-validación defensiva
     try:
         metrics.validate()
-        if not metrics.is_finite(): raise ValueError()
+        if not metrics.is_finite():
+            raise ValueError("Datos no numéricos detectados")
     except (ValueError, TypeError, AttributeError):
-        return HealthResult(0, "F", {}, ["Error: Datos corruptos."])
+        return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
 
     ratios: ScoreMap = {
         "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),

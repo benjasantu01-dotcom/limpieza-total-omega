@@ -1248,3 +1248,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-20T12:55:45` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-20T12:55:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T12:55:45` Corrida terminada. Total usado hoy: 304.
+- `2026-08-20T13:03:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-20T13:03:58` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas sobre `entry.path` y `relative_to` para evitar excepciones en rutas con caracteres especiales o cambios de estado concurrentes durante la iteración, manteniendo la integridad del bucle.
+- `2026-08-20T13:04:22` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `hash_file`/`partial_hash` añadiendo validaciones de tipo y estado antes de operar, asegurando que `stat()` o `is_file()` no procesen objetos inválidos o corrompidos.
+- `2026-08-20T13:04:46` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del sistema ante datos de entrada mal formados añadiendo una validación explícita en el método `validate` de `SystemMetrics` y usando un bloque de manejo de errores más específico y preventivo en `compute_score`, asegurando que cualquier entrada inesperada sea capturada antes de procesar el cálculo.
+- `2026-08-20T13:05:40` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se mejora `_validate_numeric_setting` para prevenir errores de tipo `None` inesperados y se añade un filtro de caracteres imprimibles a `api_key_entry` para evitar inyecciones o caracteres de control en la configuración.
+- `2026-08-20T13:05:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T13:05:40` Corrida terminada. Total usado hoy: 308.
