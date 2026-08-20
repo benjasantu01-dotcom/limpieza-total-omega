@@ -419,7 +419,7 @@ def quarantine_file(
             raise RuntimeError(f"Aislamiento físico exitoso, pero fallo al actualizar manifiesto: {e}")
             
     except (Exception, OSError, ValueError) as e:
-        if destination.exists():
+        if destination.exists() and not destination.exists() == False:
             _safe_unlink(destination)
         raise RuntimeError(f"Error al finalizar el aislamiento: {e}")
 

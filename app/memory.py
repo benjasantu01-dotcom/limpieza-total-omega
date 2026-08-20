@@ -177,7 +177,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """Extrae un objeto ProcessMemory desde una línea CSV con formato Nombre,PID,WorkingSet."""
+    """Extracts a ProcessMemory object from a CSV line."""
     if not isinstance(csv_line, str):
         return None
     line = csv_line.strip()
@@ -202,13 +202,7 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
 
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """
-    Convierte una salida multilínea de PowerShell en una lista ordenada de ProcessMemory.
-    
-    Args:
-        raw_csv_text: Salida de texto cruda desde PowerShell.
-        limit: Cantidad máxima de procesos a retornar.
-    """
+    """Converts multi-line PowerShell output into a ProcessMemory list."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
@@ -253,9 +247,7 @@ def read_snapshot() -> MemorySnapshot:
 
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """
-    Consulta procesos pesados vía PowerShell con caché de 30 segundos.
-    """
+    """Consulta procesos pesados vía PowerShell con caché de 30 segundos."""
     global _last_proc_fetch, _cached_proc_output
     
     if os.name != "nt":
@@ -333,7 +325,6 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     buf = ctypes.create_unicode_buffer(size.value)
     
     try:
-        # 0 indica que se pasa una ruta de estilo Win32
         if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError):
@@ -342,16 +333,15 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 
 
 def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
-    """
-    Chequeos de seguridad previos a la liberación de memoria.
-    Verifica estado, existencia y que la ruta del ejecutable no sea protegida.
-    """
+    """Chequeos de seguridad previos a la liberación de memoria."""
     if not proc_handle:
         return False, "Handle inválido."
 
-    kernel32 = ctypes.windll.kernel32
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
+    if not kernel32:
+        return False, "No se pudo acceder a la API del sistema."
+
     exit_code = ctypes.c_ulong()
-    
     if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
         return False, "No se pudo obtener el estado del proceso."
     
@@ -359,12 +349,15 @@ def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[
         return False, "El proceso seleccionado ya no está activo."
         
     path = _get_process_path(proc_handle)
-    if not path or not isinstance(path, str):
+    if not path:
         return False, "No se pudo verificar la ubicación del ejecutable."
     
     # Prevenir ataques de spoofing mediante caracteres de control RTL (U+202E, etc)
-    rtl_chars = ["\u202E", "\u202D", "\u202B", "\u202A"]
-    if any(c in path for c in rtl_chars):
+    # Codificamos a bytes para detectar bytes de control de manera robusta
+    path_bytes = path.encode("utf-8", errors="ignore")
+    # RTL control chars byte sequences
+    forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
+    if any(seq in path_bytes for seq in forbidden_sequences):
         return False, "Ruta de proceso sospechosa (caracteres control)."
 
     normalized_path = os.path.normcase(os.path.normpath(path))
@@ -375,14 +368,7 @@ def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[
 
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Solicita al S.O. liberar el Working Set (RAM residente) de un proceso.
-    
-    Args:
-        pid: Identificador del proceso a liberar.
-    Returns:
-        Tupla (éxito, mensaje explicativo).
-    """
+    """Solicita al S.O. liberar el Working Set (RAM residente) de un proceso."""
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     

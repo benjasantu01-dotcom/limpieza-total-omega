@@ -93,7 +93,6 @@ def _is_junction(path: Path) -> bool:
     Evita que el escáner siga punteros hacia fuera de la estructura de archivos local.
     """
     try:
-        # Windows: Verifica atributo FILE_ATTRIBUTE_REPARSE_POINT (0x400)
         return path.is_symlink() or (os.name == "nt" and bool(path.stat().st_file_attributes & 0x400))
     except (OSError, AttributeError):
         return False
@@ -146,7 +145,6 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     lo cual causaría bucles infinitos en el sistema de archivos.
     """
     try:
-        # Resolvemos rutas para comparación exacta
         s, d = src.resolve(), dest.resolve()
         return s == d or d.is_relative_to(s)
     except (OSError, RuntimeError, ValueError):
@@ -211,7 +209,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             
             for root, dirs, files in os.walk(base):
                 root_path: Path = Path(root)
-                # Filtrado preventivo de carpetas para evitar entrar en subárboles no permitidos
                 dirs[:] = [dn for dn in dirs if _is_allowed_directory(dn) and not _is_junction(root_path / dn)]
                 
                 for name in files:
@@ -251,6 +248,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
+        # Validación estricta antes de operar
         if not dest_base.is_dir() or not is_safe_to_modify(dest_base): 
             return None
     except (OSError, PermissionError, RuntimeError):
@@ -260,7 +258,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile): continue
         try:
             src_path: Path = junk_file.path
-            # Verificación adicional para asegurar que el destino no esté contenido en el origen
             if not src_path.exists() or _is_recursive_violation(src_path, dest_base) or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
@@ -284,6 +281,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
+        # Verificar que la ruta no sea un sistema crítico antes de iterar
         if not dest.is_dir() or not is_safe_to_modify(dest):
             return 0
     except (OSError, RuntimeError):
@@ -294,6 +292,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         try:
             if not item.is_file() or _is_junction(item):
                 continue
+            # Asegurar que el ítem pertenece a la carpeta de revisión antes de borrar
             if item.is_relative_to(dest) and is_safe_to_modify(item):
                 if not _is_file_locked(item):
                     ensure_safe_to_modify(item)
