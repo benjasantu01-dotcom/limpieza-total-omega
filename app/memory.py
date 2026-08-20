@@ -341,7 +341,6 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     buf = ctypes.create_unicode_buffer(size.value)
     
     try:
-        # Usamos handle explícito para asegurar compatibilidad de tipos
         if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError):
@@ -409,5 +408,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)

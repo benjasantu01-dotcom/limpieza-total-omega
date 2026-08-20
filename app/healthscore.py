@@ -222,6 +222,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         breakdown[area] = puntos
         final_score += puntos
     
+    # Asegurar que el puntaje final se mantenga en rango 0-100
+    final_score = int(_clamp(float(final_score), 0.0, 100.0))
+    
     recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios.get(rule.area, 0.0))]
     
     if metrics.quarantined_count > 0:

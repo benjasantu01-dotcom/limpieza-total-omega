@@ -293,7 +293,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not item.is_file() or _is_junction(item):
                 continue
             resolved_item: Path = item.resolve()
-            # Validar que el archivo no haya sido movido fuera del directorio de revisión
+            # Validar que el archivo resida efectivamente dentro del directorio de revisión (is_relative_to)
             if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)

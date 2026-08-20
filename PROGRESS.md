@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 141 | 11 | 19 | 13 | 164 |
-| 2026-08-20 | 81 | 4 | 13 | 1 | 57 |
+| 2026-08-19 | 141 | 11 | 19 | 13 | 160 |
+| 2026-08-20 | 85 | 4 | 13 | 1 | 57 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **42**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **23**
 - `assistant.py`: **22**
 - `settings.py`: **22**
+- `healthscore.py`: **20**
 - `duplicates.py`: **20**
-- `healthscore.py`: **19**
-- `organizer.py`: **18**
+- `organizer.py`: **19**
 - `browser.py`: **17**
 - `scanner.py`: **17**
-- `main.py`: **15**
+- `main.py`: **16**
+- `memory.py`: **15**
 - `quarantine.py`: **15**
-- `memory.py`: **14**
 - `branding.py`: **9**
 - `safety.py`: **7**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T06:48:07` **organizer.py** (seguridad defensiva): Se ha restringido el alcance de `delete_reviewed` para que solo elimine archivos que residan físicamente dentro de la carpeta de revisión mediante `is_relative_to`, previniendo que un path manipulado (ej. mediante `..`) pueda escapar del directorio autorizado.
+- `2026-08-20T06:47:56` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `trim_working_set` al asegurar que el manejo de recursos (handles de procesos) sea robusto, evitando fugas de memoria o manipulaciones accidentales si la operación falla, garantizando que el `CloseHandle` sea incondicional y el acceso se restrinja a permisos mínimos.
+- `2026-08-20T06:47:30` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `main.py` añadiendo una capa de validación de rutas mediante `safety.ensure_safe_to_modify` en todas las operaciones que inician procesos de modificación de disco (borrado, movimiento o aislamiento), asegurando que incluso ante un error en la lógica de UI, el sistema nunca opere sobre rutas protegidas.
+- `2026-08-20T06:46:18` **healthscore.py** (seguridad defensiva): Reforcé la integridad del proceso de evaluación implementando una validación estricta al final del cómputo para prevenir que condiciones de contorno o errores inesperados generen puntajes fuera del rango lógico 0-100.
 - `2026-08-20T06:37:34` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `all_drives_usage` bloqueando explícitamente el procesamiento de rutas UNC (`\\servidor\recurso`) mediante una validación de formato antes de intentar acceder al disco, previniendo errores de red o bloqueos de I/O en recursos de red no deseados.
 - `2026-08-20T06:37:02` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la validación estricta de cada entrada de directorio con `is_protected_path` antes de intentar cualquier acceso a metadatos, garantizando que el escáner sea incapaz de seguir enlaces a volúmenes o rutas fuera de la jerarquía permitida.
 - `2026-08-20T06:27:02` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva del asistente al implementar una validación estricta del tamaño de la respuesta recibida desde la API, usando `_validate_response_length` antes de procesar el texto y asegurando que las llaves JSON (`candidates`, `parts`, etc.) sean validadas para evitar excepciones de tipo, reforzando la robustez ante respuestas malformadas o inesperadas del motor externo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T06:05:24` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `hash_file` y `partial_hash` ante errores de lectura bloqueante o archivos que cambian de estado durante la ejecución mediante un bloque `try-except` más granular y una verificación estricta de la integridad del archivo antes de la lectura.
 - `2026-08-20T05:56:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` ante archivos que desaparecen durante la iteración (concurrencia) y mejoré el manejo de errores en `all_drives_usage` para evitar cuelgues al acceder a unidades externas o sin formato que pueden lanzar errores inesperados al intentar obtener su estado de uso.
 - `2026-08-20T05:56:36` **browser.py** (robustez ante casos límite): Se ha mejorado `_should_skip_entry` para capturar errores `FileNotFoundError` durante la evaluación de atributos, evitando que una entrada eliminada o renombrada externamente durante el escaneo detenga el proceso completo del módulo.
-- `2026-08-20T05:55:26` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la recepción de objetos inesperados o malformados, asegurando que cualquier entrada que no sea un diccionario puro se maneje mediante un acceso a atributos defensivo (`getattr`), evitando que el asistente falle o se bloquee ante datos corruptos o tipos de datos no compatibles.
-- `2026-08-20T05:46:06` **startup.py** (rendimiento): Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y llamadas a `is_protected_path` dentro del bucle, procesando los nombres de archivo mediante `os.path` (más ligero) y aplicando la validación de seguridad solo una vez sobre la ruta completa.
-- `2026-08-20T05:45:51` **settings.py** (rendimiento): Optimicé el acceso a configuraciones frecuentes implementando una caché de tipo `lru_cache` sobre `load()`, reduciendo drásticamente las llamadas redundantes a disco y el parseo de JSON en operaciones repetitivas de lectura.
-- `2026-08-20T05:35:58` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `item_map` en un conjunto de nombres de archivos registrados para evitar iteraciones redundantes y permitiendo un filtrado más eficiente de los archivos en disco que no pertenecen al manifiesto.

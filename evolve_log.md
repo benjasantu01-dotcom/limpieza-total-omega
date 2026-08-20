@@ -502,3 +502,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T06:37:46` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
 - `2026-08-20T06:37:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T06:37:46` Corrida terminada. Total usado hoy: 156.
+- `2026-08-20T06:45:46` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-20T06:46:18` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Reforcé la integridad del proceso de evaluación implementando una validación estricta al final del cómputo para prevenir que condiciones de contorno o errores inesperados generen puntajes fuera del rango lógico 0-100.
+- `2026-08-20T06:47:30` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `main.py` añadiendo una capa de validación de rutas mediante `safety.ensure_safe_to_modify` en todas las operaciones que inician procesos de modificación de disco (borrado, movimiento o aislamiento), asegurando que incluso ante un error en la lógica de UI, el sistema nunca opere sobre rutas protegidas.
+- `2026-08-20T06:47:56` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `trim_working_set` al asegurar que el manejo de recursos (handles de procesos) sea robusto, evitando fugas de memoria o manipulaciones accidentales si la operación falla, garantizando que el `CloseHandle` sea incondicional y el acceso se restrinja a permisos mínimos.
+- `2026-08-20T06:48:07` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha restringido el alcance de `delete_reviewed` para que solo elimine archivos que residan físicamente dentro de la carpeta de revisión mediante `is_relative_to`, previniendo que un path manipulado (ej. mediante `..`) pueda escapar del directorio autorizado.
+- `2026-08-20T06:48:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T06:48:07` Corrida terminada. Total usado hoy: 160.
