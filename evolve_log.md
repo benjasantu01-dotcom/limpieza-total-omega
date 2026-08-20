@@ -1099,3 +1099,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T00:40:08` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-08-20T00:40:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T00:40:08` Corrida terminada. Total usado hoy: 16.
+- `2026-08-20T00:48:36` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-20T00:49:21` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` reemplazando la construcción de listas y el formateo de strings repetitivo dentro del loop por un acceso directo y pre-calculado, evitando el costo de `format()` y `getattr()` cuando no hay criterios que cumplan el umbral.
+- `2026-08-20T00:49:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-20T00:50:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-20T00:50:55` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para realizar el cálculo de pesos en una sola pasada usando `walk_files`, eliminando el recálculo redundante y las llamadas repetidas a `path.relative_to` que causaban ineficiencia en estructuras de directorios profundas.
+- `2026-08-20T00:50:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T00:50:55` Corrida terminada. Total usado hoy: 20.

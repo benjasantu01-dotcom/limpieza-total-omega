@@ -306,36 +306,23 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Identifica las subcarpetas de primer nivel que ocupan más espacio.
-    
-    Args:
-        directory: Ruta del directorio a analizar.
-        limit: Límite de carpetas a retornar.
-        skip_protected: Si se deben ignorar rutas protegidas.
-        
-    Returns:
-        Lista de objetos FolderUsage con el resumen de uso por carpeta.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
     try:
         base = Path(directory).resolve(strict=False)
-        if skip_protected and is_protected_path(base):
-            return []
-
         sums: Dict[Path, int] = defaultdict(int)
         counts: Dict[Path, int] = defaultdict(int)
         
         for path, size in walk_files(base, skip_protected):
             try:
+                # Obtener la parte inmediata debajo de base
                 relative = path.relative_to(base)
-                top_folder = base / relative.parts[0]
-                
-                if skip_protected and is_protected_path(top_folder):
-                    continue
-                
-                sums[top_folder] += size
-                counts[top_folder] += 1
+                if len(relative.parts) > 1:
+                    top_folder = base / relative.parts[0]
+                    sums[top_folder] += size
+                    counts[top_folder] += 1
             except (ValueError, IndexError): 
                 continue
 

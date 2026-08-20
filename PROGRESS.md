@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 55 | 4 | 10 | 4 | 65 |
+| 2026-08-18 | 55 | 3 | 10 | 3 | 63 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 11 | 1 | 3 | 0 | 1 |
+| 2026-08-20 | 13 | 1 | 3 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
+- rendimiento: **35**
 - robustez ante casos límite: **33**
-- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **21**
+- `diskreport.py`: **22**
+- `assistant.py`: **21**
 - `settings.py`: **21**
-- `assistant.py`: **20**
 - `scanner.py`: **19**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T00:50:55` **diskreport.py** (rendimiento): Optimizé `largest_folders` para realizar el cálculo de pesos en una sola pasada usando `walk_files`, eliminando el recálculo redundante y las llamadas repetidas a `path.relative_to` que causaban ineficiencia en estructuras de directorios profundas.
+- `2026-08-20T00:49:21` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la construcción de listas y el formateo de strings repetitivo dentro del loop por un acceso directo y pre-calculado, evitando el costo de `format()` y `getattr()` cuando no hay criterios que cumplan el umbral.
 - `2026-08-20T00:39:50` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos claros a las funciones públicas y extrayendo la lógica de validación de rutas complejas a una función privada más cohesiva, eliminando la sobrecarga cognitiva en los validadores.
 - `2026-08-20T00:39:22` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` y la adición de `type hints` explícitos en la función `scan_directory` para asegurar que las responsabilidades de los parámetros y el retorno sean claras, facilitando el mantenimiento a largo plazo.
 - `2026-08-20T00:30:14` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en el manejo de rutas y listas) y se documentaron los métodos críticos con docstrings estructurados según el estilo de "colaborador senior" para aclarar las invariantes de seguridad y la lógica de validación de cada función.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T00:08:26` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` al capturar el escenario donde el CSV retornado por PowerShell es válido pero vacío (solo encabezados), evitando procesar filas inexistentes y añadiendo validación explícita de tipos para evitar errores ante datos inesperados.
 - `2026-08-19T15:08:24` **settings.py** (manejo de errores y validación de entradas): Reforcé la validación de entrada en la función `save` y `load` mediante la captura explícita de errores durante la manipulación de archivos y la consolidación de `_Validators.str` para evitar inyecciones o lecturas fuera de rango, asegurando que la configuración nunca quede en estado inconsistente.
 - `2026-08-19T15:07:56` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las verificaciones de metadatos en `check_recent_executable_in_downloads` y `process_entry`, asegurando que `entry.stat()` se llame de forma defensiva y capturando explícitamente errores de acceso sin interrumpir el flujo del escáner.
-- `2026-08-19T15:00:56` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, asegurando que `_check_file_integrity` maneje correctamente la inexistencia súbita de archivos entre validaciones sucesivas, y agregué una validación de longitud máxima al `Path` resultante para prevenir errores de la API de Windows antes de que ocurran.
-- `2026-08-19T14:57:58` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la validación de los parámetros de entrada en `stage_for_review` y `delete_reviewed` para evitar errores de tipo o rutas mal formadas (como `Path(".")` en caso de error) y se añadieron chequeos de `None` más explícitos para mejorar la robustez ante estados inesperados del bucle.

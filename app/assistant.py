@@ -357,10 +357,10 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
         
         if f_val < 0: continue
             
-        is_triggered = (crit.operator == "<" and f_val < crit.threshold) or \
-                       (crit.operator == ">" and f_val > crit.threshold)
+        triggered = (crit.operator == "<" and f_val < crit.threshold) or \
+                    (crit.operator == ">" and f_val > crit.threshold)
         
-        if is_triggered:
+        if triggered:
             problemas.append(crit.message_format.format(val)[:_MAX_MSG_CHUNK])
             if len(problemas) >= 3: break
     return problemas
