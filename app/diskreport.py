@@ -367,17 +367,6 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
     """
     Realiza una pasada única para recolectar todas las métricas necesarias para el resumen.
-    
-    Esta función procesa el árbol de archivos en una sola iteración para optimizar
-    la lectura de disco, manteniendo contadores de tamaño por extensión y un
-    heap con los archivos de mayor tamaño.
-    
-    Args:
-        directory: Objeto Path a analizar.
-        skip_protected: Si se deben ignorar rutas protegidas.
-        
-    Returns:
-        Tupla conteniendo: (total_bytes, total_files, extension_sizes, extension_counts, largest_files_heap).
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -392,25 +381,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        # Mantener un heap de tamaño fijo de 8 elementos
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, path))
             
-    return total_bytes, total_files, dict(ext_sizes), dict(ext_counts), top_files_heap
+    return total_bytes, total_files, ext_sizes, ext_counts, top_files_heap
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe textual unificado con los hallazgos del análisis de disco.
-    
-    Args:
-        directory: Ruta del directorio a resumir.
-        skip_protected: Si se deben ignorar rutas protegidas.
-        
-    Returns:
-        Lista de strings formateados para visualización.
     """
     if not directory: 
         return ["Error: Ruta no proporcionada."]

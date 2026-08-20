@@ -815,3 +815,11 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-08-20T09:41:49` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el cálculo de colores de gradiente precomputando el índice de búsqueda en `gradient_colors` y convirtiendo `_hex_to_rgb` en una función de acceso directo a la tabla `PALETTE_RGB` para evitar llamadas redundantes a `int(..., 16)` durante la renderización.
 - `2026-08-20T09:41:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T09:41:49` Corrida terminada. Total usado hoy: 228.
+- `2026-08-20T09:49:27` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-20T09:50:05` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Optimicé el cálculo del tamaño de directorios implementando un `memo` compartido en la función `detect_profiles`, evitando realizar múltiples recorridos de sistema de archivos sobre los mismos subdirectorios de caché cuando varios navegadores comparten estructuras comunes.
+- `2026-08-20T09:50:37` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `dict()` sobre objetos `defaultdict` y reduje la carga de memoria al procesar el heap de archivos más grandes directamente como generadores, mejorando el rendimiento en directorios con gran cantidad de archivos.
+- `2026-08-20T09:50:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-20T09:51:06` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el proceso de recolección de candidatos utilizando `os.scandir` para obtener el tamaño y el estado del archivo en una sola llamada de sistema, eliminando las redundantes llamadas a `p.stat()` dentro del bucle de `group_by_size` y `_collect_candidates`.
+- `2026-08-20T09:51:17` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje transformando `_RECOMMENDATION_RULES` en un diccionario indexado por `area`, evitando iteraciones innecesarias y búsquedas lineales en cada llamado a `compute_score`.
+- `2026-08-20T09:51:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T09:51:17` Corrida terminada. Total usado hoy: 232.

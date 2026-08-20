@@ -137,9 +137,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         try:
             target = Path(p)
-            if not target.is_file() or target.is_symlink(): continue
+            st = target.stat()
+            if not st.st_size > 0 or target.is_symlink(): continue
             if is_protected_path(target) or not is_safe_to_modify(target): continue
-            groups[target.stat().st_size].append(target)
+            groups[st.st_size].append(target)
         except (OSError, PermissionError, FileNotFoundError, TypeError):
             continue
     return groups
@@ -152,7 +153,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo del sistema de archivos para agrupar candidatos.
-    Utiliza un set de inodos para evitar el procesamiento redundante de puntos de montaje.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
