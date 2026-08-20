@@ -246,17 +246,20 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     parsed_entries: List[StartupEntry] = []
     
     try:
-        reader: csv.DictReader = csv.DictReader(io.StringIO(text.strip()))
+        f = io.StringIO(text.strip())
+        reader: csv.DictReader = csv.DictReader(f)
+        
+        # Validar si el CSV tiene contenido mas allá de las cabeceras
         for row in reader:
-            if not isinstance(row, dict) or len(row) < 2:
+            if not isinstance(row, dict) or not row:
                 continue
             
             # Acceso seguro a valores del diccionario ignorando claves del sistema PS
-            vals = [val for key, val in row.items() if not key.startswith("PS")]
+            vals = [val for key, val in row.items() if val is not None and not key.startswith("PS")]
             if len(vals) < 2:
                 continue
                 
-            name_raw, cmd_raw = str(vals[0] or ""), str(vals[1] or "")
+            name_raw, cmd_raw = str(vals[0]), str(vals[1])
             name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
             cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             

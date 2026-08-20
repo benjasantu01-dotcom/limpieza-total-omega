@@ -5,9 +5,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **205** (40.8% de aceptación)
-- Rechazadas por tests: 16
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 232
@@ -16,16 +16,17 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 64 | 5 | 12 | 5 | 66 |
+| 2026-08-18 | 62 | 5 | 12 | 5 | 66 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
+| 2026-08-20 | 3 | 1 | 0 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **46**
-- manejo de errores y validación de entradas: **44**
-- legibilidad y documentación: **40**
+- manejo de errores y validación de entradas: **45**
+- legibilidad y documentación: **42**
 - robustez ante casos límite: **38**
-- rendimiento: **37**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,17 +36,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **19**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
-- `organizer.py`: **18**
+- `organizer.py`: **17**
 - `quarantine.py`: **15**
-- `browser.py`: **14**
+- `browser.py`: **15**
 - `main.py`: **13**
-- `memory.py`: **10**
-- `branding.py`: **9**
+- `branding.py`: **10**
+- `memory.py`: **9**
 - `safety.py`: **6**
-- `startup.py`: **2**
+- `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T00:10:12` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del código mediante la adición de Type Hints explícitos en funciones de bajo nivel y la documentación de las máscaras de bits usadas en la interacción con la API de Windows.
+- `2026-08-20T00:10:02` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `score_color` para eliminar la lógica condicional anidada por una estructura de datos clara y declarativa, facilitando futuras modificaciones en los umbrales de salud.
+- `2026-08-20T00:08:26` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` al capturar el escenario donde el CSV retornado por PowerShell es válido pero vacío (solo encabezados), evitando procesar filas inexistentes y añadiendo validación explícita de tipos para evitar errores ante datos inesperados.
 - `2026-08-19T15:08:24` **settings.py** (manejo de errores y validación de entradas): Reforcé la validación de entrada en la función `save` y `load` mediante la captura explícita de errores durante la manipulación de archivos y la consolidación de `_Validators.str` para evitar inyecciones o lecturas fuera de rango, asegurando que la configuración nunca quede en estado inconsistente.
 - `2026-08-19T15:07:56` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las verificaciones de metadatos en `check_recent_executable_in_downloads` y `process_entry`, asegurando que `entry.stat()` se llame de forma defensiva y capturando explícitamente errores de acceso sin interrumpir el flujo del escáner.
 - `2026-08-19T15:00:56` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, asegurando que `_check_file_integrity` maneje correctamente la inexistencia súbita de archivos entre validaciones sucesivas, y agregué una validación de longitud máxima al `Path` resultante para prevenir errores de la API de Windows antes de que ocurran.
@@ -58,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-19T13:15:32` **settings.py** (seguridad defensiva): Se endurece la validación en `save()` añadiendo una comprobación explícita mediante `is_protected_path` sobre la ruta final del archivo de configuración antes de cualquier operación de escritura, garantizando que ni siquiera un error lógico en la resolución de rutas pueda permitir la sobreescritura de ubicaciones protegidas.
 - `2026-08-19T13:06:22` **scanner.py** (seguridad defensiva): Se reforzó la seguridad del proceso de escaneo integrando `is_protected_path` en `check_recent_executable_in_downloads` para evitar el acceso a metadatos de rutas críticas incluso si el escáner alcanza una carpeta protegida por un error de resolución, y se añadieron chequeos de integridad para prevenir seguimientos a enlaces simbólicos o puntos de reanálisis durante la obtención de `st_mtime`.
 - `2026-08-19T12:56:55` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `stage_for_review` y `delete_reviewed` al asegurar que cualquier operación de movimiento o eliminación verifique explícitamente que la ruta resuelta no esté fuera del árbol de directorios de destino (evitando ataques de "path traversal" o movimientos accidentales fuera de la cuarentena).
-- `2026-08-19T12:55:03` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación explícita en `compute_score` para asegurar que `SystemMetrics` contenga solo tipos de datos esperados, previniendo inyecciones de objetos maliciosos o inesperados antes de procesar las métricas.
-- `2026-08-19T12:46:23` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre los elementos encontrados durante el escaneo, evitando así que una ruta que contenga un punto de reparse malicioso o un acceso no autorizado pueda ser procesada aunque la carpeta raíz haya sido validada.
-- `2026-08-19T12:35:36` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` integrando `is_protected_path` al validar el contexto y la consulta antes de construir el payload, asegurando que ningún dato del sistema que pase por `build_context` pueda ser malinterpretado por la API remota.

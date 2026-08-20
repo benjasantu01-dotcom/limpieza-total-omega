@@ -156,10 +156,12 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
         return False
     try:
         path_to_check = entry_path if not entry_path.startswith(r"\\?") else entry_path[4:]
-        attrs = kernel32.GetFileAttributesW(path_to_check)
+        attrs: int = kernel32.GetFileAttributesW(path_to_check)
         if attrs == 0xFFFFFFFF:
             return False
-        # 0x04: FILE_ATTRIBUTE_SYSTEM, 0x02: FILE_ATTRIBUTE_HIDDEN
+        
+        # Constantes de atributos de archivo de Windows:
+        # FILE_ATTRIBUTE_HIDDEN (0x02) | FILE_ATTRIBUTE_SYSTEM (0x04)
         return bool(attrs & 0x04 or attrs & 0x02)
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False

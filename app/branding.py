@@ -260,17 +260,27 @@ def score_color(score: Union[float, int, None]) -> HexColor:
     if score is None:
         return PALETTE["text_muted"]
     try:
-        valor: float = float(score)
-        if not (0.0 <= valor <= 100.0):
-            return PALETTE["text_muted"]
-        
-        if valor >= 90: return PALETTE["success"]
-        if valor >= 80: return PALETTE["info"]
-        if valor >= 65: return PALETTE["warning"]
-        if valor >= 50: return "#ff7b39"
-        return PALETTE["danger"]
+        valor = float(score)
     except (TypeError, ValueError):
         return PALETTE["text_muted"]
+    
+    if not (0.0 <= valor <= 100.0):
+        return PALETTE["text_muted"]
+
+    # Umbrales definidos: (Límite inferior, Color)
+    # Ordenados de mayor a menor para evaluar correctamente
+    thresholds: List[Tuple[float, HexColor]] = [
+        (90.0, PALETTE["success"]),
+        (80.0, PALETTE["info"]),
+        (65.0, PALETTE["warning"]),
+        (50.0, "#ff7b39")
+    ]
+    
+    for limit, color_val in thresholds:
+        if valor >= limit:
+            return color_val
+            
+    return PALETTE["danger"]
 
 
 @lru_cache(maxsize=64)

@@ -1054,3 +1054,24 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-19T23:37:25` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-19T23:47:32` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-19T23:57:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-20T00:07:57` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-20T00:08:26` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` al capturar el escenario donde el CSV retornado por PowerShell es válido pero vacío (solo encabezados), evitando procesar filas inexistentes y añadiendo validación explícita de tipos para evitar errores ante datos inesperados.
+- `2026-08-20T00:09:19` Tests FALLARON:
+```
+aña 'Seguridad'.", source='local', notice='Respondido por el motor local, sin conexión. Para consultas personalizadas, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'no pude identificar el área. ¿consultar sobre ram, disco o seguridad?'
+ +  where 'no pude identificar el área. ¿consultar sobre ram, disco o seguridad?' = <built-in method lower of str object at 0x7f74135e92b0>()
+ +    where <built-in method lower of str object at 0x7f74135e92b0> = 'No pude identificar el área. ¿Consultar sobre RAM, disco o seguridad?'.lower
+ +      where 'No pude identificar el área. ¿Consultar sobre RAM, disco o seguridad?' = Answer(text='No pude identificar el área. ¿Consultar sobre RAM, disco o seguridad?', source='local', notice='Respondido por el motor local, sin conexión. Para consultas personalizadas, activá el asistente en Ajustes.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_explain_area_on_unknown_input - AssertionError: assert 'No tengo' in 'Sin explicación disponible.'
+ +  where 'Sin explicación disponible.' = <function explain_area at 0x7f7412eae0c0>('inventada')
+ +    where <function explain_area at 0x7f7412eae0c0> = assistant.explain_area
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Error en el contexto.'
+8 failed, 291 passed, 7 warnings in 1.22s
+
+```
+- `2026-08-20T00:09:19` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad del módulo mediante la aplicación de docstrings enriquecidos, tipado más específico y la eliminación de la redundancia en `SYSTEM_PROMPT` y `SUGGESTED_QUESTIONS` para asegurar que la documentación interna sea consistente con el estado actual del asistente.
+- `2026-08-20T00:10:02` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `score_color` para eliminar la lógica condicional anidada por una estructura de datos clara y declarativa, facilitando futuras modificaciones en los umbrales de salud.
+- `2026-08-20T00:10:12` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenimiento del código mediante la adición de Type Hints explícitos en funciones de bajo nivel y la documentación de las máscaras de bits usadas en la interacción con la API de Windows.
+- `2026-08-20T00:10:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T00:10:12` Corrida terminada. Total usado hoy: 4.
