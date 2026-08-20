@@ -140,7 +140,10 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta si el nombre del archivo contiene extensiones anidadas que sugieran ofuscación."""
+    """
+    Detecta nombres con extensiones múltiples, técnica común para ocultar ejecutables maliciosos.
+    Retorna un objeto Suspicion si se detecta el patrón, caso contrario None.
+    """
     if not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -149,7 +152,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Evalúa la antigüedad de un ejecutable mediante su timestamp de modificación (mtime)."""
+    """
+    Analiza ejecutables en directorios de alto riesgo (Descargas, Temp) comparando el 
+    timestamp de modificación contra el umbral RECENT_FILE_THRESHOLD_HOURS.
+    """
     if is_protected_path(path):
         return None
     
@@ -168,7 +174,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Verifica si el nombre de archivo coincide con procesos críticos del sistema fuera de su ruta legítima."""
+    """
+    Compara el nombre del archivo con una lista blanca de procesos del sistema.
+    Si coincide pero no reside en system32, marca sospecha de suplantación.
+    """
     if not path.name:
         return None
         
@@ -181,7 +190,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Orquesta la ejecución de reglas heurísticas sobre un archivo dado.
-    Aplica filtros de extensiones sospechosas antes de ejecutar tests de comportamiento.
+    Filtra por extensión para aplicar solo las reglas de seguridad relevantes.
     """
     if not path or not path.is_file():
         return []
@@ -207,14 +216,13 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Inicializa el motor de escaneo, valida la raíz y gestiona la cola de directorios
-    para una exploración profunda no recursiva (iterativa) del sistema de archivos.
-
+    Inicializa el motor de escaneo y realiza la iteración profunda del sistema de archivos.
+    
     Args:
-        directory: La ruta inicial desde donde comenzar el escaneo (str o Path).
+        directory: Ruta base de inicio. Validada contra protección y existencia.
 
     Returns:
-        Una lista de objetos Suspicion encontrados durante el recorrido.
+        Lista de hallazgos (ScanResult) encontrados durante el recorrido iterativo.
     """
     if not directory:
         return []

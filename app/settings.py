@@ -140,7 +140,7 @@ class _Validators:
 
     @staticmethod
     def bool(val: Any) -> bool | None:
-        """Valida valores booleanos aceptando representaciones de texto comunes."""
+        """Valida booleanos aceptando representaciones de texto comunes."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -213,14 +213,14 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 _STRING_TO_KEY: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Resuelve la ubicación del archivo de configuración, validando seguridad."""
+    """Resuelve la ruta del archivo de configuración, asegurando que el directorio sea seguro."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
     if not _Validators._is_safe_path(str(base)): return SETTINGS_DIR / SETTINGS_FILE
     return base / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario de configuración bruto y lo ajusta a valores seguros."""
+    """Valida el diccionario bruto recibido y aplica valores de fábrica para cualquier campo inválido."""
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     for key_str, val in raw_values.items():
@@ -231,7 +231,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Lee y valida la configuración desde el disco, usando caché de sesión."""
+    """Lee el archivo de config o retorna defaults tras fallos de integridad o I/O."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
@@ -255,18 +255,17 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         _SESSION_CACHE[ruta_str] = (stats.st_mtime, config)
         return config
         
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return _get_default_config()
-    except (OSError, PermissionError):
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError):
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste la configuración en un archivo temporal y realiza un reemplazo atómico."""
+    """Persiste configuración de forma atómica. Falla silenciosamente si no es posible escribir."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     if not _Validators._is_safe_path(str(ruta.parent)): return None
     
     cleaned_settings = validate(values)
+    # Seguridad: forzar apagado si no hay clave disponible
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
     
@@ -290,7 +289,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Actualiza claves específicas en la configuración y guarda los cambios."""
+    """Actualiza campos específicos, valida cambios y guarda si hay diferencias reales."""
     current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
@@ -306,28 +305,28 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura la configuración a sus valores de fábrica."""
+    """Restaura la configuración a valores de fábrica."""
     default_config = _get_default_config()
     save(default_config, custom_base)
     return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Obtiene un valor específico de la configuración, con fallback a fábrica."""
+    """Accesor seguro que garantiza devolver un valor existente incluso si el archivo falta."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Obtiene la clave de API priorizando la variable de entorno."""
+    """Obtiene API Key priorizando la variable de entorno sobre la persistida."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente tiene las condiciones necesarias para operar."""
+    """Verifica si el asistente tiene el entorno y la configuración necesarios."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", ""))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera una representación textual legible de la configuración actual."""
+    """Genera un reporte textual de la configuración actual para el usuario."""
     current = load(custom_base)
     key = assistant_api_key(custom_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
