@@ -260,10 +260,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile): continue
         try:
             src_path: Path = junk_file.path.resolve()
-            if not src_path.is_file() or not _is_safe_to_move(junk_file, dest_base):
+            if not src_path.exists() or not src_path.is_file() or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
-            target: Path = _generate_unique_target(dest_base / f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}")
+            # Nombre de archivo seguro: evitamos caracteres problemáticos en el sistema de archivos
+            safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
+            target: Path = _generate_unique_target(dest_base / safe_name)
             
             ensure_safe_to_modify(src_path)
             shutil.move(str(src_path), str(target))

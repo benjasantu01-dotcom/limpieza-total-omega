@@ -737,3 +737,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T08:40:16` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_valid_trim_target` añadiendo validaciones explícitas contra nulos y tipos, asegurando que `_get_process_path` no intente operar sobre handles inválidos, evitando así excepciones no controladas durante la fase crítica de chequeo de seguridad.
 - `2026-08-20T08:40:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T08:40:16` Corrida terminada. Total usado hoy: 204.
+- `2026-08-20T08:48:05` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-20T08:48:34` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `stage_for_review` ante entradas mal formadas y errores de I/O, centralizando la validación de la carpeta destino y asegurando que las operaciones de movimiento no se vean afectadas por archivos con nombres inválidos o rutas inexistentes.
+- `2026-08-20T08:49:22` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-20T08:49:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-20T08:49:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-20T08:50:15` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` implementando un chequeo temprano de `OSError` al realizar `lstat()` en `_check_file_integrity` y refiné la captura de excepciones en `normalize` para evitar que errores inesperados del sistema de archivos (como dispositivos desconectados repentinamente) se propaguen como `ValueError` genéricos, mejorando la previsibilidad de los estados de error.
+- `2026-08-20T08:50:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T08:50:15` Corrida terminada. Total usado hoy: 208.

@@ -184,8 +184,8 @@ def _check_file_integrity(p: Path) -> None:
 
     try:
         st = p.lstat()
-    except (OSError, PermissionError) as e:
-        raise UnsafePathError(f"No se pudo acceder a metadatos: {e}")
+    except OSError as e:
+        raise UnsafePathError(f"Error de acceso a metadatos: {e.strerror}")
 
     if not os.access(p, os.W_OK):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}.")
@@ -235,9 +235,8 @@ def normalize(path: PathLike) -> Path:
             raise ValueError("Unidad de disco no disponible.")
         return p.resolve(strict=False)
     except (OSError, RuntimeError) as e:
-        if _is_permission_denied(e):
-            raise ValueError("Acceso denegado durante la normalización.")
-        raise ValueError(f"Error al normalizar: {e}")
+        # Re-raise como ValueError para mantener la firma del API, pero con detalle
+        raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 
 
 def is_drive_root(path: PathLike) -> bool:
