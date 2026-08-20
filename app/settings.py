@@ -245,8 +245,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
-        if not isinstance(data, dict) or len(data) > (len(ConfigKey) * 2): 
-            return _get_default_config()
+        if not isinstance(data, dict): return _get_default_config()
             
         config = validate(data)
         _CACHE[ruta_str] = (mtime, config)
@@ -279,7 +278,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         os.replace(temp_path, ruta)
         _CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
-    except (OSError, IOError, PermissionError, RuntimeError):
+    except (OSError, IOError, PermissionError, RuntimeError, TypeError, ValueError):
         if temp_path.exists():
             try: temp_path.unlink()
             except OSError: pass

@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 94 | 8 | 14 | 8 | 128 |
-| 2026-08-20 | 127 | 8 | 18 | 3 | 96 |
+| 2026-08-19 | 94 | 8 | 14 | 8 | 124 |
+| 2026-08-20 | 128 | 9 | 18 | 3 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - legibilidad y documentación: **51**
 - rendimiento: **41**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `settings.py`: **21**
+- `settings.py`: **22**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
 - `organizer.py`: **20**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T10:52:11` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de la persistencia de configuración agregando una verificación de integridad del JSON mediante una comparación de claves permitidas y el manejo de excepciones durante la serialización, evitando que un archivo parcialmente escrito o corrupto rompa el estado de la aplicación.
 - `2026-08-20T10:42:03` **quarantine.py** (robustez ante casos límite): Se ha mejorado `quarantine.py` para prevenir la corrupción de datos y bloqueos en condiciones de carrera, añadiendo una validación de existencia persistente durante `quarantine_file` para evitar que un archivo borrado o movido por otro proceso durante la ejecución de la lógica interna provoque inconsistencias en el manifiesto.
 - `2026-08-20T10:41:28` **organizer.py** (robustez ante casos límite): He robustecido la función `stage_for_review` y sus auxiliares para manejar de forma segura el caso límite donde la ruta de destino es una subcarpeta de la ruta de origen, evitando movimientos que podrían corromper la estructura de directorios o causar recursión infinita en el escaneo futuro, además de añadir validación de `exists()` en la lectura de atributos para evitar excepciones en archivos que desaparecen entre la detección y el procesamiento.
 - `2026-08-20T10:40:59` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `_get_process_path` y `trim_working_set` ante casos límite mediante la gestión explícita de `ctypes.wintypes` y la validación de integridad de los buffers, previniendo fallos en entornos donde las llamadas a la API de Windows puedan retornar buffers truncados o errores de acceso inesperados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T10:00:53` **main.py** (rendimiento): Optimicé el manejo de la caché de datos de salud (`_compile_metrics`) para evitar recalcular múltiples veces los mismos resultados durante un único ciclo de análisis, consolidando la lógica de invalidación y reduciendo la presión sobre el sistema de archivos al centralizar el acceso a los datos.
 - `2026-08-20T09:51:17` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje transformando `_RECOMMENDATION_RULES` en un diccionario indexado por `area`, evitando iteraciones innecesarias y búsquedas lineales en cada llamado a `compute_score`.
 - `2026-08-20T09:51:06` **duplicates.py** (rendimiento): Optimicé el proceso de recolección de candidatos utilizando `os.scandir` para obtener el tamaño y el estado del archivo en una sola llamada de sistema, eliminando las redundantes llamadas a `p.stat()` dentro del bucle de `group_by_size` y `_collect_candidates`.
-- `2026-08-20T09:50:37` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `dict()` sobre objetos `defaultdict` y reduje la carga de memoria al procesar el heap de archivos más grandes directamente como generadores, mejorando el rendimiento en directorios con gran cantidad de archivos.

@@ -949,3 +949,42 @@ FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - A
 - `2026-08-20T10:42:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-20T10:42:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T10:42:08` Corrida terminada. Total usado hoy: 252.
+- `2026-08-20T10:50:40` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-20T10:51:17` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-20T10:51:40` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-20T10:52:11` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de la persistencia de configuración agregando una verificación de integridad del JSON mediante una comparación de claves permitidas y el manejo de excepciones durante la serialización, evitando que un archivo parcialmente escrito o corrupto rompa el estado de la aplicación.
+- `2026-08-20T10:52:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-20T10:53:04` Tests FALLARON:
+```
+ble_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:101
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:101: SyntaxWarning: invalid escape sequence '\A'
+    Extrae la ruta absoluta dentro de comillas (ej: "C:\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 8 warnings in 1.21s
+
+```
+- `2026-08-20T10:53:04` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la resiliencia de la resolución de rutas en `StartupEntry` añadiendo validaciones de existencia física mediante `os.path.exists` antes de intentar operaciones de resolución complejas, previniendo errores en rutas mal formadas, inexistentes o con caracteres especiales que podrían disparar excepciones innecesarias.
+- `2026-08-20T10:53:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T10:53:04` Corrida terminada. Total usado hoy: 256.
