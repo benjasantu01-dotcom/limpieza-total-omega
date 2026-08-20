@@ -164,13 +164,11 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Evalúa la salud de la memoria según el porcentaje disponible respecto al umbral."""
-    if _LIMIT_RAM_PERCENT <= 0: return 0.0
-    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0)
+    return 0.0 if _LIMIT_RAM_PERCENT <= 0 else _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Evalúa la salud del disco según el espacio libre disponible respecto al umbral."""
-    if _LIMIT_DISK_PERCENT <= 0: return 0.0
-    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0)
+    return 0.0 if _LIMIT_DISK_PERCENT <= 0 else _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud basado en el espacio desperdiciado por duplicados."""
@@ -219,11 +217,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     breakdown: Dict[MetricKey, int] = {}
     final_score = 0
     for area, weight in _WEIGHT_ITEMS_INT:
-        puntos = int(round(ratios[area] * weight))
+        ratio = ratios.get(area, 0.0)
+        puntos = int(round(_clamp(ratio, 0.0, 1.0) * weight))
         breakdown[area] = puntos
         final_score += puntos
     
-    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios[rule.area])]
+    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios.get(rule.area, 0.0))]
     
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

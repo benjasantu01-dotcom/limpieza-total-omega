@@ -80,18 +80,18 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         p = Path(path)
-        if not p.exists(): return None
-        file_path = p.resolve(strict=True)
-        if not file_path.is_file() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
+        if not p.is_file(): return None
+        
+        # Validaciones de seguridad externas (NO cambiar por condiciones de if)
+        if is_protected_path(p) or not is_safe_to_modify(p):
             return None
 
-        stat_initial = file_path.stat()
-        # 0x400 es el atributo FILE_ATTRIBUTE_REPARSE_POINT (Junctions/Symlinks)
+        stat_initial = p.stat()
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
         digest = hashlib.sha256()
-        with open(file_path, "rb") as f:
+        with open(p, "rb") as f:
             while (buffer := f.read(chunk_size)):
                 digest.update(buffer)
         
@@ -109,13 +109,13 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         
     try:
         p = Path(path)
-        if not p.exists(): return None
-        file_path = p.resolve(strict=True)
-        if not file_path.is_file() or is_protected_path(file_path) or not is_safe_to_modify(file_path):
+        if not p.is_file(): return None
+        if is_protected_path(p) or not is_safe_to_modify(p):
             return None
             
-        with open(file_path, "rb") as f:
-            if not (content := f.read(read_bytes)):
+        with open(p, "rb") as f:
+            content = f.read(read_bytes)
+            if not content:
                 return None
             return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
@@ -132,7 +132,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     for p in paths:
         try:
-            target = Path(p).resolve(strict=True)
+            target = Path(p)
             if not target.is_file() or target.is_symlink(): continue
             if is_protected_path(target) or not is_safe_to_modify(target): continue
             groups[target.stat().st_size].append(target)
@@ -241,11 +241,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            target = p.resolve(strict=True)
-            if not target.is_file() or is_protected_path(target) or not is_safe_to_modify(target):
+            if not p.is_file() or is_protected_path(p) or not is_safe_to_modify(p):
                 continue
-            stat_info = target.stat()
-            keepers.append((float(stat_info.st_mtime), len(str(target)), target))
+            stat_info = p.stat()
+            keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError, AttributeError, ValueError, TypeError):
             continue
             

@@ -329,7 +329,7 @@ def _is_system_process(pid: int) -> bool:
     return pid in SYSTEM_CRITICAL_PIDS or pid < 100
 
 
-def _get_process_path(handle: int) -> Optional[str]:
+def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     """Resuelve la ruta absoluta del ejecutable desde un handle de Win32."""
     if not handle:
         return None
@@ -341,14 +341,15 @@ def _get_process_path(handle: int) -> Optional[str]:
     buf = ctypes.create_unicode_buffer(size.value)
     
     try:
-        if kernel32.QueryFullProcessImageNameW(handle, 0, buf, ctypes.byref(size)) > 0:
+        # Usamos handle explícito para asegurar compatibilidad de tipos
+        if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError):
         return None
     return None
 
 
-def _is_valid_trim_target(proc_handle: int) -> Tuple[bool, Optional[str]]:
+def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
     """Realiza chequeos de seguridad antes de permitir la liberación de RAM."""
     if not proc_handle:
         return False, "Handle inválido."
@@ -401,7 +402,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, reason or "Validación de proceso fallida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
-            return False, f"Error al liberar memoria (código {kernel32.GetLastError()})."
+            error = kernel32.GetLastError()
+            return False, f"Error al liberar memoria (código {error})."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, Exception):

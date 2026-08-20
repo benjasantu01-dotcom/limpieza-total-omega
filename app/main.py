@@ -150,15 +150,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         pool de hilos y destruye la instancia de la interfaz.
         """
         self._closing = True
+        # Limpieza de hilos: evitamos que nuevas tareas se encolen y liberamos recursos
         with self._task_lock:
             if self._executor:
-                self._executor.shutdown(wait=False)
+                self._executor.shutdown(wait=False, cancel_futures=True)
+                self._executor = None
         self.destroy()
 
     def _safe_run_ui_callback(self, callback: Callable[[], None]) -> None:
         """Ejecuta una actualización de UI solo si la ventana sigue abierta."""
         if not self._closing:
-            self.after_idle(callback)
+            try:
+                self.after_idle(callback)
+            except tk.TclError:
+                pass
 
     def _validate_environment(self) -> None:
         """
@@ -221,7 +226,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 pass
         if not self._closing:
-            self._debounces[key] = self.after(delay, callback)
+            try:
+                self._debounces[key] = self.after(delay, callback)
+            except tk.TclError:
+                pass
 
     def _create_styled_label(self, parent: Any, text: str, style: str, **kwargs: Any) -> ctk.CTkLabel:
         """
