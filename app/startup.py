@@ -72,9 +72,10 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada, sea de carpetas o registro.
     
-    La clase utiliza resolución perezosa para el ejecutable (`executable`) con el fin 
-    de minimizar llamadas costosas al sistema de archivos hasta que la interfaz 
-    realmente necesite mostrar la ruta completa.
+    Atributos:
+        name: Nombre descriptivo del programa.
+        command: Línea de comando original desde el registro o carpeta.
+        source: Origen de la detección ('carpeta' o 'registro').
     """
     name: str
     command: str
@@ -90,15 +91,19 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Elimina caracteres de control y espacios en blanco extremos del comando crudo."""
+        """Limpia caracteres de control (ASCII < 32) del comando crudo."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Analiza cadenas entre comillas, comunes en registros (ej: "C:\Ruta\App.exe").
-        Valida mediante `is_protected_path` que la ruta no sea un objetivo prohibido.
+        Extrae la ruta absoluta dentro de comillas (ej: "C:\App.exe").
+        
+        Args:
+            raw_cmd: Cadena conteniendo la ruta entre comillas.
+        Returns:
+            Ruta limpia si es válida y no protegida, cadena vacía caso contrario.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -120,8 +125,10 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Resuelve la ruta absoluta, verificando existencia y seguridad.
-        Utiliza _EXISTS_CACHE para evitar el impacto de performance de múltiples `Path.exists()`.
+        Resuelve la ruta absoluta mediante `os.path.realpath`.
+        
+        Utiliza _EXISTS_CACHE para evitar el impacto de performance de múltiples 
+        consultas al disco por cada entrada, verificando seguridad de ruta.
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
@@ -178,8 +185,8 @@ class StartupEntry:
         """
         Acceso perezoso a la ruta absoluta del ejecutable.
         
-        Calculado solo bajo demanda y cacheado para asegurar que la UI no bloquee el 
-        hilo principal consultando repetidamente al disco.
+        Calculado una única vez bajo demanda y cacheado en `_exec_cache` 
+        para asegurar que la UI no bloquee el hilo principal.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -239,7 +246,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte el CSV generado por PowerShell en objetos StartupEntry."""
+    """Convierte el CSV crudo generado por PowerShell en objetos StartupEntry."""
     if not isinstance(text, str) or not text.strip():
         return []
         
@@ -249,12 +256,10 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         f = io.StringIO(text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         
-        # Validar si el CSV tiene contenido mas allá de las cabeceras
         for row in reader:
             if not isinstance(row, dict) or not row:
                 continue
             
-            # Acceso seguro a valores del diccionario ignorando claves del sistema PS
             vals = [val for key, val in row.items() if val is not None and not key.startswith("PS")]
             if len(vals) < 2:
                 continue
@@ -309,12 +314,11 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Combina fuentes de carpetas y registro usando concurrencia para reducir latencia."""
+    """Combina fuentes de carpetas y registro usando concurrencia."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
 
-    # Escaneo concurrente de fuentes de I/O bloqueantes
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         f_folders = executor.submit(entries_from_folders)
         f_registry = executor.submit(entries_from_registry)
@@ -343,7 +347,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera una salida de texto para la interfaz con el estado del inicio."""
+    """Genera informe de texto para la interfaz."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

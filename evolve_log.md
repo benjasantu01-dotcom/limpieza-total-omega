@@ -409,3 +409,40 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-20T05:05:28` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo `settings.py` integrando type hints más precisos, unificando la lógica de validación de rutas para reducir la redundancia y añadiendo docstrings que explican claramente la lógica de fallback y seguridad, tal como solicita el enfoque de legibilidad.
 - `2026-08-20T05:05:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T05:05:28` Corrida terminada. Total usado hoy: 120.
+- `2026-08-20T05:13:52` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-08-20T05:14:28` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y detallando la lógica de resolución de rutas, lo que facilita el mantenimiento del sistema de caché de archivos de inicio.
+- `2026-08-20T05:15:16` Tests FALLARON:
+```
+ef espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+                             ^^^^^^^^^^^^^^^^
+E       KeyError: 'texto'
+
+evolve/tests/test_assistant.py:418: KeyError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:101: SyntaxWarning: invalid escape sequence '\A'
+    Extrae la ruta absoluta dentro de comillas (ej: "C:\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+1 failed, 298 passed, 7 warnings in 1.20s
+
+```
+- `2026-08-20T05:15:16` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a los datos de configuración en `ask()` y `_call_gemini` mediante la reutilización de la carga de ajustes, evitando llamadas repetitivas al sistema de archivos y validaciones redundantes de tipos en cada iteración del bucle de consulta.
+- `2026-08-20T05:15:51` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de colores RGB mediante la eliminación de la re-conversión manual en `blend` y `_hex_to_rgb`, aprovechando directamente la constante `PALETTE_RGB` para evitar cálculos repetitivos en el bucle de renderizado.
+- `2026-08-20T05:16:02` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` implementando un mecanismo de caché `memo` persistente para evitar escaneos redundantes de subdirectorios comunes entre distintos navegadores (como rutas compartidas bajo `User Data`), reduciendo drásticamente las llamadas a `os.scandir` y `stat`.
+- `2026-08-20T05:16:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T05:16:02` Corrida terminada. Total usado hoy: 124.

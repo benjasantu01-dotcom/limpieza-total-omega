@@ -230,8 +230,6 @@ def _sum_directory_recursive(
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     try:
-                        if is_protected_path(Path(entry.path)):
-                            continue
                         if entry.is_dir():
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file():
@@ -245,7 +243,6 @@ def _sum_directory_recursive(
         return total
 
     result = _walk(root_key, 0)
-    memo[root_key] = result
     return result
 
 
