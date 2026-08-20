@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 42 | 2 | 8 | 3 | 47 |
+| 2026-08-18 | 42 | 2 | 8 | 3 | 43 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 33 | 3 | 5 | 0 | 11 |
+| 2026-08-20 | 36 | 3 | 5 | 0 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **45**
+- seguridad defensiva: **43**
 - rendimiento: **41**
 - robustez ante casos límite: **40**
-- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,19 +34,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **22**
 - `assistant.py`: **22**
 - `duplicates.py`: **20**
-- `organizer.py`: **19**
+- `organizer.py`: **20**
 - `scanner.py`: **19**
 - `healthscore.py`: **19**
 - `quarantine.py`: **16**
 - `browser.py`: **15**
-- `main.py`: **14**
-- `memory.py`: **11**
+- `main.py`: **15**
+- `memory.py`: **12**
 - `branding.py`: **9**
 - `safety.py`: **6**
 - `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T02:22:44` **organizer.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_is_safe_for_disk_op` para validar explícitamente que la ruta de destino no sea una subcarpeta del origen, evitando así operaciones de movimiento lógico o físico que podrían corromper la jerarquía de archivos o inducir errores de recursión profunda en sistemas de archivos complejos.
+- `2026-08-20T02:22:19` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` asegurando que el buffer de memoria sea gestionado y validado correctamente antes de intentar convertirlo a string, evitando lecturas fuera de rango o manipulación insegura de punteros en la interacción con la API de Windows.
+- `2026-08-20T02:21:46` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` al reemplazar accesos directos a rutas en métodos asíncronos (`on_scan_junk`, `on_find_duplicates`) por una validación explícita mediante `ensure_safe_to_modify` dentro del `worker_thread_logic`, asegurando que cualquier operación sobre archivos verifique la integridad de la ruta incluso si la UI intentó validarla previamente, y protegiendo el punto de entrada de la app mediante un check de integridad del directorio de trabajo.
 - `2026-08-20T02:12:32` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del sistema de evaluación asegurando que, ante una configuración de pesos parcial o errónea en `WEIGHTS`, `compute_score` no intente procesar áreas inexistentes o genere divisiones por cero, garantizando que el cálculo de `final_score` siempre sea determinista y seguro.
 - `2026-08-20T02:12:02` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `group_by_size` y `_collect_candidates` consolidando la validación de rutas mediante un único método de chequeo, asegurando que cualquier entrada sea validada contra las listas de protección antes de cualquier intento de acceso al sistema de archivos.
 - `2026-08-20T02:11:36` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `walk_files` implementando una validación estricta de rutas mediante `is_protected_path` sobre `resolve(strict=False)` antes de iterar, asegurando que el escáner no pueda ser engañado por rutas relativas maliciosas o enlaces simbólicos mal formados que apunten fuera del directorio objetivo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T01:41:58` **memory.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `_parse_csv_row` para manejar fallos en la división de cadenas y entradas malformadas, evitando que el proceso de parsing del CSV se interrumpa ante datos inesperados del sistema, mejorando así la resiliencia del módulo ante procesos con nombres complejos o caracteres no estándar.
 - `2026-08-20T01:41:21` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta en el método `on_delete_reviewed` para garantizar que la carpeta de revisión sea una ruta válida y segura antes de intentar cualquier operación de borrado, evitando fallos si el directorio no existe o fue manipulado externamente.
 - `2026-08-20T01:31:03` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_system_hidden` para evitar falsos positivos y errores ante rutas inexistentes o inaccesibles, asegurando que la validación de archivos ocultos/sistema sea resiliente ante cambios inesperados en el sistema de archivos durante la iteración.
-- `2026-08-20T01:30:30` **branding.py** (robustez ante casos límite): Se ha mejorado `save_logo_svg` para manejar robustamente la creación de rutas, incluyendo la validación explícita mediante `is_safe_to_modify` antes de intentar crear directorios o escribir el archivo, previniendo errores en casos límite de permisos o rutas de sistema.
-- `2026-08-20T01:21:20` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante una validación de `source` más estricta, asegurando que `_validate_and_assign` no acceda a atributos o claves inexistentes sin comprobación previa, evitando así posibles excepciones durante la inicialización de métricas.
-- `2026-08-20T01:20:24` **settings.py** (rendimiento): Optimizé `load` y `save` eliminando llamadas redundantes a `is_protected_path` y `path.exists()` dentro del flujo crítico, centralizando la verificación de seguridad en una única llamada a `_is_safe_path` (que ya engloba la lógica necesaria) para reducir el I/O innecesario.

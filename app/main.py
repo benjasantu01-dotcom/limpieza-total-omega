@@ -933,10 +933,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not self._closing:
                 self._validate_and_log_error(e, tab)
 
-    def _worker_thread_logic(self, fn: Callable[[], Any], tab: str) -> None:
-        """Wrappers de ejecución para hilos de trabajo asíncronos."""
+    def _worker_thread_logic(self, fn: Callable[[], Any], tab: str, target: Optional[str]) -> None:
+        """Wrappers de ejecución para hilos de trabajo asíncronos con validación de seguridad."""
         try:
+            if target:
+                safety.ensure_safe_to_modify(Path(target).resolve(strict=True))
             self._safe_run(fn, tab)
+        except safety.UnsafePathError as e:
+            self.log(f"Abortado: La ruta {target} no es segura: {e}", tab)
         finally:
             if not self._closing:
                 self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
@@ -946,18 +950,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if self._closing: return
         
         target_path = target or self.scan_target
-        if check_safety and target_path:
-            try:
-                safety.ensure_safe_to_modify(Path(target_path).resolve())
-            except safety.UnsafePathError as e:
-                self.log(f"Abortado: La ruta de destino {target_path} no es segura: {e}", self._current_tab())
-                return
-            
         self._set_busy(True)
         tab = self._current_tab()
         
         if not self._closing and self._executor:
-            self._executor.submit(self._worker_thread_logic, fn, tab)
+            # La validación se delega al worker thread para mayor seguridad
+            self._executor.submit(self._worker_thread_logic, fn, tab, target_path if check_safety else None)
 
     def _current_tab(self) -> str:
         """Determina la pestaña activa actualmente."""
@@ -1193,10 +1191,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _run_heuristic_scan(self, folder: str) -> None:
         """Ejecuta el escaneo de seguridad en una ruta específica."""
         def task() -> None:
-            if not self._is_valid_dir(folder):
-                self.log(f"Error: La carpeta {folder} no es accesible.", "Seguridad")
-                return
-            
             self.set_status(f"Escaneando {folder}...")
             self.clear("Seguridad")
             self.log(f"Escaneo heurístico en: {folder}", "Seguridad")
@@ -1436,7 +1430,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_disk_analysis(self) -> None:
         """Analiza la distribución de uso de una carpeta."""
         folder = self._ask_folder("Elegí una carpeta para analizar")
-        if not folder or not self._verify_disk_path(folder):
+        if not folder:
             return
         
         self.analysis_folder = folder
@@ -1445,28 +1439,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not Path(folder).exists():
                 self.log(f"Error: La carpeta {folder} ya no existe.", "Disco")
                 return
-
-            if not self._is_valid_dir(folder):
-                self.log("Error: La carpeta seleccionada no es accesible.", "Disco")
-                return
             
             self.set_status(f"Analizando {folder}...")
             self.clear("Disco")
             self.log(f"Analizando {folder} (solo lectura, puede tardar)...", "Disco")
             self.log_lines(diskreport.summarize(folder), "Disco")
 
-        self.run_async(task)
+        self.run_async(task, check_safety=True, target=folder)
 
     def on_find_duplicates(self) -> None:
         """Buscador de archivos duplicados por hash."""
         folder = self._ask_folder("Elegí una carpeta donde buscar duplicados")
-        if not folder or not self._verify_disk_path(folder):
+        if not folder:
             return
 
         def task() -> None:
-            if not self._is_valid_dir(folder):
-                self.log("Error: La carpeta seleccionada ya no existe.", "Duplicados")
-                return
             self.set_status(f"Buscando duplicados en {folder}...")
             self.clear("Duplicados")
             self.log(f"Buscando duplicados en {folder} (solo lectura, puede tardar)...",

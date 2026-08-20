@@ -145,8 +145,9 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     try:
         src_abs = src.resolve()
         dest_abs = dest.resolve()
-        return src_abs == dest_abs or src_abs == dest_abs.parent or dest_abs in src_abs.parents
-    except (OSError, RuntimeError):
+        # Verificamos si el origen es igual al destino o si el destino es un subdirectorio del origen
+        return src_abs == dest_abs or dest_abs.is_relative_to(src_abs)
+    except (OSError, RuntimeError, ValueError):
         return True
 
 
