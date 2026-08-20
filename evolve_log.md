@@ -995,3 +995,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-20T11:02:51` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-08-20T11:02:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T11:02:51` Corrida terminada. Total usado hoy: 260.
+- `2026-08-20T11:11:07` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-20T11:11:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-20T11:12:01` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad de `SystemMetrics` mediante la adición de una validación explícita de tipos y rangos durante la inicialización, asegurando que los datos de entrada no maliciosos o corruptos puedan comprometer los cálculos de salud.
+- `2026-08-20T11:13:08` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad defensiva en `main.py` mediante la implementación de `ensure_safe_to_modify` en todas las operaciones que implican escritura o movimiento de archivos, sustituyendo comprobaciones insuficientes y asegurando que la validación ocurra en el hilo de trabajo (`worker_thread_logic`) para evitar bloqueos innecesarios en la UI o falsos positivos por concurrencia.
+- `2026-08-20T11:13:21` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad adicional en `_is_valid_trim_target` para prevenir intentos de manipulación sobre procesos con nombres o rutas que contengan caracteres de control RTL (Right-to-Left), mitigando posibles ataques de confusión de rutas o spoofing visual.
+- `2026-08-20T11:13:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T11:13:21` Corrida terminada. Total usado hoy: 264.

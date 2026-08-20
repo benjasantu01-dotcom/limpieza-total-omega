@@ -102,6 +102,9 @@ class SystemMetrics:
     startup_count: int = 0
     quarantined_count: int = 0
 
+    def __post_init__(self) -> None:
+        self.validate()
+
     def validate(self) -> None:
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))

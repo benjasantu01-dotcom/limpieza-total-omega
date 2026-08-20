@@ -362,6 +362,11 @@ def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[
     if not path or not isinstance(path, str):
         return False, "No se pudo verificar la ubicación del ejecutable."
     
+    # Prevenir ataques de spoofing mediante caracteres de control RTL (U+202E, etc)
+    rtl_chars = ["\u202E", "\u202D", "\u202B", "\u202A"]
+    if any(c in path for c in rtl_chars):
+        return False, "Ruta de proceso sospechosa (caracteres control)."
+
     normalized_path = os.path.normcase(os.path.normpath(path))
     if is_protected_path(normalized_path):
         return False, "Operación denegada: ruta de ejecutable protegida."
