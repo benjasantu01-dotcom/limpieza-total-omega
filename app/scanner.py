@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from typing import List, Optional, Union, Final, Callable, TypeAlias
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
@@ -120,7 +120,8 @@ class Scanner:
         try:
             target_path = Path(entry.path)
             
-            if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
+            # Verificación defensiva usando booleano para no romper el flujo
+            if not is_safe_to_modify(target_path) or str(target_path).startswith("\\\\"):
                 return
 
             if entry.is_symlink() or self._is_reparse_point(entry):

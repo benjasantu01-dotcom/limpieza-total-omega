@@ -33,7 +33,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional
 
-from safety import is_safe_to_modify, is_protected_path
+from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 
@@ -259,8 +259,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(custom_base)
     parent = ruta.parent
     
-    if not _Validators._is_safe_path(str(parent.resolve(strict=False))): return None
-    if parent.exists() and not os.access(parent, os.W_OK): return None
+    try:
+        ensure_safe_to_modify(str(parent.resolve(strict=False)))
+    except (OSError, RuntimeError, PermissionError):
+        return None
     
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):

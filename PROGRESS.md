@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 94 | 8 | 14 | 8 | 112 |
-| 2026-08-20 | 133 | 10 | 19 | 4 | 102 |
+| 2026-08-19 | 94 | 8 | 14 | 8 | 108 |
+| 2026-08-20 | 135 | 10 | 19 | 4 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - legibilidad y documentación: **51**
+- seguridad defensiva: **43**
 - rendimiento: **41**
-- seguridad defensiva: **41**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **23**
 - `diskreport.py`: **22**
-- `settings.py`: **22**
 - `assistant.py`: **21**
 - `healthscore.py`: **21**
 - `organizer.py`: **20**
@@ -38,7 +38,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `browser.py`: **17**
 - `main.py`: **17**
-- `scanner.py`: **15**
+- `scanner.py`: **16**
 - `quarantine.py`: **15**
 - `branding.py`: **8**
 - `safety.py`: **7**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T11:32:34` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta del directorio de configuración mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, previniendo así intentos de manipulación de archivos en ubicaciones protegidas por parte de terceros o configuraciones erróneas.
+- `2026-08-20T11:32:01` **scanner.py** (seguridad defensiva): Se ha implementado `is_safe_to_modify` en `process_entry` antes de realizar operaciones de análisis para garantizar que la ruta sea segura, siguiendo estrictamente la recomendación del bucle autónomo de no usar funciones que lancen excepciones dentro de flujos de control.
 - `2026-08-20T11:13:21` **memory.py** (seguridad defensiva): Se ha añadido una validación de seguridad adicional en `_is_valid_trim_target` para prevenir intentos de manipulación sobre procesos con nombres o rutas que contengan caracteres de control RTL (Right-to-Left), mitigando posibles ataques de confusión de rutas o spoofing visual.
 - `2026-08-20T11:12:01` **healthscore.py** (seguridad defensiva): Se reforzó la integridad de `SystemMetrics` mediante la adición de una validación explícita de tipos y rangos durante la inicialización, asegurando que los datos de entrada no maliciosos o corruptos puedan comprometer los cálculos de salud.
 - `2026-08-20T11:02:40` **browser.py** (seguridad defensiva): Se ha implementado `is_safe_to_modify` en las funciones críticas de detección y navegación de directorios, asegurando que cualquier acceso a rutas esté filtrado por `is_protected_path` de forma explícita y coherente, eliminando la ambigüedad en el manejo de permisos durante la recursión.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T10:31:56` **healthscore.py** (robustez ante casos límite): Se reforzó la robustez de `SystemMetrics` ante valores `NaN` o `inf` que podrían saltarse las validaciones actuales, asegurando que `is_finite()` sea un chequeo exhaustivo antes de realizar cualquier cálculo.
 - `2026-08-20T10:31:00` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular en el acceso a atributos de archivo (`stat`) y metadatos, evitando que una entrada individual bloquee el recorrido completo del directorio.
 - `2026-08-20T10:21:47` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `build_context` implementando una validación exhaustiva de los tipos de entrada y asegurando que `extra` no contenga datos arbitrarios mediante la restricción estricta al inventario de `_VALIDATORS`.
-- `2026-08-20T10:11:27` **settings.py** (rendimiento): Se optimizó el rendimiento de carga reemplazando `lru_cache` manuales y lecturas redundantes de disco por un mecanismo de caché en memoria con `mtime` (tiempo de última modificación), evitando operaciones de I/O innecesarias al llamar a `load()` múltiples veces durante el mismo ciclo.
-- `2026-08-20T10:11:06` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `scan_file` para evitar llamadas redundantes a `path.exists()` y `path.is_file()` (que ya fueron validadas por `os.scandir` y `process_entry`), utilizando el objeto `DirEntry` ya existente para realizar comprobaciones sin acceder al disco nuevamente.
