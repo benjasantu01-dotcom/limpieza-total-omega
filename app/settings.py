@@ -32,13 +32,11 @@ import os
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict
+from functools import lru_cache
 
 from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
-
-# Caché interno para evitar I/O repetido en la misma ejecución: (mtime, datos)
-_SESSION_CACHE: dict[str, tuple[float, AppSettings]] = {}
 
 class ConfigKey(Enum):
     """Enumeración de claves permitidas en el diccionario de configuración."""
@@ -230,33 +228,24 @@ def validate(raw_values: Any) -> AppSettings:
             if validated is not None: config[key.value] = validated
     return config
 
-def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Lee el archivo de config o retorna defaults tras fallos de integridad o I/O."""
-    ruta = settings_path(custom_base)
-    ruta_str = str(ruta)
-    
+@lru_cache(maxsize=2)
+def _load_internal(ruta_str: str) -> AppSettings:
+    """Implementación interna de carga con caché de archivos."""
+    ruta = Path(ruta_str)
     try:
         if not ruta.exists(): return _get_default_config()
-        stats = ruta.stat()
-        
-        if ruta_str in _SESSION_CACHE:
-            cached_mtime, cached_data = _SESSION_CACHE[ruta_str]
-            if cached_mtime == stats.st_mtime: return cached_data
-            
-        if stats.st_size > MAX_SETTINGS_SIZE or not _Validators._is_safe_path(ruta_str):
+        if ruta.stat().st_size > MAX_SETTINGS_SIZE or not _Validators._is_safe_path(ruta_str):
             return _get_default_config()
-        
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
-            
         if not isinstance(data, dict): return _get_default_config()
-        
-        config = validate(data)
-        _SESSION_CACHE[ruta_str] = (stats.st_mtime, config)
-        return config
-        
+        return validate(data)
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError):
         return _get_default_config()
+
+def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Lee el archivo de config o retorna defaults tras fallos de integridad o I/O."""
+    return _load_internal(str(settings_path(custom_base)))
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Persiste configuración de forma atómica. Falla silenciosamente si no es posible escribir."""
@@ -265,7 +254,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not _Validators._is_safe_path(str(ruta.parent)): return None
     
     cleaned_settings = validate(values)
-    # Seguridad: forzar apagado si no hay clave disponible
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
     
@@ -274,13 +262,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         ruta.parent.mkdir(parents=True, exist_ok=True)
-        
         with open(temp_path, "wb") as f:
             f.write(encoded_data)
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_path, ruta)
-        _SESSION_CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
+        _load_internal.cache_clear()
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
         if temp_path.exists():

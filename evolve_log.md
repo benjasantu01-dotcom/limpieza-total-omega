@@ -460,3 +460,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T05:36:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-08-20T05:36:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T05:36:05` Corrida terminada. Total usado hoy: 132.
+- `2026-08-20T05:44:29` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-20T05:44:59` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-20T05:45:23` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-20T05:45:51` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el acceso a configuraciones frecuentes implementando una caché de tipo `lru_cache` sobre `load()`, reduciendo drásticamente las llamadas redundantes a disco y el parseo de JSON en operaciones repetitivas de lectura.
+- `2026-08-20T05:46:06` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y llamadas a `is_protected_path` dentro del bucle, procesando los nombres de archivo mediante `os.path` (más ligero) y aplicando la validación de seguridad solo una vez sobre la ruta completa.
+- `2026-08-20T05:46:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T05:46:06` Corrida terminada. Total usado hoy: 136.
