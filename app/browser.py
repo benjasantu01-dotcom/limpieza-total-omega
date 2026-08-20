@@ -184,7 +184,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
             return True
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, FileNotFoundError):
         return True
     return False
 

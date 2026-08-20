@@ -159,13 +159,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
     try:
         p = Path(mount).resolve(strict=False)
-        # Verificar existencia antes de consultar para evitar errores en unidades removibles
+        # Verificar existencia y acceso básico
         if not p.exists():
             return None
             
         usage = shutil.disk_usage(p)
         return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, PermissionError, ValueError, RuntimeError):
+    except (OSError, PermissionError, ValueError, RuntimeError, FileNotFoundError):
         return None
 
 
@@ -190,8 +190,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     results: List[DriveUsage] = []
     if mounts and isinstance(mounts, Iterable):
         for mount in mounts:
-            # Validar que la cadena no sea vacía y no sea una ruta UNC problemática
-            if mount and isinstance(mount, (str, os.PathLike)) and not str(mount).startswith(("\\\\", "//")):
+            if mount and isinstance(mount, (str, os.PathLike)):
+                if str(mount).startswith(("\\\\", "//")):
+                    continue
                 usage = drive_usage(mount)
                 if usage:
                     results.append(usage)
@@ -230,12 +231,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Saltar symlinks/junctions para evitar bucles infinitos
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
                         
+                        # stat puede fallar si el archivo fue borrado entre scandir y stat
                         stat_data = entry.stat(follow_symlinks=False)
                         
                         if entry.is_dir():
@@ -245,9 +248,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 stack.append(entry.path)
                         elif entry.is_file():
                             yield Path(entry.path), stat_data.st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
 
 
@@ -326,7 +329,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                # Obtener la parte inmediata debajo de la ruta base
                 relative = path.relative_to(base)
                 if len(relative.parts) > 1:
                     top_folder = base / relative.parts[0]

@@ -252,15 +252,8 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
 
     cast, min_v, max_v = spec
     
-    # Solo procesar si es un contenedor navegable
-    if not isinstance(source, (dict, object)):
-        return
-
-    # Extracción segura según tipo de origen
-    if isinstance(source, dict):
-        val = source.get(key)
-    else:
-        val = getattr(source, key, None)
+    # Extracción segura: intentamos dict get, luego atributo si no es dict
+    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
     # Prohibir contenedores como métricas; aceptar solo escalares numéricos o strings
     if val is None or isinstance(val, (list, dict, set, tuple, bool)):
@@ -291,9 +284,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     if health is not None:
         _validate_and_assign(ctx, health, "score", (int, 0, 100))
-        grade_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
-        if isinstance(grade_val, (str, int, float)):
-            ctx.grade = str(grade_val)[:10].strip()
+        # Acceso defensivo a grade
+        g_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
+        if isinstance(g_val, (str, int, float)):
+            ctx.grade = str(g_val)[:10].strip()
         ctx.analyzed = True
 
     for k, v in extra.items():

@@ -467,3 +467,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T05:46:06` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y llamadas a `is_protected_path` dentro del bucle, procesando los nombres de archivo mediante `os.path` (más ligero) y aplicando la validación de seguridad solo una vez sobre la ruta completa.
 - `2026-08-20T05:46:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T05:46:06` Corrida terminada. Total usado hoy: 136.
+- `2026-08-20T05:54:44` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-20T05:55:26` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante la recepción de objetos inesperados o malformados, asegurando que cualquier entrada que no sea un diccionario puro se maneje mediante un acceso a atributos defensivo (`getattr`), evitando que el asistente falle o se bloquee ante datos corruptos o tipos de datos no compatibles.
+- `2026-08-20T05:56:02` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-20T05:56:36` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado `_should_skip_entry` para capturar errores `FileNotFoundError` durante la evaluación de atributos, evitando que una entrada eliminada o renombrada externamente durante el escaneo detenga el proceso completo del módulo.
+- `2026-08-20T05:56:58` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` ante archivos que desaparecen durante la iteración (concurrencia) y mejoré el manejo de errores en `all_drives_usage` para evitar cuelgues al acceder a unidades externas o sin formato que pueden lanzar errores inesperados al intentar obtener su estado de uso.
+- `2026-08-20T05:56:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T05:56:58` Corrida terminada. Total usado hoy: 140.

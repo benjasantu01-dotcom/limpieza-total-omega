@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 4 | 0 | 1 | 0 | 13 |
+| 2026-08-18 | 1 | 0 | 1 | 0 | 12 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 69 | 4 | 12 | 1 | 50 |
+| 2026-08-20 | 72 | 4 | 12 | 1 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **42**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `diskreport.py`: **21**
-- `assistant.py`: **20**
-- `organizer.py`: **19**
+- `diskreport.py`: **22**
+- `assistant.py`: **21**
 - `duplicates.py`: **19**
 - `healthscore.py`: **18**
+- `organizer.py`: **18**
 - `scanner.py`: **17**
-- `main.py`: **15**
-- `quarantine.py`: **15**
-- `browser.py`: **15**
+- `browser.py`: **16**
+- `main.py`: **14**
+- `quarantine.py`: **14**
 - `memory.py`: **13**
 - `branding.py`: **9**
 - `safety.py`: **7**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T05:56:58` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` ante archivos que desaparecen durante la iteración (concurrencia) y mejoré el manejo de errores en `all_drives_usage` para evitar cuelgues al acceder a unidades externas o sin formato que pueden lanzar errores inesperados al intentar obtener su estado de uso.
+- `2026-08-20T05:56:36` **browser.py** (robustez ante casos límite): Se ha mejorado `_should_skip_entry` para capturar errores `FileNotFoundError` durante la evaluación de atributos, evitando que una entrada eliminada o renombrada externamente durante el escaneo detenga el proceso completo del módulo.
+- `2026-08-20T05:55:26` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la recepción de objetos inesperados o malformados, asegurando que cualquier entrada que no sea un diccionario puro se maneje mediante un acceso a atributos defensivo (`getattr`), evitando que el asistente falle o se bloquee ante datos corruptos o tipos de datos no compatibles.
 - `2026-08-20T05:46:06` **startup.py** (rendimiento): Se optimizó `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y llamadas a `is_protected_path` dentro del bucle, procesando los nombres de archivo mediante `os.path` (más ligero) y aplicando la validación de seguridad solo una vez sobre la ruta completa.
 - `2026-08-20T05:45:51` **settings.py** (rendimiento): Optimicé el acceso a configuraciones frecuentes implementando una caché de tipo `lru_cache` sobre `load()`, reduciendo drásticamente las llamadas redundantes a disco y el parseo de JSON en operaciones repetitivas de lectura.
 - `2026-08-20T05:35:58` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `item_map` en un conjunto de nombres de archivos registrados para evitar iteraciones redundantes y permitiendo un filtrado más eficiente de los archivos en disco que no pertenecen al manifiesto.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T05:15:51` **branding.py** (rendimiento): Optimicé el cálculo de colores RGB mediante la eliminación de la re-conversión manual en `blend` y `_hex_to_rgb`, aprovechando directamente la constante `PALETTE_RGB` para evitar cálculos repetitivos en el bucle de renderizado.
 - `2026-08-20T05:14:28` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y detallando la lógica de resolución de rutas, lo que facilita el mantenimiento del sistema de caché de archivos de inicio.
 - `2026-08-20T05:05:28` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `settings.py` integrando type hints más precisos, unificando la lógica de validación de rutas para reducir la redundancia y añadiendo docstrings que explican claramente la lógica de fallback y seguridad, tal como solicita el enfoque de legibilidad.
-- `2026-08-20T05:05:14` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings técnicos estandarizados y type hints faltantes en las funciones de escaneo para mejorar la mantenibilidad y claridad del flujo de datos sin alterar la lógica de detección.
-- `2026-08-20T04:56:09` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones clave, aclarando las precondiciones, el manejo de errores y las garantías de seguridad para alinear el módulo con el estándar de calidad requerido.
-- `2026-08-20T04:55:41` **organizer.py** (legibilidad y documentación): He mejorado la documentación técnica incluyendo docstrings específicos que explican el "porqué" de las validaciones de seguridad, clarificando la intención tras el manejo de excepciones y los estados lógicos en las operaciones de disco críticas para asegurar el mantenimiento del código.
