@@ -166,7 +166,9 @@ def _collect_candidates(
                                 visited_inodes.add(inode)
                                 _scan(Path(entry.path))
                         elif entry.is_file() and st.st_size >= min_size:
-                            temp_groups[st.st_size].append(Path(entry.path))
+                            p = Path(entry.path)
+                            if not skip_protected or (not is_protected_path(p) and is_safe_to_modify(p)):
+                                temp_groups[st.st_size].append(p)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -175,16 +177,7 @@ def _collect_candidates(
         if item and (path_item := Path(item)).is_dir():
             _scan(path_item.resolve())
             
-    final_groups: Dict[int, List[Path]] = defaultdict(list)
-    for size, paths in temp_groups.items():
-        for p in paths:
-            try:
-                target = p.resolve(strict=True)
-                if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
-                    final_groups[size].append(target)
-            except (OSError, RuntimeError): continue
-                
-    return {size: files for size, files in final_groups.items() if len(files) > 1}
+    return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
 
 def _refine_by_hash(

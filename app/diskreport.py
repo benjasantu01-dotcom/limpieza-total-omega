@@ -222,7 +222,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [base_path]
+    stack: List[str] = [str(base_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -233,8 +233,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        path_obj = Path(entry.path).resolve(strict=False)
-                        if skip_protected and is_protected_path(path_obj):
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
                         
                         stat_data = entry.stat(follow_symlinks=False)
@@ -243,9 +242,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(path_obj)
+                                stack.append(entry.path)
                         elif entry.is_file():
-                            yield path_obj, stat_data.st_size
+                            yield Path(entry.path), stat_data.st_size
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
