@@ -1106,3 +1106,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T00:50:55` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para realizar el cálculo de pesos en una sola pasada usando `walk_files`, eliminando el recálculo redundante y las llamadas repetidas a `path.relative_to` que causaban ineficiencia en estructuras de directorios profundas.
 - `2026-08-20T00:50:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T00:50:55` Corrida terminada. Total usado hoy: 20.
+- `2026-08-20T00:58:49` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-20T00:59:26` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para evitar realizar llamadas a `resolve()` (que implica acceso a disco y validación de seguridad extra) de forma redundante dentro del bucle, realizando la validación de `safe_to_modify` y `protected_path` solo una vez al final del proceso de recolección para los candidatos confirmados por tamaño.
+- `2026-08-20T00:59:50` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-20T01:01:02` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimizé la carga de pestañas implementando un mecanismo de carga diferida (lazy loading) en `_tab_factory`, evitando inicializar todos los módulos pesados al arrancar la aplicación y reduciendo el tiempo de respuesta inicial.
+- `2026-08-20T01:01:16` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: rendimiento).
+- `2026-08-20T01:01:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T01:01:16` Corrida terminada. Total usado hoy: 24.

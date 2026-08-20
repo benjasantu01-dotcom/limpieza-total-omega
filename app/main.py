@@ -33,6 +33,7 @@ que consume el asistente. El estado de análisis pesados se cachea por sesión.
 Se emplea invalidación selectiva para evitar procesado redundante en disco.
 Se optimizan eventos de redibujo UI y se utiliza gestión de colas de eventos 
 para evitar saturación del hilo principal durante el logueo masivo.
+Carga perezosa de pestañas implementada para acelerar el inicio de la app.
 
 Instalar dependencias:
     pip install customtkinter
@@ -121,6 +122,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def __init__(self) -> None:
         super().__init__()
         self.tabs: Dict[str, ctk.CTkFrame] = {}
+        self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         self._log_queue: List[Tuple[str, str]] = []
         self._log_lock = threading.Lock()
@@ -337,11 +339,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         Delega la construcción del contenido de cada pestaña a sus métodos específicos.
         """
+        if self._initialized_tabs.get(name):
+            return
+            
         method_name = f"_build_tab_{name.lower()}"
         constructor = getattr(self, method_name, None)
         if constructor and name in self.tabs:
             try:
                 constructor()
+                self._initialized_tabs[name] = True
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
                 tab_frame = self.tabs[name]
@@ -362,14 +368,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             corner_radius=12,
             border_width=1,
             border_color=branding.color("border"),
+            command=self._on_tab_change
         )
         self.tabview.pack(fill="both", expand=True, padx=18, pady=(4, 8))
 
         for name in TABS:
-            frame = self.tabview.add(branding.tab_label(name))
-            if frame:
-                self.tabs[name] = frame
-                self._tab_factory(name)
+            self.tabs[name] = self.tabview.add(branding.tab_label(name))
+            
+        # Inicializar solo la primera pestaña al arrancar
+        self._tab_factory(TABS[0])
+
+    def _on_tab_change(self, tab_label: str) -> None:
+        """Callback al cambiar de pestaña para inicializar el contenido bajo demanda."""
+        for original_name in TABS:
+            if branding.tab_label(original_name) == tab_label:
+                self._tab_factory(original_name)
+                break
 
     def _build_header(self) -> None:
         """Renderiza la cabecera con el logo, título y versión de la aplicación."""

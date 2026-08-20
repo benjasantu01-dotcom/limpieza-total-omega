@@ -152,9 +152,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo del sistema de archivos para agrupar archivos por tamaño.
-    
-    Emplea un conjunto 'visited_inodes' para detectar ciclos en enlaces simbólicos o 
-    montajes recursivos, evitando la duplicación de procesamiento y bloqueos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -165,7 +162,6 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         st = entry.stat(follow_symlinks=False)
-                        # Identificar puntos de reparse (Junctions/Symlinks de sistema)
                         if getattr(st, 'st_file_attributes', 0) & 0x400:
                             continue
                             
@@ -174,11 +170,8 @@ def _collect_candidates(
                             if inode not in visited_inodes:
                                 visited_inodes.add(inode)
                                 _scan(Path(entry.path))
-                        elif entry.is_file():
-                            if st.st_size >= min_size:
-                                target = Path(entry.path).resolve()
-                                if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
-                                    temp_groups[st.st_size].append(target)
+                        elif entry.is_file() and st.st_size >= min_size:
+                            temp_groups[st.st_size].append(Path(entry.path))
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -187,11 +180,19 @@ def _collect_candidates(
         try:
             if not item: continue
             path_item = Path(item).resolve(strict=True)
-            if path_item.is_dir():
-                _scan(path_item)
+            if path_item.is_dir(): _scan(path_item)
         except (OSError, RuntimeError, ValueError, TypeError): continue
             
-    return {size: paths for size, paths in temp_groups.items() if len(paths) > 1}
+    # Filtrado de seguridad diferido a cuando ya tenemos candidatos por tamaño
+    final_groups = defaultdict(list)
+    for size, paths in temp_groups.items():
+        if len(paths) < 2: continue
+        for p in paths:
+            target = p.resolve()
+            if not skip_protected or (not is_protected_path(target) and is_safe_to_modify(target)):
+                final_groups[size].append(target)
+                
+    return {size: paths for size, paths in final_groups.items() if len(paths) > 1}
 
 
 def _refine_by_hash(
@@ -200,9 +201,6 @@ def _refine_by_hash(
 ) -> Dict[str, List[Path]]:
     """
     Agrupa candidatos basándose en el resultado de una función de hash específica.
-    
-    Esta función es el motor de refinamiento utilizado para pasar de agrupaciones 
-    por tamaño a agrupaciones por contenido (parcial o completo).
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     
@@ -222,9 +220,6 @@ def _refine_by_hash(
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Ejecuta el pipeline de refinamiento (Hash Parcial -> Hash Completo).
-    
-    Reduce drásticamente las I/O al realizar el hash completo de 256 bits 
-    únicamente sobre aquellos archivos que ya demostraron coincidencia parcial.
     """
     confirmed_groups: List[DuplicateGroup] = []
     partial_groups = _refine_by_hash(paths, partial_hash)

@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 32
+- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 233
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 55 | 3 | 10 | 3 | 63 |
+| 2026-08-18 | 54 | 2 | 9 | 3 | 62 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 13 | 1 | 3 | 0 | 3 |
+| 2026-08-20 | 15 | 1 | 3 | 0 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **35**
-- robustez ante casos límite: **33**
+- rendimiento: **37**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
 - `assistant.py`: **21**
 - `settings.py`: **21**
-- `scanner.py`: **19**
-- `duplicates.py`: **19**
+- `duplicates.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **18**
+- `scanner.py`: **18**
 - `quarantine.py`: **15**
 - `browser.py`: **14**
-- `main.py`: **13**
+- `main.py`: **14**
 - `memory.py`: **10**
 - `branding.py`: **9**
 - `safety.py`: **6**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T01:01:02` **main.py** (rendimiento): Optimizé la carga de pestañas implementando un mecanismo de carga diferida (lazy loading) en `_tab_factory`, evitando inicializar todos los módulos pesados al arrancar la aplicación y reduciendo el tiempo de respuesta inicial.
+- `2026-08-20T00:59:26` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar realizar llamadas a `resolve()` (que implica acceso a disco y validación de seguridad extra) de forma redundante dentro del bucle, realizando la validación de `safe_to_modify` y `protected_path` solo una vez al final del proceso de recolección para los candidatos confirmados por tamaño.
 - `2026-08-20T00:50:55` **diskreport.py** (rendimiento): Optimizé `largest_folders` para realizar el cálculo de pesos en una sola pasada usando `walk_files`, eliminando el recálculo redundante y las llamadas repetidas a `path.relative_to` que causaban ineficiencia en estructuras de directorios profundas.
 - `2026-08-20T00:49:21` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` reemplazando la construcción de listas y el formateo de strings repetitivo dentro del loop por un acceso directo y pre-calculado, evitando el costo de `format()` y `getattr()` cuando no hay criterios que cumplan el umbral.
 - `2026-08-20T00:39:50` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos claros a las funciones públicas y extrayendo la lógica de validación de rutas complejas a una función privada más cohesiva, eliminando la sobrecarga cognitiva en los validadores.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T00:10:12` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del código mediante la adición de Type Hints explícitos en funciones de bajo nivel y la documentación de las máscaras de bits usadas en la interacción con la API de Windows.
 - `2026-08-20T00:10:02` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `score_color` para eliminar la lógica condicional anidada por una estructura de datos clara y declarativa, facilitando futuras modificaciones en los umbrales de salud.
 - `2026-08-20T00:08:26` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` al capturar el escenario donde el CSV retornado por PowerShell es válido pero vacío (solo encabezados), evitando procesar filas inexistentes y añadiendo validación explícita de tipos para evitar errores ante datos inesperados.
-- `2026-08-19T15:08:24` **settings.py** (manejo de errores y validación de entradas): Reforcé la validación de entrada en la función `save` y `load` mediante la captura explícita de errores durante la manipulación de archivos y la consolidación de `_Validators.str` para evitar inyecciones o lecturas fuera de rango, asegurando que la configuración nunca quede en estado inconsistente.
-- `2026-08-19T15:07:56` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las verificaciones de metadatos en `check_recent_executable_in_downloads` y `process_entry`, asegurando que `entry.stat()` se llame de forma defensiva y capturando explícitamente errores de acceso sin interrumpir el flujo del escáner.
