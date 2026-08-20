@@ -529,16 +529,16 @@ def _call_gemini(
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
             
-            if not isinstance(data, dict) or "candidates" not in data: return None
+            if not isinstance(data, dict) or "candidates" not in data or not isinstance(data["candidates"], list): 
+                return None
             candidates = data["candidates"]
-            if not isinstance(candidates, list) or not candidates: return None
+            if not candidates: return None
             
             content = candidates[0].get("content", {})
-            if not isinstance(content, dict): return None
-            parts = content.get("parts", [])
-            if not isinstance(parts, list): return None
+            if not isinstance(content, dict) or "parts" not in content or not isinstance(content["parts"], list): 
+                return None
             
-            text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
+            text = "".join(str(p.get("text", "")) for p in content["parts"] if isinstance(p, dict))
             final_text = _validate_response_length(text.strip())
             
             limpia_final = _PATH_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", final_text))

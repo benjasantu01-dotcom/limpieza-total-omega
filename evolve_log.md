@@ -488,3 +488,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T06:17:01` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-20T06:17:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T06:17:01` Corrida terminada. Total usado hoy: 148.
+- `2026-08-20T06:25:20` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-20T06:25:46` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-20T06:26:14` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se añadió una validación explícita para evitar que la aplicación entre en un estado de error o inconsistencia si el archivo de configuración, aunque sea JSON válido, contiene claves inesperadas o está truncado, mediante una verificación robusta del tamaño y la integridad estructural antes de procesarlo.
+- `2026-08-20T06:26:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-20T06:27:02` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva del asistente al implementar una validación estricta del tamaño de la respuesta recibida desde la API, usando `_validate_response_length` antes de procesar el texto y asegurando que las llaves JSON (`candidates`, `parts`, etc.) sean validadas para evitar excepciones de tipo, reforzando la robustez ante respuestas malformadas o inesperadas del motor externo.
+- `2026-08-20T06:27:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T06:27:02` Corrida terminada. Total usado hoy: 152.

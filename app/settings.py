@@ -239,6 +239,8 @@ def _load_internal(ruta_str: str) -> AppSettings:
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
         if not isinstance(data, dict): return _get_default_config()
+        # Verificación de integridad: asegurar que no haya desbordamiento de claves corruptas
+        if len(data) > (len(ConfigKey) * 2): return _get_default_config()
         return validate(data)
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError):
         return _get_default_config()

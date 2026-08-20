@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 0 | 0 | 0 | 0 | 6 |
+| 2026-08-18 | 0 | 0 | 0 | 0 | 2 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 77 | 4 | 13 | 1 | 53 |
+| 2026-08-20 | 79 | 4 | 13 | 1 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **42**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **35**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **22**
 - `diskreport.py`: **22**
-- `assistant.py`: **21**
-- `settings.py`: **21**
+- `settings.py`: **22**
 - `duplicates.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **18**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T06:27:02` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva del asistente al implementar una validación estricta del tamaño de la respuesta recibida desde la API, usando `_validate_response_length` antes de procesar el texto y asegurando que las llaves JSON (`candidates`, `parts`, etc.) sean validadas para evitar excepciones de tipo, reforzando la robustez ante respuestas malformadas o inesperadas del motor externo.
+- `2026-08-20T06:26:14` **settings.py** (robustez ante casos límite): Se añadió una validación explícita para evitar que la aplicación entre en un estado de error o inconsistencia si el archivo de configuración, aunque sea JSON válido, contiene claves inesperadas o está truncado, mediante una verificación robusta del tamaño y la integridad estructural antes de procesarlo.
 - `2026-08-20T06:16:26` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine_file` al introducir un chequeo de existencia previo al borrado del original, evitando errores innecesarios si la operación de copia falló parcialmente o si el archivo fue eliminado externamente entre la validación y el movimiento.
 - `2026-08-20T06:07:08` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_get_process_path` y `trim_working_set` ante casos límite mediante la gestión explícita de tipos, verificaciones de existencias de APIs y una limpieza más segura de los recursos (`proc_handle`) incluso ante fallos inesperados de la API de Windows.
 - `2026-08-20T06:06:55` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante hilos huérfanos y condiciones de carrera al cerrar la ventana, asegurando que `_executor` se apague correctamente y se limpien los recursos de la UI antes de que el proceso principal finalice.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T05:35:58` **quarantine.py** (rendimiento): Optimicé el rendimiento de `purge_all` transformando `item_map` en un conjunto de nombres de archivos registrados para evitar iteraciones redundantes y permitiendo un filtrado más eficiente de los archivos en disco que no pertenecen al manifiesto.
 - `2026-08-20T05:35:19` **organizer.py** (rendimiento): Optimizé `scan_for_junk` para reducir llamadas redundantes al sistema de archivos cacheando el resultado de `is_safe_to_modify(base)` y eliminando llamadas innecesarias a `is_safe_to_modify(path)` dentro del loop interno, ya que el estado de seguridad de los archivos dentro de un directorio ya validado se controla con `is_valid_junk_candidate`.
 - `2026-08-20T05:34:47` **memory.py** (rendimiento): Se implementó un mecanismo de caché para el resultado de `pressure_level` (basado en la referencia del snapshot) y se eliminó el cálculo redundante de `available_percent` dentro de `diagnose`, utilizando en su lugar el cálculo ya existente en el objeto `MemorySnapshot`, reduciendo ciclos de CPU.
-- `2026-08-20T05:25:27` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje en `compute_score` cacheando las llamadas a `ratios.get` y eliminando la redundancia de `_clamp` dentro del loop, aprovechando además que las llaves de `_WEIGHT_ITEMS_INT` ya garantizan orden y existencia en `ratios`.
-- `2026-08-20T05:25:00` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar realizar múltiples llamadas de `resolve()` y verificaciones de seguridad sobre el mismo archivo, integrando los filtros `is_protected_path` e `is_safe_to_modify` directamente dentro del primer escaneo de `os.scandir` para reducir drásticamente el overhead de I/O.
