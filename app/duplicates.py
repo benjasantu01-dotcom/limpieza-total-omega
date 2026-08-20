@@ -74,6 +74,9 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo tras validar su seguridad.
+    
+    Raises:
+        Ignora errores de acceso a disco (PermissionError, OSError) retornando None.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -82,11 +85,12 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         p = Path(path)
         if not p.is_file(): return None
         
-        # Validaciones de seguridad externas (NO cambiar por condiciones de if)
+        # Validaciones de seguridad externas: verificar integridad antes de procesar
         if is_protected_path(p) or not is_safe_to_modify(p):
             return None
 
         stat_initial = p.stat()
+        # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT; evitamos seguir junctions o symlinks
         if stat_initial.st_size <= 0 or (getattr(stat_initial, 'st_file_attributes', 0) & 0x400):
             return None
             
@@ -148,6 +152,7 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo del sistema de archivos para agrupar candidatos.
+    Utiliza un set de inodos para evitar el procesamiento redundante de puntos de montaje.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -158,6 +163,7 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         st = entry.stat(follow_symlinks=False)
+                        # Ignorar reparse points (0x400) para prevenir bucles de recursión
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                             
                         if entry.is_dir(follow_symlinks=False):
@@ -238,7 +244,9 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona el 'archivo maestro' (más antiguo, luego ruta más corta).
+    Selecciona el 'archivo maestro' (keeper) basado en:
+    1. Menor fecha de modificación (más antiguo es más probable que sea el original).
+    2. Longitud de la ruta (ruta más corta es preferible como desempate).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

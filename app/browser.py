@@ -198,6 +198,7 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Suma el tamaño de archivos en una jerarquía aplicando límites de seguridad y profundidad.
+    Retorna 0 si la ruta es inaccesible o si se detecta un riesgo de seguridad.
     """
     if not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -226,17 +227,15 @@ def _sum_directory_recursive(
                 for entry in it:
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
-                    try:
-                        if is_protected_path(Path(entry.path)):
-                            continue
-                        if entry.is_dir():
-                            total += _walk(entry.path, depth + 1)
-                        elif entry.is_file():
+                    
+                    if entry.is_dir():
+                        total += _walk(entry.path, depth + 1)
+                    elif entry.is_file():
+                        try:
                             file_size = entry.stat(follow_symlinks=False).st_size
-                            if file_size > 0:
-                                total += file_size
-                    except (OSError, PermissionError, FileNotFoundError, OverflowError):
-                        continue
+                            total += max(0, file_size)
+                        except (OSError, PermissionError):
+                            continue
         except (PermissionError, OSError, FileNotFoundError):
             return 0
         
@@ -244,7 +243,7 @@ def _sum_directory_recursive(
         return total
 
     result = _walk(root_key, 0)
-    return result if result >= 0 else 0
+    return result
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:

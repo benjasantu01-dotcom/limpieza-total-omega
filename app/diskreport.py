@@ -368,12 +368,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
     """
     Realiza una pasada única para recolectar todas las métricas necesarias para el resumen.
     
+    Esta función procesa el árbol de archivos en una sola iteración para optimizar
+    la lectura de disco, manteniendo contadores de tamaño por extensión y un
+    heap con los archivos de mayor tamaño.
+    
     Args:
         directory: Objeto Path a analizar.
         skip_protected: Si se deben ignorar rutas protegidas.
         
     Returns:
-        Tupla con métricas: (total_bytes, total_files, extension_sizes, extension_counts, largest_files_heap).
+        Tupla conteniendo: (total_bytes, total_files, extension_sizes, extension_counts, largest_files_heap).
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -388,6 +392,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
+        # Mantener un heap de tamaño fijo de 8 elementos
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:

@@ -249,7 +249,18 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
-    """Genera una representación visual de progreso en formato texto."""
+    """
+    Genera una representación visual de progreso en formato texto.
+
+    Args:
+        percent: Valor numérico (0-100) para calcular la longitud.
+        width: Número total de caracteres de la barra.
+        filled: Glifo para la sección completada.
+        empty: Glifo para la sección faltante.
+
+    Returns:
+        String formateado con la barra visual de progreso.
+    """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
         ancho: int = max(1, int(width))
@@ -277,7 +288,17 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Realiza una interpolación lineal (lerp) entre dos colores HEX."""
+    """
+    Realiza una interpolación lineal (lerp) entre dos colores HEX.
+
+    Args:
+        start: Color HEX inicial.
+        end: Color HEX final.
+        ratio: Factor de mezcla entre 0.0 y 1.0.
+
+    Returns:
+        Color HEX resultante de la interpolación.
+    """
     ratio_clamped = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
