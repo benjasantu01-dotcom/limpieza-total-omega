@@ -514,7 +514,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el tamaño total en bytes de los archivos en cuarentena."""
+    """Calcula el tamaño total en bytes de los archivos en cuarentena aprovechando el manifiesto cargado."""
     return sum(item.size_bytes for item in load_manifest(base))
 
 

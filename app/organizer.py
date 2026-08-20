@@ -193,6 +193,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             
             for root, dirs, files in os.walk(base):
                 root_path: Path = Path(root)
+                # Modificamos la lista in-place para podar el árbol de búsqueda
                 dirs[:] = [dn for dn in dirs if _is_allowed_directory(dn) and not _is_junction(root_path / dn)]
                 
                 for name in files:

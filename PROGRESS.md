@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 54 | 2 | 9 | 3 | 62 |
+| 2026-08-18 | 50 | 2 | 9 | 3 | 62 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 15 | 1 | 3 | 0 | 5 |
+| 2026-08-20 | 17 | 1 | 4 | 0 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
-- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **37**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **43**
+- rendimiento: **39**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `assistant.py`: **21**
 - `settings.py`: **21**
 - `duplicates.py`: **20**
+- `assistant.py`: **20**
 - `healthscore.py`: **19**
-- `organizer.py`: **18**
+- `organizer.py`: **19**
 - `scanner.py`: **18**
-- `quarantine.py`: **15**
-- `browser.py`: **14**
+- `quarantine.py`: **16**
 - `main.py`: **14**
+- `browser.py`: **13**
 - `memory.py`: **10**
-- `branding.py`: **9**
+- `branding.py`: **8**
 - `safety.py`: **6**
-- `startup.py`: **3**
+- `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T01:10:19` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y la carga del manifiesto mediante la introducción de un `cached_property` o lógica de agregación eficiente, reduciendo lecturas redundantes de disco al iterar sobre el manifiesto ya cargado en memoria.
+- `2026-08-20T01:09:47` **organizer.py** (rendimiento): Optimicé el bucle de escaneo en `scan_for_junk` utilizando una lista pre-filtrada (`dirs[:]`) para evitar la recursión innecesaria en ramas protegidas desde el nivel superior, reduciendo significativamente las llamadas a `os.walk` y las validaciones redundantes de rutas.
 - `2026-08-20T01:01:02` **main.py** (rendimiento): Optimizé la carga de pestañas implementando un mecanismo de carga diferida (lazy loading) en `_tab_factory`, evitando inicializar todos los módulos pesados al arrancar la aplicación y reduciendo el tiempo de respuesta inicial.
 - `2026-08-20T00:59:26` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar realizar llamadas a `resolve()` (que implica acceso a disco y validación de seguridad extra) de forma redundante dentro del bucle, realizando la validación de `safe_to_modify` y `protected_path` solo una vez al final del proceso de recolección para los candidatos confirmados por tamaño.
 - `2026-08-20T00:50:55` **diskreport.py** (rendimiento): Optimizé `largest_folders` para realizar el cálculo de pesos en una sola pasada usando `walk_files`, eliminando el recálculo redundante y las llamadas repetidas a `path.relative_to` que causaban ineficiencia en estructuras de directorios profundas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T00:20:21` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y legibilidad del pipeline de duplicados mediante la adición de docstrings estructuradas en las funciones privadas, clarificando la lógica de filtrado recursivo y de refinamiento de hashes.
 - `2026-08-20T00:19:38` **diskreport.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones públicas y privadas mediante docstrings claros bajo el estándar de Google, especificando tipos de retorno, posibles excepciones y el propósito de cada parámetro.
 - `2026-08-20T00:10:12` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del código mediante la adición de Type Hints explícitos en funciones de bajo nivel y la documentación de las máscaras de bits usadas en la interacción con la API de Windows.
-- `2026-08-20T00:10:02` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la refactorización de `score_color` para eliminar la lógica condicional anidada por una estructura de datos clara y declarativa, facilitando futuras modificaciones en los umbrales de salud.
-- `2026-08-20T00:08:26` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` al capturar el escenario donde el CSV retornado por PowerShell es válido pero vacío (solo encabezados), evitando procesar filas inexistentes y añadiendo validación explícita de tipos para evitar errores ante datos inesperados.
