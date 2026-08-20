@@ -187,23 +187,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Ejecuta todas las reglas heurísticas sobre un archivo.
-    
-    Args:
-        path: Ruta del archivo.
-        now_ts: Timestamp actual.
-        entry: Objeto DirEntry opcional asociado.
-    Returns:
-        Lista de objetos Suspicion encontrados.
     """
-    if path is None or not path.exists():
-        return []
-
-    try:
-        if not path.is_file():
-            return []
-    except (OSError, PermissionError):
-        return []
-
     findings: ScanResult = []
     
     # 1. Reglas generales

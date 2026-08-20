@@ -862,3 +862,10 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-20T10:02:05` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `purge_all` para evitar lecturas redundantes del manifiesto y recorridos O(n*m) mediante el uso de un diccionario de búsqueda indexado por nombre de archivo, mejorando la eficiencia algorítmica durante limpiezas masivas.
 - `2026-08-20T10:02:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T10:02:05` Corrida terminada. Total usado hoy: 236.
+- `2026-08-20T10:09:52` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-20T10:10:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-08-20T10:10:40` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-20T10:11:06` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de filtrado inicial en `scan_file` para evitar llamadas redundantes a `path.exists()` y `path.is_file()` (que ya fueron validadas por `os.scandir` y `process_entry`), utilizando el objeto `DirEntry` ya existente para realizar comprobaciones sin acceder al disco nuevamente.
+- `2026-08-20T10:11:27` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el rendimiento de carga reemplazando `lru_cache` manuales y lecturas redundantes de disco por un mecanismo de caché en memoria con `mtime` (tiempo de última modificación), evitando operaciones de I/O innecesarias al llamar a `load()` múltiples veces durante el mismo ciclo.
+- `2026-08-20T10:11:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T10:11:27` Corrida terminada. Total usado hoy: 240.
