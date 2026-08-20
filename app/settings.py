@@ -31,7 +31,7 @@ import json
 import os
 from enum import Enum
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, TypedDict
+from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional
 from functools import lru_cache
 
 from safety import is_safe_to_modify, is_protected_path
@@ -125,7 +125,7 @@ class _Validators:
     
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Verifica restricciones de seguridad en la estructura de una ruta dada."""
+        """Determina si una ruta es segura contra manipulaciones o bloqueos de sistema."""
         try:
             path_obj = Path(path_str)
             resolved = path_obj.resolve(strict=False)
@@ -137,8 +137,8 @@ class _Validators:
             return False
 
     @staticmethod
-    def bool(val: Any) -> bool | None:
-        """Valida booleanos aceptando representaciones de texto comunes."""
+    def bool(val: Any) -> Optional[bool]:
+        """Convierte entradas ambiguas (bool, int, str) a un valor booleano o None si falla."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -147,8 +147,8 @@ class _Validators:
         return None
 
     @staticmethod
-    def int(key: ConfigKey, val: Any) -> int | None:
-        """Valida enteros dentro de los límites definidos en _NUMERIC_LIMITS."""
+    def int(key: ConfigKey, val: Any) -> Optional[int]:
+        """Asegura que el valor sea un entero y respete los límites de rango definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value: int = int(val)
@@ -157,8 +157,8 @@ class _Validators:
         except (TypeError, ValueError, OverflowError): return None
 
     @staticmethod
-    def path(val: Any) -> str | None:
-        """Valida que una ruta sea absoluta, existente/creable y considerada segura."""
+    def path(val: Any) -> Optional[str]:
+        """Valida rutas de usuario: comprueba formato absoluto, caracteres prohibidos y seguridad."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
@@ -173,16 +173,16 @@ class _Validators:
             return None
 
     @staticmethod
-    def _validate_enum_str(text: str, key: ConfigKey) -> str | None:
-        """Valida que strings de opciones fijas coincidan con los permitidos."""
+    def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
+        """Verifica que el string pertenezca a un conjunto permitido (Temas/Acentos)."""
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
         return text if len(text) <= 512 else None
 
     @staticmethod
-    def str(key: ConfigKey, val: Any) -> str | None:
-        """Valida strings generales y delega validación de rutas si corresponde."""
+    def str(key: ConfigKey, val: Any) -> Optional[str]:
+        """Valida strings generales aplicando filtros de longitud y caracteres, y delega en path si aplica."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None

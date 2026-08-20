@@ -774,3 +774,44 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T09:30:38` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints precisos, la estandarización de docstrings (siguiendo las recomendaciones de Google Style para facilitar la lectura técnica) y la clarificación de las responsabilidades de los parámetros, garantizando que la documentación refleje el propósito de cada utilidad sin cambiar el comportamiento del código.
 - `2026-08-20T09:30:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T09:30:38` Corrida terminada. Total usado hoy: 224.
+- `2026-08-20T09:39:19` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-08-20T09:39:51` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los validadores, clarificando el propósito y el contrato de los parámetros, además de reemplazar los tipos genéricos `Any` por pistas más precisas en funciones críticas.
+- `2026-08-20T09:40:26` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-08-20T09:41:26` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `local_answer` convirtiendo el mapeo de palabras clave (`_KEYWORD_MAP`) en un set para la detección de tokens y evitando el re-procesamiento de la lista de problemas en llamadas recurrentes, además de simplificar las búsquedas de handlers eliminando el ciclo for innecesario.
+- `2026-08-20T09:41:49` Tests FALLARON:
+```
+anding.GRADIENT_STOPS[-1].lower()
+E       AssertionError: assert '#fe2d78' == '#ff2d78'
+E         
+E         - #ff2d78
+E         ?   ^
+E         + #fe2d78
+E         ?   ^
+
+evolve/tests/test_modules.py:215: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:101: SyntaxWarning: invalid escape sequence '\A'
+    Extrae la ruta absoluta dentro de comillas (ej: "C:\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount_of_colors - ZeroDivisionError: division by zero
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - AssertionError: assert '#fe2d78' == '#ff2d78'
+  
+  - #ff2d78
+  ?   ^
+  + #fe2d78
+  ?   ^
+2 failed, 297 passed, 7 warnings in 1.12s
+
+```
+- `2026-08-20T09:41:49` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el cálculo de colores de gradiente precomputando el índice de búsqueda en `gradient_colors` y convirtiendo `_hex_to_rgb` en una función de acceso directo a la tabla `PALETTE_RGB` para evitar llamadas redundantes a `int(..., 16)` durante la renderización.
+- `2026-08-20T09:41:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T09:41:49` Corrida terminada. Total usado hoy: 228.

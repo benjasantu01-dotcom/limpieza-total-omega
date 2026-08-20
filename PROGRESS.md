@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 228
+- Sin cambios (nada sustancial que mejorar): 12
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 109 | 9 | 16 | 10 | 136 |
-| 2026-08-20 | 111 | 4 | 16 | 1 | 92 |
+| 2026-08-19 | 107 | 9 | 16 | 10 | 134 |
+| 2026-08-20 | 112 | 5 | 16 | 2 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
-- legibilidad y documentación: **50**
+- legibilidad y documentación: **51**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **36**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
+- `settings.py`: **22**
 - `diskreport.py`: **21**
-- `duplicates.py`: **20**
 - `assistant.py`: **20**
 - `organizer.py`: **19**
+- `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `browser.py`: **17**
-- `main.py`: **16**
 - `scanner.py`: **16**
 - `memory.py`: **16**
 - `quarantine.py`: **15**
+- `main.py`: **15**
 - `branding.py`: **8**
 - `safety.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T09:39:51` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los validadores, clarificando el propósito y el contrato de los parámetros, además de reemplazar los tipos genéricos `Any` por pistas más precisas en funciones críticas.
 - `2026-08-20T09:30:38` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la inclusión de type hints precisos, la estandarización de docstrings (siguiendo las recomendaciones de Google Style para facilitar la lectura técnica) y la clarificación de las responsabilidades de los parámetros, garantizando que la documentación refleje el propósito de cada utilidad sin cambiar el comportamiento del código.
 - `2026-08-20T09:29:32` **quarantine.py** (legibilidad y documentación): Mejoré la documentación de los métodos críticos del módulo `quarantine.py` mediante docstrings detallados que explican el "porqué" de las validaciones de seguridad y los riesgos asociados a cada operación, alineándome con el enfoque de legibilidad técnica solicitado.
 - `2026-08-20T09:22:14` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos, añadí type hints en variables internas para mejorar la trazabilidad del flujo de datos y reemplacé comentarios genéricos por notas explicativas sobre la lógica de seguridad y validación de rutas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T09:00:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones explícitas de tipos y saneamiento de los valores extraídos del CSV, evitando posibles fallos ante entradas malformadas o inesperadas que podrían propagar errores en las etapas de resolución de rutas.
 - `2026-08-20T08:59:25` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` añadiendo una verificación de escritura explícita mediante `os.access` sobre el directorio padre, previniendo errores de permisos en tiempo de ejecución antes de intentar crear archivos temporales.
 - `2026-08-20T08:58:48` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `scan_file` añadiendo validaciones de entrada (`is_file`, `exists`, `is_dir`) y asegurando que las funciones de chequeo no fallen ante rutas inexistentes o inaccesibles, evitando así interrupciones en el bucle principal.
-- `2026-08-20T08:50:15` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` implementando un chequeo temprano de `OSError` al realizar `lstat()` en `_check_file_integrity` y refiné la captura de excepciones en `normalize` para evitar que errores inesperados del sistema de archivos (como dispositivos desconectados repentinamente) se propaguen como `ValueError` genéricos, mejorando la previsibilidad de los estados de error.
