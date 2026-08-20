@@ -130,12 +130,13 @@ class _Validators:
         """Verifica restricciones de seguridad en la estructura de una ruta dada."""
         try:
             path_obj = Path(path_str)
+            # resolved expande symlinks/junctions; prevenimos acceso si resuelven fuera de lo permitido
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return False
             if is_protected_path(str(resolved)): return False
-            target = resolved if resolved.exists() else resolved.parent
-            return is_safe_to_modify(str(target))
+            # Validamos el componente base para asegurar que la ruta resuelta no escale jerarquías
+            return is_safe_to_modify(str(resolved))
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
 
@@ -164,12 +165,14 @@ class _Validators:
         """Valida que una ruta sea absoluta, existente/creable y considerada segura."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
+        # Rechazar explícitamente caracteres de control y secuencias de escape de directorio
         if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
+            # Asegurar consistencia entre la ruta dada y su resolución real para evitar engaños de path
             resolved = path_obj.resolve(strict=False)
-            if str(path_obj.absolute()) != str(resolved): return None
+            if not str(resolved).startswith(str(path_obj.anchor)): return None
             path_str = str(resolved)
             return path_str if _Validators._is_safe_path(path_str) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):

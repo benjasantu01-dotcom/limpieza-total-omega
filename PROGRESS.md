@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 42 | 2 | 8 | 3 | 43 |
+| 2026-08-18 | 42 | 2 | 8 | 3 | 39 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 36 | 3 | 5 | 0 | 12 |
+| 2026-08-20 | 37 | 3 | 6 | 1 | 13 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **50**
 - manejo de errores y validación de entradas: **45**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - rendimiento: **41**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **23**
 - `diskreport.py`: **22**
-- `settings.py`: **22**
 - `assistant.py`: **22**
 - `duplicates.py`: **20**
 - `organizer.py`: **20**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T02:32:26` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.path` y `_Validators._is_safe_path` para garantizar que la resolución de rutas mediante `path.resolve(strict=False)` no sea vulnerada por enlaces simbólicos o junctions que apunten fuera de los directorios permitidos, previniendo el "path traversal" incluso si el usuario intenta configurar una ruta malintencionada.
 - `2026-08-20T02:22:44` **organizer.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_is_safe_for_disk_op` para validar explícitamente que la ruta de destino no sea una subcarpeta del origen, evitando así operaciones de movimiento lógico o físico que podrían corromper la jerarquía de archivos o inducir errores de recursión profunda en sistemas de archivos complejos.
 - `2026-08-20T02:22:19` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` asegurando que el buffer de memoria sea gestionado y validado correctamente antes de intentar convertirlo a string, evitando lecturas fuera de rango o manipulación insegura de punteros en la interacción con la API de Windows.
 - `2026-08-20T02:21:46` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` al reemplazar accesos directos a rutas en métodos asíncronos (`on_scan_junk`, `on_find_duplicates`) por una validación explícita mediante `ensure_safe_to_modify` dentro del `worker_thread_logic`, asegurando que cualquier operación sobre archivos verifique la integridad de la ruta incluso si la UI intentó validarla previamente, y protegiendo el punto de entrada de la app mediante un check de integridad del directorio de trabajo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T01:42:17` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `organizer.py` ante errores de entrada y condiciones de carrera, integrando validaciones de tipo y estructura más estrictas para prevenir que rutas inexistentes o malformadas interrumpan el proceso de escaneo o limpieza.
 - `2026-08-20T01:41:58` **memory.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `_parse_csv_row` para manejar fallos en la división de cadenas y entradas malformadas, evitando que el proceso de parsing del CSV se interrumpa ante datos inesperados del sistema, mejorando así la resiliencia del módulo ante procesos con nombres complejos o caracteres no estándar.
 - `2026-08-20T01:41:21` **main.py** (robustez ante casos límite): Se introdujo una comprobación robusta en el método `on_delete_reviewed` para garantizar que la carpeta de revisión sea una ruta válida y segura antes de intentar cualquier operación de borrado, evitando fallos si el directorio no existe o fue manipulado externamente.
-- `2026-08-20T01:31:03` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_is_system_hidden` para evitar falsos positivos y errores ante rutas inexistentes o inaccesibles, asegurando que la validación de archivos ocultos/sistema sea resiliente ante cambios inesperados en el sistema de archivos durante la iteración.

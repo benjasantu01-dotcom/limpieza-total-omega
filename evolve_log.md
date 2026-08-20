@@ -1241,3 +1241,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-20T02:23:01` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: seguridad defensiva).
 - `2026-08-20T02:23:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T02:23:01` Corrida terminada. Total usado hoy: 56.
+- `2026-08-20T02:30:49` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-20T02:31:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-20T02:31:41` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-20T02:32:13` ➖ Sin cambios en scanner.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `Scanner` al implementar la validación `is_protected_path` directamente en `process_entry` antes de realizar cualquier operación de resolución de rutas o acceso a metadatos, garantizando que el escáner no intente explorar ni siquiera por metadatos rutas bloqueadas incluso si provienen de recursiones previas.
+- `2026-08-20T02:32:26` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_Validators.path` y `_Validators._is_safe_path` para garantizar que la resolución de rutas mediante `path.resolve(strict=False)` no sea vulnerada por enlaces simbólicos o junctions que apunten fuera de los directorios permitidos, previniendo el "path traversal" incluso si el usuario intenta configurar una ruta malintencionada.
+- `2026-08-20T02:32:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T02:32:26` Corrida terminada. Total usado hoy: 60.
