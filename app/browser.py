@@ -196,8 +196,11 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Realiza un recorrido DFS para sumar el tamaño de los archivos, usando memoization
-    para evitar redundancia y MAX_SCAN_DEPTH para limitar la recursión.
+    Suma el tamaño de archivos en una jerarquía aplicando límites de seguridad y profundidad.
+    
+    Utiliza un recorrido DFS (Depth-First Search) con memorización para optimizar el acceso
+    al disco y evitar re-procesar subdirectorios ya visitados. Se detiene al alcanzar
+    MAX_SCAN_DEPTH para prevenir desbordamientos en estructuras de archivos complejas.
     """
     if not isinstance(root_dir, str) or not root_dir:
         return 0

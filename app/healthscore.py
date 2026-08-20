@@ -53,6 +53,8 @@ __all__ = [
 ]
 
 # --- UMBRALES DE NORMALIZACIÓN ---
+# Define la escala de referencia: para cada métrica, el límite representa 
+# el valor óptimo de tolerancia antes de empezar a degradar el puntaje.
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
@@ -60,11 +62,13 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # --- UMBRALES DE ADVERTENCIA ---
+# Definen cuándo una métrica se considera 'degradada' para disparar una recomendación.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
 # --- PESOS DE CALIFICACIÓN ---
+# Determinan la importancia relativa de cada categoría en la sumatoria final de 100 puntos.
 WEIGHTS: Final[Dict[MetricKey, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -103,7 +107,7 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def validate(self) -> None:
-        """Limpia y normaliza los valores entrantes para evitar errores de cálculo."""
+        """Aplica saneamiento de tipos y rangos para evitar desbordes en los cálculos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -149,22 +153,22 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio (0.0-1.0) de salud relativo al umbral de basura acumulada."""
+    """Calcula el ratio (0.0-1.0) de salud basado en la proximidad al límite de basura."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa la seguridad penalizando hallazgos (pesados) y advertencias (leves)."""
+    """Puntúa la seguridad: penalización fija por hallazgos críticos y advertencias."""
     s_count = max(0, _to_int(suspicious_count))
     s_warn = max(0, _to_int(warnings))
     return _clamp(1.0 - ((s_count * 0.05) + (s_warn * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Evalúa la salud de la memoria: 1.0 si supera el umbral, proporcional si es menor."""
+    """Evalúa la salud de la memoria según el porcentaje disponible respecto al umbral."""
     if _LIMIT_RAM_PERCENT <= 0: return 0.0
     return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Evalúa el estado del disco: 1.0 si el espacio libre es óptimo según el umbral."""
+    """Evalúa la salud del disco según el espacio libre disponible respecto al umbral."""
     if _LIMIT_DISK_PERCENT <= 0: return 0.0
     return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT, 0.0, 1.0)
 
@@ -173,7 +177,7 @@ def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Puntúa negativamente el conteo de programas de arranque según el umbral configurado."""
+    """Puntúa el arranque: mayor conteo de programas resulta en una penalización lineal."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:

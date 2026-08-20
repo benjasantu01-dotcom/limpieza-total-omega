@@ -74,7 +74,6 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo tras validar su seguridad.
-    Verifica atributos del sistema para evitar errores de acceso en metadatos.
     """
     if path is None or chunk_size <= 0: 
         return None
@@ -93,10 +92,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             
         digest = hashlib.sha256()
         with open(file_path, "rb") as f:
-            while True:
-                buffer = f.read(chunk_size)
-                if not buffer:
-                    break
+            while (buffer := f.read(chunk_size)):
                 digest.update(buffer)
         
         return digest.hexdigest()
@@ -107,7 +103,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Hash rápido de los primeros bytes para comparación heurística.
-    Es una optimización para evitar leer archivos grandes que difieren al inicio.
     """
     if path is None or read_bytes <= 0: 
         return None
@@ -120,8 +115,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             return None
             
         with open(file_path, "rb") as f:
-            content = f.read(read_bytes)
-            if not content:
+            if not (content := f.read(read_bytes)):
                 return None
             return hashlib.sha256(content).hexdigest()
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
@@ -131,7 +125,6 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Clasifica una colección de rutas según su tamaño en bytes.
-    Filtra symlinks y rutas protegidas antes del procesamiento.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: 
@@ -139,7 +132,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         
     for p in paths:
         try:
-            if not p: continue
             target = Path(p).resolve(strict=True)
             if not target.is_file() or target.is_symlink(): continue
             if is_protected_path(target) or not is_safe_to_modify(target): continue
@@ -155,7 +147,7 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo del sistema de archivos para agrupar archivos por tamaño.
+    Realiza un recorrido recursivo del sistema de archivos para agrupar candidatos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -166,8 +158,7 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         st = entry.stat(follow_symlinks=False)
-                        if getattr(st, 'st_file_attributes', 0) & 0x400:
-                            continue
+                        if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                             
                         if entry.is_dir(follow_symlinks=False):
                             inode: Tuple[int, int] = (st.st_dev, st.st_ino)
@@ -179,15 +170,12 @@ def _collect_candidates(
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
-    if directories is None: return {}
+    if not directories: return {}
     for item in directories:
-        try:
-            if not item: continue
-            path_item = Path(item)
-            if path_item.exists() and path_item.is_dir(): _scan(path_item.resolve())
-        except (OSError, RuntimeError, ValueError, TypeError): continue
+        if item and (path_item := Path(item)).is_dir():
+            _scan(path_item.resolve())
             
-    final_groups = defaultdict(list)
+    final_groups: Dict[int, List[Path]] = defaultdict(list)
     for size, paths in temp_groups.items():
         for p in paths:
             try:
@@ -196,7 +184,7 @@ def _collect_candidates(
                     final_groups[size].append(target)
             except (OSError, RuntimeError): continue
                 
-    return {size: paths for size, paths in final_groups.items() if len(paths) > 1}
+    return {size: files for size, files in final_groups.items() if len(files) > 1}
 
 
 def _refine_by_hash(
@@ -204,19 +192,13 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Agrupa candidatos basándose en el resultado de una función de hash específica.
+    Refina grupos de candidatos basándose en una función de hash.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     
     for path in paths:
-        try:
-            target = Path(path).resolve(strict=True)
-            if not target.is_file(): continue
-            digest = hash_func(target)
-            if digest:
-                groups_by_digest[digest].append(target)
-        except (OSError, PermissionError, FileNotFoundError, TypeError):
-            continue
+        if (digest := hash_func(path)):
+            groups_by_digest[digest].append(path)
                 
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -226,10 +208,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     Ejecuta el pipeline de refinamiento (Hash Parcial -> Hash Completo).
     """
     confirmed_groups: List[DuplicateGroup] = []
-    partial_groups = _refine_by_hash(paths, partial_hash)
-    for partial_candidates in partial_groups.values():
-        if len(partial_candidates) < 2:
-            continue
+    for partial_candidates in _refine_by_hash(paths, partial_hash).values():
         full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
             confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
@@ -246,26 +225,22 @@ def find_duplicates(
     """
     if directories is None or min_size < 0: return []
     
-    size_map = _collect_candidates(directories, min_size, skip_protected)
     groups: List[DuplicateGroup] = []
-    
-    for size, paths_in_size_group in size_map.items():
-        groups.extend(_process_size_group(size, paths_in_size_group))
+    for size, paths in _collect_candidates(directories, min_size, skip_protected).items():
+        groups.extend(_process_size_group(size, paths))
 
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Suma total de bytes redundantes en los grupos detectados."""
-    if not groups: return 0
-    return sum(g.wasted_bytes for g in groups)
+    """Suma total de bytes recuperables."""
+    return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona el 'archivo maestro' conservando el más antiguo (mtime).
-    Ante igualdad, se prioriza la ruta más corta (menor profundidad).
+    Selecciona el 'archivo maestro' (más antiguo, luego ruta más corta).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -273,13 +248,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            target = Path(p).resolve(strict=True)
+            target = p.resolve(strict=True)
             if not target.is_file() or is_protected_path(target) or not is_safe_to_modify(target):
                 continue
             stat_info = target.stat()
-            mtime = float(getattr(stat_info, 'st_mtime', 0.0))
-            keepers.append((mtime, len(str(target)), target))
-        except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError, TypeError):
+            keepers.append((float(stat_info.st_mtime), len(str(target)), target))
+        except (OSError, PermissionError, AttributeError, ValueError, TypeError):
             continue
             
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
@@ -287,7 +261,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """
-    Genera representación textual de un grupo para visualización en UI.
+    Genera representación textual para la UI.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return []
@@ -298,11 +272,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
-        try:
-            target = Path(path).resolve(strict=True)
-            is_keeper = (keeper is not None and target == keeper)
-        except (OSError, PermissionError, FileNotFoundError, TypeError):
-            is_keeper = False
+        is_keeper = (keeper is not None and path == keeper)
         marca = "conservar" if is_keeper else "duplicado"
         lines.append(f"   [{marca}] {path}")
     return lines
