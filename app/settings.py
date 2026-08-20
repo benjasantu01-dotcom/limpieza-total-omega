@@ -209,7 +209,7 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
     ConfigKey.TOP_PROCESOS: _Validators.int
 }
 
-_STRING_TO_KEY: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
+_STR_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ubicación del archivo de configuración garantizando la seguridad del directorio base."""
@@ -226,10 +226,10 @@ def validate(raw_values: Any) -> AppSettings:
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     for key_str, val in raw_values.items():
-        key = _STRING_TO_KEY.get(key_str)
+        key = _STR_TO_ENUM.get(key_str)
         if key and key in _VALIDATOR_MAP:
             validated = _VALIDATOR_MAP[key](key, val)
-            if validated is not None: config[key.value] = validated
+            if validated is not None: config[key_str] = validated
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -238,12 +238,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta_str = str(ruta)
     
     try:
-        mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
-        if ruta_str in _CACHE and _CACHE[ruta_str][0] == mtime:
+        if not ruta.exists(): return _get_default_config()
+        stat = ruta.stat()
+        if ruta_str in _CACHE and _CACHE[ruta_str][0] == stat.st_mtime:
             return _CACHE[ruta_str][1]
             
-        if not ruta.exists(): return _get_default_config()
-        if ruta.stat().st_size > MAX_SETTINGS_SIZE or not _Validators._is_safe_path(ruta_str):
+        if stat.st_size > MAX_SETTINGS_SIZE or not _Validators._is_safe_path(ruta_str):
             return _get_default_config()
             
         with open(ruta, "r", encoding="utf-8") as f:
@@ -251,7 +251,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if not isinstance(data, dict): return _get_default_config()
             
         config = validate(data)
-        _CACHE[ruta_str] = (mtime, config)
+        _CACHE[ruta_str] = (stat.st_mtime, config)
         return config
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError):
         return _get_default_config()
@@ -294,14 +294,12 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
-        key_enum = _STRING_TO_KEY.get(k)
-        if key_enum:
-            validator = _VALIDATOR_MAP.get(key_enum)
-            if validator:
-                val = validator(key_enum, v)
-                if val is not None and val != current.get(k):
-                    current[k] = val
-                    needs_save = True
+        key_enum = _STR_TO_ENUM.get(k)
+        if key_enum and key_enum in _VALIDATOR_MAP:
+            val = _VALIDATOR_MAP[key_enum](key_enum, v)
+            if val is not None and val != current.get(k):
+                current[k] = val
+                needs_save = True
     if needs_save: save(current, custom_base)
     return current
 

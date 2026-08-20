@@ -376,13 +376,13 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     Genera respuesta educativa sobre el estado de memoria RAM usando métricas de SystemContext.
     Calcula el impacto de la RAM libre y sugiere acciones de limpieza seguras.
     """
-    mem_pct = _safe_float(ctx.memory_available_percent)
-    total_gb = _safe_float(ctx.memory_total_gb)
+    mem_pct = _safe_float(ctx.memory_available_percent, 50.0)
+    total_gb = _safe_float(ctx.memory_total_gb, 0.0)
     
     estado_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     accion_msg = "Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses; en la pestaña Memoria tenés qué consume más." if mem_pct < 15 else "Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
     consejo_final = "No busques un 'liberador de RAM': suben el número de memoria libre pero la PC queda más lenta."
-    startup_ad = f" Sí te conviene mirar los {ctx.startup_count} programas de inicio." if ctx.startup_count > 12 else ""
+    startup_ad = f" Sí te conviene mirar los {int(ctx.startup_count)} programas de inicio." if ctx.startup_count > 12 else ""
     
     texto = f"{estado_msg} {accion_msg} {consejo_final}{startup_ad}"
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
@@ -395,7 +395,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     recuperable = _safe_float(ctx.junk_mb) + _safe_float(ctx.duplicate_mb) + _safe_float(ctx.browser_cache_mb)
     
     linea1 = f"Tenés {ctx.disk_free_percent:.0f}% libre en disco."
-    linea2 = f"Podés recuperar cerca de {recuperable:.0f} MB: {ctx.junk_mb:.0f} MB de basura, {ctx.duplicate_mb:.0f} MB de duplicados{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb else ''}."
+    linea2 = f"Podés recuperar cerca de {recuperable:.0f} MB: {ctx.junk_mb:.0f} MB de basura, {ctx.duplicate_mb:.0f} MB de duplicados{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb > 0 else ''}."
     alerta = " Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería." if ctx.disk_free_percent < 10 else ""
     cierre = " Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra."
     
@@ -433,7 +433,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     Genera respuesta sobre el impacto de programas al inicio usando métricas de SystemContext.
     Advierte que el control debe ejercerse desde las herramientas nativas de Windows.
     """
-    estado = f"Tenés {ctx.startup_count} programas que arrancan con Windows."
+    estado = f"Tenés {int(ctx.startup_count)} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos." if ctx.startup_count > 15 else ("Es una cantidad normal, aunque se puede recortar." if ctx.startup_count > 8 else "Está bien así.")
     cierre = " La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows."
     

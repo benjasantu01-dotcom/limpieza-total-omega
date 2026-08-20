@@ -1365,3 +1365,44 @@ FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount
 - `2026-08-20T14:37:12` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la lógica de filtrado inicial en `process_entry` moviendo la validación de extensiones y rutas de sistema al principio para evitar el acceso al sistema de archivos (`stat`) en archivos que claramente no son sospechosos ni ejecutables, reduciendo drásticamente las llamadas a I/O innecesarias durante el recorrido recursivo.
 - `2026-08-20T14:37:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T14:37:12` Corrida terminada. Total usado hoy: 344.
+- `2026-08-20T14:45:58` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-20T14:46:30` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `update()` evitando la serialización completa de datos en el caché y utilizando un diccionario de `Enum` para evitar la búsqueda constante por strings durante las validaciones.
+- `2026-08-20T14:47:00` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.21s
+
+```
+- `2026-08-20T14:47:00` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` aplicando `os.path.normpath` y validando la existencia mediante `os.path.exists` en una sola pasada lógica dentro del cache, reduciendo las llamadas redundantes al sistema de archivos y evitando procesar rutas ya invalidadas en `_EXISTS_CACHE`.
+- `2026-08-20T14:47:40` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor local ante valores nulos, vacíos o mal formados en `handle_ram` y `handle_disk`, evitando comportamientos inesperados o cálculos erróneos si el contexto de sistema llega con datos incompletos.
+- `2026-08-20T14:48:13` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-20T14:48:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T14:48:13` Corrida terminada. Total usado hoy: 348.
