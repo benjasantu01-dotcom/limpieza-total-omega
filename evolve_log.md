@@ -1002,3 +1002,36 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-20T11:13:21` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad adicional en `_is_valid_trim_target` para prevenir intentos de manipulación sobre procesos con nombres o rutas que contengan caracteres de control RTL (Right-to-Left), mitigando posibles ataques de confusión de rutas o spoofing visual.
 - `2026-08-20T11:13:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T11:13:21` Corrida terminada. Total usado hoy: 264.
+- `2026-08-20T11:21:20` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-20T11:21:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-20T11:22:23` Tests FALLARON:
+```
+:
+            if destination.exists():
+                _safe_unlink(destination)
+>           raise RuntimeError(f"Error al finalizar el aislamiento: {e}")
+E           RuntimeError: Error al finalizar el aislamiento: Seguridad bloqueó el borrado del archivo original tras la copia.
+
+app/quarantine.py:427: RuntimeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:101: SyntaxWarning: invalid escape sequence '\A'
+    Extrae la ruta absoluta dentro de comillas (ej: "C:\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - RuntimeError: Error al finalizar el aislamiento: Seguridad bloqueó el borrado del archivo original tras la copia.
+1 failed, 298 passed, 7 warnings in 1.20s
+
+```
+- `2026-08-20T11:22:23` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita mediante `is_safe_to_modify` antes de intentar eliminar el archivo original, alineando la lógica de destrucción con las reglas de seguridad defensiva para evitar operaciones no autorizadas en archivos protegidos.
+- `2026-08-20T11:22:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-20T11:22:56` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-20T11:22:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T11:22:56` Corrida terminada. Total usado hoy: 268.
