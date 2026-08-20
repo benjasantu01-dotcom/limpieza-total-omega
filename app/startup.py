@@ -84,26 +84,26 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Determina si la ruta apunta a un ejecutable válido y es segura de inspeccionar."""
+        """Valida que la extensión sea ejecutable y no sea un enlace simbólico (evita loops)."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia caracteres de control (ASCII < 32) del comando crudo."""
+        """Elimina caracteres de control y espacios en blanco no imprimibles."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta absoluta dentro de comillas (ej: "C:\App.exe").
+        Extrae la ruta absoluta delimitada por comillas dobles.
         
-        Args:
-            raw_cmd: Cadena conteniendo la ruta entre comillas.
-        Returns:
-            Ruta limpia si es válida y no protegida, cadena vacía caso contrario.
+        Validaciones:
+            1. Verifica presencia de cierre de comillas.
+            2. Filtra caracteres prohibidos en rutas de sistema.
+            3. Aplica chequeo de seguridad via `is_protected_path`.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -125,10 +125,10 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Resuelve la ruta absoluta mediante `os.path.realpath`.
+        Resuelve y normaliza una ruta, verificando su existencia real en disco.
         
-        Utiliza _EXISTS_CACHE para evitar el impacto de performance de múltiples 
-        consultas al disco por cada entrada, verificando seguridad de ruta.
+        Usa `_EXISTS_CACHE` para memoizar resultados de `realpath` y evitar
+        consultas repetitivas al sistema de archivos, mejorando la performance.
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
@@ -142,12 +142,12 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
                 
-            # Verificación de integridad antes de resolución
+            # Verificación de integridad: evita seguir enlaces simbólicos maliciosos
             if is_protected_path(p) or p.is_symlink():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
             
-            # Resolver ruta real para detectar ocultamientos mediante reparse points
+            # Realpath normaliza la ruta resolviendo junctions o atajos del sistema
             real_path = os.path.realpath(str(p))
             if not os.path.lexists(real_path) or is_protected_path(Path(real_path)):
                 _EXISTS_CACHE[path_str] = False
@@ -161,8 +161,11 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, cmd: str) -> str:
         """
-        Selecciona la estrategia de resolución de ruta: modo comando directo o 
-        modo ruta entrecomillada, mitigando intentos de inyección de shell.
+        Selecciona la estrategia de resolución de ruta según el formato del comando.
+        
+        Mitiga inyecciones de shell detectando caracteres de control y 
+        delegando la extracción de la ruta al método correspondiente según
+        presencia de comillas o parámetros adicionales.
         """
         if not cmd or not isinstance(cmd, str):
             return ""
@@ -183,10 +186,10 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Acceso perezoso a la ruta absoluta del ejecutable.
+        Obtiene la ruta absoluta del ejecutable de forma perezosa.
         
-        Calculado una única vez bajo demanda y cacheado en `_exec_cache` 
-        para asegurar que la UI no bloquee el hilo principal.
+        El resultado se almacena en `_exec_cache` durante la primera llamada.
+        Si la ruta original es sospechosa o no existe, retorna una cadena vacía.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -243,7 +246,12 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte el CSV crudo generado por PowerShell en objetos StartupEntry."""
+    """
+    Convierte el CSV crudo generado por PowerShell en objetos StartupEntry.
+    
+    Aplica filtros de seguridad: omite entradas con caracteres inválidos, 
+    rutas protegidas o comandos que sugieran ejecución de scripts de PowerShell.
+    """
     if not isinstance(text, str) or not text.strip():
         return []
         
@@ -258,7 +266,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
                 if not isinstance(row, dict) or len(row) < 2:
                     continue
                 
-                # Extraemos y validamos valores del registro
                 vals = [str(v).strip() for v in row.values() if v is not None]
                 name_raw, cmd_raw = vals[0], vals[1]
                 
@@ -285,7 +292,7 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Recupera entradas de inicio desde el registro mediante PowerShell."""
+    """Recupera entradas de inicio desde el registro mediante una ejecución de PowerShell."""
     global _REGISTRY_CACHE
     if _REGISTRY_CACHE is not None:
         return _REGISTRY_CACHE
@@ -310,7 +317,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Combina fuentes de carpetas y registro usando concurrencia."""
+    """Combina fuentes de carpetas y registro, eliminando duplicados mediante un ThreadPool."""
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
@@ -343,7 +350,7 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera informe de texto para la interfaz."""
+    """Genera informe textual con niveles de impacto para la interfaz de usuario."""
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

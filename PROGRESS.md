@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 9
+- Sin cambios (nada sustancial que mejorar): 8
 - Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 66 | 5 | 9 | 5 | 91 |
-| 2026-08-20 | 154 | 10 | 21 | 4 | 139 |
+| 2026-08-19 | 63 | 5 | 9 | 4 | 91 |
+| 2026-08-20 | 158 | 10 | 21 | 4 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **52**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **39**
-- rendimiento: **34**
+- robustez ante casos límite: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
-- `diskreport.py`: **21**
+- `settings.py`: **23**
 - `organizer.py`: **20**
-- `healthscore.py`: **19**
-- `assistant.py`: **19**
-- `duplicates.py`: **18**
+- `assistant.py`: **20**
+- `diskreport.py`: **20**
+- `healthscore.py`: **18**
 - `memory.py`: **17**
+- `scanner.py`: **17**
+- `duplicates.py`: **17**
 - `quarantine.py`: **16**
-- `scanner.py`: **16**
 - `browser.py`: **15**
 - `main.py`: **15**
 - `branding.py`: **9**
 - `safety.py`: **7**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T14:07:02` **assistant.py** (rendimiento): Optimicé el mapeo de palabras clave (`_KEYWORD_MAP`) convirtiéndolo en un conjunto de búsqueda eficiente y reestructuré el bucle de coincidencia para evitar iteraciones redundantes sobre tokens, mejorando el rendimiento de la detección de intenciones.
+- `2026-08-20T14:06:29` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en métodos clave, aclarando las responsabilidades de resolución de rutas y el manejo del ciclo de vida de los datos (`cache`, `security checks`), facilitando el mantenimiento futuro y la comprensión de la lógica de seguridad.
+- `2026-08-20T14:06:00` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para mejorar la legibilidad del motor de validación, garantizando que la intención técnica de cada restricción sea clara para futuros desarrolladores sin alterar el comportamiento.
+- `2026-08-20T14:05:31` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados, type hints en los retornos de funciones y clarificación de los propósitos de las constantes para mejorar la mantenibilidad y legibilidad del código.
 - `2026-08-20T13:56:33` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y type hints consistentes en funciones internas, además de asegurar que las advertencias de seguridad y responsabilidades de las funciones estén claramente declaradas para facilitar su mantenimiento.
 - `2026-08-20T13:55:19` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones de Args y Returns) y tipos más explícitos, facilitando la comprensión del flujo de datos en operaciones críticas como el movimiento y borrado de archivos, sin alterar la lógica de seguridad.
 - `2026-08-20T13:45:08` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings más precisos, se han añadido type hints que faltaban en funciones internas y se ha extraído la lógica de cálculo de hash en el pipeline de `_refine_by_hash` a un flujo más explícito, facilitando la legibilidad sobre cómo los archivos se descartan durante el proceso de escaneo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T13:25:37` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la validación de archivos integrando `ensure_safe_to_modify` en el chequeo de la ruta de configuración (`settings_path`) para garantizar que la ubicación de guardado sea legítima y segura antes de cualquier operación de escritura, previniendo excepciones innecesarias en el flujo principal.
 - `2026-08-20T13:25:08` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las verificaciones de entrada en `scan_directory` y `process_entry` mediante la validación explícita de tipos, capturando posibles valores `None` o errores de conversión antes de interactuar con el sistema de archivos.
 - `2026-08-20T13:24:40` **safety.py** (manejo de errores y validación de entradas): He mejorado la robustez de `ensure_safe_to_modify` ante entradas no alfanuméricas o rutas con caracteres de control, unificando la lógica de validación de caracteres (antes dispersa) en un paso previo crítico y asegurando que las excepciones capturadas sean explícitas para evitar silenciamiento de errores operativos.
-- `2026-08-20T13:15:25` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` encapsulando la lógica de borrado del archivo original en un bloque `try-except` más específico y añadiendo una validación explícita para evitar intentar borrar un archivo si la operación de copia falló parcialmente, mejorando el manejo de estados inconsistentes.
-- `2026-08-20T13:14:52` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al asegurar que las rutas sean validadas explícitamente antes de intentar operaciones de disco, protegiendo el código contra entradas vacías o malformadas y evitando el acceso a rutas protegidas mediante una verificación de seguridad más estricta.
-- `2026-08-20T13:14:26` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_valid_trim_target` añadiendo validaciones de tipo explícitas para las variables de entorno `kernel32` y asegurando que las comparaciones de rutas sean seguras contra posibles `None`, además de sanitizar los inputs de caracteres de control de manera más estricta mediante `str.encode` para evitar errores de codificación en paths no estándar.
-- `2026-08-20T13:05:40` **main.py** (manejo de errores y validación de entradas): Se mejora `_validate_numeric_setting` para prevenir errores de tipo `None` inesperados y se añade un filtro de caracteres imprimibles a `api_key_entry` para evitar inyecciones o caracteres de control en la configuración.

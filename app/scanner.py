@@ -43,13 +43,17 @@ SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optio
 # Alias para representar una colección de hallazgos.
 ScanResult: TypeAlias = List[Suspicion]
 
-# Expresiones regulares y constantes de configuración
+# Expresiones regulares para detección de ofuscación
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d]")
+
+# Conjuntos de constantes para comparación rápida
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
-SYSTEM32_LOWER: Final[str] = "system32"
 WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
+
+# Configuración de umbrales
+SYSTEM32_LOWER: Final[str] = "system32"
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 
 # Colección pre-definida de verificaciones para ejecutables
@@ -188,6 +192,9 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Ejecuta todas las reglas heurísticas sobre un archivo.
+    
+    Returns:
+        Lista de hallazgos (Suspicion) encontrados en el archivo.
     """
     if path is None:
         return []

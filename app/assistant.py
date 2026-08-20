@@ -467,12 +467,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     clean_text = _sanitize_query(question)
-    tokens = _TOKEN_REGEX.findall(clean_text)
+    tokens = set(_TOKEN_REGEX.findall(clean_text))
     
+    # Búsqueda eficiente usando intersección de conjuntos
     for token in tokens:
-        handler_key = _KEYWORD_MAP.get(token)
-        if handler_key:
-            return _HANDLERS[handler_key](context, clean_text)
+        if token in _KEYWORD_MAP:
+            return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
