@@ -146,7 +146,8 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo del sistema de archivos para agrupar candidatos.
+    Realiza un recorrido recursivo del sistema de archivos para agrupar candidatos,
+    evitando seguir puntos de reparse mediante el chequeo de atributos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -157,6 +158,7 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         st = entry.stat(follow_symlinks=False)
+                        # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT (Junctions, Symlinks)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                             
                         if entry.is_dir(follow_symlinks=False):
@@ -189,12 +191,14 @@ def _refine_by_hash(
     hash_func: Callable[[Path], Optional[str]]
 ) -> Dict[str, List[Path]]:
     """
-    Refina grupos de candidatos basándose en una función de hash.
+    Agrupa rutas que comparten el mismo hash generado por la función provista.
+    Solo se incluyen grupos con 2 o más elementos.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     
     for path in paths:
-        if path and (digest := hash_func(path)):
+        digest = hash_func(path)
+        if digest:
             groups_by_digest[digest].append(path)
                 
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
@@ -202,13 +206,20 @@ def _refine_by_hash(
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Ejecuta el pipeline de refinamiento (Hash Parcial -> Hash Completo).
+    Pipeline de refinamiento: reduce candidatos mediante Hash Parcial y 
+    luego confirma identidad definitiva con Hash Completo.
     """
     confirmed_groups: List[DuplicateGroup] = []
-    for partial_candidates in _refine_by_hash(paths, partial_hash).values():
+    
+    # 1. Filtro heurístico rápido
+    partial_results = _refine_by_hash(paths, partial_hash)
+    
+    # 2. Confirmación mediante hash de contenido completo
+    for partial_candidates in partial_results.values():
         full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
             confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
+            
     return confirmed_groups
 
 
@@ -223,9 +234,13 @@ def find_duplicates(
     if directories is None or min_size < 0: return []
     
     groups: List[DuplicateGroup] = []
-    for size, paths in _collect_candidates(directories, min_size, skip_protected).items():
+    # Primero agrupamos candidatos por tamaño
+    size_candidates = _collect_candidates(directories, min_size, skip_protected)
+    
+    for size, paths in size_candidates.items():
         groups.extend(_process_size_group(size, paths))
 
+    # Ordenar grupos por mayor impacto de ahorro de espacio
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
 
@@ -239,7 +254,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Selecciona el 'archivo maestro' (keeper) basado en:
     1. Menor fecha de modificación.
-    2. Longitud de la ruta.
+    2. Longitud de la ruta (a menor longitud, consideramos una ubicación más raíz/fácil).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -259,7 +274,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """
-    Genera representación textual para la UI.
+    Genera una representación legible del grupo para la interfaz de usuario.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths: 
         return []

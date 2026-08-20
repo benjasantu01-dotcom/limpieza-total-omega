@@ -1277,3 +1277,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-20T13:37:11` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los argumentos, retornos y el propósito de las funciones internas que carecían de docstrings detallados, y estandarizando las anotaciones de tipo para mayor claridad.
 - `2026-08-20T13:37:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T13:37:11` Corrida terminada. Total usado hoy: 320.
+- `2026-08-20T13:44:36` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-20T13:45:08` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna mediante docstrings más precisos, se han añadido type hints que faltaban en funciones internas y se ha extraído la lógica de cálculo de hash en el pipeline de `_refine_by_hash` a un flujo más explícito, facilitando la legibilidad sobre cómo los archivos se descartan durante el proceso de escaneo.
+- `2026-08-20T13:45:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-20T13:45:48` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: legibilidad y documentación).
+- `2026-08-20T13:46:17` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-20T13:47:20` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-20T13:48:02` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-20T13:48:20` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-20T13:48:49` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: legibilidad y documentación).
+- `2026-08-20T13:48:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T13:48:49` Corrida terminada. Total usado hoy: 324.

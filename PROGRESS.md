@@ -7,34 +7,34 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 230
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 68 | 6 | 10 | 5 | 95 |
-| 2026-08-20 | 151 | 10 | 20 | 4 | 135 |
+| 2026-08-19 | 67 | 5 | 9 | 5 | 94 |
+| 2026-08-20 | 152 | 10 | 20 | 4 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **47**
 - seguridad defensiva: **43**
 - robustez ante casos límite: **40**
-- rendimiento: **35**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **22**
 - `diskreport.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
-- `duplicates.py`: **17**
+- `duplicates.py`: **18**
 - `memory.py`: **17**
 - `scanner.py`: **16**
 - `browser.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T13:45:08` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante docstrings más precisos, se han añadido type hints que faltaban en funciones internas y se ha extraído la lógica de cálculo de hash en el pipeline de `_refine_by_hash` a un flujo más explícito, facilitando la legibilidad sobre cómo los archivos se descartan durante el proceso de escaneo.
 - `2026-08-20T13:37:11` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` documentando los argumentos, retornos y el propósito de las funciones internas que carecían de docstrings detallados, y estandarizando las anotaciones de tipo para mayor claridad.
 - `2026-08-20T13:36:57` **browser.py** (legibilidad y documentación): Se documentó la jerarquía de funciones y el propósito de los filtros de seguridad mediante docstrings descriptivos, se añadieron type hints ausentes en funciones internas clave y se renombró `_is_safe_path` por `_is_path_inside_base` para clarificar su intención específica de prevenir el escape del directorio base.
 - `2026-08-20T13:36:30` **branding.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `branding.py` añadiendo docstrings técnicos a las estructuras de datos y a las funciones de acceso, clarificando el propósito de cada constante y su rol en la arquitectura visual del proyecto.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T13:05:40` **main.py** (manejo de errores y validación de entradas): Se mejora `_validate_numeric_setting` para prevenir errores de tipo `None` inesperados y se añade un filtro de caracteres imprimibles a `api_key_entry` para evitar inyecciones o caracteres de control en la configuración.
 - `2026-08-20T13:04:46` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez del sistema ante datos de entrada mal formados añadiendo una validación explícita en el método `validate` de `SystemMetrics` y usando un bloque de manejo de errores más específico y preventivo en `compute_score`, asegurando que cualquier entrada inesperada sea capturada antes de procesar el cálculo.
 - `2026-08-20T13:04:22` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `hash_file`/`partial_hash` añadiendo validaciones de tipo y estado antes de operar, asegurando que `stat()` o `is_file()` no procesen objetos inválidos o corrompidos.
-- `2026-08-20T13:03:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones preventivas sobre `entry.path` y `relative_to` para evitar excepciones en rutas con caracteres especiales o cambios de estado concurrentes durante la iteración, manteniendo la integridad del bucle.
