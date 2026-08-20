@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 28
+- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 233
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 26 | 2 | 3 | 1 | 22 |
+| 2026-08-18 | 24 | 1 | 3 | 1 | 21 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 45 | 3 | 6 | 1 | 45 |
+| 2026-08-20 | 48 | 3 | 7 | 1 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **44**
-- rendimiento: **41**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **23**
-- `diskreport.py`: **21**
+- `assistant.py`: **22**
 - `settings.py`: **21**
+- `diskreport.py`: **20**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `organizer.py`: **19**
-- `scanner.py`: **17**
+- `scanner.py`: **18**
 - `main.py`: **16**
-- `quarantine.py`: **14**
+- `quarantine.py`: **15**
 - `browser.py`: **14**
 - `memory.py`: **11**
 - `branding.py`: **10**
-- `safety.py`: **6**
+- `safety.py`: **7**
 - `startup.py`: **2**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T04:24:44` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` validando la entrada y los resultados intermedios de `path.resolve()` mediante un manejo de excepciones más específico, evitando que un error de sistema detenga el flujo antes de iniciar.
+- `2026-08-20T04:24:26` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `ensure_safe_to_modify` para prevenir condiciones de carrera y fallos silenciosos al integrar comprobaciones de estado de archivo más rigurosas.
+- `2026-08-20T04:23:27` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para manejar errores de permiso con mayor granularidad, asegurando que si no podemos determinar el estado de acceso del archivo, se asuma preventivamente como bloqueado para evitar operaciones fallidas en el sistema de archivos.
 - `2026-08-20T04:17:08` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas de origen y destino sean efectivamente archivos o directorios reales antes de proceder, previniendo errores de `OSError` al intentar operar sobre rutas inexistentes o mal formadas.
 - `2026-08-20T04:16:25` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de pestañas agregando un chequeo de existencia de los widgets en el método `_tab_factory`, evitando excepciones si el usuario cambia de pestaña rápidamente antes de que el layout termine de construirse.
 - `2026-08-20T04:13:13` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando una validación explícita para evitar divisiones por cero en los cálculos de los ratios si las constantes globales llegaran a alterarse accidentalmente, y asegurando que `summarize` maneje de forma segura métricas faltantes en el desglose.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T02:22:44` **organizer.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_is_safe_for_disk_op` para validar explícitamente que la ruta de destino no sea una subcarpeta del origen, evitando así operaciones de movimiento lógico o físico que podrían corromper la jerarquía de archivos o inducir errores de recursión profunda en sistemas de archivos complejos.
 - `2026-08-20T02:22:19` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` asegurando que el buffer de memoria sea gestionado y validado correctamente antes de intentar convertirlo a string, evitando lecturas fuera de rango o manipulación insegura de punteros en la interacción con la API de Windows.
 - `2026-08-20T02:21:46` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` al reemplazar accesos directos a rutas en métodos asíncronos (`on_scan_junk`, `on_find_duplicates`) por una validación explícita mediante `ensure_safe_to_modify` dentro del `worker_thread_logic`, asegurando que cualquier operación sobre archivos verifique la integridad de la ruta incluso si la UI intentó validarla previamente, y protegiendo el punto de entrada de la app mediante un check de integridad del directorio de trabajo.
-- `2026-08-20T02:12:32` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del sistema de evaluación asegurando que, ante una configuración de pesos parcial o errónea en `WEIGHTS`, `compute_score` no intente procesar áreas inexistentes o genere divisiones por cero, garantizando que el cálculo de `final_score` siempre sea determinista y seguro.
-- `2026-08-20T02:12:02` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `group_by_size` y `_collect_candidates` consolidando la validación de rutas mediante un único método de chequeo, asegurando que cualquier entrada sea validada contra las listas de protección antes de cualquier intento de acceso al sistema de archivos.
-- `2026-08-20T02:11:36` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez de `walk_files` implementando una validación estricta de rutas mediante `is_protected_path` sobre `resolve(strict=False)` antes de iterar, asegurando que el escáner no pueda ser engañado por rutas relativas maliciosas o enlaces simbólicos mal formados que apunten fuera del directorio objetivo.

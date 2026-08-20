@@ -223,11 +223,12 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         raw_path = Path(directory)
         if not raw_path.exists():
             return []
+        # Validación explícita de la ruta base
         path_input = raw_path.resolve(strict=True)
-        # Filtro de seguridad inicial crítico antes de iniciar el escaneo
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
-    except (OSError, TypeError, ValueError, RuntimeError):
+    except (OSError, TypeError, ValueError, RuntimeError) as e:
+        logger.debug(f"Entrada de directorio inválida o inaccesible: {e}")
         return []
 
     scanner = Scanner(base_root=path_input)

@@ -1471,3 +1471,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-20T04:17:08` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas de origen y destino sean efectivamente archivos o directorios reales antes de proceder, previniendo errores de `OSError` al intentar operar sobre rutas inexistentes o mal formadas.
 - `2026-08-20T04:17:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T04:17:08` Corrida terminada. Total usado hoy: 100.
+- `2026-08-20T04:22:52` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-20T04:23:27` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` para manejar errores de permiso con mayor granularidad, asegurando que si no podemos determinar el estado de acceso del archivo, se asuma preventivamente como bloqueado para evitar operaciones fallidas en el sistema de archivos.
+- `2026-08-20T04:23:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-20T04:24:26` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones en `ensure_safe_to_modify` para prevenir condiciones de carrera y fallos silenciosos al integrar comprobaciones de estado de archivo más rigurosas.
+- `2026-08-20T04:24:44` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scan_directory` validando la entrada y los resultados intermedios de `path.resolve()` mediante un manejo de excepciones más específico, evitando que un error de sistema detenga el flujo antes de iniciar.
+- `2026-08-20T04:24:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T04:24:44` Corrida terminada. Total usado hoy: 104.

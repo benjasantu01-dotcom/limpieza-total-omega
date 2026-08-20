@@ -176,7 +176,6 @@ def _check_file_integrity(p: Path) -> None:
     if p is None:
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
     
-    # Verificación de existencia re-evaluada ante condiciones de carrera
     if not p.exists():
         raise UnsafePathError(f"El archivo {p.name} no existe.")
 
@@ -219,9 +218,6 @@ def _is_readonly(path: Path) -> bool:
 def normalize(path: PathLike) -> Path:
     """
     Convierte una ruta a su forma absoluta canónica.
-    
-    Nota: Aplica límite de 260 caracteres para garantizar compatibilidad con 
-    versiones de Windows previas a la habilitación de rutas largas (MAX_PATH).
     """
     if path is None:
         raise ValueError("Ruta nula recibida.")
@@ -336,18 +332,20 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
 
-    path_str = str(path)
-    if _has_invalid_chars(path_str):
-        raise UnsafePathError("Caracteres ilegales detectados en la ruta.")
-
     try:
         p = normalize(path)
+        path_str = str(p)
         
         _validate_basic_path_safety(p, path_str)
         _validate_boundary_conditions(p, base_dir)
         
         if p.exists():
             _check_file_integrity(p)
+        else:
+            # Validación preventiva para rutas no existentes
+            parent = p.parent
+            if parent.exists() and not os.access(parent, os.W_OK):
+                raise UnsafePathError("Directorio padre sin permisos de escritura.")
         
         if not allow_sensitive and is_sensitive_file(p):
             raise UnsafePathError("Extensión de archivo sensible.")

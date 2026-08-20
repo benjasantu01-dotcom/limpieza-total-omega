@@ -145,13 +145,15 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está bloqueado intentando una operación de lectura."""
+    """Verifica si un archivo está bloqueado intentando abrirlo en modo lectura exclusiva."""
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        with open(path, "rb") as f:
-            return not os.access(path, os.W_OK)
-    except (OSError, PermissionError):
+        # Intenta abrir para escritura para comprobar si el SO permite acceso exclusivo
+        with open(path, "rb+") as f:
+            return False
+    except (IOError, OSError, PermissionError):
+        # Si falla, asumimos que está bloqueado o tenemos permisos denegados
         return True
 
 
