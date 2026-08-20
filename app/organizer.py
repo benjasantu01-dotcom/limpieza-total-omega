@@ -146,7 +146,9 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     lo cual causaría bucles infinitos en el sistema de archivos.
     """
     try:
-        return src == dest or dest.is_relative_to(src)
+        # Resolvemos rutas para comparación exacta
+        s, d = src.resolve(), dest.resolve()
+        return s == d or d.is_relative_to(s)
     except (OSError, RuntimeError, ValueError):
         return True
 
@@ -157,7 +159,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Rechaza archivos ocultos, de sistema, reparse points o archivos bloqueados.
     """
     try:
-        if not src.is_file() or _is_junction(src):
+        if not src.exists() or not src.is_file() or _is_junction(src):
             return False
         if os.name == "nt":
             attrs: int = src.stat().st_file_attributes
@@ -178,7 +180,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     if not isinstance(junk_file, JunkFile): return False
     try:
         current_path: Path = junk_file.path
-        if is_protected_path(current_path) or is_protected_path(dest):
+        if not current_path.exists() or is_protected_path(current_path) or is_protected_path(dest):
             return False
         if not _is_safe_for_disk_op(current_path, dest):
             return False
@@ -258,7 +260,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile): continue
         try:
             src_path: Path = junk_file.path
-            if not src_path.is_file() or not _is_safe_to_move(junk_file, dest_base):
+            # Verificación adicional para asegurar que el destino no esté contenido en el origen
+            if not src_path.exists() or _is_recursive_violation(src_path, dest_base) or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"

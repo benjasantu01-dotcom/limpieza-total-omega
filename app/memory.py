@@ -323,20 +323,21 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     """Resuelve la ruta absoluta del ejecutable usando la Win32 QueryFullProcessImageNameW."""
-    if not handle or handle == -1:
+    if not handle:
         return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"):
         return None
     
-    size = ctypes.c_ulong(4096)
+    size = ctypes.c_ulong(1024)
     buf = ctypes.create_unicode_buffer(size.value)
     
     try:
+        # 0 indica que se pasa una ruta de estilo Win32
         if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError):
-        return None
+        pass
     return None
 
 
@@ -345,7 +346,7 @@ def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[
     Chequeos de seguridad previos a la liberación de memoria.
     Verifica estado, existencia y que la ruta del ejecutable no sea protegida.
     """
-    if not proc_handle or proc_handle == -1:
+    if not proc_handle:
         return False, "Handle inválido."
 
     kernel32 = ctypes.windll.kernel32
@@ -394,7 +395,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Error de sistema: APIs de memoria no disponibles."
 
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
-    if not proc_handle or proc_handle == -1:
+    if not proc_handle:
         return False, "Acceso denegado al proceso (podría haber finalizado)."
         
     try:

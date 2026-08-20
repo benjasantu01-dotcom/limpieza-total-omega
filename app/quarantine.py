@@ -378,8 +378,9 @@ def quarantine_file(
     except OSError as e:
         raise RuntimeError(f"No se pudo determinar el tamaño del archivo origen: {e}")
     
-    if source_path.is_symlink():
-        raise UnsafePathError("El archivo ha cambiado su naturaleza (enlace detectado).")
+    # Doble chequeo crítico ante condiciones de carrera
+    if not source_path.exists():
+        raise RuntimeError("El archivo origen desapareció antes de ser aislado.")
 
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
