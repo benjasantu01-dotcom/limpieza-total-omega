@@ -242,33 +242,31 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     return True
 
-def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> None:
+def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
     """
     Extrae, normaliza y asigna una métrica de forma defensiva dentro de los rangos
     permitidos, verificando finitud y tipos de dato para evitar errores silenciosos.
     """
     if not isinstance(spec, tuple) or len(spec) != 3:
-        return
+        return False
 
     cast, min_v, max_v = spec
-    
-    # Extracción segura: intentamos dict get, luego atributo si no es dict
     val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
-    # Prohibir contenedores como métricas; aceptar solo escalares numéricos o strings
     if val is None or isinstance(val, (list, dict, set, tuple, bool)):
-        return
+        return False
         
     try:
         clean_val = float(val)
         if math.isfinite(clean_val):
-            # Clamping defensivo
             clamped = max(float(min_v), min(clean_val, float(max_v)))
             final_val = cast(clamped)
             if isinstance(final_val, (int, float)) and math.isfinite(float(final_val)):
                 setattr(ctx, key, final_val)
+                return True
     except (ValueError, TypeError, OverflowError):
         pass
+    return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
@@ -276,26 +274,29 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     y centralizando el inventario de métricas permitidas fuera del equipo.
     """
     ctx = SystemContext()
+    found_data = False
     
     if metrics is not None:
         for key, spec in _VALIDATORS.items():
-            _validate_and_assign(ctx, metrics, key, spec)
-        ctx.analyzed = True
+            if _validate_and_assign(ctx, metrics, key, spec):
+                found_data = True
 
     if health is not None:
-        _validate_and_assign(ctx, health, "score", (int, 0, 100))
-        # Acceso defensivo a grade
+        if _validate_and_assign(ctx, health, "score", (int, 0, 100)):
+            found_data = True
         g_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
         if isinstance(g_val, (str, int, float)):
             ctx.grade = str(g_val)[:10].strip()
-        ctx.analyzed = True
 
     for k, v in extra.items():
         if k in _VALIDATORS:
-            _validate_and_assign(ctx, extra, k, _VALIDATORS[k])
+            if _validate_and_assign(ctx, extra, k, _VALIDATORS[k]):
+                found_data = True
         elif k == "score":
-            _validate_and_assign(ctx, extra, "score", (int, 0, 100))
+            if _validate_and_assign(ctx, extra, "score", (int, 0, 100)):
+                found_data = True
             
+    ctx.analyzed = found_data
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:

@@ -216,7 +216,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        base_path = Path(directory).resolve(strict=False)
+        p_path = Path(directory)
+        base_path = p_path.resolve(strict=False)
         if not base_path.exists() or not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
@@ -411,8 +412,10 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     
     try:
         p_input = Path(directory).resolve(strict=False)
-        if not p_input.exists() or not p_input.is_dir():
-            return [f"Error: Ruta no válida: {p_input}"]
+        if not p_input.exists():
+            return [f"Error: Ruta no existente: {p_input}"]
+        if not p_input.is_dir():
+            return [f"Error: Ruta no es un directorio: {p_input}"]
         if skip_protected and is_protected_path(p_input):
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             

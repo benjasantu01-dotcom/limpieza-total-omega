@@ -723,3 +723,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-20T08:21:42` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-20T08:21:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T08:21:42` Corrida terminada. Total usado hoy: 196.
+- `2026-08-20T08:27:47` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-20T08:28:21` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` al capturar explícitamente `ValueError` y `TypeError` durante la carga de métricas para evitar que datos malformados interrumpan el proceso, asegurando que `ctx.analyzed` solo sea verdadero si el contexto pudo ser poblado mínimamente.
+- `2026-08-20T08:28:52` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-20T08:29:18` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que los resultados de `st_size` sean números positivos y añadiendo una captura de `OverflowError` ante posibles errores de precisión en sistemas de archivos atípicos, manteniendo la integridad del bucle de escaneo.
+- `2026-08-20T08:29:30` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `summarize` y `walk_files` validando explícitamente las entradas, asegurando que `None` o rutas vacías sean manejadas correctamente sin generar excepciones no controladas antes de procesar el disco.
+- `2026-08-20T08:29:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T08:29:30` Corrida terminada. Total usado hoy: 200.

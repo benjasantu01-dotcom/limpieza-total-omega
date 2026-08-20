@@ -198,17 +198,12 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Suma el tamaño de archivos en una jerarquía aplicando límites de seguridad y profundidad.
-    
-    Utiliza un recorrido DFS (Depth-First Search) con memorización para optimizar el acceso
-    al disco y evitar re-procesar subdirectorios ya visitados. Se detiene al alcanzar
-    MAX_SCAN_DEPTH para prevenir desbordamientos en estructuras de archivos complejas.
     """
     if not isinstance(root_dir, str) or not root_dir:
         return 0
     
     try:
         abs_root = Path(root_dir).resolve(strict=True)
-        # Validación de seguridad defensiva en el nivel raíz
         if not abs_root.is_dir() or is_protected_path(abs_root) or abs_root.is_symlink() or is_junction_fn(str(abs_root)):
             return 0
         root_key = str(abs_root)
@@ -232,14 +227,15 @@ def _sum_directory_recursive(
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     try:
-                        # Re-validación de seguridad por cada entrada encontrada
                         if is_protected_path(Path(entry.path)):
                             continue
                         if entry.is_dir():
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file():
-                            total += entry.stat(follow_symlinks=False).st_size
-                    except (OSError, PermissionError, FileNotFoundError):
+                            file_size = entry.stat(follow_symlinks=False).st_size
+                            if file_size > 0:
+                                total += file_size
+                    except (OSError, PermissionError, FileNotFoundError, OverflowError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
             return 0
@@ -248,7 +244,7 @@ def _sum_directory_recursive(
         return total
 
     result = _walk(root_key, 0)
-    return result
+    return result if result >= 0 else 0
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
