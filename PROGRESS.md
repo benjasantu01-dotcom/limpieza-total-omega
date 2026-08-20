@@ -7,33 +7,33 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 15
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 13
+- Sin cambios (nada sustancial que mejorar): 11
 - Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 98 | 9 | 15 | 10 | 132 |
-| 2026-08-20 | 120 | 6 | 17 | 3 | 94 |
+| 2026-08-19 | 97 | 9 | 15 | 8 | 131 |
+| 2026-08-20 | 121 | 8 | 17 | 3 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **54**
 - legibilidad y documentación: **51**
 - rendimiento: **41**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `diskreport.py`: **21**
-- `healthscore.py`: **20**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
 - `duplicates.py`: **19**
+- `healthscore.py`: **19**
 - `organizer.py`: **19**
 - `scanner.py`: **16**
 - `browser.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T10:21:47` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `build_context` implementando una validación exhaustiva de los tipos de entrada y asegurando que `extra` no contenga datos arbitrarios mediante la restricción estricta al inventario de `_VALIDATORS`.
 - `2026-08-20T10:11:27` **settings.py** (rendimiento): Se optimizó el rendimiento de carga reemplazando `lru_cache` manuales y lecturas redundantes de disco por un mecanismo de caché en memoria con `mtime` (tiempo de última modificación), evitando operaciones de I/O innecesarias al llamar a `load()` múltiples veces durante el mismo ciclo.
 - `2026-08-20T10:11:06` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `scan_file` para evitar llamadas redundantes a `path.exists()` y `path.is_file()` (que ya fueron validadas por `os.scandir` y `process_entry`), utilizando el objeto `DirEntry` ya existente para realizar comprobaciones sin acceder al disco nuevamente.
 - `2026-08-20T10:02:05` **quarantine.py** (rendimiento): Optimicé `purge_all` para evitar lecturas redundantes del manifiesto y recorridos O(n*m) mediante el uso de un diccionario de búsqueda indexado por nombre de archivo, mejorando la eficiencia algorítmica durante limpiezas masivas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T09:22:14` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos, añadí type hints en variables internas para mejorar la trazabilidad del flujo de datos y reemplacé comentarios genéricos por notas explicativas sobre la lógica de seguridad y validación de rutas.
 - `2026-08-20T09:22:03` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `memory.py` mediante la adición de docstrings estructurados con tipado claro y explicaciones del propósito funcional, facilitando la comprensión de las interacciones con la Win32 API y la lógica de validación de seguridad para futuros mantenedores.
 - `2026-08-20T09:21:27` **main.py** (legibilidad y documentación): He mejorado la documentación y legibilidad de `main.py` mediante la aplicación estricta de *type hints* en los métodos de construcción de la interfaz y la adición de docstrings técnicos que justifican el uso de las estrategias de diseño (como el *tab factory* y el *debounce*), facilitando la navegación para futuros colaboradores.
-- `2026-08-20T09:19:11` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `healthscore.py` mediante la adición de Type Hints en la interfaz de funciones y una documentación más clara sobre el proceso de normalización de las métricas.

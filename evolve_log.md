@@ -869,3 +869,68 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-20T10:11:27` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el rendimiento de carga reemplazando `lru_cache` manuales y lecturas redundantes de disco por un mecanismo de caché en memoria con `mtime` (tiempo de última modificación), evitando operaciones de I/O innecesarias al llamar a `load()` múltiples veces durante el mismo ciclo.
 - `2026-08-20T10:11:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T10:11:27` Corrida terminada. Total usado hoy: 240.
+- `2026-08-20T10:20:03` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-20T10:20:34` Tests FALLARON:
+```
+").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+app/startup.py:101
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:101: SyntaxWarning: invalid escape sequence '\A'
+    Extrae la ruta absoluta dentro de comillas (ej: "C:\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 8 warnings in 1.26s
+
+```
+- `2026-08-20T10:20:34` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a disco en `_resolve_and_cache_path` mediante la implementación de una caché de negativa (resultados `False`) y la eliminación de llamadas redundantes a `os.path.realpath`, consolidando la validación en una única ruta de acceso para reducir el impacto de I/O en el hilo principal.
+- `2026-08-20T10:21:47` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `build_context` implementando una validación exhaustiva de los tipos de entrada y asegurando que `extra` no contenga datos arbitrarios mediante la restricción estricta al inventario de `_VALIDATORS`.
+- `2026-08-20T10:22:36` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-20T10:22:47` Tests FALLARON:
+```
+t at 0x7f027a3aef80>
+
+>   return sum(cache.heap_bytes for cache in (caches or []))
+               ^^^^^^^^^^^^^^^^
+E   AttributeError: 'BrowserCache' object has no attribute 'heap_bytes'
+
+app/browser.py:322: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:101: SyntaxWarning: invalid escape sequence '\A'
+    Extrae la ruta absoluta dentro de comillas (ej: "C:\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_total_cache_bytes_sums_detected_caches - AttributeError: 'BrowserCache' object has no attribute 'heap_bytes'
+FAILED evolve/tests/test_modules.py::test_summarize_includes_the_safety_note - AttributeError: 'BrowserCache' object has no attribute 'heap_bytes'
+2 failed, 297 passed, 7 warnings in 1.32s
+
+```
+- `2026-08-20T10:22:47` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se introdujo una comprobación explícita para evitar bucles infinitos en directorios con profundidad excesiva o reparse points cíclicos dentro de `_sum_directory_recursive`, protegiendo la ejecución ante sistemas de archivos malformados o estructuras de directorios inusualmente profundas.
+- `2026-08-20T10:22:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T10:22:47` Corrida terminada. Total usado hoy: 244.

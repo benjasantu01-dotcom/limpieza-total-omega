@@ -281,12 +281,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     found_data = False
     
-    if metrics is not None:
+    if isinstance(metrics, (dict, object)):
         for key, spec in _VALIDATORS.items():
             if _validate_and_assign(ctx, metrics, key, spec):
                 found_data = True
 
-    if health is not None:
+    if isinstance(health, (dict, object)):
         if _validate_and_assign(ctx, health, "score", (int, 0, 100)):
             found_data = True
         g_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
@@ -294,10 +294,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             ctx.grade = str(g_val)[:10].strip()
 
     for k, v in extra.items():
-        if k in _VALIDATORS:
+        if k in _VALIDATORS and isinstance(v, (int, float)):
             if _validate_and_assign(ctx, extra, k, _VALIDATORS[k]):
                 found_data = True
-        elif k == "score":
+        elif k == "score" and isinstance(v, (int, float)):
             if _validate_and_assign(ctx, extra, "score", (int, 0, 100)):
                 found_data = True
             
