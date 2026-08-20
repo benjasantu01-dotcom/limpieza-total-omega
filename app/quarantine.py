@@ -512,22 +512,20 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     if not items:
         return 0
     item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
-    item_names = set(item_map.keys())
-    purged_items: List[QuarantineItem] = []
+    purged_ids = set()
     
     for entry in quarantine_root.iterdir():
-        if entry.name in item_names:
+        if entry.name in item_map:
             item = item_map[entry.name]
             if entry.exists() and _is_item_purgable(entry, item, quarantine_root):
                 if _safe_unlink(entry):
-                    purged_items.append(item)
+                    purged_ids.add(item.item_id)
             
-    if purged_items:
-        purged_ids = {p.item_id for p in purged_items}
+    if purged_ids:
         remaining_items = [i for i in load_manifest(base, force_reload=True) if i.item_id not in purged_ids]
         save_manifest(remaining_items, base)
         
-    return len(purged_items)
+    return len(purged_ids)
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:

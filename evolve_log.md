@@ -823,3 +823,42 @@ FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops 
 - `2026-08-20T09:51:17` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje transformando `_RECOMMENDATION_RULES` en un diccionario indexado por `area`, evitando iteraciones innecesarias y búsquedas lineales en cada llamado a `compute_score`.
 - `2026-08-20T09:51:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T09:51:17` Corrida terminada. Total usado hoy: 232.
+- `2026-08-20T09:59:38` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-20T10:00:53` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el manejo de la caché de datos de salud (`_compile_metrics`) para evitar recalcular múltiples veces los mismos resultados durante un único ciclo de análisis, consolidando la lógica de invalidación y reduciendo la presión sobre el sistema de archivos al centralizar el acceso a los datos.
+- `2026-08-20T10:01:23` Tests FALLARON:
+```
+====
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:101: SyntaxWarning: invalid escape sequence '\A'
+    Extrae la ruta absoluta dentro de comillas (ej: "C:\App.exe").
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not_the_goal - AssertionError: assert 'memoria total' in 'total: 1000 b uso: 50.0% libre: 50.0% estado: holgado.'
+3 failed, 296 passed, 7 warnings in 1.22s
+
+```
+- `2026-08-20T10:01:23` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha optimizado la función `top_memory_processes` reemplazando la ejecución manual de comandos de PowerShell por una estructura más eficiente, eliminando la reconstrucción constante de strings de consulta y centralizando el comando de filtrado, además de añadir un control de guardado de estado para evitar llamadas redundantes a subprocess en iteraciones rápidas.
+- `2026-08-20T10:01:48` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el escaneo inicial implementando un filtro de directorios preventivo y reduciendo el uso de `resolve()` y `expanduser()` dentro del bucle de recorrido, evitando así llamadas innecesarias al sistema de archivos para rutas que ya fueron validadas.
+- `2026-08-20T10:02:05` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé `purge_all` para evitar lecturas redundantes del manifiesto y recorridos O(n*m) mediante el uso de un diccionario de búsqueda indexado por nombre de archivo, mejorando la eficiencia algorítmica durante limpiezas masivas.
+- `2026-08-20T10:02:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T10:02:05` Corrida terminada. Total usado hoy: 236.

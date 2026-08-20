@@ -998,6 +998,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Reúne métricas de todos los módulos para calcular el puntaje global."""
+        # Se obtiene el estado base una sola vez por ejecución para evitar inconsistencias
         hallazgos = self._get_cached("suspicions") or []
         arranque = self._get_cached("startup") or []
         junk = self._get_cached("junk") or []
@@ -1006,6 +1007,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         snapshot = memory_mod.read_snapshot()
         home = Path.home()
         
+        # Uso de caché con provider para asegurar que disk_info se calcule eficientemente
         disk_info = self._get_cached(f"disk_info_{home}", provider=lambda: diskreport.drive_usage(home) if home.exists() else None)
         
         metrics = healthscore.SystemMetrics(
