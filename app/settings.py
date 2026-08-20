@@ -253,7 +253,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Persiste configuración de forma atómica. Falla silenciosamente si no es posible escribir."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    if not _Validators._is_safe_path(str(ruta.parent)): return None
+    # Refuerzo: validar parent directory antes de cualquier acceso de escritura
+    if not _Validators._is_safe_path(str(ruta.parent.resolve(strict=False))): return None
     
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
