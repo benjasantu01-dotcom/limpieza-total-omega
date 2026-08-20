@@ -1478,3 +1478,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-20T04:24:44` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scan_directory` validando la entrada y los resultados intermedios de `path.resolve()` mediante un manejo de excepciones más específico, evitando que un error de sistema detenga el flujo antes de iniciar.
 - `2026-08-20T04:24:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T04:24:44` Corrida terminada. Total usado hoy: 104.
+- `2026-08-20T04:33:04` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-08-20T04:33:35` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de la validación de archivos JSON al reemplazar el bloque `try-except` genérico en la función `load` por capturas específicas y un manejo de estados intermedios más seguro, evitando que un archivo JSON mal formado o un error inesperado de I/O bloquee la aplicación.
+- `2026-08-20T04:34:13` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-20T04:35:06` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): el archivo se encogió al 49% del original (posible pérdida de código)
+- `2026-08-20T04:35:37` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-08-20T04:35:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T04:35:37` Corrida terminada. Total usado hoy: 108.

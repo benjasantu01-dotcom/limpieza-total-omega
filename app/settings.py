@@ -130,12 +130,10 @@ class _Validators:
         """Verifica restricciones de seguridad en la estructura de una ruta dada."""
         try:
             path_obj = Path(path_str)
-            # resolved expande symlinks/junctions; prevenimos acceso si resuelven fuera de lo permitido
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return False
             if is_protected_path(str(resolved)): return False
-            # Validamos el componente base para asegurar que la ruta resuelta no escale jerarquías
             return is_safe_to_modify(str(resolved))
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
@@ -165,12 +163,10 @@ class _Validators:
         """Valida que una ruta sea absoluta, existente/creable y considerada segura."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        # Rechazar explícitamente caracteres de control y secuencias de escape de directorio
         if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
-            # Asegurar consistencia entre la ruta dada y su resolución real para evitar engaños de path
             resolved = path_obj.resolve(strict=False)
             if not str(resolved).startswith(str(path_obj.anchor)): return None
             path_str = str(resolved)
@@ -238,12 +234,15 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Lee y valida la configuración desde el disco, usando caché de sesión."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
+    
     try:
         if not ruta.exists(): return _get_default_config()
         stats = ruta.stat()
+        
         if ruta_str in _SESSION_CACHE:
             cached_mtime, cached_data = _SESSION_CACHE[ruta_str]
             if cached_mtime == stats.st_mtime: return cached_data
+            
         if stats.st_size > MAX_SETTINGS_SIZE or not _Validators._is_safe_path(ruta_str):
             return _get_default_config()
         
@@ -251,10 +250,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = json.load(f)
             
         if not isinstance(data, dict): return _get_default_config()
+        
         config = validate(data)
         _SESSION_CACHE[ruta_str] = (stats.st_mtime, config)
         return config
-    except (OSError, PermissionError, json.JSONDecodeError, ValueError, TypeError):
+        
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return _get_default_config()
+    except (OSError, PermissionError):
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:

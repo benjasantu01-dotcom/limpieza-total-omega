@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 29
+- Mejoras aceptadas: **211** (41.9% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 232
+- Sin respuesta de la IA (error o límite): 234
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-18 | 24 | 1 | 3 | 1 | 21 |
+| 2026-08-18 | 21 | 0 | 3 | 1 | 21 |
 | 2026-08-19 | 141 | 11 | 19 | 13 | 166 |
-| 2026-08-20 | 48 | 3 | 7 | 1 | 45 |
+| 2026-08-20 | 49 | 3 | 8 | 1 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **49**
+- manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **44**
 - legibilidad y documentación: **41**
 - robustez ante casos límite: **40**
-- rendimiento: **39**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **22**
 - `assistant.py`: **22**
-- `settings.py`: **21**
 - `diskreport.py`: **20**
-- `duplicates.py`: **19**
-- `healthscore.py`: **19**
 - `organizer.py`: **19**
 - `scanner.py`: **18**
-- `main.py`: **16**
+- `duplicates.py`: **18**
+- `healthscore.py`: **18**
 - `quarantine.py`: **15**
+- `main.py`: **15**
 - `browser.py`: **14**
 - `memory.py`: **11**
 - `branding.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-20T04:33:35` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la validación de archivos JSON al reemplazar el bloque `try-except` genérico en la función `load` por capturas específicas y un manejo de estados intermedios más seguro, evitando que un archivo JSON mal formado o un error inesperado de I/O bloquee la aplicación.
 - `2026-08-20T04:24:44` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` validando la entrada y los resultados intermedios de `path.resolve()` mediante un manejo de excepciones más específico, evitando que un error de sistema detenga el flujo antes de iniciar.
 - `2026-08-20T04:24:26` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `ensure_safe_to_modify` para prevenir condiciones de carrera y fallos silenciosos al integrar comprobaciones de estado de archivo más rigurosas.
 - `2026-08-20T04:23:27` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` para manejar errores de permiso con mayor granularidad, asegurando que si no podemos determinar el estado de acceso del archivo, se asuma preventivamente como bloqueado para evitar operaciones fallidas en el sistema de archivos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T02:32:26` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.path` y `_Validators._is_safe_path` para garantizar que la resolución de rutas mediante `path.resolve(strict=False)` no sea vulnerada por enlaces simbólicos o junctions que apunten fuera de los directorios permitidos, previniendo el "path traversal" incluso si el usuario intenta configurar una ruta malintencionada.
 - `2026-08-20T02:22:44` **organizer.py** (seguridad defensiva): Se ha implementado un chequeo adicional en `_is_safe_for_disk_op` para validar explícitamente que la ruta de destino no sea una subcarpeta del origen, evitando así operaciones de movimiento lógico o físico que podrían corromper la jerarquía de archivos o inducir errores de recursión profunda en sistemas de archivos complejos.
 - `2026-08-20T02:22:19` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` asegurando que el buffer de memoria sea gestionado y validado correctamente antes de intentar convertirlo a string, evitando lecturas fuera de rango o manipulación insegura de punteros en la interacción con la API de Windows.
-- `2026-08-20T02:21:46` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` al reemplazar accesos directos a rutas en métodos asíncronos (`on_scan_junk`, `on_find_duplicates`) por una validación explícita mediante `ensure_safe_to_modify` dentro del `worker_thread_logic`, asegurando que cualquier operación sobre archivos verifique la integridad de la ruta incluso si la UI intentó validarla previamente, y protegiendo el punto de entrada de la app mediante un check de integridad del directorio de trabajo.
