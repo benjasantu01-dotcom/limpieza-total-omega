@@ -1175,8 +1175,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Verificación de seguridad previa al borrado
+            base_dir = Path(".").resolve()
+            if not base_dir.exists() or not safety.is_safe_to_modify(base_dir):
+                self.log("Error: La carpeta de revisión no es accesible o es insegura.", "Limpieza")
+                return
+            
             try:
-                safety.ensure_safe_to_modify(Path(".").resolve())
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()
                 self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza")

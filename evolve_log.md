@@ -1178,3 +1178,10 @@ FAILED evolve/tests/test_modules.py::test_entries_from_folders_on_missing_folder
 - `2026-08-20T01:32:01` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-20T01:32:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-20T01:32:01` Corrida terminada. Total usado hoy: 36.
+- `2026-08-20T01:39:41` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-08-20T01:40:08` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-20T01:41:21` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta en el método `on_delete_reviewed` para garantizar que la carpeta de revisión sea una ruta válida y segura antes de intentar cualquier operación de borrado, evitando fallos si el directorio no existe o fue manipulado externamente.
+- `2026-08-20T01:41:58` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta en `_parse_csv_row` para manejar fallos en la división de cadenas y entradas malformadas, evitando que el proceso de parsing del CSV se interrumpa ante datos inesperados del sistema, mejorando así la resiliencia del módulo ante procesos con nombres complejos o caracteres no estándar.
+- `2026-08-20T01:42:17` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `organizer.py` ante errores de entrada y condiciones de carrera, integrando validaciones de tipo y estructura más estrictas para prevenir que rutas inexistentes o malformadas interrumpan el proceso de escaneo o limpieza.
+- `2026-08-20T01:42:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-20T01:42:17` Corrida terminada. Total usado hoy: 40.

@@ -93,6 +93,7 @@ def _is_junction(path: Path) -> bool:
     Retorna True si la ruta es un vínculo simbólico o un punto de unión de Windows.
     """
     try:
+        if not path.exists(): return False
         return path.is_symlink() or (os.name == "nt" and "reparse" in os.stat(path).st_file_attributes)
     except (OSError, AttributeError):
         return False
@@ -118,6 +119,7 @@ def _generate_unique_target(target: Path) -> Path:
     
     while (candidate := parent / f"{stem}_{counter}{suffix}").exists():
         counter += 1
+        if counter > 999: break # Safety break
     return candidate
 
 
@@ -140,7 +142,12 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """Valida que la operación no cause recursión accidental (ej. mover un padre a un hijo)."""
-    return src == dest or src == dest.parent or dest in src.parents
+    try:
+        src_abs = src.resolve()
+        dest_abs = dest.resolve()
+        return src_abs == dest_abs or src_abs == dest_abs.parent or dest_abs in src_abs.parents
+    except (OSError, RuntimeError):
+        return True
 
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
@@ -148,14 +155,14 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     try:
         if not src.exists() or not src.is_file() or _is_junction(src):
             return False
-        if os.name == "nt" and hasattr(src.stat(), 'st_file_attributes') and (src.stat().st_file_attributes & 0x40):
+        # Verificación estricta de atributos de archivo en Windows
+        if os.name == "nt":
+            attrs = src.stat().st_file_attributes
+            if (attrs & 0x02) or (attrs & 0x04) or (attrs & 0x40):
+                return False
+        if _is_recursive_violation(src, dest):
             return False
-        src_abs, dest_abs = src.resolve(), dest.resolve()
-        if _is_recursive_violation(src_abs, dest_abs):
-            return False
-        if os.name == "nt" and hasattr(src_abs.stat(), 'st_file_attributes') and (src_abs.stat().st_file_attributes & 0x06):
-            return False
-        return is_safe_to_modify(src_abs) and is_safe_to_modify(dest_abs) and not _is_file_locked(src_abs)
+        return is_safe_to_modify(src.resolve()) and is_safe_to_modify(dest.resolve()) and not _is_file_locked(src)
     except (OSError, RuntimeError, AttributeError):
         return False
 
@@ -163,20 +170,25 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Valida la seguridad del movimiento, asegurando que ni origen ni destino estén protegidos."""
     if not isinstance(junk_file, JunkFile): return False
-    current_path = junk_file.path
-    dest_abs = dest.resolve()
-    if is_protected_path(current_path) or is_protected_path(dest_abs):
+    try:
+        current_path = junk_file.path
+        if is_protected_path(current_path) or is_protected_path(dest.resolve()):
+            return False
+        if not _is_safe_for_disk_op(current_path, dest):
+            return False
+        if current_path.anchor != dest.resolve().anchor:
+            return False
+        return True
+    except (OSError, RuntimeError):
         return False
-    if not _is_safe_for_disk_op(current_path, dest_abs):
-        return False
-    if current_path.anchor != dest_abs.anchor:
-        return False
-    return True
 
 
 def _is_valid_junk_candidate(path: Path) -> bool:
     """Determina si un archivo es un candidato legítimo para ser clasificado como basura."""
-    return _is_junk_path(path) and is_safe_to_modify(path) and not _is_junction(path)
+    try:
+        return _is_junk_path(path) and is_safe_to_modify(path) and not _is_junction(path) and path.is_file()
+    except (OSError, RuntimeError):
+        return False
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
@@ -193,7 +205,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             
             for root, dirs, files in os.walk(base):
                 root_path: Path = Path(root)
-                # Modificamos la lista in-place para podar el árbol de búsqueda
                 dirs[:] = [dn for dn in dirs if _is_allowed_directory(dn) and not _is_junction(root_path / dn)]
                 
                 for name in files:
@@ -241,14 +252,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             src_path: Path = junk_file.path.resolve()
             if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base):
                 continue
-            if shutil.disk_usage(dest_base).free <= junk_file.size_bytes:
-                continue
-                
+            
             target: Path = _generate_unique_target(dest_base / f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}")
-            if not target.resolve().is_relative_to(dest_base):
-                continue
+            
             ensure_safe_to_modify(src_path)
-            ensure_safe_to_modify(target)
             if src_path.exists():
                 shutil.move(str(src_path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
@@ -271,15 +278,14 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if not item or not item.exists() or not item.is_file() or _is_junction(item):
+            if not item.is_file() or _is_junction(item):
                 continue
             resolved_item: Path = item.resolve()
             if resolved_item.is_relative_to(dest) and is_safe_to_modify(resolved_item):
                 if not _is_file_locked(resolved_item):
                     ensure_safe_to_modify(resolved_item)
-                    if resolved_item.exists():
-                        resolved_item.unlink()
-                        count += 1
+                    resolved_item.unlink()
+                    count += 1
         except (PermissionError, OSError, ValueError):
             continue
     return count

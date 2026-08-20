@@ -188,14 +188,14 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     if not line or "," not in line:
         return None
     
-    parts = line.split(",")
+    parts = line.rsplit(",", 2)
     if len(parts) < 3:
         return None
         
     try:
-        ws_raw = parts[-1].strip().strip("'\"")
-        pid_raw = parts[-2].strip().strip("'\"")
-        name = ",".join(parts[:-2]).strip().strip("'\"")
+        ws_raw = parts[2].strip().strip("'\"")
+        pid_raw = parts[1].strip().strip("'\"")
+        name = parts[0].strip().strip("'\"")
         
         if not name or not ws_raw.isdigit() or not pid_raw.isdigit():
             return None
