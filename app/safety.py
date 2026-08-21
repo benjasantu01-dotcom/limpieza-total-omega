@@ -48,6 +48,7 @@ class ProtectionReason(Enum):
     IN_USE = "en uso"
     SYSTEM_HIDDEN = "sistema/oculto"
     HARD_LINK = "hard link detectado"
+    SYMLINK = "enlace simbólico detectado"
     ADS = "ADS (flujos alternativos)"
     EMPTY_FILE = "archivo vacío"
     EXCESSIVE_DEPTH = "profundidad excesiva"
@@ -193,6 +194,8 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}.")
     if _is_reparse_point(path):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.REPARSE_POINT.value}.")
+    if os.path.islink(path):
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.SYMLINK.value}.")
     if not bool(st.st_mode & stat.S_IWRITE):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.READ_ONLY.value}.")
     if _is_file_in_use(path):
@@ -410,6 +413,7 @@ def describe_protection(path: PathLike) -> str:
     if p.exists():
         if len(p.parts) > 64: return f"'{p}' profundidad excesiva."
         if not os.access(p, os.W_OK): return f"'{p}' sin permisos de escritura."
+        if os.path.islink(p): return f"'{p}' es un enlace simbólico."
         if _is_readonly(p): return f"'{p}' es solo lectura."
         if _is_file_in_use(p): return f"'{p}' en uso por otro proceso."
         if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema."

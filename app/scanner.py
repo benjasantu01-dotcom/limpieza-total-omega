@@ -162,7 +162,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if path is None or is_protected_path(path):
         return None
     
-    # Verificación eficiente: comprobar existencia en padres sin generar sets intermedios innecesarios
     if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         return None
         
@@ -241,8 +240,11 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry is not None:
-                        scanner.process_entry(entry, stack)
+                    try:
+                        if entry is not None:
+                            scanner.process_entry(entry, stack)
+                    except Exception as e:
+                        logger.debug(f"Error procesando entrada individual: {e}")
         except (PermissionError, OSError) as e:
             logger.debug(f"Error accediendo a directorio {current_dir}: {e}")
             continue

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 225
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 8 | 0 | 1 | 0 | 33 |
+| 2026-08-19 | 8 | 0 | 1 | 0 | 29 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 49 | 4 | 7 | 4 | 48 |
+| 2026-08-21 | 51 | 4 | 7 | 5 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
 - rendimiento: **42**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **39**
 - seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
@@ -37,16 +37,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
 - `main.py`: **15**
 - `branding.py`: **10**
 - `startup.py`: **9**
-- `safety.py`: **7**
+- `safety.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T04:53:35` **scanner.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `Scanner.process_entry` y `scan_directory` ante casos límite como rutas de longitud excesiva o entradas bloqueadas por el sistema operativo, utilizando el bloque `try-except` de manera más granular para evitar que una sola falla en un archivo detenga el escaneo completo.
+- `2026-08-21T04:53:09` **safety.py** (robustez ante casos límite): Se introdujo la verificación `os.path.islink(p)` dentro de `_check_file_integrity` para detectar enlaces simbólicos a nivel de archivo (además de los reparse points a nivel de directorio), mitigando riesgos de manipulación externa no intencionada sobre enlaces.
 - `2026-08-21T04:34:29` **main.py** (robustez ante casos límite): Se introdujo un manejo robusto de excepciones y validación de estado en los métodos de renderizado de la interfaz (`_render_gauge`, `actualizar`) y en los callbacks de la UI, asegurando que la aplicación no intente interactuar con widgets que hayan sido destruidos durante un cierre prematuro o cambio de pestañas, fortaleciendo así la resiliencia ante condiciones de carrera en el hilo principal.
 - `2026-08-21T04:32:48` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo explícito en `walk_files` para manejar `PermissionError` y `OSError` al intentar acceder al `stat()` de un archivo, evitando que una excepción durante la iteración detenga prematuramente el proceso de escaneo y asegurando robustez ante archivos bloqueados o con permisos denegados.
 - `2026-08-21T04:23:54` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo recursivo mediante la validación del estado del enlace (`is_symlink` / `isjunction`) antes de procesar cada entrada en `_walk`, evitando intentos innecesarios de `stat()` sobre rutas que podrían ser puntos de reparse inestables o inaccesibles, mejorando la tolerancia ante errores de permiso y estructuras de carpetas profundas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T03:52:59` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` para evitar llamadas redundantes a `path.resolve()` y `path.is_file()`, reduciendo drásticamente las llamadas al sistema de archivos (syscalls) innecesarias en el bucle principal de escaneo.
 - `2026-08-21T03:52:34` **diskreport.py** (rendimiento): Optimicé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso intensivo de `relative_to` dentro del loop de procesamiento, realizando la agregación directamente sobre la estructura de datos para reducir el costo computacional por archivo.
 - `2026-08-21T03:43:40` **branding.py** (rendimiento): Optimicé el cálculo de `PALETTE_RGB` y `HEX_TO_KEY` eliminando la creación de diccionarios intermedios innecesarios y simplificando la lógica de mapeo para mejorar la eficiencia en la carga inicial y el acceso a datos.
-- `2026-08-21T03:42:19` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del código documentando las responsabilidades de los métodos en `StartupEntry` y estandarizando los type hints para asegurar que los desarrolladores entiendan las restricciones de seguridad al extender la lógica de resolución de rutas.
-- `2026-08-21T03:33:24` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en todas las funciones y se han reforzado los type hints para asegurar una mayor claridad en el flujo de datos de los hallazgos.

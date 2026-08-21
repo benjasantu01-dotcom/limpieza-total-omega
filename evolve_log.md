@@ -744,3 +744,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T04:44:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
 - `2026-08-21T04:44:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T04:44:07` Corrida terminada. Total usado hoy: 112.
+- `2026-08-21T04:52:38` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-21T04:53:09` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `os.path.islink(p)` dentro de `_check_file_integrity` para detectar enlaces simbólicos a nivel de archivo (además de los reparse points a nivel de directorio), mitigando riesgos de manipulación externa no intencionada sobre enlaces.
+- `2026-08-21T04:53:35` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de errores en `Scanner.process_entry` y `scan_directory` ante casos límite como rutas de longitud excesiva o entradas bloqueadas por el sistema operativo, utilizando el bloque `try-except` de manera más granular para evitar que una sola falla en un archivo detenga el escaneo completo.
+- `2026-08-21T04:54:12` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez ante la carga de configuraciones al implementar un manejo explícito de errores de lectura de disco y de validación de JSON mediante una estrategia de respaldo atómico, asegurando que la aplicación siempre mantenga un estado operativo incluso si el archivo `config.json` es inaccesible o está parcialmente corrompido durante la ejecución.
+- `2026-08-21T04:54:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-21T04:54:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T04:54:41` Corrida terminada. Total usado hoy: 116.
