@@ -226,7 +226,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if key in self._debounces:
             try:
                 self.after_cancel(self._debounces[key])
-            except Exception:
+            except (tk.TclError, Exception):
                 pass
         if not self._closing:
             try:
@@ -536,8 +536,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                    font=("Segoe UI", branding.font_size("display"), "bold"))
             self.gauge.create_text(88, 116, text=f"nota {grade}", fill=color_nota,
                                    font=("Segoe UI", branding.font_size("body"), "bold"))
-        except Exception as e:
-            logging.error("Error al renderizar gauge: %s", e)
+        except (Exception, tk.TclError):
+            pass
 
     def _build_tab_limpieza(self) -> None:
         """Construye la interfaz de limpieza: búsqueda, revisión y borrado de basura."""
@@ -1082,34 +1082,38 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def actualizar() -> None:
             if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
-            self._draw_gauge(resultado.score, resultado.grade)
-
-            valores = {
-                "basura": f"{junk_mb:.0f} MB",
-                "sospechosos": str(sospechosos),
-                "ram": f"{ram_libre:.0f}%",
-                "disco": f"{disco_libre:.0f}%",
-            }
-            colores = {
-                "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
-                "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
-                "ram": branding.score_color(ram_libre * 3),
-                "disco": branding.score_color(disco_libre * 5),
-            }
             
-            for clave, label in self.cards.items():
-                if label.winfo_exists():
-                    label.configure(text=valores[clave], text_color=colores[clave])
+            try:
+                self._draw_gauge(resultado.score, resultado.grade)
 
-            for clave, (barra, label) in self.area_bars.items():
-                if barra.winfo_exists():
-                    puntos = resultado.breakdown.get(clave, 0)
-                    maximo = healthscore.WEIGHTS.get(clave, 1)
-                    proporcion = puntos / maximo if maximo else 0
-                    c = branding.score_color(proporcion * 100)
-                    barra.configure(progress_color=c)
-                    barra.set(proporcion)
-                    label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
+                valores = {
+                    "basura": f"{junk_mb:.0f} MB",
+                    "sospechosos": str(sospechosos),
+                    "ram": f"{ram_libre:.0f}%",
+                    "disco": f"{disco_libre:.0f}%",
+                }
+                colores = {
+                    "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
+                    "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
+                    "ram": branding.score_color(ram_libre * 3),
+                    "disco": branding.score_color(disco_libre * 5),
+                }
+                
+                for clave, label in self.cards.items():
+                    if label.winfo_exists():
+                        label.configure(text=valores[clave], text_color=colores[clave])
+
+                for clave, (barra, label) in self.area_bars.items():
+                    if barra.winfo_exists():
+                        puntos = resultado.breakdown.get(clave, 0)
+                        maximo = healthscore.WEIGHTS.get(clave, 1)
+                        proporcion = puntos / maximo if maximo else 0
+                        c = branding.score_color(proporcion * 100)
+                        barra.configure(progress_color=c)
+                        barra.set(proporcion)
+                        label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
+            except (tk.TclError, Exception):
+                pass
 
         self._safe_run_ui_callback(actualizar)
 

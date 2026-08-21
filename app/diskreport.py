@@ -236,7 +236,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                         
                         entry_path = Path(entry.path).resolve()
-                        # Defensa: asegurar que no escapamos del directorio base tras resolución de rutas
                         if base_path not in entry_path.parents and entry_path != base_path:
                             continue
                         
