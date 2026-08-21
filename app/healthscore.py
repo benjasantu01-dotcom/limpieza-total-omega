@@ -202,11 +202,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     final_score: int = 0
     
     for area, weight in _WEIGHT_ITEMS_INT:
-        ratio = _SCORERS[area](metrics) if area in _SCORERS else 0.0
-        clamped_ratio = _clamp(ratio, 0.0, 1.0)
-        ratios[area] = clamped_ratio
+        scorer = _SCORERS.get(area)
+        ratio = scorer(metrics) if scorer else 0.0
+        ratios[area] = ratio
         
-        puntos = int(round(clamped_ratio * weight))
+        puntos = int(round(ratio * weight))
         breakdown[area] = puntos
         final_score += puntos
     

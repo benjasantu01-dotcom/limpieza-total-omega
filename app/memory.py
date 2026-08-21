@@ -260,7 +260,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         return []
 
     if (time.time() - _last_proc_fetch) > 30:
-        # Comando PowerShell para extraer procesos y su WorkingSet
         cmd = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 Name,Id,WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
         try:
             proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)

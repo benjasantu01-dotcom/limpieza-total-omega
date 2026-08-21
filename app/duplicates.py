@@ -108,6 +108,7 @@ def _collect_candidates(
     """Recorre recursivamente los directorios buscando candidatos a duplicados."""
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
+    processed_paths: set[Path] = set()
 
     def _scan(root_path: Path) -> None:
         try:
@@ -115,6 +116,9 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         p_entry = Path(entry.path)
+                        if p_entry in processed_paths: continue
+                        processed_paths.add(p_entry)
+
                         # Regla de seguridad: omitir rutas protegidas o inseguras
                         if skip_protected and (is_protected_path(p_entry) or not is_safe_to_modify(p_entry)):
                             continue
@@ -135,7 +139,7 @@ def _collect_candidates(
 
     for item in directories:
         if item:
-            p_item = Path(item)
+            p_item = Path(item).resolve()
             if p_item.is_dir() and not is_protected_path(p_item):
                 _scan(p_item)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
