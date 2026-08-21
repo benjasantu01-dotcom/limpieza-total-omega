@@ -203,6 +203,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos de forma iterativa.
+    
+    Args:
+        directory: Ruta base para comenzar el recorrido.
+        skip_protected: Si es True, utiliza `is_protected_path` para evitar carpetas del sistema.
+        
+    Yields:
+        Tuplas conteniendo la ruta absoluta (Path) y el tamaño en bytes (int) de cada archivo.
     """
     if not directory:
         return
@@ -299,6 +306,14 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Identifica las subcarpetas de primer nivel que ocupan más espacio.
+    
+    Args:
+        directory: Ruta raíz a analizar.
+        limit: Número máximo de carpetas a listar.
+        skip_protected: Si debe ignorar rutas protegidas durante la exploración.
+        
+    Returns:
+        Lista de objetos FolderUsage con datos agregados de los hijos directos.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -310,7 +325,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(base, skip_protected):
             try:
-                # Defensa: validar relacionalidad estricta para evitar escape de scope
+                # Defensa: validar relacionalidad estricta con la base para aislar las 
+                # subcarpetas directas (primer nivel) y evitar fugas de lógica.
                 if base in path.parents or path == base:
                     relative = path.relative_to(base)
                     if len(relative.parts) > 0:

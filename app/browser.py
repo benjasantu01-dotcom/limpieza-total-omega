@@ -114,6 +114,10 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
     """
     Verifica si 'target_path' reside efectivamente dentro de 'base_path' evitando 
     ataques de path traversal, symlinks o junctions inseguros.
+    
+    Args:
+        target_path: La ruta a validar.
+        base_path: La carpeta raíz permitida.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -142,7 +146,10 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Verifica si un nombre de archivo está en la lista negra de componentes críticos (NEVER_TOUCH)."""
+    """
+    Verifica si un nombre de archivo está en la lista negra de componentes críticos (NEVER_TOUCH).
+    La comparación se realiza en minúsculas para normalizar el caso.
+    """
     if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
@@ -200,6 +207,12 @@ def _sum_directory_recursive(
     Ejecuta un recorrido recursivo con límite de profundidad (MAX_SCAN_DEPTH)
     para sumar el peso de archivos, usando un diccionario de memoización para
     evitar re-procesar subdirectorios ya visitados.
+    
+    Args:
+        root_dir: Ruta inicial del escaneo.
+        is_junction_fn: Función para detectar enlaces simbólicos de directorio.
+        kernel32: Instancia de ctypes de Windows o None.
+        memo: Caché de resultados (diccionario) para optimizar el rendimiento.
     """
     if not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -270,7 +283,10 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Valida si un candidato es una ruta de caché existente y segura dentro de la base."""
+    """
+    Valida si un candidato es una ruta de caché existente y segura dentro de la base.
+    Asegura que el directorio sea de caché y que no contenga elementos prohibidos.
+    """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
@@ -285,8 +301,11 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea las ubicaciones base buscando las rutas de caché definidas.
+    Escanea las ubicaciones base buscando las rutas de caché definidas en cache_paths.
     Utiliza inyección de dependencias para permitir pruebas en entornos CI.
+
+    Returns:
+        Lista de objetos BrowserCache encontrados, ordenados por tamaño descendente.
     """
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -328,7 +347,10 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera un reporte legible por humanos de las cachés encontradas y su peso."""
+    """
+    Genera un reporte legible por humanos de las cachés encontradas y su peso.
+    Si no se pasan cachés, las detecta automáticamente.
+    """
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

@@ -8,13 +8,6 @@ GLOSARIO VISUAL:
   - Accent: Colores de marca para llamados a la acción o elementos destacados.
   - Glow: Efectos de iluminación sutil para resaltar estados de salud.
   - Severity: Código cromático para niveles de riesgo (OK, Info, Warning, Danger).
-
-Referencia de funciones gráficas para el layout:
-  - `draw_logo(...)`: Renderiza el escudo/omega en widgets Tkinter.
-  - `draw_ring(...)`: Medidor circular de estado (HealthScore).
-  - `draw_gradient_bar(...)`: Franja decorativa de alta fidelidad.
-  - `bar(...)`: Generador de texto para paneles de consola/reporte.
-  - `logo_svg(...)`: Serializador de identidad para exportación.
 """
 
 from __future__ import annotations
@@ -30,7 +23,6 @@ SeverityLevel: TypeAlias = Literal["ok", "info", "warning", "danger"]
 GradeKey: TypeAlias = Literal["A", "B", "C", "D", "F"]
 SeverityStyle: TypeAlias = Tuple[HexColor, str]  # (Color, Etiqueta)
 RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
-PointCoords: TypeAlias = List[float]  # Lista plana [x1, y1, x2, y2, ...]
 
 class PaletteDict(TypedDict):
     """Contrato de claves requerido para la paleta cromática completa."""
@@ -72,7 +64,7 @@ APP_SHORT_NAME: Final[str] = "Omega"
 APP_TAGLINE: Final[str] = "Limpieza y seguridad, en un solo lugar"
 APP_VERSION: Final[str] = "2.1.0"
 
-# UI_FONT_FAMILY: Fuente base definida para compatibilidad con el sistema operativo
+# Estilos de fuente base
 UI_FONT_FAMILY: Final[str] = "Segoe UI"
 UI_FONT_BOLD: Final[str] = "bold"
 
@@ -110,7 +102,7 @@ PALETTE_RGB: Final[Mapping[str, RGBTuple]] = MappingProxyType({
 HEX_TO_KEY: Final[Mapping[HexColor, str]] = MappingProxyType({v: k for k, v in PALETTE.items()})
 
 # FONT_SIZES: Definición de tamaños de fuente aplicados en la jerarquía visual
-FONT_SIZES: FONT_SIZES_T = {
+FONT_SIZES: Final[FontSizesDict] = {
     "display": 46,
     "title": 26,
     "subtitle": 13,
@@ -119,7 +111,6 @@ FONT_SIZES: FONT_SIZES_T = {
     "mono": 11,
     "caption": 10,
 }
-FontSizesDict: TypeAlias = FontSizesDict # workaround for type checker
 
 # SEVERITY_STYLES: Configuración semántica para estados críticos del sistema
 SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType({
@@ -161,18 +152,15 @@ def app_title() -> str:
     """Retorna el nombre completo de la aplicación con la versión actual."""
     return f"{APP_NAME} v{APP_VERSION}"
 
-
 @lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
     """Obtiene el código HEX de la paleta por nombre de clave; usa gris como fallback."""
     return PALETTE.get(name, "#808080")
 
-
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:
     """Recupera el tamaño de fuente jerárquico por nombre; utiliza 'body' como defecto."""
     return FONT_SIZES.get(name, FONT_SIZES["body"])
-
 
 @lru_cache(maxsize=32)
 def icon(section: Optional[str]) -> str:
@@ -181,28 +169,24 @@ def icon(section: Optional[str]) -> str:
         return "\u2022"
     return ICONS.get(section.strip(), "\u2022")
 
-
 @lru_cache(maxsize=32)
 def tab_label(section: str) -> str:
     """Compone la etiqueta para pestañas: Ícono seguido de nombre de sección."""
     return f"{icon(section)}  {section}"
 
-
 @lru_cache(maxsize=16)
 def severity_color(severity: Optional[str]) -> HexColor:
     """Retorna el color HEX para un nivel de severidad dado."""
-    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
+    if severity and (style := SEVERITY_STYLES.get(severity.lower())): # type: ignore
         return style[0]
     return PALETTE["text_muted"]
-
 
 @lru_cache(maxsize=16)
 def severity_label(severity: Optional[str]) -> str:
     """Traduce el nivel de severidad a una etiqueta amigable para el usuario."""
-    if severity and (style := SEVERITY_STYLES.get(severity.lower())):
+    if severity and (style := SEVERITY_STYLES.get(severity.lower())): # type: ignore
         return style[1]
     return severity.upper() if (severity and severity.strip()) else "Desconocido"
-
 
 def severity_icon(severity: Optional[str]) -> str:
     """Selecciona el glifo correspondiente al estado de riesgo."""
@@ -211,14 +195,12 @@ def severity_icon(severity: Optional[str]) -> str:
         return "\u2022"
     return simbolos.get(severity.lower(), "\u2022")
 
-
 @lru_cache(maxsize=16)
 def grade_color(grade: Optional[str]) -> HexColor:
     """Retorna el color de grado académico (A-F) solicitado."""
     if isinstance(grade, str) and grade.strip():
         return GRADE_COLORS.get(grade.upper()[0], PALETTE["text_muted"])
     return PALETTE["text_muted"]
-
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
@@ -246,7 +228,6 @@ def score_color(score: Union[float, int, None]) -> HexColor:
             
     return PALETTE["danger"]
 
-
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
@@ -258,7 +239,6 @@ def bar(percent: Union[float, int, None], width: int = 24,
         return filled * llenos + empty * (ancho - llenos)
     except (TypeError, ValueError):
         return empty * max(1, int(width))
-
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
@@ -274,7 +254,6 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     except ValueError:
         return (0, 0, 0)
 
-
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """Realiza una mezcla lineal (lerp) entre dos colores HEX."""
@@ -286,7 +265,6 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
         int(g1 + (g2 - g1) * ratio_clamped),
         int(b1 + (b2 - b1) * ratio_clamped),
     )
-
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
@@ -303,7 +281,6 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
         res[i] = blend(stops[idx], stops[idx + 1], pos - idx) if idx < tramos else stops[-1]
     return tuple(res)
 
-
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
     """Agrupa colores consecutivos idénticos para reducir la complejidad de dibujo."""
@@ -317,13 +294,11 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor,
     segments.append((colors[start], start, len(colors)))
     return tuple(segments)
 
-
 @lru_cache(maxsize=8)
 def _get_shield_coords(s: float) -> List[float]:
     """Calcula las coordenadas de los vértices del escudo con escalado aplicado."""
     base: List[float] = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return [v * float(s) for v in base]
-
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
@@ -352,7 +327,6 @@ def logo_svg(size: int = 128) -> str:
 </svg>
 """
 
-
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo SVG tras validaciones de seguridad."""
     if not destination: return None
@@ -375,7 +349,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     except (OSError, PermissionError, ValueError, TypeError, AttributeError):
         return None
 
-
 def logo_ascii() -> str:
     """Devuelve la versión tipográfica ASCII para terminales."""
     return r"""
@@ -385,7 +358,6 @@ def logo_ascii() -> str:
   \___/|_|  |_|___\___/_/ \_\
       Limpieza Total Omega
 """
-
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Dibuja los segmentos degradados internos dentro del polígono del escudo."""
@@ -403,7 +375,6 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
             canvas_x + 64 * scale + w, y_fin + 1, 
             fill=color_hex, outline=""
         )
-
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Renderiza el escudo corporativo en un widget Canvas de Tkinter."""
@@ -428,7 +399,6 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError):
         pass
 
-
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
@@ -440,7 +410,6 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
         for color_hex, start, end in _get_grouped_segments(colores):
             canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
-
 
 def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
