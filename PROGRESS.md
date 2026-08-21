@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 161 | 11 | 23 | 5 | 144 |
-| 2026-08-21 | 60 | 6 | 8 | 6 | 80 |
+| 2026-08-20 | 158 | 11 | 22 | 5 | 144 |
+| 2026-08-21 | 61 | 6 | 8 | 6 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **50**
-- manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **47**
+- manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
 - rendimiento: **42**
 - robustez ante casos límite: **39**
@@ -30,15 +30,15 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
-- `organizer.py`: **20**
 - `diskreport.py`: **20**
 - `assistant.py`: **19**
-- `healthscore.py`: **18**
-- `memory.py`: **18**
+- `organizer.py`: **19**
 - `duplicates.py`: **17**
+- `browser.py`: **17**
+- `memory.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **16**
 - `scanner.py`: **16**
-- `browser.py`: **16**
 - `main.py`: **15**
 - `branding.py`: **9**
 - `safety.py`: **8**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T06:58:14` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que los resultados de `st_size` sean números positivos y añadiendo un manejo de excepciones más granular para evitar que fallos en el acceso a atributos de archivos específicos interrumpan el cálculo de carpetas completas.
 - `2026-08-21T05:34:38` **settings.py** (seguridad defensiva): Se endureció la seguridad en `save` verificando explícitamente que la ruta del archivo de configuración no sea un enlace simbólico o unión antes de escribir, evitando la redirección de escritura fuera del directorio de la aplicación.
 - `2026-08-21T05:25:30` **safety.py** (seguridad defensiva): Se introdujo la verificación `os.path.ismount` dentro de `ensure_safe_to_modify` para detectar puntos de montaje de unidades, evitando explícitamente cualquier intento de operación sobre el punto de inicio de un volumen, reforzando la protección contra la manipulación inadvertida de estructuras de disco raíz.
 - `2026-08-21T05:23:49` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de "Path Traversal" o inyección de rutas al asegurar que cada archivo movido resida explícitamente dentro de la jerarquía de la carpeta de revisión (`dest_base`), evitando confiar ciegamente en la concatenación de nombres de archivo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T04:34:29` **main.py** (robustez ante casos límite): Se introdujo un manejo robusto de excepciones y validación de estado en los métodos de renderizado de la interfaz (`_render_gauge`, `actualizar`) y en los callbacks de la UI, asegurando que la aplicación no intente interactuar con widgets que hayan sido destruidos durante un cierre prematuro o cambio de pestañas, fortaleciendo así la resiliencia ante condiciones de carrera en el hilo principal.
 - `2026-08-21T04:32:48` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo explícito en `walk_files` para manejar `PermissionError` y `OSError` al intentar acceder al `stat()` de un archivo, evitando que una excepción durante la iteración detenga prematuramente el proceso de escaneo y asegurando robustez ante archivos bloqueados o con permisos denegados.
 - `2026-08-21T04:23:54` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo recursivo mediante la validación del estado del enlace (`is_symlink` / `isjunction`) antes de procesar cada entrada en `_walk`, evitando intentos innecesarios de `stat()` sobre rutas que podrían ser puntos de reparse inestables o inaccesibles, mejorando la tolerancia ante errores de permiso y estructuras de carpetas profundas.
-- `2026-08-21T04:23:12` **assistant.py** (robustez ante casos límite): Mejoré `build_context` para manejar robustamente casos donde `metrics` o `health` son `None` o tienen tipos inesperados, evitando errores de ejecución al procesar configuraciones parciales o corruptas.

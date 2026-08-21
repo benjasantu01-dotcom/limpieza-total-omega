@@ -122,7 +122,6 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
         if not target_path.is_absolute() or not base_path.is_absolute():
             return False
 
-        # Uso de is_safe_to_modify capturando posibles errores de resolución
         if not is_safe_to_modify(target_path) or not is_safe_to_modify(base_path):
             return False
 
@@ -170,7 +169,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
         return True
     
     try:
-        # Usar try-except para evitar que la validación de seguridad bloquee el escaneo
         if not is_safe_to_modify(Path(entry.path)):
             return True
         if _is_system_hidden(entry.path, kernel32):
@@ -207,9 +205,6 @@ def _sum_directory_recursive(
         if depth > MAX_SCAN_DEPTH:
             return 0
         
-        if current_dir in memo:
-            return memo[current_dir]
-        
         total: int = 0
         try:
             with os.scandir(current_dir) as it:
@@ -218,20 +213,22 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir():
-                        if not (entry.is_symlink() or is_junction_fn(entry.path)):
-                            total += _walk(entry.path, depth + 1)
+                        total += _walk(entry.path, depth + 1)
                     elif entry.is_file():
                         try:
-                            total += max(0, entry.stat(follow_symlinks=False).st_size)
+                            # Validación estricta del tamaño para evitar valores negativos o errores de stat
+                            st = entry.stat(follow_symlinks=False)
+                            if st.st_size > 0:
+                                total += st.st_size
                         except (OSError, PermissionError):
                             continue
         except (PermissionError, OSError, FileNotFoundError):
             return 0
         
-        memo[current_dir] = total
         return total
 
     result = _walk(root_key, 0)
+    memo[root_key] = result
     return result
 
 
@@ -241,10 +238,10 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         return 0
     try:
         p_obj = Path(path)
-        if not p_obj.exists():
+        if not p_obj.is_dir():
             return 0
         p_path = p_obj.resolve(strict=True)
-        if not p_path.is_absolute() or not p_path.is_dir() or not is_safe_to_modify(p_path):
+        if not p_path.is_absolute() or not is_safe_to_modify(p_path):
             return 0
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
