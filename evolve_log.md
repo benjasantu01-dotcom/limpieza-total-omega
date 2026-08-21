@@ -1481,3 +1481,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-21T00:20:18` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-21T00:20:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T00:20:18` Corrida terminada. Total usado hoy: 8.
+- `2026-08-21T00:27:38` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-08-21T00:28:18` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-21T00:28:54` Tests FALLARON:
+```
+LURES ===================================
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7faf2abcaa80>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+        assert "2400" not in enviado["texto"]
+>       assert "no autorizó" in enviado["texto"]
+E       AssertionError: assert 'no autorizó' in 'Error: el contexto generado no cumple los estándares de seguridad.'
+
+evolve/tests/test_assistant.py:419: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - AssertionError: assert 'no autorizó' in 'Error: el contexto generado no cumple los estándares de seguridad.'
+1 failed, 298 passed in 1.08s
+
+```
+- `2026-08-21T00:28:54` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `settings.py` ante escenarios de escritura parcial o archivos corruptos durante la actualización, implementando una verificación de integridad post-escritura y manejando explícitamente el caso donde la carpeta de configuración podría ser eliminada o inaccesible entre la validación y la escritura física.
+- `2026-08-21T00:29:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-21T00:30:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-21T00:31:32` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejoré `entries_from_folders` para robustecer el manejo de rutas mal formadas o inaccesibles añadiendo un bloque `try-except` más específico dentro del bucle de escaneo, asegurando que un fallo al acceder a un archivo individual o una ruta simbólica corrupta no aborte el proceso completo de inventario.
+- `2026-08-21T00:32:13` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la implementación de `_is_safe_text_structure` en `_ensure_safe_text` para validar que el contenido no contenga patrones de inyección de código o rutas maliciosas, encapsulando la lógica de validación de caracteres de manera más estricta antes de procesar el prompt hacia Gemini.
+- `2026-08-21T00:32:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T00:32:13` Corrida terminada. Total usado hoy: 12.

@@ -229,6 +229,12 @@ class Answer:
         """Indica si la respuesta fue generada por el motor Gemini."""
         return self.source == "gemini"
 
+def _is_safe_text_structure(text: str) -> bool:
+    """Valida que la estructura del texto no contenga inyecciones de comandos o rutas."""
+    if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text):
+        return False
+    return True
+
 def _ensure_safe_text(text: Any) -> bool:
     """
     Verifica que el texto sea seguro: bloquea inyecciones de ruta, caracteres
@@ -240,10 +246,7 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     if _CONTROL_CHARS_REGEX.search(text):
         return False
-    # Bloquea explícitamente cualquier rastro de rutas (C:\, /, ..)
-    if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text):
-        return False
-    return True
+    return _is_safe_text_structure(text)
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
     """

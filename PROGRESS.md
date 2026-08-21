@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 227
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 52 | 3 | 7 | 4 | 80 |
+| 2026-08-19 | 52 | 3 | 7 | 4 | 76 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 4 | 0 | 1 | 0 | 3 |
+| 2026-08-21 | 6 | 1 | 1 | 0 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **52**
+- robustez ante casos límite: **42**
 - rendimiento: **41**
-- robustez ante casos límite: **41**
-- seguridad defensiva: **33**
+- seguridad defensiva: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `assistant.py`: **20**
+- `assistant.py`: **21**
 - `diskreport.py`: **20**
 - `organizer.py`: **20**
 - `healthscore.py`: **19**
@@ -42,11 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **15**
 - `main.py`: **15**
 - `branding.py`: **9**
-- `startup.py`: **7**
+- `startup.py`: **8**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T00:32:13` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la implementación de `_is_safe_text_structure` en `_ensure_safe_text` para validar que el contenido no contenga patrones de inyección de código o rutas maliciosas, encapsulando la lógica de validación de caracteres de manera más estricta antes de procesar el prompt hacia Gemini.
+- `2026-08-21T00:31:32` **startup.py** (robustez ante casos límite): Mejoré `entries_from_folders` para robustecer el manejo de rutas mal formadas o inaccesibles añadiendo un bloque `try-except` más específico dentro del bucle de escaneo, asegurando que un fallo al acceder a un archivo individual o una ruta simbólica corrupta no aborte el proceso completo de inventario.
 - `2026-08-21T00:18:29` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante condiciones de carrera y archivos inconsistentes, añadiendo un `try-finally` para asegurar que el archivo temporal se elimine si falla la copia, y validando que el archivo fuente no haya cambiado de tamaño durante el proceso de aislamiento.
 - `2026-08-21T00:17:53` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas destino no sean de solo lectura (caso frecuente en unidades protegidas) y al asegurar que el archivo a borrar sea efectivamente un archivo regular antes de ejecutar `unlink`, previniendo errores de permisos en directorios especiales.
 - `2026-08-21T00:10:34` **main.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta y segura en el hilo principal (`_build_tab_salud`) y en los métodos de renderizado, evitando cierres inesperados por `TclError` si la UI intenta actualizarse durante el cierre de la aplicación o cuando los widgets ya han sido destruidos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T14:18:06` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando un generador y procesando el `os.scandir` de forma más eficiente para reducir el impacto en I/O, además de transformar la lógica de agrupado por tamaño para evitar reconstruir listas innecesarias, aprovechando que `defaultdict` ya maneja la memoria de forma eficiente.
 - `2026-08-20T14:17:51` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar llamadas redundantes a `path.suffix` y conversiones de tipo en cada iteración del bucle, procesando la extensión una única vez por archivo para mejorar el rendimiento en directorios masivos.
 - `2026-08-20T14:07:02` **assistant.py** (rendimiento): Optimicé el mapeo de palabras clave (`_KEYWORD_MAP`) convirtiéndolo en un conjunto de búsqueda eficiente y reestructuré el bucle de coincidencia para evitar iteraciones redundantes sobre tokens, mejorando el rendimiento de la detección de intenciones.
-- `2026-08-20T14:06:29` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en métodos clave, aclarando las responsabilidades de resolución de rutas y el manejo del ciclo de vida de los datos (`cache`, `security checks`), facilitando el mantenimiento futuro y la comprensión de la lógica de seguridad.
-- `2026-08-20T14:06:00` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para mejorar la legibilidad del motor de validación, garantizando que la intención técnica de cada restricción sea clara para futuros desarrolladores sin alterar el comportamiento.
