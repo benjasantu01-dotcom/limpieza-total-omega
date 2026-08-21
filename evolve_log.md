@@ -1197,3 +1197,11 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-08-21T08:59:20` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y se ha centralizado la validación de límites en `compute_score`, asegurando que el cálculo del puntaje nunca falle ante valores de entrada atípicos o no normalizados.
 - `2026-08-21T08:59:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T08:59:20` Corrida terminada. Total usado hoy: 212.
+- `2026-08-21T09:07:52` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-08-21T09:09:03` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha mejorado `_validate_environment` para garantizar que la aplicación no intente ejecutarse desde una ruta bloqueada por seguridad (ej. una unidad raíz o carpeta de sistema), evitando errores de inicialización antes de que se monte la UI.
+- `2026-08-21T09:09:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T09:10:17` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-21T09:10:41` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-21T09:11:00` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `quarantine_file` ante condiciones de carrera y fallos parciales, introduciendo una validación de existencia post-copia más estricta y asegurando la limpieza de recursos temporales incluso ante errores de sistema inesperados durante la persistencia.
+- `2026-08-21T09:11:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T09:11:00` Corrida terminada. Total usado hoy: 216.

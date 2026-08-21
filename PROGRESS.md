@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 130 | 9 | 17 | 5 | 131 |
-| 2026-08-21 | 92 | 8 | 12 | 9 | 91 |
+| 2026-08-20 | 129 | 9 | 17 | 4 | 129 |
+| 2026-08-21 | 93 | 8 | 12 | 10 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
 - rendimiento: **43**
-- seguridad defensiva: **36**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **35**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
 - `diskreport.py`: **21**
 - `healthscore.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
 - `organizer.py`: **17**
 - `memory.py`: **17**
 - `browser.py`: **16**
+- `main.py`: **15**
 - `quarantine.py`: **15**
 - `scanner.py`: **15**
-- `main.py`: **14**
 - `branding.py`: **10**
 - `safety.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T09:09:03` **main.py** (robustez ante casos límite): Se ha mejorado `_validate_environment` para garantizar que la aplicación no intente ejecutarse desde una ruta bloqueada por seguridad (ej. una unidad raíz o carpeta de sistema), evitando errores de inicialización antes de que se monte la UI.
 - `2026-08-21T08:59:20` **healthscore.py** (robustez ante casos límite): Se ha mejorado la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y se ha centralizado la validación de límites en `compute_score`, asegurando que el cálculo del puntaje nunca falle ante valores de entrada atípicos o no normalizados.
 - `2026-08-21T08:58:54` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `hash_file` ante errores de acceso (como archivos bloqueados por el sistema o eliminados durante la ejecución) mediante un manejo de excepciones más granular que evita caídas silenciosas en el bucle de procesamiento.
 - `2026-08-21T08:49:21` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo mediante `path_obj.parent.exists()` y un manejo de errores más robusto en `save_logo_svg` para evitar excepciones al intentar crear directorios en rutas bloqueadas o inaccesibles, asegurando que la operación de escritura sea totalmente segura ante casos límite de sistema de archivos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T08:18:39` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` y las métricas asociadas reemplazando las múltiples pasadas redundantes por una única iteración en `_collect_summary_data`, evitando llamadas repetitivas y costosas al sistema de archivos.
 - `2026-08-21T08:08:32` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo los tokens en un `set` una sola vez y refactorizando el filtrado de palabras clave para evitar recorridos redundantes sobre el diccionario.
 - `2026-08-21T08:08:09` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de docstrings de estilo Google, la adición de Type Hints explícitos para mayor claridad en las interfaces de métodos y la refactorización de la lógica de validación de rutas para hacerla más intuitiva, manteniendo el comportamiento íntegro.
-- `2026-08-21T08:07:39` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints más precisos en las funciones clave de manipulación de archivos y validación para mejorar la mantenibilidad y claridad del flujo de datos en un módulo crítico.
