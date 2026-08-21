@@ -152,13 +152,8 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """
-    Parsea el contenido de /proc/meminfo a MemorySnapshot.
-    
-    Args:
-        meminfo_text: Contenido crudo del archivo /proc/meminfo.
-    """
-    if not meminfo_text:
+    """Parsea el contenido de /proc/meminfo a MemorySnapshot."""
+    if not isinstance(meminfo_text, str) or not meminfo_text:
         return MemorySnapshot(0, 0)
     
     metrics: Dict[str, int] = {}
@@ -166,8 +161,15 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     
     for line in meminfo_text.splitlines():
         parts = line.split(":")
-        if len(parts) == 2 and parts[0] in target_keys:
-            metrics[parts[0]] = int(parts[1].split()[0]) * 1024
+        if len(parts) == 2:
+            key = parts[0].strip()
+            if key in target_keys:
+                try:
+                    val_parts = parts[1].split()
+                    if val_parts:
+                        metrics[key] = int(val_parts[0]) * 1024
+                except (ValueError, IndexError):
+                    continue
     
     total = metrics.get("MemTotal", 0)
     available = metrics.get("MemAvailable", metrics.get("MemFree", 0))

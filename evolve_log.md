@@ -571,3 +571,14 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T02:32:13` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `drive_usage` mediante una validación de tipos más estricta y el manejo explícito de rutas inválidas, evitando errores silenciosos durante el procesamiento de datos de disco.
 - `2026-08-21T02:32:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T02:32:13` Corrida terminada. Total usado hoy: 60.
+- `2026-08-21T02:40:10` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-21T02:40:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T02:41:10` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `group_by_size` encapsulando los accesos a atributos de `stat` mediante una validación estricta, previniendo errores en caso de archivos que desaparecen entre la detección y la inspección (condiciones de carrera).
+- `2026-08-21T02:41:44` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-21T02:42:45` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-21T02:43:48` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-21T02:44:54` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-21T02:46:06` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-08-21T02:46:38` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` y `parse_windows_process_csv` añadiendo validaciones estrictas de tipos y estructuras, evitando errores de ejecución ante entradas malformadas o inesperadas que podrían comprometer la integridad de las métricas.
+- `2026-08-21T02:46:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T02:46:38` Corrida terminada. Total usado hoy: 64.
