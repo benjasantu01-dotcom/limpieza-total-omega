@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 13
 - Sin respuesta de la IA (error o límite): 222
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 138 | 9 | 18 | 5 | 134 |
-| 2026-08-21 | 85 | 8 | 11 | 8 | 88 |
+| 2026-08-20 | 135 | 9 | 18 | 5 | 133 |
+| 2026-08-21 | 87 | 8 | 12 | 8 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
-- seguridad defensiva: **44**
-- rendimiento: **40**
+- rendimiento: **42**
+- seguridad defensiva: **41**
 - robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **22**
+- `diskreport.py`: **21**
 - `healthscore.py`: **20**
 - `settings.py`: **20**
-- `assistant.py`: **19**
 - `duplicates.py`: **19**
 - `memory.py`: **18**
 - `organizer.py`: **18**
-- `browser.py`: **17**
+- `assistant.py`: **18**
+- `browser.py`: **16**
 - `main.py`: **15**
-- `quarantine.py`: **14**
-- `scanner.py`: **14**
+- `quarantine.py`: **15**
+- `scanner.py`: **15**
 - `branding.py`: **9**
 - `safety.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T08:39:03` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado de directorios mediante el uso de `path.parts` para verificar la inclusión en `WATCHED_FOLDERS`, evitando la conversión de la ruta completa a `str` y múltiples llamadas a `lower()` dentro del bucle de escaneo.
+- `2026-08-21T08:37:56` **quarantine.py** (rendimiento): Se optimizó `purge_all` para reducir drásticamente la complejidad algorítmica de O(N*M) a O(N) mediante el uso de un diccionario para el acceso directo a los ítems, evitando múltiples recorridos y lecturas innecesarias del manifiesto.
 - `2026-08-21T08:29:13` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante la eliminación de la recarga redundante del comando de PowerShell y la implementación de una lista de exclusión basada en un `set` para búsquedas O(1) en lugar de una tupla.
 - `2026-08-21T08:28:43` **main.py** (rendimiento): Se implementó un cacheo más inteligente de métricas en `on_full_analysis` utilizando `self._get_cached` para evitar el cálculo redundante de `disk_info` y `memory_mod.read_snapshot()` si los datos aún son válidos, reduciendo la carga de E/S en ejecuciones sucesivas del dashboard.
 - `2026-08-21T08:27:29` **healthscore.py** (rendimiento): Optimizé `compute_score` cacheando el cálculo de los `ratios` dentro de un diccionario local para evitar llamadas redundantes a las funciones de puntuación y operaciones matemáticas repetitivas, mejorando la eficiencia durante el ciclo de procesamiento.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T07:47:05` **healthscore.py** (legibilidad y documentación): Mejore la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones de puntuación y definiendo explícitamente las fórmulas de cálculo en los docstrings, facilitando así la auditoría de la lógica de negocio.
 - `2026-08-21T07:46:40` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints en funciones internas y se unificaron las excepciones en `collect_candidates` para mejorar la robustez y legibilidad, asegurando que la lógica de escaneo sea consistente con el manejo de errores del resto del módulo.
 - `2026-08-21T07:38:36` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, docstrings descriptivos que explican el propósito de funciones internas y la normalización de la nomenclatura de parámetros en funciones de análisis.
-- `2026-08-21T07:38:20` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones de utilidad interna, estandarizando el formato de los parámetros y aclarando el propósito de los filtros de seguridad, mejorando la mantenibilidad para futuros colaboradores sin alterar la funcionalidad.
-- `2026-08-21T07:37:39` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de dibujo y helpers de color, y se han añadido anotaciones de tipo más estrictas en `draw_logo` y `draw_ring` para clarificar la interfaz de los argumentos, facilitando el mantenimiento futuro y la legibilidad para otros colaboradores.

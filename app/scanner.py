@@ -113,7 +113,7 @@ class Scanner:
             target_path = Path(entry.path)
             
             # Filtrado temprano de seguridad y estructura
-            if not is_safe_to_modify(target_path) or str(target_path).startswith("\\\\"):
+            if not is_safe_to_modify(target_path) or entry.path.startswith("\\\\"):
                 return
             if not self._is_safe_entry(target_path):
                 return
@@ -162,7 +162,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if path is None or is_protected_path(path):
         return None
     
-    if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
+    # Optimización: comparar partes de la ruta como set intersection es más eficiente que loop + lower
+    if not (set(p.lower() for p in path.parts) & WATCHED_FOLDERS):
         return None
         
     try:

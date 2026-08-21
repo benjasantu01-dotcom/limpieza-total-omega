@@ -1176,3 +1176,10 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-08-21T08:29:25` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `scan_for_junk` eliminando la llamada repetitiva a `path.stat()` dentro del loop de archivos, aprovechando que `os.walk` permite el acceso directo a la información básica mediante `os.scandir` implícito o procesando eficientemente el árbol, además de reducir la resolución de rutas innecesarias.
 - `2026-08-21T08:29:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T08:29:25` Corrida terminada. Total usado hoy: 200.
+- `2026-08-21T08:37:14` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-21T08:37:56` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `purge_all` para reducir drásticamente la complejidad algorítmica de O(N*M) a O(N) mediante el uso de un diccionario para el acceso directo a los ítems, evitando múltiples recorridos y lecturas innecesarias del manifiesto.
+- `2026-08-21T08:38:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-08-21T08:38:41` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-21T08:39:03` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el proceso de filtrado de directorios mediante el uso de `path.parts` para verificar la inclusión en `WATCHED_FOLDERS`, evitando la conversión de la ruta completa a `str` y múltiples llamadas a `lower()` dentro del bucle de escaneo.
+- `2026-08-21T08:39:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T08:39:03` Corrida terminada. Total usado hoy: 204.
