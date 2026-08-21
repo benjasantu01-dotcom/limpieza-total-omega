@@ -1465,3 +1465,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-20T23:36:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-20T23:46:52` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-20T23:57:06` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-21T00:07:16` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-21T00:07:57` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-21T00:08:22` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se añadió una validación explícita en `compute_score` para manejar el caso donde los umbrales globales pudieran ser cero o negativos (debido a errores de configuración en `settings.py`), previniendo divisiones por cero o comportamientos inesperados en el cálculo de ratios.
+- `2026-08-21T00:09:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-21T00:10:34` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una gestión de errores más robusta y segura en el hilo principal (`_build_tab_salud`) y en los métodos de renderizado, evitando cierres inesperados por `TclError` si la UI intenta actualizarse durante el cierre de la aplicación o cuando los widgets ya han sido destruidos.
+- `2026-08-21T00:10:46` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-21T00:10:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T00:10:46` Corrida terminada. Total usado hoy: 4.

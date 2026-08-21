@@ -162,7 +162,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not self._closing:
             try:
                 self.after_idle(callback)
-            except tk.TclError:
+            except (tk.TclError, RuntimeError):
                 pass
 
     def _validate_environment(self) -> None:
@@ -885,8 +885,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for tab, msgs in logs_por_tab.items():
             box = self._box(tab)
             if box and box.winfo_exists():
-                box.insert("end", "\n".join(msgs) + "\n")
-                box.see("end")
+                try:
+                    box.insert("end", "\n".join(msgs) + "\n")
+                    box.see("end")
+                except tk.TclError:
+                    pass
 
     def clear(self, tab: str = "Limpieza") -> None:
         """Limpia todo el texto del log de la pestaña especificada."""
@@ -897,15 +900,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def set_status(self, text: str) -> None:
         """Actualiza el mensaje de estado en el pie de página."""
         if not self._closing and hasattr(self, 'status') and self.status.winfo_exists():
-            self.status.configure(text=text)
+            try:
+                self.status.configure(text=text)
+            except tk.TclError:
+                pass
 
     def log_lines(self, lines: List[str], tab: str) -> None:
         """Reemplaza el log de la pestaña con una lista de líneas nuevas."""
         self.clear(tab)
         box = self._box(tab)
         if box and box.winfo_exists():
-            box.insert("1.0", "\n".join(lines))
-            box.see("1.0")
+            try:
+                box.insert("1.0", "\n".join(lines))
+                box.see("1.0")
+            except tk.TclError:
+                pass
         self.report_data[tab.lower()] = list(lines)
 
     def _set_busy(self, busy: bool) -> None:
@@ -914,13 +923,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if busy:
             self._tasks_running += 1
             if self._tasks_running == 1:
-                self.activity.pack(side="right")
-                self.activity.start()
+                try:
+                    self.activity.pack(side="right")
+                    self.activity.start()
+                except tk.TclError:
+                    pass
         else:
             self._tasks_running = max(0, self._tasks_running - 1)
             if self._tasks_running == 0:
-                self.activity.stop()
-                self.activity.pack_forget()
+                try:
+                    self.activity.stop()
+                    self.activity.pack_forget()
+                except tk.TclError:
+                    pass
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
         """Traduce excepciones de bajo nivel en mensajes claros para el log de la UI."""
