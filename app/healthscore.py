@@ -186,21 +186,22 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     except (ValueError, TypeError, AttributeError):
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
 
-    breakdown = {}
-    final_score = 0
+    breakdown: Dict[MetricKey, int] = {}
     ratios: Dict[MetricKey, float] = {}
+    final_score: int = 0
     
     for area, weight in _WEIGHT_ITEMS_INT:
-        ratio = _SCORERS.get(area, lambda _: 0.0)(metrics)
-        ratio = _clamp(ratio, 0.0, 1.0)
-        ratios[area] = ratio
-        puntos = int(round(ratio * weight))
+        ratio = _SCORERS[area](metrics) if area in _SCORERS else 0.0
+        clamped_ratio = _clamp(ratio, 0.0, 1.0)
+        ratios[area] = clamped_ratio
+        
+        puntos = int(round(clamped_ratio * weight))
         breakdown[area] = puntos
         final_score += puntos
     
     recommendations = []
     for r in _RECOMMENDATION_RULES:
-        if r.area in ratios and r.check(metrics, ratios[r.area]):
+        if r.check(metrics, ratios.get(r.area, 0.0)):
             recommendations.append(r.message_factory(metrics))
             
     if metrics.quarantined_count > 0:

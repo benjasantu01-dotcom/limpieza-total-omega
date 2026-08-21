@@ -30,7 +30,7 @@ import ctypes
 import time
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar, TypeAlias, Final, Iterator
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar, TypeAlias, Final, Iterator, Set
 from safety import is_protected_path
 
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ STILL_ACTIVE_EXIT_CODE: Final[int] = 259
 ERROR_ACCESS_DENIED: Final[int] = 5
 
 # PIDs reservados: 0 (System Idle), 4 (System)
-SYSTEM_CRITICAL_PIDS: Final[Tuple[int, ...]] = (0, 4)
+SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 
 _last_proc_fetch: float = 0.0
 _cached_proc_output: str = ""

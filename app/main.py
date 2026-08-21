@@ -1022,15 +1022,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Reúne métricas de todos los módulos para calcular el puntaje global."""
-        # Se obtiene el estado base una sola vez por ejecución para evitar inconsistencias
         hallazgos = self._get_cached("suspicions") or []
         arranque = self._get_cached("startup") or []
         junk = self._get_cached("junk") or []
         dups = self._get_cached("dups") or []
 
-        snapshot = memory_mod.read_snapshot()
-        home = Path.home()
+        # Caché de instantánea de memoria para evitar I/O redundante
+        snapshot = self._get_cached("memory_snapshot", provider=memory_mod.read_snapshot) or memory_mod.Snapshot(0, 0, 0)
         
+        home = Path.home()
         # Uso de caché con provider para asegurar que disk_info se calcule eficientemente
         disk_info = self._get_cached(f"disk_info_{home}", provider=lambda: diskreport.drive_usage(home) if home.exists() else None)
         
@@ -1044,7 +1044,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             startup_count=len(arranque),
             quarantined_count=len(quarantine.list_items()),
         )
-        return metrics, snapshot or memory_mod.Snapshot(0, 0, 0), disk_info or diskreport.DriveInfo(0, 0, 0, "")
+        return metrics, snapshot, disk_info or diskreport.DriveInfo(0, 0, 0, "")
 
     def on_full_analysis(self) -> None:
         """Dispara el análisis completo y actualiza el estado de la aplicación."""

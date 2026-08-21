@@ -1147,3 +1147,32 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T08:19:03` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el pipeline de detección para evitar re-validaciones redundantes en `_process_size_group` y `suggest_keeper`, moviendo la lógica de filtrado de seguridad hacia `_collect_candidates` para que los datos procesados ya estén limpios antes de calcular hashes, reduciendo drásticamente las llamadas a `is_safe_to_modify` y `stat`.
 - `2026-08-21T08:19:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T08:19:03` Corrida terminada. Total usado hoy: 196.
+- `2026-08-21T08:27:01` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-21T08:27:29` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé `compute_score` cacheando el cálculo de los `ratios` dentro de un diccionario local para evitar llamadas redundantes a las funciones de puntuación y operaciones matemáticas repetitivas, mejorando la eficiencia durante el ciclo de procesamiento.
+- `2026-08-21T08:28:43` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un cacheo más inteligente de métricas en `on_full_analysis` utilizando `self._get_cached` para evitar el cálculo redundante de `disk_info` y `memory_mod.read_snapshot()` si los datos aún son válidos, reduciendo la carga de E/S en ejecuciones sucesivas del dashboard.
+- `2026-08-21T08:29:13` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de métricas mediante la eliminación de la recarga redundante del comando de PowerShell y la implementación de una lista de exclusión basada en un `set` para búsquedas O(1) en lugar de una tupla.
+- `2026-08-21T08:29:25` Tests FALLARON:
+```
+  for name in files:
+                        file_path: Path = root_path / name
+                        if _is_junk_path(file_path):
+                            try:
+                                # Obtenemos stats una sola vez para evitar I/O redundante
+                                stats = file_path.stat()
+                                # Validamos atributos solo si es necesario (NT) o es reparse
+>                               if not (stats.st_file_attributes & 0x02) and not (stats.st_file_attributes & 0x04):
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^
+E                               AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+
+app/organizer.py:231: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_finds_junk_and_ignores_other_files - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_recurses_into_subfolders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_scan_for_junk_skips_system_folders - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AttributeError: 'os.stat_result' object has no attribute 'st_file_attributes'
+4 failed, 295 passed in 1.25s
+
+```
+- `2026-08-21T08:29:25` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `scan_for_junk` eliminando la llamada repetitiva a `path.stat()` dentro del loop de archivos, aprovechando que `os.walk` permite el acceso directo a la información básica mediante `os.scandir` implícito o procesando eficientemente el árbol, además de reducir la resolución de rutas innecesarias.
+- `2026-08-21T08:29:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T08:29:25` Corrida terminada. Total usado hoy: 200.

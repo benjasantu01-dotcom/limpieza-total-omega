@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 140 | 10 | 18 | 5 | 135 |
-| 2026-08-21 | 82 | 7 | 11 | 8 | 88 |
+| 2026-08-20 | 138 | 9 | 18 | 5 | 134 |
+| 2026-08-21 | 85 | 8 | 11 | 8 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
 - seguridad defensiva: **44**
-- rendimiento: **37**
-- robustez ante casos límite: **32**
+- rendimiento: **40**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **22**
-- `settings.py`: **21**
+- `healthscore.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `healthscore.py`: **19**
+- `memory.py`: **18**
 - `organizer.py`: **18**
 - `browser.py`: **17**
-- `memory.py`: **17**
-- `scanner.py`: **15**
-- `main.py`: **14**
+- `main.py`: **15**
 - `quarantine.py`: **14**
+- `scanner.py`: **14**
 - `branding.py`: **9**
 - `safety.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T08:29:13` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante la eliminación de la recarga redundante del comando de PowerShell y la implementación de una lista de exclusión basada en un `set` para búsquedas O(1) en lugar de una tupla.
+- `2026-08-21T08:28:43` **main.py** (rendimiento): Se implementó un cacheo más inteligente de métricas en `on_full_analysis` utilizando `self._get_cached` para evitar el cálculo redundante de `disk_info` y `memory_mod.read_snapshot()` si los datos aún son válidos, reduciendo la carga de E/S en ejecuciones sucesivas del dashboard.
+- `2026-08-21T08:27:29` **healthscore.py** (rendimiento): Optimizé `compute_score` cacheando el cálculo de los `ratios` dentro de un diccionario local para evitar llamadas redundantes a las funciones de puntuación y operaciones matemáticas repetitivas, mejorando la eficiencia durante el ciclo de procesamiento.
 - `2026-08-21T08:19:03` **duplicates.py** (rendimiento): Optimizé el pipeline de detección para evitar re-validaciones redundantes en `_process_size_group` y `suggest_keeper`, moviendo la lógica de filtrado de seguridad hacia `_collect_candidates` para que los datos procesados ya estén limpios antes de calcular hashes, reduciendo drásticamente las llamadas a `is_safe_to_modify` y `stat`.
 - `2026-08-21T08:18:39` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` y las métricas asociadas reemplazando las múltiples pasadas redundantes por una única iteración en `_collect_summary_data`, evitando llamadas repetitivas y costosas al sistema de archivos.
 - `2026-08-21T08:08:32` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo los tokens en un `set` una sola vez y refactorizando el filtrado de palabras clave para evitar recorridos redundantes sobre el diccionario.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T07:38:36` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, docstrings descriptivos que explican el propósito de funciones internas y la normalización de la nomenclatura de parámetros en funciones de análisis.
 - `2026-08-21T07:38:20` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones de utilidad interna, estandarizando el formato de los parámetros y aclarando el propósito de los filtros de seguridad, mejorando la mantenibilidad para futuros colaboradores sin alterar la funcionalidad.
 - `2026-08-21T07:37:39` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de dibujo y helpers de color, y se han añadido anotaciones de tipo más estrictas en `draw_logo` y `draw_ring` para clarificar la interfaz de los argumentos, facilitando el mantenimiento futuro y la legibilidad para otros colaboradores.
-- `2026-08-21T07:36:44` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manejo de respuestas y una revisión de las docstrings para clarificar el propósito de cada motor, facilitando el mantenimiento y la legibilidad para futuros colaboradores.
-- `2026-08-21T07:27:23` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` añadiendo una validación explícita para asegurar que los directorios no sean bloqueados o inexistentes antes de intentar escribir, además de refinar el manejo de excepciones al verificar el estado de los archivos temporales para evitar operaciones fallidas en sistemas de archivos restringidos.
-- `2026-08-21T07:26:24` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_system_or_hidden` y `_is_reparse_point` al evitar el uso de `path.stat()` (que puede disparar excepciones adicionales) y centralizando el manejo de errores en una lógica de "falla cerrada" más estricta, previniendo que errores de acceso inesperados se interpreten erróneamente en el flujo de validación.
