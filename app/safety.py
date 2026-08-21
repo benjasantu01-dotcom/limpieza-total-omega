@@ -173,6 +173,9 @@ def _check_file_integrity(path: Path) -> None:
 
     try:
         st = path.lstat()
+        # Verificar permisos en el padre si el archivo existe pero no podemos acceder a sus atributos
+        if not os.access(path.parent, os.W_OK):
+            raise UnsafePathError(f"Directorio padre sin permisos de escritura.")
     except OSError as e:
         raise UnsafePathError(f"Error de acceso a metadatos: {e.strerror}")
 
