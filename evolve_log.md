@@ -1617,3 +1617,10 @@ FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - Attr
 - `2026-08-21T13:24:58` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se añadió validación de existencia y accesibilidad en el bloque de filtrado de `_collect_candidates` para prevenir excepciones durante el escaneo de directorios con archivos volátiles o permisos cambiantes.
 - `2026-08-21T13:24:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T13:24:58` Corrida terminada. Total usado hoy: 316.
+- `2026-08-21T13:33:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-21T13:33:35` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-21T13:34:43` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Mejoré la robustez ante la concurrencia y la integridad de la UI asegurando que las referencias a `winfo_exists()` verifiquen siempre la existencia del widget antes de cualquier manipulación, evitando errores `tk.TclError` en hilos asíncronos que podrían estar terminando mientras el hilo principal destruye la ventana.
+- `2026-08-21T13:35:10` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `top_memory_processes` añadiendo validación de tipos y manejo de errores ante entradas malformadas, evitando que una salida inesperada de PowerShell rompa la recolección de métricas.
+- `2026-08-21T13:35:24` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-21T13:35:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T13:35:24` Corrida terminada. Total usado hoy: 320.

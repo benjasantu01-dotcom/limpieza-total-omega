@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 80 | 8 | 9 | 4 | 87 |
-| 2026-08-21 | 136 | 11 | 18 | 15 | 136 |
+| 2026-08-20 | 78 | 8 | 9 | 4 | 85 |
+| 2026-08-21 | 138 | 11 | 18 | 15 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **54**
 - rendimiento: **39**
-- seguridad defensiva: **34**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **34**
+- seguridad defensiva: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `assistant.py`: **20**
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
+- `settings.py`: **19**
 - `healthscore.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `scanner.py`: **17**
 - `organizer.py`: **16**
 - `browser.py`: **15**
-- `main.py`: **13**
+- `main.py`: **14**
 - `quarantine.py`: **12**
 - `branding.py`: **11**
-- `safety.py`: **10**
+- `safety.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T13:35:10` **memory.py** (robustez ante casos límite): Mejoré la robustez de `top_memory_processes` añadiendo validación de tipos y manejo de errores ante entradas malformadas, evitando que una salida inesperada de PowerShell rompa la recolección de métricas.
+- `2026-08-21T13:34:43` **main.py** (robustez ante casos límite): Mejoré la robustez ante la concurrencia y la integridad de la UI asegurando que las referencias a `winfo_exists()` verifiquen siempre la existencia del widget antes de cualquier manipulación, evitando errores `tk.TclError` en hilos asíncronos que podrían estar terminando mientras el hilo principal destruye la ventana.
 - `2026-08-21T13:24:09` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular durante la lectura de metadatos, evitando que una falla en un solo archivo detenga el cálculo del tamaño de toda la carpeta.
 - `2026-08-21T13:23:44` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas o entornos con problemas de escritura, añadiendo validaciones de tipo y estructura que evitan excepciones silenciosas o fallos en tiempo de ejecución.
 - `2026-08-21T13:14:41` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del módulo `assistant.py` frente a configuraciones externas corruptas o maliciosas en `settings.py`, asegurando que `ask()` nunca falle ante valores inesperados en el archivo de configuración y manteniendo la integridad del flujo de fallback al motor local.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T12:33:27` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `settings.py` documentando los límites y el propósito de cada clave en `_NUMERIC_LIMITS` y extrayendo la lógica repetitiva de validación de booleanos y rangos para reducir la complejidad cognitiva de las funciones de ayuda.
 - `2026-08-21T12:32:59` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados, type hints en todas las funciones y la extracción de la lógica de evaluación de ejecutables en `scan_file` hacia una estructura más clara, facilitando la comprensión del flujo de análisis de riesgos.
 - `2026-08-21T12:24:00` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y se reemplazó el uso de nombres de variables crípticos (como `entry` o `i`) por nombres más semánticos como `quarantine_item` o `file_path`, mejorando la legibilidad y mantenibilidad del módulo para auditorías futuras.
-- `2026-08-21T12:22:47` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de docstrings detallados en funciones clave, la clarificación de tipos en las firmas y la unificación de la lógica de validación de seguridad para que sea más explícita y coherente con las reglas del proyecto.
-- `2026-08-21T12:22:16` **memory.py** (legibilidad y documentación): Se documentó exhaustivamente la estructura de datos `MEMORYSTATUSEX` y las funciones de bajo nivel relacionadas, aclarando el propósito de cada campo y validación para mejorar la mantenibilidad técnica del módulo.

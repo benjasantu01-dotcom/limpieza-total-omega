@@ -929,7 +929,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _set_busy(self, busy: bool) -> None:
         """Gestiona el estado visual de la barra de progreso asíncrona."""
-        if self._closing or not hasattr(self, 'activity'): return
+        if self._closing or not hasattr(self, 'activity') or not self.activity.winfo_exists(): return
         if busy:
             self._tasks_running += 1
             if self._tasks_running == 1:

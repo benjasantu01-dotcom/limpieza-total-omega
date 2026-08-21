@@ -203,6 +203,8 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
 
 def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
     """Generador eficiente de objetos ProcessMemory a partir de salida cruda."""
+    if not isinstance(raw_csv_text, str):
+        return
     for line in raw_csv_text.splitlines():
         proc = _parse_csv_row(line)
         if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
@@ -263,7 +265,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         cmd = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 Name,Id,WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
         try:
             proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
-            if proc.returncode == 0:
+            if proc.returncode == 0 and isinstance(proc.stdout, str):
                 _cached_proc_output = proc.stdout
                 _last_proc_fetch = time.time()
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired):
