@@ -165,7 +165,7 @@ def _collect_candidates(
                             visited_inodes.add(inode)
                             _scan(Path(entry.path))
                     elif entry.is_file() and st.st_size >= min_size:
-                        p = Path(entry.path)
+                        p = Path(entry.path).resolve()
                         if not skip_protected or (not is_protected_path(p) and is_safe_to_modify(p)):
                             temp_groups[st.st_size].append(p)
                 except (OSError, PermissionError): continue

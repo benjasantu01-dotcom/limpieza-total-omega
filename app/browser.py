@@ -205,10 +205,10 @@ def _sum_directory_recursive(
         return 0
     
     try:
-        abs_root = Path(root_dir).resolve(strict=True)
-        if not abs_root.is_dir() or not is_safe_to_modify(abs_root) or abs_root.is_symlink() or is_junction_fn(str(abs_root)):
+        root_path = Path(root_dir).resolve(strict=True)
+        if not root_path.is_dir() or not is_safe_to_modify(root_path) or root_path.is_symlink() or is_junction_fn(str(root_path)):
             return 0
-        root_key = str(abs_root)
+        root_key = str(root_path)
     except (OSError, PermissionError, RuntimeError):
         return 0
 
@@ -229,6 +229,10 @@ def _sum_directory_recursive(
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     
+                    # Seguridad defensiva: confirmar que la sub-ruta sigue bajo la raíz original
+                    if not Path(entry.path).resolve().as_posix().startswith(root_path.as_posix()):
+                        continue
+
                     if entry.is_dir():
                         total += _walk(entry.path, depth + 1)
                     elif entry.is_file():
