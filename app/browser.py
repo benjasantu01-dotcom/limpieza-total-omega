@@ -112,8 +112,8 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
-    Verifica si 'target_path' reside efectivamente dentro de 'base_path' evitando 
-    ataques de path traversal, symlinks o junctions inseguros.
+    Valida que 'target_path' sea un subdirectorio real de 'base_path'.
+    Previene ataques de path traversal, symlinks o junctions fuera de la jerarquía permitida.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -141,14 +141,17 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Verifica si un nombre de archivo está en la lista negra de componentes críticos."""
+    """Valida si el nombre de archivo es uno de los componentes críticos definidos en NEVER_TOUCH."""
     if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
 
 
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
-    """Consulta los atributos de archivo de Windows para descartar objetos de sistema o ocultos."""
+    """
+    Verifica mediante la API de Windows si un archivo posee atributos de sistema o oculto.
+    Utiliza kernel32.dll para leer metadatos de archivos de forma eficiente.
+    """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
@@ -164,7 +167,10 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
-    """Filtro selector para el recorrido: descarta inseguros, críticos o punteros."""
+    """
+    Determina si una entrada del sistema de archivos debe ser ignorada por el escáner.
+    Filtra archivos protegidos, enlaces simbólicos, junctions y archivos del sistema.
+    """
     if _is_excluded_file(entry.name):
         return True
     
@@ -186,7 +192,10 @@ def _sum_directory_recursive(
     kernel32: ctypes.WinDLL | None,
     memo: Dict[str, int]
 ) -> int:
-    """Ejecuta un recorrido recursivo con límite de profundidad y control de enlaces."""
+    """
+    Calcula recursivamente el tamaño de un directorio.
+    Usa un diccionario 'memo' para evitar re-escaneo de subdirectorios en la misma iteración.
+    """
     if not isinstance(root_dir, str) or not root_dir:
         return 0
     
@@ -265,7 +274,10 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Escanea las ubicaciones base buscando las rutas de caché definidas."""
+    """
+    Escanea las ubicaciones base buscando las rutas de caché de los navegadores configurados.
+    Retorna una lista de objetos BrowserCache ordenados por tamaño descendente.
+    """
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     

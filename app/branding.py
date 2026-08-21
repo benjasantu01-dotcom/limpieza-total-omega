@@ -378,7 +378,7 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
         )
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el escudo corporativo en un widget Canvas de Tkinter."""
+    """Renderiza el escudo corporativo en un widget Canvas de Tkinter escalado por tamaño."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128))
@@ -416,7 +416,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un anillo de progreso circular para métricas de salud."""
+    """Dibuja un anillo de progreso circular para métricas de salud (0-100)."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         if percent is None: return
