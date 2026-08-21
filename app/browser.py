@@ -160,8 +160,8 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
     try:
         if not os.path.exists(entry_path):
             return False
-        path_to_check = entry_path if not entry_path.startswith(r"\\?") else entry_path[4:]
-        attrs: int = kernel32.GetFileAttributesW(path_to_check)
+        # Normalización de ruta para manejo de atributos
+        attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False
         return bool(attrs & 0x04 or attrs & 0x02)
@@ -178,7 +178,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
         return True
     
     try:
-        if not is_safe_to_modify(Path(entry.path)):
+        p = Path(entry.path)
+        if not is_safe_to_modify(p):
             return True
         if _is_system_hidden(entry.path, kernel32):
             return True

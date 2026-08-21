@@ -153,7 +153,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
         
     try:
-        p = Path(mount).resolve(strict=False)
+        p = Path(os.fspath(mount)).resolve(strict=False)
         if not p.exists():
             return None
             
@@ -163,7 +163,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
             
         usage = shutil.disk_usage(p)
         return DriveUsage(mount=str_mount, total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, PermissionError, ValueError, RuntimeError, FileNotFoundError):
+    except (OSError, PermissionError, ValueError, RuntimeError, FileNotFoundError, TypeError):
         return None
 
 
@@ -204,7 +204,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        base_path = Path(directory).resolve(strict=False)
+        base_path = Path(os.fspath(directory)).resolve(strict=False)
         if not base_path.exists() or not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
@@ -294,7 +294,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        base = Path(directory).resolve(strict=False)
+        base = Path(os.fspath(directory)).resolve(strict=False)
         sums: Dict[Path, int] = defaultdict(int)
         counts: Dict[Path, int] = defaultdict(int)
         
@@ -354,20 +354,21 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     """
     Genera un informe textual unificado con los hallazgos del análisis de disco.
     """
-    if not directory or not isinstance(directory, (str, os.PathLike)): 
-        return ["Error: Ruta inválida o no proporcionada."]
-    
     try:
-        p_input = Path(directory).resolve(strict=False)
-        if not p_input.exists():
-            return [f"Error: Ruta no existente: {p_input}"]
-        if not p_input.is_dir():
-            return [f"Error: Ruta no es un directorio: {p_input}"]
-        if skip_protected and is_protected_path(p_input):
-            return [f"Error: Ruta protegida no permitida: {p_input}"]
+        p_input = Path(os.fspath(directory)).resolve(strict=False)
+    except (TypeError, ValueError):
+        return ["Error: Ruta inválida."]
+        
+    if not p_input.exists():
+        return [f"Error: Ruta no existente: {p_input}"]
+    if not p_input.is_dir():
+        return [f"Error: Ruta no es un directorio: {p_input}"]
+    if skip_protected and is_protected_path(p_input):
+        return [f"Error: Ruta protegida no permitida: {p_input}"]
             
+    try:
         total_bytes, total_files, ext_sizes, ext_counts, top_files_heap = _collect_summary_data(p_input, skip_protected)
-    except (OSError, PermissionError, ValueError, TypeError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError):
         return ["Error: Acceso denegado o error inesperado durante el análisis del disco."]
 
     lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]

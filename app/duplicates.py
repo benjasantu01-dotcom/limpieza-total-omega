@@ -176,15 +176,19 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
             continue
-    return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
+    if not keepers:
+        return None
+    return min(keepers, key=lambda x: (x[0], x[1]))[2]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    if not isinstance(group, DuplicateGroup) or not group.paths: return []
+    if not isinstance(group, DuplicateGroup) or not group.paths:
+        return []
     keeper = suggest_keeper(group)
     mb_total = round(group.size_bytes / (1024 * 1024), 2)
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
-        lines.append(f"   [{'conservar' if path == keeper else 'duplicado'}] {path}")
+        label = 'conservar' if keeper is not None and path == keeper else 'duplicado'
+        lines.append(f"   [{label}] {path}")
     return lines
