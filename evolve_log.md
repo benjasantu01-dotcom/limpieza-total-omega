@@ -1516,3 +1516,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-21T12:24:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-21T12:24:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T12:24:10` Corrida terminada. Total usado hoy: 292.
+- `2026-08-21T12:31:55` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-08-21T12:32:24` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-21T12:32:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T12:32:59` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados, type hints en todas las funciones y la extracción de la lógica de evaluación de ejecutables en `scan_file` hacia una estructura más clara, facilitando la comprensión del flujo de análisis de riesgos.
+- `2026-08-21T12:33:27` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo `settings.py` documentando los límites y el propósito de cada clave en `_NUMERIC_LIMITS` y extrayendo la lógica repetitiva de validación de booleanos y rangos para reducir la complejidad cognitiva de las funciones de ayuda.
+- `2026-08-21T12:33:38` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de registro y carpetas, y clarifiqué mediante docstrings el propósito de los métodos privados de la clase `StartupEntry`, facilitando la auditoría de seguridad del flujo de resolución de rutas.
+- `2026-08-21T12:33:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T12:33:38` Corrida terminada. Total usado hoy: 296.

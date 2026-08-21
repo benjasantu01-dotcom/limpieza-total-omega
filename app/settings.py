@@ -115,10 +115,11 @@ def _get_default_config() -> AppSettings:
 
 DEFAULTS: Final[AppSettings] = _get_default_config()
 
+# Límites operativos para evitar valores absurdos que rompan la UI o el rendimiento.
 _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
-    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: (0, 1024 * 1024),
-    ConfigKey.TOP_ARCHIVOS: (1, 500),
-    ConfigKey.TOP_PROCESOS: (1, 500),
+    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: (0, 1024 * 1024), # 0 a 1GB
+    ConfigKey.TOP_ARCHIVOS: (1, 500),                       # Mínimo 1, máximo 500 elementos
+    ConfigKey.TOP_PROCESOS: (1, 500),                       # Mínimo 1, máximo 500 procesos
 }
 
 class _Validators:
