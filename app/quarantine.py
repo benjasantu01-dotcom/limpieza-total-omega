@@ -80,9 +80,9 @@ class QuarantineItem:
             self.size_bytes = int(self.size_bytes)
         except (ValueError, TypeError):
             self.size_bytes = 0
-        if not self.item_id or not isinstance(self.item_id, str):
+        if not isinstance(self.item_id, str) or not self.item_id:
             raise ValueError("ID de ítem vacío o inválido")
-        if not self.reason or not isinstance(self.reason, str):
+        if not isinstance(self.reason, str) or not self.reason:
             self.reason = "Sin motivo especificado"
 
     @property
@@ -126,9 +126,7 @@ class QuarantineItem:
             if stats.st_size != self.size_bytes:
                 return False
             actual_hash = _get_sha256(stored_path)
-            if self.sha256 and actual_hash != self.sha256:
-                return False
-            return actual_hash != ""
+            return bool(self.sha256 and actual_hash == self.sha256)
         except (OSError, PermissionError):
             return False
 
@@ -183,7 +181,7 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
         path = Path(base).expanduser().resolve()
-        if path.name.strip() == "":
+        if not path.name.strip():
             raise UnsafePathError("Ruta de cuarentena inválida o vacía.")
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
@@ -308,7 +306,7 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     if source.is_symlink() or ":" in str(source):
         raise UnsafePathError("Operación denegada: origen no es archivo regular.")
     if destination.exists():
-        raise RuntimeError("Conflicto de seguridad: el destino ya existe en el sandbox.")
+        raise FileExistsError(f"Conflicto: {destination.name} ya existe en el sandbox.")
     
     if not os.access(destination.parent, os.W_OK):
         raise PermissionError(f"Sin permisos de escritura en {destination.parent}")
@@ -317,14 +315,16 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     try:
         shutil.copy2(source, temp_dest)
         if temp_dest.stat().st_size != file_size:
-            raise RuntimeError("Corrupción durante copia: tamaño mismatch.")
+            raise OSError("Corrupción durante copia: tamaño mismatch.")
         file_hash = _get_sha256(temp_dest)
         if not file_hash:
-            raise RuntimeError("Falla de integridad: no se pudo calcular hash.")
+            raise OSError("Falla de integridad: no se pudo calcular hash.")
         os.replace(temp_dest, destination)
         return file_hash
     except (OSError, PermissionError) as e:
-        raise RuntimeError(f"Error crítico durante el aislamiento: {e}")
+        if temp_dest.exists():
+            _safe_unlink(temp_dest)
+        raise
     finally:
         if temp_dest.exists():
             _safe_unlink(temp_dest)
@@ -353,48 +353,42 @@ def quarantine_file(
     try:
         file_size = source_path.stat().st_size
     except OSError as e:
-        raise RuntimeError(f"No se pudo determinar el tamaño del archivo origen: {e}")
+        raise OSError(f"No se pudo determinar el tamaño del archivo origen: {e}")
     
     if not source_path.exists() or source_path.stat().st_size != file_size:
-        raise RuntimeError("El archivo origen cambió o desapareció antes de ser aislado.")
+        raise OSError("El archivo origen cambió o desapareció antes de ser aislado.")
 
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
-        raise RuntimeError("Espacio insuficiente en disco.")
+        raise OSError("Espacio insuficiente en disco.")
     item_id = uuid.uuid4().hex[:12]
     stored_name = _generate_safe_stored_name(source_path, item_id)
     destination = dest_dir / stored_name
-    if destination.exists():
-        raise UnsafePathError("Colisión de nombres detectada en el almacenamiento de cuarentena.")
     
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
         if not destination.exists():
-            raise RuntimeError("Fallo en la confirmación de aislamiento.")
+            raise OSError("Fallo en la confirmación de aislamiento.")
         if source_path.exists():
             try:
                 os.remove(source_path)
             except OSError as e:
-                raise RuntimeError(f"Archivo copiado a cuarentena pero error al borrar original: {e}")
+                raise OSError(f"Archivo copiado pero error al borrar original: {e}")
         
-        try:
-            items = load_manifest(base)
-            item = QuarantineItem(
-                item_id=item_id,
-                original_path=str(source_path),
-                stored_name=stored_name,
-                size_bytes=file_size,
-                reason=str(reason) if reason else "Sin motivo",
-                quarantined_at=datetime.now().isoformat(timespec="seconds"),
-                sha256=file_hash,
-            )
-            items.append(item)
-            save_manifest(items, base)
-            return item
-        except (Exception, OSError) as e:
-            raise RuntimeError(f"Aislamiento físico exitoso, pero fallo al actualizar manifiesto: {e}")
-            
+        items = load_manifest(base)
+        item = QuarantineItem(
+            item_id=item_id,
+            original_path=str(source_path),
+            stored_name=stored_name,
+            size_bytes=file_size,
+            reason=str(reason) if reason else "Sin motivo",
+            quarantined_at=datetime.now().isoformat(timespec="seconds"),
+            sha256=file_hash,
+        )
+        items.append(item)
+        save_manifest(items, base)
+        return item
     except (Exception, OSError, ValueError) as e:
         if destination.exists():
             _safe_unlink(destination)

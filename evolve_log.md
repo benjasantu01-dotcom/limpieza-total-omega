@@ -1056,3 +1056,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T07:07:46` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la carga de pestañas agregando una validación de seguridad adicional antes de construir el contenido, garantizando que si una pestaña falla, no se detenga la inicialización de la interfaz ni se exponga un estado inconsistente.
 - `2026-08-21T07:07:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T07:07:46` Corrida terminada. Total usado hoy: 168.
+- `2026-08-21T07:15:38` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-21T07:16:10` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-21T07:16:35` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `stage_for_review` mediante una validación explícita de `is_safe_to_modify` para el destino y la normalización de rutas antes de operar, previniendo errores por entradas mal formadas o permisos insuficientes.
+- `2026-08-21T07:17:08` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la deserialización en `QuarantineItem.from_dict` y el manejo de excepciones en `_atomic_isolate_file`, reemplazando el uso de `RuntimeError` por excepciones más específicas (`ValueError`, `OSError`) y asegurando que las validaciones de tipo prevengan errores de ejecución en cascada.
+- `2026-08-21T07:17:12` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-21T07:17:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T07:17:12` Corrida terminada. Total usado hoy: 172.

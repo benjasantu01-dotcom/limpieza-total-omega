@@ -272,7 +272,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
-        # Verificación de permisos y seguridad antes de mover
+        # Verificación estricta de permisos y seguridad con el módulo safety
         if not dest_base.is_dir() or not is_safe_to_modify(dest_base) or not os.access(dest_base, os.W_OK): 
             return None
     except (OSError, PermissionError, RuntimeError):
@@ -281,7 +281,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     for junk_file in files:
         if not isinstance(junk_file, JunkFile): continue
         try:
-            src_path: Path = junk_file.path
+            src_path: Path = junk_file.path.resolve()
             # Validaciones de seguridad pre-movimiento
             if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base):
                 continue
