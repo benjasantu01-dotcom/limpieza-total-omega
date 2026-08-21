@@ -1524,3 +1524,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-21T12:33:38` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de registro y carpetas, y clarifiqué mediante docstrings el propósito de los métodos privados de la clase `StartupEntry`, facilitando la auditoría de seguridad del flujo de resolución de rutas.
 - `2026-08-21T12:33:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T12:33:38` Corrida terminada. Total usado hoy: 296.
+- `2026-08-21T12:42:06` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-21T12:42:51` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` convirtiendo el mapeo de palabras clave (`_KEYWORD_MAP`) en un conjunto (`set`) o accediendo directamente mediante `tokens.intersection`, evitando iterar sobre todo el diccionario y reduciendo la complejidad de búsqueda de O(N) a O(1) por cada token recibido.
+- `2026-08-21T12:43:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T12:43:47` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimizé `gradient_colors` para evitar el cálculo innecesario de segmentos de degradado cuando los colores son constantes, reduciendo la carga en el ciclo de renderizado de la UI.
+- `2026-08-21T12:44:17` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-21T12:44:36` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el generador `walk_files` para reducir drásticamente las llamadas a `Path.resolve()` y `Path.relative_to()` (operaciones costosas de E/S y procesamiento de strings) moviendo la validación de ruta al ámbito del padre mediante la manipulación directa de nombres en `os.DirEntry`.
+- `2026-08-21T12:44:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T12:44:36` Corrida terminada. Total usado hoy: 300.

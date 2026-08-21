@@ -438,9 +438,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     tokens = set(_TOKEN_REGEX.findall(_sanitize_query(question)))
+    map_keys = set(_KEYWORD_MAP.keys())
     
-    # Prioridad: intersección rápida con map de keywords
-    for target in tokens & _KEYWORD_MAP.keys():
+    # O(1) búsqueda por intersección en lugar de iteración sobre dict
+    match = tokens.intersection(map_keys)
+    if match:
+        target = match.pop()
         return _HANDLERS[_KEYWORD_MAP[target]](context, question)
 
     problemas = _identify_active_problems(context)

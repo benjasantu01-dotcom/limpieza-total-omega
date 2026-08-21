@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 92 | 8 | 11 | 4 | 93 |
-| 2026-08-21 | 127 | 9 | 16 | 14 | 130 |
+| 2026-08-20 | 89 | 8 | 11 | 4 | 92 |
+| 2026-08-21 | 130 | 9 | 16 | 14 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **33**
-- rendimiento: **33**
+- rendimiento: **36**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
-- `assistant.py`: **19**
-- `diskreport.py`: **19**
-- `memory.py`: **18**
+- `assistant.py`: **20**
+- `diskreport.py`: **20**
 - `healthscore.py`: **18**
 - `duplicates.py`: **18**
+- `memory.py`: **17**
 - `organizer.py`: **17**
 - `scanner.py`: **17**
-- `main.py`: **15**
 - `browser.py`: **15**
-- `quarantine.py`: **14**
+- `main.py`: **14**
+- `quarantine.py`: **13**
 - `safety.py`: **10**
+- `branding.py`: **10**
 - `startup.py`: **9**
-- `branding.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T12:44:36` **diskreport.py** (rendimiento): Se optimizó el generador `walk_files` para reducir drásticamente las llamadas a `Path.resolve()` y `Path.relative_to()` (operaciones costosas de E/S y procesamiento de strings) moviendo la validación de ruta al ámbito del padre mediante la manipulación directa de nombres en `os.DirEntry`.
+- `2026-08-21T12:43:47` **branding.py** (rendimiento): Optimizé `gradient_colors` para evitar el cálculo innecesario de segmentos de degradado cuando los colores son constantes, reduciendo la carga en el ciclo de renderizado de la UI.
+- `2026-08-21T12:42:51` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo el mapeo de palabras clave (`_KEYWORD_MAP`) en un conjunto (`set`) o accediendo directamente mediante `tokens.intersection`, evitando iterar sobre todo el diccionario y reduciendo la complejidad de búsqueda de O(N) a O(1) por cada token recibido.
 - `2026-08-21T12:33:38` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de registro y carpetas, y clarifiqué mediante docstrings el propósito de los métodos privados de la clase `StartupEntry`, facilitando la auditoría de seguridad del flujo de resolución de rutas.
 - `2026-08-21T12:33:27` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo `settings.py` documentando los límites y el propósito de cada clave en `_NUMERIC_LIMITS` y extrayendo la lógica repetitiva de validación de booleanos y rangos para reducir la complejidad cognitiva de las funciones de ayuda.
 - `2026-08-21T12:32:59` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings estructurados, type hints en todas las funciones y la extracción de la lógica de evaluación de ejecutables en `scan_file` hacia una estructura más clara, facilitando la comprensión del flujo de análisis de riesgos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T12:12:25` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes, tipado explícito en estructuras de datos, y mejorando los docstrings para clarificar el flujo de datos y las garantías de seguridad en `summarize` y `walk_files`.
 - `2026-08-21T12:03:51` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de Type Hints más precisos y docstrings descriptivos, especificando las restricciones de seguridad (`is_safe_to_modify`) y el comportamiento ante errores, facilitando el mantenimiento y la auditoría del código.
 - `2026-08-21T12:03:11` **branding.py** (legibilidad y documentación): Documenté con precisión los parámetros de entrada y el comportamiento de las funciones de dibujo (`draw_logo`, `draw_gradient_bar`, `draw_ring`) mediante docstrings estandarizados, facilitando la integración con los componentes de la interfaz.
-- `2026-08-21T12:02:37` **assistant.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de manipulación de contexto para mejorar la mantenibilidad y claridad del flujo de datos, facilitando la auditoría de seguridad del asistente.
-- `2026-08-21T12:01:53` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `StartupEntry._resolve_and_cache_path` añadiendo una validación explícita para asegurar que el path resuelto no sea nulo ni contenga caracteres inválidos antes de procesarlo, evitando posibles excepciones de tipo en `os.path.realpath` y fortaleciendo el manejo de errores ante entradas de registro malformadas.
-- `2026-08-21T11:52:47` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_Validators.path` al incluir un chequeo explícito contra `None` o valores vacíos antes de realizar operaciones de resolución de rutas, evitando posibles excepciones `TypeError` o `ValueError` al manejar entradas malformadas que no fueron capturadas inicialmente.

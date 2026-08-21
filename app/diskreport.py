@@ -193,13 +193,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos buscando archivos.
-    
-    Args:
-        directory: Directorio raíz desde el cual comenzar el escaneo.
-        skip_protected: Si es True, ignora rutas que `safety.is_protected_path` marca como peligrosas.
-        
-    Yields:
-        Tuplas conteniendo el objeto Path del archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -222,17 +215,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar links simbólicos y junctions para evitar bucles o salidas de contexto
+                        # Saltar links simbólicos y junctions para evitar bucles o salidas
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        entry_path = Path(entry.path).resolve()
-                        
-                        # Garantía: asegurarse que el archivo pertenece a la raíz original
-                        try:
-                            entry_path.relative_to(base_path)
-                        except ValueError:
-                            continue
+                        entry_path = Path(entry.path)
                         
                         if skip_protected and is_protected_path(entry_path):
                             continue

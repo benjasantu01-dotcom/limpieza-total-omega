@@ -258,6 +258,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """Realiza una mezcla lineal (lerp) entre dos colores HEX."""
+    if start == end: return start
     ratio_clamped = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
