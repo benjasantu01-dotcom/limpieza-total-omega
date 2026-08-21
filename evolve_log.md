@@ -1079,3 +1079,11 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T07:38:36` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la adición de Type Hints detallados, docstrings descriptivos que explican el propósito de funciones internas y la normalización de la nomenclatura de parámetros en funciones de análisis.
 - `2026-08-21T07:38:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T07:38:36` Corrida terminada. Total usado hoy: 180.
+- `2026-08-21T07:46:14` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-08-21T07:46:40` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se introdujeron type hints en funciones internas y se unificaron las excepciones en `collect_candidates` para mejorar la robustez y legibilidad, asegurando que la lógica de escaneo sea consistente con el manejo de errores del resto del módulo.
+- `2026-08-21T07:47:05` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejore la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones de puntuación y definiendo explícitamente las fórmulas de cálculo en los docstrings, facilitando así la auditoría de la lógica de negocio.
+- `2026-08-21T07:48:05` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-21T07:49:15` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Se introdujeron type hints en métodos de construcción de UI y se extrajeron los bloques de configuración de cada pestaña a métodos privados `_build_tab_*` con documentación clara, mejorando la legibilidad y estructura del archivo según las pautas de este enfoque.
+- `2026-08-21T07:49:31` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, la unificación de los nombres de las funciones internas de validación y la clarificación de los docstrings en las estructuras de datos, asegurando un estándar de código senior.
+- `2026-08-21T07:49:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T07:49:31` Corrida terminada. Total usado hoy: 184.

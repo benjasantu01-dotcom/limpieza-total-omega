@@ -153,23 +153,23 @@ def _collect_candidates(
 
     def _scan(root_path: Path) -> None:
         try:
-            for entry in os.scandir(root_path):
-                try:
-                    p = Path(entry.path)
-                    if skip_protected and (is_protected_path(p) or not is_safe_to_modify(p)):
-                        continue
-                    
-                    st = entry.stat(follow_symlinks=False)
-                    if getattr(st, 'st_file_attributes', 0) & 0x400: continue
-                            
-                    if entry.is_dir(follow_symlinks=False):
-                        inode = (st.st_dev, st.st_ino)
-                        if inode not in visited_inodes:
-                            visited_inodes.add(inode)
-                            _scan(p)
-                    elif entry.is_file() and st.st_size >= min_size:
-                        temp_groups[st.st_size].append(p)
-                except (OSError, PermissionError): continue
+            with os.scandir(root_path) as it:
+                for entry in it:
+                    try:
+                        if skip_protected and (is_protected_path(Path(entry.path)) or not is_safe_to_modify(Path(entry.path))):
+                            continue
+                        
+                        st = entry.stat(follow_symlinks=False)
+                        if getattr(st, 'st_file_attributes', 0) & 0x400: continue
+                                
+                        if entry.is_dir(follow_symlinks=False):
+                            inode = (st.st_dev, st.st_ino)
+                            if inode not in visited_inodes:
+                                visited_inodes.add(inode)
+                                _scan(Path(entry.path))
+                        elif entry.is_file() and st.st_size >= min_size:
+                            temp_groups[int(st.st_size)].append(Path(entry.path))
+                    except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
     if not directories: return {}
