@@ -235,7 +235,6 @@ def normalize(path: PathLike) -> Path:
             raise ValueError("Unidad de disco no disponible.")
         return p.resolve(strict=False)
     except (OSError, RuntimeError) as e:
-        # Re-raise como ValueError para mantener la firma del API, pero con detalle
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 
 
@@ -256,8 +255,11 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
+    except (ValueError, TypeError, OSError, RuntimeError):
+        return True
+
+    try:
         norm_str = os.path.normcase(str(p))
-        
         if any(norm_str.startswith(root) for root in _SYSTEM_ROOT_PATHS):
             return True
             
@@ -265,7 +267,7 @@ def is_protected_path(path: PathLike) -> bool:
             return True
             
         return p == Path(p.anchor)
-    except (PermissionError, OSError, ValueError, TypeError, RuntimeError):
+    except Exception:
         return True 
 
 
@@ -331,7 +333,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
 
-    # Validación preventiva de caracteres antes de la normalización
     if _has_invalid_chars(str(path)):
         raise UnsafePathError("Ruta contiene caracteres inválidos o de control.")
 
@@ -345,7 +346,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if p.exists():
             _check_file_integrity(p)
         else:
-            # Validación preventiva: si el archivo no existe, el padre no debe estar en zona protegida.
             parent = p.parent
             if parent.exists() and is_protected_path(parent):
                 raise UnsafePathError("Intento de escritura en directorio protegido.")

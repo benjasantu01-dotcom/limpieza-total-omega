@@ -247,13 +247,16 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
         by: 'size' para tamaño, 'date' para fecha de modificación.
         ascending: True para orden ascendente, False para descendente.
     """
-    if not isinstance(files, list): return []
+    if not isinstance(files, list) or not all(isinstance(f, JunkFile) for f in files):
+        return []
         
     registry: Dict[str, SortConfig] = {
         "size": SortConfig("size", lambda f: f.size_bytes),
         "date": SortConfig("date", lambda f: f.modified)
     }
-    config: SortConfig = registry.get(by.lower() if isinstance(by, str) else "size", registry["size"])
+    
+    key: str = by.lower() if isinstance(by, str) else "size"
+    config: SortConfig = registry.get(key, registry["size"])
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 
@@ -284,8 +287,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
             target: Path = _generate_unique_target(dest_base / safe_name)
             
-            ensure_safe_to_modify(src_path)
-            shutil.move(str(src_path), str(target))
+            if is_safe_to_modify(src_path):
+                ensure_safe_to_modify(src_path)
+                shutil.move(str(src_path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
             continue
     return dest_base

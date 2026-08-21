@@ -336,6 +336,11 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         raise UnsafePathError("Operación denegada: origen no es archivo regular.")
     if destination.exists():
         raise RuntimeError("Conflicto de seguridad: el destino ya existe en el sandbox.")
+    
+    # Validar permisos básicos de escritura antes de intentar operar
+    if not os.access(destination.parent, os.W_OK):
+        raise PermissionError(f"Sin permisos de escritura en {destination.parent}")
+        
     temp_dest = destination.parent / f".tmp_{uuid.uuid4().hex}"
     try:
         shutil.copy2(source, temp_dest)
@@ -389,7 +394,9 @@ def quarantine_file(
     destination = dest_dir / stored_name
     if destination.exists():
         raise UnsafePathError("Colisión de nombres detectada en el almacenamiento de cuarentena.")
+    
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
+    
     try:
         if not destination.exists():
             raise RuntimeError("Fallo en la confirmación de aislamiento.")
