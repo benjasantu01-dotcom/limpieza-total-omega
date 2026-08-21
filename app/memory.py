@@ -67,7 +67,6 @@ TRIM_WARNING: Final[str] = (
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 
 # Constantes para Win32 API: permisos mínimos necesarios para diagnóstico y gestión
-# PROCESS_QUERY_LIMITED_INFORMATION: 0x1000, PROCESS_SET_QUOTA: 0x0100
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA

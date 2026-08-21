@@ -184,6 +184,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     for area, weight in _WEIGHT_ITEMS_INT:
         ratio = _SCORERS[area](metrics)
+        if not math.isfinite(ratio): ratio = 0.0
         ratios[area] = ratio
         puntos = int(round(_clamp(ratio, 0.0, 1.0) * weight))
         breakdown[area] = puntos

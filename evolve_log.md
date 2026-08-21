@@ -782,3 +782,13 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-21T05:05:21` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Reforcé la seguridad en `walk_files` implementando una validación estricta de límites mediante `is_relative_to` (o equivalente lógico), asegurando que el recorrido no escape del directorio base mediante enlaces simbólicos o manipulaciones de ruta durante la iteración.
 - `2026-08-21T05:05:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T05:05:21` Corrida terminada. Total usado hoy: 120.
+- `2026-08-21T05:13:10` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-08-21T05:13:43` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado `_collect_candidates` para aplicar `is_protected_path` inmediatamente después de obtener la entrada del directorio antes de realizar cualquier operación de `stat` o recursión, cumpliendo con la política de seguridad defensiva de validar rutas antes de procesarlas.
+- `2026-08-21T05:14:23` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad defensiva de la función `compute_score` validando explícitamente que los resultados de los cálculos sean números finitos antes de procesarlos, previniendo así la propagación de datos corruptos o valores `NaN`/`inf` en la interfaz de usuario.
+- `2026-08-21T05:15:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-21T05:16:26` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-21T05:17:32` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-21T05:18:54` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva centralizando la validación de directorios en `on_target_choice_changed` para evitar que el usuario asigne manualmente rutas de sistema inseguras mediante el selector de carpetas, utilizando `is_safe_target_dir` antes de aplicar el cambio de estado.
+- `2026-08-21T05:19:09` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `trim_working_set` al evitar la apertura indiscriminada de procesos mediante la implementación de una validación previa de integridad de la ruta y evitando el uso de constantes de acceso excesivas, asegurando que solo se interactúe con ejecutables que pasan el filtro de `safety.py`.
+- `2026-08-21T05:19:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T05:19:09` Corrida terminada. Total usado hoy: 124.

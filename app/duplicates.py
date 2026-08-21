@@ -154,8 +154,11 @@ def _collect_candidates(
     def _scan(root_path: Path) -> None:
         try:
             for entry in os.scandir(root_path):
+                # Aplicamos validación de seguridad inmediata
+                if skip_protected and is_protected_path(Path(entry.path)):
+                    continue
+                
                 try:
-                    # Usamos el stat del entry para evitar llamadas adicionales a lstat/stat
                     st = entry.stat(follow_symlinks=False)
                     if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                             
@@ -166,7 +169,7 @@ def _collect_candidates(
                             _scan(Path(entry.path))
                     elif entry.is_file() and st.st_size >= min_size:
                         p = Path(entry.path)
-                        if not (skip_protected and (is_protected_path(p) or not is_safe_to_modify(p))):
+                        if not (skip_protected and not is_safe_to_modify(p)):
                             temp_groups[st.st_size].append(p)
                 except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
