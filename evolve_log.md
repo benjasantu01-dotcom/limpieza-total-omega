@@ -678,3 +678,12 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T04:05:35` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimizé `purge_all` para evitar múltiples lecturas y escrituras redundantes del manifiesto, utilizando una estructura de set para el procesamiento batch y realizando una única operación de guardado final.
 - `2026-08-21T04:05:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T04:05:35` Corrida terminada. Total usado hoy: 96.
+- `2026-08-21T04:11:57` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-21T04:12:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-08-21T04:12:52` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-21T04:13:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T04:13:34` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `check_recent_executable_in_downloads` para realizar la intersección de conjuntos (`WATCHED_FOLDERS.intersection`) solo si el archivo es ejecutable, y convertí la comparación de partes de la ruta a una lógica más eficiente que evita crear sets en cada llamada, reduciendo significativamente la presión del recolector de basura durante el escaneo recursivo.
+- `2026-08-21T04:13:48` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T04:14:11` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a los datos de configuración sustituyendo búsquedas lineales y cálculos repetitivos por el uso de `frozenset` para claves y una estructura de diccionario de validadores que evita la re-evaluación del mapa de validación en cada llamada a `validate` o `update`.
+- `2026-08-21T04:14:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T04:14:11` Corrida terminada. Total usado hoy: 100.

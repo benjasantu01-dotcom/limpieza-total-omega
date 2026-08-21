@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 226
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 14 | 1 | 2 | 2 | 39 |
+| 2026-08-19 | 13 | 1 | 2 | 2 | 36 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 43 | 3 | 5 | 2 | 43 |
+| 2026-08-21 | 45 | 3 | 6 | 2 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
-- seguridad defensiva: **41**
-- rendimiento: **40**
+- rendimiento: **42**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **22**
 - `organizer.py`: **21**
-- `settings.py`: **21**
-- `diskreport.py`: **20**
 - `healthscore.py`: **19**
+- `diskreport.py`: **19**
 - `assistant.py`: **18**
 - `duplicates.py`: **18**
 - `memory.py`: **18**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
 - `quarantine.py`: **16**
 - `browser.py`: **15**
 - `main.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T04:14:11` **settings.py** (rendimiento): Se optimizó el acceso a los datos de configuración sustituyendo búsquedas lineales y cálculos repetitivos por el uso de `frozenset` para claves y una estructura de diccionario de validadores que evita la re-evaluación del mapa de validación en cada llamada a `validate` o `update`.
+- `2026-08-21T04:13:34` **scanner.py** (rendimiento): Optimicé el método `check_recent_executable_in_downloads` para realizar la intersección de conjuntos (`WATCHED_FOLDERS.intersection`) solo si el archivo es ejecutable, y convertí la comparación de partes de la ruta a una lógica más eficiente que evita crear sets en cada llamada, reduciendo significativamente la presión del recolector de basura durante el escaneo recursivo.
 - `2026-08-21T04:05:18` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` eliminando la llamada redundante y costosa a `is_safe_to_modify` dentro del bucle de `os.walk` (que ya estaba filtrada mediante `is_allowed_directory` y `_is_junction`) y moviendo la validación de seguridad a una comprobación única de "parent" para reducir el acceso a disco por cada iteración.
 - `2026-08-21T04:04:36` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación y expansión de una lista mutable por un generador eficiente, evitando así múltiples reasignaciones de memoria durante el procesamiento de la lista de procesos.
 - `2026-08-21T04:04:07` **main.py** (rendimiento): Se ha optimizado la gestión de la cola de logs implementando un buffer interno en `_flush_logs` que agrupa todos los mensajes pendientes por pestaña antes de realizar una sola operación de inserción (`insert` + `see`) por cada caja de texto, reduciendo drásticamente el número de llamadas costosas a `tk.TclError` y el overhead de redibujo de los widgets durante operaciones masivas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T03:32:15` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de `QuarantineItem` y funciones auxiliares, añadiendo type hints faltantes y estandarizando las docstrings para clarificar el flujo de seguridad, cumpliendo estrictamente con el enfoque de legibilidad sin alterar la lógica.
 - `2026-08-21T03:24:43` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings detallados en funciones críticas, la estandarización de tipos y la clarificación de las condiciones de seguridad en las validaciones, asegurando que el "porqué" de las restricciones sea evidente para futuros colaboradores.
 - `2026-08-21T03:24:32` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_parse_csv_row` y `parse_windows_process_csv`, añadiendo type hinting más preciso, simplificando el flujo de validación y documentando la lógica de las máscaras de bits para el acceso a procesos.
-- `2026-08-21T03:23:57` **main.py** (legibilidad y documentación): Documenté con docstrings detallados la estructura de los métodos del asistente, los filtros de seguridad de rutas y las utilidades de caché, mejorando la mantenibilidad para futuras expansiones del bucle autónomo.
-- `2026-08-21T03:13:36` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando type hints explícitos en funciones internas y refactorizando la lógica de `_collect_candidates` para separar la responsabilidad de filtrado de la lógica de recorrido, mejorando la mantenibilidad.

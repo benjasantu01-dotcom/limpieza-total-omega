@@ -162,8 +162,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if path is None or is_protected_path(path):
         return None
     
-    parts = set(p.lower() for p in path.parts)
-    if not WATCHED_FOLDERS.intersection(parts):
+    # Verificación eficiente: comprobar existencia en padres sin generar sets intermedios innecesarios
+    if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         return None
         
     try:
