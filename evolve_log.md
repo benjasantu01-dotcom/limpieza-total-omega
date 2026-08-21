@@ -565,3 +565,4 @@ FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_i
 - `2026-08-21T20:31:12` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-21T20:41:23` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-21T20:51:36` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-21T21:01:49` Presupuesto diario agotado (350 usados). Corte hasta mañana.
