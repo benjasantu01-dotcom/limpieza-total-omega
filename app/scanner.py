@@ -132,7 +132,8 @@ class Scanner:
             if entry.is_file(follow_symlinks=False):
                 # Ignorar archivos inaccesibles o bloqueados por sistema
                 try:
-                    if entry.stat().st_size == 0:
+                    stat_info = entry.stat()
+                    if stat_info.st_size == 0:
                         return
                 except (OSError, PermissionError):
                     return
@@ -252,11 +253,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    try:
-                        if entry is not None:
-                            scanner.process_entry(entry, stack)
-                    except Exception as e:
-                        logger.debug(f"Error procesando entrada individual: {e}")
+                    if entry is not None:
+                        scanner.process_entry(entry, stack)
         except (PermissionError, OSError) as e:
             logger.debug(f"Error accediendo a directorio {current_dir}: {e}")
             continue

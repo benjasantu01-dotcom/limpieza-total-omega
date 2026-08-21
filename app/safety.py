@@ -95,7 +95,7 @@ def is_running_as_admin() -> bool:
         return os.getuid() == 0
     try:
         return bool(ctypes.windll.shell32.IsUserAnAdmin())
-    except (AttributeError, OSError):
+    except (AttributeError, OSError, MemoryError):
         return False
 
 
@@ -106,7 +106,7 @@ def _is_permission_denied(e: Exception) -> bool:
 
 def _has_invalid_chars(path_str: str) -> bool:
     """Detecta caracteres ilegales en rutas (null bytes, control chars, RTL marks)."""
-    if not path_str: return True
+    if not isinstance(path_str, str) or not path_str: return True
     return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str))
 
 
@@ -123,13 +123,13 @@ def _has_alternate_data_stream(path: Path) -> bool:
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
     """Consulta atributos win32 para verificar flags de sistema u oculto."""
-    if os.name != 'nt' or path is None:
+    if os.name != 'nt' or not isinstance(path, Path):
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs == -1: return False # Fallback si falla, no asumir riesgo
+        if attrs == -1: return False
         return bool(attrs & (0x02 | 0x04))
-    except (OSError, AttributeError, TypeError):
+    except (OSError, AttributeError, TypeError, ValueError):
         return False 
 
 
@@ -138,19 +138,19 @@ def _is_reparse_point(path: Path) -> bool:
     """Detecta puntos de reparse (junctions/symlinks) vía API de bajo nivel."""
     if os.name != 'nt':
         return path.is_symlink()
-    if path is None:
+    if not isinstance(path, Path):
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs == -1: return False # Fallback si falla, no asumir riesgo
+        if attrs == -1: return False
         return bool(attrs & 0x400)
-    except (OSError, AttributeError, TypeError):
+    except (OSError, AttributeError, TypeError, ValueError):
         return False
 
 
 def _is_file_in_use(path: Path) -> bool:
     """Verifica exclusividad de acceso intentando abrir el archivo con modo lectura."""
-    if path is None or not path.exists() or not path.is_file():
+    if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
     try:
         handle = os.open(path, os.O_RDONLY | getattr(os, 'O_BINARY', 0))
@@ -162,7 +162,7 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(path: Path) -> None:
     """Realiza validaciones físicas de integridad de archivo (uso, flags, permisos)."""
-    if path is None:
+    if not isinstance(path, Path):
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
     
     if not path.exists():

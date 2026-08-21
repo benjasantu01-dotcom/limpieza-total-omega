@@ -127,6 +127,7 @@ class _Validators:
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Verifica recursivamente que la ruta sea segura y no sea un enlace simbólico/junction."""
+        if not path_str: return False
         try:
             path_obj = Path(path_str).resolve(strict=False)
             if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
@@ -166,7 +167,7 @@ class _Validators:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
             resolved = path_obj.resolve(strict=False)
-            if not str(resolved).startswith(str(path_obj.anchor)): return None
+            if not resolved.anchor or not str(resolved).startswith(str(path_obj.anchor)): return None
             return str(resolved) if _Validators._is_safe_path(str(resolved)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None
