@@ -1540,3 +1540,46 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-21T00:52:38` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` y `stage_for_review` asegurando que ninguna operación de movimiento atraviese límites de volumen físico (cross-drive move), evitando errores de `shutil.move` que podrían dejar archivos en estados intermedios inconsistentes.
 - `2026-08-21T00:52:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T00:52:38` Corrida terminada. Total usado hoy: 20.
+- `2026-08-21T00:58:15` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-21T00:58:50` Tests FALLARON:
+```
+^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+base_str = '/tmp/pytest-of-runner/pytest-1/test_corrupt_manifest_does_not0/_Cuarentena'
+
+    @lru_cache(maxsize=4)
+    def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
+        """Carga interna: lee el JSON de manifiesto para aprovechar la caché."""
+        base_path = Path(base_str)
+        path = _manifest_path(base_path)
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if not isinstance(raw_data, list):
+                return []
+            valid_items: List[QuarantineItem] = []
+            for entry in raw_data:
+                if isinstance(entry, dict):
+                    item = QuarantineItem.from_dict(entry)
+                    if item:
+                        valid_items.append(item)
+            return valid_items
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:291: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 1.23s
+
+```
+- `2026-08-21T00:58:50` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad en `_atomic_isolate_file` añadiendo una validación explícita para asegurar que el archivo de destino (dentro del sandbox) no sea un enlace simbólico, reforzando la protección contra ataques de redirección de rutas y manteniendo la integridad del aislamiento.
+- `2026-08-21T00:59:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-21T00:59:46` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-21T00:59:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-21T00:59:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T00:59:55` Corrida terminada. Total usado hoy: 24.
