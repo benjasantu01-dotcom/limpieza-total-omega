@@ -402,3 +402,41 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-21T13:45:30` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-08-21T13:45:30` Rotación — log: 1257 líneas archivadas; metrics: 4 registros archivados; 2 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T13:45:30` Corrida terminada. Total usado hoy: 324.
+- `2026-08-21T13:53:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-21T13:54:37` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-21T13:55:09` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `settings.py` ante fallos de E/S y corrupción de archivos mediante la implementación de una estrategia de "reintentos con retroceso" (backoff) al guardar, y añadiendo comprobaciones de integridad más estrictas que previenen escrituras parciales o estados inconsistentes cuando el disco está lleno o el sistema deniega permisos.
+- `2026-08-21T13:55:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-21T13:56:10` Tests FALLARON:
+```
+............................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+____________ test_security_question_without_findings_is_reassuring _____________
+
+    def test_security_question_without_findings_is_reassuring():
+        contexto = _contexto_lleno()
+>       contexto.suspicious_count = 0
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_assistant.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = SystemContext(score=61, grade='C', junk_mb=2400.0, suspicious_count=3, suspicious_warnings=1, memory_available_percent...isk_free_percent=6.0, duplicate_mb=900.0, startup_count=19, quarantined_count=2, browser_cache_mb=430.0, analyzed=True)
+name = 'suspicious_count', value = 0
+
+>   ???
+E   dataclasses.FrozenInstanceError: cannot assign to field 'suspicious_count'
+
+<string>:4: FrozenInstanceError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_is_reassuring - dataclasses.FrozenInstanceError: cannot assign to field 'suspicious_count'
+1 failed, 298 passed in 1.22s
+
+```
+- `2026-08-21T13:56:10` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva de `assistant.py` centralizando la validación de entrada de `ask` y `local_answer` mediante un chequeo de contenido más estricto contra inyecciones de control, y fortalecí el `SystemContext` para que sea inmutable después de su construcción, evitando manipulaciones accidentales de los datos de salud una vez validados.
+- `2026-08-21T13:56:31` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha añadido una validación de seguridad adicional en `save_logo_svg` utilizando `is_protected_path` sobre el directorio padre para garantizar que la operación de escritura no ocurra dentro de una ruta protegida del sistema antes de intentar cualquier creación de directorios.
+- `2026-08-21T13:56:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T13:56:31` Corrida terminada. Total usado hoy: 328.
