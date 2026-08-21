@@ -818,7 +818,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return self._get_cached(key)
 
     def _get_cached(self, key: str, provider: Optional[Callable[[], Any]] = None, force: bool = False) -> Any:
-        """Recupera datos del caché LRU o ejecuta el provider si el TTL expiró."""
+        """
+        Recupera datos del caché LRU o ejecuta el provider si el TTL expiró.
+        El sistema de caché implementa TTL (Time-To-Live) para evitar datos obsoletos.
+        """
         now = time.time()
         # Invalidation check: Si el provider es None y no forzamos, solo leemos
         if not force and key in self._cache:
@@ -1602,7 +1605,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
-        """Procesa consultas con el asistente local."""
+        """
+        Procesa consultas con el asistente local.
+        El motor de IA es local por diseño y garantiza que los datos sensibles
+        no salgan de la máquina. La función `ask` retorna una respuesta procesada
+        por el motor local o una sugerencia de acción.
+        """
         texto = (question or (self.question_entry.get() if hasattr(self, 'question_entry') else "")).strip()
         texto = "".join(c for c in texto if c.isprintable())[:500]
         

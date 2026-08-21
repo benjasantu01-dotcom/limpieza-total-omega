@@ -67,6 +67,7 @@ TRIM_WARNING: Final[str] = (
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 
 # Constantes para Win32 API: permisos mínimos necesarios para diagnóstico y gestión
+# PROCESS_QUERY_LIMITED_INFORMATION: 0x1000, PROCESS_SET_QUOTA: 0x0100
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -179,43 +180,35 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """Extracts a ProcessMemory object from a CSV line."""
+    """Valida y convierte una línea CSV de PowerShell en un objeto ProcessMemory."""
     if not isinstance(csv_line, str):
         return None
-    line = csv_line.strip()
-    if not line or "," not in line:
-        return None
-    
-    parts = line.rsplit(",", 2)
-    if len(parts) < 3:
+        
+    # Formato esperado: Name,PID,WorkingSet
+    parts = [p.strip().strip("'\"") for p in csv_line.split(",")]
+    if len(parts) != 3:
         return None
         
-    try:
-        name = parts[0].strip().strip("'\"")
-        pid_raw = parts[1].strip().strip("'\"")
-        ws_raw = parts[2].strip().strip("'\"")
-        
-        if not name or not ws_raw.isdigit() or not pid_raw.isdigit():
-            return None
+    name, pid_str, ws_str = parts
+    if not name or not pid_str.isdigit() or not ws_str.isdigit():
+        return None
             
-        return ProcessMemory(name=name, pid=int(pid_raw), working_set=int(ws_raw))
-    except (ValueError, TypeError, IndexError):
-        return None
+    return ProcessMemory(name=name, pid=int(pid_str), working_set=int(ws_str))
 
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Converts multi-line PowerShell output into a ProcessMemory list."""
+    """Procesa salida de PowerShell y retorna lista ordenada por consumo de RAM."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    processes = []
+    processes: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
         proc = _parse_csv_row(line)
         if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
             processes.append(proc)
             
-    processes.sort(key=lambda p: p.working_set, reverse=True)
-    return processes[:max(0, limit)]
+    # Ordenar por consumo descendente y aplicar límite
+    return sorted(processes, key=lambda p: p.working_set, reverse=True)[:max(0, limit)]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:
