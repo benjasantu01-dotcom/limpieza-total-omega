@@ -620,3 +620,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T03:33:24` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en todas las funciones y se han reforzado los type hints para asegurar una mayor claridad en el flujo de datos de los hallazgos.
 - `2026-08-21T03:33:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T03:33:24` Corrida terminada. Total usado hoy: 84.
+- `2026-08-21T03:41:25` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-08-21T03:41:51` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._validate_enum_str, _Validators.int, _Validators.str
+- `2026-08-21T03:42:19` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenimiento del código documentando las responsabilidades de los métodos en `StartupEntry` y estandarizando los type hints para asegurar que los desarrolladores entiendan las restricciones de seguridad al extender la lógica de resolución de rutas.
+- `2026-08-21T03:43:01` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Se optimizó el proceso de decisión en `local_answer` convirtiendo el `_KEYWORD_MAP` en un `set` de claves y utilizando un mapeo directo para evitar iterar tokens innecesariamente, mejorando la eficiencia en la búsqueda de intención.
+- `2026-08-21T03:43:40` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `PALETTE_RGB` y `HEX_TO_KEY` eliminando la creación de diccionarios intermedios innecesarios y simplificando la lógica de mapeo para mejorar la eficiencia en la carga inicial y el acceso a datos.
+- `2026-08-21T03:43:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T03:43:40` Corrida terminada. Total usado hoy: 88.

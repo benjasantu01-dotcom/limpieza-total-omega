@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 8
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 9
 - Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 21 | 1 | 3 | 2 | 43 |
+| 2026-08-19 | 17 | 1 | 3 | 2 | 43 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 35 | 2 | 4 | 1 | 42 |
+| 2026-08-21 | 37 | 2 | 5 | 2 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
-- legibilidad y documentación: **53**
+- legibilidad y documentación: **54**
 - seguridad defensiva: **42**
-- robustez ante casos límite: **39**
-- rendimiento: **33**
+- robustez ante casos límite: **35**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `organizer.py`: **20**
-- `healthscore.py`: **19**
 - `assistant.py`: **19**
 - `diskreport.py`: **19**
-- `duplicates.py`: **18**
-- `memory.py`: **18**
+- `healthscore.py`: **18**
 - `quarantine.py`: **17**
+- `duplicates.py`: **17**
+- `memory.py`: **17**
 - `scanner.py`: **16**
 - `browser.py`: **15**
-- `main.py`: **14**
-- `startup.py`: **9**
-- `branding.py`: **9**
+- `main.py`: **13**
+- `startup.py`: **10**
+- `branding.py`: **10**
 - `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T03:43:40` **branding.py** (rendimiento): Optimicé el cálculo de `PALETTE_RGB` y `HEX_TO_KEY` eliminando la creación de diccionarios intermedios innecesarios y simplificando la lógica de mapeo para mejorar la eficiencia en la carga inicial y el acceso a datos.
+- `2026-08-21T03:42:19` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento del código documentando las responsabilidades de los métodos en `StartupEntry` y estandarizando los type hints para asegurar que los desarrolladores entiendan las restricciones de seguridad al extender la lógica de resolución de rutas.
 - `2026-08-21T03:33:24` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en todas las funciones y se han reforzado los type hints para asegurar una mayor claridad en el flujo de datos de los hallazgos.
 - `2026-08-21T03:33:04` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructuradas en las funciones de validación, clarificando las precondiciones y el flujo de excepciones, además de estandarizar la nomenclatura de los argumentos internos para mayor coherencia.
 - `2026-08-21T03:32:15` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos de `QuarantineItem` y funciones auxiliares, añadiendo type hints faltantes y estandarizando las docstrings para clarificar el flujo de seguridad, cumpliendo estrictamente con el enfoque de legibilidad sin alterar la lógica.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T03:02:56` **assistant.py** (legibilidad y documentación): Mejora la documentación técnica y legibilidad del módulo mediante la adición de docstrings precisos en las constantes y funciones clave, clarificando la jerarquía de validación de seguridad y el rol de las estructuras de datos.
 - `2026-08-21T03:02:30` **startup.py** (manejo de errores y validación de entradas): He mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV contenga al menos dos valores antes de procesarlos, evitando así posibles errores de `IndexError` al acceder a los elementos por índice y añadiendo una comprobación de tipo más estricta sobre la fila.
 - `2026-08-21T03:01:54` **settings.py** (manejo de errores y validación de entradas): Se reforzó la validación de `_Validators.path` para prevenir ataques de desbordamiento de memoria o errores de sistema al procesar rutas malintencionadas, y se encapsuló la lógica de recuperación de la clave de API para garantizar que nunca se retorne `None` inesperado.
-- `2026-08-21T03:01:14` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las verificaciones heurísticas mediante la validación explícita de `path` y `entry` al inicio de cada función de chequeo, evitando excepciones por atributos faltantes y asegurando una gestión de errores más limpia.
-- `2026-08-21T02:52:41` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `is_protected_path` ante errores de sistema (como rutas inexistentes o inaccesibles) envolviendo la normalización en una lógica de validación previa más estricta para asegurar que el `lru_cache` no bloquee permanentemente rutas válidas ante fallos temporales.

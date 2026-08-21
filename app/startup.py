@@ -84,26 +84,23 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida que la extensión sea ejecutable y no sea un enlace simbólico (evita loops)."""
+        """Verifica si el archivo es un ejecutable válido y no un enlace simbólico."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Elimina caracteres de control y espacios en blanco no imprimibles."""
+        """Limpia la línea de comando eliminando caracteres de control no imprimibles."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae la ruta absoluta delimitada por comillas dobles.
+        Extrae la ruta absoluta delimitada por comillas dobles, validando integridad.
         
-        Validaciones:
-            1. Verifica presencia de cierre de comillas.
-            2. Filtra caracteres prohibidos en rutas de sistema.
-            3. Aplica chequeo de seguridad via `is_protected_path`.
+        Nota: Devuelve una ruta vacía si la ruta está protegida por `is_protected_path`.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -125,10 +122,10 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Resuelve y normaliza una ruta, verificando su existencia real en disco.
+        Resuelve y normaliza la ruta del ejecutable utilizando memoización.
         
-        Usa `_EXISTS_CACHE` para memoizar resultados de `realpath` y evitar
-        consultas repetitivas al sistema de archivos, mejorando la performance.
+        Implementa validación estricta: las rutas relativas o protegidas son ignoradas.
+        La resolución final utiliza `os.path.realpath` para desambiguar junctions.
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
@@ -142,12 +139,10 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
                 
-            # Verificación de integridad: evita seguir enlaces simbólicos maliciosos
             if is_protected_path(p) or p.is_symlink():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
             
-            # Realpath normaliza la ruta resolviendo junctions o atajos del sistema
             real_path = os.path.realpath(str(p))
             if not os.path.lexists(real_path) or is_protected_path(Path(real_path)):
                 _EXISTS_CACHE[path_str] = False
@@ -161,11 +156,10 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, cmd: str) -> str:
         """
-        Selecciona la estrategia de resolución de ruta según el formato del comando.
+        Estrategia de resolución según el formato de línea de comando.
         
-        Mitiga inyecciones de shell detectando caracteres de control y 
-        delegando la extracción de la ruta al método correspondiente según
-        presencia de comillas o parámetros adicionales.
+        Detecta si el comando usa comillas para acotación de ruta o si es un
+        ejecutable simple, descartando comandos con caracteres peligrosos de shell.
         """
         if not cmd or not isinstance(cmd, str):
             return ""
@@ -186,10 +180,10 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Obtiene la ruta absoluta del ejecutable de forma perezosa.
+        Retorna la ruta absoluta del ejecutable (resolución perezosa).
         
-        El resultado se almacena en `_exec_cache` durante la primera llamada.
-        Si la ruta original es sospechosa o no existe, retorna una cadena vacía.
+        El resultado se cachea en `_exec_cache`. Retorna "" si la ruta es inválida
+        o apunta a una ubicación protegida por `safety.py`.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -252,8 +246,8 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
     """
     Convierte el CSV crudo generado por PowerShell en objetos StartupEntry.
     
-    Aplica filtros de seguridad: omite entradas con caracteres inválidos, 
-    rutas protegidas o comandos que sugieran ejecución de scripts de PowerShell.
+    Filtra entradas basadas en la seguridad del sistema y nombres de comandos 
+    sospechosos para prevenir lecturas erróneas.
     """
     if not isinstance(text, str) or not text.strip():
         return []
@@ -269,7 +263,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
                 if not isinstance(row, dict) or len(row) < 2:
                     continue
                 
-                # Validar que los valores existan y no sean None
                 row_values = list(row.values())
                 if len(row_values) < 2 or row_values[0] is None or row_values[1] is None:
                     continue

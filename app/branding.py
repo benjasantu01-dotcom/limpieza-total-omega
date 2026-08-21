@@ -246,8 +246,9 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     
-    if key := HEX_TO_KEY.get(value):
-        return PALETTE_RGB[key]
+    # Intenta obtener de PALETTE_RGB directamente si el color es de la marca
+    if (key := HEX_TO_KEY.get(value)) and (rgb := PALETTE_RGB.get(key)):
+        return rgb
         
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
