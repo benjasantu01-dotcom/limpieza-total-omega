@@ -270,6 +270,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
+        
+        # Validación de seguridad: no permitir carpetas de sistema
+        if is_protected_path(dest_base):
+            return None
+
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
         # Verificación estricta de permisos y seguridad con el módulo safety

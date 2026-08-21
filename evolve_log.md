@@ -1478,3 +1478,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-21T11:32:06` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-21T11:32:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T11:32:06` Corrida terminada. Total usado hoy: 272.
+- `2026-08-21T11:40:52` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-21T11:41:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-21T11:43:11` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de `on_trim_process` y `on_restore_quarantine` mediante la validación temprana de entradas y el uso de `try-except` específico para capturar errores de formato o lógica antes de ejecutar tareas asíncronas, evitando así comportamientos inesperados en el pool de hilos.
+- `2026-08-21T11:43:41` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `trim_working_set` y `_get_process_path`, asegurando que el cierre de `handle` esté garantizado ante excepciones inesperadas y validando explícitamente los parámetros de entrada antes de su uso para evitar el paso de objetos nulos o mal formados a las llamadas de la API de Windows.
+- `2026-08-21T11:44:09` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré `stage_for_review` para validar que `review_dir` no sea una ruta de sistema antes de crearla y añadí verificaciones de tipo y estado en las entradas para prevenir excepciones inesperadas durante la ejecución de los bucles.
+- `2026-08-21T11:44:26` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` agregando validaciones preventivas contra rutas inexistentes, tipos de archivos no compatibles y estados de bloqueo antes de iniciar cualquier operación de I/O, siguiendo el enfoque de manejo de errores defensivo.
+- `2026-08-21T11:44:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T11:44:26` Corrida terminada. Total usado hoy: 276.

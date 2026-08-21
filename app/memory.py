@@ -320,7 +320,6 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"):
         return None
     
-    # MAX_PATH standard es 260, usamos un margen superior de seguridad
     buffer_size = 1024
     size = ctypes.c_ulong(buffer_size)
     buf = ctypes.create_unicode_buffer(buffer_size)
@@ -353,7 +352,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]
     if not path:
         return False, "No se pudo verificar la ubicación del ejecutable."
     
-    # Prevenir ataques mediante caracteres de control RTL (U+202E, etc)
     path_bytes = path.encode("utf-8", errors="ignore")
     forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
     if any(seq in path_bytes for seq in forbidden_sequences):
@@ -400,4 +398,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

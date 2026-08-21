@@ -338,29 +338,35 @@ def quarantine_file(
     """Orquesta el aislamiento de un archivo: valida, copia y registra en el manifiesto."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
+    
     source_path = Path(source).expanduser().resolve()
     if not source_path.exists():
         raise FileNotFoundError(f"El archivo origen no existe: {source_path}")
     if not source_path.is_file():
-        raise UnsafePathError("Solo se aceptan archivos regulares.")
+        raise UnsafePathError("Solo se aceptan archivos regulares, no directorios.")
     if source_path.is_symlink():
         raise UnsafePathError("No se permite cuarentena de enlaces simbólicos.")
+    
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     if str(source_path).startswith(("\\\\", "//")):
         raise UnsafePathError("No se permite cuarentena en recursos compartidos de red.")
+    
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
+    
     try:
-        file_size = source_path.stat().st_size
+        file_stats = source_path.stat()
+        file_size = file_stats.st_size
     except OSError as e:
         raise OSError(f"No se pudo determinar el tamaño del archivo origen: {e}")
     
-    if not source_path.exists() or source_path.stat().st_size != file_size:
-        raise OSError("El archivo origen cambió o desapareció antes de ser aislado.")
-
+    if _is_file_locked(source_path):
+        raise IOError("El archivo está bloqueado por otro proceso.")
+    
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
-        raise OSError("Espacio insuficiente en disco.")
+        raise OSError("Espacio insuficiente en disco para el aislamiento.")
+        
     item_id = uuid.uuid4().hex[:12]
     stored_name = _generate_safe_stored_name(source_path, item_id)
     destination = dest_dir / stored_name
@@ -368,8 +374,6 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
-        if not destination.exists():
-            raise OSError("Fallo en la confirmación de aislamiento.")
         if source_path.exists():
             try:
                 os.remove(source_path)
