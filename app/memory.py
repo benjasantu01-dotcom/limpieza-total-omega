@@ -320,8 +320,10 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"):
         return None
     
-    size = ctypes.c_ulong(1024)
-    buf = ctypes.create_unicode_buffer(size.value)
+    # MAX_PATH standard es 260, usamos un margen superior de seguridad
+    buffer_size = 1024
+    size = ctypes.c_ulong(buffer_size)
+    buf = ctypes.create_unicode_buffer(buffer_size)
     
     try:
         if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
@@ -357,7 +359,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]
     if any(seq in path_bytes for seq in forbidden_sequences):
         return False, "Ruta de proceso sospechosa (caracteres control)."
 
-    normalized_path = os.path.normcase(os.path.normpath(path))
+    normalized_path = os.normcase(os.path.normpath(path))
     if is_protected_path(normalized_path):
         return False, "Operación denegada: ruta de ejecutable protegida."
         

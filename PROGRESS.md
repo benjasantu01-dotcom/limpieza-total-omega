@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 129 | 9 | 17 | 4 | 117 |
-| 2026-08-21 | 99 | 9 | 13 | 12 | 95 |
+| 2026-08-20 | 129 | 9 | 17 | 4 | 113 |
+| 2026-08-21 | 101 | 9 | 14 | 13 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
 - rendimiento: **43**
+- seguridad defensiva: **40**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **21**
 - `duplicates.py`: **20**
 - `assistant.py`: **19**
+- `organizer.py`: **18**
+- `memory.py`: **18**
 - `browser.py`: **17**
-- `organizer.py`: **17**
-- `memory.py`: **17**
 - `scanner.py`: **16**
 - `main.py`: **15**
 - `quarantine.py`: **15**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T09:49:39` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de *path traversal* (o inyección de rutas) mediante la validación estricta de que el nombre de destino generado, tras incluir el nombre del archivo original, resida efectivamente dentro del directorio de revisión (`dest_base`), evitando que un nombre de archivo malicioso intente escapar a rutas superiores.
+- `2026-08-21T09:49:12` **memory.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `_get_process_path` para prevenir desbordamientos de buffer y mejorar la integridad de las rutas recuperadas, asegurando que el tamaño del buffer se maneje de forma explícita antes de la llamada a la API `QueryFullProcessImageNameW`.
 - `2026-08-21T09:39:49` **healthscore.py** (seguridad defensiva): Se reforzó la integridad defensiva de `compute_score` añadiendo una validación explícita para evitar que configuraciones de límites negativas o nulas (que podrían surgir de una corrupción en `settings.json`) resulten en cálculos matemáticos inválidos o divisiones por cero.
 - `2026-08-21T09:39:24` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` asegurando que las rutas pasen por `is_protected_path` antes de cualquier procesamiento, manteniendo la consistencia con las reglas de seguridad al evitar operaciones en archivos potencialmente críticos, independientemente de los filtros de tamaño.
 - `2026-08-21T09:30:12` **browser.py** (seguridad defensiva): Se reforzó `_is_path_inside_base` para validar que `real_target` sea un subdirectorio estricto o igual a `real_base` usando `pathlib.Path.parts`, evitando comparaciones de strings vulnerables a rutas que comparten prefijos parciales.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T08:49:02` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas mal formadas o tipos inesperados mediante una validación estricta y segura en la extracción de datos, evitando que valores inesperados (como `None` o estructuras anidadas) causen errores en tiempo de ejecución o corrompan el estado del asistente.
 - `2026-08-21T08:47:59` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando llamadas redundantes a `os.stat` y normalizando el acceso a caché mediante la simplificación de la resolución de rutas en cada iteración.
 - `2026-08-21T08:39:03` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado de directorios mediante el uso de `path.parts` para verificar la inclusión en `WATCHED_FOLDERS`, evitando la conversión de la ruta completa a `str` y múltiples llamadas a `lower()` dentro del bucle de escaneo.
-- `2026-08-21T08:37:56` **quarantine.py** (rendimiento): Se optimizó `purge_all` para reducir drásticamente la complejidad algorítmica de O(N*M) a O(N) mediante el uso de un diccionario para el acceso directo a los ítems, evitando múltiples recorridos y lecturas innecesarias del manifiesto.
-- `2026-08-21T08:29:13` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante la eliminación de la recarga redundante del comando de PowerShell y la implementación de una lista de exclusión basada en un `set` para búsquedas O(1) en lugar de una tupla.
