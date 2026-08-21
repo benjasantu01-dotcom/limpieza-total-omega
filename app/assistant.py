@@ -240,7 +240,8 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     cast, min_v, max_v = spec
     try:
         val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-        if val is None or isinstance(val, (list, dict, set, tuple, bool)):
+        # Rechazar tipos complejos o no numéricos antes de intentar cast
+        if val is None or isinstance(val, (list, dict, set, tuple, bool, str)):
             return False
             
         clean_val = float(val)
