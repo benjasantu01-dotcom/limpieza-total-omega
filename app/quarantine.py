@@ -412,6 +412,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     quarantine_item = next((item for item in items if item.item_id == item_id), None)
     if not quarantine_item:
         raise KeyError(f"No se encontró el ítem: {item_id}")
+    
     base_path = quarantine_dir(base)
     stored_file = (base_path / quarantine_item.stored_name).resolve()
     if not _is_valid_quarantine_path(stored_file, base_path):
@@ -422,17 +423,21 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise FileNotFoundError("Archivo en cuarentena no localizado en disco.")
     if not quarantine_item.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida.")
+    
     destination = Path(quarantine_item.original_path).resolve()
+    _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
         raise UnsafePathError("Restauración denegada: destino protegido por sistema.")
     if destination.exists():
         raise FileExistsError(f"Error: el destino {destination} ya existe.")
+    
     try:
         ensure_safe_to_modify(destination.parent, allow_sensitive=False)
         destination.parent.mkdir(parents=True, exist_ok=True)
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo crítico durante la restauración: {e}")
+        
     items.remove(quarantine_item)
     save_manifest(items, base)
     return destination

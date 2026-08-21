@@ -385,6 +385,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if os.name != "nt":
         return False, "Solo disponible en Windows."
     
+    kernel32 = getattr(ctypes.windll, "kernel32", None)
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):
+        return False, "Error de sistema: APIs de memoria no disponibles."
+
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
@@ -393,14 +398,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid) or target_pid == os.getpid():
         return False, "Operación denegada: PID fuera de rango o protegido."
     
-    kernel32 = getattr(ctypes.windll, "kernel32", None)
-    psapi = getattr(ctypes.windll, "psapi", None)
-    if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):
-        return False, "Error de sistema: APIs de memoria no disponibles."
-
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        return False, "Acceso denegado al proceso (podría haber finalizado o requerido privilegios elevados)."
+        return False, "Acceso denegado al proceso."
         
     try:
         valid, reason = _is_safe_to_trim(proc_handle)
@@ -414,5 +414,4 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        if proc_handle:
-            kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)

@@ -176,10 +176,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if not os.access(home, os.R_OK | os.W_OK):
                 raise OSError(f"Permisos insuficientes en directorio usuario: {home}")
             
-            # 2. Asegurar que la ruta donde vive la app sea segura para evitar riesgos
-            current_app_dir = Path(__file__).parent.resolve()
+            # 2. Asegurar que la ruta donde vive la app sea segura para evitar riesgos de ejecución maliciosa
+            current_app_dir = Path(__file__).resolve().parent
             if not safety.is_safe_to_modify(current_app_dir):
-                raise OSError(f"La aplicación se ejecuta desde una ruta restringida: {current_app_dir}")
+                raise OSError(f"La aplicación se ejecuta desde una ruta restringida o insegura: {current_app_dir}")
                 
         except Exception as e:
             raise OSError(f"Fallo al validar entorno seguro: {e}")

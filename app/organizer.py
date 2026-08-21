@@ -296,10 +296,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
             target_candidate: Path = dest_base / safe_name
-            target: Path = _generate_unique_target(target_candidate)
+            target: Path = _generate_unique_target(target_candidate).resolve()
             
             # Verificación estricta contra path traversal: asegurar que el destino final resida en la carpeta de revisión
-            if not target.resolve().parent.is_relative_to(dest_base):
+            if not target.is_relative_to(dest_base):
                 continue
                 
             if is_safe_to_modify(src_path):
