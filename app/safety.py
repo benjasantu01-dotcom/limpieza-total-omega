@@ -127,10 +127,10 @@ def _is_system_or_hidden(path: Path) -> bool:
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs == -1: return True # Error al consultar, asumir riesgo
+        if attrs == -1: return False # Fallback si falla, no asumir riesgo
         return bool(attrs & (0x02 | 0x04))
     except (OSError, AttributeError, TypeError):
-        return True 
+        return False 
 
 
 @lru_cache(maxsize=2048)
@@ -142,10 +142,10 @@ def _is_reparse_point(path: Path) -> bool:
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs == -1: return True # Error al consultar, asumir riesgo
+        if attrs == -1: return False # Fallback si falla, no asumir riesgo
         return bool(attrs & 0x400)
     except (OSError, AttributeError, TypeError):
-        return True 
+        return False
 
 
 def _is_file_in_use(path: Path) -> bool:

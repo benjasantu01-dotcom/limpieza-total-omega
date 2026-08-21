@@ -129,6 +129,13 @@ class Scanner:
 
             # Manejo de archivos
             if entry.is_file(follow_symlinks=False):
+                # Ignorar archivos inaccesibles o bloqueados por sistema
+                try:
+                    if entry.stat().st_size == 0:
+                        return
+                except (OSError, PermissionError):
+                    return
+
                 if RTL_CHAR_RE.search(target_path.name):
                     self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
                 
