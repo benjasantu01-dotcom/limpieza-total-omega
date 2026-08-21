@@ -259,13 +259,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Mueve los archivos a una carpeta de revisión.
-    
-    Args:
-        files: Lista de objetos JunkFile.
-        review_dir: Ruta destino donde se moverán los archivos.
-        
-    Returns:
-        Path: Ruta de la carpeta donde se almacenaron los archivos, o None si falló.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
@@ -274,8 +267,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
-        # Validación estricta antes de operar
-        if not dest_base.is_dir() or not is_safe_to_modify(dest_base): 
+        # Validación de seguridad y permisos de escritura
+        if not dest_base.is_dir() or not is_safe_to_modify(dest_base) or not os.access(dest_base, os.W_OK): 
             return None
     except (OSError, PermissionError, RuntimeError):
         return None
@@ -301,16 +294,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     """
     Elimina archivos de forma segura. 
     Solo procesa archivos dentro de la carpeta de revisión verificada.
-    
-    Returns:
-        int: Cantidad de archivos eliminados con éxito.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        # Verificar que la ruta no sea un sistema crítico antes de iterar
         if not dest.is_dir() or not is_safe_to_modify(dest):
             return 0
     except (OSError, RuntimeError):
@@ -319,9 +308,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
+            # Asegurar que el ítem es un archivo y no un directorio o reparse point
             if not item.is_file() or _is_junction(item):
                 continue
-            # Asegurar que el ítem pertenece a la carpeta de revisión antes de borrar
             if item.is_relative_to(dest) and is_safe_to_modify(item):
                 if not _is_file_locked(item):
                     ensure_safe_to_modify(item)

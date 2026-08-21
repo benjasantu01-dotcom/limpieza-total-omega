@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 52 | 4 | 7 | 4 | 83 |
+| 2026-08-19 | 52 | 3 | 7 | 4 | 80 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 2 | 0 | 0 | 0 | 2 |
+| 2026-08-21 | 4 | 0 | 1 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **52**
 - rendimiento: **41**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **41**
 - seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **23**
 - `assistant.py`: **20**
 - `diskreport.py`: **20**
-- `organizer.py`: **19**
+- `organizer.py`: **20**
 - `healthscore.py`: **19**
 - `duplicates.py`: **18**
 - `memory.py`: **17**
 - `scanner.py`: **17**
+- `quarantine.py`: **16**
 - `browser.py`: **15**
 - `main.py`: **15**
-- `quarantine.py`: **15**
 - `branding.py`: **9**
 - `startup.py`: **7**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T00:18:29` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante condiciones de carrera y archivos inconsistentes, añadiendo un `try-finally` para asegurar que el archivo temporal se elimine si falla la copia, y validando que el archivo fuente no haya cambiado de tamaño durante el proceso de aislamiento.
+- `2026-08-21T00:17:53` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` al validar que las rutas destino no sean de solo lectura (caso frecuente en unidades protegidas) y al asegurar que el archivo a borrar sea efectivamente un archivo regular antes de ejecutar `unlink`, previniendo errores de permisos en directorios especiales.
 - `2026-08-21T00:10:34` **main.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta y segura en el hilo principal (`_build_tab_salud`) y en los métodos de renderizado, evitando cierres inesperados por `TclError` si la UI intenta actualizarse durante el cierre de la aplicación o cuando los widgets ya han sido destruidos.
 - `2026-08-21T00:08:22` **healthscore.py** (robustez ante casos límite): Se añadió una validación explícita en `compute_score` para manejar el caso donde los umbrales globales pudieran ser cero o negativos (debido a errores de configuración en `settings.py`), previniendo divisiones por cero o comportamientos inesperados en el cálculo de ratios.
 - `2026-08-20T14:56:42` **browser.py** (robustez ante casos límite): Se mejora la robustez ante errores de E/S y permisos denegados al invocar `stat()` en archivos durante el recorrido, asegurando que `total` sea un acumulador resiliente que no interrumpa el escaneo si un archivo individual no puede ser leído.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-20T14:07:02` **assistant.py** (rendimiento): Optimicé el mapeo de palabras clave (`_KEYWORD_MAP`) convirtiéndolo en un conjunto de búsqueda eficiente y reestructuré el bucle de coincidencia para evitar iteraciones redundantes sobre tokens, mejorando el rendimiento de la detección de intenciones.
 - `2026-08-20T14:06:29` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en métodos clave, aclarando las responsabilidades de resolución de rutas y el manejo del ciclo de vida de los datos (`cache`, `security checks`), facilitando el mantenimiento futuro y la comprensión de la lógica de seguridad.
 - `2026-08-20T14:06:00` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos para mejorar la legibilidad del motor de validación, garantizando que la intención técnica de cada restricción sea clara para futuros desarrolladores sin alterar el comportamiento.
-- `2026-08-20T14:05:31` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados, type hints en los retornos de funciones y clarificación de los propósitos de las constantes para mejorar la mantenibilidad y legibilidad del código.
-- `2026-08-20T13:56:33` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y type hints consistentes en funciones internas, además de asegurar que las advertencias de seguridad y responsabilidades de las funciones estén claramente declaradas para facilitar su mantenimiento.

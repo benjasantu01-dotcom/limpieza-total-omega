@@ -378,9 +378,8 @@ def quarantine_file(
     except OSError as e:
         raise RuntimeError(f"No se pudo determinar el tamaño del archivo origen: {e}")
     
-    # Doble chequeo crítico ante condiciones de carrera
-    if not source_path.exists():
-        raise RuntimeError("El archivo origen desapareció antes de ser aislado.")
+    if not source_path.exists() or source_path.stat().st_size != file_size:
+        raise RuntimeError("El archivo origen cambió o desapareció antes de ser aislado.")
 
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size * 1.05):
@@ -394,7 +393,6 @@ def quarantine_file(
     try:
         if not destination.exists():
             raise RuntimeError("Fallo en la confirmación de aislamiento.")
-        # Validación extra: confirmar que el original sigue ahí antes de borrar
         if source_path.exists():
             try:
                 os.remove(source_path)
