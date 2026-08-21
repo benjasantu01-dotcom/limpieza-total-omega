@@ -229,11 +229,11 @@ def _sum_directory_recursive(
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     
-                    if entry.is_dir():
+                    if entry.is_dir(follow_symlinks=False):
                         total += _walk(entry.path, depth + 1)
-                    elif entry.is_file():
+                    elif entry.is_file(follow_symlinks=False):
                         try:
-                            # Validación estricta del tamaño para evitar valores negativos o errores de stat
+                            # Validación estricta ante errores de lectura de metadatos (archivos bloqueados)
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size > 0:
                                 total += st.st_size
@@ -258,7 +258,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         return 0
     try:
         p_obj = Path(path)
-        if not p_obj.is_dir():
+        if not p_obj.exists() or not p_obj.is_dir():
             return 0
         p_path = p_obj.resolve(strict=True)
         if not p_path.is_absolute() or not is_safe_to_modify(p_path):

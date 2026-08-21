@@ -251,8 +251,9 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
         return rgb
         
     try:
-        return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except ValueError:
+        r, g, b = int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)
+        return (r, g, b)
+    except (ValueError, IndexError):
         return (0, 0, 0)
 
 @lru_cache(maxsize=64)

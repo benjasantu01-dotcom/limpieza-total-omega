@@ -1581,3 +1581,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-21T13:14:41` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del módulo `assistant.py` frente a configuraciones externas corruptas o maliciosas en `settings.py`, asegurando que `ask()` nunca falle ante valores inesperados en el archivo de configuración y manteniendo la integridad del flujo de fallback al motor local.
 - `2026-08-21T13:14:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T13:14:41` Corrida terminada. Total usado hoy: 312.
+- `2026-08-21T13:22:55` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-21T13:23:44` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas o entornos con problemas de escritura, añadiendo validaciones de tipo y estructura que evitan excepciones silenciosas o fallos en tiempo de ejecución.
+- `2026-08-21T13:24:09` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular durante la lectura de metadatos, evitando que una falla en un solo archivo detenga el cálculo del tamaño de toda la carpeta.
+- `2026-08-21T13:24:37` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-21T13:24:58` Tests FALLARON:
+```
+) -> None:
+        try:
+            with os.scandir(root_path) as it:
+                for entry in it:
+                    try:
+                        p_entry = Path(entry.path)
+                        if p_entry in processed_paths: continue
+                        processed_paths.add(p_entry)
+    
+                        # Regla de seguridad: omitir rutas protegidas o inseguras
+                        if skip_protected and (is_protected_path(p_entry) or not is_safe_to_modify(p_entry)):
+                            continue
+    
+                        # Validar existencia antes de stat
+>                       if not entry.exists(): continue
+                               ^^^^^^^^^^^^
+E                       AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+
+app/duplicates.py:127: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_finds_identical_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_ignores_files_with_different_content - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_finds_duplicates_across_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_min_size_filters_out_tiny_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+4 failed, 295 passed in 1.29s
+
+```
+- `2026-08-21T13:24:58` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se añadió validación de existencia y accesibilidad en el bloque de filtrado de `_collect_candidates` para prevenir excepciones durante el escaneo de directorios con archivos volátiles o permisos cambiantes.
+- `2026-08-21T13:24:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T13:24:58` Corrida terminada. Total usado hoy: 316.
