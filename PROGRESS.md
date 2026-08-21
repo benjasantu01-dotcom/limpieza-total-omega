@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 21
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 78 | 8 | 9 | 4 | 69 |
-| 2026-08-21 | 149 | 13 | 19 | 15 | 140 |
+| 2026-08-20 | 78 | 8 | 9 | 4 | 65 |
+| 2026-08-21 | 152 | 13 | 20 | 15 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **41**
+- seguridad defensiva: **44**
 - rendimiento: **39**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **21**
 - `assistant.py`: **20**
 - `diskreport.py`: **20**
 - `duplicates.py`: **20**
-- `settings.py`: **20**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
+- `scanner.py`: **18**
 - `organizer.py`: **17**
-- `scanner.py`: **17**
 - `browser.py`: **16**
 - `main.py`: **15**
 - `quarantine.py`: **13**
 - `branding.py`: **12**
-- `safety.py`: **10**
+- `safety.py`: **11**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T14:25:34` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_protected_path` sobre la ruta del archivo de configuración antes de cualquier operación de escritura, asegurando que no solo el padre, sino el archivo mismo sea seguro de manipular.
+- `2026-08-21T14:25:21` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (que es para operaciones de escritura/modificación) por `is_protected_path`, evitando así el error de lógica de negocio donde un escáner de solo lectura se bloqueaba indebidamente con las reglas de escritura.
+- `2026-08-21T14:24:57` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` integrando `os.path.commonpath` para detectar de forma más precisa y segura si una ruta reside bajo un directorio de sistema, evitando fallos en la coincidencia de cadenas parciales.
 - `2026-08-21T14:19:12` **quarantine.py** (seguridad defensiva): Mejoré la seguridad en la restauración y el manejo de archivos reforzando la validación del destino para evitar la inyección de rutas (path traversal) y asegurando que las operaciones de movimiento (`os.replace`) sean estrictamente supervisadas por las guardas de `safety.py`.
 - `2026-08-21T14:18:40` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de *path traversal* (ej. nombres de archivo con `..`), validando explícitamente que el destino final resida dentro de `dest_base` después de resolver la ruta, garantizando que el `shutil.move` nunca salga del sandbox de revisión.
 - `2026-08-21T14:18:12` **memory.py** (seguridad defensiva): Mejoré la robustez de `trim_working_set` implementando el cierre seguro del handle en todas las rutas de ejecución mediante un bloque `try/finally` explícito, y validando la existencia de la API `EmptyWorkingSet` antes de intentar abrir el proceso para evitar dejar handles abiertos innecesariamente.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T13:55:09` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante fallos de E/S y corrupción de archivos mediante la implementación de una estrategia de "reintentos con retroceso" (backoff) al guardar, y añadiendo comprobaciones de integridad más estrictas que previenen escrituras parciales o estados inconsistentes cuando el disco está lleno o el sistema deniega permisos.
 - `2026-08-21T13:45:22` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante una verificación explícita de `os.access` en el directorio padre durante `_check_file_integrity` y la normalización de la validación de existencia para prevenir errores de tipo `FileNotFoundError` si el archivo es eliminado por un proceso externo justo antes de la verificación.
 - `2026-08-21T13:35:10` **memory.py** (robustez ante casos límite): Mejoré la robustez de `top_memory_processes` añadiendo validación de tipos y manejo de errores ante entradas malformadas, evitando que una salida inesperada de PowerShell rompa la recolección de métricas.
-- `2026-08-21T13:34:43` **main.py** (robustez ante casos límite): Mejoré la robustez ante la concurrencia y la integridad de la UI asegurando que las referencias a `winfo_exists()` verifiquen siempre la existencia del widget antes de cualquier manipulación, evitando errores `tk.TclError` en hilos asíncronos que podrían estar terminando mientras el hilo principal destruye la ventana.
-- `2026-08-21T13:24:09` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular durante la lectura de metadatos, evitando que una falla en un solo archivo detenga el cálculo del tamaño de toda la carpeta.
-- `2026-08-21T13:23:44` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` frente a entradas mal formadas o entornos con problemas de escritura, añadiendo validaciones de tipo y estructura que evitan excepciones silenciosas o fallos en tiempo de ejecución.

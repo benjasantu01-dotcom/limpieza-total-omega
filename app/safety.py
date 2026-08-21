@@ -249,20 +249,22 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
+        p_str = str(p)
     except (ValueError, TypeError, OSError, RuntimeError):
         return True
 
+    # Comprobar si la ruta es subdirectorio de rutas de sistema conocidas
     try:
-        norm_str = os.path.normcase(str(p))
-        if any(norm_str.startswith(root) for root in _SYSTEM_ROOT_PATHS):
-            return True
+        for root in _SYSTEM_ROOT_PATHS:
+            if os.path.commonpath([p_str, root]) == root:
+                return True
+    except ValueError:
+        pass
             
-        if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
-            return True
+    if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
+        return True
             
-        return p == Path(p.anchor)
-    except Exception:
-        return True 
+    return p == Path(p.anchor)
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:

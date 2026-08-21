@@ -93,7 +93,8 @@ class Scanner:
         try:
             target_path = Path(entry.path)
             
-            if not is_safe_to_modify(target_path) or entry.path.startswith("\\\\"):
+            # El scanner solo lee: usamos is_protected_path en lugar de is_safe_to_modify
+            if is_protected_path(target_path) or entry.path.startswith("\\\\"):
                 return
             if not self._is_safe_entry(target_path):
                 return

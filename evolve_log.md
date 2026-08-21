@@ -458,3 +458,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_i
 - `2026-08-21T14:19:12` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad en la restauración y el manejo de archivos reforzando la validación del destino para evitar la inyección de rutas (path traversal) y asegurando que las operaciones de movimiento (`os.replace`) sean estrictamente supervisadas por las guardas de `safety.py`.
 - `2026-08-21T14:19:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T14:19:12` Corrida terminada. Total usado hoy: 336.
+- `2026-08-21T14:24:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-21T14:24:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-21T14:24:57` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `is_protected_path` integrando `os.path.commonpath` para detectar de forma más precisa y segura si una ruta reside bajo un directorio de sistema, evitando fallos en la coincidencia de cadenas parciales.
+- `2026-08-21T14:25:21` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (que es para operaciones de escritura/modificación) por `is_protected_path`, evitando así el error de lógica de negocio donde un escáner de solo lectura se bloqueaba indebidamente con las reglas de escritura.
+- `2026-08-21T14:25:34` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_protected_path` sobre la ruta del archivo de configuración antes de cualquier operación de escritura, asegurando que no solo el padre, sino el archivo mismo sea seguro de manipular.
+- `2026-08-21T14:25:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T14:25:34` Corrida terminada. Total usado hoy: 340.
