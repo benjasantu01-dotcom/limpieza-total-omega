@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 21
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 78 | 8 | 9 | 4 | 65 |
-| 2026-08-21 | 152 | 13 | 20 | 15 | 140 |
+| 2026-08-20 | 78 | 8 | 9 | 4 | 61 |
+| 2026-08-21 | 153 | 13 | 20 | 15 | 143 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
 - rendimiento: **39**
 - robustez ante casos límite: **36**
 
@@ -42,10 +42,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **13**
 - `branding.py`: **12**
 - `safety.py`: **11**
-- `startup.py`: **9**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T14:34:54` **startup.py** (seguridad defensiva): Mejoré la seguridad en `_resolve_and_cache_path` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de permitir su retorno, evitando así que el sistema pueda intentar procesar archivos que, aunque no parezcan sensibles inicialmente, se resuelvan en áreas protegidas del sistema.
 - `2026-08-21T14:25:34` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_protected_path` sobre la ruta del archivo de configuración antes de cualquier operación de escritura, asegurando que no solo el padre, sino el archivo mismo sea seguro de manipular.
 - `2026-08-21T14:25:21` **scanner.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (que es para operaciones de escritura/modificación) por `is_protected_path`, evitando así el error de lógica de negocio donde un escáner de solo lectura se bloqueaba indebidamente con las reglas de escritura.
 - `2026-08-21T14:24:57` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` integrando `os.path.commonpath` para detectar de forma más precisa y segura si una ruta reside bajo un directorio de sistema, evitando fallos en la coincidencia de cadenas parciales.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T13:56:31` **branding.py** (seguridad defensiva): Se ha añadido una validación de seguridad adicional en `save_logo_svg` utilizando `is_protected_path` sobre el directorio padre para garantizar que la operación de escritura no ocurra dentro de una ruta protegida del sistema antes de intentar cualquier creación de directorios.
 - `2026-08-21T13:55:09` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante fallos de E/S y corrupción de archivos mediante la implementación de una estrategia de "reintentos con retroceso" (backoff) al guardar, y añadiendo comprobaciones de integridad más estrictas que previenen escrituras parciales o estados inconsistentes cuando el disco está lleno o el sistema deniega permisos.
 - `2026-08-21T13:45:22` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante una verificación explícita de `os.access` en el directorio padre durante `_check_file_integrity` y la normalización de la validación de existencia para prevenir errores de tipo `FileNotFoundError` si el archivo es eliminado por un proceso externo justo antes de la verificación.
-- `2026-08-21T13:35:10` **memory.py** (robustez ante casos límite): Mejoré la robustez de `top_memory_processes` añadiendo validación de tipos y manejo de errores ante entradas malformadas, evitando que una salida inesperada de PowerShell rompa la recolección de métricas.
