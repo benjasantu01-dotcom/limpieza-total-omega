@@ -82,7 +82,7 @@ class ProblemCriterion(NamedTuple):
 # TypeAliases para mejorar la legibilidad de las firmas de funciones
 MetricSource: TypeAlias = dict[str, Any] | object
 ScoreSource: TypeAlias = dict[str, Any] | object
-ValidatorSpec: TypeAlias = tuple[Callable, float, float]
+ValidatorSpec: TypeAlias = tuple[Callable[[Any], float], float, float]
 
 # Límites de seguridad para prevenir ataques de denegación de servicio por procesamiento de texto
 _MAX_TEXT_LENGTH: Final[int] = 1000
@@ -233,14 +233,16 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
-    """Extrae métricas de una fuente externa validando tipos y rangos definidos."""
+    """
+    Intenta extraer y validar una métrica individual desde una fuente de datos.
+    Aplica el 'spec' (tipo de cast, min, max) para asegurar la integridad.
+    """
     if not isinstance(source, (dict, object)) or not isinstance(spec, tuple) or len(spec) != 3:
         return False
 
     cast, min_v, max_v = spec
     try:
         val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-        # Rechazar tipos complejos o no numéricos antes de intentar cast
         if val is None or isinstance(val, (list, dict, set, tuple, bool, str)):
             return False
             
@@ -254,27 +256,28 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """Construye un objeto de contexto validando entradas contra _VALIDATORS."""
+    """
+    Construye el objeto SystemContext agregando datos de diversas fuentes.
+    Valida cada campo contra _VALIDATORS para prevenir contaminación de datos.
+    """
     ctx = SystemContext()
     found_data = False
     
-    # Fuentes de datos soportadas
     sources = [metrics, health, extra]
     
-    # Procesar métricas estándar definidas en _VALIDATORS
+    # Procesar métricas numéricas estándar
     for src in sources:
         if src is None: continue
         for key, spec in _VALIDATORS.items():
             if _validate_and_assign(ctx, src, key, spec):
                 found_data = True
 
-    # Procesar score y grade específicamente
+    # Procesar score y grade con validación de tipo específica
     for src in [health, extra]:
         if src is None: continue
         if _validate_and_assign(ctx, src, "score", (int, 0, 100)):
             found_data = True
         
-        # Validar grado (debe ser string seguro)
         g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
         if isinstance(g_val, (str, int, float)):
             g_str = str(g_val)[:10].strip()
@@ -285,12 +288,15 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Formatea métricas eliminando caracteres de control y rutas."""
+    """Formatea métricas y elimina cualquier posible residuo de caracteres de control."""
     raw = _fmt_metric(val, unit, decimal)
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa métricas en texto plano seguro para el asistente en línea."""
+    """
+    Serializa el estado del sistema en un formato de texto plano y seguro.
+    Este texto es el ÚNICO contenido enviado al motor remoto cuando está activo.
+    """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
@@ -313,7 +319,7 @@ def context_as_text(context: SystemContext) -> str:
         return "Error crítico al procesar métricas de seguridad."
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Formateador base para valores numéricos."""
+    """Formateador base de bajo nivel para valores numéricos."""
     f = _safe_float(val, -1.0)
     return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 

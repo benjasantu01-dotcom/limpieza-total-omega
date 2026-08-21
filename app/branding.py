@@ -379,7 +379,15 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
         )
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Renderiza el escudo corporativo en un widget Canvas de Tkinter escalado por tamaño."""
+    """
+    Renderiza el escudo corporativo en un widget Canvas de Tkinter.
+    
+    Args:
+        canvas: Widget Tkinter donde dibujar.
+        size: Tamaño base del logo en píxeles.
+        canvas_x: Coordenada X de origen en el canvas.
+        canvas_y: Coordenada Y de origen en el canvas.
+    """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128))
@@ -404,7 +412,17 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea decorativa horizontal con gradiente en un Canvas."""
+    """
+    Dibuja una línea decorativa horizontal con degradado en un Canvas.
+
+    Args:
+        canvas: Widget donde dibujar.
+        width: Ancho total de la línea.
+        height: Grosor de la línea.
+        canvas_x: Desplazamiento horizontal.
+        canvas_y: Desplazamiento vertical.
+        stops: Tupla de colores para el gradiente.
+    """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho: int = max(1, int(width))
@@ -417,7 +435,18 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un anillo de progreso circular para métricas de salud (0-100)."""
+    """
+    Dibuja un indicador circular de progreso para métricas.
+
+    Args:
+        canvas: Widget Tkinter donde dibujar.
+        percent: Valor actual entre 0 y 100.
+        size: Diámetro del anillo.
+        canvas_x, canvas_y: Posición en el canvas.
+        thickness: Grosor de la línea del anillo.
+        track: Color del fondo del anillo (opcional).
+        fill: Color del progreso (opcional).
+    """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         if percent is None: return

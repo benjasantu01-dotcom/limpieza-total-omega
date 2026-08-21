@@ -144,7 +144,7 @@ class StartupEntry:
                 return path_str
             
             real_path: str = os.path.realpath(str(p))
-            if not os.path.lexists(real_path) or is_protected_path(Path(real_path)):
+            if not real_path or not os.path.lexists(real_path) or is_protected_path(Path(real_path)):
                 _EXISTS_CACHE[path_str] = False
                 return ""
                 

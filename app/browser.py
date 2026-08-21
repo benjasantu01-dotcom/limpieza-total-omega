@@ -92,7 +92,8 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
 def base_directories() -> List[Path]:
     """
     Identifica la ruta LOCALAPPDATA del usuario actual.
-    Valida la existencia y seguridad de la ruta antes de retornarla.
+    Valida la existencia y seguridad de la ruta mediante `is_safe_to_modify`
+    antes de retornarla. Retorna lista vacía si falla o el acceso es restringido.
     """
     if os.name != "nt":
         return []
@@ -113,7 +114,8 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Valida que 'target_path' sea un subdirectorio real de 'base_path'.
-    Previene ataques de path traversal, symlinks o junctions fuera de la jerarquía permitida.
+    Previene ataques de path traversal, symlinks o junctions fuera de la jerarquía permitida
+    mediante resolución absoluta y verificación de componentes.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -154,6 +156,7 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
     """
     Verifica mediante la API de Windows si un archivo posee atributos de sistema o oculto.
     Utiliza kernel32.dll para leer metadatos de archivos de forma eficiente.
+    Retorna True si el archivo es un sistema/oculto según atributos de Win32.
     """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
@@ -172,7 +175,7 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
     """
     Determina si una entrada del sistema de archivos debe ser ignorada por el escáner.
-    Filtra archivos protegidos, enlaces simbólicos, junctions y archivos del sistema.
+    Aplica filtros de seguridad: NEVER_TOUCH, is_safe_to_modify, y atributos del sistema.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -199,6 +202,7 @@ def _sum_directory_recursive(
     """
     Calcula recursivamente el tamaño de un directorio.
     Usa un diccionario 'memo' para evitar re-escaneo de subdirectorios en la misma iteración.
+    Solo procesa rutas validadas por `is_safe_to_modify`.
     """
     if not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -246,7 +250,10 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
-    """Calcula el tamaño total en bytes de un directorio, aplicando validaciones de seguridad."""
+    """
+    Calcula el tamaño total en bytes de un directorio, aplicando validaciones 
+    de seguridad (`is_safe_to_modify`) antes de recorrer.
+    """
     if path is None:
         return 0
     try:
@@ -264,7 +271,10 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """Valida si un candidato es una ruta de caché existente y segura dentro de la base."""
+    """
+    Valida si un candidato es una ruta de caché existente, segura y contenida 
+    dentro de la base permitida.
+    """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
@@ -280,7 +290,8 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea las ubicaciones base buscando las rutas de caché de los navegadores configurados.
-    Retorna una lista de objetos BrowserCache ordenados por tamaño descendente.
+    Filtra entradas mediante `is_safe_to_modify` y retorna una lista de `BrowserCache`
+    ordenados por tamaño (bytes) de mayor a menor.
     """
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -317,12 +328,12 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
-    """Suma total en bytes de una colección de cachés."""
+    """Suma total en bytes de una colección de objetos `BrowserCache`."""
     return sum(cache.size_bytes for cache in (caches or []))
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera un reporte legible por humanos de las cachés encontradas y su peso."""
+    """Genera un reporte legible por humanos de las cachés encontradas y su peso total."""
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]
