@@ -151,19 +151,11 @@ def _collect_candidates(
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
 
-    def _is_eligible(entry: os.DirEntry, st: os.stat_result) -> bool:
-        """Verifica si un archivo cumple con los criterios de escaneo."""
-        if st.st_size < min_size: return False
-        if skip_protected:
-            p = Path(entry.path)
-            if is_protected_path(p) or not is_safe_to_modify(p):
-                return False
-        return True
-
     def _scan(root_path: Path) -> None:
         try:
             for entry in os.scandir(root_path):
                 try:
+                    # Usamos el stat del entry para evitar llamadas adicionales a lstat/stat
                     st = entry.stat(follow_symlinks=False)
                     if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                             
@@ -172,8 +164,10 @@ def _collect_candidates(
                         if inode not in visited_inodes:
                             visited_inodes.add(inode)
                             _scan(Path(entry.path))
-                    elif entry.is_file() and _is_eligible(entry, st):
-                        temp_groups[st.st_size].append(Path(entry.path).resolve())
+                    elif entry.is_file() and st.st_size >= min_size:
+                        p = Path(entry.path)
+                        if not (skip_protected and (is_protected_path(p) or not is_safe_to_modify(p))):
+                            temp_groups[st.st_size].append(p)
                 except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -182,7 +176,7 @@ def _collect_candidates(
         if item:
             path_item = Path(item)
             if path_item.exists() and path_item.is_dir():
-                _scan(path_item.resolve())
+                _scan(path_item)
             
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 

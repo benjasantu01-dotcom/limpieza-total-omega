@@ -627,3 +627,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T03:43:40` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de `PALETTE_RGB` y `HEX_TO_KEY` eliminando la creación de diccionarios intermedios innecesarios y simplificando la lógica de mapeo para mejorar la eficiencia en la carga inicial y el acceso a datos.
 - `2026-08-21T03:43:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T03:43:40` Corrida terminada. Total usado hoy: 88.
+- `2026-08-21T03:51:35` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-21T03:52:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-21T03:52:34` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso intensivo de `relative_to` dentro del loop de procesamiento, realizando la agregación directamente sobre la estructura de datos para reducir el costo computacional por archivo.
+- `2026-08-21T03:52:59` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de archivos utilizando `os.scandir` para evitar llamadas redundantes a `path.resolve()` y `path.is_file()`, reduciendo drásticamente las llamadas al sistema de archivos (syscalls) innecesarias en el bucle principal de escaneo.
+- `2026-08-21T03:53:09` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score evitando la creación de diccionarios intermedios y pre-calculando las funciones de puntuación en una estructura de mapeo eficiente, reduciendo el overhead en cada llamada a `compute_score`.
+- `2026-08-21T03:53:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T03:53:09` Corrida terminada. Total usado hoy: 92.

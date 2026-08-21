@@ -23,15 +23,6 @@ NormalizedRatio: TypeAlias = Annotated[float, "Un valor entre 0.0 y 1.0 represen
 MetricKey: TypeAlias = str
 
 class RecommendationRule(NamedTuple):
-    """
-    Regla de negocio que evalúa si una métrica requiere una recomendación al usuario.
-    
-    Attributes:
-        area: La clave de la métrica (de `WEIGHTS`) a evaluar.
-        threshold: Ratio crítico por debajo del cual se dispara la advertencia.
-        message_factory: Función que genera un mensaje humano según el contexto de SystemMetrics.
-        check: Predicado que compara el ratio actual contra el umbral.
-    """
     area: MetricKey
     threshold: float
     message_factory: Callable[[SystemMetrics], str]
@@ -52,19 +43,16 @@ __all__ = [
     "summarize",
 ]
 
-# --- UMBRALES DE NORMALIZACIÓN ---
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# --- UMBRALES DE ADVERTENCIA ---
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
-# --- PESOS DE CALIFICACIÓN ---
 WEIGHTS: Final[Dict[MetricKey, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -75,7 +63,6 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
 }
 
 def _validate_integrity() -> bool:
-    """Verifica que la suma de pesos sea exactamente 100 para garantizar la escala 0-100."""
     return math.isfinite(sum(WEIGHTS.values())) and sum(WEIGHTS.values()) == 100 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
 
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
@@ -92,7 +79,6 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos crudos recolectados por otros módulos para su evaluación."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -106,7 +92,6 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        # Normalización robusta: sanitiza tipos y asegura finitud matemática
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -171,11 +156,19 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
+_SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
+    "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
+    "disco": lambda m: score_disk(m.disk_free_percent),
+    "memoria": lambda m: score_memory(m.memory_available_percent),
+    "basura": lambda m: score_junk(m.junk_mb),
+    "duplicados": lambda m: score_duplicates(m.duplicate_mb),
+    "arranque": lambda m: score_startup(m.startup_count)
+}
+
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
         return HealthResult(0, "F", {}, ["Error: Configuración inestable."])
     
-    # Validación extra de umbrales para evitar divisiones por cero ante configuración inválida
     if any(limit <= 0 for limit in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema inválidos."])
 
@@ -185,19 +178,14 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     except (ValueError, TypeError, AttributeError):
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
 
-    ratios = {
-        "seguridad": score_security(metrics.suspicious_count, metrics.suspicious_warnings),
-        "disco": score_disk(metrics.disk_free_percent),
-        "memoria": score_memory(metrics.memory_available_percent),
-        "basura": score_junk(metrics.junk_mb),
-        "duplicados": score_duplicates(metrics.duplicate_mb),
-        "arranque": score_startup(metrics.startup_count)
-    }
-    
     breakdown = {}
     final_score = 0
+    ratios = {}
+    
     for area, weight in _WEIGHT_ITEMS_INT:
-        puntos = int(round(_clamp(ratios[area], 0.0, 1.0) * weight))
+        ratio = _SCORERS[area](metrics)
+        ratios[area] = ratio
+        puntos = int(round(_clamp(ratio, 0.0, 1.0) * weight))
         breakdown[area] = puntos
         final_score += puntos
     
