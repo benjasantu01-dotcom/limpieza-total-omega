@@ -170,6 +170,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
                 return False
         if _is_recursive_violation(src, dest):
             return False
+        # Validar que no cruce volúmenes (evita fallos de copia física entre unidades)
+        if src.anchor != dest.anchor:
+            return False
         return is_safe_to_modify(src) and is_safe_to_modify(dest) and not _is_file_locked(src)
     except (OSError, RuntimeError, AttributeError):
         return False
@@ -185,9 +188,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
         current_path: Path = junk_file.path
         if not current_path.exists() or is_protected_path(current_path) or is_protected_path(dest):
             return False
-        if not _is_safe_for_disk_op(current_path, dest):
-            return False
-        return current_path.anchor == dest.anchor
+        return _is_safe_for_disk_op(current_path, dest)
     except (OSError, RuntimeError):
         return False
 
@@ -277,7 +278,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile): continue
         try:
             src_path: Path = junk_file.path
-            if not src_path.exists() or _is_recursive_violation(src_path, dest_base) or not _is_safe_to_move(junk_file, dest_base):
+            if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"

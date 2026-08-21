@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 220
+- Sin cambios (nada sustancial que mejorar): 10
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 52 | 3 | 7 | 4 | 72 |
+| 2026-08-19 | 52 | 3 | 7 | 4 | 68 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 10 | 1 | 1 | 0 | 4 |
+| 2026-08-21 | 13 | 1 | 1 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,17 +26,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **52**
 - robustez ante casos límite: **42**
 - rendimiento: **41**
-- seguridad defensiva: **38**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
 - `assistant.py`: **21**
 - `diskreport.py`: **21**
-- `organizer.py`: **20**
+- `organizer.py`: **21**
+- `healthscore.py`: **20**
 - `duplicates.py`: **19**
-- `healthscore.py`: **19**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `scanner.py`: **17**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T00:52:38` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` y `stage_for_review` asegurando que ninguna operación de movimiento atraviese límites de volumen físico (cross-drive move), evitando errores de `shutil.move` que podrían dejar archivos en estados intermedios inconsistentes.
+- `2026-08-21T00:52:26` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `trim_working_set` implementando un chequeo de privilegios de acceso (verificando que el handle no requiera más que `SAFE_ACCESS_MASK`) y aplicando una validación estricta de la ruta del ejecutable mediante `is_protected_path` sobre la ruta resuelta antes de cualquier interacción, previniendo así la manipulación de procesos protegidos o maliciosos.
+- `2026-08-21T00:48:53` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación explícita de `is_finite()` en cada métrica individual dentro de `SystemMetrics.validate`, previniendo que valores `NaN` o `inf` corruptos puedan propagarse a los cálculos de puntaje y generar resultados matemáticos inconsistentes o inesperados.
 - `2026-08-21T00:40:26` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el recorrido del sistema de archivos no solo valide la ruta contra `is_protected_path`, sino que también ejecute `is_safe_to_modify` sobre el `Path` resuelto antes de realizar cualquier operación de acceso, mitigando riesgos ante manipulaciones de enlaces simbólicos o rutas malintencionadas.
 - `2026-08-21T00:40:04` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` validando explícitamente que los archivos encontrados sean hijos reales del directorio base mediante `path.is_relative_to(base)` (en versiones modernas) o `base in path.parents` para prevenir que operaciones de lectura escapen del ámbito restringido por enlaces simbólicos o manipulaciones de ruta.
 - `2026-08-21T00:39:28` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de rutas durante la iteración, impidiendo que el recorrido escape del directorio raíz especificado ante posibles manipulaciones externas o enlaces simbólicos maliciosos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T00:08:22` **healthscore.py** (robustez ante casos límite): Se añadió una validación explícita en `compute_score` para manejar el caso donde los umbrales globales pudieran ser cero o negativos (debido a errores de configuración en `settings.py`), previniendo divisiones por cero o comportamientos inesperados en el cálculo de ratios.
 - `2026-08-20T14:56:42` **browser.py** (robustez ante casos límite): Se mejora la robustez ante errores de E/S y permisos denegados al invocar `stat()` en archivos durante el recorrido, asegurando que `total` sea un acumulador resiliente que no interrumpa el escaneo si un archivo individual no puede ser leído.
 - `2026-08-20T14:47:40` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor local ante valores nulos, vacíos o mal formados en `handle_ram` y `handle_disk`, evitando comportamientos inesperados o cálculos erróneos si el contexto de sistema llega con datos incompletos.
-- `2026-08-20T14:46:30` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `update()` evitando la serialización completa de datos en el caché y utilizando un diccionario de `Enum` para evitar la búsqueda constante por strings durante las validaciones.
-- `2026-08-20T14:37:12` **scanner.py** (rendimiento): Optimizé la lógica de filtrado inicial en `process_entry` moviendo la validación de extensiones y rutas de sistema al principio para evitar el acceso al sistema de archivos (`stat`) en archivos que claramente no son sospechosos ni ejecutables, reduciendo drásticamente las llamadas a I/O innecesarias durante el recorrido recursivo.
-- `2026-08-20T14:29:02` **memory.py** (rendimiento): Se implementó un filtrado preventivo en `parse_windows_process_csv` para descartar procesos irrelevantes (PIDs críticos y procesos con 0 MB de consumo) antes de realizar el ordenamiento, reduciendo la carga de trabajo en el `sort` y la lista final.

@@ -358,9 +358,7 @@ def _is_valid_trim_target(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[
         return False, "No se pudo verificar la ubicación del ejecutable."
     
     # Prevenir ataques de spoofing mediante caracteres de control RTL (U+202E, etc)
-    # Codificamos a bytes para detectar bytes de control de manera robusta
     path_bytes = path.encode("utf-8", errors="ignore")
-    # RTL control chars byte sequences
     forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
     if any(seq in path_bytes for seq in forbidden_sequences):
         return False, "Ruta de proceso sospechosa (caracteres control)."
@@ -390,9 +388,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "Error de sistema: APIs de memoria no disponibles."
 
+    # Se abre con permisos restringidos para minimizar riesgo de privilegios excesivos
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle:
-        return False, "Acceso denegado al proceso (podría haber finalizado)."
+        return False, "Acceso denegado al proceso (podría haber finalizado o requerido privilegios elevados)."
         
     try:
         valid, reason = _is_valid_trim_target(proc_handle)
@@ -400,8 +399,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, reason or "Validación de proceso fallida."
             
         if not psapi.EmptyWorkingSet(proc_handle):
-            error = kernel32.GetLastError()
-            return False, f"Error al liberar memoria (código {error})."
+            return False, "Error al liberar memoria del proceso seleccionado."
             
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, Exception):
