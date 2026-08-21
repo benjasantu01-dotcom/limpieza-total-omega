@@ -826,7 +826,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _get_cached(self, key: str, provider: Optional[Callable[[], Any]] = None, force: bool = False) -> Any:
         """
         Recupera datos del caché LRU o ejecuta el provider si el TTL expiró.
-        El sistema de caché implementa TTL (Time-To-Live) para evitar datos obsoletos.
+        Si la caché para 'key' no existe o expiró, utiliza 'provider' para refrescarla.
+        El sistema utiliza un TTL para asegurar que los análisis no se vuelvan obsoletos.
         """
         now = time.time()
         # Invalidation check: Si el provider es None y no forzamos, solo leemos
@@ -1231,7 +1232,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, check_safety=True)
 
     def _run_heuristic_scan(self, folder: str) -> None:
-        """Ejecuta el escaneo de seguridad en una ruta específica."""
+        """
+        Ejecuta el escaneo de seguridad en una ruta específica.
+        La función delega el escaneo al hilo de trabajo y procesa los resultados
+        asincrónicamente mediante una caché para evitar cálculos repetitivos.
+        """
         def task() -> None:
             self.set_status(f"Escaneando {folder}...")
             self.clear("Seguridad")
