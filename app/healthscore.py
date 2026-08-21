@@ -188,6 +188,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
         return HealthResult(0, "F", {}, ["Error: Configuración inestable."])
     
+    # Validar que los umbrales no permitan divisiones por cero
     if any(l <= 0 for l in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema inválidos."])
 

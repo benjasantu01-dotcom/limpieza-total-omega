@@ -233,7 +233,9 @@ def _sum_directory_recursive(
                         total += _walk(entry.path, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         try:
-                            # Validación estricta ante errores de lectura de metadatos (archivos bloqueados)
+                            # Verificación de seguridad adicional en cada archivo
+                            if not is_safe_to_modify(Path(entry.path)):
+                                continue
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size > 0:
                                 total += st.st_size

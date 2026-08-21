@@ -133,7 +133,9 @@ def _collect_candidates(
                                 visited_inodes.add(inode)
                                 _scan(p_entry)
                         elif entry.is_file() and st.st_size >= min_size:
-                            temp_groups[int(st.st_size)].append(p_entry)
+                            # Validar seguridad adicional antes de añadir
+                            if is_safe_to_modify(p_entry):
+                                temp_groups[int(st.st_size)].append(p_entry)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 

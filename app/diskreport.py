@@ -211,11 +211,18 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     
     while stack:
         current_dir = stack.pop()
+        
+        # Validar que no hayamos escapado del base_path por symlink
+        try:
+            if base_path not in current_dir.resolve(strict=False).parents and current_dir.resolve(strict=False) != base_path:
+                continue
+        except (OSError, RuntimeError):
+            continue
+
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Saltar links simbólicos y junctions para evitar bucles o salidas
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
