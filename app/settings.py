@@ -161,7 +161,7 @@ class _Validators:
         """Valida que la ruta sea absoluta, no contenga cruces de directorios y sea modificable por la app."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        if not path_string or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
+        if not path_string or len(path_string) > 4096 or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None

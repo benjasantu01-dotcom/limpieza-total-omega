@@ -153,7 +153,7 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta nombres con extensiones múltiples para ocultar ejecutables."""
-    if not path or not path.name:
+    if path is None or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -162,10 +162,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Analiza la antigüedad de ejecutables en carpetas de riesgo (Descargas, Temp)."""
-    if not path or is_protected_path(path):
+    if path is None or is_protected_path(path):
         return None
     
-    parts = set(path.parts)
+    parts = set(p.lower() for p in path.parts)
     if not WATCHED_FOLDERS.intersection(parts):
         return None
         
@@ -180,7 +180,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Verifica si un ejecutable intenta suplantar procesos críticos del sistema."""
-    if not path or not path.name:
+    if path is None or not path.name:
         return None
         
     if path.name.lower() in SYSTEM_LOOKALIKES:

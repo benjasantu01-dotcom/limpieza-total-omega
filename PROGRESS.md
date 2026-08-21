@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 31 | 1 | 4 | 3 | 47 |
+| 2026-08-19 | 27 | 1 | 4 | 3 | 47 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 21 | 2 | 3 | 1 | 41 |
+| 2026-08-21 | 25 | 2 | 3 | 1 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **52**
+- manejo de errores y validación de entradas: **55**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
 - seguridad defensiva: **42**
-- legibilidad y documentación: **42**
-- rendimiento: **40**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
-- `diskreport.py`: **20**
-- `healthscore.py`: **20**
+- `settings.py`: **23**
 - `organizer.py`: **20**
-- `assistant.py`: **19**
-- `duplicates.py`: **18**
+- `assistant.py`: **20**
+- `diskreport.py`: **19**
+- `healthscore.py`: **19**
+- `duplicates.py`: **17**
 - `memory.py`: **17**
+- `scanner.py`: **16**
 - `quarantine.py`: **16**
-- `scanner.py`: **15**
-- `main.py`: **14**
 - `browser.py`: **14**
+- `main.py`: **13**
 - `branding.py`: **9**
-- `startup.py`: **8**
+- `startup.py`: **9**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T03:02:56` **assistant.py** (legibilidad y documentación): Mejora la documentación técnica y legibilidad del módulo mediante la adición de docstrings precisos en las constantes y funciones clave, clarificando la jerarquía de validación de seguridad y el rol de las estructuras de datos.
+- `2026-08-21T03:02:30` **startup.py** (manejo de errores y validación de entradas): He mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV contenga al menos dos valores antes de procesarlos, evitando así posibles errores de `IndexError` al acceder a los elementos por índice y añadiendo una comprobación de tipo más estricta sobre la fila.
+- `2026-08-21T03:01:54` **settings.py** (manejo de errores y validación de entradas): Se reforzó la validación de `_Validators.path` para prevenir ataques de desbordamiento de memoria o errores de sistema al procesar rutas malintencionadas, y se encapsuló la lógica de recuperación de la clave de API para garantizar que nunca se retorne `None` inesperado.
+- `2026-08-21T03:01:14` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las verificaciones heurísticas mediante la validación explícita de `path` y `entry` al inicio de cada función de chequeo, evitando excepciones por atributos faltantes y asegurando una gestión de errores más limpia.
 - `2026-08-21T02:52:41` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `is_protected_path` ante errores de sistema (como rutas inexistentes o inaccesibles) envolviendo la normalización en una lógica de validación previa más estricta para asegurar que el `lru_cache` no bloquee permanentemente rutas válidas ante fallos temporales.
 - `2026-08-21T02:51:39` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación temprana de permisos de escritura y capturando errores específicos al realizar el movimiento atómico, asegurando que cualquier fallo no deje estados intermedios inconsistentes.
 - `2026-08-21T02:51:00` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `sort_junk` y `stage_for_review` ante entradas malformadas, reemplazando chequeos implícitos por validaciones explícitas de tipos y estados, asegurando que `ensure_safe_to_modify` nunca se invoque sin un contexto de validación previo exitoso.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T00:52:38` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` y `stage_for_review` asegurando que ninguna operación de movimiento atraviese límites de volumen físico (cross-drive move), evitando errores de `shutil.move` que podrían dejar archivos en estados intermedios inconsistentes.
 - `2026-08-21T00:52:26` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `trim_working_set` implementando un chequeo de privilegios de acceso (verificando que el handle no requiera más que `SAFE_ACCESS_MASK`) y aplicando una validación estricta de la ruta del ejecutable mediante `is_protected_path` sobre la ruta resuelta antes de cualquier interacción, previniendo así la manipulación de procesos protegidos o maliciosos.
 - `2026-08-21T00:48:53` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación explícita de `is_finite()` en cada métrica individual dentro de `SystemMetrics.validate`, previniendo que valores `NaN` o `inf` corruptos puedan propagarse a los cálculos de puntaje y generar resultados matemáticos inconsistentes o inesperados.
-- `2026-08-21T00:40:26` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el recorrido del sistema de archivos no solo valide la ruta contra `is_protected_path`, sino que también ejecute `is_safe_to_modify` sobre el `Path` resuelto antes de realizar cualquier operación de acceso, mitigando riesgos ante manipulaciones de enlaces simbólicos o rutas malintencionadas.
-- `2026-08-21T00:40:04` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` validando explícitamente que los archivos encontrados sean hijos reales del directorio base mediante `path.is_relative_to(base)` (en versiones modernas) o `base in path.parents` para prevenir que operaciones de lectura escapen del ámbito restringido por enlaces simbólicos o manipulaciones de ruta.
-- `2026-08-21T00:39:28` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de rutas durante la iteración, impidiendo que el recorrido escape del directorio raíz especificado ante posibles manipulaciones externas o enlaces simbólicos maliciosos.
-- `2026-08-21T00:38:59` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la ruta de destino antes de intentar crear directorios o escribir el archivo, y utilizando la forma segura de verificación para evitar escrituras no autorizadas en rutas de sistema.

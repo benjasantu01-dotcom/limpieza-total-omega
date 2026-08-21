@@ -84,10 +84,11 @@ MetricSource: TypeAlias = dict[str, Any] | object
 ScoreSource: TypeAlias = dict[str, Any] | object
 ValidatorSpec: TypeAlias = tuple[Callable, float, float]
 
+# Límites de seguridad para prevenir ataques de denegación de servicio por procesamiento de texto
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
-_MAX_MSG_CHUNK: Final[int] = 200 # Límite defensivo para trozos de texto
-_MAX_PROMPT_LIMIT: Final[int] = 4000 # Límite estricto para evitar ataques de contexto
+_MAX_MSG_CHUNK: Final[int] = 200 
+_MAX_PROMPT_LIMIT: Final[int] = 4000 
 
 SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
     "rutas de archivos",
@@ -100,15 +101,12 @@ SENSITIVE_KEYS_NEVER_SENT: Final[tuple[str, ...]] = (
 )
 
 PRIVACY_NOTICE: Final[str] = (
-    "El asistente en línea envía a Google solo números agregados: MB de "
-    "basura, cantidad de archivos sospechosos, porcentaje de RAM y disco "
-    "libres, cantidad de programas de inicio y el puntaje de salud. Nunca "
-    "envía rutas, nombres ni contenido de archivos. Podés apagarlo en Ajustes."
+    "El asistente en línea envía a Google solo números agregados. "
+    "Nunca envía rutas, nombres ni contenido de archivos."
 )
 
 OFFLINE_NOTICE: Final[str] = (
-    "Respondido por el motor local, sin conexión ni envío de datos. "
-    "Para preguntas escritas con tus palabras, activá el asistente en Ajustes."
+    "Respondido por el motor local, sin conexión ni envío de datos."
 )
 
 SUGGESTED_QUESTIONS: Final[tuple[str, ...]] = (
@@ -128,12 +126,9 @@ SYSTEM_PROMPT: Final[str] = (
     "concreta, sin tecnicismos innecesarios.\n\n"
     "Reglas:\n"
     "- Basate solo en las métricas que te paso. No inventes datos que no están.\n"
-    "- No prometas resultados mágicos. Si algo no vale la pena, decilo.\n"
-    "- Los 'limpiadores de RAM' que liberan memoria a la fuerza empeoran el "
-    "rendimiento: la RAM ocupada como caché es lo que hace que los programas "
-    "abran rápido. Si te preguntan por eso, explicalo.\n"
-    "- Nunca digas que borraste o cambiaste algo: vos solo aconsejás. Indicá "
-    "qué pestaña de la app usar.\n"
+    "- No prometas resultados mágicos.\n"
+    "- Los 'limpiadores de RAM' empeoran el rendimiento: explicalo si preguntan.\n"
+    "- Nunca digas que borraste o cambiaste algo: vos solo aconsejás.\n"
     "- Si te preguntan algo que no se puede saber con estas métricas, decí "
     "que hace falta correr el análisis correspondiente.\n"
     "- Máximo 6 líneas."
@@ -178,11 +173,7 @@ _VALIDATORS: Final[dict[str, ValidatorSpec]] = {
 }
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
-    """
-    Conversión defensiva de tipos numéricos. 
-    Evita que valores no finitos (inf, nan) o tipos incompatibles 
-    contaminen el motor de lógica o el reporte de métricas.
-    """
+    """Conversión segura a float. Retorna default si el valor no es numérico o es infinito."""
     if val is None or isinstance(val, (list, dict, set, tuple, bool)):
         return default
     try:
@@ -192,15 +183,12 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
         return default
 
 def _validate_response_length(text: str) -> str:
-    """Asegura que el texto retornado esté dentro de los límites de seguridad definidos."""
+    """Trunca el texto para cumplir con el límite máximo de caracteres del motor."""
     return text[:_MAX_TEXT_LENGTH]
 
 @dataclass
 class SystemContext:
-    """
-    Representa el estado actual del sistema mediante métricas agregadas.
-    Todas las métricas deben ser valores numéricos simples sin rastro de rutas.
-    """
+    """Contenedor de estado del sistema. Mantiene únicamente métricas agregadas."""
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
@@ -215,10 +203,9 @@ class SystemContext:
     browser_cache_mb: float = 0.0
     analyzed: bool = False
 
-
 @dataclass
 class Answer:
-    """Respuesta generada por el asistente con metadatos de origen y sugerencias."""
+    """Respuesta generada por el asistente con metadatos."""
     text: str
     source: str = "local"
     notice: str = ""
@@ -226,20 +213,17 @@ class Answer:
 
     @property
     def is_online(self) -> bool:
-        """Indica si la respuesta fue generada por el motor Gemini."""
+        """Determina si la respuesta provino de una API externa."""
         return self.source == "gemini"
 
 def _is_safe_text_structure(text: str) -> bool:
-    """Valida que la estructura del texto no contenga inyecciones de comandos o rutas."""
+    """Valida la ausencia de rutas o comandos en un string."""
     if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text):
         return False
     return True
 
 def _ensure_safe_text(text: Any) -> bool:
-    """
-    Verifica que el texto sea seguro: bloquea inyecciones de ruta, caracteres
-    de control invisibles y cualquier rastro de estructuras de directorio.
-    """
+    """Validación exhaustiva de integridad y seguridad para texto de entrada/salida."""
     if not isinstance(text, str) or not text:
         return False
     if len(text) > _MAX_TEXT_LENGTH:
@@ -249,11 +233,7 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
-    """
-    Extrae y asigna una métrica validando: tipo, finitud y rangos (min/max).
-    El uso de especificaciones (ValidatorSpec) evita inyecciones de datos 
-    fuera de rango y garantiza que el objeto SystemContext sea inerte.
-    """
+    """Extrae métricas de una fuente externa validando tipos y rangos definidos."""
     if not isinstance(spec, tuple) or len(spec) != 3:
         return False
 
@@ -273,10 +253,7 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """
-    Construye un objeto SystemContext validando estrictamente los datos de entrada
-    y centralizando el inventario de métricas permitidas fuera del equipo.
-    """
+    """Construye un objeto de contexto validando entradas contra _VALIDATORS."""
     ctx = SystemContext()
     found_data = False
     
@@ -307,15 +284,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Serializa una métrica como texto limpio, eliminando cualquier caracter peligroso."""
+    """Formatea métricas eliminando caracteres de control y rutas."""
     raw = _fmt_metric(val, unit, decimal)
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 def context_as_text(context: SystemContext) -> str:
-    """
-    Serializa el contexto a formato texto para Gemini, aplicando una doble capa
-    de limpieza contra caracteres de control y rutas para prevenir filtraciones.
-    """
+    """Serializa métricas en texto plano seguro para el asistente en línea."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
@@ -338,12 +312,12 @@ def context_as_text(context: SystemContext) -> str:
         return "Error crítico al procesar métricas de seguridad."
 
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
-    """Convierte una métrica a string formateado."""
+    """Formateador base para valores numéricos."""
     f = _safe_float(val, -1.0)
     return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
-    """Proporciona una explicación educativa sobre los conceptos clave."""
+    """Devuelve explicaciones pedagógicas de los módulos de la app."""
     explicaciones: Final[dict[str, str]] = {
         "basura": "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo.",
         "seguridad": "Archivos con señales de riesgo: extensiones inusuales o ejecutables sin firma, requieren revisión manual.",
@@ -357,7 +331,7 @@ def explain_area(area: Any) -> str:
     return "No tengo una explicación para esa área."
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """Evalúa los criterios de salud contra el contexto para identificar estados críticos."""
+    """Compara métricas contra criterios para detectar estados críticos."""
     problemas: list[str] = []
     for crit in _CRITERIOS_SALUD:
         val = getattr(ctx, crit.metric_key)
@@ -374,10 +348,7 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     return problemas
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """
-    Genera respuesta educativa sobre el estado de memoria RAM usando métricas de SystemContext.
-    Calcula el impacto de la RAM libre y sugiere acciones de limpieza seguras.
-    """
+    """Procesa consultas sobre memoria RAM."""
     mem_pct = _safe_float(ctx.memory_available_percent, 50.0)
     total_gb = _safe_float(ctx.memory_total_gb, 0.0)
     
@@ -390,10 +361,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """
-    Genera respuesta sobre el almacenamiento y espacio recuperable mediante SystemContext.
-    Suma fuentes de basura y caché para estimar el espacio total recuperable.
-    """
+    """Procesa consultas sobre uso de disco."""
     recuperable = _safe_float(ctx.junk_mb) + _safe_float(ctx.duplicate_mb) + _safe_float(ctx.browser_cache_mb)
     
     linea1 = f"Tenés {ctx.disk_free_percent:.0f}% libre en disco."
@@ -404,10 +372,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{linea1} {linea2}{alerta}{cierre}"), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """
-    Genera respuesta sobre archivos sospechosos detectados mediante el análisis de seguridad.
-    Refuerza la naturaleza informativa y no destructiva de la herramienta.
-    """
+    """Procesa consultas sobre seguridad."""
     if ctx.suspicious_count == 0:
         texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación."
     else:
@@ -419,10 +384,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """
-    Genera respuesta sobre el puntaje de salud global procesando SystemContext.
-    Prioriza problemas detectados basándose en los criterios de salud definidos.
-    """
+    """Procesa consultas sobre puntaje de salud."""
     score_display = f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
     problemas = _identify_active_problems(ctx)
     resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente para arreglar."
@@ -431,10 +393,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """
-    Genera respuesta sobre el impacto de programas al inicio usando métricas de SystemContext.
-    Advierte que el control debe ejercerse desde las herramientas nativas de Windows.
-    """
+    """Procesa consultas sobre programas de inicio."""
     estado = f"Tenés {int(ctx.startup_count)} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos." if ctx.startup_count > 15 else ("Es una cantidad normal, aunque se puede recortar." if ctx.startup_count > 8 else "Está bien así.")
     cierre = " La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows."
@@ -450,15 +409,15 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 }
 
 def _sanitize_query(question: str) -> str:
-    """Limpia la consulta del usuario de caracteres no permitidos e invisibles."""
+    """Sanitiza el input del usuario eliminando caracteres especiales."""
     if not isinstance(question, str): return ""
     clean = re.sub(r'[\x00-\x1f\x7f\u200b-\u200f\u202a-\u202e]', '', question)
     return clean.strip()[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """
-    Determina la respuesta mediante heurísticas locales basadas en keywords,
-    asegurando que el sistema pueda responder aunque no se haya completado el análisis.
+    Motor de lógica local: responde consultas basándose en reglas heurísticas
+    aplicadas sobre el contexto del sistema.
     """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
@@ -471,7 +430,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     clean_text = _sanitize_query(question)
     tokens = set(_TOKEN_REGEX.findall(clean_text))
     
-    # Búsqueda eficiente usando intersección de conjuntos
     for token in tokens:
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, clean_text)
@@ -486,7 +444,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
 
 def available(base: Union[str, Path, None] = None) -> bool:
-    """Verifica si la configuración del sistema permite el uso del asistente en línea."""
+    """Verifica habilitación de funcionalidades en la nube a través de settings."""
     try:
         return settings.assistant_enabled(base)
     except Exception:
@@ -499,15 +457,13 @@ def _call_gemini(
     model: str
 ) -> Optional[str]:
     """
-    Ejecuta una solicitud POST al motor de Gemini. Aplica filtros de seguridad 
-    en el prompt enviado y valida la respuesta recibida para asegurar que 
-    no se expongan rutas ni se inyecten comandos, abortando ante cualquier anomalía.
+    Invoca la API de Gemini enviando un prompt construido bajo estrictas políticas
+    de anonimización y seguridad de datos.
     """
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q = _sanitize_query(question)
-    # Seguridad defensiva: verificar que ni el contexto ni la pregunta contengan rutas disfrazadas
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
     
     try:
@@ -556,12 +512,7 @@ def _call_gemini(
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """
-    Orquestador de alto nivel: elige entre motor local o remoto. 
-    Aplica una política de 'fallo seguro': si la validación de configuración, 
-    contexto o la comunicación con la API falla, siempre retorna la respuesta del
-    motor local para mantener la funcionalidad básica garantizada.
-    """
+    """Orquestador de consultas: elige motor local o remoto aplicando fallbacks seguros."""
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     
