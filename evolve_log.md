@@ -1539,3 +1539,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-21T12:54:59` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de métricas de procesos eliminando la conversión redundante a `List` en el generador y ajustando `top_memory_processes` para que el parseo sea una operación directa sobre los datos cacheados, reduciendo el overhead en cada llamada.
 - `2026-08-21T12:54:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T12:54:59` Corrida terminada. Total usado hoy: 304.
+- `2026-08-21T13:02:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-21T13:03:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-21T13:03:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T13:04:50` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-21T13:05:57` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-21T13:06:25` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-21T13:06:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-21T13:07:10` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-21T13:07:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T13:07:10` Corrida terminada. Total usado hoy: 308.
