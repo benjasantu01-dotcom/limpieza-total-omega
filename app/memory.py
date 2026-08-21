@@ -81,7 +81,14 @@ _last_proc_fetch: float = 0.0
 _cached_proc_output: str = ""
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura de datos Win32 para la función GlobalMemoryStatusEx."""
+    """
+    Estructura de datos Win32 (GlobalMemoryStatusEx).
+    dwMemoryLoad: porcentaje de uso (0-100).
+    ullTotalPhys: RAM física total.
+    ullAvailPhys: RAM física disponible.
+    ullTotalPageFile: Tamaño total del archivo de paginación (RAM + swap).
+    ullAvailPageFile: Espacio disponible en archivo de paginación.
+    """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -95,7 +102,7 @@ class MEMORYSTATUSEX(ctypes.Structure):
     ]
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Instancia y configura el tamaño de la estructura de estado de memoria."""
+    """Instancia la estructura requerida por la API de Windows inicializando dwLength."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
@@ -109,7 +116,7 @@ class MemorySnapshot:
 
     @property
     def used(self) -> BytesValue:
-        """Cantidad de bytes utilizados."""
+        """Cantidad de bytes utilizados (total - disponible)."""
         return max(0, self.total - self.available)
 
     @property
@@ -142,7 +149,7 @@ class ProcessMemory:
 
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte un valor numérico de bytes a una cadena legible."""
+    """Convierte un valor numérico de bytes a una cadena legible (ej: 1.5 MB)."""
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -179,7 +186,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """Convierte una línea individual de texto en un modelo ProcessMemory."""
+    """Convierte una línea individual (CSV) en un modelo ProcessMemory."""
     if not isinstance(csv_line, str):
         return None
         
@@ -253,6 +260,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         return []
 
     if (time.time() - _last_proc_fetch) > 30:
+        # Comando PowerShell para extraer procesos y su WorkingSet
         cmd = "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 Name,Id,WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
         try:
             proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
@@ -267,7 +275,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=2)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica el nivel de estrés del sistema (info/warning/danger)."""
+    """Clasifica el nivel de estrés del sistema (ok/info/warning/danger)."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
     
@@ -313,7 +321,10 @@ def _is_system_process(pid: int) -> bool:
 
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
-    """Obtiene la ruta absoluta de un ejecutable dado su handle."""
+    """
+    Obtiene la ruta absoluta del ejecutable mediante QueryFullProcessImageNameW.
+    Requiere un handle con acceso PROCESS_QUERY_LIMITED_INFORMATION.
+    """
     if not handle:
         return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
@@ -333,7 +344,10 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
-    """Valida que el proceso sea seguro para liberar memoria mediante API de seguridad."""
+    """
+    Valida que el proceso sea seguro para liberar memoria.
+    Verifica estado activo, ruta del ejecutable y ausencia de caracteres sospechosos.
+    """
     if not proc_handle:
         return False, "Handle inválido."
 
@@ -353,11 +367,12 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]
         return False, "No se pudo verificar la ubicación del ejecutable."
     
     path_bytes = path.encode("utf-8", errors="ignore")
+    # Bloqueo de caracteres de control RTL (a menudo usados para camuflar extensiones)
     forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
     if any(seq in path_bytes for seq in forbidden_sequences):
         return False, "Ruta de proceso sospechosa (caracteres control)."
 
-    normalized_path = os.normcase(os.path.normpath(path))
+    normalized_path = os.normcase(os.normpath(path))
     if is_protected_path(normalized_path):
         return False, "Operación denegada: ruta de ejecutable protegida."
         

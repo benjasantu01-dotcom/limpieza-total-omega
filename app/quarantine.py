@@ -263,9 +263,9 @@ def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
         valid_items: List[QuarantineItem] = []
         for entry in raw_data:
             if isinstance(entry, dict):
-                item = QuarantineItem.from_dict(entry)
-                if item:
-                    valid_items.append(item)
+                quarantine_item = QuarantineItem.from_dict(entry)
+                if quarantine_item:
+                    valid_items.append(quarantine_item)
         return valid_items
     except (json.JSONDecodeError, OSError, PermissionError):
         return []
@@ -381,7 +381,7 @@ def quarantine_file(
                 raise OSError(f"Archivo copiado pero error al borrar original: {e}")
         
         items = load_manifest(base)
-        item = QuarantineItem(
+        quarantine_item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
             stored_name=stored_name,
@@ -390,9 +390,9 @@ def quarantine_file(
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
         )
-        items.append(item)
+        items.append(quarantine_item)
         save_manifest(items, base)
-        return item
+        return quarantine_item
     except (Exception, OSError, ValueError) as e:
         if destination.exists():
             _safe_unlink(destination)
@@ -401,7 +401,7 @@ def quarantine_file(
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna los ítems en cuarentena, ordenados cronológicamente."""
-    return sorted(load_manifest(base), key=lambda i: i.quarantined_at, reverse=True)
+    return sorted(load_manifest(base), key=lambda item: item.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
@@ -409,20 +409,20 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not isinstance(item_id, str) or not item_id.strip():
         raise ValueError("ID de ítem inválido o vacío.")
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
-    if not match:
+    quarantine_item = next((item for item in items if item.item_id == item_id), None)
+    if not quarantine_item:
         raise KeyError(f"No se encontró el ítem: {item_id}")
     base_path = quarantine_dir(base)
-    stored_file = (base_path / match.stored_name).resolve()
+    stored_file = (base_path / quarantine_item.stored_name).resolve()
     if not _is_valid_quarantine_path(stored_file, base_path):
         raise UnsafePathError("Acceso fuera del sandbox de cuarentena detectado.")
     if not stored_file.exists() or not stored_file.is_file():
-        items.remove(match)
+        items.remove(quarantine_item)
         save_manifest(items, base)
         raise FileNotFoundError("Archivo en cuarentena no localizado en disco.")
-    if not match.verify_integrity(stored_file):
+    if not quarantine_item.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida.")
-    destination = Path(match.original_path).resolve()
+    destination = Path(quarantine_item.original_path).resolve()
     if is_protected_path(destination):
         raise UnsafePathError("Restauración denegada: destino protegido por sistema.")
     if destination.exists():
@@ -433,7 +433,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo crítico durante la restauración: {e}")
-    items.remove(match)
+    items.remove(quarantine_item)
     save_manifest(items, base)
     return destination
 
@@ -443,33 +443,33 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not isinstance(item_id, str) or not item_id.strip():
         return False
     items = load_manifest(base)
-    match = next((i for i in items if i.item_id == item_id), None)
-    if not match:
+    quarantine_item = next((item for item in items if item.item_id == item_id), None)
+    if not quarantine_item:
         return False
     quarantine_root = quarantine_dir(base)
-    stored_file = (quarantine_root / match.stored_name).resolve()
+    stored_file = (quarantine_root / quarantine_item.stored_name).resolve()
     if not stored_file.exists():
-        items.remove(match)
+        items.remove(quarantine_item)
         save_manifest(items, base)
         return False
-    if not match.verify_integrity(stored_file):
+    if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError("Integridad comprometida: no se puede procesar el archivo.")
     if not _is_valid_quarantine_path(stored_file, quarantine_root):
         raise UnsafePathError("Intento de borrado fuera del sandbox.")
     if _safe_unlink(stored_file):
-        items.remove(match)
+        items.remove(quarantine_item)
         save_manifest(items, base)
         return True
     return False
 
 
-def _is_item_purgable(entry: Path, item: QuarantineItem, root: Path) -> bool:
+def _is_item_purgable(file_path: Path, item: QuarantineItem, root: Path) -> bool:
     """Verifica si un archivo en el sandbox cumple requisitos para ser borrado."""
     return (
-        _is_valid_quarantine_path(entry.resolve(), root) and
-        entry.is_file() and
-        item.verify_integrity(entry) and
-        not _is_file_locked(entry)
+        _is_valid_quarantine_path(file_path.resolve(), root) and
+        file_path.is_file() and
+        item.verify_integrity(file_path) and
+        not _is_file_locked(file_path)
     )
 
 
@@ -479,18 +479,18 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     items = load_manifest(base)
     if not items:
         return 0
-    item_map: Dict[str, QuarantineItem] = {i.stored_name: i for i in items}
+    item_map: Dict[str, QuarantineItem] = {item.stored_name: item for item in items}
     purged_ids = set()
     
-    for entry in quarantine_root.iterdir():
-        if entry.name in item_map:
-            item = item_map[entry.name]
-            if entry.exists() and _is_item_purgable(entry, item, quarantine_root):
-                if _safe_unlink(entry):
-                    purged_ids.add(item.item_id)
+    for file_path in quarantine_root.iterdir():
+        if file_path.name in item_map:
+            quarantine_item = item_map[file_path.name]
+            if file_path.exists() and _is_item_purgable(file_path, quarantine_item, quarantine_root):
+                if _safe_unlink(file_path):
+                    purged_ids.add(quarantine_item.item_id)
             
     if purged_ids:
-        remaining_items = [i for i in items if i.item_id not in purged_ids]
+        remaining_items = [item for item in items if item.item_id not in purged_ids]
         save_manifest(remaining_items, base)
         
     return len(purged_ids)
@@ -506,7 +506,7 @@ def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
     items = load_manifest(base)
     if not items:
         return ["La cuarentena está vacía."]
-    total_mb = sum(i.size_mb for i in items)
+    total_mb = sum(item.size_mb for item in items)
     lines = [f"{len(items)} archivo(s) en cuarentena — {round(total_mb, 2)} MB", ""]
     for item in items:
         lines.extend([

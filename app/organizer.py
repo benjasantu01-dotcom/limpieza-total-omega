@@ -136,8 +136,10 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta verificar si el archivo está siendo usado por otro proceso.
-    Si el archivo no se puede abrir en modo lectura binaria, se asume bloqueado por el S.O.
+    Verifica si un archivo está bloqueado intentando abrirlo en modo lectura binaria exclusiva.
+    
+    Returns:
+        bool: True si el archivo está en uso por otro proceso, False si es accesible.
     """
     try:
         with open(path, "rb") as f:
@@ -161,7 +163,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Valida la seguridad de la operación de E/S.
-    Verifica: existencia, tipo de archivo, atributos ocultos/sistema, bucles y bloqueo.
+    Verifica: existencia, tipo de archivo, atributos de sistema/oculto, bucles, cruce de volúmenes,
+    integridad de permisos mediante `is_safe_to_modify` y estado de bloqueo del archivo.
     """
     try:
         if not src.exists() or not src.is_file() or _is_junction(src):
@@ -183,7 +186,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Validación final antes del movimiento: verifica reglas del módulo `safety` 
+    Validación de alto nivel antes del movimiento: verifica reglas del módulo `safety` 
     y restricciones de E/S físicas.
     """
     if not isinstance(junk_file, JunkFile): return False
@@ -310,7 +313,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de forma segura. 
-    Solo procesa archivos dentro de la carpeta de revisión verificada.
+    Solo procesa archivos dentro de la carpeta de revisión verificada y llama a `ensure_safe_to_modify`
+    antes de cada eliminación física.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
