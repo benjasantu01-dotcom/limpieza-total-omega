@@ -166,42 +166,44 @@ def _is_file_in_use(path: Path) -> bool:
         return getattr(e, 'winerror', 0) == 32 or getattr(e, 'errno', 0) == 13
 
 
-def _check_file_integrity(p: Path) -> None:
+def _check_file_integrity(path: Path) -> None:
     """
-    Realiza una batería de verificaciones de integridad antes de modificar archivos.
+    Realiza validaciones físicas de integridad de archivo (uso, flags, permisos).
     
+    Args:
+        path: Objeto Path a validar.
     Raises:
-        UnsafePathError: Si el archivo está bloqueado, en uso, o presenta riesgos de integridad.
+        UnsafePathError: Si el archivo está bloqueado, en uso, o presenta riesgos.
     """
-    if p is None:
+    if path is None:
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
     
-    if not p.exists():
-        raise UnsafePathError(f"El archivo {p.name} no existe.")
+    if not path.exists():
+        raise UnsafePathError(f"El archivo {path.name} no existe.")
 
-    if len(p.parts) > 64:
+    if len(path.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
     try:
-        st = p.lstat()
+        st = path.lstat()
     except OSError as e:
         raise UnsafePathError(f"Error de acceso a metadatos: {e.strerror}")
 
-    if not os.access(p, os.W_OK):
+    if not os.access(path, os.W_OK):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}.")
-    if _is_reparse_point(p):
+    if _is_reparse_point(path):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.REPARSE_POINT.value}.")
     if not bool(st.st_mode & stat.S_IWRITE):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.READ_ONLY.value}.")
-    if _is_file_in_use(p):
+    if _is_file_in_use(path):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.IN_USE.value}.")
-    if _is_system_or_hidden(p):
+    if _is_system_or_hidden(path):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.SYSTEM_HIDDEN.value}.")
-    if p.is_file() and st.st_nlink > 1:
+    if path.is_file() and st.st_nlink > 1:
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.HARD_LINK.value}.")
-    if _has_alternate_data_stream(p):
+    if _has_alternate_data_stream(path):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.ADS.value}.")
-    if p.is_file() and st.st_size == 0:
+    if path.is_file() and st.st_size == 0:
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.EMPTY_FILE.value}.")
 
 
@@ -217,7 +219,14 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
     """
-    Convierte una ruta a su forma absoluta canónica.
+    Convierte una ruta a su forma absoluta canónica resolviendo enlaces.
+    
+    Args:
+        path: Ruta a normalizar.
+    Returns:
+        Objeto Path absoluto.
+    Raises:
+        ValueError: Si la ruta es inválida, nula o excede límites de sistema.
     """
     if path is None:
         raise ValueError("Ruta nula recibida.")
@@ -293,42 +302,51 @@ def is_sensitive_file(path: PathLike) -> bool:
         return True 
 
 
-def _validate_basic_path_safety(p: Path, path_str: str) -> None:
-    """Realiza validaciones de seguridad estructural previas a la modificación."""
-    if _has_invalid_chars(path_str) or _is_reserved_device_name(p.name):
+def _validate_basic_path_safety(path: Path, path_str: str) -> None:
+    """Verifica riesgos estructurales en la cadena de la ruta (traversal, UNC, invalidos)."""
+    if _has_invalid_chars(path_str) or _is_reserved_device_name(path.name):
         raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
     
-    if ".." in p.parts:
+    if ".." in path.parts:
         raise UnsafePathError("Intento de path traversal detectado.")
 
     if path_str.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas de red (UNC) no permitidas.")
 
-    if p.anchor and not os.path.exists(p.anchor):
+    if path.anchor and not os.path.exists(path.anchor):
         raise UnsafePathError("Unidad o punto de montaje no disponible.")
     
-    if len(str(p)) >= 260:
+    if len(str(path)) >= 260:
         raise UnsafePathError("La ruta resultante excede la longitud máxima permitida.")
 
 
-def _validate_boundary_conditions(p: Path, base_dir: PathLike | None) -> None:
-    """Verifica que la ruta se mantenga dentro de los límites operativos permitidos."""
-    if base_dir and not is_within_directory(p, base_dir, allow_equal=True):
+def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None:
+    """Valida los límites operativos (scope de directorio base, directorios de trabajo)."""
+    if base_dir and not is_within_directory(path, base_dir, allow_equal=True):
         raise UnsafePathError("Operación fuera del directorio base permitido.")
     
-    if is_within_directory(p, Path.cwd(), allow_equal=True):
+    if is_within_directory(path, Path.cwd(), allow_equal=True):
         raise UnsafePathError("Operación denegada en el directorio de ejecución.")
 
-    if is_drive_root(p) or is_protected_path(p):
+    if is_drive_root(path) or is_protected_path(path):
         raise UnsafePathError("Ruta de sistema protegida.")
 
-    if _is_reparse_point(p):
+    if _is_reparse_point(path):
         raise UnsafePathError("Seguridad denegada: nodo de reparse detectado.")
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Valida la integridad y seguridad de la ruta antes de realizar cambios persistentes.
+    
+    Args:
+        path: Ruta a validar.
+        allow_sensitive: Si es True, permite archivos de configuración del SO.
+        base_dir: Directorio base opcional para restringir el alcance de la operación.
+    Returns:
+        Objeto Path validado si es seguro.
+    Raises:
+        UnsafePathError: Si la ruta no pasa los controles de integridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")

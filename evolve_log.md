@@ -612,3 +612,11 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T03:24:43` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings detallados en funciones críticas, la estandarización de tipos y la clarificación de las condiciones de seguridad en las validaciones, asegurando que el "porqué" de las restricciones sea evidente para futuros colaboradores.
 - `2026-08-21T03:24:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T03:24:43` Corrida terminada. Total usado hoy: 80.
+- `2026-08-21T03:31:11` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-08-21T03:31:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T03:32:15` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos de `QuarantineItem` y funciones auxiliares, añadiendo type hints faltantes y estandarizando las docstrings para clarificar el flujo de seguridad, cumpliendo estrictamente con el enfoque de legibilidad sin alterar la lógica.
+- `2026-08-21T03:32:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-21T03:33:04` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructuradas en las funciones de validación, clarificando las precondiciones y el flujo de excepciones, además de estandarizar la nomenclatura de los argumentos internos para mayor coherencia.
+- `2026-08-21T03:33:24` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de docstrings detallados en todas las funciones y se han reforzado los type hints para asegurar una mayor claridad en el flujo de datos de los hallazgos.
+- `2026-08-21T03:33:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T03:33:24` Corrida terminada. Total usado hoy: 84.
