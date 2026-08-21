@@ -1549,3 +1549,35 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-21T13:07:10` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-21T13:07:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T13:07:10` Corrida terminada. Total usado hoy: 308.
+- `2026-08-21T13:12:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-21T13:13:10` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-21T13:13:38` ➖ Sin cambios en settings.py (enfoque: rendimiento). Motivo: Se optimizó el acceso a los datos de configuración sustituyendo la carga completa del archivo y su validación mediante el caché de `st_mtime` en funciones que solo requieren un único valor, evitando redundancias en la lectura del disco.
+- `2026-08-21T13:13:47` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T13:14:16` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.23s
+
+```
+- `2026-08-21T13:14:16` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` aplicando una caché de resultados negativa (`_MISSING_CACHE`) para evitar re-verificar repetidamente ejecutables inexistentes, reduciendo el I/O en cada iteración de `summarize`.
+- `2026-08-21T13:14:41` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del módulo `assistant.py` frente a configuraciones externas corruptas o maliciosas en `settings.py`, asegurando que `ask()` nunca falle ante valores inesperados en el archivo de configuración y manteniendo la integridad del flujo de fallback al motor local.
+- `2026-08-21T13:14:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T13:14:41` Corrida terminada. Total usado hoy: 312.

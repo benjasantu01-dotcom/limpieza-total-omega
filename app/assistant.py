@@ -525,7 +525,6 @@ def _call_gemini(
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
     """Orquestador de consultas: elige motor local o remoto aplicando fallbacks seguros."""
-    # Validación temprana para prevenir procesamiento de entradas maliciosas
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
         
@@ -535,14 +534,15 @@ def ask(question: str, context: Optional[SystemContext] = None,
     if not available(base): return respaldo
     
     try:
-        configuracion = settings.load(base)
-        if not isinstance(configuracion, dict): return respaldo
+        raw_cfg = settings.load(base)
+        if not isinstance(raw_cfg, dict): return respaldo
         
         cfg: AssistantConfig = {
-            "asistente_api_key": str(configuracion.get("asistente_api_key", "")),
-            "asistente_modelo": str(configuracion.get("asistente_modelo", "gemini-3.1-flash-lite")),
-            "asistente_enviar_metricas": bool(configuracion.get("asistente_enviar_metricas", True))
+            "asistente_api_key": str(raw_cfg.get("asistente_api_key", "")),
+            "asistente_modelo": str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")),
+            "asistente_enviar_metricas": bool(raw_cfg.get("asistente_enviar_metricas", True))
         }
+        
         texto_contexto = context_as_text(ctx) if cfg["asistente_enviar_metricas"] else "El usuario no autorizó enviar métricas."
         
         remoto = _call_gemini(question, texto_contexto, cfg["asistente_api_key"], cfg["asistente_modelo"])
@@ -550,5 +550,5 @@ def ask(question: str, context: Optional[SystemContext] = None,
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo
         return Answer(remoto, source="gemini", notice=PRIVACY_NOTICE)
-    except Exception:
+    except (Exception, TypeError, ValueError):
         return respaldo

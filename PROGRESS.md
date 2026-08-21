@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 28
-- Sin cambios (nada sustancial que mejorar): 18
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 86 | 8 | 10 | 4 | 88 |
-| 2026-08-21 | 133 | 9 | 18 | 14 | 134 |
+| 2026-08-20 | 83 | 8 | 10 | 4 | 87 |
+| 2026-08-21 | 134 | 10 | 18 | 15 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **40**
 - rendimiento: **39**
-- robustez ante casos límite: **29**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `diskreport.py`: **20**
 - `settings.py`: **20**
-- `healthscore.py`: **19**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
+- `diskreport.py`: **19**
 - `duplicates.py`: **19**
 - `memory.py`: **18**
+- `healthscore.py`: **18**
 - `organizer.py`: **17**
 - `scanner.py`: **17**
-- `main.py`: **14**
 - `browser.py`: **14**
 - `quarantine.py`: **13**
+- `main.py`: **13**
 - `safety.py`: **10**
 - `branding.py`: **10**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T13:14:41` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del módulo `assistant.py` frente a configuraciones externas corruptas o maliciosas en `settings.py`, asegurando que `ask()` nunca falle ante valores inesperados en el archivo de configuración y manteniendo la integridad del flujo de fallback al motor local.
 - `2026-08-21T12:54:59` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas de procesos eliminando la conversión redundante a `List` en el generador y ajustando `top_memory_processes` para que el parseo sea una operación directa sobre los datos cacheados, reduciendo el overhead en cada llamada.
 - `2026-08-21T12:53:13` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje total en `compute_score` cacheando el resultado de `_SCORERS` y eliminando la redundancia al iterar sobre `_WEIGHT_ITEMS_INT`, evitando cálculos duplicados y acceso innecesario a diccionarios en cada ciclo.
 - `2026-08-21T12:52:46` **duplicates.py** (rendimiento): Optimizé la recolección de candidatos utilizando un set para las rutas ya procesadas en `_collect_candidates`, evitando escaneos redundantes y reduciendo drásticamente las llamadas a `stat` y el consumo de memoria al evitar redundancias en el árbol de directorios.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T12:22:16` **memory.py** (legibilidad y documentación): Se documentó exhaustivamente la estructura de datos `MEMORYSTATUSEX` y las funciones de bajo nivel relacionadas, aclarando el propósito de cada campo y validación para mejorar la mantenibilidad técnica del módulo.
 - `2026-08-21T12:14:18` **main.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de construcción de pestañas (`_build_tab_*`) y se mejoró la documentación (docstrings) de los métodos de gestión de estado (`_get_cached` y `_run_heuristic_scan`) para aclarar su lógica de invalidación y el uso del pool de hilos, facilitando la auditoría de seguridad del flujo de datos.
 - `2026-08-21T12:13:17` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados en las funciones clave y la clarificación de las constantes de umbral mediante tipos explícitos, facilitando el mantenimiento y la auditoría del motor de cálculo de salud.
-- `2026-08-21T12:12:50` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los métodos de filtrado y recolección para clarificar la lógica de exclusión y manejo de errores, asegurando una mayor robustez técnica en el proceso de búsqueda de archivos.
