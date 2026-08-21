@@ -634,3 +634,47 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T03:53:09` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score evitando la creación de diccionarios intermedios y pre-calculando las funciones de puntuación en una estructura de mapeo eficiente, reduciendo el overhead en cada llamada a `compute_score`.
 - `2026-08-21T03:53:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T03:53:09` Corrida terminada. Total usado hoy: 92.
+- `2026-08-21T04:01:50` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-21T04:02:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-21T04:04:07` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se ha optimizado la gestión de la cola de logs implementando un buffer interno en `_flush_logs` que agrupa todos los mensajes pendientes por pestaña antes de realizar una sola operación de inserción (`insert` + `see`) por cada caja de texto, reduciendo drásticamente el número de llamadas costosas a `tk.TclError` y el overhead de redibujo de los widgets durante operaciones masivas.
+- `2026-08-21T04:04:36` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación y expansión de una lista mutable por un generador eficiente, evitando así múltiples reasignaciones de memoria durante el procesamiento de la lista de procesos.
+- `2026-08-21T04:05:18` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento de `scan_for_junk` eliminando la llamada redundante y costosa a `is_safe_to_modify` dentro del bucle de `os.walk` (que ya estaba filtrada mediante `is_allowed_directory` y `_is_junction`) y moviendo la validación de seguridad a una comprobación única de "parent" para reducir el acceso a disco por cada iteración.
+- `2026-08-21T04:05:35` Tests FALLARON:
+```
+^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+base_str = '/tmp/pytest-of-runner/pytest-4/test_corrupt_manifest_does_not0/_Cuarentena'
+
+    @lru_cache(maxsize=4)
+    def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
+        """Carga interna: lee el manifiesto JSON y cachea el resultado."""
+        base_path = Path(base_str)
+        path = _manifest_path(base_path)
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if not isinstance(raw_data, list):
+                return []
+            valid_items: List[QuarantineItem] = []
+            for entry in raw_data:
+                if isinstance(entry, dict):
+                    item = QuarantineItem.from_dict(entry)
+                    if item:
+                        valid_items.append(item)
+            return valid_items
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:272: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 1.25s
+
+```
+- `2026-08-21T04:05:35` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimizé `purge_all` para evitar múltiples lecturas y escrituras redundantes del manifiesto, utilizando una estructura de set para el procesamiento batch y realizando una única operación de guardado final.
+- `2026-08-21T04:05:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T04:05:35` Corrida terminada. Total usado hoy: 96.

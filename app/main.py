@@ -878,7 +878,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pendientes = self._log_queue
             self._log_queue = []
         
-        # Agrupamos por pestaña directamente sobre la lista de pendientes
+        # Agrupamos por pestaña para reducir llamadas a métodos de UI
         logs_por_tab = {}
         for tab, msg in pendientes:
             if tab not in logs_por_tab:

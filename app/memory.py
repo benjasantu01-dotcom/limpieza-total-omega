@@ -30,7 +30,7 @@ import ctypes
 import time
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar, TypeAlias, Final
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar, TypeAlias, Final, Iterator
 from safety import is_protected_path
 
 if TYPE_CHECKING:
@@ -196,19 +196,21 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     return ProcessMemory(name=name, pid=int(pid_str), working_set=int(ws_str))
 
 
+def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
+    """Generador eficiente para extraer procesos válidos del texto crudo."""
+    for line in raw_csv_text.splitlines():
+        proc = _parse_csv_row(line)
+        if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
+            yield proc
+
+
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Procesa salida de PowerShell y retorna lista ordenada por consumo de RAM."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
-    
-    processes: List[ProcessMemory] = []
-    for line in raw_csv_text.splitlines():
-        proc = _parse_csv_row(line)
-        if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
-            processes.append(proc)
-            
-    # Ordenar por consumo descendente y aplicar límite
-    return sorted(processes, key=lambda p: p.working_set, reverse=True)[:max(0, limit)]
+        
+    # Ordenar y limitar usando generador para reducir consumo de memoria intermedio
+    return sorted(_yield_processes(raw_csv_text), key=lambda p: p.working_set, reverse=True)[:max(0, limit)]
 
 
 def _read_windows_snapshot() -> MemorySnapshot:

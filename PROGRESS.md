@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 9
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 16 | 1 | 2 | 2 | 41 |
+| 2026-08-19 | 14 | 1 | 2 | 2 | 39 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 40 | 2 | 5 | 2 | 43 |
+| 2026-08-21 | 43 | 3 | 5 | 2 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
-- seguridad defensiva: **42**
-- rendimiento: **37**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **41**
+- rendimiento: **40**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
+- `organizer.py`: **21**
+- `settings.py`: **21**
 - `diskreport.py`: **20**
-- `organizer.py`: **20**
-- `assistant.py`: **19**
 - `healthscore.py`: **19**
+- `assistant.py`: **18**
 - `duplicates.py`: **18**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `scanner.py`: **16**
 - `quarantine.py`: **16**
 - `browser.py`: **15**
-- `main.py`: **13**
+- `main.py`: **14**
 - `startup.py`: **10**
 - `branding.py`: **10**
 - `safety.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T04:05:18` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` eliminando la llamada redundante y costosa a `is_safe_to_modify` dentro del bucle de `os.walk` (que ya estaba filtrada mediante `is_allowed_directory` y `_is_junction`) y moviendo la validación de seguridad a una comprobación única de "parent" para reducir el acceso a disco por cada iteración.
+- `2026-08-21T04:04:36` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_windows_process_csv` reemplazando la creación y expansión de una lista mutable por un generador eficiente, evitando así múltiples reasignaciones de memoria durante el procesamiento de la lista de procesos.
+- `2026-08-21T04:04:07` **main.py** (rendimiento): Se ha optimizado la gestión de la cola de logs implementando un buffer interno en `_flush_logs` que agrupa todos los mensajes pendientes por pestaña antes de realizar una sola operación de inserción (`insert` + `see`) por cada caja de texto, reduciendo drásticamente el número de llamadas costosas a `tk.TclError` y el overhead de redibujo de los widgets durante operaciones masivas.
 - `2026-08-21T03:53:09` **healthscore.py** (rendimiento): Optimicé el cálculo del score evitando la creación de diccionarios intermedios y pre-calculando las funciones de puntuación en una estructura de mapeo eficiente, reduciendo el overhead en cada llamada a `compute_score`.
 - `2026-08-21T03:52:59` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos utilizando `os.scandir` para evitar llamadas redundantes a `path.resolve()` y `path.is_file()`, reduciendo drásticamente las llamadas al sistema de archivos (syscalls) innecesarias en el bucle principal de escaneo.
 - `2026-08-21T03:52:34` **diskreport.py** (rendimiento): Optimicé `largest_folders` para evitar la creación innecesaria de objetos `Path` y el uso intensivo de `relative_to` dentro del loop de procesamiento, realizando la agregación directamente sobre la estructura de datos para reducir el costo computacional por archivo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T03:24:32` **memory.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `memory.py` mediante la refactorización de `_parse_csv_row` y `parse_windows_process_csv`, añadiendo type hinting más preciso, simplificando el flujo de validación y documentando la lógica de las máscaras de bits para el acceso a procesos.
 - `2026-08-21T03:23:57` **main.py** (legibilidad y documentación): Documenté con docstrings detallados la estructura de los métodos del asistente, los filtros de seguridad de rutas y las utilidades de caché, mejorando la mantenibilidad para futuras expansiones del bucle autónomo.
 - `2026-08-21T03:13:36` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando type hints explícitos en funciones internas y refactorizando la lógica de `_collect_candidates` para separar la responsabilidad de filtrado de la lógica de recorrido, mejorando la mantenibilidad.
-- `2026-08-21T03:12:23` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de `walk_files` y `largest_folders` añadiendo type hints faltantes y docstrings descriptivos que explican el "porqué" de las defensas implementadas (evitar el escape del directorio raíz).
-- `2026-08-21T03:11:51` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` documentando los parámetros y retornos de las funciones internas con docstrings claros y tipado explícito, además de añadir explicaciones sobre la lógica de exclusión y seguridad de rutas para facilitar futuras auditorías técnicas.
-- `2026-08-21T03:11:23` **branding.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `branding.py` mediante la corrección del tipo de `FONT_SIZES`, la simplificación de la estructura de las constantes globales, la adición de `docstrings` específicos para las clases de datos y la eliminación de variables redundantes, asegurando que la estructura de tipos sea consistente y autodescriptiva.

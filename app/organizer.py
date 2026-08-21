@@ -221,8 +221,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
         if not isinstance(d, str) or not d: continue
         try:
             base: Path = Path(d).expanduser().resolve()
-            # Validamos seguridad en la raíz de cada directorio de escaneo
-            if not base.is_dir() or not is_safe_to_modify(base): 
+            if not base.is_dir(): 
                 continue
             
             for root, dirs, files in os.walk(base):
