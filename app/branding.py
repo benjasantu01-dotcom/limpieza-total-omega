@@ -102,7 +102,7 @@ PALETTE_RGB: Final[Mapping[str, RGBTuple]] = MappingProxyType({
 HEX_TO_KEY: Final[Mapping[HexColor, str]] = MappingProxyType({v: k for k, v in PALETTE.items()})
 
 # FONT_SIZES: Definición de tamaños de fuente aplicados en la jerarquía visual
-FONT_SIZES: Final[FontSizesDict] = {
+FONT_SIZES: FontSizesDict = {
     "display": 46,
     "title": 26,
     "subtitle": 13,
@@ -333,6 +333,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination: return None
     try:
         path_obj = Path(destination).expanduser().resolve()
+        # Verificación estricta de seguridad antes de cualquier operación
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         

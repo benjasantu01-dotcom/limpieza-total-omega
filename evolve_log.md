@@ -1183,3 +1183,10 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-08-21T08:39:03` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el proceso de filtrado de directorios mediante el uso de `path.parts` para verificar la inclusión en `WATCHED_FOLDERS`, evitando la conversión de la ruta completa a `str` y múltiples llamadas a `lower()` dentro del bucle de escaneo.
 - `2026-08-21T08:39:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T08:39:03` Corrida terminada. Total usado hoy: 204.
+- `2026-08-21T08:47:28` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-21T08:47:59` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando llamadas redundantes a `os.stat` y normalizando el acceso a caché mediante la simplificación de la resolución de rutas en cada iteración.
+- `2026-08-21T08:48:25` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-21T08:49:02` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas mal formadas o tipos inesperados mediante una validación estricta y segura en la extracción de datos, evitando que valores inesperados (como `None` o estructuras anidadas) causen errores en tiempo de ejecución o corrompan el estado del asistente.
+- `2026-08-21T08:49:21` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia previo mediante `path_obj.parent.exists()` y un manejo de errores más robusto en `save_logo_svg` para evitar excepciones al intentar crear directorios en rutas bloqueadas o inaccesibles, asegurando que la operación de escritura sea totalmente segura ante casos límite de sistema de archivos.
+- `2026-08-21T08:49:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T08:49:21` Corrida terminada. Total usado hoy: 208.

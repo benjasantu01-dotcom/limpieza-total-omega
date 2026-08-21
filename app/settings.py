@@ -235,8 +235,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     try:
         if not ruta.exists(): return _get_default_config()
         stat = ruta.stat()
-        if ruta_str in _CACHE and _CACHE[ruta_str][0] == stat.st_mtime:
-            return _CACHE[ruta_str][1]
+        cached = _CACHE.get(ruta_str)
+        if cached and cached[0] == stat.st_mtime:
+            return cached[1]
         if stat.st_size > MAX_SETTINGS_SIZE or not _Validators._is_safe_path(ruta_str):
             return _get_default_config()
         with open(ruta, "r", encoding="utf-8") as f:

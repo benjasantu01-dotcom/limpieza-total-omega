@@ -257,28 +257,28 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     found_data = False
     
-    if metrics is not None and isinstance(metrics, (dict, object)):
+    # Fuentes de datos soportadas
+    sources = [metrics, health, extra]
+    
+    # Procesar métricas estándar definidas en _VALIDATORS
+    for src in sources:
+        if src is None: continue
         for key, spec in _VALIDATORS.items():
-            if _validate_and_assign(ctx, metrics, key, spec):
+            if _validate_and_assign(ctx, src, key, spec):
                 found_data = True
 
-    if health is not None and isinstance(health, (dict, object)):
-        if _validate_and_assign(ctx, health, "score", (int, 0, 100)):
+    # Procesar score y grade específicamente
+    for src in [health, extra]:
+        if src is None: continue
+        if _validate_and_assign(ctx, src, "score", (int, 0, 100)):
             found_data = True
-        try:
-            g_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
-            if g_val is not None:
-                ctx.grade = str(g_val)[:10].strip()
-        except Exception:
-            pass
-
-    for k, v in extra.items():
-        if k in _VALIDATORS:
-            if _validate_and_assign(ctx, extra, k, _VALIDATORS[k]):
-                found_data = True
-        elif k == "score":
-            if _validate_and_assign(ctx, extra, "score", (int, 0, 100)):
-                found_data = True
+        
+        # Validar grado (debe ser string seguro)
+        g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
+        if isinstance(g_val, (str, int, float)):
+            g_str = str(g_val)[:10].strip()
+            if _ensure_safe_text(g_str):
+                ctx.grade = g_str
             
     ctx.analyzed = found_data
     return ctx
