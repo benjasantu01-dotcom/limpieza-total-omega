@@ -122,37 +122,29 @@ def _has_alternate_data_stream(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """
-    Consulta atributos win32 para verificar flags de sistema u oculto.
-    Si la API de Windows falla, asume riesgo (True) por principio de seguridad conservadora.
-    """
+    """Consulta atributos win32 para verificar flags de sistema u oculto."""
     if os.name != 'nt' or path is None:
         return False
     try:
-        if not path.exists():
-            return False
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs != -1:
-            return bool(attrs & (0x02 | 0x04))
-        return bool(path.stat().st_file_attributes & (0x02 | 0x04)) if hasattr(path.stat(), 'st_file_attributes') else False
-    except (OSError, AttributeError, TypeError, PermissionError):
+        if attrs == -1: return True # Error al consultar, asumir riesgo
+        return bool(attrs & (0x02 | 0x04))
+    except (OSError, AttributeError, TypeError):
         return True 
 
 
 @lru_cache(maxsize=2048)
 def _is_reparse_point(path: Path) -> bool:
-    """
-    Detecta puntos de reparse (junctions/symlinks) para prevenir recursión infinita
-    y evitar seguir enlaces hacia áreas protegidas del sistema.
-    """
+    """Detecta puntos de reparse (junctions/symlinks) vía API de bajo nivel."""
     if os.name != 'nt':
         return path.is_symlink()
-    if path is None or not path.exists():
+    if path is None:
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        return attrs != -1 and bool(attrs & 0x400)
-    except (OSError, AttributeError, TypeError, PermissionError):
+        if attrs == -1: return True # Error al consultar, asumir riesgo
+        return bool(attrs & 0x400)
+    except (OSError, AttributeError, TypeError):
         return True 
 
 
@@ -169,14 +161,7 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(path: Path) -> None:
-    """
-    Realiza validaciones físicas de integridad de archivo (uso, flags, permisos).
-    
-    Args:
-        path: Objeto Path a validar.
-    Raises:
-        UnsafePathError: Si el archivo está bloqueado, en uso, o presenta riesgos.
-    """
+    """Realiza validaciones físicas de integridad de archivo (uso, flags, permisos)."""
     if path is None:
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
     
@@ -224,16 +209,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """
-    Convierte una ruta a su forma absoluta canónica resolviendo enlaces.
-    
-    Args:
-        path: Ruta a normalizar.
-    Returns:
-        Objeto Path absoluto.
-    Raises:
-        ValueError: Si la ruta es inválida, nula o excede límites de sistema.
-    """
+    """Convierte una ruta a su forma absoluta canónica resolviendo enlaces."""
     if path is None:
         raise ValueError("Ruta nula recibida.")
     
@@ -344,15 +320,6 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Valida la integridad y seguridad de la ruta antes de realizar cambios persistentes.
-    
-    Args:
-        path: Ruta a validar.
-        allow_sensitive: Si es True, permite archivos de configuración del SO.
-        base_dir: Directorio base opcional para restringir el alcance de la operación.
-    Returns:
-        Objeto Path validado si es seguro.
-    Raises:
-        UnsafePathError: Si la ruta no pasa los controles de integridad.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
@@ -381,7 +348,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             
         return p
         
-    except (UnsafePathError):
+    except UnsafePathError:
         raise
     except (ValueError, TypeError, OSError) as e:
         raise UnsafePathError(f"Error crítico de seguridad validando ruta: {e}")

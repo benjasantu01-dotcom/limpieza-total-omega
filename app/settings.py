@@ -244,6 +244,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(custom_base)
     if ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()): return None
     parent = ruta.parent.resolve(strict=False)
+    if not parent.exists():
+        try: parent.mkdir(parents=True, exist_ok=True)
+        except OSError: return None
     if not _Validators._is_safe_path(str(parent)): return None
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
@@ -252,7 +255,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     try:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
-        parent.mkdir(parents=True, exist_ok=True)
         with open(temp_path, "wb") as f:
             f.write(encoded_data)
             f.flush()
