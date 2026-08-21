@@ -77,8 +77,8 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root.resolve()
-        self.now_ts = datetime.now().timestamp()
+        self.base_root: Path = base_root.resolve()
+        self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """
@@ -224,7 +224,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         raw_path = Path(directory)
         if not raw_path.exists():
             return []
-        path_input = raw_path.resolve(strict=True)
+        path_input: Path = raw_path.resolve(strict=True)
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError) as e:

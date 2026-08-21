@@ -1132,3 +1132,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T07:58:35` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ProtectionReason, _IntegrityCheck
 - `2026-08-21T07:58:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T07:58:35` Corrida terminada. Total usado hoy: 188.
+- `2026-08-21T08:06:41` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-21T08:07:08` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) para clarificar las responsabilidades de cada componente en `scanner.py`, facilitando su mantenimiento y lectura.
+- `2026-08-21T08:07:39` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints más precisos en las funciones clave de manipulación de archivos y validación para mejorar la mantenibilidad y claridad del flujo de datos en un módulo crítico.
+- `2026-08-21T08:08:09` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de docstrings de estilo Google, la adición de Type Hints explícitos para mayor claridad en las interfaces de métodos y la refactorización de la lógica de validación de rutas para hacerla más intuitiva, manteniendo el comportamiento íntegro.
+- `2026-08-21T08:08:32` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` convirtiendo los tokens en un `set` una sola vez y refactorizando el filtrado de palabras clave para evitar recorridos redundantes sobre el diccionario.
+- `2026-08-21T08:08:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T08:08:32` Corrida terminada. Total usado hoy: 192.

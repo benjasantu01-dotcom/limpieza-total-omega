@@ -126,6 +126,7 @@ class _Validators:
     
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
+        """Verifica recursivamente que la ruta sea segura y no sea un enlace simbólico/junction."""
         try:
             path_obj = Path(path_str).resolve(strict=False)
             if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
@@ -137,6 +138,7 @@ class _Validators:
 
     @staticmethod
     def bool(val: Any) -> Optional[bool]:
+        """Normaliza entradas de usuario a booleanos, aceptando strings comunes."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -146,6 +148,7 @@ class _Validators:
 
     @staticmethod
     def int(key: ConfigKey, val: Any) -> Optional[int]:
+        """Valida y ajusta valores numéricos dentro de los límites definidos en _NUMERIC_LIMITS."""
         if val is None or isinstance(val, bool): return None
         try:
             parsed_value: int = int(val)
@@ -155,6 +158,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> Optional[str]:
+        """Valida si la entrada es una ruta absoluta, segura y no bloqueada por `safety`."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or len(path_string) > 4096 or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
@@ -169,6 +173,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
+        """Valida strings restringidos a un conjunto específico de opciones permitidas."""
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
@@ -176,6 +181,7 @@ class _Validators:
 
     @staticmethod
     def str(key: ConfigKey, val: Any) -> Optional[str]:
+        """Sanitiza strings generales y delega validación de rutas o enums según la clave."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -204,6 +210,7 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 _STR_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
+    """Resuelve la ubicación del archivo de configuración, priorizando `custom_base`."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
     if _Validators._is_safe_path(str(base)):
@@ -211,16 +218,18 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
+    """Valida un diccionario arbitrario contra el esquema esperado, aplicando valores por defecto si falla."""
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     for key_str, val in raw_values.items():
         key = _STR_TO_ENUM.get(key_str)
         if key and key in _VALIDATOR_MAP:
             validated = _VALIDATOR_MAP[key](key, val)
-            if validated is not None: config[key_str] = validated
+            if validated is not None: config[key_str] = validated # type: ignore
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Lee y parsea el archivo de configuración; utiliza caché de `st_mtime` para eficiencia."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     try:
@@ -240,6 +249,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
+    """Serializa la configuración al disco usando una escritura atómica mediante archivo temporal."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     if ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()): return None
@@ -269,6 +279,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
+    """Aplica cambios parciales y guarda el resultado si hubo modificaciones válidas."""
     current = load(custom_base)
     needs_save = False
     for k, v in changes.items():
@@ -276,29 +287,34 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
         if key_enum and key_enum in _VALIDATOR_MAP:
             val = _VALIDATOR_MAP[key_enum](key_enum, v)
             if val is not None and val != current.get(k):
-                current[k] = val
+                current[k] = val # type: ignore
                 needs_save = True
     if needs_save: save(current, custom_base)
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
+    """Restaura la configuración a los valores de fábrica."""
     default_config = _get_default_config()
     save(default_config, custom_base)
     return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
+    """Obtiene un valor individual, con fallback a valores de fábrica."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
+    """Devuelve la API Key del asistente priorizando la variable de entorno sobre el archivo."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
+    """Determina si el asistente IA está habilitado basado en la configuración y presencia de clave."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", ""))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
+    """Genera una descripción legible por humanos de la configuración actual."""
     current = load(custom_base)
     key = assistant_api_key(custom_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
