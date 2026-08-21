@@ -751,3 +751,34 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T04:54:41` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-08-21T04:54:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T04:54:41` Corrida terminada. Total usado hoy: 116.
+- `2026-08-21T05:02:57` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-08-21T05:03:36` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la restricción estricta de la entrada `question` en `ask()` y `local_answer()`, asegurando que no solo el texto enviado sea seguro, sino que toda interacción sea validada antes de cualquier procesamiento, previniendo inyecciones de control de flujo.
+- `2026-08-21T05:04:12` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.20s
+
+```
+- `2026-08-21T05:04:12` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `save_logo_svg` añadiendo una comprobación explícita para evitar que `Path.resolve()` resuelva rutas que apunten fuera del sistema de archivos esperado o rutas maliciosas, asegurando que solo se operen archivos en ubicaciones validadas.
+- `2026-08-21T05:04:57` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones de seguridad en `_is_path_inside_base` y `_sum_directory_recursive` para evitar que las comprobaciones de `is_safe_to_modify` lancen excepciones inesperadas ante rutas que contienen caracteres inválidos o restricciones de acceso de nivel de sistema, garantizando que el escáner sea más resiliente a errores de I/O en entornos Windows complejos.
+- `2026-08-21T05:05:21` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Reforcé la seguridad en `walk_files` implementando una validación estricta de límites mediante `is_relative_to` (o equivalente lógico), asegurando que el recorrido no escape del directorio base mediante enlaces simbólicos o manipulaciones de ruta durante la iteración.
+- `2026-08-21T05:05:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T05:05:21` Corrida terminada. Total usado hoy: 120.

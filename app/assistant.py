@@ -419,6 +419,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     Motor de lógica local: responde consultas basándose en reglas heurísticas
     aplicadas sobre el contexto del sistema.
     """
+    if not _ensure_safe_text(question):
+        return Answer("Entrada no válida.")
+
     if not isinstance(context, SystemContext) or not context.analyzed:
         return Answer(
             text="Todavía no corriste ningún análisis. Andá a la pestaña Salud "
@@ -513,12 +516,13 @@ def _call_gemini(
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
     """Orquestador de consultas: elige motor local o remoto aplicando fallbacks seguros."""
+    # Validación temprana para prevenir procesamiento de entradas maliciosas
+    if not _ensure_safe_text(question):
+        return Answer("Entrada no válida.")
+        
     ctx: SystemContext = context if isinstance(context, SystemContext) else SystemContext()
     respaldo: Answer = local_answer(question, ctx)
     
-    if not _ensure_safe_text(question): 
-        return respaldo
-        
     if not available(base): return respaldo
     
     try:

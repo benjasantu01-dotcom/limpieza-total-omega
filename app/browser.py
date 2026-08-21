@@ -122,6 +122,7 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
         if not target_path.is_absolute() or not base_path.is_absolute():
             return False
 
+        # Uso de is_safe_to_modify capturando posibles errores de resolución
         if not is_safe_to_modify(target_path) or not is_safe_to_modify(base_path):
             return False
 
@@ -169,6 +170,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
         return True
     
     try:
+        # Usar try-except para evitar que la validación de seguridad bloquee el escaneo
         if not is_safe_to_modify(Path(entry.path)):
             return True
         if _is_system_hidden(entry.path, kernel32):

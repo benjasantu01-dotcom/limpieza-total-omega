@@ -232,11 +232,16 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Seguridad defensiva: evitar seguir enlaces simbólicos o junctions
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
                         entry_path = Path(entry.path).resolve()
-                        if base_path not in entry_path.parents and entry_path != base_path:
+                        
+                        # Seguridad defensiva: verificar que la ruta sea subdirectorio de base_path
+                        try:
+                            entry_path.relative_to(base_path)
+                        except ValueError:
                             continue
                         
                         if skip_protected and is_protected_path(entry_path):
