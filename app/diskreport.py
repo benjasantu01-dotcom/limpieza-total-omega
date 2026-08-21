@@ -328,14 +328,6 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
     """
     Realiza una pasada única para recolectar todas las métricas necesarias para el resumen.
-    
-    Args:
-        directory: Path a analizar.
-        skip_protected: Flag para filtrar rutas protegidas.
-        
-    Returns:
-        Tupla con (bytes totales, conteo total, mapa de tamaños por ext, 
-        mapa de conteos por ext, heap con los 8 archivos más grandes).
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)

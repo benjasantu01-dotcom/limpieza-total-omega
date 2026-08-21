@@ -1139,3 +1139,11 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T08:08:32` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` convirtiendo los tokens en un `set` una sola vez y refactorizando el filtrado de palabras clave para evitar recorridos redundantes sobre el diccionario.
 - `2026-08-21T08:08:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T08:08:32` Corrida terminada. Total usado hoy: 192.
+- `2026-08-21T08:16:52` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-08-21T08:17:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T08:17:45` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-21T08:18:12` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-21T08:18:39` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `summarize` y las métricas asociadas reemplazando las múltiples pasadas redundantes por una única iteración en `_collect_summary_data`, evitando llamadas repetitivas y costosas al sistema de archivos.
+- `2026-08-21T08:19:03` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el pipeline de detección para evitar re-validaciones redundantes en `_process_size_group` y `suggest_keeper`, moviendo la lógica de filtrado de seguridad hacia `_collect_candidates` para que los datos procesados ya estén limpios antes de calcular hashes, reduciendo drásticamente las llamadas a `is_safe_to_modify` y `stat`.
+- `2026-08-21T08:19:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T08:19:03` Corrida terminada. Total usado hoy: 196.
