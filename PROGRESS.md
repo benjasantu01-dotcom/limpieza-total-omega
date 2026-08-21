@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 10
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 52 | 3 | 7 | 4 | 64 |
+| 2026-08-19 | 52 | 3 | 7 | 4 | 60 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 13 | 2 | 2 | 1 | 6 |
+| 2026-08-21 | 14 | 2 | 2 | 1 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **52**
 - robustez ante casos límite: **42**
+- seguridad defensiva: **42**
 - rendimiento: **41**
-- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **24**
 - `assistant.py`: **21**
 - `diskreport.py`: **21**
 - `organizer.py`: **21**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T01:09:00` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save()` y `settings_path()` mediante el uso de `pathlib.Path.resolve()` antes de realizar chequeos, previniendo que rutas maliciosas que evaden filtros mediante ".." u otras técnicas de normalización lleguen a tocar el sistema de archivos.
 - `2026-08-21T00:52:38` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` y `stage_for_review` asegurando que ninguna operación de movimiento atraviese límites de volumen físico (cross-drive move), evitando errores de `shutil.move` que podrían dejar archivos en estados intermedios inconsistentes.
 - `2026-08-21T00:52:26` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva de `trim_working_set` implementando un chequeo de privilegios de acceso (verificando que el handle no requiera más que `SAFE_ACCESS_MASK`) y aplicando una validación estricta de la ruta del ejecutable mediante `is_protected_path` sobre la ruta resuelta antes de cualquier interacción, previniendo así la manipulación de procesos protegidos o maliciosos.
 - `2026-08-21T00:48:53` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación explícita de `is_finite()` en cada métrica individual dentro de `SystemMetrics.validate`, previniendo que valores `NaN` o `inf` corruptos puedan propagarse a los cálculos de puntaje y generar resultados matemáticos inconsistentes o inesperados.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T00:10:34` **main.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta y segura en el hilo principal (`_build_tab_salud`) y en los métodos de renderizado, evitando cierres inesperados por `TclError` si la UI intenta actualizarse durante el cierre de la aplicación o cuando los widgets ya han sido destruidos.
 - `2026-08-21T00:08:22` **healthscore.py** (robustez ante casos límite): Se añadió una validación explícita en `compute_score` para manejar el caso donde los umbrales globales pudieran ser cero o negativos (debido a errores de configuración en `settings.py`), previniendo divisiones por cero o comportamientos inesperados en el cálculo de ratios.
 - `2026-08-20T14:56:42` **browser.py** (robustez ante casos límite): Se mejora la robustez ante errores de E/S y permisos denegados al invocar `stat()` en archivos durante el recorrido, asegurando que `total` sea un acumulador resiliente que no interrumpa el escaneo si un archivo individual no puede ser leído.
-- `2026-08-20T14:47:40` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor local ante valores nulos, vacíos o mal formados en `handle_ram` y `handle_disk`, evitando comportamientos inesperados o cálculos erróneos si el contexto de sistema llega con datos incompletos.

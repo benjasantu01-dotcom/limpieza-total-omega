@@ -128,12 +128,11 @@ class _Validators:
     def _is_safe_path(path_str: str) -> bool:
         """Determina si la ruta está libre de enlaces simbólicos peligrosos y fuera de bloqueos."""
         try:
-            path_obj = Path(path_str)
-            resolved = path_obj.resolve(strict=False)
-            if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
+            path_obj = Path(path_str).resolve(strict=False)
+            if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
                 return False
-            if is_protected_path(str(resolved)): return False
-            return is_safe_to_modify(str(resolved))
+            if is_protected_path(str(path_obj)): return False
+            return is_safe_to_modify(str(path_obj))
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
 
@@ -168,8 +167,7 @@ class _Validators:
             if not path_obj.is_absolute(): return None
             resolved = path_obj.resolve(strict=False)
             if not str(resolved).startswith(str(path_obj.anchor)): return None
-            path_str = str(resolved)
-            return path_str if _Validators._is_safe_path(path_str) else None
+            return str(resolved) if _Validators._is_safe_path(str(resolved)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None
 
@@ -215,11 +213,9 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ubicación del archivo de configuración garantizando la seguridad del directorio base."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
-    try:
-        ensure_safe_to_modify(str(base))
+    if _Validators._is_safe_path(str(base)):
         return base / SETTINGS_FILE
-    except (OSError, RuntimeError, PermissionError):
-        return SETTINGS_DIR / SETTINGS_FILE
+    return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un diccionario externo aplicando los límites de fábrica a cada campo inválido."""
@@ -260,11 +256,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Persiste la configuración de forma atómica usando un archivo temporal y fsync."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    parent = ruta.parent
+    parent = ruta.parent.resolve(strict=False)
     
-    try:
-        ensure_safe_to_modify(str(parent.resolve(strict=False)))
-    except (OSError, RuntimeError, PermissionError):
+    if not _Validators._is_safe_path(str(parent)):
         return None
     
     cleaned_settings = validate(values)
