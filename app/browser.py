@@ -128,7 +128,10 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        if not str(real_target).startswith(str(real_base)):
+        # Validación robusta por componentes de ruta
+        if len(real_target.parts) < len(real_base.parts):
+            return False
+        if real_target.parts[:len(real_base.parts)] != real_base.parts:
             return False
 
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)

@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 129 | 9 | 17 | 4 | 125 |
-| 2026-08-21 | 96 | 8 | 13 | 10 | 93 |
+| 2026-08-20 | 129 | 9 | 17 | 4 | 121 |
+| 2026-08-21 | 97 | 9 | 13 | 10 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **54**
 - rendimiento: **43**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **35**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **20**
 - `assistant.py`: **19**
 - `duplicates.py`: **19**
+- `browser.py`: **17**
 - `organizer.py`: **17**
 - `memory.py`: **17**
-- `browser.py`: **16**
 - `scanner.py`: **16**
 - `main.py`: **15**
 - `quarantine.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T09:30:12` **browser.py** (seguridad defensiva): Se reforzó `_is_path_inside_base` para validar que `real_target` sea un subdirectorio estricto o igual a `real_base` usando `pathlib.Path.parts`, evitando comparaciones de strings vulnerables a rutas que comparten prefijos parciales.
 - `2026-08-21T09:19:57` **settings.py** (robustez ante casos límite): Se introdujo una lógica de "recuperación ante desastres" en `load()` que intenta renombrar un archivo de configuración detectado como corrupto (por tamaño o error de lectura) a una extensión `.bak` antes de regenerar los valores por defecto, evitando la pérdida silenciosa de datos y facilitando el diagnóstico del usuario.
 - `2026-08-21T09:19:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una validación explícita para archivos de tamaño cero o nulos, y asegurando que las excepciones en `entry.stat()` durante el escaneo no propaguen errores hacia la interfaz principal.
 - `2026-08-21T09:19:06` **safety.py** (robustez ante casos límite): Mejoré la resiliencia ante errores de sistema integrando un chequeo preventivo de `OSError` con `errno` en `_is_reparse_point` y `_is_system_or_hidden`, evitando que la app aborte cuando el SO bloquea el acceso a metadatos de archivos específicos (común en accesos denegados o archivos en uso exclusivo).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T08:29:13` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante la eliminación de la recarga redundante del comando de PowerShell y la implementación de una lista de exclusión basada en un `set` para búsquedas O(1) en lugar de una tupla.
 - `2026-08-21T08:28:43` **main.py** (rendimiento): Se implementó un cacheo más inteligente de métricas en `on_full_analysis` utilizando `self._get_cached` para evitar el cálculo redundante de `disk_info` y `memory_mod.read_snapshot()` si los datos aún son válidos, reduciendo la carga de E/S en ejecuciones sucesivas del dashboard.
 - `2026-08-21T08:27:29` **healthscore.py** (rendimiento): Optimizé `compute_score` cacheando el cálculo de los `ratios` dentro de un diccionario local para evitar llamadas redundantes a las funciones de puntuación y operaciones matemáticas repetitivas, mejorando la eficiencia durante el ciclo de procesamiento.
-- `2026-08-21T08:19:03` **duplicates.py** (rendimiento): Optimizé el pipeline de detección para evitar re-validaciones redundantes en `_process_size_group` y `suggest_keeper`, moviendo la lógica de filtrado de seguridad hacia `_collect_candidates` para que los datos procesados ya estén limpios antes de calcular hashes, reduciendo drásticamente las llamadas a `is_safe_to_modify` y `stat`.

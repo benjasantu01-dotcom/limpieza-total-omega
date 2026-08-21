@@ -1212,3 +1212,34 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-08-21T09:19:57` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una lógica de "recuperación ante desastres" en `load()` que intenta renombrar un archivo de configuración detectado como corrupto (por tamaño o error de lectura) a una extensión `.bak` antes de regenerar los valores por defecto, evitando la pérdida silenciosa de datos y facilitando el diagnóstico del usuario.
 - `2026-08-21T09:19:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T09:19:57` Corrida terminada. Total usado hoy: 220.
+- `2026-08-21T09:28:17` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-08-21T09:28:46` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.00s
+
+```
+- `2026-08-21T09:28:46` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se añadió una verificación de existencia robusta y manejo de excepciones en `_resolve_and_cache_path` mediante `os.access` y una validación de `path.exists()` explícita para evitar bloqueos ante rutas con permisos denegados o inexistentes que causaban fallos en la resolución.
+- `2026-08-21T09:29:29` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-08-21T09:30:01` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-21T09:30:12` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó `_is_path_inside_base` para validar que `real_target` sea un subdirectorio estricto o igual a `real_base` usando `pathlib.Path.parts`, evitando comparaciones de strings vulnerables a rutas que comparten prefijos parciales.
+- `2026-08-21T09:30:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T09:30:12` Corrida terminada. Total usado hoy: 224.
