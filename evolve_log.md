@@ -1087,3 +1087,48 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T07:49:31` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, la unificación de los nombres de las funciones internas de validación y la clarificación de los docstrings en las estructuras de datos, asegurando un estándar de código senior.
 - `2026-08-21T07:49:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T07:49:31` Corrida terminada. Total usado hoy: 184.
+- `2026-08-21T07:56:30` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-08-21T07:56:42` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T07:57:10` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
+- `2026-08-21T07:57:46` Tests FALLARON:
+```
+^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+base_str = '/tmp/pytest-of-runner/pytest-1/test_corrupt_manifest_does_not0/_Cuarentena'
+
+    @lru_cache(maxsize=4)
+    def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
+        """Carga interna: lee el manifiesto JSON y cachea el resultado."""
+        base_path = Path(base_str)
+        path = _manifest_path(base_path)
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if not isinstance(raw_data, list):
+                return []
+            valid_items: List[QuarantineItem] = []
+            for entry in raw_data:
+                if isinstance(entry, dict):
+                    item = QuarantineItem.from_dict(entry)
+                    if item:
+                        valid_items.append(item)
+            return valid_items
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:278: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 1.27s
+
+```
+- `2026-08-21T07:57:46` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la adición de docstrings técnicos detallados en funciones clave y la sustitución de comprobaciones manuales por expresiones más expresivas, asegurando que cada operación de I/O esté claramente documentada respecto a sus precondiciones.
+- `2026-08-21T07:58:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-08-21T07:58:21` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-21T07:58:35` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ProtectionReason, _IntegrityCheck
+- `2026-08-21T07:58:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T07:58:35` Corrida terminada. Total usado hoy: 188.
