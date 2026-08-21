@@ -114,10 +114,6 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
     """
     Verifica si 'target_path' reside efectivamente dentro de 'base_path' evitando 
     ataques de path traversal, symlinks o junctions inseguros.
-    
-    Args:
-        target_path: La ruta a validar.
-        base_path: La carpeta raíz permitida.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -132,7 +128,6 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Comprobación de contención física en disco
         if not str(real_target).startswith(str(real_base)):
             return False
 
@@ -146,20 +141,14 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """
-    Verifica si un nombre de archivo está en la lista negra de componentes críticos (NEVER_TOUCH).
-    La comparación se realiza en minúsculas para normalizar el caso.
-    """
+    """Verifica si un nombre de archivo está en la lista negra de componentes críticos."""
     if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
 
 
 def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
-    """
-    Consulta los atributos de archivo de Windows (GetFileAttributesW) para descartar 
-    objetos con banderas de SISTEMA o HIDDEN, evitando procesar archivos protegidos del SO.
-    """
+    """Consulta los atributos de archivo de Windows para descartar objetos de sistema o ocultos."""
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
@@ -169,19 +158,13 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
         attrs: int = kernel32.GetFileAttributesW(path_to_check)
         if attrs == 0xFFFFFFFF:
             return False
-        
-        # Constantes de atributos de archivo de Windows:
-        # FILE_ATTRIBUTE_HIDDEN (0x02) | FILE_ATTRIBUTE_SYSTEM (0x04)
         return bool(attrs & 0x04 or attrs & 0x02)
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
-    """
-    Filtro selector para el recorrido del sistema de archivos: descarta rutas
-    inseguras, archivos críticos o punteros (symlinks/junctions).
-    """
+    """Filtro selector para el recorrido: descarta inseguros, críticos o punteros."""
     if _is_excluded_file(entry.name):
         return True
     
@@ -203,17 +186,7 @@ def _sum_directory_recursive(
     kernel32: ctypes.WinDLL | None,
     memo: Dict[str, int]
 ) -> int:
-    """
-    Ejecuta un recorrido recursivo con límite de profundidad (MAX_SCAN_DEPTH)
-    para sumar el peso de archivos, usando un diccionario de memoización para
-    evitar re-procesar subdirectorios ya visitados.
-    
-    Args:
-        root_dir: Ruta inicial del escaneo.
-        is_junction_fn: Función para detectar enlaces simbólicos de directorio.
-        kernel32: Instancia de ctypes de Windows o None.
-        memo: Caché de resultados (diccionario) para optimizar el rendimiento.
-    """
+    """Ejecuta un recorrido recursivo con límite de profundidad y control de enlaces."""
     if not isinstance(root_dir, str) or not root_dir:
         return 0
     
@@ -242,15 +215,11 @@ def _sum_directory_recursive(
                     if _should_skip_entry(entry, kernel32, is_junction_fn):
                         continue
                     
-                    # Seguridad defensiva: confirmar que la sub-ruta sigue bajo la raíz original
-                    if not Path(entry.path).resolve().as_posix().startswith(root_path.as_posix()):
-                        continue
-
                     if entry.is_dir():
-                        total += _walk(entry.path, depth + 1)
+                        if not (entry.is_symlink() or is_junction_fn(entry.path)):
+                            total += _walk(entry.path, depth + 1)
                     elif entry.is_file():
                         try:
-                            # Captura de errores individual para archivos bloqueados o inaccesibles
                             total += max(0, entry.stat(follow_symlinks=False).st_size)
                         except (OSError, PermissionError):
                             continue
@@ -283,10 +252,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
-    """
-    Valida si un candidato es una ruta de caché existente y segura dentro de la base.
-    Asegura que el directorio sea de caché y que no contenga elementos prohibidos.
-    """
+    """Valida si un candidato es una ruta de caché existente y segura dentro de la base."""
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
@@ -300,13 +266,7 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """
-    Escanea las ubicaciones base buscando las rutas de caché definidas en cache_paths.
-    Utiliza inyección de dependencias para permitir pruebas en entornos CI.
-
-    Returns:
-        Lista de objetos BrowserCache encontrados, ordenados por tamaño descendente.
-    """
+    """Escanea las ubicaciones base buscando las rutas de caché definidas."""
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
@@ -347,10 +307,7 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """
-    Genera un reporte legible por humanos de las cachés encontradas y su peso.
-    Si no se pasan cachés, las detecta automáticamente.
-    """
+    """Genera un reporte legible por humanos de las cachés encontradas y su peso."""
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

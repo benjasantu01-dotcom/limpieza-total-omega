@@ -687,3 +687,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T04:14:11` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a los datos de configuración sustituyendo búsquedas lineales y cálculos repetitivos por el uso de `frozenset` para claves y una estructura de diccionario de validadores que evita la re-evaluación del mapa de validación en cada llamada a `validate` o `update`.
 - `2026-08-21T04:14:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T04:14:11` Corrida terminada. Total usado hoy: 100.
+- `2026-08-21T04:22:08` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-21T04:22:37` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-21T04:23:12` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré `build_context` para manejar robustamente casos donde `metrics` o `health` son `None` o tienen tipos inesperados, evitando errores de ejecución al procesar configuraciones parciales o corruptas.
+- `2026-08-21T04:23:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-21T04:23:54` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez del escaneo recursivo mediante la validación del estado del enlace (`is_symlink` / `isjunction`) antes de procesar cada entrada en `_walk`, evitando intentos innecesarios de `stat()` sobre rutas que podrían ser puntos de reparse inestables o inaccesibles, mejorando la tolerancia ante errores de permiso y estructuras de carpetas profundas.
+- `2026-08-21T04:23:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T04:23:54` Corrida terminada. Total usado hoy: 104.

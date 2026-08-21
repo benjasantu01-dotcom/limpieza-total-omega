@@ -234,7 +234,7 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
     """Extrae métricas de una fuente externa validando tipos y rangos definidos."""
-    if not isinstance(spec, tuple) or len(spec) != 3:
+    if not isinstance(source, (dict, object)) or not isinstance(spec, tuple) or len(spec) != 3:
         return False
 
     cast, min_v, max_v = spec
@@ -257,12 +257,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     found_data = False
     
-    if metrics is not None:
+    if metrics is not None and isinstance(metrics, (dict, object)):
         for key, spec in _VALIDATORS.items():
             if _validate_and_assign(ctx, metrics, key, spec):
                 found_data = True
 
-    if health is not None:
+    if health is not None and isinstance(health, (dict, object)):
         if _validate_and_assign(ctx, health, "score", (int, 0, 100)):
             found_data = True
         try:
