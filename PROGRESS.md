@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 129 | 9 | 17 | 4 | 121 |
-| 2026-08-21 | 97 | 9 | 13 | 10 | 95 |
+| 2026-08-20 | 129 | 9 | 17 | 4 | 117 |
+| 2026-08-21 | 99 | 9 | 13 | 12 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,15 +25,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **54**
 - rendimiento: **43**
 - robustez ante casos límite: **38**
-- seguridad defensiva: **36**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `diskreport.py`: **21**
+- `healthscore.py`: **21**
 - `settings.py`: **21**
-- `healthscore.py`: **20**
+- `duplicates.py`: **20**
 - `assistant.py`: **19**
-- `duplicates.py`: **19**
 - `browser.py`: **17**
 - `organizer.py`: **17**
 - `memory.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T09:39:49` **healthscore.py** (seguridad defensiva): Se reforzó la integridad defensiva de `compute_score` añadiendo una validación explícita para evitar que configuraciones de límites negativas o nulas (que podrían surgir de una corrupción en `settings.json`) resulten en cálculos matemáticos inválidos o divisiones por cero.
+- `2026-08-21T09:39:24` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `group_by_size` asegurando que las rutas pasen por `is_protected_path` antes de cualquier procesamiento, manteniendo la consistencia con las reglas de seguridad al evitar operaciones en archivos potencialmente críticos, independientemente de los filtros de tamaño.
 - `2026-08-21T09:30:12` **browser.py** (seguridad defensiva): Se reforzó `_is_path_inside_base` para validar que `real_target` sea un subdirectorio estricto o igual a `real_base` usando `pathlib.Path.parts`, evitando comparaciones de strings vulnerables a rutas que comparten prefijos parciales.
 - `2026-08-21T09:19:57` **settings.py** (robustez ante casos límite): Se introdujo una lógica de "recuperación ante desastres" en `load()` que intenta renombrar un archivo de configuración detectado como corrupto (por tamaño o error de lectura) a una extensión `.bak` antes de regenerar los valores por defecto, evitando la pérdida silenciosa de datos y facilitando el diagnóstico del usuario.
 - `2026-08-21T09:19:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una validación explícita para archivos de tamaño cero o nulos, y asegurando que las excepciones en `entry.stat()` durante el escaneo no propaguen errores hacia la interfaz principal.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T08:39:03` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado de directorios mediante el uso de `path.parts` para verificar la inclusión en `WATCHED_FOLDERS`, evitando la conversión de la ruta completa a `str` y múltiples llamadas a `lower()` dentro del bucle de escaneo.
 - `2026-08-21T08:37:56` **quarantine.py** (rendimiento): Se optimizó `purge_all` para reducir drásticamente la complejidad algorítmica de O(N*M) a O(N) mediante el uso de un diccionario para el acceso directo a los ítems, evitando múltiples recorridos y lecturas innecesarias del manifiesto.
 - `2026-08-21T08:29:13` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante la eliminación de la recarga redundante del comando de PowerShell y la implementación de una lista de exclusión basada en un `set` para búsquedas O(1) en lugar de una tupla.
-- `2026-08-21T08:28:43` **main.py** (rendimiento): Se implementó un cacheo más inteligente de métricas en `on_full_analysis` utilizando `self._get_cached` para evitar el cálculo redundante de `disk_info` y `memory_mod.read_snapshot()` si los datos aún son válidos, reduciendo la carga de E/S en ejecuciones sucesivas del dashboard.
-- `2026-08-21T08:27:29` **healthscore.py** (rendimiento): Optimizé `compute_score` cacheando el cálculo de los `ratios` dentro de un diccionario local para evitar llamadas redundantes a las funciones de puntuación y operaciones matemáticas repetitivas, mejorando la eficiencia durante el ciclo de procesamiento.

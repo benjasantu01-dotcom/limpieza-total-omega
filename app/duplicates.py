@@ -86,6 +86,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         try:
             target = Path(p)
+            # Verificación estricta de seguridad antes de procesar el archivo
             if target.is_file() and not is_protected_path(target) and is_safe_to_modify(target):
                 st = target.stat()
                 if st.st_size > 0:
@@ -109,6 +110,7 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         p_entry = Path(entry.path)
+                        # Filtro de seguridad obligatorio
                         if skip_protected and (is_protected_path(p_entry) or not is_safe_to_modify(p_entry)):
                             continue
                         
@@ -126,8 +128,10 @@ def _collect_candidates(
         except (OSError, PermissionError): pass
 
     for item in directories:
-        if item and Path(item).is_dir():
-            _scan(Path(item))
+        if item:
+            p_item = Path(item)
+            if p_item.is_dir() and not is_protected_path(p_item):
+                _scan(p_item)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
 
