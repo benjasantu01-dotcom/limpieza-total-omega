@@ -792,3 +792,46 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-21T05:19:09` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `trim_working_set` al evitar la apertura indiscriminada de procesos mediante la implementación de una validación previa de integridad de la ruta y evitando el uso de constantes de acceso excesivas, asegurando que solo se interactúe con ejecutables que pasan el filtro de `safety.py`.
 - `2026-08-21T05:19:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T05:19:09` Corrida terminada. Total usado hoy: 124.
+- `2026-08-21T05:23:19` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-21T05:23:49` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `stage_for_review` para prevenir ataques de "Path Traversal" o inyección de rutas al asegurar que cada archivo movido resida explícitamente dentro de la jerarquía de la carpeta de revisión (`dest_base`), evitando confiar ciegamente en la concatenación de nombres de archivo.
+- `2026-08-21T05:24:38` Tests FALLARON:
+```
+^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+base_str = '/tmp/pytest-of-runner/pytest-2/test_corrupt_manifest_does_not0/_Cuarentena'
+
+    @lru_cache(maxsize=4)
+    def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
+        """Carga interna: lee el manifiesto JSON y cachea el resultado."""
+        base_path = Path(base_str)
+        path = _manifest_path(base_path)
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if not isinstance(raw_data, list):
+                return []
+            valid_items: List[QuarantineItem] = []
+            for entry in raw_data:
+                if isinstance(entry, dict):
+                    item = QuarantineItem.from_dict(entry)
+                    if item:
+                        valid_items.append(item)
+            return valid_items
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:272: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 0.91s
+
+```
+- `2026-08-21T05:24:38` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la seguridad defensiva en `_atomic_isolate_file` reemplazando `shutil.copy2` (que podría seguir enlaces o comportamientos inesperados) por una copia basada en bloques de baja prioridad, garantizando que solo se copien archivos regulares y verificando activamente que el descriptor de archivo no apunte a un dispositivo distinto o ruta inusual tras abrirlo.
+- `2026-08-21T05:24:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-21T05:25:30` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se introdujo la verificación `os.path.ismount` dentro de `ensure_safe_to_modify` para detectar puntos de montaje de unidades, evitando explícitamente cualquier intento de operación sobre el punto de inicio de un volumen, reforzando la protección contra la manipulación inadvertida de estructuras de disco raíz.
+- `2026-08-21T05:25:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T05:25:30` Corrida terminada. Total usado hoy: 128.

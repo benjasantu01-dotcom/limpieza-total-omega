@@ -52,6 +52,7 @@ class ProtectionReason(Enum):
     ADS = "ADS (flujos alternativos)"
     EMPTY_FILE = "archivo vacío"
     EXCESSIVE_DEPTH = "profundidad excesiva"
+    MOUNT_POINT = "punto de montaje detectado"
 
 
 # DIRECTORIOS_BLOQUEADOS: Nombres que, si aparecen en una ruta, indican riesgo de sistema.
@@ -208,6 +209,8 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.ADS.value}.")
     if path.is_file() and st.st_size == 0:
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.EMPTY_FILE.value}.")
+    if os.path.ismount(path):
+        raise UnsafePathError(f"Operación denegada: {ProtectionReason.MOUNT_POINT.value}.")
 
 
 @lru_cache(maxsize=2048)
@@ -414,6 +417,7 @@ def describe_protection(path: PathLike) -> str:
         if len(p.parts) > 64: return f"'{p}' profundidad excesiva."
         if not os.access(p, os.W_OK): return f"'{p}' sin permisos de escritura."
         if os.path.islink(p): return f"'{p}' es un enlace simbólico."
+        if os.path.ismount(p): return f"'{p}' es un punto de montaje."
         if _is_readonly(p): return f"'{p}' es solo lectura."
         if _is_file_in_use(p): return f"'{p}' en uso por otro proceso."
         if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema."

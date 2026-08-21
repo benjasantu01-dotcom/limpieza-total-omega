@@ -289,7 +289,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
             target: Path = _generate_unique_target(dest_base / safe_name)
             
-            # Verificación explícita de seguridad dictada por el core de la app
+            # Verificación estricta: asegurar que target sigue siendo hijo de dest_base
+            if target.parent.resolve() != dest_base.resolve():
+                continue
+                
             if is_safe_to_modify(src_path):
                 ensure_safe_to_modify(src_path)
                 shutil.move(str(src_path), str(target))

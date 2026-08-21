@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 11
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-19 | 8 | 0 | 1 | 0 | 21 |
+| 2026-08-19 | 8 | 0 | 1 | 0 | 17 |
 | 2026-08-20 | 166 | 12 | 23 | 5 | 144 |
-| 2026-08-21 | 57 | 5 | 7 | 6 | 49 |
+| 2026-08-21 | 59 | 6 | 8 | 6 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
+- seguridad defensiva: **43**
 - rendimiento: **42**
-- seguridad defensiva: **41**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
+- `organizer.py`: **21**
 - `settings.py`: **21**
 - `diskreport.py`: **21**
 - `assistant.py`: **20**
-- `organizer.py`: **20**
 - `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
@@ -42,11 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **16**
 - `main.py`: **15**
 - `branding.py`: **10**
+- `safety.py`: **9**
 - `startup.py`: **9**
-- `safety.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T05:25:30` **safety.py** (seguridad defensiva): Se introdujo la verificación `os.path.ismount` dentro de `ensure_safe_to_modify` para detectar puntos de montaje de unidades, evitando explícitamente cualquier intento de operación sobre el punto de inicio de un volumen, reforzando la protección contra la manipulación inadvertida de estructuras de disco raíz.
+- `2026-08-21T05:23:49` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de "Path Traversal" o inyección de rutas al asegurar que cada archivo movido resida explícitamente dentro de la jerarquía de la carpeta de revisión (`dest_base`), evitando confiar ciegamente en la concatenación de nombres de archivo.
 - `2026-08-21T05:19:09` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` al evitar la apertura indiscriminada de procesos mediante la implementación de una validación previa de integridad de la ruta y evitando el uso de constantes de acceso excesivas, asegurando que solo se interactúe con ejecutables que pasan el filtro de `safety.py`.
 - `2026-08-21T05:14:23` **healthscore.py** (seguridad defensiva): Se reforzó la integridad defensiva de la función `compute_score` validando explícitamente que los resultados de los cálculos sean números finitos antes de procesarlos, previniendo así la propagación de datos corruptos o valores `NaN`/`inf` en la interfaz de usuario.
 - `2026-08-21T05:13:43` **duplicates.py** (seguridad defensiva): Se ha mejorado `_collect_candidates` para aplicar `is_protected_path` inmediatamente después de obtener la entrada del directorio antes de realizar cualquier operación de `stat` o recursión, cumpliendo con la política de seguridad defensiva de validar rutas antes de procesarlas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T04:23:54` **browser.py** (robustez ante casos límite): Se reforzó la robustez del escaneo recursivo mediante la validación del estado del enlace (`is_symlink` / `isjunction`) antes de procesar cada entrada en `_walk`, evitando intentos innecesarios de `stat()` sobre rutas que podrían ser puntos de reparse inestables o inaccesibles, mejorando la tolerancia ante errores de permiso y estructuras de carpetas profundas.
 - `2026-08-21T04:23:12` **assistant.py** (robustez ante casos límite): Mejoré `build_context` para manejar robustamente casos donde `metrics` o `health` son `None` o tienen tipos inesperados, evitando errores de ejecución al procesar configuraciones parciales o corruptas.
 - `2026-08-21T04:14:11` **settings.py** (rendimiento): Se optimizó el acceso a los datos de configuración sustituyendo búsquedas lineales y cálculos repetitivos por el uso de `frozenset` para claves y una estructura de diccionario de validadores que evita la re-evaluación del mapa de validación en cada llamada a `validate` o `update`.
-- `2026-08-21T04:13:34` **scanner.py** (rendimiento): Optimicé el método `check_recent_executable_in_downloads` para realizar la intersección de conjuntos (`WATCHED_FOLDERS.intersection`) solo si el archivo es ejecutable, y convertí la comparación de partes de la ruta a una lógica más eficiente que evita crear sets en cada llamada, reduciendo significativamente la presión del recolector de basura durante el escaneo recursivo.
-- `2026-08-21T04:05:18` **organizer.py** (rendimiento): Se optimizó el rendimiento de `scan_for_junk` eliminando la llamada redundante y costosa a `is_safe_to_modify` dentro del bucle de `os.walk` (que ya estaba filtrada mediante `is_allowed_directory` y `_is_junction`) y moviendo la validación de seguridad a una comprobación única de "parent" para reducir el acceso a disco por cada iteración.
