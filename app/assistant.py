@@ -183,7 +183,7 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
     Evita que valores no finitos (inf, nan) o tipos incompatibles 
     contaminen el motor de lógica o el reporte de métricas.
     """
-    if isinstance(val, (list, dict, set, tuple, bool)):
+    if val is None or isinstance(val, (list, dict, set, tuple, bool)):
         return default
     try:
         f = float(val)
@@ -258,21 +258,17 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
         return False
 
     cast, min_v, max_v = spec
-    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-    
-    # Filtro estricto: rechaza tipos mutables o booleanos inesperados
-    if val is None or isinstance(val, (list, dict, set, tuple, bool)):
-        return False
-        
     try:
+        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+        if val is None or isinstance(val, (list, dict, set, tuple, bool)):
+            return False
+            
         clean_val = float(val)
         if math.isfinite(clean_val):
             clamped = max(float(min_v), min(clean_val, float(max_v)))
-            final_val = cast(clamped)
-            if isinstance(final_val, (int, float)) and math.isfinite(float(final_val)):
-                setattr(ctx, key, final_val)
-                return True
-    except (ValueError, TypeError, OverflowError):
+            setattr(ctx, key, cast(clamped))
+            return True
+    except (AttributeError, ValueError, TypeError, OverflowError):
         pass
     return False
 
@@ -284,23 +280,26 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     found_data = False
     
-    if isinstance(metrics, (dict, object)):
+    if metrics is not None:
         for key, spec in _VALIDATORS.items():
             if _validate_and_assign(ctx, metrics, key, spec):
                 found_data = True
 
-    if isinstance(health, (dict, object)):
+    if health is not None:
         if _validate_and_assign(ctx, health, "score", (int, 0, 100)):
             found_data = True
-        g_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
-        if isinstance(g_val, (str, int, float)):
-            ctx.grade = str(g_val)[:10].strip()
+        try:
+            g_val = health.get("grade") if isinstance(health, dict) else getattr(health, "grade", None)
+            if g_val is not None:
+                ctx.grade = str(g_val)[:10].strip()
+        except Exception:
+            pass
 
     for k, v in extra.items():
-        if k in _VALIDATORS and isinstance(v, (int, float, str)):
+        if k in _VALIDATORS:
             if _validate_and_assign(ctx, extra, k, _VALIDATORS[k]):
                 found_data = True
-        elif k == "score" and isinstance(v, (int, float)):
+        elif k == "score":
             if _validate_and_assign(ctx, extra, "score", (int, 0, 100)):
                 found_data = True
             

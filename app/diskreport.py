@@ -155,7 +155,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     Returns:
         Instancia de DriveUsage con estadísticas o None si la ruta es inaccesible.
     """
-    if not mount:
+    if not mount or not isinstance(mount, (str, os.PathLike)):
         return None
     try:
         str_mount = str(mount)
@@ -167,7 +167,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
             return None
             
         usage = shutil.disk_usage(p)
-        return DriveUsage(mount=str(mount), total=usage.total, used=usage.used, free=usage.free)
+        return DriveUsage(mount=str_mount, total=usage.total, used=usage.used, free=usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, FileNotFoundError):
         return None
 
@@ -366,8 +366,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     """
     Genera un informe textual unificado con los hallazgos del análisis de disco.
     """
-    if not directory: 
-        return ["Error: Ruta no proporcionada."]
+    if not directory or not isinstance(directory, (str, os.PathLike)): 
+        return ["Error: Ruta inválida o no proporcionada."]
     
     try:
         p_input = Path(directory).resolve(strict=False)
@@ -380,7 +380,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             
         total_bytes, total_files, ext_sizes, ext_counts, top_files_heap = _collect_summary_data(p_input, skip_protected)
     except (OSError, PermissionError, ValueError, TypeError, RuntimeError):
-        return ["Error: Acceso denegado o error durante el análisis del disco."]
+        return ["Error: Acceso denegado o error inesperado durante el análisis del disco."]
 
     lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
     sorted_exts = heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1])

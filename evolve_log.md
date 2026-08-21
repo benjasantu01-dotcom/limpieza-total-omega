@@ -564,3 +564,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T02:24:00` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-21T02:24:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T02:24:00` Corrida terminada. Total usado hoy: 56.
+- `2026-08-21T02:30:02` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-21T02:30:52` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de errores en `build_context` y `_validate_and_assign`, asegurando que cualquier entrada inesperada (como valores `None` o tipos de datos erróneos provenientes de los módulos de análisis) sea capturada y descartada silenciosamente sin romper el flujo de la aplicación.
+- `2026-08-21T02:31:36` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-21T02:32:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-21T02:32:13` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `summarize` y `drive_usage` mediante una validación de tipos más estricta y el manejo explícito de rutas inválidas, evitando errores silenciosos durante el procesamiento de datos de disco.
+- `2026-08-21T02:32:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T02:32:13` Corrida terminada. Total usado hoy: 60.
