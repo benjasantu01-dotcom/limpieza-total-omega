@@ -701,3 +701,46 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-21T04:34:29` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo un manejo robusto de excepciones y validación de estado en los métodos de renderizado de la interfaz (`_render_gauge`, `actualizar`) y en los callbacks de la UI, asegurando que la aplicación no intente interactuar con widgets que hayan sido destruidos durante un cierre prematuro o cambio de pestañas, fortaleciendo así la resiliencia ante condiciones de carrera en el hilo principal.
 - `2026-08-21T04:34:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T04:34:29` Corrida terminada. Total usado hoy: 108.
+- `2026-08-21T04:42:27` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-08-21T04:43:07` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-21T04:43:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-21T04:44:03` Tests FALLARON:
+```
+^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+base_str = '/tmp/pytest-of-runner/pytest-1/test_corrupt_manifest_does_not0/_Cuarentena'
+
+    @lru_cache(maxsize=4)
+    def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
+        """Carga interna: lee el manifiesto JSON y cachea el resultado."""
+        base_path = Path(base_str)
+        path = _manifest_path(base_path)
+        if not path.exists():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                raw_data = json.load(f)
+            if not isinstance(raw_data, list):
+                return []
+            valid_items: List[QuarantineItem] = []
+            for entry in raw_data:
+                if isinstance(entry, dict):
+                    item = QuarantineItem.from_dict(entry)
+                    if item:
+                        valid_items.append(item)
+            return valid_items
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:272: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 1.12s
+
+```
+- `2026-08-21T04:44:03` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `quarantine_file` para evitar un escenario de pérdida de datos (Race Condition) mediante la verificación explícita del estado de escritura después de mover el archivo original, asegurando que el manifiesto solo refleje archivos que efectivamente fueron removidos de la ubicación original.
+- `2026-08-21T04:44:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-08-21T04:44:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T04:44:07` Corrida terminada. Total usado hoy: 112.
