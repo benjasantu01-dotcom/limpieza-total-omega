@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 129 | 9 | 17 | 4 | 113 |
-| 2026-08-21 | 101 | 9 | 14 | 13 | 95 |
+| 2026-08-20 | 129 | 9 | 17 | 4 | 109 |
+| 2026-08-21 | 103 | 9 | 14 | 13 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **54**
 - rendimiento: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **22**
 - `diskreport.py`: **21**
 - `healthscore.py`: **21**
-- `settings.py`: **21**
 - `duplicates.py`: **20**
 - `assistant.py`: **19**
 - `organizer.py`: **18**
 - `memory.py`: **18**
 - `browser.py`: **17**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
 - `main.py`: **15**
 - `quarantine.py`: **15**
 - `branding.py`: **10**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-21T10:00:41` **settings.py** (seguridad defensiva): Se reforzó la seguridad en el método `save` integrando una validación previa de la integridad del directorio padre mediante `is_safe_to_modify` y asegurando que la ruta del archivo de configuración no sea un enlace simbólico, previniendo así posibles ataques de "link following" o inyección de rutas en la escritura de preferencias.
+- `2026-08-21T09:59:58` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de la detección de puntos de reanálisis (reparse points) en `_is_reparse_point`, forzando el uso de una máscara más precisa sobre los atributos de archivo para evitar la recursión infinita en enlaces simbólicos complejos, y se ha añadido una validación de seguridad contra rutas UNC (Universal Naming Convention) directamente en `scan_directory` para prevenir intentos de escaneo en rutas de red potencialmente inseguras.
 - `2026-08-21T09:49:39` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de *path traversal* (o inyección de rutas) mediante la validación estricta de que el nombre de destino generado, tras incluir el nombre del archivo original, resida efectivamente dentro del directorio de revisión (`dest_base`), evitando que un nombre de archivo malicioso intente escapar a rutas superiores.
 - `2026-08-21T09:49:12` **memory.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `_get_process_path` para prevenir desbordamientos de buffer y mejorar la integridad de las rutas recuperadas, asegurando que el tamaño del buffer se maneje de forma explícita antes de la llamada a la API `QueryFullProcessImageNameW`.
 - `2026-08-21T09:39:49` **healthscore.py** (seguridad defensiva): Se reforzó la integridad defensiva de `compute_score` añadiendo una validación explícita para evitar que configuraciones de límites negativas o nulas (que podrían surgir de una corrupción en `settings.json`) resulten en cálculos matemáticos inválidos o divisiones por cero.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-21T08:58:54` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `hash_file` ante errores de acceso (como archivos bloqueados por el sistema o eliminados durante la ejecución) mediante un manejo de excepciones más granular que evita caídas silenciosas en el bucle de procesamiento.
 - `2026-08-21T08:49:21` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo mediante `path_obj.parent.exists()` y un manejo de errores más robusto en `save_logo_svg` para evitar excepciones al intentar crear directorios en rutas bloqueadas o inaccesibles, asegurando que la operación de escritura sea totalmente segura ante casos límite de sistema de archivos.
 - `2026-08-21T08:49:02` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas mal formadas o tipos inesperados mediante una validación estricta y segura en la extracción de datos, evitando que valores inesperados (como `None` o estructuras anidadas) causen errores en tiempo de ejecución o corrompan el estado del asistente.
-- `2026-08-21T08:47:59` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando llamadas redundantes a `os.stat` y normalizando el acceso a caché mediante la simplificación de la resolución de rutas en cada iteración.
-- `2026-08-21T08:39:03` **scanner.py** (rendimiento): Se optimizó el proceso de filtrado de directorios mediante el uso de `path.parts` para verificar la inclusión en `WATCHED_FOLDERS`, evitando la conversión de la ruta completa a `str` y múltiples llamadas a `lower()` dentro del bucle de escaneo.

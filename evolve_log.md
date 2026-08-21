@@ -1258,3 +1258,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-21T09:51:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-08-21T09:51:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T09:51:03` Corrida terminada. Total usado hoy: 232.
+- `2026-08-21T09:58:56` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-21T09:59:28` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-21T09:59:58` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de la detección de puntos de reanálisis (reparse points) en `_is_reparse_point`, forzando el uso de una máscara más precisa sobre los atributos de archivo para evitar la recursión infinita en enlaces simbólicos complejos, y se ha añadido una validación de seguridad contra rutas UNC (Universal Naming Convention) directamente en `scan_directory` para prevenir intentos de escaneo en rutas de red potencialmente inseguras.
+- `2026-08-21T10:00:41` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el método `save` integrando una validación previa de la integridad del directorio padre mediante `is_safe_to_modify` y asegurando que la ruta del archivo de configuración no sea un enlace simbólico, previniendo así posibles ataques de "link following" o inyección de rutas en la escritura de preferencias.
+- `2026-08-21T10:00:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-21T10:00:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T10:00:51` Corrida terminada. Total usado hoy: 236.

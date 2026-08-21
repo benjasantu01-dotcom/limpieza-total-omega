@@ -97,8 +97,9 @@ class Scanner:
         para prevenir recursión infinita en Junctions o Symlinks.
         """
         try:
+            # FILE_ATTRIBUTE_REPARSE_POINT (0x400)
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
-        except (OSError, AttributeError):
+        except (OSError, AttributeError, TypeError):
             return True 
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
@@ -230,6 +231,9 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         raw_path = Path(directory)
+        # Prevención de rutas de red (UNC)
+        if str(raw_path).startswith(("\\\\", "//")):
+            return []
         if not raw_path.exists():
             return []
         path_input: Path = raw_path.resolve(strict=True)
