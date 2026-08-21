@@ -66,7 +66,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             while (buffer := f.read(chunk_size)):
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -76,7 +76,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, ValueError, TypeError, RuntimeError, IOError, AttributeError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -90,7 +90,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
                 st = target.stat()
                 if st.st_size > 0:
                     groups[st.st_size].append(target)
-        except (OSError, PermissionError, FileNotFoundError, TypeError, AttributeError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
     return groups
 
@@ -170,7 +170,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         try:
             stat_info = p.stat()
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))
-        except (OSError, PermissionError, AttributeError, ValueError, TypeError):
+        except (OSError, PermissionError):
             continue
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
 

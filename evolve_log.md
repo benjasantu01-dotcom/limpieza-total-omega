@@ -1190,3 +1190,10 @@ FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_del
 - `2026-08-21T08:49:21` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia previo mediante `path_obj.parent.exists()` y un manejo de errores más robusto en `save_logo_svg` para evitar excepciones al intentar crear directorios en rutas bloqueadas o inaccesibles, asegurando que la operación de escritura sea totalmente segura ante casos límite de sistema de archivos.
 - `2026-08-21T08:49:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-21T08:49:21` Corrida terminada. Total usado hoy: 208.
+- `2026-08-21T08:57:35` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-08-21T08:58:01` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-21T08:58:32` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Mejora la robustez del escaneo en `walk_files` manejando explícitamente errores de acceso al intentar leer los atributos de las rutas raíz, evitando que el generador colapse prematuramente ante permisos denegados o rutas de red inaccesibles.
+- `2026-08-21T08:58:54` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `suggest_keeper` y `hash_file` ante errores de acceso (como archivos bloqueados por el sistema o eliminados durante la ejecución) mediante un manejo de excepciones más granular que evita caídas silenciosas en el bucle de procesamiento.
+- `2026-08-21T08:59:20` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y se ha centralizado la validación de límites en `compute_score`, asegurando que el cálculo del puntaje nunca falle ante valores de entrada atípicos o no normalizados.
+- `2026-08-21T08:59:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-21T08:59:20` Corrida terminada. Total usado hoy: 212.
