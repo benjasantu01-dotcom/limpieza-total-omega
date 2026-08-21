@@ -358,8 +358,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         constructor = getattr(self, method_name, None)
         tab_frame = self.tabs.get(name)
         
+        # Validar seguridad antes de invocar constructor
         if constructor and tab_frame and tab_frame.winfo_exists():
             try:
+                # Comprobar seguridad del entorno base antes de montar contenido dinámico
+                safety.ensure_safe_to_modify(Path(".").resolve())
                 constructor()
                 self._initialized_tabs[name] = True
             except Exception as e:

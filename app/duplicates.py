@@ -154,11 +154,11 @@ def _collect_candidates(
     def _scan(root_path: Path) -> None:
         try:
             for entry in os.scandir(root_path):
-                # Aplicamos validación de seguridad inmediata
-                if skip_protected and is_protected_path(Path(entry.path)):
-                    continue
-                
                 try:
+                    p = Path(entry.path)
+                    if skip_protected and (is_protected_path(p) or not is_safe_to_modify(p)):
+                        continue
+                    
                     st = entry.stat(follow_symlinks=False)
                     if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                             
@@ -166,11 +166,9 @@ def _collect_candidates(
                         inode = (st.st_dev, st.st_ino)
                         if inode not in visited_inodes:
                             visited_inodes.add(inode)
-                            _scan(Path(entry.path))
+                            _scan(p)
                     elif entry.is_file() and st.st_size >= min_size:
-                        p = Path(entry.path)
-                        if not (skip_protected and not is_safe_to_modify(p)):
-                            temp_groups[st.st_size].append(p)
+                        temp_groups[st.st_size].append(p)
                 except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -178,7 +176,7 @@ def _collect_candidates(
     for item in directories:
         if item:
             path_item = Path(item)
-            if path_item.exists() and path_item.is_dir():
+            if path_item.is_dir():
                 _scan(path_item)
             
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
@@ -253,12 +251,9 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if not isinstance(p, Path): continue
         try:
-            if not isinstance(p, Path) or not p.is_file():
-                continue
-            
-            # Validamos seguridad antes de usar metadata
-            if is_protected_path(p) or not is_safe_to_modify(p):
+            if not p.is_file() or is_protected_path(p) or not is_safe_to_modify(p):
                 continue
             
             stat_info = p.stat()

@@ -148,22 +148,17 @@ def format_size(num: Union[int, float, None]) -> str:
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad específica.
-    
-    Args:
-        mount: Ruta o letra de la unidad a analizar.
-        
-    Returns:
-        Instancia de DriveUsage con estadísticas o None si la ruta es inaccesible.
     """
-    if not mount or not isinstance(mount, (str, os.PathLike)):
+    if mount is None:
         return None
+        
     try:
-        str_mount = str(mount)
-        if str_mount.startswith(("\\\\", "//")):
-            return None
-            
         p = Path(mount).resolve(strict=False)
         if not p.exists():
+            return None
+            
+        str_mount = str(p)
+        if str_mount.startswith(("\\\\", "//")):
             return None
             
         usage = shutil.disk_usage(p)
@@ -175,12 +170,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
     Obtiene el uso de almacenamiento de todas las unidades detectadas en el sistema.
-    
-    Args:
-        mounts: Opcional, lista de rutas de unidades a analizar. Si es None, detecta automáticas.
-        
-    Returns:
-        Lista de objetos DriveUsage con la información de cada unidad.
     """
     if mounts is None:
         if os.name == "nt":
@@ -191,9 +180,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
             mounts = ["/"]
     
     results: List[DriveUsage] = []
-    if mounts and isinstance(mounts, Iterable):
+    if mounts is not None:
         for mount in mounts:
-            if mount and isinstance(mount, (str, os.PathLike)):
+            if mount:
                 usage = drive_usage(mount)
                 if usage:
                     results.append(usage)
@@ -203,13 +192,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos de forma iterativa.
-    
-    Args:
-        directory: Ruta base para comenzar el recorrido.
-        skip_protected: Si es True, utiliza `is_protected_path` para evitar carpetas del sistema.
-        
-    Yields:
-        Tuplas conteniendo la ruta absoluta (Path) y el tamaño en bytes (int) de cada archivo.
     """
     if not directory:
         return
@@ -232,13 +214,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad defensiva: evitar seguir enlaces simbólicos o junctions
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
                         entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad defensiva: verificar que la ruta sea subdirectorio de base_path
                         try:
                             entry_path.relative_to(base_path)
                         except ValueError:
@@ -265,14 +245,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
     Identifica los archivos más grandes en un directorio utilizando un heap.
-    
-    Args:
-        directory: Ruta base de búsqueda.
-        limit: Cantidad máxima de archivos a retornar.
-        skip_protected: Si se deben ignorar rutas protegidas.
-        
-    Returns:
-        Lista de objetos FileEntry ordenados de mayor a menor peso.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
