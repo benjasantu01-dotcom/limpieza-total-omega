@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 28
+- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 42 | 4 | 6 | 2 | 48 |
+| 2026-08-20 | 39 | 4 | 5 | 2 | 48 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 24 | 0 | 2 | 1 | 25 |
+| 2026-08-22 | 25 | 1 | 2 | 1 | 27 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **32**
-- rendimiento: **32**
+- rendimiento: **33**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **20**
-- `memory.py`: **19**
+- `duplicates.py`: **20**
 - `assistant.py`: **19**
-- `duplicates.py`: **19**
+- `memory.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
-- `organizer.py`: **16**
 - `browser.py`: **16**
-- `quarantine.py`: **13**
+- `organizer.py`: **15**
 - `branding.py`: **13**
 - `main.py`: **12**
+- `quarantine.py`: **12**
 - `safety.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T02:19:12` **duplicates.py** (rendimiento): Optimizé la función `_collect_candidates` para evitar llamadas redundantes a `is_safe_to_modify` y `is_protected_path` centralizando la validación durante la iteración inicial y eliminando la verificación repetida en la rama `elif`.
 - `2026-08-22T02:09:14` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` evitando iteraciones redundantes y validaciones innecesarias, consolidando el procesamiento de métricas en una única pasada sobre el diccionario de validadores y optimizando la asignación de atributos mediante una estructura más directa.
 - `2026-08-22T02:08:55` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `StartupEntry` añadiendo docstrings descriptivos a los métodos privados y clarificando las responsabilidades de cada etapa de resolución de rutas, facilitando el mantenimiento y la comprensión de la lógica de seguridad y caché.
 - `2026-08-22T02:08:29` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del validador de tipos mediante la implementación de un decorador (`type_check`) que centraliza la lógica de validación de los métodos estáticos, permitiendo eliminar la repetición de chequeos `None` y garantizando que toda validación de `ConfigKey` sea consistente.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T01:38:09` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `PaletteDict` y `FontSizesDict` mediante la adición de docstrings detallados en sus atributos, facilitando la comprensión del rol específico de cada token de diseño para futuros desarrolladores.
 - `2026-08-22T01:37:36` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad del motor de reglas local y la mantenibilidad de la lógica de respuesta extrayendo la evaluación de criterios a un método más limpio, además de clarificar los docstrings para cumplir con los estándares de documentación del proyecto.
 - `2026-08-22T01:28:10` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` implementando una validación explícita de `cleaned_settings` contra el esquema `AppSettings` antes de escribir en disco, evitando que valores inesperados o malformados persistan por una falla en la validación lógica, y endurecí el manejo de errores de `json.dumps` mediante un bloque `try-except` específico.
-- `2026-08-22T01:27:43` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` implementando una validación temprana de `path.exists()` y `is_dir()` en las funciones de chequeo heurístico, evitando errores `OSError` o comportamientos inesperados cuando se trabaja con referencias a archivos que desaparecieron durante la ejecución.

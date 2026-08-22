@@ -781,3 +781,29 @@ FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_i
 - `2026-08-22T02:09:14` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` evitando iteraciones redundantes y validaciones innecesarias, consolidando el procesamiento de métricas en una única pasada sobre el diccionario de validadores y optimizando la asignación de atributos mediante una estructura más directa.
 - `2026-08-22T02:09:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T02:09:14` Corrida terminada. Total usado hoy: 52.
+- `2026-08-22T02:17:45` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-22T02:18:16` Tests FALLARON:
+```
+      +  where ['oval', 'oval', 'oval', 'oval', 'polygon'] = <test_modules._CanvasFalso object at 0x7fad3b268740>.llamadas
+
+evolve/tests/test_modules.py:273: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_draw_logo_paints_on_the_canvas_without_a_display - AssertionError: assert 'text' in ['oval', 'oval', 'oval', 'oval', 'polygon']
+ +  where ['oval', 'oval', 'oval', 'oval', 'polygon'] = <test_modules._CanvasFalso object at 0x7fad3b23b920>.llamadas
+FAILED evolve/tests/test_modules.py::test_gradient_produces_the_requested_amount_of_colors - IndexError: tuple index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_starts_and_ends_on_its_stops - IndexError: tuple index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_actually_changes_color - IndexError: tuple index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_bar_paints_one_line_per_pixel - IndexError: tuple index out of range
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - ValueError: invalid literal for int() with base 10: 'ancho'
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - AssertionError: falta el degradado del escudo
+assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
+ +  where ['oval', 'oval', 'oval', 'oval', 'polygon'] = <test_modules._CanvasFalso object at 0x7fad3b268740>.llamadas
+7 failed, 292 passed in 1.32s
+
+```
+- `2026-08-22T02:18:16` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el cálculo de colores RGB mediante la eliminación de la re-conversión redundante en `_hex_to_rgb` y la capitalización de las claves de paleta en los diccionarios, evitando así múltiples consultas al diccionario con normalización `lower()` o `upper()` en los métodos de acceso frecuentes.
+- `2026-08-22T02:18:40` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-22T02:19:04` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-22T02:19:12` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la función `_collect_candidates` para evitar llamadas redundantes a `is_safe_to_modify` y `is_protected_path` centralizando la validación durante la iteración inicial y eliminando la verificación repetida en la rama `elif`.
+- `2026-08-22T02:19:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T02:19:12` Corrida terminada. Total usado hoy: 56.

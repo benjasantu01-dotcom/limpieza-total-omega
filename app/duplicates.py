@@ -126,7 +126,7 @@ def _collect_candidates(
                         if p_entry in processed_paths: continue
                         processed_paths.add(p_entry)
 
-                        # Regla de seguridad: omitir rutas protegidas o inseguras
+                        # Regla de seguridad: omitir rutas protegidas o inseguras de forma temprana
                         if skip_protected and (is_protected_path(p_entry) or not is_safe_to_modify(p_entry)):
                             continue
                         
@@ -140,9 +140,7 @@ def _collect_candidates(
                                 visited_inodes.add(inode)
                                 _scan(p_entry)
                         elif entry.is_file() and st.st_size >= min_size:
-                            # Verificación extra: solo archivos validados por safety
-                            if is_safe_to_modify(p_entry):
-                                temp_groups[int(st.st_size)].append(p_entry)
+                            temp_groups[int(st.st_size)].append(p_entry)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
