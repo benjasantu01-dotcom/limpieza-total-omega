@@ -202,40 +202,39 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
         return False
 
 
-def _is_valid_junk_candidate(path: Path) -> bool:
-    """Filtro de conveniencia para descartar directorios y reparse points durante el escaneo."""
-    try:
-        return _is_junk_path(path) and not _is_junction(path) and path.is_file()
-    except (OSError, RuntimeError):
-        return False
+def _is_valid_junk_candidate(entry: os.DirEntry) -> bool:
+    """Filtro optimizado usando DirEntry para evitar llamadas extras a stat()."""
+    return entry.is_file() and _is_junk_path(Path(entry.path))
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios buscando archivos clasificados como basura.
+    Usa os.scandir para mayor eficiencia de I/O.
     """
     search_dirs = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     
-    for d in search_dirs:
+    def _traverse(current_dir: Path):
         try:
-            base = d.expanduser().resolve()
-            if not base.is_dir(): continue
-            
-            for root, dirs, files in os.walk(base):
-                root_path: Path = Path(root)
-                dirs[:] = [dn for dn in dirs if _is_allowed_directory(dn) and not _is_junction(root_path / dn)]
-                
-                for name in files:
-                    file_path: Path = root_path / name
-                    if _is_valid_junk_candidate(file_path):
-                        try:
-                            stats = file_path.stat()
-                            found.append(JunkFile(file_path, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
-                        except (OSError, PermissionError):
-                            continue
-        except (OSError, RuntimeError):
-            continue
+            with os.scandir(current_dir) as it:
+                for entry in it:
+                    try:
+                        if entry.is_dir(follow_symlinks=False):
+                            if _is_allowed_directory(entry.name) and not _is_junction(Path(entry.path)):
+                                _traverse(Path(entry.path))
+                        elif _is_valid_junk_candidate(entry):
+                            stats = entry.stat()
+                            found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                    except (OSError, PermissionError):
+                        continue
+        except (OSError, PermissionError):
+            pass
+
+    for d in search_dirs:
+        base = d.expanduser().resolve()
+        if base.is_dir():
+            _traverse(base)
     return found
 
 

@@ -515,3 +515,10 @@ assert not True
 - `2026-08-22T11:25:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run
 - `2026-08-22T11:25:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T11:25:26` Corrida terminada. Total usado hoy: 268.
+- `2026-08-22T11:33:29` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-22T11:33:59` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `parse_linux_meminfo` sustituyendo la búsqueda lineal en una lista de llaves por un conjunto (set) de búsqueda O(1) y eliminando la creación innecesaria de diccionarios intermedios, reduciendo la complejidad de las iteraciones sobre el texto.
+- `2026-08-22T11:34:24` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimicé el bucle de escaneo en `scan_for_junk` utilizando `os.scandir` en lugar de `os.walk`, lo cual mejora drásticamente el rendimiento al reducir las llamadas a `stat()` y el uso de memoria durante el recorrido del sistema de archivos.
+- `2026-08-22T11:34:54` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-08-22T11:34:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-08-22T11:34:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T11:34:58` Corrida terminada. Total usado hoy: 272.
