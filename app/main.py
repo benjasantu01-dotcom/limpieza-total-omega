@@ -1349,8 +1349,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log("Error: Manifiesto corrupto.", "Cuarentena")
                 return
             
+            # Validación de seguridad: verificamos ruta original antes de procesar
             if not self._is_safe_path(item.original_path):
-                self.log("Error: Ruta original insegura.", "Cuarentena")
+                self.log("Error: La ruta original del archivo no es segura para restauración.", "Cuarentena")
                 return
             
             try:
@@ -1430,12 +1431,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
             
         raw = self.pid_entry.get().strip()
-        try:
-            pid = int(raw)
-        except ValueError:
+        # Validación de entrada antes de proceder
+        if not raw.isdigit():
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
-        
+            
+        pid = int(raw)
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return

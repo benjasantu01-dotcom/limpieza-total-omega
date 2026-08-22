@@ -192,10 +192,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if any(l <= 0 for l in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema inválidos."])
 
+    # Validación profunda: asegurar que no haya valores nulos inesperados en el objeto
     try:
         metrics.validate()
-        if not metrics.is_finite(): raise ValueError
-    except (ValueError, TypeError, AttributeError):
+        if not metrics.is_finite(): raise ValueError("Métricas no finitas")
+    except Exception:
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
 
     breakdown: Dict[MetricKey, int] = {}

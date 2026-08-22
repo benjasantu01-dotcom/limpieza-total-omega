@@ -62,6 +62,7 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo. Retorna None en caso de error de acceso."""
+    if path is None: return None
     try:
         digest = hashlib.sha256()
         with open(path, "rb") as f:
@@ -74,6 +75,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash de los primeros N bytes para filtrado rápido."""
+    if path is None: return None
     try:
         with open(path, "rb") as f:
             content = f.read(read_bytes)
@@ -139,11 +141,14 @@ def _collect_candidates(
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
-    for item in directories:
-        if item:
-            p_item = Path(item).resolve()
-            if p_item.is_dir() and not is_protected_path(p_item):
-                _scan(p_item)
+    if directories:
+        for item in directories:
+            if item:
+                try:
+                    p_item = Path(item).resolve()
+                    if p_item.is_dir() and not is_protected_path(p_item):
+                        _scan(p_item)
+                except (OSError, RuntimeError): continue
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
 
@@ -188,15 +193,13 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         return None
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if not p or not p.exists(): continue
         try:
             stat_info = p.stat()
-            # Criterio: fecha de modificación y, en caso de empate, longitud de la ruta
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
             continue
-    if not keepers:
-        return None
-    return min(keepers, key=lambda x: (x[0], x[1]))[2]
+    return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

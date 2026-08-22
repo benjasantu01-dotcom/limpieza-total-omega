@@ -181,6 +181,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
         else:
             mounts = ["/"]
     
+    if not isinstance(mounts, Iterable):
+        return []
+    
     results: List[DriveUsage] = []
     for mount in mounts:
         if mount:
@@ -308,6 +311,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """Calcula el tamaño total en bytes y el conteo de archivos en un directorio."""
     total_bytes, file_count = 0, 0
+    if not directory:
+        return 0, 0
     for _, size in walk_files(directory, skip_protected):
         total_bytes += size
         file_count += 1
@@ -341,6 +346,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """Genera un informe textual unificado con los hallazgos del análisis."""
+    if directory is None:
+        return ["Error: Ruta no proporcionada."]
+
     try:
         p_input = Path(os.fspath(directory)).resolve(strict=False)
     except (TypeError, ValueError):
