@@ -1194,3 +1194,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T06:39:47` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir la anidación (usando guard clauses) y clarificar la lógica de resolución, además de añadir type hints faltantes en funciones clave.
 - `2026-08-22T06:39:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T06:39:47` Corrida terminada. Total usado hoy: 156.
+- `2026-08-22T06:47:58` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-22T06:49:06` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` evitando la creación repetida de `set` y `list` mediante el uso de constantes pre-compiladas y búsqueda directa en el diccionario de mapeo, reduciendo la carga de CPU en cada consulta.
+- `2026-08-22T06:49:41` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-22T06:50:07` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetidas a `is_safe_to_modify` y `is_protected_path` al procesar directorios hijos, moviendo la validación al nivel de entrada antes de entrar en la recursión.
+- `2026-08-22T06:50:43` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-22T06:50:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T06:50:43` Corrida terminada. Total usado hoy: 160.

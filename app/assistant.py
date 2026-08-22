@@ -427,13 +427,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
-    tokens = set(_TOKEN_REGEX.findall(_sanitize_query(question)))
-    map_keys = set(_KEYWORD_MAP.keys())
+    tokens = _TOKEN_REGEX.findall(_sanitize_query(question))
     
-    match = tokens.intersection(map_keys)
-    if match:
-        target = match.pop()
-        return _HANDLERS[_KEYWORD_MAP[target]](context, question)
+    for token in tokens:
+        if token in _KEYWORD_MAP:
+            return _HANDLERS[_KEYWORD_MAP[token]](context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
