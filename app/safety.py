@@ -92,10 +92,13 @@ class _IntegrityCheck(NamedTuple):
 def is_running_as_admin() -> bool:
     """Verifica si el proceso actual tiene privilegios elevados (Administrador)."""
     if os.name != 'nt':
-        return os.getuid() == 0
+        try:
+            return os.getuid() == 0
+        except AttributeError:
+            return False
     try:
         return bool(ctypes.windll.shell32.IsUserAnAdmin())
-    except (AttributeError, OSError, MemoryError):
+    except Exception:
         return False
 
 
@@ -253,7 +256,11 @@ def is_protected_path(path: PathLike) -> bool:
     except (ValueError, TypeError, OSError, RuntimeError):
         return True
 
-    if any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS):
+    # Evitar fallos si p.parts está vacío por rutas extrañas
+    if not p.parts:
+        return True
+
+    if any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root):
         return True
             
     if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):

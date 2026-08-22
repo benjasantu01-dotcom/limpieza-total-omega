@@ -99,7 +99,13 @@ class Scanner:
             if not self._is_safe_entry(target_path):
                 return
 
-            if entry.is_dir(follow_symlinks=False):
+            try:
+                is_dir = entry.is_dir(follow_symlinks=False)
+                is_file = entry.is_file(follow_symlinks=False)
+            except (OSError, PermissionError):
+                return
+
+            if is_dir:
                 if not self._is_reparse_point(entry):
                     path_str = str(target_path)
                     if path_str not in self.seen:
@@ -107,7 +113,7 @@ class Scanner:
                         stack.append(path_str)
                 return
 
-            if entry.is_file(follow_symlinks=False):
+            if is_file:
                 try:
                     if entry.stat().st_size == 0:
                         return
@@ -121,10 +127,8 @@ class Scanner:
                 if suffix in SUSPICIOUS_EXECUTABLE_EXT or DOUBLE_EXTENSION_RE.search(target_path.name):
                     self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
-        except (PermissionError, OSError) as e:
-            logger.debug(f"Acceso denegado o error en ruta {entry.path}: {e}")
         except Exception as e:
-            logger.error(f"Error inesperado procesando {entry.path}: {e}")
+            logger.debug(f"Error procesando {entry.path if entry else 'unknown'}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:

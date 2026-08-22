@@ -128,7 +128,7 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     """Decorador para asegurar que los validadores manejen entradas inválidas (None/bool) antes de procesar."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         val = args[1] if len(args) > 1 else kwargs.get("val")
-        if val is None or isinstance(val, bool) and func.__name__ != "bool":
+        if val is None or (isinstance(val, bool) and func.__name__ != "bool"):
             return None
         return func(*args, **kwargs)
     return wrapper
@@ -235,13 +235,12 @@ def validate(raw_values: Any) -> AppSettings:
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
-    ruta_str = str(ruta)
     try:
         if not ruta.exists(): return _get_default_config()
         
         stat = ruta.stat()
         mtime = stat.st_mtime
-        if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
+        if (cached := _CACHE.get(str(ruta))) and cached[0] == mtime:
             return cached[1]
             
         if stat.st_size > MAX_SETTINGS_SIZE:
@@ -252,15 +251,15 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         if not isinstance(data, dict): return _get_default_config()
         config = validate(data)
-        _CACHE[ruta_str] = (mtime, config)
+        _CACHE[str(ruta)] = (mtime, config)
         return config
-    except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError):
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    if ruta.is_symlink() or (hasattr(ruta, 'is_junction') and ruta.is_junction()): return None
+    
     parent = ruta.parent.resolve(strict=False)
     if not parent.exists():
         try: parent.mkdir(parents=True, exist_ok=True)
