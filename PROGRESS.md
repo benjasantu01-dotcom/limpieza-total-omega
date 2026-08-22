@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 16
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 97 | 8 | 13 | 10 | 100 |
-| 2026-08-22 | 126 | 8 | 17 | 11 | 114 |
+| 2026-08-21 | 95 | 7 | 13 | 9 | 100 |
+| 2026-08-22 | 128 | 8 | 17 | 11 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **44**
+- seguridad defensiva: **42**
 - rendimiento: **40**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
 - `settings.py`: **21**
 - `duplicates.py`: **21**
+- `memory.py`: **21**
 - `healthscore.py`: **19**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **14**
-- `organizer.py`: **13**
+- `branding.py`: **14**
 - `safety.py`: **13**
-- `branding.py`: **13**
+- `organizer.py`: **12**
 - `main.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T11:55:05` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el acceso directo a `PALETTE` por el método `color()` para prevenir excepciones por claves faltantes en tiempo de ejecución.
+- `2026-08-22T11:54:33` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de tipos y rangos en el mapeo de palabras clave (`_KEYWORD_MAP` a `_HANDLERS`), asegurando que si la configuración de métricas es nula o malintencionada, la app no lance excepciones no capturadas al invocar métodos en `None` o valores inesperados.
 - `2026-08-22T11:45:04` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetitivas de disco por una validación de `st_mtime` basada en `stat()` y eliminando la recarga innecesaria del archivo al llamar a `update()`.
 - `2026-08-22T11:44:35` **scanner.py** (rendimiento): Optronicé la detección de carpetas de riesgo en `check_recent_executable_in_downloads` sustituyendo la búsqueda iterativa sobre `WATCHED_FOLDERS` por una verificación de conjunto (set) mediante `path.parts`, reduciendo la complejidad de O(N*M) a O(1) por cada acceso.
 - `2026-08-22T11:34:24` **organizer.py** (rendimiento): Optimicé el bucle de escaneo en `scan_for_junk` utilizando `os.scandir` en lugar de `os.walk`, lo cual mejora drásticamente el rendimiento al reducir las llamadas a `stat()` y el uso de memoria durante el recorrido del sistema de archivos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T11:13:34` **startup.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de procesamiento de datos y validación en `StartupEntry`, clarificando el propósito de cada método y mejorando la legibilidad técnica del código fuente.
 - `2026-08-22T11:04:11` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante docstrings detallados en funciones clave y la adición de tipos claros para las heurísticas, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar la lógica.
 - `2026-08-22T11:03:46` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores internos mediante la estandarización de los docstrings, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
-- `2026-08-22T10:54:55` **quarantine.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de las funciones críticas de validación y persistencia, clarificando el propósito de seguridad y las restricciones impuestas por el sistema.
-- `2026-08-22T10:54:16` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints en las funciones de la Win32 API y una mejora en los comentarios explicativos sobre la lógica de validación, facilitando el mantenimiento futuro del código de bajo nivel.

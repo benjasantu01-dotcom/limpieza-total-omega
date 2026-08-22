@@ -179,7 +179,7 @@ def severity_color(severity: Optional[str]) -> HexColor:
     """Retorna el color HEX para un nivel de severidad dado."""
     if severity and (style := SEVERITY_STYLES.get(severity.lower())): # type: ignore
         return style[0]
-    return PALETTE["text_muted"]
+    return color("text_muted")
 
 @lru_cache(maxsize=16)
 def severity_label(severity: Optional[str]) -> str:
@@ -199,26 +199,26 @@ def severity_icon(severity: Optional[str]) -> str:
 def grade_color(grade: Optional[str]) -> HexColor:
     """Retorna el color de grado académico (A-F) solicitado."""
     if isinstance(grade, str) and grade.strip():
-        return GRADE_COLORS.get(grade.upper()[0], PALETTE["text_muted"])
-    return PALETTE["text_muted"]
+        return GRADE_COLORS.get(grade.upper()[0], color("text_muted"))
+    return color("text_muted")
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
     """Determina el color representativo de un puntaje de salud (0-100)."""
     if score is None:
-        return PALETTE["text_muted"]
+        return color("text_muted")
     try:
         valor = float(score)
     except (TypeError, ValueError):
-        return PALETTE["text_muted"]
+        return color("text_muted")
     
     if not (0.0 <= valor <= 100.0):
-        return PALETTE["text_muted"]
+        return color("text_muted")
 
     thresholds: List[Tuple[float, HexColor]] = [
-        (90.0, PALETTE["success"]),
-        (80.0, PALETTE["info"]),
-        (65.0, PALETTE["warning"]),
+        (90.0, color("success")),
+        (80.0, color("info")),
+        (65.0, color("warning")),
         (50.0, "#ff7b39")
     ]
     
@@ -226,7 +226,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
         if valor >= limit:
             return color_val
             
-    return PALETTE["danger"]
+    return color("danger")
 
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
@@ -280,7 +280,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     Útil para crear degradados visuales suaves en canvas.
     """
     n = max(1, int(steps))
-    if not stops: return (PALETTE["accent"],) * n
+    if not stops: return (color("accent"),) * n
     if len(stops) < 2: return (stops[0],) * n
     
     res = [stops[0]] * n
@@ -322,24 +322,24 @@ def logo_svg(size: int = 128) -> str:
       <stop offset="100%" stop-color="{GRADIENT_STOPS[2]}"/>
     </linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
-      <stop offset="0%" stop-color="{PALETTE['glow']}" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="{PALETTE['glow']}" stop-opacity="0"/>
+      <stop offset="0%" stop-color="{color('glow')}" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="{color('glow')}" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="128" height="128" rx="30" fill="{PALETTE['surface']}"/>
+  <rect width="128" height="128" rx="30" fill="{color('surface')}"/>
   <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
   <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z"
         fill="url(#omegaShield)"/>
-  <path d="M41 75 L75 41" stroke="{PALETTE['background']}" stroke-width="8" stroke-linecap="round"/>
-  <path d="M75 41 L89 38 L92 52 Z" fill="{PALETTE['background']}"/>
+  <path d="M41 75 L75 41" stroke="{color('background')}" stroke-width="8" stroke-linecap="round"/>
+  <path d="M75 41 L89 38 L92 52 Z" fill="{color('background')}"/>
   <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26"
-        font-weight="{UI_FONT_BOLD}" fill="{PALETTE['background']}" text-anchor="middle">&#937;</text>
+        font-weight="{UI_FONT_BOLD}" fill="{color('background')}" text-anchor="middle">&#937;</text>
 </svg>
 """
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda una copia física del archivo SVG tras validaciones de seguridad."""
-    if not isinstance(destination, (str, Path)):
+    if destination is None:
         return None
     try:
         path_obj = Path(destination).expanduser().resolve()
@@ -410,15 +410,15 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
             r: float = 56 * scale * (0.6 + paso * 0.12)
             canvas.create_oval(canvas_x + 64 * scale - r, canvas_y + 58 * scale - r, 
                                canvas_x + 64 * scale + r, canvas_y + 58 * scale + r, 
-                               fill=blend(PALETTE["surface"], PALETTE["glow"], 0.04 * paso), outline="")
+                               fill=blend(color("surface"), color("glow"), 0.04 * paso), outline="")
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, 
-                           fill=PALETTE["background"], width=max(2, int(8 * scale)), capstyle="round")
+                           fill=color("background"), width=max(2, int(8 * scale)), capstyle="round")
         canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, 
-                              canvas_x + 92 * scale, canvas_y + 52 * scale, fill=PALETTE["background"], outline="")
+                              canvas_x + 92 * scale, canvas_y + 52 * scale, fill=color("background"), outline="")
         canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
-                           fill=PALETTE["background"], font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
+                           fill=color("background"), font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError):
         pass
 
@@ -449,7 +449,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
         valor: float = max(0.0, min(100.0, float(percent)))
         diametro: int = max(20, int(size))
         grosor: int = max(2, min(int(thickness), diametro // 2 - 1))
-        color_fondo: HexColor = track or PALETTE["surface_alt"]
+        color_fondo: HexColor = track or color("surface_alt")
         color_avance: HexColor = fill or score_color(valor)
         borde: float = grosor / 2
         caja: Tuple[float, float, float, float] = (

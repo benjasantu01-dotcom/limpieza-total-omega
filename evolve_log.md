@@ -589,3 +589,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T11:45:16` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` añadiendo una comprobación temprana de existencia mediante `_EXISTS_CACHE` en `_resolve_path_from_command` para evitar el costo de computar `os.path.abspath` y `os.path.realpath` en rutas que ya se verificaron como inexistentes o protegidas.
 - `2026-08-22T11:45:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T11:45:16` Corrida terminada. Total usado hoy: 276.
+- `2026-08-22T11:53:56` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-22T11:54:33` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor de inferencia local añadiendo validación de tipos y rangos en el mapeo de palabras clave (`_KEYWORD_MAP` a `_HANDLERS`), asegurando que si la configuración de métricas es nula o malintencionada, la app no lance excepciones no capturadas al invocar métodos en `None` o valores inesperados.
+- `2026-08-22T11:55:05` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el acceso directo a `PALETTE` por el método `color()` para prevenir excepciones por claves faltantes en tiempo de ejecución.
+- `2026-08-22T11:55:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-22T11:55:38` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-22T11:55:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T11:55:38` Corrida terminada. Total usado hoy: 280.
