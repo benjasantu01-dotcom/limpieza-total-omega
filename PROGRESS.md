@@ -9,44 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 223
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 33 | 2 | 4 | 1 | 42 |
+| 2026-08-20 | 31 | 2 | 4 | 1 | 40 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 33 | 2 | 3 | 2 | 32 |
+| 2026-08-22 | 35 | 2 | 3 | 3 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **40**
+- seguridad defensiva: **38**
 - rendimiento: **37**
-- robustez ante casos límite: **32**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
-- `settings.py`: **20**
 - `assistant.py`: **19**
 - `diskreport.py`: **19**
-- `memory.py`: **18**
-- `scanner.py`: **17**
+- `memory.py`: **19**
+- `settings.py`: **19**
 - `healthscore.py`: **17**
+- `scanner.py`: **16**
 - `organizer.py`: **15**
 - `browser.py`: **15**
 - `main.py`: **13**
-- `quarantine.py`: **12**
+- `quarantine.py`: **13**
 - `branding.py`: **12**
 - `safety.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T03:11:24` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio libre preventivo y la gestión de permisos denegados en `_get_sha256`, garantizando que el sistema no falle silenciosamente ni en condiciones de disco lleno ni al encontrar archivos bloqueados por permisos durante el cálculo de integridad.
+- `2026-08-22T03:10:33` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores `None` o corruptos en `_parse_csv_row` y `_yield_processes` para evitar excepciones imprevistas al procesar salidas de PowerShell que podrían estar truncadas o malformadas, reforzando la tolerancia a fallos ante entradas inesperadas.
 - `2026-08-22T03:00:02` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos límite añadiendo una validación explícita de `is_finite` en los valores de entrada y reforzando la integridad de los resultados, asegurando que ante cualquier dato corrupto o no finito la función retorne un estado de salud seguro y predecible en lugar de fallar o generar un score inválido.
 - `2026-08-22T02:59:46` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `suggest_keeper` ante fallos de acceso durante la recolección de metadatos, evitando que una excepción en `stat()` detenga la evaluación de todo el grupo y asegurando un comportamiento predecible ante rutas que desaparecen durante la ejecución.
 - `2026-08-22T02:59:23` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante el acceso a directorios con permisos denegados o rutas de sistema que pueden disparar errores de acceso durante la iteración, envolviendo el `os.scandir` en un bloque `try-except` más robusto y asegurando que las comparaciones de `parents` manejen correctamente las excepciones de resolución de rutas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T02:08:55` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `StartupEntry` añadiendo docstrings descriptivos a los métodos privados y clarificando las responsabilidades de cada etapa de resolución de rutas, facilitando el mantenimiento y la comprensión de la lógica de seguridad y caché.
 - `2026-08-22T02:08:29` **settings.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del validador de tipos mediante la implementación de un decorador (`type_check`) que centraliza la lógica de validación de los métodos estáticos, permitiendo eliminar la repetición de chequeos `None` y garantizando que toda validación de `ConfigKey` sea consistente.
 - `2026-08-22T02:08:01` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings descriptivos en `scan_file` y `scan_directory` para mejorar la legibilidad y clarificar la lógica de las heurísticas, eliminando ambigüedades en la firma de las funciones.
-- `2026-08-22T01:59:21` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para separar la lógica de copia y verificación, y añadiendo docstrings técnicos claros a las funciones críticas para documentar los contratos de seguridad.
-- `2026-08-22T01:58:50` **organizer.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones críticas de validación de E/S (`_is_safe_for_disk_op`, `_is_recursive_violation` y `_is_safe_to_move`) mediante docstrings detallados que explican el "porqué" de las restricciones de seguridad, facilitando el mantenimiento y la auditoría del cumplimiento de las reglas del proyecto.

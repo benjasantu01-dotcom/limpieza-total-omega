@@ -138,6 +138,7 @@ def _get_sha256(path: Path) -> str:
             while chunk := f.read(131072):
                 sha256_hash.update(chunk)
     except (OSError, PermissionError):
+        # En caso de no poder leer, retornamos una cadena vacía para indicar fallo de acceso
         return ""
     return sha256_hash.hexdigest()
 
@@ -365,6 +366,7 @@ def quarantine_file(
         raise IOError("El archivo está bloqueado por otro proceso.")
     
     usage = shutil.disk_usage(dest_dir)
+    # Verificación preventiva: 5% extra por seguridad
     if usage.free < (file_size * 1.05):
         raise OSError("Espacio insuficiente en disco para el aislamiento.")
         

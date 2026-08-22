@@ -170,15 +170,18 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     """Convierte una línea individual (CSV) en un modelo ProcessMemory."""
-    if not isinstance(csv_line, str):
+    if not isinstance(csv_line, str) or not csv_line.strip():
         return None
     parts = [p.strip().strip("'\"") for p in csv_line.split(",")]
     if len(parts) != 3:
         return None
     name, pid_str, ws_str = parts
-    if not name or not pid_str.isdigit() or not ws_str.isdigit():
+    try:
+        if not name or not pid_str.isdigit() or not ws_str.isdigit():
+            return None
+        return ProcessMemory(name=name, pid=int(pid_str), working_set=int(ws_str))
+    except (ValueError, TypeError):
         return None
-    return ProcessMemory(name=name, pid=int(pid_str), working_set=int(ws_str))
 
 def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
     """Generador eficiente de objetos ProcessMemory a partir de salida cruda."""
