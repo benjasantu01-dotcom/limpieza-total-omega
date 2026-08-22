@@ -242,23 +242,28 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte un HEX a tupla RGB, consultando primero el cache de paleta."""
+    """
+    Convierte una cadena HEX a una tupla de enteros RGB (0-255).
+    Verifica primero en la caché de marca `PALETTE_RGB` para optimización.
+    Retorna (0,0,0) ante formatos inválidos.
+    """
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     
-    # Intenta obtener de PALETTE_RGB directamente si el color es de la marca
     if (key := HEX_TO_KEY.get(value)) and (rgb := PALETTE_RGB.get(key)):
         return rgb
         
     try:
-        r, g, b = int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16)
-        return (r, g, b)
+        return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
     except (ValueError, IndexError):
         return (0, 0, 0)
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Realiza una mezcla lineal (lerp) entre dos colores HEX."""
+    """
+    Interpola linealmente entre dos colores HEX basados en un factor (ratio).
+    ratio 0.0 retorna 'start', 1.0 retorna 'end'.
+    """
     if start == end: return start
     ratio_clamped = max(0.0, min(1.0, float(ratio)))
     r1, g1, b1 = _hex_to_rgb(start)
@@ -271,7 +276,10 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
-    """Genera una tupla de colores interpolados basada en puntos de parada."""
+    """
+    Genera una secuencia de colores interpolados entre múltiples puntos de parada.
+    Útil para crear degradados visuales suaves en canvas.
+    """
     n = max(1, int(steps))
     if not stops: return (PALETTE["accent"],) * n
     if len(stops) < 2: return (stops[0],) * n
@@ -431,7 +439,11 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular de progreso para métricas con validación de parámetros."""
+    """
+    Dibuja un indicador circular de progreso (donut chart).
+    'percent' es un valor entre 0 y 100.
+    'thickness' define el grosor del anillo; 'track' y 'fill' permiten personalizar colores.
+    """
     if not hasattr(canvas, "create_arc"): return
     try:
         if percent is None or not isinstance(percent, (int, float)): return

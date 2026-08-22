@@ -79,6 +79,18 @@ class ProblemCriterion(NamedTuple):
     operator: str  # '<' o '>'
     message_format: str
 
+    def format_if_triggered(self, ctx: SystemContext) -> str | None:
+        """Evalúa si la métrica rompe el umbral y devuelve el mensaje formateado."""
+        val = getattr(ctx, self.metric_key, -1.0)
+        f_val = _safe_float(val, -1.0)
+        if f_val < 0:
+            return None
+        
+        is_triggered = (self.operator == "<" and f_val < self.threshold) or \
+                       (self.operator == ">" and f_val > self.threshold)
+        
+        return self.message_format.format(val)[:_MAX_MSG_CHUNK] if is_triggered else None
+
 # TypeAliases para mejorar la legibilidad de las firmas de funciones
 MetricSource: TypeAlias = dict[str, Any] | object
 ScoreSource: TypeAlias = dict[str, Any] | object
@@ -329,22 +341,11 @@ def explain_area(area: Any) -> str:
         return _validate_response_length(explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área."))
     return "No tengo una explicación para esa área."
 
-def _get_criterion_check(ctx: SystemContext, crit: ProblemCriterion) -> str | None:
-    """Evalúa un criterio de salud contra el contexto y devuelve el mensaje si aplica."""
-    val = getattr(ctx, crit.metric_key, -1.0)
-    f_val = _safe_float(val, -1.0)
-    if f_val < 0: return None
-        
-    is_triggered = (crit.operator == "<" and f_val < crit.threshold) or \
-                   (crit.operator == ">" and f_val > crit.threshold)
-    
-    return crit.message_format.format(val)[:_MAX_MSG_CHUNK] if is_triggered else None
-
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Recopila la lista de problemas actuales basándose en los criterios definidos."""
     problemas: list[str] = []
     for crit in _CRITERIOS_SALUD:
-        msg = _get_criterion_check(ctx, crit)
+        msg = crit.format_if_triggered(ctx)
         if msg:
             problemas.append(msg)
             if len(problemas) >= 3: break

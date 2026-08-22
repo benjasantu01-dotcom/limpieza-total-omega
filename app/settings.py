@@ -267,7 +267,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(custom_base)
     parent = ruta.parent.resolve(strict=False)
     
-    # Verificación estricta de seguridad antes de cualquier I/O
     if is_protected_path(str(ruta)) or not _Validators._is_safe_path(str(parent)):
         return None
     

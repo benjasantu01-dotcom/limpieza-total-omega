@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 115 | 11 | 15 | 13 | 106 |
-| 2026-08-22 | 104 | 6 | 12 | 10 | 112 |
+| 2026-08-21 | 111 | 11 | 15 | 13 | 106 |
+| 2026-08-22 | 107 | 6 | 12 | 10 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **50**
+- manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **49**
-- legibilidad y documentación: **46**
-- rendimiento: **37**
+- legibilidad y documentación: **48**
 - robustez ante casos límite: **37**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
-- `memory.py`: **21**
-- `settings.py`: **20**
-- `healthscore.py`: **19**
-- `assistant.py`: **18**
+- `settings.py`: **21**
+- `duplicates.py`: **20**
+- `memory.py`: **20**
+- `assistant.py`: **19**
+- `healthscore.py`: **18**
 - `scanner.py`: **17**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
-- `main.py`: **13**
 - `organizer.py`: **13**
 - `safety.py`: **13**
 - `quarantine.py`: **13**
-- `branding.py`: **11**
+- `main.py`: **12**
+- `branding.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T10:35:33` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en funciones críticas (`_hex_to_rgb`, `blend`, `gradient_colors`, `draw_ring`), especificando los tipos de entrada, comportamientos ante casos límite y el propósito de cada cálculo para facilitar el mantenimiento futuro.
+- `2026-08-22T10:34:49` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenimiento del motor local de `assistant.py` al reemplazar la lógica repetitiva de formateo de condiciones por un nuevo método `ProblemCriterion.format_if_triggered`, encapsulando la lógica de evaluación y formateo dentro de la clase de datos.
+- `2026-08-22T10:32:47` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load` y `save` incorporando validaciones de tipo explícitas y manejo de errores ante estructuras JSON malformadas o inesperadas que podrían comprometer la integridad de la configuración, asegurando que el sistema siempre retorne un estado válido ante cualquier corrupción.
 - `2026-08-22T10:23:35` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` y `process_entry` mediante la validación proactiva de tipos y estados, garantizando que el escáner no intente operar sobre objetos `None` o rutas mal formadas, y encapsulando las operaciones de resolución de rutas en bloques de protección contra errores de E/S.
 - `2026-08-22T10:23:25` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, reemplazando chequeos redundantes por una captura explícita de `FileNotFoundError` durante la inspección de integridad.
 - `2026-08-22T10:22:39` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la eliminación del archivo original en un bloque `try...except` específico y validando que el archivo realmente existe antes de invocar `os.remove`, asegurando que no se lancen excepciones inesperadas si el archivo fue movido o eliminado externamente durante la operación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T09:55:04` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `_validate_and_assign` mediante la validación explícita de `spec` y el manejo preventivo de posibles errores de tipo, evitando que configuraciones malformadas o métricas inesperadas provoquen una falla silenciosa en la construcción del contexto.
 - `2026-08-22T08:31:16` **settings.py** (seguridad defensiva): He refactorizado la validación en `save` para asegurar que el chequeo de seguridad de la ruta padre ocurra antes de cualquier operación de escritura, y he consolidado el chequeo de `is_protected_path` para prevenir explícitamente escrituras en rutas restringidas mediante una validación más robusta antes de instanciar archivos temporales.
 - `2026-08-22T08:31:04` **scanner.py** (seguridad defensiva): Se reforzó `scanner.py` integrando `is_safe_to_modify` en `process_entry` para asegurar que el escáner no solo ignore rutas protegidas por nombre, sino que también verifique proactivamente la integridad de la ruta antes de interactuar con el sistema de archivos, cumpliendo estrictamente con las reglas de seguridad defensiva y evitando errores de resolución en rutas críticas.
-- `2026-08-22T08:21:42` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `stage_for_review` incorporando una verificación de "espacio disponible" (vía `shutil.disk_usage`) antes de intentar mover archivos, evitando fallos parciales o corrupción de datos por desbordamiento de disco, manteniendo el enfoque de seguridad defensiva.
-- `2026-08-22T08:21:17` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta de la ruta del ejecutable mediante `is_protected_path` tras su normalización, asegurando que ninguna operación de gestión de memoria se realice sobre procesos del sistema operativo, independientemente de la ofuscación de la ruta.
-- `2026-08-22T08:12:53` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación estricta de finitud y tipos en `SystemMetrics` antes de cualquier cálculo, garantizando que el motor de scoring no procese estados inconsistentes.
