@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 19
+- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 8 | 2 | 2 | 1 | 5 |
+| 2026-08-20 | 6 | 1 | 2 | 1 | 4 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 57 | 2 | 5 | 3 | 69 |
+| 2026-08-22 | 58 | 2 | 6 | 4 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **49**
 - legibilidad y documentación: **47**
 - robustez ante casos límite: **37**
-- rendimiento: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
 - `memory.py`: **20**
-- `diskreport.py`: **19**
+- `duplicates.py`: **20**
 - `settings.py`: **19**
 - `healthscore.py`: **18**
 - `assistant.py`: **18**
+- `diskreport.py`: **18**
 - `browser.py`: **16**
 - `scanner.py`: **15**
 - `main.py`: **14**
 - `organizer.py`: **14**
 - `quarantine.py`: **13**
+- `safety.py`: **12**
 - `branding.py`: **11**
-- `safety.py`: **11**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T05:52:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `_check_file_integrity` mediante la captura explícita de `PermissionError` y el manejo de descriptores de archivos, asegurando que los fallos de acceso no se propaguen como errores genéricos y validando correctamente el estado de los archivos sin dejar handles abiertos.
 - `2026-08-22T05:44:02` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `restore_item` y `quarantine_file` sustituyendo excepciones genéricas por chequeos explícitos y mensajes de error específicos, garantizando que la integridad del sistema sea validada antes de intentar cualquier operación de archivo.
 - `2026-08-22T05:43:21` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` validando la existencia del proceso mediante una llamada a `OpenProcess` con permisos mínimos antes de realizar operaciones de gestión, y centraliza el manejo de errores del handle con un bloque `finally` garantizando que no queden recursos abiertos ante excepciones inesperadas.
 - `2026-08-22T05:42:53` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `on_trim_process` y `_collect_settings` mediante la validación proactiva de datos de entrada y manejo de errores, evitando que valores inesperados (caracteres no numéricos, strings vacíos o IDs inválidos) provoquen caídas en el hilo principal o excepciones no capturadas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T03:50:25` **organizer.py** (seguridad defensiva): Se ha añadido una validación estricta de "cross-device move" en `stage_for_review` para prevenir el fallo de `shutil.move` al intentar mover archivos entre volúmenes distintos, lo cual es una operación propensa a errores que podría dejar el estado del sistema en una inconsistencia no controlada.
 - `2026-08-22T03:50:00` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `is_protected_path` en `trim_working_set` antes de abrir el proceso, asegurando que no se intente interactuar con ejecutables en rutas críticas incluso antes de realizar la validación mediante el handle del proceso.
 - `2026-08-22T03:41:31` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_environment` eliminando la validación genérica de `Path(".")` y delegándola a una verificación explícita mediante `ensure_safe_to_modify` sobre el directorio base real, evitando ambigüedades en la resolución de rutas de trabajo.
-- `2026-08-22T03:40:38` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva de la función `compute_score` implementando una técnica de "fail-safe" mediante la validación estricta de la estructura de `_SCORERS` y la consistencia de los datos, evitando el acceso inseguro a punteros de funciones potencialmente nulos o malformados tras una iteración de cálculo.

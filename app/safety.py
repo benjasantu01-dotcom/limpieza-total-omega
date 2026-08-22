@@ -156,11 +156,11 @@ def _is_file_in_use(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
     try:
-        handle = os.open(path, os.O_RDONLY | getattr(os, 'O_BINARY', 0))
+        handle = os.open(path, os.O_RDONLY)
         os.close(handle)
         return False
-    except OSError as e:
-        return getattr(e, 'winerror', 0) == 32 or getattr(e, 'errno', 0) == 13
+    except (OSError, PermissionError):
+        return True
 
 
 def _check_file_integrity(path: Path) -> None:

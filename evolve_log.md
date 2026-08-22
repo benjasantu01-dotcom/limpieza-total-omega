@@ -1121,3 +1121,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T05:44:02` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `restore_item` y `quarantine_file` sustituyendo excepciones genéricas por chequeos explícitos y mensajes de error específicos, garantizando que la integridad del sistema sea validada antes de intentar cualquier operación de archivo.
 - `2026-08-22T05:44:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T05:44:02` Corrida terminada. Total usado hoy: 136.
+- `2026-08-22T05:51:53` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-22T05:52:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-22T05:52:42` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use` y `_check_file_integrity` mediante la captura explícita de `PermissionError` y el manejo de descriptores de archivos, asegurando que los fallos de acceso no se propaguen como errores genéricos y validando correctamente el estado de los archivos sin dejar handles abiertos.
+- `2026-08-22T05:53:05` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-22T05:53:15` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `save()` capturando posibles errores de serialización (`TypeError`) durante `json.dumps` y agregué una validación explícita para asegurar que la estructura de la configuración esté completa antes de persistirla, evitando inconsistencias por estados parciales.
+- `2026-08-22T05:53:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T05:53:16` Corrida terminada. Total usado hoy: 140.
