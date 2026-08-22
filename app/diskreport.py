@@ -22,7 +22,7 @@ import heapq
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union
+from typing import Generator, Iterable, Dict, List, Tuple, Optional, Union, NamedTuple
 
 from safety import is_protected_path
 
@@ -41,6 +41,15 @@ __all__ = [
     "total_size",
     "summarize",
 ]
+
+
+class SummaryData(NamedTuple):
+    """Contenedor de resultados para el análisis unificado de directorios."""
+    total_bytes: int
+    total_files: int
+    ext_sizes: Dict[str, int]
+    ext_counts: Dict[str, int]
+    top_files: List[Tuple[int, Path]]
 
 
 def _bytes_to_mb(size_bytes: int | float) -> float:
@@ -196,6 +205,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos buscando archivos.
+    
+    Args:
+        directory: Directorio base desde donde iniciar la búsqueda.
+        skip_protected: Si es True, ignora rutas marcadas como protegidas por safety.py.
     """
     if not directory:
         return
@@ -319,7 +332,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     return total_bytes, file_count
 
 
-def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, int, Dict[str, int], Dict[str, int], List[Tuple[int, Path]]]:
+def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Recolección unificada de datos para resumen (optimiza la lectura de disco).
     """
@@ -341,7 +354,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> Tuple[int, i
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, path))
             
-    return total_bytes, total_files, ext_sizes, ext_counts, top_files_heap
+    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files_heap)
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
@@ -362,16 +375,21 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return [f"Error: Ruta protegida no permitida: {p_input}"]
             
     try:
-        total_bytes, total_files, ext_sizes, ext_counts, top_files_heap = _collect_summary_data(p_input, skip_protected)
+        data = _collect_summary_data(p_input, skip_protected)
     except (OSError, PermissionError, RuntimeError):
         return ["Error: Acceso denegado o error inesperado durante el análisis."]
 
-    lines = [f"Carpeta analizada: {p_input}", f"Total: {format_size(total_bytes)} en {total_files} archivos", "", "Por tipo de archivo:"]
-    sorted_exts = heapq.nlargest(8, ext_sizes.items(), key=lambda item: item[1])
+    lines = [
+        f"Carpeta analizada: {p_input}", 
+        f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", 
+        "", 
+        "Por tipo de archivo:"
+    ]
+    sorted_exts = heapq.nlargest(8, data.ext_sizes.items(), key=lambda item: item[1])
     for ext, size in sorted_exts:
-        lines.append(f"  {ext:<18} {format_size(size):>10}  ({ext_counts[ext]} archivos)")
+        lines.append(f"  {ext:<18} {format_size(size):>10}  ({data.ext_counts[ext]} archivos)")
         
     lines.extend(["", "Archivos más grandes:"])
-    for size, path in sorted(top_files_heap, key=lambda x: x[0], reverse=True):
+    for size, path in sorted(data.top_files, key=lambda x: x[0], reverse=True):
         lines.append(f"  {format_size(size):>10}  {path}")
     return lines

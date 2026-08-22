@@ -196,13 +196,20 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
 def _sum_directory_recursive(
     root_dir: str, 
     is_junction_fn: Callable[[str], bool], 
-    kernel32: ctypes.WinDLL | None,
+    kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int]
 ) -> int:
     """
-    Calcula recursivamente el tamaño de un directorio.
-    Usa un diccionario 'memo' para evitar re-escaneo de subdirectorios en la misma iteración.
-    Solo procesa rutas validadas por `is_safe_to_modify`.
+    Calcula el tamaño acumulado de un directorio de forma recursiva.
+
+    Args:
+        root_dir: Ruta absoluta a procesar.
+        is_junction_fn: Callback para detectar puntos de reparse (Windows).
+        kernel32: Instancia de ctypes para acceso a bajo nivel o None.
+        memo: Diccionario para cachear resultados por ruta y optimizar.
+
+    Returns:
+        Tamaño total en bytes de la jerarquía segura.
     """
     if not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -233,7 +240,6 @@ def _sum_directory_recursive(
                         total += _walk(entry.path, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         try:
-                            # Verificación de seguridad adicional en cada archivo
                             if not is_safe_to_modify(Path(entry.path)):
                                 continue
                             st = entry.stat(follow_symlinks=False)

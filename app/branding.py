@@ -26,37 +26,37 @@ RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 
 class PaletteDict(TypedDict):
     """Contrato de claves requerido para la paleta cromática completa."""
-    background: HexColor
-    surface: HexColor
-    surface_alt: HexColor
-    surface_hover: HexColor
-    card: HexColor
-    accent: HexColor
-    accent_hover: HexColor
-    accent_dim: HexColor
-    accent2: HexColor
-    accent2_hover: HexColor
-    accent3: HexColor
-    success: HexColor
-    info: HexColor
-    warning: HexColor
-    danger: HexColor
-    danger_hover: HexColor
-    text: HexColor
-    text_muted: HexColor
-    text_dim: HexColor
-    border: HexColor
-    glow: HexColor
+    background: HexColor      # Color principal de la ventana raíz
+    surface: HexColor         # Fondo base de paneles y contenedores
+    surface_alt: HexColor     # Fondo secundario para contraste o énfasis
+    surface_hover: HexColor   # Color aplicado al pasar el ratón sobre elementos
+    card: HexColor            # Fondo específico para tarjetas de información
+    accent: HexColor          # Color primario de marca (botones, selección)
+    accent_hover: HexColor    # Variación de accent para estados interactivos
+    accent_dim: HexColor      # Versión atenuada de accent para profundidad
+    accent2: HexColor         # Color secundario de marca
+    accent2_hover: HexColor   # Variación interactiva de accent2
+    accent3: HexColor         # Color terciario para alertas de alto impacto
+    success: HexColor         # Indicador de estado positivo
+    info: HexColor            # Indicador de estado informativo
+    warning: HexColor         # Indicador de precaución
+    danger: HexColor          # Indicador crítico de peligro
+    danger_hover: HexColor    # Variación interactiva de danger
+    text: HexColor            # Color principal para texto legible
+    text_muted: HexColor      # Color para texto secundario o descriptivo
+    text_dim: HexColor        # Color para texto de baja prioridad
+    border: HexColor          # Color para bordes y separadores
+    glow: HexColor            # Color para efectos lumínicos y sombras suaves
 
 class FontSizesDict(TypedDict):
     """Mapeo de jerarquía tipográfica para consistencia en componentes UI."""
-    display: int
-    title: int
-    subtitle: int
-    heading: int
-    body: int
-    mono: int
-    caption: int
+    display: int    # Encabezados de gran tamaño (dashboards, splash)
+    title: int      # Títulos de ventanas o secciones principales
+    subtitle: int   # Subtítulos de secciones
+    heading: int    # Etiquetas de campos o nombres de módulos
+    body: int       # Tamaño estándar para el cuerpo de texto
+    mono: int       # Tamaño para datos tabulares o logs
+    caption: int    # Texto pequeño para pies de nota o metadatos
 
 # Metadatos del producto
 APP_NAME: Final[str] = "Limpieza Total Omega"

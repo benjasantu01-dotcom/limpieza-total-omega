@@ -337,20 +337,24 @@ def explain_area(area: Any) -> str:
         return _validate_response_length(explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área."))
     return "No tengo una explicación para esa área."
 
+def _get_criterion_check(ctx: SystemContext, crit: ProblemCriterion) -> str | None:
+    """Evalúa un criterio de salud contra el contexto y devuelve el mensaje si aplica."""
+    val = getattr(ctx, crit.metric_key)
+    f_val = _safe_float(val, -1.0)
+    if f_val < 0: return None
+        
+    is_triggered = (crit.operator == "<" and f_val < crit.threshold) or \
+                   (crit.operator == ">" and f_val > crit.threshold)
+    
+    return crit.message_format.format(val)[:_MAX_MSG_CHUNK] if is_triggered else None
+
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """Compara métricas contra criterios para detectar estados críticos."""
+    """Recopila la lista de problemas actuales basándose en los criterios definidos."""
     problemas: list[str] = []
     for crit in _CRITERIOS_SALUD:
-        val = getattr(ctx, crit.metric_key)
-        f_val = _safe_float(val, -1.0)
-        
-        if f_val < 0: continue
-            
-        triggered = (crit.operator == "<" and f_val < crit.threshold) or \
-                    (crit.operator == ">" and f_val > crit.threshold)
-        
-        if triggered:
-            problemas.append(crit.message_format.format(val)[:_MAX_MSG_CHUNK])
+        msg = _get_criterion_check(ctx, crit)
+        if msg:
+            problemas.append(msg)
             if len(problemas) >= 3: break
     return problemas
 
