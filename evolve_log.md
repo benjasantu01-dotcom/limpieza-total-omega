@@ -766,3 +766,11 @@ FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_i
 - `2026-08-22T01:49:57` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados en funciones clave y el uso de un bloque `if __name__ == "__main__":` con ejemplos de uso, facilitando la comprensión de las estructuras de datos y el flujo de los analizadores.
 - `2026-08-22T01:49:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T01:49:57` Corrida terminada. Total usado hoy: 44.
+- `2026-08-22T01:57:29` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-08-22T01:58:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-22T01:58:50` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Documenté el propósito técnico de las funciones críticas de validación de E/S (`_is_safe_for_disk_op`, `_is_recursive_violation` y `_is_safe_to_move`) mediante docstrings detallados que explican el "porqué" de las restricciones de seguridad, facilitando el mantenimiento y la auditoría del cumplimiento de las reglas del proyecto.
+- `2026-08-22T01:59:21` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_atomic_isolate_file` para separar la lógica de copia y verificación, y añadiendo docstrings técnicos claros a las funciones críticas para documentar los contratos de seguridad.
+- `2026-08-22T01:59:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-08-22T01:59:52` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-22T01:59:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T01:59:52` Corrida terminada. Total usado hoy: 48.

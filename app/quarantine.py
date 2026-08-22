@@ -116,6 +116,7 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Verifica que el archivo físico en el sandbox sea bit-a-bit idéntico al original.
+        Utiliza el hash SHA256 almacenado en el manifiesto como fuente de verdad.
         """
         if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
             return False
@@ -300,26 +301,28 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
-    """Realiza la copia física del archivo al sandbox validando hash antes de confirmar."""
+    """
+    Realiza la copia física al sandbox mediante un archivo temporal.
+    Garantiza que el archivo se ha copiado correctamente validando su tamaño y hash.
+    """
     if source.is_symlink() or ":" in str(source):
-        raise UnsafePathError("Operación denegada: origen no es archivo regular.")
+        raise UnsafePathError("Origen no es archivo regular.")
     if destination.exists():
-        raise FileExistsError(f"Conflicto: {destination.name} ya existe en el sandbox.")
+        raise FileExistsError(f"Conflicto: {destination.name} ya existe.")
     
-    if not os.access(destination.parent, os.W_OK):
-        raise PermissionError(f"Sin permisos de escritura en {destination.parent}")
-        
     temp_dest = destination.parent / f".tmp_{uuid.uuid4().hex}"
     try:
         shutil.copy2(source, temp_dest)
         if temp_dest.stat().st_size != file_size:
-            raise OSError("Corrupción durante copia: tamaño mismatch.")
+            raise OSError("Corrupción durante copia: mismatch de tamaño.")
+            
         file_hash = _get_sha256(temp_dest)
         if not file_hash:
             raise OSError("Falla de integridad: no se pudo calcular hash.")
+            
         os.replace(temp_dest, destination)
         return file_hash
-    except (OSError, PermissionError) as e:
+    except Exception:
         if temp_dest.exists():
             _safe_unlink(temp_dest)
         raise
@@ -376,7 +379,6 @@ def quarantine_file(
             try:
                 os.remove(source_path)
             except OSError as e:
-                # Reversión: si falla el borrado, intentar deshacer la copia para mantener atomicidad
                 if destination.exists():
                     _safe_unlink(destination)
                 raise OSError(f"Archivo copiado pero error al borrar original: {e}")

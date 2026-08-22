@@ -150,8 +150,9 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Verifica si el destino de la operación es hijo o el mismo directorio del origen.
-    Crucial para evitar que mover archivos cree recursividad infinita.
+    Previene la recursividad infinita durante operaciones de archivo.
+    Garantiza que el destino no sea un directorio padre, el mismo archivo, 
+    o un subdirectorio del origen, evitando que el proceso se consuma a sí mismo.
     """
     try:
         s, d = src.resolve(), dest.resolve()
@@ -162,9 +163,10 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Valida la seguridad de la operación de E/S.
-    Verifica: existencia, tipo de archivo, atributos de sistema/oculto, bucles, cruce de volúmenes,
-    integridad de permisos mediante `is_safe_to_modify` y estado de bloqueo del archivo.
+    Valida la integridad de una operación de E/S.
+    Aplica controles de: existencia física, no ser un punto de reparse, atributos 
+    de sistema/oculto, prevención de recursión y aislamiento de volúmenes. 
+    Solo retorna True si las rutas son seguras según `safety.py` y el archivo está libre.
     """
     try:
         if not src.exists() or not src.is_file() or _is_junction(src):
@@ -186,8 +188,10 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Validación de alto nivel antes del movimiento: verifica reglas del módulo `safety` 
-    y restricciones de E/S físicas.
+    Validación de alto nivel previa al movimiento.
+    Combina la lógica de `safety.py` (bloqueo de rutas sensibles) con 
+    restricciones de E/S de bajo nivel (`_is_safe_for_disk_op`) para asegurar
+    que ni el origen ni el destino comprometan la estabilidad del SO.
     """
     if not isinstance(junk_file, JunkFile): return False
     try:
