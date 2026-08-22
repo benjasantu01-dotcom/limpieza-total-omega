@@ -607,3 +607,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T12:10:38` ➖ Sin cambios en memory.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un chequeo de integridad en `trim_working_set` para prevenir fugas de recursos (handles abiertos) ante excepciones inesperadas durante la validación o la ejecución, garantizando que `CloseHandle` siempre se invoque incluso si la validación falla antes de entrar al `try` interno.
 - `2026-08-22T12:10:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T12:10:38` Corrida terminada. Total usado hoy: 284.
+- `2026-08-22T12:14:22` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-08-22T12:14:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-22T12:15:18` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `quarantine_file` ante fallos en la persistencia del manifiesto, implementando un mecanismo de reversión automática si `save_manifest` falla, asegurando que el archivo no quede "huérfano" en el sandbox sin registro.
+- `2026-08-22T12:15:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-22T12:15:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-22T12:16:19` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-22T12:16:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T12:16:19` Corrida terminada. Total usado hoy: 288.
