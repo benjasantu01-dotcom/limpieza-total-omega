@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 31 | 2 | 4 | 1 | 32 |
+| 2026-08-20 | 31 | 2 | 4 | 1 | 28 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 40 | 2 | 4 | 3 | 35 |
+| 2026-08-22 | 44 | 2 | 4 | 3 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **40**
+- seguridad defensiva: **44**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `duplicates.py`: **22**
 - `assistant.py`: **20**
+- `diskreport.py`: **20**
 - `settings.py`: **20**
-- `diskreport.py`: **19**
 - `memory.py`: **19**
-- `healthscore.py`: **17**
+- `healthscore.py`: **18**
 - `scanner.py`: **17**
 - `browser.py`: **16**
 - `organizer.py`: **15**
-- `main.py`: **13**
+- `main.py`: **14**
 - `quarantine.py`: **13**
 - `safety.py`: **12**
 - `branding.py`: **12**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T03:41:31` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_environment` eliminando la validación genérica de `Path(".")` y delegándola a una verificación explícita mediante `ensure_safe_to_modify` sobre el directorio base real, evitando ambigüedades en la resolución de rutas de trabajo.
+- `2026-08-22T03:40:38` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva de la función `compute_score` implementando una técnica de "fail-safe" mediante la validación estricta de la estructura de `_SCORERS` y la consistencia de los datos, evitando el acceso inseguro a punteros de funciones potencialmente nulos o malformados tras una iteración de cálculo.
+- `2026-08-22T03:40:11` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `group_by_size` y `_collect_candidates` asegurando que los archivos sean validados con `is_safe_to_modify` antes de intentar realizar cualquier operación de lectura, mitigando el riesgo de procesar rutas inválidas o bloqueadas por políticas de seguridad del sistema.
+- `2026-08-22T03:39:48` **diskreport.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `walk_files` al añadir una verificación adicional mediante `os.path.abspath` antes de procesar rutas, asegurando que la normalización de `Path.resolve()` sea consistente en entornos con enlaces simbólicos complejos o rutas relativas ambiguas, previniendo así un posible escape del directorio base.
 - `2026-08-22T03:30:56` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_sum_directory_recursive` implementando una comprobación de seguridad adicional mediante `is_protected_path` al inicio de cada iteración de `os.scandir`, asegurando que ninguna subcarpeta o archivo accedido accidentalmente (por ejemplo, mediante rutas mal formadas) viole las restricciones de protección del sistema antes de procesar sus metadatos.
 - `2026-08-22T03:30:13` **assistant.py** (seguridad defensiva): Reforcé la integridad del asistente añadiendo una validación explícita sobre los datos externos (`extra`) en `build_context`, garantizando que solo se acepten métricas con formato de texto seguro y evitando posibles inyecciones de contenido malicioso o rutas de archivo en el contexto que se procesa.
 - `2026-08-22T03:21:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de E/S y corrupción de archivos al añadir una lógica de validación de directorio más estricta en `load` y un mecanismo de recuperación ante archivos de configuración bloqueados o malformados, asegurando que la aplicación siempre mantenga un estado operativo incluso si `config.json` no es accesible.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T02:59:46` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `suggest_keeper` ante fallos de acceso durante la recolección de metadatos, evitando que una excepción en `stat()` detenga la evaluación de todo el grupo y asegurando un comportamiento predecible ante rutas que desaparecen durante la ejecución.
 - `2026-08-22T02:59:23` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante el acceso a directorios con permisos denegados o rutas de sistema que pueden disparar errores de acceso durante la iteración, envolviendo el `os.scandir` en un bloque `try-except` más robusto y asegurando que las comparaciones de `parents` manejen correctamente las excepciones de resolución de rutas.
 - `2026-08-22T02:49:53` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes o corruptos durante la carga de métricas y la serialización, añadiendo validación de tipos estricta y protección contra valores nulos en `_validate_and_assign` y `context_as_text`.
-- `2026-08-22T02:48:48` **settings.py** (rendimiento): Implementé un sistema de "lazy loading" en `load()` utilizando `pathlib` de forma más eficiente y centralizando el chequeo de `stat` para evitar accesos repetitivos a disco y llamadas innecesarias a `is_safe_to_modify` en accesos frecuentes.
-- `2026-08-22T02:39:24` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la lógica de comparación de rutas `os.path.commonpath` (que es costosa y realiza IO/normalizaciones repetitivas) por una verificación basada en el prefijo de la cadena normalizada, aprovechando que el cache ya almacena la ruta normalizada.
-- `2026-08-22T02:30:03` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de validación basada en una caché temporal, evitando el sobrecosto de generar procesos hijos y ejecutar scripts pesados cuando la información aún es reciente.
-- `2026-08-22T02:29:35` **main.py** (rendimiento): Optimicé el sistema de caché y las consultas de métricas de salud implementando `lru_cache` (estándar) para operaciones de solo lectura y reduciendo la redundancia en `_compile_metrics`, evitando así múltiples accesos a disco concurrentes durante el análisis de salud.

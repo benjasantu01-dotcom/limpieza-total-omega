@@ -62,10 +62,11 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo. Retorna None en caso de error de acceso."""
-    if path is None: return None
+    path_obj = Path(path)
+    if not is_safe_to_modify(path_obj): return None
     try:
         digest = hashlib.sha256()
-        with open(path, "rb") as f:
+        with open(path_obj, "rb") as f:
             while (buffer := f.read(chunk_size)):
                 digest.update(buffer)
         return digest.hexdigest()
@@ -75,9 +76,10 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash de los primeros N bytes para filtrado rápido."""
-    if path is None: return None
+    path_obj = Path(path)
+    if not is_safe_to_modify(path_obj): return None
     try:
-        with open(path, "rb") as f:
+        with open(path_obj, "rb") as f:
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
@@ -92,7 +94,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         try:
             target = Path(p)
-            # Solo procesar si el archivo es accesible y no es ruta crítica/sistema
+            # Solo procesar si el archivo es accesible y pasa los filtros de seguridad
             if target.is_file() and not is_protected_path(target) and is_safe_to_modify(target):
                 st = target.stat()
                 if st.st_size > 0:
@@ -109,9 +111,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Recorre recursivamente directorios buscando archivos duplicados potenciales.
-    
-    Aplica filtros de seguridad: omite rutas protegidas, junctions de Windows,
-    y verifica permisos de modificación mediante is_safe_to_modify().
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
@@ -126,12 +125,10 @@ def _collect_candidates(
                         if p_entry in processed_paths: continue
                         processed_paths.add(p_entry)
 
-                        # Regla de seguridad: omitir rutas protegidas o inseguras de forma temprana
                         if skip_protected and (is_protected_path(p_entry) or not is_safe_to_modify(p_entry)):
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
-                        # Evitar reparse points o junctions mediante atributos de archivo (0x400)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                                 
                         if entry.is_dir(follow_symlinks=False):
@@ -149,7 +146,7 @@ def _collect_candidates(
             if item:
                 try:
                     p_item = Path(item).resolve()
-                    if p_item.is_dir() and not is_protected_path(p_item):
+                    if p_item.is_dir() and not is_protected_path(p_item) and is_safe_to_modify(p_item):
                         _scan(p_item)
                 except (OSError, RuntimeError): continue
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
@@ -191,18 +188,14 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """
-    Selecciona el archivo candidato a conservar (el más antiguo) para evitar
-    pérdida de metadatos de creación históricos.
-    """
+    """Selecciona el archivo candidato a conservar."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            if not p.is_file(): continue
+            if not p.is_file() or not is_safe_to_modify(p): continue
             stat_info = p.stat()
-            # Ordenamos por fecha de modificación (mtime) y luego longitud de ruta
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
             continue

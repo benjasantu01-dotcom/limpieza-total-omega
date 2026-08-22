@@ -190,11 +190,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
         return HealthResult(0, "F", {}, ["Error: Configuración inestable."])
     
-    # Validar que los umbrales no permitan divisiones por cero
     if any(l <= 0 for l in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema inválidos."])
 
-    # Validación profunda: asegurar que no haya valores nulos o infinitos
     try:
         metrics.validate()
         if not metrics.is_finite():
@@ -208,12 +206,15 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     for area, weight in _WEIGHT_ITEMS_INT:
         scorer = _SCORERS.get(area)
-        ratio = scorer(metrics) if scorer else 0.0
+        if scorer is None:
+            continue
+        
+        ratio = scorer(metrics)
         ratios[area] = ratio
         
         puntos = int(round(ratio * weight))
-        breakdown[area] = _clamp(float(puntos), 0.0, float(weight))
-        final_score += puntos
+        breakdown[area] = int(_clamp(float(puntos), 0.0, float(weight)))
+        final_score += breakdown[area]
     
     recommendations = []
     for r in _RECOMMENDATION_RULES:
@@ -224,7 +225,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     final_score = int(_clamp(float(final_score), 0.0, 100.0))
-    return HealthResult(final_score, grade_for_score(final_score), {k: int(v) for k, v in breakdown.items()}, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
+    return HealthResult(final_score, grade_for_score(final_score), breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación textual (lista de strings) formateada para la interfaz de usuario."""

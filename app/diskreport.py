@@ -214,7 +214,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        base_path = Path(os.fspath(directory)).resolve(strict=False)
+        # Normalizamos la base para asegurar confinamiento
+        abs_base = os.path.abspath(os.fspath(directory))
+        base_path = Path(abs_base).resolve(strict=False)
         if not base_path.exists() or not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
@@ -230,6 +232,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         
         try:
             curr_res = current_dir.resolve(strict=False)
+            # Validación de confinamiento estricto
             if base_path not in curr_res.parents and curr_res != base_path:
                 continue
         except (OSError, RuntimeError):
