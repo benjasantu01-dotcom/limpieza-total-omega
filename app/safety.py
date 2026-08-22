@@ -173,19 +173,18 @@ def _check_file_integrity(path: Path) -> None:
     if not isinstance(path, Path):
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
     
-    if not path.exists():
-        raise UnsafePathError(f"El archivo {path.name} no existe.")
-
     if len(path.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
     try:
         st = path.lstat()
-        if not os.access(path.parent, os.W_OK):
-            raise UnsafePathError(f"Directorio padre sin permisos de escritura.")
+    except FileNotFoundError:
+        raise UnsafePathError(f"Archivo desaparecido durante validación: {path.name}")
     except OSError as e:
         raise UnsafePathError(f"Error de acceso a metadatos: {e.strerror}")
 
+    if not os.access(path.parent, os.W_OK):
+        raise UnsafePathError(f"Directorio padre sin permisos de escritura.")
     if not os.access(path, os.W_OK):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}.")
     if _is_reparse_point(path):

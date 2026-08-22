@@ -110,7 +110,7 @@ class Scanner:
             target_path = Path(entry.path)
             
             # Chequeo de seguridad: omitir si está protegido, fuera de raíz o es ruta inválida
-            if is_protected_path(target_path) or not is_safe_to_modify(target_path) or entry.path.startswith("\\\\"):
+            if not is_safe_to_modify(target_path) or is_protected_path(target_path) or entry.path.startswith("\\\\"):
                 return
             if not self._is_safe_entry(target_path):
                 return
@@ -131,14 +131,12 @@ class Scanner:
 
             if is_file:
                 try:
-                    # Validar existencia y tamaño antes de analizar
                     stats = entry.stat(follow_symlinks=False)
                     if stats.st_size == 0:
                         return
                 except (OSError, PermissionError, FileNotFoundError):
                     return
 
-                # Aplicar heurísticas de nombre y extensión
                 if RTL_CHAR_RE.search(target_path.name):
                     self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
                 
@@ -169,14 +167,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if path is None or is_protected_path(path):
         return None
     
-    # Optimización: evitar crear sets o listas, usar any() con verificación de substrings lower
     path_str_lower = str(path).lower()
     if not any(folder in path_str_lower for folder in WATCHED_FOLDERS):
         return None
         
     try:
-        # Usar os.path.exists para verificar existencia sin levantar excepción si es un enlace roto
-        if not os.path.exists(path):
+        if not path.exists():
             return None
             
         stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'stat')) else path.stat()
@@ -213,11 +209,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     
     findings: ScanResult = []
     
-    # Chequeo genérico para todos los archivos
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    # Chequeo específico para ejecutables
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECKS:
             try:
@@ -243,10 +237,10 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         raw_path = Path(directory)
         if str(raw_path).startswith(("\\\\", "//")):
             return []
-        if not raw_path.exists():
+        if not raw_path.is_dir() or not raw_path.exists():
             return []
         path_input: Path = raw_path.resolve(strict=True)
-        if not path_input.is_dir() or is_protected_path(path_input) or not is_safe_to_modify(path_input):
+        if is_protected_path(path_input) or not is_safe_to_modify(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError) as e:
         logger.debug(f"Entrada de directorio inválida o inaccesible: {e}")

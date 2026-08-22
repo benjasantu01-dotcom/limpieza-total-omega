@@ -465,3 +465,10 @@ assert not True
 - `2026-08-22T10:14:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-22T10:14:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T10:14:13` Corrida terminada. Total usado hoy: 240.
+- `2026-08-22T10:22:05` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-22T10:22:39` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` envolviendo la eliminación del archivo original en un bloque `try...except` específico y validando que el archivo realmente existe antes de invocar `os.remove`, asegurando que no se lancen excepciones inesperadas si el archivo fue movido o eliminado externamente durante la operación.
+- `2026-08-22T10:22:57` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-22T10:23:25` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, reemplazando chequeos redundantes por una captura explícita de `FileNotFoundError` durante la inspección de integridad.
+- `2026-08-22T10:23:35` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scan_directory` y `process_entry` mediante la validación proactiva de tipos y estados, garantizando que el escáner no intente operar sobre objetos `None` o rutas mal formadas, y encapsulando las operaciones de resolución de rutas en bloques de protección contra errores de E/S.
+- `2026-08-22T10:23:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T10:23:35` Corrida terminada. Total usado hoy: 244.

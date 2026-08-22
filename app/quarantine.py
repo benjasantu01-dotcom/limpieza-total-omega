@@ -381,9 +381,12 @@ def quarantine_file(
         items.append(quarantine_item)
         save_manifest(items, base)
         
-        # Solo eliminar origen una vez que el registro es exitoso
-        if source_path.exists():
-            os.remove(source_path)
+        # Solo intentar eliminar origen si el archivo aún existe y el registro es exitoso
+        try:
+            if source_path.exists():
+                os.remove(source_path)
+        except OSError:
+            pass
             
         return quarantine_item
     except Exception as e:
