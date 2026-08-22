@@ -953,3 +953,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T14:50:05` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-22T14:50:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T14:50:05` Corrida terminada. Total usado hoy: 348.
+- `2026-08-22T14:57:33` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-22T14:57:54` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-22T14:58:22` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `_is_reparse_point` y `process_entry` ante rutas inexistentes o inaccesibles, asegurando que el scanner no se interrumpa ante errores de sistema y validando explícitamente los atributos de los objetos `DirEntry` antes de acceder a ellos.
+- `2026-08-22T14:58:50` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `validate()` asegurando que la configuración resultante mantenga la integridad de todas las claves requeridas frente a archivos JSON maliciosos o truncados, mediante una verificación estricta de superconjunto de llaves.
+- `2026-08-22T14:58:50` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-22T14:58:50` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T14:58:50` Corrida terminada. Total usado hoy: 350.

@@ -80,7 +80,6 @@ class Scanner:
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """Verifica que la ruta esté contenida dentro del alcance de la raíz original."""
         try:
-            # Uso de resolve(strict=False) para evitar fallos si el archivo es temporal y desaparece
             resolved = entry_path.resolve(strict=False)
             return self.base_root == resolved or self.base_root in resolved.parents
         except (OSError, RuntimeError):
@@ -89,34 +88,30 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
         Detecta si la entrada es un punto de reanálisis (reparse point).
-        
-        Utiliza el bit 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) para identificar 
-        Junciones o Symlinks y prevenir que el escáner escape del árbol asignado.
         """
         try:
+            # Usamos stat sin seguir enlaces para verificar atributos de reanálisis
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError, TypeError):
+            # Ante error al leer metadatos, se considera inseguro continuar
             return True 
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
         Analiza un elemento del sistema de archivos mediante reglas de seguridad.
-        
-        Si el elemento es directorio, lo encola en 'stack'. Si es archivo,
-        aplica las heurísticas configuradas en las funciones de escaneo.
         """
-        if entry is None or not hasattr(entry, 'path') or not entry.path:
+        if entry is None or not hasattr(entry, 'path'):
             return
         
         try:
             target_path = Path(entry.path)
             
-            # Solo lectura: usamos is_protected_path para evitar errores innecesarios de is_safe_to_modify
             if is_protected_path(target_path) or entry.path.startswith("\\\\"):
                 return
             if not self._is_safe_entry(target_path):
                 return
 
+            # Validar existencia antes de comprobar tipo
             try:
                 is_dir = entry.is_dir(follow_symlinks=False)
                 is_file = entry.is_file(follow_symlinks=False)
@@ -136,7 +131,7 @@ class Scanner:
                     stats = entry.stat(follow_symlinks=False)
                     if stats.st_size == 0:
                         return
-                except (OSError, PermissionError, FileNotFoundError):
+                except (OSError, PermissionError):
                     return
 
                 if RTL_CHAR_RE.search(target_path.name):
@@ -147,12 +142,12 @@ class Scanner:
                     self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
                 
         except Exception as e:
-            logger.debug(f"Error procesando {entry.path if entry else 'unknown'}: {e}")
+            logger.debug(f"Error procesando {entry.path}: {e}")
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta nombres con extensiones múltiples engañosas (ej: imagen.jpg.exe)."""
-    if path is None or not path.name:
+    if not path or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -195,7 +190,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     Orquestador de reglas heurísticas para un archivo dado.
     """
-    if path is None:
+    if not path:
         return []
     
     findings: ScanResult = []
@@ -242,7 +237,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry is not None:
+                    if entry:
                         scanner.process_entry(entry, stack)
         except (PermissionError, OSError) as e:
             logger.debug(f"Error accediendo a directorio {current_dir}: {e}")

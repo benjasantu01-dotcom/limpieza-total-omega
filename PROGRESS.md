@@ -5,8 +5,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **222** (44.2% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 22
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 73 | 6 | 9 | 7 | 61 |
-| 2026-08-22 | 151 | 11 | 20 | 15 | 151 |
+| 2026-08-21 | 69 | 6 | 9 | 7 | 61 |
+| 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **51**
+- manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **50**
 - legibilidad y documentación: **47**
-- rendimiento: **39**
 - robustez ante casos límite: **37**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **21**
-- `healthscore.py`: **20**
-- `settings.py`: **20**
+- `settings.py`: **21**
+- `duplicates.py`: **20**
+- `scanner.py`: **19**
 - `assistant.py`: **19**
-- `scanner.py`: **18**
-- `diskreport.py`: **17**
+- `healthscore.py`: **19**
 - `browser.py`: **17**
+- `diskreport.py`: **16**
 - `quarantine.py`: **14**
 - `branding.py`: **14**
 - `organizer.py`: **13**
-- `main.py`: **12**
+- `main.py`: **11**
 - `safety.py`: **11**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T14:58:50` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate()` asegurando que la configuración resultante mantenga la integridad de todas las claves requeridas frente a archivos JSON maliciosos o truncados, mediante una verificación estricta de superconjunto de llaves.
+- `2026-08-22T14:58:22` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_is_reparse_point` y `process_entry` ante rutas inexistentes o inaccesibles, asegurando que el scanner no se interrumpa ante errores de sistema y validando explícitamente los atributos de los objetos `DirEntry` antes de acceder a ellos.
 - `2026-08-22T14:48:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y `restore_item` al reemplazar el manejo implícito de errores por chequeos explícitos, asegurando que si el manifiesto está corrupto o desincronizado, la operación falle de forma segura sin intentar borrar o mover archivos huérfanos.
 - `2026-08-22T14:47:47` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas y capturando excepciones de sistema de archivos durante la iteración para garantizar que un error en un archivo individual no detenga el proceso completo.
 - `2026-08-22T14:39:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus funciones auxiliares implementando validaciones estrictas de tipo y estado para prevenir errores de ejecución por entradas nulas o malformadas, además de asegurar que `OpenProcess` siempre gestione correctamente el cierre del handle incluso ante excepciones inesperadas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T12:58:06` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (diseñado para operaciones de escritura/modificación) por `is_protected_path`, evitando el error de lógica donde el escáner se bloqueaba a sí mismo al evaluar rutas que solo necesita leer.
 - `2026-08-22T12:48:13` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de path traversal y evitar que se manipulen archivos fuera de la jerarquía permitida, validando que el destino final resuelto sea efectivamente hijo del directorio de revisión antes de cualquier operación de movimiento.
 - `2026-08-22T12:48:03` **memory.py** (seguridad defensiva): Se añadió la verificación `os.path.exists` en `trim_working_set` para validar que el ejecutable asociado al PID efectivamente exista en el sistema antes de proceder con el manejo de memoria, reforzando la seguridad defensiva contra posibles condiciones de carrera (Race Conditions) donde el PID podría haber sido reciclado.
-- `2026-08-22T12:47:35` **main.py** (seguridad defensiva): He refactorizado `_worker_thread_logic` para que el chequeo de seguridad mediante `ensure_safe_to_modify` ocurra de forma obligatoria y previa a cualquier ejecución, consolidando la lógica de protección del hilo en un único punto centralizado.
-- `2026-08-22T12:45:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `compute_score` agregando una validación explícita de `metrics.quarantined_count` antes de generar recomendaciones, asegurando que solo se procesen valores enteros positivos, y mejorando la robustez ante posibles inyecciones de datos no numéricos mediante el uso de `_to_int` para el contador de cuarentena.

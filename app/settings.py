@@ -237,6 +237,12 @@ def validate(raw_values: Any) -> AppSettings:
         if key and key in _VALIDATOR_MAP:
             validated = _VALIDATOR_MAP[key](key, val)
             if validated is not None: config[key_str] = validated # type: ignore
+    
+    # Asegurar que todas las llaves requeridas existan, incluso si el JSON era parcial
+    for k in DEFAULTS:
+        if k not in config:
+            config[k] = DEFAULTS[k] # type: ignore
+            
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -260,9 +266,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         
         # Validación de integridad de estructura
         config = validate(data)
-        if not all(k in config for k in DEFAULTS.keys()):
-            return _get_default_config()
-            
+        
         _CACHE[ruta] = (mtime, config)
         return config
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):
