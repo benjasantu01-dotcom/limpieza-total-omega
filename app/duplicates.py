@@ -93,12 +93,13 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None: return groups
     for p in paths:
         try:
+            if not p: continue
             target = Path(p).resolve()
             if target.is_file() and not is_protected_path(target) and is_safe_to_modify(target):
                 st = target.stat()
                 if st.st_size > 0:
                     groups[st.st_size].append(target)
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, FileNotFoundError, RuntimeError):
             continue
     return groups
 
@@ -200,11 +201,13 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         return None
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
+        if not isinstance(p, (Path, str)): continue
+        p_obj = Path(p)
         try:
-            if not p.is_file() or not is_safe_to_modify(p): continue
-            stat_info = p.stat()
-            keepers.append((float(stat_info.st_mtime), len(str(p)), p))
+            if not p_obj.exists() or not p_obj.is_file() or not is_safe_to_modify(p_obj):
+                continue
+            stat_info = p_obj.stat()
+            keepers.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
         except (OSError, PermissionError, FileNotFoundError):
             continue
     if not keepers:

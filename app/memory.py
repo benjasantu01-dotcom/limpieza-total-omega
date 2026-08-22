@@ -336,6 +336,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):
         return False, "Error de sistema: APIs de memoria no disponibles."
+    
     try:
         target_pid = int(pid)
     except (ValueError, TypeError): return False, "El PID debe ser un número entero válido."
@@ -357,7 +358,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)
 
 if __name__ == "__main__":
     snap = read_snapshot()

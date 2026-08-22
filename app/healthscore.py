@@ -189,19 +189,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incorrecto."])
     
-    # Validar coherencia de porcentajes de entrada (0-100)
-    metrics.memory_available_percent = _clamp(metrics.memory_available_percent, 0.0, 100.0)
-    metrics.disk_free_percent = _clamp(metrics.disk_free_percent, 0.0, 100.0)
-    
-    # Validar que los límites globales no causen divisiones por cero
-    safe_limits = [
-        _LIMIT_JUNK_MB > 0, _LIMIT_RAM_PERCENT > 0, 
-        _LIMIT_DISK_PERCENT > 0, _LIMIT_DUPLICATE_MB > 0, 
-        _LIMIT_STARTUP_COUNT > 0
-    ]
-    if not all(safe_limits):
-        return HealthResult(0, "F", {}, ["Error: Umbrales de sistema mal configurados."])
-
     try:
         metrics.validate()
         if not metrics.is_finite():
@@ -209,34 +196,34 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     except Exception:
         return HealthResult(0, "F", {}, ["Error: Fallo al validar métricas."])
 
+    # Validar que los límites globales no causen divisiones por cero
+    if any(limit <= 0 for limit in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
+        return HealthResult(0, "F", {}, ["Error: Umbrales de sistema mal configurados."])
+
     breakdown: Dict[MetricKey, int] = {}
     ratios: Dict[MetricKey, float] = {}
     final_score: float = 0.0
     
-    scorers = _SCORERS
     for area, weight in _WEIGHT_ITEMS_INT:
-        scorer = scorers.get(area)
+        scorer = _SCORERS.get(area)
         if scorer is None: continue
         
         try:
             ratio = scorer(metrics)
+            ratios[area] = ratio
+            puntos = round(ratio * weight)
+            breakdown[area] = int(_clamp(float(puntos), 0.0, float(weight)))
+            final_score += breakdown[area]
         except Exception:
-            ratio = 0.0
-        
-        ratios[area] = ratio
-        puntos = round(ratio * weight)
-        breakdown[area] = int(_clamp(float(puntos), 0.0, float(weight)))
-        final_score += breakdown[area]
+            continue
     
     recommendations = []
     for r in _RECOMMENDATION_RULES:
         if r.check(metrics, ratios.get(r.area, 0.0)):
             recommendations.append(r.message_factory(metrics))
             
-    # Validación defensiva del contador de cuarentena
-    q_count = _to_int(metrics.quarantined_count)
-    if q_count > 0:
-        recommendations.append(f"Tenés {q_count} archivo(s) en cuarentena.")
+    if metrics.quarantined_count > 0:
+        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     score_int = int(_clamp(final_score, 0.0, 100.0))
     return HealthResult(score_int, grade_for_score(score_int), breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
