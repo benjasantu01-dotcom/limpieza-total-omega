@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 18
+- Rechazadas por guardia de seguridad: 28
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 38 | 3 | 5 | 2 | 46 |
+| 2026-08-20 | 35 | 3 | 5 | 2 | 45 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 27 | 1 | 2 | 1 | 29 |
+| 2026-08-22 | 28 | 1 | 3 | 2 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **45**
-- rendimiento: **35**
+- seguridad defensiva: **42**
+- rendimiento: **36**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **20**
-- `assistant.py`: **19**
 - `memory.py`: **19**
 - `settings.py`: **19**
+- `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
-- `browser.py`: **16**
 - `organizer.py`: **15**
-- `branding.py`: **13**
+- `browser.py`: **15**
 - `main.py`: **13**
 - `quarantine.py`: **12**
-- `safety.py`: **10**
+- `branding.py`: **12**
+- `safety.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T02:39:24` **safety.py** (rendimiento): Se optimizó el rendimiento de `is_protected_path` reemplazando la lógica de comparación de rutas `os.path.commonpath` (que es costosa y realiza IO/normalizaciones repetitivas) por una verificación basada en el prefijo de la cadena normalizada, aprovechando que el cache ya almacena la ruta normalizada.
 - `2026-08-22T02:30:03` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de validación basada en una caché temporal, evitando el sobrecosto de generar procesos hijos y ejecutar scripts pesados cuando la información aún es reciente.
 - `2026-08-22T02:29:35` **main.py** (rendimiento): Optimicé el sistema de caché y las consultas de métricas de salud implementando `lru_cache` (estándar) para operaciones de solo lectura y reduciendo la redundancia en `_compile_metrics`, evitando así múltiples accesos a disco concurrentes durante el análisis de salud.
 - `2026-08-22T02:19:12` **duplicates.py** (rendimiento): Optimizé la función `_collect_candidates` para evitar llamadas redundantes a `is_safe_to_modify` y `is_protected_path` centralizando la validación durante la iteración inicial y eliminando la verificación repetida en la rama `elif`.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T01:47:37` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de Type Hints más precisos y docstrings explicativos que aclaran el flujo lógico de las funciones de filtrado, asegurando el mantenimiento de las reglas de seguridad sin alterar la funcionalidad.
 - `2026-08-22T01:38:57` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la refactorización de `_collect_summary_data` hacia un `NamedTuple` interno para evitar el acceso por índices (tipo `tuple[0]`, `tuple[1]`) que resultaba opaco y propenso a errores, además de clarificar los docstrings de los parámetros de `walk_files`.
 - `2026-08-22T01:38:46` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación interna mediante docstrings estructurados (usando el formato Google Style) en las funciones críticas de recorrido, clarificando la intención y los contratos de seguridad de cada parámetro.
-- `2026-08-22T01:38:09` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `PaletteDict` y `FontSizesDict` mediante la adición de docstrings detallados en sus atributos, facilitando la comprensión del rol específico de cada token de diseño para futuros desarrolladores.
