@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 126 | 11 | 17 | 14 | 108 |
-| 2026-08-22 | 94 | 6 | 11 | 9 | 108 |
+| 2026-08-21 | 123 | 11 | 17 | 14 | 107 |
+| 2026-08-22 | 95 | 6 | 11 | 9 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **55**
+- legibilidad y documentación: **52**
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **40**
+- manejo de errores y validación de entradas: **41**
 - rendimiento: **39**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
 - `memory.py`: **21**
+- `duplicates.py`: **20**
 - `settings.py`: **20**
-- `diskreport.py`: **18**
 - `healthscore.py`: **18**
+- `assistant.py`: **18**
 - `scanner.py`: **17**
-- `assistant.py`: **17**
+- `diskreport.py`: **17**
 - `browser.py`: **16**
-- `main.py`: **14**
 - `organizer.py`: **14**
 - `quarantine.py`: **13**
 - `safety.py`: **13**
+- `main.py`: **13**
 - `branding.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T09:55:04` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `_validate_and_assign` mediante la validación explícita de `spec` y el manejo preventivo de posibles errores de tipo, evitando que configuraciones malformadas o métricas inesperadas provoquen una falla silenciosa en la construcción del contexto.
 - `2026-08-22T08:31:16` **settings.py** (seguridad defensiva): He refactorizado la validación en `save` para asegurar que el chequeo de seguridad de la ruta padre ocurra antes de cualquier operación de escritura, y he consolidado el chequeo de `is_protected_path` para prevenir explícitamente escrituras en rutas restringidas mediante una validación más robusta antes de instanciar archivos temporales.
 - `2026-08-22T08:31:04` **scanner.py** (seguridad defensiva): Se reforzó `scanner.py` integrando `is_safe_to_modify` en `process_entry` para asegurar que el escáner no solo ignore rutas protegidas por nombre, sino que también verifique proactivamente la integridad de la ruta antes de interactuar con el sistema de archivos, cumpliendo estrictamente con las reglas de seguridad defensiva y evitando errores de resolución en rutas críticas.
 - `2026-08-22T08:21:42` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `stage_for_review` incorporando una verificación de "espacio disponible" (vía `shutil.disk_usage`) antes de intentar mover archivos, evitando fallos parciales o corrupción de datos por desbordamiento de disco, manteniendo el enfoque de seguridad defensiva.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T07:49:38` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos parciales durante la copia y el registro del manifiesto, asegurando que si ocurre una interrupción, el estado del sistema no quede en una inconsistencia lógica (como un archivo copiado pero sin registro en el manifiesto).
 - `2026-08-22T07:40:55` **memory.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta y defensiva en `_read_windows_snapshot` y `read_snapshot` para manejar casos límite donde `GlobalMemoryStatusEx` podría fallar, retornar valores incoherentes o donde el acceso al sistema de archivos bajo `/proc` en entornos no estándar (como contenedores restringidos o sistemas de solo lectura) cause excepciones inesperadas.
 - `2026-08-22T07:39:22` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `compute_score` ante posibles divisiones por cero en los cálculos de ratios, evitando fallos silenciosos o resultados erróneos si se modifican los umbrales constantes en el futuro.
-- `2026-08-22T07:30:10` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de disponibilidad de unidad previo en `all_drives_usage` para evitar cuelgues ante unidades de red o soportes extraíbles que no responden, mejorando la robustez frente a casos límite de hardware inaccesible.

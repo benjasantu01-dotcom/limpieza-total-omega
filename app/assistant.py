@@ -235,6 +235,8 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
     """Extrae y valida una métrica individual desde una fuente de datos."""
+    if not isinstance(spec, (tuple, list)) or len(spec) != 3:
+        return False
     cast, min_v, max_v = spec
     try:
         val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
@@ -242,7 +244,7 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
         return False
     
     clean_val = _safe_float(val, -1.0)
-    if clean_val < 0 and key != "score": # El score puede ser None originalmente
+    if clean_val < 0 and key != "score": 
         return False
     
     try:
