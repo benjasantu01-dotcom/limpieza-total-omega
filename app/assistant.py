@@ -170,6 +170,7 @@ _VALIDATORS: Final[dict[str, ValidatorSpec]] = {
     "startup_count": (int, 0, 1000),
     "quarantined_count": (int, 0, 10000),
     "browser_cache_mb": (float, 0.0, 1e6),
+    "score": (int, 0, 100),
 }
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
@@ -233,51 +234,32 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
-    """
-    Intenta extraer y validar una métrica individual desde una fuente de datos.
-    Aplica el 'spec' (tipo de cast, min, max) para asegurar la integridad.
-    """
-    if not isinstance(source, (dict, object)) or not isinstance(spec, tuple) or len(spec) != 3:
-        return False
-
+    """Extrae y valida una métrica individual desde una fuente de datos."""
     cast, min_v, max_v = spec
-    try:
-        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-        if val is None or isinstance(val, (list, dict, set, tuple, bool, str)):
-            return False
-            
-        clean_val = float(val)
-        if math.isfinite(clean_val):
-            clamped = max(float(min_v), min(clean_val, float(max_v)))
-            setattr(ctx, key, cast(clamped))
-            return True
-    except (AttributeError, ValueError, TypeError, OverflowError):
-        pass
-    return False
+    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+    
+    clean_val = _safe_float(val, -1.0)
+    if clean_val < 0:
+        return False
+        
+    clamped = max(float(min_v), min(clean_val, float(max_v)))
+    setattr(ctx, key, cast(clamped))
+    return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
-    """
-    Construye el objeto SystemContext agregando datos de diversas fuentes.
-    Valida cada campo contra _VALIDATORS para prevenir contaminación de datos.
-    """
+    """Construye el objeto SystemContext validando datos contra _VALIDATORS."""
     ctx = SystemContext()
     found_data = False
+    sources = (metrics, health, extra)
     
-    sources = [metrics, health, extra]
-    
-    # Procesar métricas numéricas estándar
-    for src in sources:
-        if src is None: continue
-        for key, spec in _VALIDATORS.items():
-            if _validate_and_assign(ctx, src, key, spec):
+    for key, spec in _VALIDATORS.items():
+        for src in sources:
+            if src is not None and _validate_and_assign(ctx, src, key, spec):
                 found_data = True
+                break
 
-    # Procesar score y grade con validación de tipo específica
-    for src in [health, extra]:
+    for src in (health, extra):
         if src is None: continue
-        if _validate_and_assign(ctx, src, "score", (int, 0, 100)):
-            found_data = True
-        
         g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
         if isinstance(g_val, (str, int, float)):
             g_str = str(g_val)[:10].strip()
@@ -293,10 +275,7 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 def context_as_text(context: SystemContext) -> str:
-    """
-    Serializa el estado del sistema en un formato de texto plano y seguro.
-    Este texto es el ÚNICO contenido enviado al motor remoto cuando está activo.
-    """
+    """Serializa el estado del sistema en un formato de texto plano y seguro."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
@@ -426,10 +405,7 @@ def _sanitize_query(question: str) -> str:
     return clean.strip()[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """
-    Motor de lógica local: responde consultas basándose en reglas heurísticas
-    aplicadas sobre el contexto del sistema.
-    """
+    """Motor de lógica local: responde consultas basándose en reglas heurísticas."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
 
@@ -444,7 +420,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     tokens = set(_TOKEN_REGEX.findall(_sanitize_query(question)))
     map_keys = set(_KEYWORD_MAP.keys())
     
-    # O(1) búsqueda por intersección en lugar de iteración sobre dict
     match = tokens.intersection(map_keys)
     if match:
         target = match.pop()
@@ -472,10 +447,7 @@ def _call_gemini(
     api_key: str, 
     model: str
 ) -> Optional[str]:
-    """
-    Invoca la API de Gemini enviando un prompt construido bajo estrictas políticas
-    de anonimización y seguridad de datos.
-    """
+    """Invoca la API de Gemini enviando un prompt construido bajo estrictas políticas."""
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
@@ -486,9 +458,7 @@ def _call_gemini(
         prompt_full = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"
         if len(prompt_full) > _MAX_PROMPT_LIMIT: return None
         
-        payload_data = {"contents": [{"parts": [{"text": prompt_full}]}]}
-        payload = json.dumps(payload_data).encode("utf-8")
-        
+        payload = json.dumps({"contents": [{"parts": [{"text": prompt_full}]}]}).encode("utf-8")
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
             data=payload, 
@@ -509,16 +479,11 @@ def _call_gemini(
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
             
-            if not isinstance(data, dict) or "candidates" not in data or not isinstance(data["candidates"], list): 
-                return None
-            candidates = data["candidates"]
-            if not candidates: return None
-            
-            content = candidates[0].get("content", {})
-            if not isinstance(content, dict) or "parts" not in content or not isinstance(content["parts"], list): 
+            candidates = data.get("candidates", [])
+            if not candidates or not isinstance(candidates[0].get("content", {}).get("parts"), list):
                 return None
             
-            text = "".join(str(p.get("text", "")) for p in content["parts"] if isinstance(p, dict))
+            text = "".join(str(p.get("text", "")) for p in candidates[0]["content"]["parts"] if isinstance(p, dict))
             final_text = _validate_response_length(text.strip())
             
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", final_text))
@@ -548,8 +513,8 @@ def ask(question: str, context: Optional[SystemContext] = None,
         }
         
         texto_contexto = context_as_text(ctx) if cfg["asistente_enviar_metricas"] else "El usuario no autorizó enviar métricas."
-        
         remoto = _call_gemini(question, texto_contexto, cfg["asistente_api_key"], cfg["asistente_modelo"])
+        
         if not remoto:
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."
             return respaldo

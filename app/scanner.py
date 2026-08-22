@@ -169,17 +169,21 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Orquestador de reglas heurísticas sobre un archivo."""
+    """
+    Ejecuta todas las reglas heurísticas configuradas sobre un archivo individual.
+    
+    Retorna una lista de hallazgos (ScanResult) encontrados durante el análisis.
+    """
     if path is None:
         return []
     
     findings: ScanResult = []
     
-    # Chequeo genérico para todos los archivos
+    # Chequeo genérico para todos los archivos (nombres, ofuscación)
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    # Chequeo específico para ejecutables
+    # Chequeo específico para ejecutables (seguridad y comportamiento)
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECKS:
             try:
@@ -192,7 +196,11 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Inicia el escaneo recursivo desde un directorio base."""
+    """
+    Inicia un escaneo recursivo del sistema de archivos desde un directorio raíz.
+    
+    Valida la ruta inicial contra bloqueos de seguridad antes de comenzar.
+    """
     if not directory:
         return []
         

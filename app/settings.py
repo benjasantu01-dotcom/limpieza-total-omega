@@ -32,11 +32,13 @@ import os
 import time
 from enum import Enum
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional
+from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec
 
 from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
+T = TypeVar("T")
+P = ParamSpec("P")
 
 class ConfigKey(Enum):
     """Enumeración de claves permitidas en el diccionario de configuración."""
@@ -122,6 +124,15 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
     ConfigKey.TOP_PROCESOS: (1, 500),
 }
 
+def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
+    """Decorador para asegurar que los validadores manejen entradas inválidas (None/bool) antes de procesar."""
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
+        val = args[1] if len(args) > 1 else kwargs.get("val")
+        if val is None or isinstance(val, bool) and func.__name__ != "bool":
+            return None
+        return func(*args, **kwargs)
+    return wrapper
+
 class _Validators:
     """Motor de validación de datos de entrada para `config.json`."""
     
@@ -147,8 +158,8 @@ class _Validators:
         return None
 
     @staticmethod
+    @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        if val is None or isinstance(val, bool): return None
         try:
             parsed_value: int = int(val)
             min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
@@ -177,9 +188,9 @@ class _Validators:
         return text if len(text) <= 512 else None
 
     @staticmethod
+    @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        if not isinstance(val, str): return None
-        text = val.strip()
+        text = str(val).strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
         return _Validators._validate_enum_str(text, key)

@@ -84,22 +84,20 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida si el archivo es un ejecutable ejecutable basándose en su extensión y tipo."""
+        """Verifica si la extensión corresponde a un ejecutable y no es un symlink (seguridad)."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia la cadena de comando eliminando caracteres no imprimibles."""
+        """Elimina caracteres de control y espacios en blanco de la cadena de comando."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """
-        Analiza cadenas entre comillas y extrae la ruta interna tras verificar seguridad.
-        """
+        """Extrae rutas encerradas entre comillas validando que no contengan caracteres prohibidos."""
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -119,9 +117,7 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """
-        Normaliza y resuelve rutas físicas, utilizando caché de sistema de archivos.
-        """
+        """Normaliza, valida la existencia y resuelve la ruta real en disco, usando caché."""
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
             return ""
         
@@ -152,7 +148,7 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Selecciona la estrategia de extracción de ruta según el formato del comando."""
+        """Determina si el comando es una ruta simple o una cadena con argumentos/comillas."""
         if not cmd or not isinstance(cmd, str):
             return ""
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
