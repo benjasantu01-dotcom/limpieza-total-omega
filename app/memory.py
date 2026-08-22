@@ -330,6 +330,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError): return False, "El PID debe ser un número entero válido."
     if _is_system_process(target_pid) or target_pid == os.getpid():
         return False, "Operación denegada: PID fuera de rango o protegido."
+    
+    # Pre-chequeo básico de seguridad antes de abrir handle
+    if is_protected_path(str(target_pid)): return False, "Acceso restringido al sistema."
+
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: return False, "Acceso denegado al proceso."
     try:

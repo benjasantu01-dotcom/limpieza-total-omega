@@ -294,6 +294,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile): continue
         try:
             src_path: Path = junk_file.path.resolve()
+            
+            # Validación: Prevenir operaciones entre volúmenes distintos (cross-device)
+            if src_path.anchor != dest_base.anchor:
+                continue
+
             # Validaciones de seguridad pre-movimiento
             if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base):
                 continue

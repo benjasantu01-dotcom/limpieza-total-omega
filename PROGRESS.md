@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 31 | 2 | 4 | 1 | 28 |
+| 2026-08-20 | 31 | 2 | 4 | 1 | 24 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 44 | 2 | 4 | 3 | 35 |
+| 2026-08-22 | 47 | 2 | 5 | 3 | 35 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **44**
+- seguridad defensiva: **47**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
 
@@ -33,20 +33,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **22**
 - `assistant.py`: **20**
 - `diskreport.py`: **20**
+- `memory.py`: **20**
 - `settings.py`: **20**
-- `memory.py`: **19**
 - `healthscore.py`: **18**
 - `scanner.py`: **17**
+- `organizer.py`: **16**
 - `browser.py`: **16**
-- `organizer.py`: **15**
 - `main.py`: **14**
-- `quarantine.py`: **13**
+- `quarantine.py`: **14**
 - `safety.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T03:50:57` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo de rutas mediante `path.absolute()` y una validación de `st_dev` (ID de dispositivo) durante la restauración para asegurar que el archivo no sea movido fuera del volumen de destino y prevenir ataques de enlace simbólico o secuestro de rutas entre particiones.
+- `2026-08-22T03:50:25` **organizer.py** (seguridad defensiva): Se ha añadido una validación estricta de "cross-device move" en `stage_for_review` para prevenir el fallo de `shutil.move` al intentar mover archivos entre volúmenes distintos, lo cual es una operación propensa a errores que podría dejar el estado del sistema en una inconsistencia no controlada.
+- `2026-08-22T03:50:00` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `is_protected_path` en `trim_working_set` antes de abrir el proceso, asegurando que no se intente interactuar con ejecutables en rutas críticas incluso antes de realizar la validación mediante el handle del proceso.
 - `2026-08-22T03:41:31` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_environment` eliminando la validación genérica de `Path(".")` y delegándola a una verificación explícita mediante `ensure_safe_to_modify` sobre el directorio base real, evitando ambigüedades en la resolución de rutas de trabajo.
 - `2026-08-22T03:40:38` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva de la función `compute_score` implementando una técnica de "fail-safe" mediante la validación estricta de la estructura de `_SCORERS` y la consistencia de los datos, evitando el acceso inseguro a punteros de funciones potencialmente nulos o malformados tras una iteración de cálculo.
 - `2026-08-22T03:40:11` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `group_by_size` y `_collect_candidates` asegurando que los archivos sean validados con `is_safe_to_modify` antes de intentar realizar cualquier operación de lectura, mitigando el riesgo de procesar rutas inválidas o bloqueadas por políticas de seguridad del sistema.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T03:11:24` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio libre preventivo y la gestión de permisos denegados en `_get_sha256`, garantizando que el sistema no falle silenciosamente ni en condiciones de disco lleno ni al encontrar archivos bloqueados por permisos durante el cálculo de integridad.
 - `2026-08-22T03:10:33` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores `None` o corruptos en `_parse_csv_row` y `_yield_processes` para evitar excepciones imprevistas al procesar salidas de PowerShell que podrían estar truncadas o malformadas, reforzando la tolerancia a fallos ante entradas inesperadas.
 - `2026-08-22T03:00:02` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos límite añadiendo una validación explícita de `is_finite` en los valores de entrada y reforzando la integridad de los resultados, asegurando que ante cualquier dato corrupto o no finito la función retorne un estado de salud seguro y predecible en lugar de fallar o generar un score inválido.
-- `2026-08-22T02:59:46` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `suggest_keeper` ante fallos de acceso durante la recolección de metadatos, evitando que una excepción en `stat()` detenga la evaluación de todo el grupo y asegurando un comportamiento predecible ante rutas que desaparecen durante la ejecución.
-- `2026-08-22T02:59:23` **diskreport.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `walk_files` ante el acceso a directorios con permisos denegados o rutas de sistema que pueden disparar errores de acceso durante la iteración, envolviendo el `os.scandir` en un bloque `try-except` más robusto y asegurando que las comparaciones de `parents` manejen correctamente las excepciones de resolución de rutas.
-- `2026-08-22T02:49:53` **assistant.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes o corruptos durante la carga de métricas y la serialización, añadiendo validación de tipos estricta y protección contra valores nulos en `_validate_and_assign` y `context_as_text`.

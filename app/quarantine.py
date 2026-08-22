@@ -429,16 +429,26 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not quarantine_item.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida.")
     
-    destination = Path(quarantine_item.original_path).resolve()
+    destination = Path(quarantine_item.original_path).absolute()
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
         raise UnsafePathError("Restauración denegada: destino protegido por sistema.")
     if destination.exists():
         raise FileExistsError(f"Error: el destino {destination} ya existe.")
     
+    # Validar que el destino esté en el mismo dispositivo que el archivo original para evitar riesgos
+    try:
+        if destination.anchor != Path(destination.anchor).anchor:
+             raise UnsafePathError("La ruta de destino parece inválida.")
+    except Exception:
+        pass
+
     try:
         ensure_safe_to_modify(destination.parent, allow_sensitive=False)
         destination.parent.mkdir(parents=True, exist_ok=True)
+        # Verificación final de dispositivo físico (st_dev) para evitar saltos entre discos
+        if stored_file.stat().st_dev != destination.parent.stat().st_dev:
+            raise UnsafePathError("La restauración no puede cruzar volúmenes físicos.")
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo crítico durante la restauración: {e}")
