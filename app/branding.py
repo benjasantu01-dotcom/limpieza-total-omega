@@ -41,7 +41,7 @@ class PaletteDict(TypedDict):
     info: HexColor            # Indicador de estado informativo
     warning: HexColor         # Indicador de precaución
     danger: HexColor          # Indicador crítico de peligro
-    danger_hover: HexColor    # Variación interactiva de danger
+    danger_hover: HexColor      # Variación interactiva de danger
     text: HexColor            # Color principal para texto legible
     text_muted: HexColor      # Color para texto secundario o descriptivo
     text_dim: HexColor        # Color para texto de baja prioridad
@@ -387,13 +387,13 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Renderiza el escudo corporativo en un widget Canvas de Tkinter.
+    Renderiza el escudo corporativo en un widget Canvas.
     
     Args:
-        canvas: Widget Tkinter donde dibujar.
+        canvas: Widget donde dibujar.
         size: Tamaño base del logo en píxeles.
-        canvas_x: Coordenada X de origen en el canvas.
-        canvas_y: Coordenada Y de origen en el canvas.
+        canvas_x: Offset horizontal en píxeles.
+        canvas_y: Offset vertical en píxeles.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -420,15 +420,15 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
-    Dibuja una línea decorativa horizontal con degradado en un Canvas.
+    Dibuja una línea horizontal decorativa con gradiente.
 
     Args:
         canvas: Widget donde dibujar.
-        width: Ancho total de la línea.
-        height: Grosor de la línea.
-        canvas_x: Desplazamiento horizontal.
-        canvas_y: Desplazamiento vertical.
-        stops: Tupla de colores para el gradiente.
+        width: Longitud horizontal.
+        height: Grosor vertical.
+        canvas_x: Offset horizontal inicial.
+        canvas_y: Offset vertical inicial.
+        stops: Colores para la interpolación.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:

@@ -1128,3 +1128,24 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T05:53:15` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `save()` capturando posibles errores de serialización (`TypeError`) durante `json.dumps` y agregué una validación explícita para asegurar que la estructura de la configuración esté completa antes de persistirla, evitando inconsistencias por estados parciales.
 - `2026-08-22T05:53:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T05:53:16` Corrida terminada. Total usado hoy: 140.
+- `2026-08-22T06:02:07` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-08-22T06:02:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-22T06:03:09` Tests FALLARON:
+```
+slar hallazgos'. Nada se borra sin confirmar.".lower
+E        +      where "Hay 3 archivos marcados. Si no reconocés alguno, usá 'Aislar hallazgos'. Nada se borra sin confirmar." = Answer(text="Hay 3 archivos marcados. Si no reconocés alguno, usá 'Aislar hallazgos'. Nada se borra sin confirmar.", source='local', notice='Respondido por el motor local, sin conexión ni envío de datos.', suggestions=[]).text
+
+evolve/tests/test_assistant.py:334: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - assert 'señales' in "hay 3 archivos marcados. si no reconocés alguno, usá 'aislar hallazgos'. nada se borra sin confirmar."
+ +  where "hay 3 archivos marcados. si no reconocés alguno, usá 'aislar hallazgos'. nada se borra sin confirmar." = <built-in method lower of str object at 0x7ff4c4099f70>()
+ +    where <built-in method lower of str object at 0x7ff4c4099f70> = "Hay 3 archivos marcados. Si no reconocés alguno, usá 'Aislar hallazgos'. Nada se borra sin confirmar.".lower
+ +      where "Hay 3 archivos marcados. Si no reconocés alguno, usá 'Aislar hallazgos'. Nada se borra sin confirmar." = Answer(text="Hay 3 archivos marcados. Si no reconocés alguno, usá 'Aislar hallazgos'. Nada se borra sin confirmar.", source='local', notice='Respondido por el motor local, sin conexión ni envío de datos.', suggestions=[]).text
+1 failed, 298 passed in 1.19s
+
+```
+- `2026-08-22T06:03:09` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `assistant.py` al reemplazar la lógica repetitiva en las funciones `handle_*` por una estructura de configuración declarativa que separa el formateo de los mensajes del cálculo de estado.
+- `2026-08-22T06:03:43` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los parámetros de `draw_logo` y `draw_gradient_bar`, y se refinó la documentación (docstrings) en las funciones gráficas para clarificar las responsabilidades de las coordenadas y el escalado, mejorando la mantenibilidad sin cambiar la lógica.
+- `2026-08-22T06:03:55` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad funcional mediante la adición de Type Hints más precisos y la conversión de funciones internas de soporte en métodos privados con docstrings explícitos sobre su intención y restricciones, facilitando la auditoría de seguridad del código.
+- `2026-08-22T06:03:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T06:03:55` Corrida terminada. Total usado hoy: 144.

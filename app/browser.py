@@ -114,8 +114,7 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path]) -> bool:
     """
     Valida que 'target_path' sea un subdirectorio real de 'base_path'.
-    Previene ataques de path traversal, symlinks o junctions fuera de la jerarquía permitida
-    mediante resolución absoluta y verificación de componentes.
+    Previene ataques de path traversal mediante resolución absoluta y verificación.
     """
     if not isinstance(target_path, Path) or not isinstance(base_path, Path):
         return False
@@ -130,11 +129,13 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
+        # Validar jerarquía de componentes
         if len(real_target.parts) < len(real_base.parts):
             return False
         if real_target.parts[:len(real_base.parts)] != real_base.parts:
             return False
 
+        # Evitar el seguimiento de symlinks o junctions fuera del árbol seguro
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
@@ -145,17 +146,16 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
 
 
 def _is_excluded_file(name: Optional[str]) -> bool:
-    """Valida si el nombre de archivo es uno de los componentes críticos definidos en NEVER_TOUCH."""
+    """Verifica si el nombre de archivo es uno de los componentes críticos definidos en NEVER_TOUCH."""
     if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
 
 
-def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) -> bool:
+def _is_system_hidden(entry_path: str | None, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Verifica mediante la API de Windows si un archivo posee atributos de sistema o oculto.
-    Utiliza kernel32.dll para leer metadatos de archivos de forma eficiente.
-    Retorna True si el archivo es un sistema/oculto según atributos de Win32.
+    Verifica mediante API de Windows (Win32) si un archivo tiene atributos de sistema u oculto.
+    Se utiliza como filtro defensivo para evitar procesar archivos críticos del SO.
     """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
@@ -165,15 +165,16 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False
+        # 0x02 = FILE_ATTRIBUTE_HIDDEN, 0x04 = FILE_ATTRIBUTE_SYSTEM
         return bool(attrs & 0x04 or attrs & 0x02)
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False
 
 
-def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_junction_fn: Callable[[str], bool]) -> bool:
+def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: Callable[[str], bool]) -> bool:
     """
-    Determina si una entrada del sistema de archivos debe ser ignorada por el escáner.
-    Aplica filtros de seguridad: NEVER_TOUCH, is_safe_to_modify, y atributos del sistema.
+    Filtro de seguridad para determinar si un archivo/directorio debe ignorarse.
+    Aplica exclusión de rutas críticas, validación `is_safe_to_modify` y atributos de sistema.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -198,7 +199,8 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Calcula el tamaño acumulado de un directorio de forma recursiva con manejo estricto de errores.
+    Calcula el tamaño acumulado de un directorio recursivamente.
+    Usa un diccionario 'memo' para evitar re-escaneo de subdirectorios ya calculados.
     """
     if not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -245,8 +247,8 @@ def _sum_directory_recursive(
 
 def directory_size(path: Union[str, os.PathLike, None]) -> int:
     """
-    Calcula el tamaño total en bytes de un directorio, aplicando validaciones 
-    de seguridad (`is_safe_to_modify`) antes de recorrer.
+    Interfaz pública para calcular el tamaño total en bytes de un directorio,
+    asegurando que la ruta sea válida y no protegida.
     """
     if not isinstance(path, (str, Path)):
         return 0
@@ -266,8 +268,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
 
 def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
     """
-    Valida si un candidato es una ruta de caché existente, segura y contenida 
-    dentro de la base permitida.
+    Verificación final de integridad para una ruta candidata a ser caché de navegador.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False

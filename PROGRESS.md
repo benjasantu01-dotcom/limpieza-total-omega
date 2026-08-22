@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 28
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 223
 
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 6 | 1 | 2 | 1 | 4 |
+| 2026-08-20 | 4 | 1 | 1 | 1 | 3 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 58 | 2 | 6 | 4 | 70 |
+| 2026-08-22 | 60 | 3 | 6 | 4 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **49**
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **49**
 - robustez ante casos límite: **37**
-- rendimiento: **34**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
 - `duplicates.py`: **20**
 - `settings.py`: **19**
-- `healthscore.py`: **18**
+- `memory.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
-- `browser.py`: **16**
+- `browser.py`: **17**
+- `healthscore.py`: **17**
 - `scanner.py`: **15**
 - `main.py`: **14**
 - `organizer.py`: **14**
 - `quarantine.py`: **13**
+- `branding.py`: **12**
 - `safety.py`: **12**
-- `branding.py`: **11**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T06:03:55` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad funcional mediante la adición de Type Hints más precisos y la conversión de funciones internas de soporte en métodos privados con docstrings explícitos sobre su intención y restricciones, facilitando la auditoría de seguridad del código.
+- `2026-08-22T06:03:43` **branding.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros de `draw_logo` y `draw_gradient_bar`, y se refinó la documentación (docstrings) en las funciones gráficas para clarificar las responsabilidades de las coordenadas y el escalado, mejorando la mantenibilidad sin cambiar la lógica.
 - `2026-08-22T05:52:42` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` y `_check_file_integrity` mediante la captura explícita de `PermissionError` y el manejo de descriptores de archivos, asegurando que los fallos de acceso no se propaguen como errores genéricos y validando correctamente el estado de los archivos sin dejar handles abiertos.
 - `2026-08-22T05:44:02` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `restore_item` y `quarantine_file` sustituyendo excepciones genéricas por chequeos explícitos y mensajes de error específicos, garantizando que la integridad del sistema sea validada antes de intentar cualquier operación de archivo.
 - `2026-08-22T05:43:21` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` validando la existencia del proceso mediante una llamada a `OpenProcess` con permisos mínimos antes de realizar operaciones de gestión, y centraliza el manejo de errores del handle con un bloque `finally` garantizando que no queden recursos abiertos ante excepciones inesperadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T04:01:02` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` sobre el directorio padre (`parent`) antes de intentar cualquier operación de escritura, asegurando que ni siquiera se creen carpetas en ubicaciones restringidas del sistema.
 - `2026-08-22T03:50:57` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo de rutas mediante `path.absolute()` y una validación de `st_dev` (ID de dispositivo) durante la restauración para asegurar que el archivo no sea movido fuera del volumen de destino y prevenir ataques de enlace simbólico o secuestro de rutas entre particiones.
 - `2026-08-22T03:50:25` **organizer.py** (seguridad defensiva): Se ha añadido una validación estricta de "cross-device move" en `stage_for_review` para prevenir el fallo de `shutil.move` al intentar mover archivos entre volúmenes distintos, lo cual es una operación propensa a errores que podría dejar el estado del sistema en una inconsistencia no controlada.
-- `2026-08-22T03:50:00` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `is_protected_path` en `trim_working_set` antes de abrir el proceso, asegurando que no se intente interactuar con ejecutables en rutas críticas incluso antes de realizar la validación mediante el handle del proceso.
-- `2026-08-22T03:41:31` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_environment` eliminando la validación genérica de `Path(".")` y delegándola a una verificación explícita mediante `ensure_safe_to_modify` sobre el directorio base real, evitando ambigüedades en la resolución de rutas de trabajo.
