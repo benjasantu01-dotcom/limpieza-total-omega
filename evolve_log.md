@@ -807,3 +807,10 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-22T02:19:12` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la función `_collect_candidates` para evitar llamadas redundantes a `is_safe_to_modify` y `is_protected_path` centralizando la validación durante la iteración inicial y eliminando la verificación repetida en la rama `elif`.
 - `2026-08-22T02:19:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T02:19:12` Corrida terminada. Total usado hoy: 56.
+- `2026-08-22T02:27:56` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-22T02:28:24` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-22T02:29:35` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el sistema de caché y las consultas de métricas de salud implementando `lru_cache` (estándar) para operaciones de solo lectura y reduciendo la redundancia en `_compile_metrics`, evitando así múltiples accesos a disco concurrentes durante el análisis de salud.
+- `2026-08-22T02:30:03` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de validación basada en una caché temporal, evitando el sobrecosto de generar procesos hijos y ejecutar scripts pesados cuando la información aún es reciente.
+- `2026-08-22T02:30:12` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-22T02:30:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T02:30:13` Corrida terminada. Total usado hoy: 60.

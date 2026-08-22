@@ -48,6 +48,7 @@ import os
 import time
 import tkinter as tk
 import threading
+from functools import lru_cache
 from collections import OrderedDict
 from tkinter import filedialog, messagebox
 from pathlib import Path
@@ -1031,12 +1032,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         junk = self._get_cached("junk") or []
         dups = self._get_cached("dups") or []
 
-        # Caché de instantánea de memoria para evitar I/O redundante
+        # Uso de caché persistente para E/S costosa
         snapshot = self._get_cached("memory_snapshot", provider=memory_mod.read_snapshot) or memory_mod.Snapshot(0, 0, 0)
         
-        home = Path.home()
-        # Uso de caché con provider para asegurar que disk_info se calcule eficientemente
-        disk_info = self._get_cached(f"disk_info_{home}", provider=lambda: diskreport.drive_usage(home) if home.exists() else None)
+        @lru_cache(maxsize=2)
+        def _get_disk_info(home_path_str):
+            home = Path(home_path_str)
+            return diskreport.drive_usage(home) if home.exists() else None
+
+        disk_info = _get_disk_info(str(Path.home()))
         
         metrics = healthscore.SystemMetrics(
             junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),

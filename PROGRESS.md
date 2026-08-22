@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 27
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 224
@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 39 | 4 | 5 | 2 | 48 |
+| 2026-08-20 | 38 | 3 | 5 | 2 | 46 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 25 | 1 | 2 | 1 | 27 |
+| 2026-08-22 | 27 | 1 | 2 | 1 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **45**
-- rendimiento: **33**
-- robustez ante casos límite: **29**
+- rendimiento: **35**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `duplicates.py`: **20**
 - `assistant.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
 - `browser.py`: **16**
 - `organizer.py`: **15**
 - `branding.py`: **13**
-- `main.py`: **12**
+- `main.py`: **13**
 - `quarantine.py`: **12**
 - `safety.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T02:30:03` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de validación basada en una caché temporal, evitando el sobrecosto de generar procesos hijos y ejecutar scripts pesados cuando la información aún es reciente.
+- `2026-08-22T02:29:35` **main.py** (rendimiento): Optimicé el sistema de caché y las consultas de métricas de salud implementando `lru_cache` (estándar) para operaciones de solo lectura y reduciendo la redundancia en `_compile_metrics`, evitando así múltiples accesos a disco concurrentes durante el análisis de salud.
 - `2026-08-22T02:19:12` **duplicates.py** (rendimiento): Optimizé la función `_collect_candidates` para evitar llamadas redundantes a `is_safe_to_modify` y `is_protected_path` centralizando la validación durante la iteración inicial y eliminando la verificación repetida en la rama `elif`.
 - `2026-08-22T02:09:14` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` evitando iteraciones redundantes y validaciones innecesarias, consolidando el procesamiento de métricas en una única pasada sobre el diccionario de validadores y optimizando la asignación de atributos mediante una estructura más directa.
 - `2026-08-22T02:08:55` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `StartupEntry` añadiendo docstrings descriptivos a los métodos privados y clarificando las responsabilidades de cada etapa de resolución de rutas, facilitando el mantenimiento y la comprensión de la lógica de seguridad y caché.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T01:38:57` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `diskreport.py` mediante la refactorización de `_collect_summary_data` hacia un `NamedTuple` interno para evitar el acceso por índices (tipo `tuple[0]`, `tuple[1]`) que resultaba opaco y propenso a errores, además de clarificar los docstrings de los parámetros de `walk_files`.
 - `2026-08-22T01:38:46` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación interna mediante docstrings estructurados (usando el formato Google Style) en las funciones críticas de recorrido, clarificando la intención y los contratos de seguridad de cada parámetro.
 - `2026-08-22T01:38:09` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de la clase `PaletteDict` y `FontSizesDict` mediante la adición de docstrings detallados en sus atributos, facilitando la comprensión del rol específico de cada token de diseño para futuros desarrolladores.
-- `2026-08-22T01:37:36` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad del motor de reglas local y la mantenibilidad de la lógica de respuesta extrayendo la evaluación de criterios a un método más limpio, además de clarificar los docstrings para cumplir con los estándares de documentación del proyecto.
-- `2026-08-22T01:28:10` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` implementando una validación explícita de `cleaned_settings` contra el esquema `AppSettings` antes de escribir en disco, evitando que valores inesperados o malformados persistan por una falla en la validación lógica, y endurecí el manejo de errores de `json.dumps` mediante un bloque `try-except` específico.
