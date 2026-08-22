@@ -299,7 +299,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    current = load(custom_base)
+    current = load(custom_base).copy()
     modified = False
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)

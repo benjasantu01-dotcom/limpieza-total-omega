@@ -168,8 +168,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if path is None or is_protected_path(path):
         return None
     
-    path_str_lower = str(path).lower()
-    if not any(folder in path_str_lower for folder in WATCHED_FOLDERS):
+    # Optimizamos la verificación: si alguna parte de la ruta está en WATCHED_FOLDERS
+    if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         return None
         
     try:

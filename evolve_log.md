@@ -522,3 +522,70 @@ assert not True
 - `2026-08-22T11:34:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-08-22T11:34:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T11:34:58` Corrida terminada. Total usado hoy: 272.
+- `2026-08-22T11:43:42` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-22T11:44:11` Tests FALLARON:
+```
+pper object at 0x7feb6fb2be20> = safety.is_protected_path
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'app.tmp'
+  'malo.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7feb6f170860>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7feb6f170860> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - Failed: DID NOT RAISE UnsafePathError
+15 failed, 284 passed in 1.30s
+
+```
+- `2026-08-22T11:44:11` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha optimizado `is_protected_path` evitando la conversión repetitiva de componentes de la ruta a minúsculas dentro del bucle mediante la pre-normalización de `PROTECTED_DIR_NAMES` y el uso de un chequeo más directo, reduciendo el costo computacional en iteraciones frecuentes.
+- `2026-08-22T11:44:35` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optronicé la detección de carpetas de riesgo en `check_recent_executable_in_downloads` sustituyendo la búsqueda iterativa sobre `WATCHED_FOLDERS` por una verificación de conjunto (set) mediante `path.parts`, reduciendo la complejidad de O(N*M) a O(1) por cada acceso.
+- `2026-08-22T11:45:04` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetitivas de disco por una validación de `st_mtime` basada en `stat()` y eliminando la recarga innecesaria del archivo al llamar a `update()`.
+- `2026-08-22T11:45:16` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.22s
+
+```
+- `2026-08-22T11:45:16` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` añadiendo una comprobación temprana de existencia mediante `_EXISTS_CACHE` en `_resolve_path_from_command` para evitar el costo de computar `os.path.abspath` y `os.path.realpath` en rutas que ya se verificaron como inexistentes o protegidas.
+- `2026-08-22T11:45:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T11:45:16` Corrida terminada. Total usado hoy: 276.
