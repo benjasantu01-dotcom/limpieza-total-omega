@@ -155,32 +155,27 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 def _is_system_hidden(entry_path: str | None, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
     Verifica mediante API de Windows (Win32) si un archivo tiene atributos de sistema, oculto o solo lectura.
-    Se utiliza como filtro defensivo para evitar procesar archivos críticos del SO.
     """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        if not os.path.exists(entry_path):
-            return False
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
-            return False
+            return True # Considerar inaccesible como riesgo
         # 0x02 = HIDDEN, 0x04 = SYSTEM, 0x01 = READONLY
         return bool(attrs & 0x01 or attrs & 0x04 or attrs & 0x02)
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
-        return False
+        return True
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: Callable[[str], bool]) -> bool:
     """
     Filtro de seguridad para determinar si un archivo/directorio debe ignorarse.
-    Aplica exclusión de rutas críticas, validación `is_safe_to_modify` y atributos de sistema.
     """
     if _is_excluded_file(entry.name):
         return True
     
     try:
-        # Nota: evitamos is_safe_to_modify aquí porque la recursión ya valida el padre
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):

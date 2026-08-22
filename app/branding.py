@@ -391,17 +391,11 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
         )
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Renderiza el escudo corporativo en un widget Canvas.
-    
-    Args:
-        canvas: Widget donde dibujar.
-        size: Tamaño base del logo en píxeles.
-        canvas_x: Offset horizontal en píxeles.
-        canvas_y: Offset vertical en píxeles.
-    """
-    if canvas is None or not hasattr(canvas, "create_polygon"): return
+    """Renderiza el escudo corporativo en un widget Canvas con validación de seguridad de datos."""
+    if not hasattr(canvas, "create_polygon"): return
     try:
+        if not all(isinstance(v, (int, float)) for v in [size, canvas_x, canvas_y]):
+            return
         scale: float = max(0.1, min(10.0, float(size) / 128))
         base_coords: List[float] = _get_shield_coords(scale)
         contorno: List[float] = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
@@ -424,17 +418,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Dibuja una línea horizontal decorativa con gradiente.
-
-    Args:
-        canvas: Widget donde dibujar.
-        width: Longitud horizontal.
-        height: Grosor vertical.
-        canvas_x: Offset horizontal inicial.
-        canvas_y: Offset vertical inicial.
-        stops: Colores para la interpolación.
-    """
+    """Dibuja una línea horizontal decorativa con gradiente."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho: int = max(1, int(width))
@@ -447,25 +431,13 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Dibuja un indicador circular de progreso para métricas.
-
-    Args:
-        canvas: Widget Tkinter donde dibujar.
-        percent: Valor actual entre 0 y 100.
-        size: Diámetro del anillo.
-        canvas_x, canvas_y: Posición en el canvas.
-        thickness: Grosor de la línea del anillo.
-        track: Color del fondo del anillo (opcional).
-        fill: Color del progreso (opcional).
-    """
-    if canvas is None or not hasattr(canvas, "create_arc"): return
+    """Dibuja un indicador circular de progreso para métricas con validación de parámetros."""
+    if not hasattr(canvas, "create_arc"): return
     try:
-        if percent is None: return
-        valor: float = float(percent)
+        if percent is None or not isinstance(percent, (int, float)): return
+        valor: float = max(0.0, min(100.0, float(percent)))
         diametro: int = max(20, int(size))
         grosor: int = max(2, min(int(thickness), diametro // 2 - 1))
-        valor = max(0.0, min(100.0, valor))
         color_fondo: HexColor = track or PALETTE["surface_alt"]
         color_avance: HexColor = fill or score_color(valor)
         borde: float = grosor / 2
@@ -477,5 +449,5 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
         if valor > 0:
             canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),
                               style="arc", outline=color_avance, width=grosor)
-    except (TypeError, ValueError, ZeroDivisionError): 
+    except (TypeError, ValueError, ZeroDivisionError, AttributeError): 
         return

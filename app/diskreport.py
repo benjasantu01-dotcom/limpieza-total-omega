@@ -159,7 +159,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     Consulta el estado de almacenamiento de una unidad específica.
     Retorna None si la ruta es inaccesible, UNC o inválida.
     """
-    if mount is None:
+    if mount is None or not isinstance(mount, (str, os.PathLike)):
         return None
         
     try:
@@ -173,7 +173,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
             
         usage = shutil.disk_usage(p)
         return DriveUsage(mount=str_mount, total=usage.total, used=usage.used, free=usage.free)
-    except (OSError, PermissionError, ValueError, RuntimeError, FileNotFoundError, TypeError):
+    except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
         return None
 
 

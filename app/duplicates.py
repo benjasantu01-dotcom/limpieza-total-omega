@@ -94,7 +94,6 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         try:
             target = Path(p).resolve()
-            # Solo procesar si el archivo es accesible y pasa los filtros de seguridad
             if target.is_file() and not is_protected_path(target) and is_safe_to_modify(target):
                 st = target.stat()
                 if st.st_size > 0:
@@ -120,7 +119,6 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Validar seguridad básica antes de entrar a cualquier subdirectorio
                         entry_path = Path(entry.path).resolve()
                         if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
                             continue
@@ -133,7 +131,6 @@ def _collect_candidates(
                                 _scan(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             entry_stat = entry.stat(follow_symlinks=False)
-                            # Ignorar puntos de reparse/links simbólicos (0x400 es FILE_ATTRIBUTE_REPARSE_POINT)
                             if getattr(entry_stat, 'st_file_attributes', 0) & 0x400: continue
                                 
                             if entry_stat.st_size >= min_size:
@@ -141,7 +138,7 @@ def _collect_candidates(
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
-    if directories:
+    if directories is not None:
         for item in directories:
             if item:
                 try:
@@ -187,7 +184,7 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma total de espacio recuperable (bytes) de una lista de grupos."""
-    return sum(g.wasted_bytes for g in groups) if groups else 0
+    return sum(g.wasted_bytes for g in groups) if groups is not None else 0
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
@@ -196,6 +193,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         return None
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if not isinstance(p, Path): continue
         try:
             if not p.is_file() or not is_safe_to_modify(p): continue
             stat_info = p.stat()
