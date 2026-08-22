@@ -113,31 +113,32 @@ def _collect_candidates(
     Recorre recursivamente directorios buscando archivos duplicados potenciales.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
-    visited_inodes: set[Tuple[int, int]] = set()
-    processed_paths: set[Path] = set()
+    visited_device_inodes: set[Tuple[int, int]] = set()
+    processed_entry_paths: set[Path] = set()
 
-    def _scan(root_path: Path) -> None:
+    def _scan(current_dir: Path) -> None:
         try:
-            with os.scandir(root_path) as it:
+            with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        p_entry = Path(entry.path)
-                        if p_entry in processed_paths: continue
-                        processed_paths.add(p_entry)
+                        entry_path = Path(entry.path)
+                        if entry_path in processed_entry_paths: continue
+                        processed_entry_paths.add(entry_path)
 
-                        if skip_protected and (is_protected_path(p_entry) or not is_safe_to_modify(p_entry)):
+                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
                             continue
                         
-                        st = entry.stat(follow_symlinks=False)
-                        if getattr(st, 'st_file_attributes', 0) & 0x400: continue
+                        entry_stat = entry.stat(follow_symlinks=False)
+                        # Ignorar atributos de sistema (0x400 es FILE_ATTRIBUTE_REPARSE_POINT)
+                        if getattr(entry_stat, 'st_file_attributes', 0) & 0x400: continue
                                 
                         if entry.is_dir(follow_symlinks=False):
-                            inode = (st.st_dev, st.st_ino)
-                            if inode not in visited_inodes:
-                                visited_inodes.add(inode)
-                                _scan(p_entry)
-                        elif entry.is_file() and st.st_size >= min_size:
-                            temp_groups[int(st.st_size)].append(p_entry)
+                            device_inode = (entry_stat.st_dev, entry_stat.st_ino)
+                            if device_inode not in visited_device_inodes:
+                                visited_device_inodes.add(device_inode)
+                                _scan(entry_path)
+                        elif entry.is_file() and entry_stat.st_size >= min_size:
+                            temp_groups[int(entry_stat.st_size)].append(entry_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -145,9 +146,9 @@ def _collect_candidates(
         for item in directories:
             if item:
                 try:
-                    p_item = Path(item).resolve()
-                    if p_item.is_dir() and not is_protected_path(p_item) and is_safe_to_modify(p_item):
-                        _scan(p_item)
+                    root_path = Path(item).resolve()
+                    if root_path.is_dir() and not is_protected_path(root_path) and is_safe_to_modify(root_path):
+                        _scan(root_path)
                 except (OSError, RuntimeError): continue
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
@@ -165,10 +166,10 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Refina grupos de tamaño mediante hash parcial y luego hash completo (SHA256)."""
     if not paths or size <= 0: return []
     confirmed_groups: List[DuplicateGroup] = []
-    partial_results = _refine_by_hash(paths, partial_hash)
+    partial_results: Dict[str, List[Path]] = _refine_by_hash(paths, partial_hash)
     for partial_candidates in partial_results.values():
         if len(partial_candidates) < 2: continue
-        full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
+        full_hash_groups: Dict[str, List[Path]] = _refine_by_hash(partial_candidates, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
             if len(confirmed_paths) > 1:
                 confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))

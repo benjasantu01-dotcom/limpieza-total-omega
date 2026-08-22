@@ -204,7 +204,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que recorre recursivamente el sistema de archivos buscando archivos.
+    Generador iterativo que recorre directorios recursivamente para listar archivos.
+    
+    Implementa un mecanismo de prevención de bucles infinitos mediante `visited_inodes` 
+    (basado en números de dispositivo e inodo) y saltea rutas protegidas consultando 
+    `safety.is_protected_path`. Omite enlaces simbólicos y puntos de unión para 
+    evitar el escape del directorio raíz definido.
     """
     if not directory:
         return
@@ -260,7 +265,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Identifica los N archivos más grandes en un directorio."""
+    """Identifica los N archivos más grandes en un directorio usando un heap para eficiencia."""
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -332,6 +337,10 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Recolección unificada de datos para resumen (optimiza la lectura de disco).
+    
+    Utiliza una única pasada de `walk_files` y un `heapq` para mantener solo los 
+    8 archivos más grandes encontrados hasta el momento, reduciendo drásticamente 
+    el consumo de memoria en directorios con millones de archivos.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)

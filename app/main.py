@@ -1095,37 +1095,42 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
             try:
                 self._draw_gauge(resultado.score, resultado.grade)
-
-                valores = {
-                    "basura": f"{junk_mb:.0f} MB",
-                    "sospechosos": str(sospechosos),
-                    "ram": f"{ram_libre:.0f}%",
-                    "disco": f"{disco_libre:.0f}%",
-                }
-                colores = {
-                    "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
-                    "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
-                    "ram": branding.score_color(ram_libre * 3),
-                    "disco": branding.score_color(disco_libre * 5),
-                }
-                
-                for clave, label in self.cards.items():
-                    if label.winfo_exists():
-                        label.configure(text=valores[clave], text_color=colores[clave])
-
-                for clave, (barra, label) in self.area_bars.items():
-                    if barra.winfo_exists():
-                        puntos = resultado.breakdown.get(clave, 0)
-                        maximo = healthscore.WEIGHTS.get(clave, 1)
-                        proporcion = puntos / maximo if maximo else 0
-                        c = branding.score_color(proporcion * 100)
-                        barra.configure(progress_color=c)
-                        barra.set(proporcion)
-                        label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
+                self._update_cards(junk_mb, sospechosos, ram_libre, disco_libre)
+                self._update_health_bars(resultado)
             except (tk.TclError, Exception):
                 pass
 
         self._safe_run_ui_callback(actualizar)
+
+    def _update_cards(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
+        """Actualiza las etiquetas de las tarjetas de métricas."""
+        valores = {
+            "basura": f"{junk_mb:.0f} MB",
+            "sospechosos": str(sospechosos),
+            "ram": f"{ram_libre:.0f}%",
+            "disco": f"{disco_libre:.0f}%",
+        }
+        colores = {
+            "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
+            "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
+            "ram": branding.score_color(ram_libre * 3),
+            "disco": branding.score_color(disco_libre * 5),
+        }
+        for clave, label in self.cards.items():
+            if label.winfo_exists():
+                label.configure(text=valores[clave], text_color=colores[clave])
+
+    def _update_health_bars(self, resultado: healthscore.ScoreResult) -> None:
+        """Actualiza las barras de progreso del desglose de salud."""
+        for clave, (barra, label) in self.area_bars.items():
+            if barra.winfo_exists():
+                puntos = resultado.breakdown.get(clave, 0)
+                maximo = healthscore.WEIGHTS.get(clave, 1)
+                proporcion = puntos / maximo if maximo else 0
+                c = branding.score_color(proporcion * 100)
+                barra.configure(progress_color=c)
+                barra.set(proporcion)
+                label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
 
     def on_target_choice_changed(self, choice: str) -> None:
         """Maneja el selector de destinos del escaneo."""
