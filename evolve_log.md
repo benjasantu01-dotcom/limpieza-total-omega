@@ -945,3 +945,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T14:39:23` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus funciones auxiliares implementando validaciones estrictas de tipo y estado para prevenir errores de ejecución por entradas nulas o malformadas, además de asegurar que `OpenProcess` siempre gestione correctamente el cierre del handle incluso ante excepciones inesperadas.
 - `2026-08-22T14:39:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T14:39:23` Corrida terminada. Total usado hoy: 344.
+- `2026-08-22T14:47:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-22T14:47:47` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas y capturando excepciones de sistema de archivos durante la iteración para garantizar que un error en un archivo individual no detenga el proceso completo.
+- `2026-08-22T14:48:18` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `purge_all` y `restore_item` al reemplazar el manejo implícito de errores por chequeos explícitos, asegurando que si el manifiesto está corrupto o desincronizado, la operación falle de forma segura sin intentar borrar o mover archivos huérfanos.
+- `2026-08-22T14:49:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-22T14:49:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-22T14:50:05` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-22T14:50:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T14:50:05` Corrida terminada. Total usado hoy: 348.

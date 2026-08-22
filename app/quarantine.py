@@ -437,10 +437,11 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     stored_file = (base_path / quarantine_item.stored_name).resolve()
     
     if not stored_file.exists():
-        raise FileNotFoundError("Archivo en cuarentena no localizado en disco.")
+        # Fallo de integridad: registro sin archivo físico
+        raise FileNotFoundError(f"Archivo en cuarentena {quarantine_item.stored_name} no hallado.")
         
     if not quarantine_item.verify_integrity(stored_file):
-        raise RuntimeError("Integridad comprometida: el hash no coincide.")
+        raise RuntimeError("Integridad comprometida: el hash no coincide con el registro.")
     
     destination = Path(quarantine_item.original_path).absolute()
     _check_path_syntax_integrity(destination)
@@ -506,17 +507,18 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     item_map = {item.stored_name: item for item in items}
-    purged_ids = set()
+    purged_ids = []
     
     for file_path in quarantine_root.iterdir():
         if file_path.name in item_map:
             item = item_map[file_path.name]
             if _is_item_purgable(file_path, item, quarantine_root):
                 if _safe_unlink(file_path):
-                    purged_ids.add(item.item_id)
+                    purged_ids.append(item.item_id)
             
     if purged_ids:
-        remaining_items = [i for i in items if i.item_id not in purged_ids]
+        purged_set = set(purged_ids)
+        remaining_items = [i for i in items if i.item_id not in purged_set]
         save_manifest(remaining_items, base)
         
     return len(purged_ids)

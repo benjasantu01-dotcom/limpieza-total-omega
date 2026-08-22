@@ -232,9 +232,12 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             pass
 
     for d in search_dirs:
-        base = d.expanduser().resolve()
-        if base.is_dir():
-            _traverse(base)
+        try:
+            base = Path(d).expanduser().resolve()
+            if base.is_dir():
+                _traverse(base)
+        except (OSError, RuntimeError):
+            continue
     return found
 
 
@@ -293,6 +296,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             ensure_safe_to_modify(src_path)
             shutil.move(str(src_path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
+            logger.warning(f"No se pudo mover el archivo: {junk_file.path}")
             continue
     return dest_base
 
@@ -312,16 +316,19 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     count: int = 0
-    for item in dest.iterdir():
-        try:
-            if not item.is_file() or _is_junction(item): continue
-            
-            # Validar que el archivo esté realmente dentro de la carpeta de revisión
-            if item.is_relative_to(dest) and is_safe_to_modify(item):
-                if not _is_file_locked(item):
-                    ensure_safe_to_modify(item)
-                    item.unlink()
-                    count += 1
-        except (PermissionError, OSError, ValueError):
-            continue
+    try:
+        for item in dest.iterdir():
+            try:
+                if not item.is_file() or _is_junction(item): continue
+                
+                # Validar que el archivo esté realmente dentro de la carpeta de revisión
+                if item.is_relative_to(dest) and is_safe_to_modify(item):
+                    if not _is_file_locked(item):
+                        ensure_safe_to_modify(item)
+                        item.unlink()
+                        count += 1
+            except (PermissionError, OSError, ValueError):
+                continue
+    except OSError:
+        pass
     return count
