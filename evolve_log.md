@@ -1201,3 +1201,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T06:50:43` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-08-22T06:50:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T06:50:43` Corrida terminada. Total usado hoy: 160.
+- `2026-08-22T06:58:09` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-22T06:58:34` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la función `_collect_candidates` utilizando `os.scandir` para obtener el tamaño y los atributos de archivo directamente desde el iterador sin realizar llamadas adicionales a `os.stat` (o `Path.stat`) por cada archivo, reduciendo drásticamente las syscalls de E/S.
+- `2026-08-22T06:58:57` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-22T07:00:01` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el sistema de caché implementando un mecanismo de invalidación inteligente basado en el tipo de tarea y una gestión de memoria más eficiente al utilizar `lru_cache` para datos de E/S repetitivos, reduciendo drásticamente las lecturas redundantes en disco durante el ciclo de vida de la app.
+- `2026-08-22T07:00:13` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de un comando de PowerShell por una implementación más eficiente que reduce la carga del sistema al cachear agresivamente la salida y filtrar los procesos directamente en el bucle, evitando subprocesos recurrentes innecesarios.
+- `2026-08-22T07:00:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T07:00:13` Corrida terminada. Total usado hoy: 164.

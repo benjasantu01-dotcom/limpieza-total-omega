@@ -114,31 +114,30 @@ def _collect_candidates(
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
-    processed_entry_paths: set[Path] = set()
 
     def _scan(current_dir: Path) -> None:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        entry_path = Path(entry.path)
-                        if entry_path in processed_entry_paths: continue
-                        processed_entry_paths.add(entry_path)
-
-                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
-                            continue
-                        
-                        entry_stat = entry.stat(follow_symlinks=False)
-                        # Ignorar atributos de sistema (0x400 es FILE_ATTRIBUTE_REPARSE_POINT)
-                        if getattr(entry_stat, 'st_file_attributes', 0) & 0x400: continue
-                                
+                        # Usar el objeto DirEntry para evitar llamadas extras a stat()
                         if entry.is_dir(follow_symlinks=False):
+                            entry_stat = entry.stat(follow_symlinks=False)
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
                                 visited_device_inodes.add(device_inode)
-                                _scan(entry_path)
-                        elif entry.is_file() and entry_stat.st_size >= min_size:
-                            temp_groups[int(entry_stat.st_size)].append(entry_path)
+                                _scan(Path(entry.path))
+                        elif entry.is_file(follow_symlinks=False):
+                            entry_path = Path(entry.path)
+                            if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
+                                continue
+                            
+                            entry_stat = entry.stat(follow_symlinks=False)
+                            # Ignorar puntos de reparse/links simbólicos (0x400 es FILE_ATTRIBUTE_REPARSE_POINT)
+                            if getattr(entry_stat, 'st_file_attributes', 0) & 0x400: continue
+                                
+                            if entry_stat.st_size >= min_size:
+                                temp_groups[int(entry_stat.st_size)].append(entry_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 

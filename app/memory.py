@@ -236,12 +236,12 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     global _last_proc_fetch, _cached_proc_output
     if os.name != "nt": return []
     
-    # Solo refrescamos el comando externo si pasaron 30 segundos
+    # Refresh cache cada 30 segundos; operación de E/S costosa minimizada
     if (time.time() - _last_proc_fetch) > 30:
-        cmd = 'Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 Name,Id,WorkingSet | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
+        cmd = 'Get-Process | Select-Object -Property Name,Id,WorkingSet | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
         try:
             proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
-            if proc.returncode == 0 and isinstance(proc.stdout, str) and proc.stdout.strip():
+            if proc.returncode == 0:
                 _cached_proc_output = proc.stdout
                 _last_proc_fetch = time.time()
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired):
