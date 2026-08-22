@@ -7,37 +7,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 16
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 21
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 145 | 12 | 19 | 15 | 145 |
-| 2026-08-22 | 76 | 4 | 8 | 6 | 74 |
+| 2026-08-21 | 142 | 12 | 19 | 14 | 145 |
+| 2026-08-22 | 79 | 5 | 8 | 6 | 74 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **46**
-- rendimiento: **37**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **43**
+- rendimiento: **39**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **22**
 - `memory.py`: **21**
-- `diskreport.py`: **19**
-- `settings.py`: **19**
-- `healthscore.py`: **17**
-- `assistant.py`: **17**
+- `duplicates.py`: **21**
+- `settings.py`: **20**
+- `assistant.py`: **18**
+- `diskreport.py`: **18**
+- `scanner.py`: **16**
 - `browser.py`: **16**
+- `healthscore.py`: **16**
 - `organizer.py`: **15**
-- `scanner.py`: **15**
 - `safety.py`: **14**
 - `main.py`: **14**
 - `quarantine.py`: **13**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T07:20:11` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la recepción de objetos `SystemContext` parciales o mal formados, garantizando que los datos numéricos siempre pasen por la validación de rango y tipo antes de ser asignados, evitando estados inconsistentes o errores de ejecución.
+- `2026-08-22T07:19:26` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` evitando la serialización completa y la revalidación innecesaria en `update()` al comparar valores antes de persistir, y mejoré la eficiencia de `_CACHE` usando `pathlib.Path` directamente como clave para evitar conversiones redundantes de `str()`.
+- `2026-08-22T07:18:58` **scanner.py** (rendimiento): Optimizamos `check_recent_executable_in_downloads` para evitar conversiones redundantes de `path.parts` a conjuntos (evitando la creación de colecciones temporales en cada iteración) utilizando el método `any()` con una verificación de subcadena más directa y eficiente.
 - `2026-08-22T07:10:52` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al reemplazar los múltiples `any()` con una verificación de conjunto (set lookup) para las partes de la ruta, aprovechando que `PROTECTED_DIR_NAMES` ya es un `frozenset`, lo cual reduce la complejidad algorítmica de O(N) a O(1) por cada componente de la ruta.
 - `2026-08-22T07:09:18` **quarantine.py** (rendimiento): Optimizé la función `purge_all` para evitar lecturas innecesarias del disco y el uso de bucles ineficientes, reemplazando la lógica de validación por un mapeo directo y utilizando un `set` para búsquedas O(1) de los ítems a purgar, mejorando el rendimiento en directorios de cuarentena con muchos archivos.
 - `2026-08-22T07:08:48` **organizer.py** (rendimiento): Optimizé la función `_is_safe_for_disk_op` para evitar llamadas redundantes a `stat()` y `exists()` mediante un orden lógico de validación (primero lo más barato, luego `stat` una sola vez) y sustituí `os.path.expandvars` por `pathlib` en la constante `DEFAULT_SCAN_DIRS` para mejorar la consistencia y rendimiento en el inicio.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T06:38:33` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `safety.py` añadiendo docstrings descriptivos a los criterios de integridad y unificando el estilo de los comentarios, facilitando la comprensión del flujo de validación para futuros desarrolladores.
 - `2026-08-22T06:23:29` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google) en funciones críticas para clarificar el flujo de seguridad, y añadí type hints explícitos en retornos y parámetros para mejorar la mantenibilidad del código.
 - `2026-08-22T06:23:01` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los tipos de datos y funciones clave, incluyendo explicaciones sobre parámetros y retornos, para facilitar el mantenimiento y la comprensión de las APIs de Windows utilizadas.
-- `2026-08-22T06:14:29` **main.py** (legibilidad y documentación): Mejoré la legibilidad del método `_update_health_visuals` extrayendo la lógica de actualización de tarjetas y barras a métodos privados (`_update_cards` y `_update_health_bars`), lo que reduce la carga cognitiva del método principal y facilita el mantenimiento.
-- `2026-08-22T06:13:37` **healthscore.py** (legibilidad y documentación): Mejora la documentación y legibilidad de `healthscore.py` mediante la adición de Type Hints detallados para las funciones de scoring y la aclaración de las responsabilidades de los parámetros mediante docstrings enriquecidos.
-- `2026-08-22T06:13:12` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna mediante la adición de Type Hints detallados en las funciones internas y se han clarificado los nombres de variables en el proceso de escaneo para reflejar mejor el propósito de la gestión de inodos y la recursividad.

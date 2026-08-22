@@ -242,12 +242,13 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
         return False
     
     clean_val = _safe_float(val, -1.0)
-    if clean_val < 0:
+    if clean_val < 0 and key != "score": # El score puede ser None originalmente
         return False
     
     try:
-        clamped = max(float(min_v), min(clean_val, float(max_v)))
-        setattr(ctx, key, cast(clamped))
+        if clean_val >= 0:
+            clamped = max(float(min_v), min(clean_val, float(max_v)))
+            setattr(ctx, key, cast(clamped))
         return True
     except (OverflowError, ValueError, TypeError):
         return False
@@ -289,7 +290,7 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
-        score_val = _fmt_metric_sanitized(context.score)
+        score_val = _fmt_metric_sanitized(context.score) if context.score is not None else "N/A"
         grade_val = str(context.grade)[:5] if isinstance(context.grade, str) else ""
         lines = (
             f"Puntaje de salud: {score_val}{f' nota {grade_val}' if grade_val else ''}",

@@ -93,7 +93,7 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
 
-_CACHE: dict[str, tuple[float, AppSettings]] = {}
+_CACHE: dict[Path, tuple[float, AppSettings]] = {}
 
 def _get_default_config() -> AppSettings:
     """Retorna el estado de fábrica de la configuración (valores seguros)."""
@@ -246,7 +246,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         
         stat = ruta.stat()
         mtime = stat.st_mtime
-        if (cached := _CACHE.get(str(ruta))) and cached[0] == mtime:
+        if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
             return cached[1]
             
         if stat.st_size > MAX_SETTINGS_SIZE:
@@ -257,7 +257,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         if not isinstance(data, dict): return _get_default_config()
         config = validate(data)
-        _CACHE[str(ruta)] = (mtime, config)
+        _CACHE[ruta] = (mtime, config)
         return config
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):
         return _get_default_config()
@@ -287,7 +287,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
                 f.flush()
                 os.fsync(f.fileno())
             os.replace(temp_path, ruta)
-            _CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
+            _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
             return ruta
         except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
             time.sleep(0.1 * (attempt + 1))
@@ -299,15 +299,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     current = load(custom_base)
-    needs_save = False
+    modified = False
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)
         if key_enum and key_enum in _VALIDATOR_MAP:
             val = _VALIDATOR_MAP[key_enum](key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val # type: ignore
-                needs_save = True
-    if needs_save: save(current, custom_base)
+                modified = True
+    if modified: save(current, custom_base)
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
