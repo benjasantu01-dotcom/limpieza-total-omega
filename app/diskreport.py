@@ -205,15 +205,15 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente para listar archivos.
-    Optimizado para evitar resoluciones de ruta redundantes.
     """
     if not directory:
         return
 
     try:
-        base_path = Path(os.fspath(directory)).resolve(strict=False)
-        if not base_path.is_dir():
+        path_obj = Path(os.fspath(directory))
+        if not path_obj.is_dir():
             return
+        base_path = path_obj.resolve(strict=False)
         if skip_protected and is_protected_path(base_path):
             return
     except (OSError, RuntimeError, TypeError, ValueError):
@@ -244,9 +244,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             yield entry_path, entry.stat(follow_symlinks=False).st_size
-                    except (OSError, PermissionError, FileNotFoundError):
+                    except (PermissionError, FileNotFoundError):
                         continue
-        except (OSError, PermissionError, FileNotFoundError):
+        except (PermissionError, FileNotFoundError):
             continue
 
 
@@ -354,20 +354,22 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
 
     try:
-        p_input = Path(os.fspath(directory)).resolve(strict=False)
+        p_input = Path(os.fspath(directory))
         if not p_input.exists():
             return [f"Error: Ruta no existente: {p_input}"]
         if not p_input.is_dir():
             return [f"Error: Ruta no es un directorio: {p_input}"]
-        if skip_protected and is_protected_path(p_input):
+        
+        p_resolved = p_input.resolve(strict=False)
+        if skip_protected and is_protected_path(p_resolved):
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             
-        data = _collect_summary_data(p_input, skip_protected)
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError):
-        return ["Error: Acceso denegado o estructura de ruta inválida."]
+        data = _collect_summary_data(p_resolved, skip_protected)
+    except (OSError, PermissionError, RuntimeError, TypeError, ValueError) as e:
+        return [f"Error: No se pudo procesar la ruta: {str(e)}"]
 
     lines = [
-        f"Carpeta analizada: {p_input}", 
+        f"Carpeta analizada: {p_resolved}", 
         f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", 
         "", 
         "Por tipo de archivo:"

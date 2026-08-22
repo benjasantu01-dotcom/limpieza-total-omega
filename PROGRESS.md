@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 214
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 78 | 7 | 11 | 8 | 64 |
-| 2026-08-22 | 142 | 11 | 19 | 14 | 150 |
+| 2026-08-21 | 77 | 6 | 11 | 7 | 63 |
+| 2026-08-22 | 146 | 11 | 19 | 14 | 150 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **46**
 - rendimiento: **40**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
 - `settings.py`: **21**
+- `memory.py`: **21**
+- `assistant.py`: **20**
 - `duplicates.py`: **20**
 - `scanner.py`: **19**
-- `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `diskreport.py`: **16**
-- `browser.py`: **16**
+- `diskreport.py`: **17**
+- `browser.py`: **17**
+- `branding.py`: **14**
 - `quarantine.py`: **13**
-- `branding.py`: **13**
 - `main.py`: **12**
 - `organizer.py`: **12**
 - `safety.py`: **11**
@@ -46,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T14:29:01` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` reemplazando los bloques `try-except` genéricos que silenciaban errores silenciosamente por validaciones de estado más específicas, asegurando que los parámetros sean tratados de forma segura antes de ser procesados por las funciones de sistema.
+- `2026-08-22T14:28:30` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` añadiendo validaciones explícitas contra entradas `None` o vacías en los parámetros, y se mejoró el manejo de excepciones en `_is_system_hidden` para evitar falsos positivos cuando el acceso a los atributos del sistema está restringido.
+- `2026-08-22T14:28:06` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de dibujo y conversión de colores mediante validaciones de parámetros de entrada (`isinstance` y chequeo de tipos) y el manejo preventivo de excepciones, evitando que entradas inesperadas (como valores `None` o tipos incorrectos) causen errores en tiempo de ejecución.
+- `2026-08-22T14:27:32` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación exhaustiva de los tipos de los datos de entrada, evitando que valores inesperados (como listas o diccionarios malformados en lugar de números) provoquen comportamientos indefinidos al ser procesados por los validadores.
 - `2026-08-22T13:05:49` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `settings.py` implementando un chequeo de seguridad preventivo al cargar el archivo, verificando si el path existe como archivo real y no como un directorio mediante `is_file()` antes de intentar abrirlo, evitando excepciones innecesarias en sistemas con estructuras de archivos maliciosas o ambiguas.
 - `2026-08-22T12:58:06` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (diseñado para operaciones de escritura/modificación) por `is_protected_path`, evitando el error de lógica donde el escáner se bloqueaba a sí mismo al evaluar rutas que solo necesita leer.
 - `2026-08-22T12:48:13` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de path traversal y evitar que se manipulen archivos fuera de la jerarquía permitida, validando que el destino final resuelto sea efectivamente hijo del directorio de revisión antes de cualquier operación de movimiento.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T12:35:44` **browser.py** (seguridad defensiva): He robustecido la seguridad defensiva de `browser.py` implementando una validación estricta de "Path Traversal" dentro de `_is_path_inside_base`, asegurando que la ruta resuelta no solo sea un subdirectorio, sino que también verifique explícitamente que no existan segmentos de ruta ".." (mediante `Path.parts`) antes de realizar cualquier operación sobre el disco.
 - `2026-08-22T12:28:13` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al inyectar validaciones explícitas en `_call_gemini` para asegurar que el `model` y la `api_key` no contengan rutas ni inyecciones de comandos, mitigando el riesgo de que una configuración maliciosa en `settings.json` intente manipular el endpoint o el entorno de red de la aplicación.
 - `2026-08-22T12:27:28` **settings.py** (robustez ante casos límite): Mejoré la robustez ante archivos corruptos o inexistentes en `load()` añadiendo un chequeo explícito de integridad tras `json.load()` para asegurar que todas las claves esperadas de `AppSettings` estén presentes, evitando errores de `KeyError` en el resto de la aplicación si el JSON del usuario está incompleto.
-- `2026-08-22T12:26:03` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de E/S en la recuperación de metadatos (stat) y en la resolución de rutas dentro de `_is_safe_entry`, evitando que el escáner aborte ante archivos bloqueados por el sistema o dispositivos extraíbles desconectados.
-- `2026-08-22T12:10:11` **main.py** (robustez ante casos límite): Se implementó un mecanismo de protección para el pool de hilos y las tareas encoladas durante el cierre de la aplicación, asegurando que las operaciones pendientes con el disco se cancelen correctamente mediante `cancel_futures=True` y se verifique el estado `self._closing` antes de intentar cualquier interacción con la interfaz gráfica, previniendo errores de `TclError` y condiciones de carrera al salir.
-- `2026-08-22T12:05:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y agregué una validación de coherencia en `compute_score` para asegurar que las métricas de porcentaje no excedan el 100% incluso ante lecturas de hardware erráticas.
-- `2026-08-22T11:55:05` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el acceso directo a `PALETTE` por el método `color()` para prevenir excepciones por claves faltantes en tiempo de ejecución.

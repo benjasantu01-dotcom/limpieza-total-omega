@@ -149,10 +149,10 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     try:
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
-            return True 
+            return False 
         return bool(attrs & 0x01 or attrs & 0x04 or attrs & 0x02)
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
-        return True
+        return False
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: Callable[[str], bool]) -> bool:
@@ -223,6 +223,8 @@ def directory_size(path: Union[str, Path]) -> int:
     Interfaz pública para calcular el tamaño total en bytes de un directorio,
     asegurando que la ruta sea válida y no protegida.
     """
+    if path is None:
+        return 0
     try:
         p_obj = Path(path).resolve(strict=True)
         if not p_obj.is_dir() or not is_safe_to_modify(p_obj) or is_protected_path(p_obj):
@@ -254,6 +256,9 @@ def detect_profiles(
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
+    if not raw_bases or not browser_map:
+        return []
+    
     is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
@@ -261,9 +266,13 @@ def detect_profiles(
     found: List[BrowserCache] = []
     
     for base in raw_bases:
+        if not base:
+            continue
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
+                if not rel_str:
+                    continue
                 # Convertimos rel_str a una ruta absoluta de forma eficiente
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 
