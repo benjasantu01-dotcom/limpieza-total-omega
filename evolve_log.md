@@ -718,3 +718,15 @@ FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_i
 - `2026-08-22T00:50:03` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-22T00:50:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T00:50:03` Corrida terminada. Total usado hoy: 20.
+- `2026-08-22T00:56:14` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-22T00:56:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-22T00:56:16` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-22T00:56:36` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-22T00:56:36` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-22T00:57:06` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-22T00:57:06` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-22T00:57:56` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-22T00:58:31` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` al reemplazar el manejo genérico de excepciones por una captura selectiva y agregué una validación de tipo temprana para el argumento `destination` para evitar errores en tiempo de ejecución al llamar a `Path()`.
+- `2026-08-22T00:58:44` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que los parámetros de entrada (`path`, `root_dir`) no sean `None` ni tipos incorrectos antes de operar, previniendo excepciones innecesarias durante la ejecución del escaneo.
+- `2026-08-22T00:58:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T00:58:44` Corrida terminada. Total usado hoy: 24.

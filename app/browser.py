@@ -256,7 +256,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
     Calcula el tamaño total en bytes de un directorio, aplicando validaciones 
     de seguridad (`is_safe_to_modify`) antes de recorrer.
     """
-    if path is None:
+    if not isinstance(path, (str, Path)):
         return 0
     try:
         p_obj = Path(path)
