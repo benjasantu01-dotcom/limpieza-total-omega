@@ -34,6 +34,7 @@ class Suspicion:
     severity: str
 
 # Alias para funciones que evalúan un archivo y retornan una sospecha o None.
+# Reciben el archivo, su entrada de directorio opcional y el timestamp base del escaneo.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
 # Alias para representar una colección de hallazgos.
@@ -65,7 +66,7 @@ class Scanner:
     
     Attributes:
         results: Lista de hallazgos acumulados durante el escaneo.
-        seen: Conjunto de rutas procesadas para evitar ciclos.
+        seen: Conjunto de rutas procesadas para evitar ciclos de enlaces simbólicos.
         base_root: Ruta absoluta y resuelta del directorio raíz de escaneo.
         now_ts: Marca de tiempo actual para cálculos de antigüedad.
     """
@@ -77,7 +78,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """Verifica que la entrada esté dentro del alcance de la raíz original."""
+        """Verifica que la ruta esté contenida dentro del alcance de la raíz original."""
         try:
             resolved = entry_path.resolve()
             return self.base_root == resolved or self.base_root in resolved.parents
@@ -88,8 +89,8 @@ class Scanner:
         """
         Detecta si la entrada es un punto de reanálisis (reparse point).
         
-        Usa flags de sistema para identificar Junciones o Symlinks y prevenir
-        que el escáner salga del árbol de directorios asignado.
+        Utiliza el bit 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) para identificar 
+        Junciones o Symlinks y prevenir que el escáner escape del árbol asignado.
         """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
@@ -98,10 +99,10 @@ class Scanner:
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
-        Analiza un elemento del sistema de archivos.
+        Analiza un elemento del sistema de archivos mediante reglas de seguridad.
         
-        Si es un directorio, lo agrega al stack para exploración profunda.
-        Si es un archivo, ejecuta las heurísticas de seguridad pertinentes.
+        Si el elemento es directorio, lo encola en 'stack'. Si es archivo,
+        aplica las heurísticas configuradas en las funciones de escaneo.
         """
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
@@ -109,7 +110,7 @@ class Scanner:
         try:
             target_path = Path(entry.path)
             
-            # Chequeo de seguridad: omitir si está protegido, fuera de raíz o es ruta inválida
+            # Filtro de seguridad obligatorio antes de cualquier operación de I/O
             if not is_safe_to_modify(target_path) or is_protected_path(target_path) or entry.path.startswith("\\\\"):
                 return
             if not self._is_safe_entry(target_path):
@@ -149,7 +150,7 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta nombres con extensiones múltiples engañosas (ej: .jpg.exe)."""
+    """Detecta nombres con extensiones múltiples engañosas (ej: imagen.jpg.exe)."""
     if path is None or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -161,8 +162,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """
     Verifica la antigüedad de un ejecutable en carpetas de alto riesgo.
     
-    Busca ejecutables descargados recientemente, ya que son vectores comunes 
-    de infección inicial.
+    Busca ejecutables descargados en las últimas 24 horas, ya que son vectores comunes 
+    de infección inicial (descargas "drive-by").
     """
     if path is None or is_protected_path(path):
         return None
@@ -187,7 +188,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     """
     Detecta archivos con nombres de procesos del sistema ubicados fuera de System32.
     
-    Identifica intentos de engaño mediante typosquatting de binarios críticos.
+    Identifica intentos de engaño mediante typosquatting de binarios críticos del SO.
     """
     if path is None or not path.name:
         return None
@@ -202,7 +203,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     Orquestador de reglas heurísticas para un archivo dado.
     
-    Agrupa chequeos genéricos y específicos para ejecutables.
+    Ejecuta validaciones genéricas y recorre la lista de chequeos específicos (EXECUTABLE_CHECKS)
+    si el archivo califica como ejecutable sospechoso.
     """
     if path is None:
         return []
@@ -227,8 +229,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Realiza un escaneo recursivo del sistema de archivos.
     
-    Valida la integridad de la ruta raíz y utiliza una pila para evitar
-    la recursividad profunda que podría causar un StackOverflow.
+    Implementa un mecanismo de pila para evitar la recursividad profunda.
+    Valida la integridad de la ruta raíz mediante las políticas de 'safety.py'.
     """
     if not directory:
         return []
@@ -268,7 +270,7 @@ def run_windows_defender_quick_scan() -> str:
     """
     Ejecuta un escaneo rápido mediante la API de Windows Defender.
     
-    Requiere PowerShell para invocar los cmdlets de seguridad nativos.
+    Requiere PowerShell para invocar los cmdlets de seguridad nativos ('Get-MpComputerStatus').
     """
     try:
         status = subprocess.run(

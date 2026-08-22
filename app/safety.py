@@ -125,7 +125,7 @@ def _has_alternate_data_stream(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Consulta atributos win32 para verificar flags de sistema u oculto."""
+    """Verifica atributos de sistema u oculto mediante APIs nativas de Windows."""
     if os.name != 'nt' or not isinstance(path, Path):
         return False
     try:
@@ -138,7 +138,7 @@ def _is_system_or_hidden(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_reparse_point(path: Path) -> bool:
-    """Detecta puntos de reparse (junctions/symlinks) vía API de bajo nivel."""
+    """Detecta junctions, symlinks y puntos de reparse mediante APIs nativas de Windows."""
     if os.name != 'nt':
         return path.is_symlink()
     if not isinstance(path, Path):
@@ -152,7 +152,7 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """Verifica exclusividad de acceso intentando abrir el archivo con modo lectura."""
+    """Determina si un archivo está bloqueado intentando abrir un descriptor de lectura exclusivo."""
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
     try:
@@ -165,10 +165,8 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(path: Path) -> None:
     """
-    Realiza validaciones físicas de integridad: 
-    Verifica existencia, profundidad de árbol, permisos de escritura, presencia de 
-    puntos de reparse, estado de bloqueo por otros procesos y atributos especiales 
-    (ADS, ocultos, solo lectura o hard links).
+    Ejecuta el conjunto completo de validaciones de seguridad físicas sobre una ruta.
+    Lanza UnsafePathError si detecta cualquier atributo que impida la modificación segura.
     """
     if not isinstance(path, Path):
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
@@ -209,7 +207,7 @@ def _check_file_integrity(path: Path) -> None:
 
 @lru_cache(maxsize=2048)
 def _is_readonly(path: Path) -> bool:
-    """Consulta el estado del bit de solo lectura en el sistema de archivos."""
+    """Valida el bit de solo lectura en el sistema de archivos mediante acceso a permisos."""
     try:
         return not bool(path.stat().st_mode & stat.S_IWRITE)
     except (OSError, PermissionError):
@@ -218,7 +216,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """Normaliza y expande rutas, validando caracteres y límites de longitud de SO."""
+    """Estandariza rutas: expande '~', resuelve componentes y verifica límites de caracteres."""
     if path is None:
         raise ValueError("Ruta nula recibida.")
     
@@ -239,7 +237,7 @@ def normalize(path: PathLike) -> Path:
 
 
 def is_drive_root(path: PathLike) -> bool:
-    """Determina si la ruta apunta a la raíz de un dispositivo de almacenamiento."""
+    """Retorna True si la ruta normalizada coincide con la raíz de un volumen."""
     try:
         p = normalize(path)
         return p == Path(p.anchor)
@@ -249,7 +247,7 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:
-    """Evalúa si una ruta pertenece a ubicaciones críticas protegidas por sistema."""
+    """Evalúa si una ruta reside en directorios críticos del sistema usando exclusiones."""
     if not path:
         return True
     
@@ -272,7 +270,7 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica si la ruta 'child' está contenida bajo el directorio 'parent'."""
+    """Valida jerarquía: confirma si 'child' es descendiente de 'parent'."""
     if child is None or parent is None:
         return False
     try:
@@ -286,7 +284,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 
 @lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:
-    """Filtra archivos por extensiones críticas que afectan la configuración del SO."""
+    """Verifica si una extensión coincide con tipos de archivos sensibles de configuración."""
     try:
         return Path(str(path)).suffix.lower() in SENSITIVE_EXTENSIONS
     except (TypeError, ValueError, OSError):
@@ -294,7 +292,7 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def _validate_basic_path_safety(path: Path, path_str: str) -> None:
-    """Valida integridad estructural: caracteres inválidos, traversal y rutas UNC."""
+    """Realiza chequeos estructurales básicos: travesía inválida, caracteres y rutas UNC."""
     if _has_invalid_chars(path_str) or _is_reserved_device_name(path.name):
         raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
     
@@ -312,7 +310,7 @@ def _validate_basic_path_safety(path: Path, path_str: str) -> None:
 
 
 def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None:
-    """Valida que la operación respete el scope de directorio definido."""
+    """Confirma que la ruta reside dentro de los límites operativos definidos por la app."""
     if base_dir and not is_within_directory(path, base_dir, allow_equal=True):
         raise UnsafePathError("Operación fuera del directorio base permitido.")
     
@@ -328,8 +326,8 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
-    Valida la integridad y seguridad de la ruta antes de realizar cambios persistentes.
-    Lanza UnsafePathError si alguna validación falla.
+    Función de entrada principal para validar si una ruta puede ser modificada.
+    Realiza una secuencia completa de chequeos estructurales y de integridad física.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
@@ -365,7 +363,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
-    """Wrapper booleano: devuelve True solo si la ruta es apta para modificación."""
+    """Wrapper booleano: devuelve True solo si la ruta supera toda validación de seguridad."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
@@ -374,12 +372,12 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una lista de rutas, retornando solo aquellas que son seguras."""
+    """Filtra una colección de rutas retornando únicamente las aptas para modificación."""
     return [normalize(p) for p in paths if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive)]
 
 
 def describe_protection(path: PathLike) -> str:
-    """Provee una explicación legible para el usuario de por qué se denegó una ruta."""
+    """Genera una descripción legible de la razón exacta por la que una ruta no es segura."""
     if path is None: return "Ruta nula."
     try:
         p = normalize(path)
