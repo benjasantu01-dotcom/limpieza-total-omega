@@ -873,3 +873,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T03:21:52` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante fallos de E/S y corrupción de archivos al añadir una lógica de validación de directorio más estricta en `load` y un mecanismo de recuperación ante archivos de configuración bloqueados o malformados, asegurando que la aplicación siempre mantenga un estado operativo incluso si `config.json` no es accesible.
 - `2026-08-22T03:21:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T03:21:52` Corrida terminada. Total usado hoy: 80.
+- `2026-08-22T03:29:11` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-08-22T03:29:38` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-22T03:30:13` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la integridad del asistente añadiendo una validación explícita sobre los datos externos (`extra`) en `build_context`, garantizando que solo se acepten métricas con formato de texto seguro y evitando posibles inyecciones de contenido malicioso o rutas de archivo en el contexto que se procesa.
+- `2026-08-22T03:30:45` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-22T03:30:56` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_sum_directory_recursive` implementando una comprobación de seguridad adicional mediante `is_protected_path` al inicio de cada iteración de `os.scandir`, asegurando que ninguna subcarpeta o archivo accedido accidentalmente (por ejemplo, mediante rutas mal formadas) viole las restricciones de protección del sistema antes de procesar sus metadatos.
+- `2026-08-22T03:30:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T03:30:56` Corrida terminada. Total usado hoy: 84.

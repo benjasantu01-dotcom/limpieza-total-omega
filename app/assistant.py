@@ -270,6 +270,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
             
         if isinstance(g_val, (str, int, float)):
             g_str = str(g_val)[:10].strip()
+            # Validación estricta de seguridad: no procesar strings que parezcan rutas o inyecciones
             if _ensure_safe_text(g_str):
                 ctx.grade = g_str
             

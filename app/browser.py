@@ -182,7 +182,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: ctypes.WinDLL | None, is_ju
     
     try:
         p = Path(entry.path)
-        if not is_safe_to_modify(p):
+        if not is_safe_to_modify(p) or is_protected_path(p):
             return True
         if _is_system_hidden(entry.path, kernel32):
             return True
@@ -216,7 +216,7 @@ def _sum_directory_recursive(
     
     try:
         root_path = Path(root_dir).resolve(strict=True)
-        if not root_path.is_dir() or not is_safe_to_modify(root_path) or root_path.is_symlink() or is_junction_fn(str(root_path)):
+        if not root_path.is_dir() or not is_safe_to_modify(root_path) or is_protected_path(root_path) or root_path.is_symlink() or is_junction_fn(str(root_path)):
             return 0
         root_key = str(root_path)
     except (OSError, PermissionError, RuntimeError):
@@ -240,7 +240,8 @@ def _sum_directory_recursive(
                         total += _walk(entry.path, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         try:
-                            if not is_safe_to_modify(Path(entry.path)):
+                            p_entry = Path(entry.path)
+                            if not is_safe_to_modify(p_entry) or is_protected_path(p_entry):
                                 continue
                             st = entry.stat(follow_symlinks=False)
                             if st.st_size > 0:
@@ -269,7 +270,7 @@ def directory_size(path: Union[str, os.PathLike, None]) -> int:
         if not p_obj.exists() or not p_obj.is_dir():
             return 0
         p_path = p_obj.resolve(strict=True)
-        if not p_path.is_absolute() or not is_safe_to_modify(p_path):
+        if not p_path.is_absolute() or not is_safe_to_modify(p_path) or is_protected_path(p_path):
             return 0
         
         is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
@@ -286,7 +287,7 @@ def _is_valid_cache_path(candidate: Optional[Path], base_path: Path) -> bool:
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
-        return (candidate.exists() and candidate.is_dir() and is_safe_to_modify(candidate) and
+        return (candidate.exists() and candidate.is_dir() and is_safe_to_modify(candidate) and not is_protected_path(candidate) and
                 _is_path_inside_base(candidate, base_path) and not _is_excluded_file(candidate.name))
     except (OSError, PermissionError, RuntimeError):
         return False
