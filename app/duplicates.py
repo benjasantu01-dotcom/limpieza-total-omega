@@ -121,34 +121,33 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        entry_path = Path(entry.path).resolve()
-                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
+                        # Usamos la entrada directa para chequear protección antes de resolve()
+                        if skip_protected and is_protected_path(Path(entry.path)):
                             continue
-
+                            
                         if entry.is_dir(follow_symlinks=False):
                             entry_stat = entry.stat(follow_symlinks=False)
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
                                 visited_device_inodes.add(device_inode)
-                                _scan(entry_path)
+                                _scan(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
                             entry_stat = entry.stat(follow_symlinks=False)
-                            # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT (ignoramos puntos de reparse)
                             if getattr(entry_stat, 'st_file_attributes', 0) & 0x400: continue
                                 
                             if entry_stat.st_size >= min_size:
-                                temp_groups[int(entry_stat.st_size)].append(entry_path)
+                                path_obj = Path(entry.path)
+                                if is_safe_to_modify(path_obj):
+                                    temp_groups[int(entry_stat.st_size)].append(path_obj)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
     if directories is not None:
         for item in directories:
             if item:
-                try:
-                    root_path = Path(item).resolve()
-                    if root_path.is_dir() and not is_protected_path(root_path) and is_safe_to_modify(root_path):
-                        _scan(root_path)
-                except (OSError, RuntimeError): continue
+                root_path = Path(item).resolve()
+                if root_path.is_dir() and not is_protected_path(root_path) and is_safe_to_modify(root_path):
+                    _scan(root_path)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
 

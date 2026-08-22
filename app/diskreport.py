@@ -205,14 +205,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente para listar archivos.
+    Optimizado para evitar resoluciones de ruta redundantes.
     """
     if not directory:
         return
 
     try:
-        abs_base = os.path.abspath(os.fspath(directory))
-        base_path = Path(abs_base).resolve(strict=False)
-        if not base_path.exists() or not base_path.is_dir():
+        base_path = Path(os.fspath(directory)).resolve(strict=False)
+        if not base_path.is_dir():
             return
         if skip_protected and is_protected_path(base_path):
             return
@@ -226,13 +226,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         current_dir = stack.pop()
         
         try:
-            curr_res = current_dir.resolve(strict=False)
-            if base_path not in curr_res.parents and curr_res != base_path:
-                continue
-        except (OSError, RuntimeError):
-            continue
-
-        try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
@@ -240,24 +233,20 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             continue
                         
                         entry_path = Path(entry.path)
-                        
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         
-                        stat_data = entry.stat(follow_symlinks=False)
-                        
-                        if entry.is_dir():
+                        if entry.is_dir(follow_symlinks=False):
+                            stat_data = entry.stat(follow_symlinks=False)
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
                                 stack.append(entry_path)
-                        elif entry.is_file():
-                            yield entry_path, stat_data.st_size
+                        elif entry.is_file(follow_symlinks=False):
+                            yield entry_path, entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError, FileNotFoundError):
-                        # Ignoramos errores de acceso a archivos específicos para permitir el escaneo parcial
                         continue
         except (OSError, PermissionError, FileNotFoundError):
-            # Ignoramos directorios que no pudimos abrir por restricciones de sistema
             continue
 
 

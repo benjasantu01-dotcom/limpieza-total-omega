@@ -508,3 +508,10 @@ assert not True
 - `2026-08-22T11:14:52` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé `detect_profiles` para evitar el re-cálculo redundante del tamaño de directorios compartidos y reducir la carga de E/S al consolidar la lógica de resolución de rutas dentro del bucle principal.
 - `2026-08-22T11:14:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T11:14:52` Corrida terminada. Total usado hoy: 264.
+- `2026-08-22T11:23:19` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-22T11:23:47` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para reducir el número de llamadas a `path.resolve()` y `path.exists()` dentro del bucle principal, minimizando operaciones de E/S costosas al iterar grandes volúmenes de archivos.
+- `2026-08-22T11:24:11` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para evitar realizar llamadas repetitivas y costosas a `Path.resolve()` y `is_safe_to_modify()` dentro del ciclo de escaneo, priorizando el uso de la información ya obtenida a través de `os.scandir` y reduciendo la creación innecesaria de objetos `Path` mediante el manejo directo de strings cuando sea posible.
+- `2026-08-22T11:24:36` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cálculo en `compute_score` pre-calculando las referencias a los scorers en un mapa local para evitar consultas repetitivas al diccionario `_SCORERS` y caché de las constantes de peso, reduciendo la sobrecarga de resolución de nombres en cada iteración del bucle.
+- `2026-08-22T11:25:26` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run
+- `2026-08-22T11:25:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T11:25:26` Corrida terminada. Total usado hoy: 268.

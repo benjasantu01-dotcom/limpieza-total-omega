@@ -209,8 +209,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios: Dict[MetricKey, float] = {}
     final_score: float = 0.0
     
+    # Cacheamos referencias locales para iteración rápida
+    scorers = _SCORERS
     for area, weight in _WEIGHT_ITEMS_INT:
-        scorer = _SCORERS.get(area)
+        scorer = scorers.get(area)
         if scorer is None: continue
         
         try:
