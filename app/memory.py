@@ -303,7 +303,11 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
-    """Valida la seguridad del proceso antes de intentar liberar su memoria residente."""
+    """
+    Valida la seguridad del proceso antes de liberar su memoria.
+    Verifica estado activo, ruta del ejecutable contra listas protegidas y 
+    presencia de caracteres sospechosos (RTL) para evitar engaños en la ruta.
+    """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
@@ -315,9 +319,12 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]
             return False, "El proceso seleccionado ya no está activo."
         path = _get_process_path(proc_handle)
         if not path: return False, "No se pudo verificar la ubicación del ejecutable."
+        
+        # Filtro de seguridad: evitar rutas con caracteres invisibles de dirección
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
+        
         normalized_path = os.normcase(os.path.abspath(path))
         if is_protected_path(normalized_path):
             return False, "Operación denegada: ruta de ejecutable protegida."
