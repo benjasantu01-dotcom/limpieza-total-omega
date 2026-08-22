@@ -16,24 +16,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 15 | 2 | 3 | 1 | 9 |
+| 2026-08-20 | 14 | 2 | 3 | 1 | 6 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 49 | 2 | 5 | 3 | 65 |
+| 2026-08-22 | 50 | 2 | 5 | 3 | 68 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **53**
+- legibilidad y documentación: **52**
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
 - `settings.py`: **20**
+- `duplicates.py`: **20**
+- `assistant.py`: **19**
 - `memory.py`: **19**
-- `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `scanner.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T05:24:08` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_validate_and_assign` capturando posibles errores de desbordamiento o tipos inesperados durante la conversión de métricas, asegurando que cualquier entrada malformada se descarte elegantemente sin propagar excepciones que interrumpan el flujo del asistente.
 - `2026-08-22T04:01:13` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` al añadir una validación estricta contra rutas con caracteres nulos o secuencias de escape (vía `os.path.abspath`) y al asegurar que la resolución de `realpath` no siga enlaces simbólicos, previniendo así posibles ataques de "link traversal" o redirecciones inesperadas hacia áreas protegidas del sistema.
 - `2026-08-22T04:01:02` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` sobre el directorio padre (`parent`) antes de intentar cualquier operación de escritura, asegurando que ni siquiera se creen carpetas en ubicaciones restringidas del sistema.
 - `2026-08-22T03:50:57` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo de rutas mediante `path.absolute()` y una validación de `st_dev` (ID de dispositivo) durante la restauración para asegurar que el archivo no sea movido fuera del volumen de destino y prevenir ataques de enlace simbólico o secuestro de rutas entre particiones.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T03:21:52` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante fallos de E/S y corrupción de archivos al añadir una lógica de validación de directorio más estricta en `load` y un mecanismo de recuperación ante archivos de configuración bloqueados o malformados, asegurando que la aplicación siempre mantenga un estado operativo incluso si `config.json` no es accesible.
 - `2026-08-22T03:21:40` **scanner.py** (robustez ante casos límite): Se ha mejorado `Scanner.process_entry` para capturar errores de acceso a atributos de `os.DirEntry` (como `is_file` o `is_dir`) que pueden fallar por condiciones de carrera o restricciones de sistema operativo, evitando la propagación de excepciones que detendrían el escaneo prematuramente ante archivos bloqueados por el SO.
 - `2026-08-22T03:20:49` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_running_as_admin` y `is_protected_path` ante errores de entorno (como falta de variables de sistema o permisos denegados al consultar atributos), evitando que una excepción en la validación bloquee la aplicación y garantizando una gestión de errores silenciosa y segura frente a estados inusuales del SO.
-- `2026-08-22T03:11:24` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio libre preventivo y la gestión de permisos denegados en `_get_sha256`, garantizando que el sistema no falle silenciosamente ni en condiciones de disco lleno ni al encontrar archivos bloqueados por permisos durante el cálculo de integridad.

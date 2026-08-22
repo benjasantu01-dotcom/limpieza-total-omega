@@ -238,16 +238,19 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     cast, min_v, max_v = spec
     try:
         val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-    except Exception:
-        val = None
+    except (AttributeError, TypeError):
+        return False
     
     clean_val = _safe_float(val, -1.0)
     if clean_val < 0:
         return False
-        
-    clamped = max(float(min_v), min(clean_val, float(max_v)))
-    setattr(ctx, key, cast(clamped))
-    return True
+    
+    try:
+        clamped = max(float(min_v), min(clean_val, float(max_v)))
+        setattr(ctx, key, cast(clamped))
+        return True
+    except (OverflowError, ValueError, TypeError):
+        return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """Construye el objeto SystemContext validando datos contra _VALIDATORS."""
@@ -265,12 +268,11 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         if src is None: continue
         try:
             g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
-        except Exception:
+        except (AttributeError, TypeError):
             g_val = None
             
         if isinstance(g_val, (str, int, float)):
             g_str = str(g_val)[:10].strip()
-            # Validación estricta de seguridad: no procesar strings que parezcan rutas o inyecciones
             if _ensure_safe_text(g_str):
                 ctx.grade = g_str
             
