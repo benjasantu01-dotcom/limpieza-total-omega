@@ -107,7 +107,12 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """Recorre recursivamente los directorios buscando candidatos a duplicados."""
+    """
+    Recorre recursivamente directorios buscando archivos duplicados potenciales.
+    
+    Aplica filtros de seguridad: omite rutas protegidas, junctions de Windows,
+    y verifica permisos de modificación mediante is_safe_to_modify().
+    """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: set[Tuple[int, int]] = set()
     processed_paths: set[Path] = set()
@@ -126,7 +131,7 @@ def _collect_candidates(
                             continue
                         
                         st = entry.stat(follow_symlinks=False)
-                        # Evitar reparse points o junctions (0x400 en atributos de Windows)
+                        # Evitar reparse points o junctions mediante atributos de archivo (0x400)
                         if getattr(st, 'st_file_attributes', 0) & 0x400: continue
                                 
                         if entry.is_dir(follow_symlinks=False):
@@ -135,7 +140,7 @@ def _collect_candidates(
                                 visited_inodes.add(inode)
                                 _scan(p_entry)
                         elif entry.is_file() and st.st_size >= min_size:
-                            # Validar seguridad adicional antes de añadir
+                            # Verificación extra: solo archivos validados por safety
                             if is_safe_to_modify(p_entry):
                                 temp_groups[int(st.st_size)].append(p_entry)
                     except (OSError, PermissionError): continue
@@ -153,7 +158,7 @@ def _collect_candidates(
 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica una función de hashing y agrupa las rutas por el digest resultante."""
+    """Aplica una función de hashing y agrupa rutas que comparten el mismo digest."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -162,7 +167,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Refina grupos de tamaño mediante hash parcial y luego hash completo."""
+    """Refina grupos de tamaño mediante hash parcial y luego hash completo (SHA256)."""
     confirmed_groups: List[DuplicateGroup] = []
     partial_results = _refine_by_hash(paths, partial_hash)
     for partial_candidates in partial_results.values():
@@ -173,7 +178,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 
 
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Función principal: orquesta la búsqueda y retorna grupos de duplicados ordenados por ahorro."""
+    """Función principal: orquesta la búsqueda y retorna grupos ordenados por ahorro potencial."""
     if directories is None or min_size < 0: return []
     groups: List[DuplicateGroup] = []
     for size, paths in _collect_candidates(directories, min_size, skip_protected).items():
@@ -183,12 +188,15 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Suma total de espacio recuperable de una lista de grupos."""
+    """Suma total de espacio recuperable (bytes) de una lista de grupos."""
     return sum(g.wasted_bytes for g in groups) if groups else 0
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Sugiere el archivo a conservar basado en la fecha de modificación (más antiguo primero)."""
+    """
+    Selecciona el archivo candidato a conservar (el más antiguo) para evitar
+    pérdida de metadatos de creación históricos.
+    """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     keepers: List[Tuple[float, int, Path]] = []
@@ -196,6 +204,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not p or not p.exists(): continue
         try:
             stat_info = p.stat()
+            # Ordenamos por fecha de modificación (mtime) y luego longitud de ruta
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
             continue
@@ -203,7 +212,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Retorna una representación textual legible de un grupo para el reporte."""
+    """Retorna una representación legible para reportes, marcando el archivo a conservar."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
     keeper = suggest_keeper(group)

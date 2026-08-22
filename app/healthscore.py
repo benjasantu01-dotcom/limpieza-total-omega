@@ -107,6 +107,7 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
+        """Verifica que todas las métricas sean valores numéricos finitos."""
         return all(isinstance(v, (int, float)) and math.isfinite(float(v)) for v in self.__dict__.values())
 
 @dataclass
@@ -119,54 +120,55 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
+        """Determina si el estado general es considerado óptimo (80+)."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Fuerza un valor dentro de un rango cerrado, manejando posibles valores no finitos."""
+    """Fuerza un valor dentro de un rango cerrado [low, high]."""
     return max(low, min(high, value)) if math.isfinite(value) else low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Convierte a float de forma defensiva."""
+    """Convierte entrada a float, retornando default si es inválida o no numérica."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def _to_int(value: Any, default: int = 0) -> int:
-    """Convierte a int de forma defensiva."""
+    """Convierte entrada a int, retornando default si es inválida o no numérica."""
     try:
         val = float(value)
         return int(val) if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el score de basura: 1.0 es 0MB, 0.0 es el límite máximo."""
+    """Score de basura: 1.0 es 0MB (limpio), 0.0 es >= _LIMIT_JUNK_MB."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa seguridad basándose en conteo de hallazgos y advertencias ponderadas."""
+    """Score de seguridad: penaliza hallazgos (0.05) y advertencias (0.25) por unidad."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Puntúa salud de memoria: normalizado contra el umbral de presión definido."""
+    """Score de RAM: mide la salud basada en el porcentaje disponible respecto a un límite de saturación."""
     limit = max(0.1, _LIMIT_RAM_PERCENT)
     return _clamp(_to_float(available_percent) / limit, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Puntúa espacio en disco: normalizado contra el umbral de criticidad definido."""
+    """Score de Disco: mide la salud basada en el porcentaje libre respecto al umbral crítico."""
     limit = max(0.1, _LIMIT_DISK_PERCENT)
     return _clamp(_to_float(free_percent) / limit, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Puntúa presencia de duplicados: penaliza mayor espacio desperdiciado."""
+    """Score de Duplicados: penaliza el espacio desperdiciado por archivos repetidos."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Puntúa carga de inicio: penaliza exceso de aplicaciones que arrancan solas."""
+    """Score de Inicio: penaliza la cantidad de programas configurados para iniciar automáticamente."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Mapea un puntaje numérico a una escala cualitativa (A-F)."""
+    """Convierte puntaje numérico (0-100) a nota cualitativa (A-F)."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -184,7 +186,7 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 }
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Función principal: orquesta el cálculo de salud basándose en las métricas."""
+    """Orquesta el cálculo de salud: normaliza áreas, aplica pesos y genera recomendaciones."""
     if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
         return HealthResult(0, "F", {}, ["Error: Configuración inestable."])
     
@@ -223,7 +225,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     return HealthResult(final_score, grade_for_score(final_score), breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def summarize(result: HealthResult) -> List[str]:
-    """Genera una representación textual formateada de los resultados para la UI o logs."""
+    """Genera una representación textual (lista de strings) formateada para la interfaz de usuario."""
     if not isinstance(result, HealthResult): return ["Error: Formato inválido."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
