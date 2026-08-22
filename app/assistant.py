@@ -247,8 +247,6 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
     """Extrae y valida una métrica individual desde una fuente de datos."""
-    if not isinstance(spec, (tuple, list)) or len(spec) != 3:
-        return False
     cast, min_v, max_v = spec
     try:
         val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
@@ -271,21 +269,16 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """Construye el objeto SystemContext validando datos contra _VALIDATORS."""
     ctx = SystemContext()
     found_data = False
-    sources = (metrics, health, extra)
     
     for key, spec in _VALIDATORS.items():
-        for src in sources:
+        for src in (metrics, health, extra):
             if src is not None and _validate_and_assign(ctx, src, key, spec):
                 found_data = True
                 break
 
     for src in (health, extra):
         if src is None: continue
-        try:
-            g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
-        except (AttributeError, TypeError):
-            g_val = None
-            
+        g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
         if isinstance(g_val, (str, int, float)):
             g_str = str(g_val)[:10].strip()
             if _ensure_safe_text(g_str):

@@ -501,3 +501,10 @@ assert not True
 - `2026-08-22T11:04:23` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
 - `2026-08-22T11:04:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T11:04:23` Corrida terminada. Total usado hoy: 260.
+- `2026-08-22T11:13:06` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-22T11:13:34` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Documenté con docstrings claros las funciones de procesamiento de datos y validación en `StartupEntry`, clarificando el propósito de cada método y mejorando la legibilidad técnica del código fuente.
+- `2026-08-22T11:14:09` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` evitando iterar sobre todos los validadores para cada fuente, transformando la lógica de búsqueda a un acceso directo por clave (`O(1)` en lugar de `O(N*M)`), lo cual es más eficiente al procesar diccionarios de métricas.
+- `2026-08-22T11:14:42` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el cálculo de la paleta RGB eliminando la re-iteración dentro de un list comprehension innecesario en el ámbito global y consolidando las transformaciones de color mediante la reutilización de `PALETTE_RGB` en `_hex_to_rgb`, evitando conversiones redundantes en cada llamada.
+- `2026-08-22T11:14:52` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé `detect_profiles` para evitar el re-cálculo redundante del tamaño de directorios compartidos y reducir la carga de E/S al consolidar la lógica de resolución de rutas dentro del bucle principal.
+- `2026-08-22T11:14:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T11:14:52` Corrida terminada. Total usado hoy: 264.

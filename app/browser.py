@@ -260,7 +260,13 @@ def detect_profiles(
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
+                # Convertimos rel_str a una ruta absoluta de forma eficiente
                 candidate = real_base.joinpath(*rel_str.split("\\"))
+                
+                # Verificamos si ya procesamos esta rama específica
+                if str(candidate) in perf_cache:
+                    continue
+
                 if _is_valid_cache_path(candidate, real_base):
                     c_path = candidate.resolve()
                     size = _sum_directory_recursive(str(c_path), is_junction, k32, perf_cache)

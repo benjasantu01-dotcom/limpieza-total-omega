@@ -245,13 +245,12 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """
     Convierte una cadena HEX a una tupla de enteros RGB (0-255).
     Verifica primero en la caché de marca `PALETTE_RGB` para optimización.
-    Retorna (0,0,0) ante formatos inválidos.
     """
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     
-    if (key := HEX_TO_KEY.get(value)) and (rgb := PALETTE_RGB.get(key)):
-        return rgb
+    if (key := HEX_TO_KEY.get(value)):
+        return PALETTE_RGB.get(key, (0, 0, 0))
         
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))

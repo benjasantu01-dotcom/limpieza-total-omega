@@ -91,13 +91,16 @@ class StartupEntry:
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Elimina caracteres de control y espacios en blanco de la cadena de comando."""
+        """Limpia la cadena de comando eliminando caracteres no imprimibles o de control."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
-        """Extrae rutas encerradas entre comillas validando que no contengan caracteres prohibidos."""
+        """
+        Analiza cadenas entrecomilladas buscando rutas de archivo válidas, 
+        evitando caracteres peligrosos y rutas protegidas.
+        """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
         end_quote: int = raw_cmd.find('"', 1)
@@ -117,7 +120,10 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
-        """Normaliza, valida la existencia y resuelve la ruta real en disco, usando caché."""
+        """
+        Normaliza, valida existencia en disco y cachea el resultado.
+        Evita seguir enlaces simbólicos para prevenir ataques de redirección.
+        """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*\0'):
             return ""
         
@@ -125,7 +131,6 @@ class StartupEntry:
             return path_str if _EXISTS_CACHE[path_str] else path_str
         
         try:
-            # Validar integridad contra caracteres de escape en la ruta absoluta
             abs_path = os.path.abspath(path_str)
             p: Path = Path(abs_path)
             
@@ -137,7 +142,6 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
             
-            # Resolver ruta real sin seguir enlaces simbólicos (evita bypass)
             real_path_str: str = os.path.realpath(abs_path)
             real_path: Path = Path(real_path_str)
             
@@ -152,7 +156,10 @@ class StartupEntry:
             return path_str
 
     def _resolve_path_from_command(self, cmd: str) -> str:
-        """Determina si el comando es una ruta simple o una cadena con argumentos/comillas."""
+        """
+        Determina la ruta del binario a partir de un comando crudo, gestionando 
+        tanto rutas simples como comandos con argumentos o comillas.
+        """
         if not cmd or not isinstance(cmd, str):
             return ""
         if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
@@ -172,7 +179,8 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Retorna la ruta absoluta del ejecutable mediante resolución perezosa (memoized).
+        Retorna la ruta absoluta del ejecutable. Utiliza una estrategia de 
+        resolución perezosa con memoización para minimizar llamadas al sistema.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -233,7 +241,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Procesa la salida CSV de PowerShell y valida la seguridad de los comandos encontrados.
+    Parsea la salida de PowerShell formateada como CSV. Valida que cada entrada 
+    no apunte a rutas protegidas antes de instanciar StartupEntry.
     """
     if not isinstance(text, str) or not text.strip():
         return []
