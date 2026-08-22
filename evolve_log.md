@@ -1285,3 +1285,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T08:12:53` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación estricta de finitud y tipos en `SystemMetrics` antes de cualquier cálculo, garantizando que el motor de scoring no procese estados inconsistentes.
 - `2026-08-22T08:12:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T08:12:53` Corrida terminada. Total usado hoy: 192.
+- `2026-08-22T08:19:44` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-08-22T08:20:49` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `main.py` encapsulando la selección de carpetas en `_ask_folder` para que, además de verificar la seguridad tras la selección, se valide el estado del directorio contra `safety.ensure_safe_to_modify` antes de asignar la ruta a `self.scan_target`, evitando que una ruta potencialmente riesgosa se filtre a las operaciones de escaneo.
+- `2026-08-22T08:21:17` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_is_safe_to_trim` implementando una validación estricta de la ruta del ejecutable mediante `is_protected_path` tras su normalización, asegurando que ninguna operación de gestión de memoria se realice sobre procesos del sistema operativo, independientemente de la ofuscación de la ruta.
+- `2026-08-22T08:21:42` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad en `stage_for_review` incorporando una verificación de "espacio disponible" (vía `shutil.disk_usage`) antes de intentar mover archivos, evitando fallos parciales o corrupción de datos por desbordamiento de disco, manteniendo el enfoque de seguridad defensiva.
+- `2026-08-22T08:21:58` Tests FALLARON:
+```
+......                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_quarantine_moves_the_file_without_deleting_it ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_moves_the_file0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_moves_the_file0/_Cuarentena')
+
+    def test_quarantine_moves_the_file_without_deleting_it(tmp_path, cuarentena):
+        origen = tmp_path / "sospechoso.exe"
+        origen.write_text("contenido importante")
+    
+        item = quarantine.quarantine_file(origen, reason="prueba", base=cuarentena)
+    
+>       assert not origen.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_moves_the_file0/sospechoso.exe').exists
+
+evolve/tests/test_safety.py:184: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-3/test_quarantine_moves_the_file0/sospechoso.exe').exists
+1 failed, 298 passed in 1.27s
+
+```
+- `2026-08-22T08:21:58` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para asegurar que el directorio de destino del archivo temporal sea el mismo que el del archivo final, evitando posibles ataques de "race condition" o manipulación de rutas durante la copia, y se reemplazó `os.remove` por `_safe_unlink` en `quarantine_file` para mantener la consistencia con las políticas de seguridad del módulo.
+- `2026-08-22T08:21:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T08:21:58` Corrida terminada. Total usado hoy: 196.

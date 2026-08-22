@@ -271,6 +271,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     except (OSError, PermissionError, RuntimeError):
         return None
 
+    total_size = sum(f.size_bytes for f in files if isinstance(f, JunkFile))
+    try:
+        if shutil.disk_usage(dest_base).free < total_size:
+            return None
+    except OSError:
+        return None
+
     for junk_file in files:
         if not isinstance(junk_file, JunkFile): continue
         try:

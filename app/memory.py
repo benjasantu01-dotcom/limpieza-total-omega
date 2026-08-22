@@ -320,7 +320,8 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
-        normalized_path = os.normcase(os.normpath(path))
+        # Normalización estricta antes de la validación de seguridad
+        normalized_path = os.normcase(os.path.abspath(path))
         if is_protected_path(normalized_path):
             return False, "Operación denegada: ruta de ejecutable protegida."
     except (ctypes.ArgumentError, Exception):
