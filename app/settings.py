@@ -138,6 +138,7 @@ class _Validators:
     
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
+        """Verifica recursivamente si una ruta está libre de junctions y protegida por sistema."""
         if not path_str: return False
         try:
             path_obj = Path(path_str).resolve(strict=False)
@@ -150,6 +151,7 @@ class _Validators:
 
     @staticmethod
     def bool(val: Any) -> Optional[bool]:
+        """Normaliza tipos mixtos a booleano estricto."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -160,6 +162,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
+        """Valida y recorta enteros dentro de los límites permitidos por `_NUMERIC_LIMITS`."""
         try:
             parsed_value: int = int(val)
             min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
@@ -168,6 +171,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> Optional[str]:
+        """Valida rutas absolutas y asegura que no apunten a directorios restringidos."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or len(path_string) > 4096 or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
@@ -182,6 +186,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
+        """Valida cadenas contra listas predefinidas para temas y acentos."""
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
@@ -190,6 +195,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
+        """Valida entrada de texto genérica, filtrando caracteres de control e inyección de rutas."""
         text = str(val).strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)

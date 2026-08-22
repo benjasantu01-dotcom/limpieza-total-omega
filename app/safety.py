@@ -164,7 +164,12 @@ def _is_file_in_use(path: Path) -> bool:
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Realiza validaciones físicas de integridad de archivo (uso, flags, permisos)."""
+    """
+    Realiza validaciones físicas de integridad: 
+    Verifica existencia, profundidad de árbol, permisos de escritura, presencia de 
+    puntos de reparse, estado de bloqueo por otros procesos y atributos especiales 
+    (ADS, ocultos, solo lectura o hard links).
+    """
     if not isinstance(path, Path):
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
     
@@ -176,7 +181,6 @@ def _check_file_integrity(path: Path) -> None:
 
     try:
         st = path.lstat()
-        # Verificar permisos en el padre si el archivo existe pero no podemos acceder a sus atributos
         if not os.access(path.parent, os.W_OK):
             raise UnsafePathError(f"Directorio padre sin permisos de escritura.")
     except OSError as e:
@@ -215,7 +219,7 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """Convierte una ruta a su forma absoluta canónica resolviendo enlaces."""
+    """Normaliza y expande rutas, validando caracteres y límites de longitud de SO."""
     if path is None:
         raise ValueError("Ruta nula recibida.")
     
@@ -256,7 +260,6 @@ def is_protected_path(path: PathLike) -> bool:
     except (ValueError, TypeError, OSError, RuntimeError):
         return True
 
-    # Evitar fallos si p.parts está vacío por rutas extrañas
     if not p.parts:
         return True
 
@@ -292,7 +295,7 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 
 def _validate_basic_path_safety(path: Path, path_str: str) -> None:
-    """Verifica riesgos estructurales en la cadena de la ruta (traversal, UNC, invalidos)."""
+    """Valida integridad estructural: caracteres inválidos, traversal y rutas UNC."""
     if _has_invalid_chars(path_str) or _is_reserved_device_name(path.name):
         raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
     
@@ -310,7 +313,7 @@ def _validate_basic_path_safety(path: Path, path_str: str) -> None:
 
 
 def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None:
-    """Valida los límites operativos (scope de directorio base, directorios de trabajo)."""
+    """Valida que la operación respete el scope de directorio definido."""
     if base_dir and not is_within_directory(path, base_dir, allow_equal=True):
         raise UnsafePathError("Operación fuera del directorio base permitido.")
     
@@ -327,6 +330,7 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Valida la integridad y seguridad de la ruta antes de realizar cambios persistentes.
+    Lanza UnsafePathError si alguna validación falla.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
