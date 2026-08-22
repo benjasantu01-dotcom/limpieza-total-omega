@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 27
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 139 | 11 | 18 | 14 | 142 |
-| 2026-08-22 | 82 | 5 | 9 | 8 | 76 |
+| 2026-08-21 | 139 | 11 | 18 | 14 | 138 |
+| 2026-08-22 | 84 | 5 | 10 | 8 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **40**
 - rendimiento: **39**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,18 +34,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **18**
+- `scanner.py`: **17**
 - `healthscore.py`: **17**
-- `scanner.py`: **16**
 - `browser.py`: **16**
 - `organizer.py`: **14**
+- `quarantine.py`: **14**
 - `safety.py`: **14**
 - `main.py`: **14**
-- `quarantine.py`: **13**
 - `branding.py`: **11**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T07:50:32` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `process_entry` ante archivos inexistentes o bloqueados durante la iteración (condición de carrera típica) añadiendo un manejo de excepciones más granular en las llamadas a `stat` y `is_file`, asegurando que el bucle no aborte ante archivos que desaparecen entre la detección y el procesamiento.
+- `2026-08-22T07:49:38` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante fallos parciales durante la copia y el registro del manifiesto, asegurando que si ocurre una interrupción, el estado del sistema no quede en una inconsistencia lógica (como un archivo copiado pero sin registro en el manifiesto).
 - `2026-08-22T07:40:55` **memory.py** (robustez ante casos límite): Se introdujo una gestión de errores más robusta y defensiva en `_read_windows_snapshot` y `read_snapshot` para manejar casos límite donde `GlobalMemoryStatusEx` podría fallar, retornar valores incoherentes o donde el acceso al sistema de archivos bajo `/proc` en entornos no estándar (como contenedores restringidos o sistemas de solo lectura) cause excepciones inesperadas.
 - `2026-08-22T07:39:22` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `compute_score` ante posibles divisiones por cero en los cálculos de ratios, evitando fallos silenciosos o resultados erróneos si se modifican los umbrales constantes en el futuro.
 - `2026-08-22T07:30:10` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de disponibilidad de unidad previo en `all_drives_usage` para evitar cuelgues ante unidades de red o soportes extraíbles que no responden, mejorando la robustez frente a casos límite de hardware inaccesible.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T06:58:34` **duplicates.py** (rendimiento): Optimizé la función `_collect_candidates` utilizando `os.scandir` para obtener el tamaño y los atributos de archivo directamente desde el iterador sin realizar llamadas adicionales a `os.stat` (o `Path.stat`) por cada archivo, reduciendo drásticamente las syscalls de E/S.
 - `2026-08-22T06:50:07` **browser.py** (rendimiento): Optimicé el rendimiento de `_sum_directory_recursive` evitando llamadas repetidas a `is_safe_to_modify` y `is_protected_path` al procesar directorios hijos, moviendo la validación al nivel de entrada antes de entrar en la recursión.
 - `2026-08-22T06:49:06` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` evitando la creación repetida de `set` y `list` mediante el uso de constantes pre-compiladas y búsqueda directa en el diccionario de mapeo, reduciendo la carga de CPU en cada consulta.
-- `2026-08-22T06:39:37` **settings.py** (legibilidad y documentación): Se introdujeron docstrings explicativos en los métodos críticos de `_Validators` para clarificar la lógica de seguridad y validación, y se mejoró la precisión de las anotaciones de tipo y la legibilidad de la lógica de reintento en `save()`.
-- `2026-08-22T06:39:09` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings normalizados y explícitos, clarificando la lógica de las funciones de chequeo y la estructura de la clase `Scanner` para facilitar su mantenimiento sin alterar la funcionalidad.

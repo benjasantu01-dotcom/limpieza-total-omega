@@ -368,9 +368,6 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
-        if source_path.exists():
-            os.remove(source_path)
-        
         items = load_manifest(base)
         quarantine_item = QuarantineItem(
             item_id=item_id,
@@ -383,11 +380,16 @@ def quarantine_file(
         )
         items.append(quarantine_item)
         save_manifest(items, base)
+        
+        # Solo eliminar origen una vez que el registro es exitoso
+        if source_path.exists():
+            os.remove(source_path)
+            
         return quarantine_item
-    except (Exception, OSError, ValueError) as e:
+    except Exception as e:
         if destination.exists():
             _safe_unlink(destination)
-        raise RuntimeError(f"Error al finalizar el aislamiento: {e}")
+        raise RuntimeError(f"Error al finalizar el aislamiento y persistir registro: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

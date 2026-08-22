@@ -131,9 +131,11 @@ class Scanner:
 
             if is_file:
                 try:
-                    if entry.stat().st_size == 0:
+                    # Validar existencia y tamaño antes de analizar
+                    stats = entry.stat(follow_symlinks=False)
+                    if stats.st_size == 0:
                         return
-                except (OSError, PermissionError):
+                except (OSError, PermissionError, FileNotFoundError):
                     return
 
                 # Aplicar heurísticas de nombre y extensión
@@ -173,7 +175,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        if not path.exists():
+        # Usar os.path.exists para verificar existencia sin levantar excepción si es un enlace roto
+        if not os.path.exists(path):
             return None
             
         stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'stat')) else path.stat()

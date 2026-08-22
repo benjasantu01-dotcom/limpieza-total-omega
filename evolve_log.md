@@ -1261,3 +1261,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T07:41:04` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-22T07:41:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T07:41:04` Corrida terminada. Total usado hoy: 180.
+- `2026-08-22T07:49:06` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-08-22T07:49:38` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante fallos parciales durante la copia y el registro del manifiesto, asegurando que si ocurre una interrupción, el estado del sistema no quede en una inconsistencia lógica (como un archivo copiado pero sin registro en el manifiesto).
+- `2026-08-22T07:49:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-22T07:50:23` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-22T07:50:32` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `process_entry` ante archivos inexistentes o bloqueados durante la iteración (condición de carrera típica) añadiendo un manejo de excepciones más granular en las llamadas a `stat` y `is_file`, asegurando que el bucle no aborte ante archivos que desaparecen entre la detección y el procesamiento.
+- `2026-08-22T07:50:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T07:50:32` Corrida terminada. Total usado hoy: 184.
