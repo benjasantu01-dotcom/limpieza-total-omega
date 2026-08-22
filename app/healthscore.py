@@ -194,10 +194,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if any(l <= 0 for l in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema inválidos."])
 
-    # Validación profunda: asegurar que no haya valores nulos inesperados en el objeto
+    # Validación profunda: asegurar que no haya valores nulos o infinitos
     try:
         metrics.validate()
-        if not metrics.is_finite(): raise ValueError("Métricas no finitas")
+        if not metrics.is_finite():
+            raise ValueError("Métricas no finitas")
     except Exception:
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
 
@@ -211,7 +212,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         ratios[area] = ratio
         
         puntos = int(round(ratio * weight))
-        breakdown[area] = puntos
+        breakdown[area] = _clamp(float(puntos), 0.0, float(weight))
         final_score += puntos
     
     recommendations = []
@@ -222,7 +223,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
-    return HealthResult(final_score, grade_for_score(final_score), breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
+    final_score = int(_clamp(float(final_score), 0.0, 100.0))
+    return HealthResult(final_score, grade_for_score(final_score), {k: int(v) for k, v in breakdown.items()}, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación textual (lista de strings) formateada para la interfaz de usuario."""

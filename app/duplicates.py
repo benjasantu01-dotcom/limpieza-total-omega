@@ -199,12 +199,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         return None
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not p or not p.exists(): continue
         try:
+            if not p.is_file(): continue
             stat_info = p.stat()
             # Ordenamos por fecha de modificación (mtime) y luego longitud de ruta
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, FileNotFoundError):
             continue
     return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
 

@@ -852,3 +852,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T02:50:12` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-08-22T02:50:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T02:50:12` Corrida terminada. Total usado hoy: 68.
+- `2026-08-22T02:58:29` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-22T02:58:56` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-22T02:59:23` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `walk_files` ante el acceso a directorios con permisos denegados o rutas de sistema que pueden disparar errores de acceso durante la iteración, envolviendo el `os.scandir` en un bloque `try-except` más robusto y asegurando que las comparaciones de `parents` manejen correctamente las excepciones de resolución de rutas.
+- `2026-08-22T02:59:46` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `suggest_keeper` ante fallos de acceso durante la recolección de metadatos, evitando que una excepción en `stat()` detenga la evaluación de todo el grupo y asegurando un comportamiento predecible ante rutas que desaparecen durante la ejecución.
+- `2026-08-22T03:00:02` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a casos límite añadiendo una validación explícita de `is_finite` en los valores de entrada y reforzando la integridad de los resultados, asegurando que ante cualquier dato corrupto o no finito la función retorne un estado de salud seguro y predecible en lugar de fallar o generar un score inválido.
+- `2026-08-22T03:00:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T03:00:02` Corrida terminada. Total usado hoy: 72.
