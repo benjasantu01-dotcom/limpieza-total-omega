@@ -83,11 +83,6 @@ _cached_proc_output: str = ""
 class MEMORYSTATUSEX(ctypes.Structure):
     """
     Estructura de datos Win32 (GlobalMemoryStatusEx).
-    dwMemoryLoad: porcentaje de uso (0-100).
-    ullTotalPhys: RAM física total.
-    ullAvailPhys: RAM física disponible.
-    ullTotalPageFile: Tamaño total del archivo de paginación (RAM + swap).
-    ullAvailPageFile: Espacio disponible en archivo de paginación.
     """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
@@ -324,7 +319,6 @@ def _is_system_process(pid: int) -> bool:
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     """
     Obtiene la ruta absoluta del ejecutable mediante QueryFullProcessImageNameW.
-    Requiere un handle con acceso PROCESS_QUERY_LIMITED_INFORMATION.
     """
     if not handle:
         return None
@@ -338,7 +332,8 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     
     try:
         if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
-            return str(buf.value)
+            if size.value > 0:
+                return str(buf.value)
     except (OSError, ctypes.ArgumentError):
         pass
     return None
@@ -347,7 +342,6 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
     """
     Valida que el proceso sea seguro para liberar memoria.
-    Verifica estado activo, ruta del ejecutable y ausencia de caracteres sospechosos.
     """
     if not proc_handle:
         return False, "Handle inválido."
@@ -356,26 +350,28 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]
     if not kernel32:
         return False, "No se pudo acceder a la API del sistema."
 
-    exit_code = ctypes.c_ulong()
-    if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
-        return False, "No se pudo obtener el estado del proceso."
-    
-    if exit_code.value != STILL_ACTIVE_EXIT_CODE:
-        return False, "El proceso seleccionado ya no está activo."
+    try:
+        exit_code = ctypes.c_ulong()
+        if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
+            return False, "No se pudo obtener el estado del proceso."
         
-    path = _get_process_path(proc_handle)
-    if not path:
-        return False, "No se pudo verificar la ubicación del ejecutable."
-    
-    path_bytes = path.encode("utf-8", errors="ignore")
-    # Bloqueo de caracteres de control RTL (a menudo usados para camuflar extensiones)
-    forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
-    if any(seq in path_bytes for seq in forbidden_sequences):
-        return False, "Ruta de proceso sospechosa (caracteres control)."
+        if exit_code.value != STILL_ACTIVE_EXIT_CODE:
+            return False, "El proceso seleccionado ya no está activo."
+            
+        path = _get_process_path(proc_handle)
+        if not path:
+            return False, "No se pudo verificar la ubicación del ejecutable."
+        
+        # Bloqueo de caracteres de control RTL
+        forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
+        if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
+            return False, "Ruta de proceso sospechosa."
 
-    normalized_path = os.normcase(os.normpath(path))
-    if is_protected_path(normalized_path):
-        return False, "Operación denegada: ruta de ejecutable protegida."
+        normalized_path = os.normcase(os.normpath(path))
+        if is_protected_path(normalized_path):
+            return False, "Operación denegada: ruta de ejecutable protegida."
+    except (ctypes.ArgumentError, Exception):
+        return False, "Error interno durante la validación de seguridad."
         
     return True, None
 
@@ -414,4 +410,5 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        kernel32.CloseHandle(proc_handle)
+        if proc_handle:
+            kernel32.CloseHandle(proc_handle)

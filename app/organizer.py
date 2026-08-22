@@ -274,14 +274,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
         
-        # Validación de seguridad: no permitir carpetas de sistema
+        # Validación: prohibir rutas de sistema y asegurar que el destino sea un directorio manejable
         if is_protected_path(dest_base):
             return None
 
         if not dest_base.exists():
             dest_base.mkdir(parents=True, exist_ok=True)
-        # Verificación estricta de permisos y seguridad con el módulo safety
-        if not dest_base.is_dir() or not is_safe_to_modify(dest_base) or not os.access(dest_base, os.W_OK): 
+            
+        if not dest_base.is_dir() or not is_safe_to_modify(dest_base): 
             return None
     except (OSError, PermissionError, RuntimeError):
         return None
@@ -298,13 +298,12 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             target_candidate: Path = dest_base / safe_name
             target: Path = _generate_unique_target(target_candidate).resolve()
             
-            # Verificación estricta contra path traversal: asegurar que el destino final resida en la carpeta de revisión
+            # Verificación de integridad: asegurar que el destino resida estrictamente dentro de la carpeta de revisión
             if not target.is_relative_to(dest_base):
                 continue
                 
-            if is_safe_to_modify(src_path):
-                ensure_safe_to_modify(src_path)
-                shutil.move(str(src_path), str(target))
+            ensure_safe_to_modify(src_path)
+            shutil.move(str(src_path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
             continue
     return dest_base
@@ -321,7 +320,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.is_dir() or not is_safe_to_modify(dest):
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
             return 0
     except (OSError, RuntimeError):
         return 0
@@ -329,10 +328,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            # Asegurar que el ítem es un archivo y no un directorio o reparse point
+            # Asegurar que el ítem es un archivo, que reside dentro del destino, y es seguro modificar
             if not item.is_file() or _is_junction(item):
                 continue
-            # El archivo debe residir dentro del directorio de revisión y ser seguro de modificar
+            
             if item.is_relative_to(dest) and is_safe_to_modify(item):
                 if not _is_file_locked(item):
                     ensure_safe_to_modify(item)

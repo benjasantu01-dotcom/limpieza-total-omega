@@ -116,8 +116,6 @@ class QuarantineItem:
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Verifica que el archivo físico en el sandbox sea bit-a-bit idéntico al original.
-        Utiliza el hash SHA256 almacenado y el tamaño para confirmar que no hubo
-        corrupción o alteración externa mientras el archivo residía en cuarentena.
         """
         if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
             return False
@@ -378,6 +376,9 @@ def quarantine_file(
             try:
                 os.remove(source_path)
             except OSError as e:
+                # Reversión: si falla el borrado, intentar deshacer la copia para mantener atomicidad
+                if destination.exists():
+                    _safe_unlink(destination)
                 raise OSError(f"Archivo copiado pero error al borrar original: {e}")
         
         items = load_manifest(base)
