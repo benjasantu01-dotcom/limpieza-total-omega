@@ -266,7 +266,7 @@ def is_protected_path(path: PathLike) -> bool:
     if any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root):
         return True
             
-    if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
+    if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
         return True
             
     return p == Path(p.anchor)
