@@ -493,10 +493,12 @@ def _call_gemini(
                 return None
             
             text = "".join(str(p.get("text", "")) for p in candidates[0]["content"]["parts"] if isinstance(p, dict))
-            final_text = _validate_response_length(text.strip())
             
-            limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", final_text))
-            return limpia_final if _ensure_safe_text(limpia_final) else None
+            # Sanitización de la respuesta recibida antes de cualquier procesamiento
+            limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", text.strip()))
+            final_text = _validate_response_length(limpia_final)
+            
+            return final_text if _ensure_safe_text(final_text) else None
     except (urllib.error.URLError, KeyError, TypeError, ValueError):
         return None
 
