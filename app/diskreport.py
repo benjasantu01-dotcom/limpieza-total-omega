@@ -290,6 +290,9 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     
     try:
         base = Path(os.fspath(directory)).resolve(strict=False)
+        if not base.is_dir() or (skip_protected and is_protected_path(base)):
+            return []
+            
         sums: Dict[Path, int] = defaultdict(int)
         counts: Dict[Path, int] = defaultdict(int)
         

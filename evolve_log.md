@@ -624,3 +624,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T12:28:13` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al inyectar validaciones explícitas en `_call_gemini` para asegurar que el `model` y la `api_key` no contengan rutas ni inyecciones de comandos, mitigando el riesgo de que una configuración maliciosa en `settings.json` intente manipular el endpoint o el entorno de red de la aplicación.
 - `2026-08-22T12:28:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T12:28:13` Corrida terminada. Total usado hoy: 292.
+- `2026-08-22T12:34:45` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-08-22T12:35:20` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.18s
+
+```
+- `2026-08-22T12:35:20` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva de `save_logo_svg` añadiendo una validación explícita para evitar inyecciones de rutas externas mediante la normalización y comparación estricta de `path_obj` contra el directorio de ejecución actual, previniendo así el posible escalado fuera del entorno esperado.
+- `2026-08-22T12:35:44` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). He robustecido la seguridad defensiva de `browser.py` implementando una validación estricta de "Path Traversal" dentro de `_is_path_inside_base`, asegurando que la ruta resuelta no solo sea un subdirectorio, sino que también verifique explícitamente que no existan segmentos de ruta ".." (mediante `Path.parts`) antes de realizar cualquier operación sobre el disco.
+- `2026-08-22T12:36:10` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `largest_folders` validando que la ruta base del análisis sea un directorio válido y no una ruta protegida antes de iniciar cualquier operación intensiva de entrada/salida.
+- `2026-08-22T12:36:20` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo en `_collect_candidates` para prevenir ataques de denegación de servicio o lecturas inesperadas mediante la verificación explícita de puntos de reparse (reparse points/junctions) utilizando `stat().st_reparse_tag` en lugar de confiar solo en el flag de exclusión genérico, garantizando que el escáner no siga recursiones infinitas o rutas fuera del control esperado.
+- `2026-08-22T12:36:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T12:36:20` Corrida terminada. Total usado hoy: 296.

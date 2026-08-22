@@ -116,6 +116,10 @@ def _is_path_inside_base(target_path: Path, base_path: Path) -> bool:
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
+        # Seguridad defensiva: verificar que no haya intentos de escape mediante segmentos '..'
+        if ".." in real_target.parts:
+            return False
+        
         if not is_safe_to_modify(real_target) or not is_safe_to_modify(real_base):
             return False
 

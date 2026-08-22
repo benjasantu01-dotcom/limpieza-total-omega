@@ -110,8 +110,7 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad por el sistema de archivos,
-    evitando ciclos mediante el seguimiento de (dispositivo, inodo) y aplicando
-    filtros de seguridad antes de cada acceso a disco.
+    evitando ciclos y puntos de reparse, aplicando filtros de seguridad.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
@@ -121,20 +120,20 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Usamos la entrada directa para chequear protección antes de resolve()
+                        # 0x400 es IO_REPARSE_TAG_REPARSE_POINT (Junctions, Symlinks, etc)
+                        entry_stat = entry.stat(follow_symlinks=False)
+                        if getattr(entry_stat, 'st_reparse_tag', 0) != 0:
+                            continue
+                            
                         if skip_protected and is_protected_path(Path(entry.path)):
                             continue
                             
                         if entry.is_dir(follow_symlinks=False):
-                            entry_stat = entry.stat(follow_symlinks=False)
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
                                 visited_device_inodes.add(device_inode)
                                 _scan(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            entry_stat = entry.stat(follow_symlinks=False)
-                            if getattr(entry_stat, 'st_file_attributes', 0) & 0x400: continue
-                                
                             if entry_stat.st_size >= min_size:
                                 path_obj = Path(entry.path)
                                 if is_safe_to_modify(path_obj):
