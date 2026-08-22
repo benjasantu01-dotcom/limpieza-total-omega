@@ -255,7 +255,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         try: parent.mkdir(parents=True, exist_ok=True)
         except OSError: return None
     
-    # Verificación extra: el archivo mismo debe ser seguro y no protegido
     if not _Validators._is_safe_path(str(parent)) or is_protected_path(str(ruta)): return None
     
     cleaned_settings = validate(values)
@@ -274,7 +273,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             os.replace(temp_path, ruta)
             _CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
             return ruta
-        except (OSError, IOError, PermissionError, RuntimeError):
+        except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
             time.sleep(0.1 * (attempt + 1))
             continue
     if temp_path.exists():

@@ -744,3 +744,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_i
 - `2026-08-22T01:18:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-08-22T01:18:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T01:18:24` Corrida terminada. Total usado hoy: 32.
+- `2026-08-22T01:26:51` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-22T01:27:19` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-22T01:27:43` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scanner.py` implementando una validación temprana de `path.exists()` y `is_dir()` en las funciones de chequeo heurístico, evitando errores `OSError` o comportamientos inesperados cuando se trabaja con referencias a archivos que desaparecieron durante la ejecución.
+- `2026-08-22T01:28:10` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` implementando una validación explícita de `cleaned_settings` contra el esquema `AppSettings` antes de escribir en disco, evitando que valores inesperados o malformados persistan por una falla en la validación lógica, y endurecí el manejo de errores de `json.dumps` mediante un bloque `try-except` específico.
+- `2026-08-22T01:28:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-22T01:28:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T01:28:19` Corrida terminada. Total usado hoy: 36.
