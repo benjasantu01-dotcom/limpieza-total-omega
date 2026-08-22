@@ -615,3 +615,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T12:16:19` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-22T12:16:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T12:16:19` Corrida terminada. Total usado hoy: 288.
+- `2026-08-22T12:24:34` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-22T12:25:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-22T12:26:03` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de E/S en la recuperación de metadatos (stat) y en la resolución de rutas dentro de `_is_safe_entry`, evitando que el escáner aborte ante archivos bloqueados por el sistema o dispositivos extraíbles desconectados.
+- `2026-08-22T12:26:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-22T12:27:28` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante archivos corruptos o inexistentes en `load()` añadiendo un chequeo explícito de integridad tras `json.load()` para asegurar que todas las claves esperadas de `AppSettings` estén presentes, evitando errores de `KeyError` en el resto de la aplicación si el JSON del usuario está incompleto.
+- `2026-08-22T12:27:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-22T12:28:13` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva al inyectar validaciones explícitas en `_call_gemini` para asegurar que el `model` y la `api_key` no contengan rutas ni inyecciones de comandos, mitigando el riesgo de que una configuración maliciosa en `settings.json` intente manipular el endpoint o el entorno de red de la aplicación.
+- `2026-08-22T12:28:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T12:28:13` Corrida terminada. Total usado hoy: 292.

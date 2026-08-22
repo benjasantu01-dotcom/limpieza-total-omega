@@ -457,7 +457,9 @@ def _call_gemini(
 ) -> Optional[str]:
     """Invoca la API de Gemini enviando un prompt construido bajo estrictas políticas."""
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
+    # Validaciones defensivas de configuración
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
+    if _PATH_INJECTION_REGEX.search(api_key) or _PATH_INJECTION_REGEX.search(model): return None
     
     safe_q = _sanitize_query(question)
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None

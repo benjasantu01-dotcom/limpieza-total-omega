@@ -256,7 +256,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             data = json.load(f)
             
         if not isinstance(data, dict): return _get_default_config()
+        
+        # Validación de integridad de estructura
         config = validate(data)
+        if not all(k in config for k in DEFAULTS.keys()):
+            return _get_default_config()
+            
         _CACHE[ruta] = (mtime, config)
         return config
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):

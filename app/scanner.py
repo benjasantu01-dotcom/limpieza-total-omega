@@ -80,7 +80,8 @@ class Scanner:
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """Verifica que la ruta esté contenida dentro del alcance de la raíz original."""
         try:
-            resolved = entry_path.resolve()
+            # Uso de resolve(strict=False) para evitar fallos si el archivo es temporal y desaparece
+            resolved = entry_path.resolve(strict=False)
             return self.base_root == resolved or self.base_root in resolved.parents
         except (OSError, RuntimeError):
             return False
@@ -161,34 +162,25 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica la antigüedad de un ejecutable en carpetas de alto riesgo.
-    
-    Busca ejecutables descargados en las últimas 24 horas, ya que son vectores comunes 
-    de infección inicial (descargas "drive-by").
     """
     if path is None or is_protected_path(path):
         return None
     
-    # Optimizamos la verificación: si alguna parte de la ruta está en WATCHED_FOLDERS
     if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         return None
         
     try:
-        if not path.exists():
-            return None
-            
         stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'stat')) else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, PermissionError, AttributeError, ValueError) as e:
-        logger.debug(f"Acceso restringido a metadatos de {path}: {e}")
+    except (OSError, PermissionError, AttributeError, ValueError):
+        pass
     return None
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Detecta archivos con nombres de procesos del sistema ubicados fuera de System32.
-    
-    Identifica intentos de engaño mediante typosquatting de binarios críticos del SO.
     """
     if path is None or not path.name:
         return None
@@ -202,9 +194,6 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Orquestador de reglas heurísticas para un archivo dado.
-    
-    Ejecuta validaciones genéricas y recorre la lista de chequeos específicos (EXECUTABLE_CHECKS)
-    si el archivo califica como ejecutable sospechoso.
     """
     if path is None:
         return []
@@ -228,9 +217,6 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Realiza un escaneo recursivo del sistema de archivos.
-    
-    Implementa un mecanismo de pila para evitar la recursividad profunda.
-    Valida la integridad de la ruta raíz mediante las políticas de 'safety.py'.
     """
     if not directory:
         return []
@@ -244,8 +230,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         path_input: Path = raw_path.resolve(strict=True)
         if is_protected_path(path_input) or not is_safe_to_modify(path_input):
             return []
-    except (OSError, TypeError, ValueError, RuntimeError) as e:
-        logger.debug(f"Entrada de directorio inválida o inaccesible: {e}")
+    except (OSError, TypeError, ValueError, RuntimeError):
         return []
 
     scanner = Scanner(base_root=path_input)
@@ -269,8 +254,6 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 def run_windows_defender_quick_scan() -> str:
     """
     Ejecuta un escaneo rápido mediante la API de Windows Defender.
-    
-    Requiere PowerShell para invocar los cmdlets de seguridad nativos ('Get-MpComputerStatus').
     """
     try:
         status = subprocess.run(

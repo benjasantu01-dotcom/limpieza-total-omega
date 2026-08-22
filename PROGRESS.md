@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 93 | 7 | 12 | 9 | 95 |
-| 2026-08-22 | 130 | 8 | 18 | 14 | 118 |
+| 2026-08-21 | 93 | 7 | 12 | 9 | 91 |
+| 2026-08-22 | 133 | 8 | 18 | 14 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **51**
+- seguridad defensiva: **41**
 - rendimiento: **40**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
+- `settings.py`: **21**
 - `memory.py`: **21**
 - `healthscore.py`: **20**
-- `settings.py`: **20**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
+- `scanner.py`: **18**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
-- `scanner.py`: **17**
 - `quarantine.py`: **14**
 - `branding.py`: **14**
 - `main.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T12:28:13` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva al inyectar validaciones explícitas en `_call_gemini` para asegurar que el `model` y la `api_key` no contengan rutas ni inyecciones de comandos, mitigando el riesgo de que una configuración maliciosa en `settings.json` intente manipular el endpoint o el entorno de red de la aplicación.
+- `2026-08-22T12:27:28` **settings.py** (robustez ante casos límite): Mejoré la robustez ante archivos corruptos o inexistentes en `load()` añadiendo un chequeo explícito de integridad tras `json.load()` para asegurar que todas las claves esperadas de `AppSettings` estén presentes, evitando errores de `KeyError` en el resto de la aplicación si el JSON del usuario está incompleto.
+- `2026-08-22T12:26:03` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de E/S en la recuperación de metadatos (stat) y en la resolución de rutas dentro de `_is_safe_entry`, evitando que el escáner aborte ante archivos bloqueados por el sistema o dispositivos extraíbles desconectados.
 - `2026-08-22T12:10:11` **main.py** (robustez ante casos límite): Se implementó un mecanismo de protección para el pool de hilos y las tareas encoladas durante el cierre de la aplicación, asegurando que las operaciones pendientes con el disco se cancelen correctamente mediante `cancel_futures=True` y se verifique el estado `self._closing` antes de intentar cualquier interacción con la interfaz gráfica, previniendo errores de `TclError` y condiciones de carrera al salir.
 - `2026-08-22T12:05:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y agregué una validación de coherencia en `compute_score` para asegurar que las métricas de porcentaje no excedan el 100% incluso ante lecturas de hardware erráticas.
 - `2026-08-22T11:55:05` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el acceso directo a `PALETTE` por el método `color()` para prevenir excepciones por claves faltantes en tiempo de ejecución.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T11:24:11` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para evitar realizar llamadas repetitivas y costosas a `Path.resolve()` y `is_safe_to_modify()` dentro del ciclo de escaneo, priorizando el uso de la información ya obtenida a través de `os.scandir` y reduciendo la creación innecesaria de objetos `Path` mediante el manejo directo de strings cuando sea posible.
 - `2026-08-22T11:23:47` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para reducir el número de llamadas a `path.resolve()` y `path.exists()` dentro del bucle principal, minimizando operaciones de E/S costosas al iterar grandes volúmenes de archivos.
 - `2026-08-22T11:14:52` **browser.py** (rendimiento): Optimizé `detect_profiles` para evitar el re-cálculo redundante del tamaño de directorios compartidos y reducir la carga de E/S al consolidar la lógica de resolución de rutas dentro del bucle principal.
-- `2026-08-22T11:14:42` **branding.py** (rendimiento): Se optimizó el cálculo de la paleta RGB eliminando la re-iteración dentro de un list comprehension innecesario en el ámbito global y consolidando las transformaciones de color mediante la reutilización de `PALETTE_RGB` en `_hex_to_rgb`, evitando conversiones redundantes en cada llamada.
-- `2026-08-22T11:14:09` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` evitando iterar sobre todos los validadores para cada fuente, transformando la lógica de búsqueda a un acceso directo por clave (`O(1)` en lugar de `O(N*M)`), lo cual es más eficiente al procesar diccionarios de métricas.
-- `2026-08-22T11:13:34` **startup.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de procesamiento de datos y validación en `StartupEntry`, clarificando el propósito de cada método y mejorando la legibilidad técnica del código fuente.
