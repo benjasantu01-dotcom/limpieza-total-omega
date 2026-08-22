@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 93 | 7 | 12 | 9 | 87 |
-| 2026-08-22 | 136 | 9 | 18 | 14 | 119 |
+| 2026-08-21 | 93 | 7 | 12 | 9 | 83 |
+| 2026-08-22 | 140 | 9 | 18 | 14 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **44**
+- seguridad defensiva: **48**
 - rendimiento: **40**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
+- `memory.py`: **22**
+- `healthscore.py`: **21**
 - `settings.py`: **21**
-- `memory.py`: **21**
-- `healthscore.py`: **20**
 - `assistant.py`: **20**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `scanner.py`: **18**
 - `quarantine.py`: **14**
 - `branding.py`: **14**
-- `main.py`: **12**
-- `organizer.py`: **12**
+- `main.py`: **13**
+- `organizer.py`: **13**
 - `safety.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T12:48:13` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de path traversal y evitar que se manipulen archivos fuera de la jerarquía permitida, validando que el destino final resuelto sea efectivamente hijo del directorio de revisión antes de cualquier operación de movimiento.
+- `2026-08-22T12:48:03` **memory.py** (seguridad defensiva): Se añadió la verificación `os.path.exists` en `trim_working_set` para validar que el ejecutable asociado al PID efectivamente exista en el sistema antes de proceder con el manejo de memoria, reforzando la seguridad defensiva contra posibles condiciones de carrera (Race Conditions) donde el PID podría haber sido reciclado.
+- `2026-08-22T12:47:35` **main.py** (seguridad defensiva): He refactorizado `_worker_thread_logic` para que el chequeo de seguridad mediante `ensure_safe_to_modify` ocurra de forma obligatoria y previa a cualquier ejecución, consolidando la lógica de protección del hilo en un único punto centralizado.
+- `2026-08-22T12:45:23` **healthscore.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `compute_score` agregando una validación explícita de `metrics.quarantined_count` antes de generar recomendaciones, asegurando que solo se procesen valores enteros positivos, y mejorando la robustez ante posibles inyecciones de datos no numéricos mediante el uso de `_to_int` para el contador de cuarentena.
 - `2026-08-22T12:36:20` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo en `_collect_candidates` para prevenir ataques de denegación de servicio o lecturas inesperadas mediante la verificación explícita de puntos de reparse (reparse points/junctions) utilizando `stat().st_reparse_tag` en lugar de confiar solo en el flag de exclusión genérico, garantizando que el escáner no siga recursiones infinitas o rutas fuera del control esperado.
 - `2026-08-22T12:36:10` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` validando que la ruta base del análisis sea un directorio válido y no una ruta protegida antes de iniciar cualquier operación intensiva de entrada/salida.
 - `2026-08-22T12:35:44` **browser.py** (seguridad defensiva): He robustecido la seguridad defensiva de `browser.py` implementando una validación estricta de "Path Traversal" dentro de `_is_path_inside_base`, asegurando que la ruta resuelta no solo sea un subdirectorio, sino que también verifique explícitamente que no existan segmentos de ruta ".." (mediante `Path.parts`) antes de realizar cualquier operación sobre el disco.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T11:55:05` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el acceso directo a `PALETTE` por el método `color()` para prevenir excepciones por claves faltantes en tiempo de ejecución.
 - `2026-08-22T11:54:33` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de tipos y rangos en el mapeo de palabras clave (`_KEYWORD_MAP` a `_HANDLERS`), asegurando que si la configuración de métricas es nula o malintencionada, la app no lance excepciones no capturadas al invocar métodos en `None` o valores inesperados.
 - `2026-08-22T11:45:04` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetitivas de disco por una validación de `st_mtime` basada en `stat()` y eliminando la recarga innecesaria del archivo al llamar a `update()`.
-- `2026-08-22T11:44:35` **scanner.py** (rendimiento): Optronicé la detección de carpetas de riesgo en `check_recent_executable_in_downloads` sustituyendo la búsqueda iterativa sobre `WATCHED_FOLDERS` por una verificación de conjunto (set) mediante `path.parts`, reduciendo la complejidad de O(N*M) a O(1) por cada acceso.
-- `2026-08-22T11:34:24` **organizer.py** (rendimiento): Optimicé el bucle de escaneo en `scan_for_junk` utilizando `os.scandir` en lugar de `os.walk`, lo cual mejora drásticamente el rendimiento al reducir las llamadas a `stat()` y el uso de memoria durante el recorrido del sistema de archivos.
-- `2026-08-22T11:33:59` **memory.py** (rendimiento): Optimicé el rendimiento de `parse_linux_meminfo` sustituyendo la búsqueda lineal en una lista de llaves por un conjunto (set) de búsqueda O(1) y eliminando la creación innecesaria de diccionarios intermedios, reduciendo la complejidad de las iteraciones sobre el texto.
-- `2026-08-22T11:24:36` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` pre-calculando las referencias a los scorers en un mapa local para evitar consultas repetitivas al diccionario `_SCORERS` y caché de las constantes de peso, reduciendo la sobrecarga de resolución de nombres en cada iteración del bucle.

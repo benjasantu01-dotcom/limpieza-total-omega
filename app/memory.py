@@ -316,7 +316,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
         path = _get_process_path(proc_handle)
-        if not path: return False, "No se pudo verificar la ubicación del ejecutable."
+        if not path or not os.path.exists(path): return False, "No se pudo verificar la ubicación del ejecutable."
         
         # Filtro de seguridad: evitar rutas con caracteres invisibles de dirección
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]

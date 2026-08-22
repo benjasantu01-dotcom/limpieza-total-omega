@@ -287,6 +287,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
             target = _generate_unique_target(dest_base / safe_name).resolve()
             
+            # Verificación estricta: asegurar que el destino resuelto resida dentro de dest_base
             if not target.is_relative_to(dest_base): continue
                 
             ensure_safe_to_modify(src_path)
@@ -315,6 +316,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         try:
             if not item.is_file() or _is_junction(item): continue
             
+            # Validar que el archivo esté realmente dentro de la carpeta de revisión
             if item.is_relative_to(dest) and is_safe_to_modify(item):
                 if not _is_file_locked(item):
                     ensure_safe_to_modify(item)

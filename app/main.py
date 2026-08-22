@@ -971,13 +971,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._validate_and_log_error(e, tab)
 
     def _worker_thread_logic(self, fn: Callable[[], Any], tab: str, target: Optional[str]) -> None:
-        """Wrappers de ejecución para hilos de trabajo asíncronos con validación de seguridad."""
+        """Wrapper de ejecución para hilos de trabajo con validación de seguridad obligatoria."""
         try:
             if target:
                 safety.ensure_safe_to_modify(Path(target).resolve(strict=True))
             self._safe_run(fn, tab)
-        except safety.UnsafePathError as e:
-            self.log(f"Abortado: La ruta {target} no es segura: {e}", tab)
+        except Exception as e:
+            if not self._closing:
+                self._validate_and_log_error(e, tab)
         finally:
             if not self._closing:
                 self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
@@ -992,7 +993,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         with self._task_lock:
             if not self._closing and self._executor:
-                # La validación se delega al worker thread para mayor seguridad
+                # La validación se realiza dentro de _worker_thread_logic
                 self._executor.submit(self._worker_thread_logic, fn, tab, target_path if check_safety else None)
 
     def _current_tab(self) -> str:

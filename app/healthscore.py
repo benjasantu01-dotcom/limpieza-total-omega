@@ -233,8 +233,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         if r.check(metrics, ratios.get(r.area, 0.0)):
             recommendations.append(r.message_factory(metrics))
             
-    if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
+    # Validación defensiva del contador de cuarentena
+    q_count = _to_int(metrics.quarantined_count)
+    if q_count > 0:
+        recommendations.append(f"Tenés {q_count} archivo(s) en cuarentena.")
     
     score_int = int(_clamp(final_score, 0.0, 100.0))
     return HealthResult(score_int, grade_for_score(score_int), breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
