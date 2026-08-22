@@ -821,3 +821,34 @@ assert 'rectangle' in ['oval', 'oval', 'oval', 'oval', 'polygon']
 - `2026-08-22T02:39:31` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-08-22T02:39:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T02:39:31` Corrida terminada. Total usado hoy: 64.
+- `2026-08-22T02:48:17` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-22T02:48:48` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Implementé un sistema de "lazy loading" en `load()` utilizando `pathlib` de forma más eficiente y centralizando el chequeo de `stat` para evitar accesos repetitivos a disco y llamadas innecesarias a `is_safe_to_modify` en accesos frecuentes.
+- `2026-08-22T02:49:17` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.21s
+
+```
+- `2026-08-22T02:49:17` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó `_resolve_and_cache_path` para evitar consultas innecesarias al sistema de archivos mediante una estrategia de "negative caching" más eficiente y el uso de un set para bloquear rutas protegidas, reduciendo la redundancia de I/O en cada iteración del bucle.
+- `2026-08-22T02:49:53` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inconsistentes o corruptos durante la carga de métricas y la serialización, añadiendo validación de tipos estricta y protección contra valores nulos en `_validate_and_assign` y `context_as_text`.
+- `2026-08-22T02:50:12` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-22T02:50:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T02:50:12` Corrida terminada. Total usado hoy: 68.

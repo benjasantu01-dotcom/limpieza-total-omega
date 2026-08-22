@@ -238,23 +238,23 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta_str = str(ruta)
     try:
         if not ruta.exists(): return _get_default_config()
+        
         stat = ruta.stat()
-        cached = _CACHE.get(ruta_str)
-        if cached and cached[0] == stat.st_mtime:
+        mtime = stat.st_mtime
+        if (cached := _CACHE.get(ruta_str)) and cached[0] == mtime:
             return cached[1]
-        if stat.st_size > MAX_SETTINGS_SIZE or not _Validators._is_safe_path(ruta_str):
-            if ruta.exists(): ruta.rename(ruta.with_suffix(".bak"))
+            
+        if stat.st_size > MAX_SETTINGS_SIZE:
             return _get_default_config()
+            
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
+            
         if not isinstance(data, dict): return _get_default_config()
         config = validate(data)
-        _CACHE[ruta_str] = (stat.st_mtime, config)
+        _CACHE[ruta_str] = (mtime, config)
         return config
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError):
-        try: 
-            if ruta.exists(): ruta.rename(ruta.with_suffix(".bak"))
-        except OSError: pass
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:

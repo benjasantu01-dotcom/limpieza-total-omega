@@ -236,7 +236,10 @@ def _ensure_safe_text(text: Any) -> bool:
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
     """Extrae y valida una métrica individual desde una fuente de datos."""
     cast, min_v, max_v = spec
-    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+    try:
+        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+    except Exception:
+        val = None
     
     clean_val = _safe_float(val, -1.0)
     if clean_val < 0:
@@ -260,7 +263,11 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     for src in (health, extra):
         if src is None: continue
-        g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
+        try:
+            g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
+        except Exception:
+            g_val = None
+            
         if isinstance(g_val, (str, int, float)):
             g_str = str(g_val)[:10].strip()
             if _ensure_safe_text(g_str):
@@ -318,7 +325,7 @@ def explain_area(area: Any) -> str:
 
 def _get_criterion_check(ctx: SystemContext, crit: ProblemCriterion) -> str | None:
     """Evalúa un criterio de salud contra el contexto y devuelve el mensaje si aplica."""
-    val = getattr(ctx, crit.metric_key)
+    val = getattr(ctx, crit.metric_key, -1.0)
     f_val = _safe_float(val, -1.0)
     if f_val < 0: return None
         
