@@ -109,7 +109,9 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Recorre recursivamente directorios buscando archivos duplicados potenciales.
+    Realiza un recorrido recursivo en profundidad por el sistema de archivos,
+    evitando ciclos mediante el seguimiento de (dispositivo, inodo) y aplicando
+    filtros de seguridad antes de cada acceso a disco.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
@@ -131,6 +133,7 @@ def _collect_candidates(
                                 _scan(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             entry_stat = entry.stat(follow_symlinks=False)
+                            # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT (ignoramos puntos de reparse)
                             if getattr(entry_stat, 'st_file_attributes', 0) & 0x400: continue
                                 
                             if entry_stat.st_size >= min_size:
@@ -150,7 +153,10 @@ def _collect_candidates(
 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica una función de hashing y agrupa rutas que comparten el mismo digest."""
+    """
+    Toma un conjunto de archivos con tamaño idéntico y los reclasifica según el 
+    resultado de hash_func, descartando grupos resultantes que contengan un único archivo.
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -159,7 +165,10 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Refina grupos de tamaño mediante hash parcial y luego hash completo (SHA256)."""
+    """
+    Aplica el pipeline de refinamiento: filtra por hash parcial (rápido) y
+    finaliza con hash completo (SHA256) para confirmar duplicados exactos.
+    """
     if not paths or size <= 0: return []
     confirmed_groups: List[DuplicateGroup] = []
     partial_results: Dict[str, List[Path]] = _refine_by_hash(paths, partial_hash)

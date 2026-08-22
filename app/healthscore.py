@@ -141,29 +141,29 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio (0.0-1.0) de salud según MB de archivos temporales (menor es mejor)."""
+    """Calcula salud: penaliza linealmente el exceso de basura hasta llegar a _LIMIT_JUNK_MB (salud 0)."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula ratio (0.0-1.0) penalizando cada hallazgo detectado."""
+    """Calcula salud: penaliza 5% por hallazgo estándar y 25% por cada advertencia crítica."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio (0.0-1.0) basándose en la RAM disponible vs. umbral de alerta."""
+    """Calcula salud: normaliza el porcentaje libre respecto al umbral definido. >100% retorna 1.0."""
     limit = max(0.1, float(_LIMIT_RAM_PERCENT))
     return _clamp(_to_float(available_percent) / limit, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula ratio (0.0-1.0) basándose en el espacio libre vs. umbral crítico."""
+    """Calcula salud: normaliza el porcentaje libre respecto al umbral crítico definido."""
     limit = max(0.1, float(_LIMIT_DISK_PERCENT))
     return _clamp(_to_float(free_percent) / limit, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula ratio (0.0-1.0) penalizando el espacio total desperdiciado por duplicados."""
+    """Calcula salud: penaliza la ocupación de espacio por duplicados respecto al límite tolerable."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula ratio (0.0-1.0) penalizando la cantidad excesiva de procesos al inicio."""
+    """Calcula salud: penaliza el exceso de procesos de inicio. 0 procesos = 100% de salud."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:

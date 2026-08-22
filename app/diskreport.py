@@ -185,7 +185,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     if mounts is None:
         if os.name == "nt":
             import string
-            # Verificamos disponibilidad rápida usando os.path.exists antes de intentar acceder
             mounts = [f"{letter}:\\" for letter in string.ascii_uppercase
                       if os.path.exists(f"{letter}:\\")]
         else:
@@ -206,11 +205,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente para listar archivos.
-    
-    Implementa un mecanismo de prevención de bucles infinitos mediante `visited_inodes` 
-    (basado en números de dispositivo e inodo) y saltea rutas protegidas consultando 
-    `safety.is_protected_path`. Omite enlaces simbólicos y puntos de unión para 
-    evitar el escape del directorio raíz definido.
     """
     if not directory:
         return
@@ -260,8 +254,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         elif entry.is_file():
                             yield entry_path, stat_data.st_size
                     except (OSError, PermissionError, FileNotFoundError):
+                        # Ignoramos errores de acceso a archivos específicos para permitir el escaneo parcial
                         continue
         except (OSError, PermissionError, FileNotFoundError):
+            # Ignoramos directorios que no pudimos abrir por restricciones de sistema
             continue
 
 
@@ -338,10 +334,6 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Recolección unificada de datos para resumen (optimiza la lectura de disco).
-    
-    Utiliza una única pasada de `walk_files` y un `heapq` para mantener solo los 
-    8 archivos más grandes encontrados hasta el momento, reduciendo drásticamente 
-    el consumo de memoria en directorios con millones de archivos.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
