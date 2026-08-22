@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 93 | 7 | 12 | 9 | 79 |
-| 2026-08-22 | 141 | 10 | 19 | 14 | 120 |
+| 2026-08-21 | 93 | 7 | 12 | 9 | 75 |
+| 2026-08-22 | 142 | 11 | 19 | 14 | 122 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **49**
+- seguridad defensiva: **50**
 - rendimiento: **40**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
+- `settings.py`: **22**
 - `memory.py`: **22**
 - `healthscore.py`: **21**
-- `settings.py`: **21**
 - `assistant.py`: **20**
 - `scanner.py`: **19**
 - `browser.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T13:05:49` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de `settings.py` implementando un chequeo de seguridad preventivo al cargar el archivo, verificando si el path existe como archivo real y no como un directorio mediante `is_file()` antes de intentar abrirlo, evitando excepciones innecesarias en sistemas con estructuras de archivos maliciosas o ambiguas.
 - `2026-08-22T12:58:06` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (diseñado para operaciones de escritura/modificación) por `is_protected_path`, evitando el error de lógica donde el escáner se bloqueaba a sí mismo al evaluar rutas que solo necesita leer.
 - `2026-08-22T12:48:13` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de path traversal y evitar que se manipulen archivos fuera de la jerarquía permitida, validando que el destino final resuelto sea efectivamente hijo del directorio de revisión antes de cualquier operación de movimiento.
 - `2026-08-22T12:48:03` **memory.py** (seguridad defensiva): Se añadió la verificación `os.path.exists` en `trim_working_set` para validar que el ejecutable asociado al PID efectivamente exista en el sistema antes de proceder con el manejo de memoria, reforzando la seguridad defensiva contra posibles condiciones de carrera (Race Conditions) donde el PID podría haber sido reciclado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T12:10:11` **main.py** (robustez ante casos límite): Se implementó un mecanismo de protección para el pool de hilos y las tareas encoladas durante el cierre de la aplicación, asegurando que las operaciones pendientes con el disco se cancelen correctamente mediante `cancel_futures=True` y se verifique el estado `self._closing` antes de intentar cualquier interacción con la interfaz gráfica, previniendo errores de `TclError` y condiciones de carrera al salir.
 - `2026-08-22T12:05:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y agregué una validación de coherencia en `compute_score` para asegurar que las métricas de porcentaje no excedan el 100% incluso ante lecturas de hardware erráticas.
 - `2026-08-22T11:55:05` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el acceso directo a `PALETTE` por el método `color()` para prevenir excepciones por claves faltantes en tiempo de ejecución.
-- `2026-08-22T11:54:33` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de tipos y rangos en el mapeo de palabras clave (`_KEYWORD_MAP` a `_HANDLERS`), asegurando que si la configuración de métricas es nula o malintencionada, la app no lance excepciones no capturadas al invocar métodos en `None` o valores inesperados.

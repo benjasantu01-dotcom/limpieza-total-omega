@@ -242,7 +242,8 @@ def validate(raw_values: Any) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     try:
-        if not ruta.exists() or ruta.stat().st_size == 0: return _get_default_config()
+        if not ruta.exists() or not ruta.is_file() or ruta.stat().st_size == 0: 
+            return _get_default_config()
         
         stat = ruta.stat()
         mtime = stat.st_mtime
