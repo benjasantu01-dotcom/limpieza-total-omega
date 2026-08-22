@@ -1434,7 +1434,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
             
         raw = self.pid_entry.get().strip()
-        # Validación de entrada antes de proceder
+        # Validación de entrada para evitar excepciones por malformación o vacío
         if not raw.isdigit():
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
@@ -1671,6 +1671,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 continue
         
         try:
+            # Validaciones preventivas para asegurar integridad de configuración
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
                     self.min_dup_entry.get(), 64
@@ -1683,6 +1684,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 
             if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
                 clave_raw = self.api_key_entry.get().strip()
+                # Filtrar caracteres no imprimibles o peligrosos en API key
                 clave_api = "".join(c for c in clave_raw if c.isprintable())
                 if clave_api:
                     valores["asistente_clave_api"] = clave_api

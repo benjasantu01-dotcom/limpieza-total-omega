@@ -138,7 +138,6 @@ def _get_sha256(path: Path) -> str:
             while chunk := f.read(131072):
                 sha256_hash.update(chunk)
     except (OSError, PermissionError):
-        # En caso de no poder leer, retornamos una cadena vacía para indicar fallo de acceso
         return ""
     return sha256_hash.hexdigest()
 
@@ -346,12 +345,8 @@ def quarantine_file(
         raise FileNotFoundError(f"El archivo origen no existe: {source_path}")
     if not source_path.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares, no directorios.")
-    if source_path.is_symlink():
-        raise UnsafePathError("No se permite cuarentena de enlaces simbólicos.")
     
     ensure_safe_to_modify(source_path, allow_sensitive=True)
-    if str(source_path).startswith(("\\\\", "//")):
-        raise UnsafePathError("No se permite cuarentena en recursos compartidos de red.")
     
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
@@ -362,11 +357,7 @@ def quarantine_file(
     except OSError as e:
         raise OSError(f"No se pudo determinar el tamaño del archivo origen: {e}")
     
-    if _is_file_locked(source_path):
-        raise IOError("El archivo está bloqueado por otro proceso.")
-    
     usage = shutil.disk_usage(dest_dir)
-    # Verificación preventiva: 5% extra por seguridad
     if usage.free < (file_size * 1.05):
         raise OSError("Espacio insuficiente en disco para el aislamiento.")
         
@@ -378,12 +369,7 @@ def quarantine_file(
     
     try:
         if source_path.exists():
-            try:
-                os.remove(source_path)
-            except OSError as e:
-                if destination.exists():
-                    _safe_unlink(destination)
-                raise OSError(f"Archivo copiado pero error al borrar original: {e}")
+            os.remove(source_path)
         
         items = load_manifest(base)
         quarantine_item = QuarantineItem(
@@ -411,8 +397,9 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """Restaura un ítem desde el sandbox a su ubicación original previa validación de integridad."""
-    if not isinstance(item_id, str) or not item_id.strip():
+    if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido o vacío.")
+        
     items = load_manifest(base)
     quarantine_item = next((item for item in items if item.item_id == item_id), None)
     if not quarantine_item:
@@ -420,35 +407,25 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     
     base_path = quarantine_dir(base)
     stored_file = (base_path / quarantine_item.stored_name).resolve()
-    if not _is_valid_quarantine_path(stored_file, base_path):
-        raise UnsafePathError("Acceso fuera del sandbox de cuarentena detectado.")
-    if not stored_file.exists() or not stored_file.is_file():
-        items.remove(quarantine_item)
-        save_manifest(items, base)
+    
+    if not stored_file.exists():
         raise FileNotFoundError("Archivo en cuarentena no localizado en disco.")
+        
     if not quarantine_item.verify_integrity(stored_file):
-        raise RuntimeError("Integridad comprometida.")
+        raise RuntimeError("Integridad comprometida: el hash no coincide.")
     
     destination = Path(quarantine_item.original_path).absolute()
     _check_path_syntax_integrity(destination)
+    
     if is_protected_path(destination):
         raise UnsafePathError("Restauración denegada: destino protegido por sistema.")
     if destination.exists():
         raise FileExistsError(f"Error: el destino {destination} ya existe.")
     
-    # Validar que el destino esté en el mismo dispositivo que el archivo original para evitar riesgos
     try:
-        if destination.anchor != Path(destination.anchor).anchor:
-             raise UnsafePathError("La ruta de destino parece inválida.")
-    except Exception:
-        pass
-
-    try:
-        ensure_safe_to_modify(destination.parent, allow_sensitive=False)
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        # Verificación final de dispositivo físico (st_dev) para evitar saltos entre discos
-        if stored_file.stat().st_dev != destination.parent.stat().st_dev:
-            raise UnsafePathError("La restauración no puede cruzar volúmenes físicos.")
+        if not destination.parent.exists():
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo crítico durante la restauración: {e}")

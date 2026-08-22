@@ -328,24 +328,25 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         target_pid = int(pid)
     except (ValueError, TypeError): return False, "El PID debe ser un número entero válido."
+    
     if _is_system_process(target_pid) or target_pid == os.getpid():
         return False, "Operación denegada: PID fuera de rango o protegido."
-    
-    # Pre-chequeo básico de seguridad antes de abrir handle
-    if is_protected_path(str(target_pid)): return False, "Acceso restringido al sistema."
 
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
-    if not proc_handle: return False, "Acceso denegado al proceso."
+    if not proc_handle: 
+        return False, "Acceso denegado al proceso (podría requerir privilegios elevados)."
+        
     try:
         valid, reason = _is_safe_to_trim(proc_handle)
-        if not valid: return False, reason or "Validación de proceso fallida."
+        if not valid: 
+            return False, reason or "Validación de proceso fallida."
         if not psapi.EmptyWorkingSet(proc_handle):
             return False, "Error al liberar memoria del proceso seleccionado."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        if proc_handle: kernel32.CloseHandle(proc_handle)
+        kernel32.CloseHandle(proc_handle)
 
 if __name__ == "__main__":
     # Ejemplo de uso para depuración del módulo
