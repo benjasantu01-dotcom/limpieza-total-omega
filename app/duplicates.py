@@ -163,12 +163,15 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Refina grupos de tamaño mediante hash parcial y luego hash completo (SHA256)."""
+    if not paths or size <= 0: return []
     confirmed_groups: List[DuplicateGroup] = []
     partial_results = _refine_by_hash(paths, partial_hash)
     for partial_candidates in partial_results.values():
+        if len(partial_candidates) < 2: continue
         full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
-            confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
+            if len(confirmed_paths) > 1:
+                confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
     return confirmed_groups
 
 
@@ -188,7 +191,7 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Selecciona el archivo candidato a conservar."""
+    """Selecciona el archivo candidato a conservar basado en antigüedad y longitud de ruta."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     keepers: List[Tuple[float, int, Path]] = []
@@ -199,7 +202,9 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             keepers.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError, FileNotFoundError):
             continue
-    return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
+    if not keepers:
+        return None
+    return min(keepers, key=lambda x: (x[0], x[1]))[2]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

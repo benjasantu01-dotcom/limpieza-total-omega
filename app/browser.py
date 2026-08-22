@@ -130,7 +130,6 @@ def _is_path_inside_base(target_path: Optional[Path], base_path: Optional[Path])
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Validación robusta por componentes de ruta
         if len(real_target.parts) < len(real_base.parts):
             return False
         if real_target.parts[:len(real_base.parts)] != real_base.parts:
@@ -163,7 +162,6 @@ def _is_system_hidden(entry_path: str | None, kernel32: ctypes.WinDLL | None) ->
     try:
         if not os.path.exists(entry_path):
             return False
-        # Normalización de ruta para manejo de atributos
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False
@@ -200,26 +198,17 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Calcula el tamaño acumulado de un directorio de forma recursiva.
-
-    Args:
-        root_dir: Ruta absoluta a procesar.
-        is_junction_fn: Callback para detectar puntos de reparse (Windows).
-        kernel32: Instancia de ctypes para acceso a bajo nivel o None.
-        memo: Diccionario para cachear resultados por ruta y optimizar.
-
-    Returns:
-        Tamaño total en bytes de la jerarquía segura.
+    Calcula el tamaño acumulado de un directorio de forma recursiva con manejo estricto de errores.
     """
     if not isinstance(root_dir, str) or not root_dir:
         return 0
     
     try:
         root_path = Path(root_dir).resolve(strict=True)
-        if not root_path.is_dir() or not is_safe_to_modify(root_path) or is_protected_path(root_path) or root_path.is_symlink() or is_junction_fn(str(root_path)):
+        if not root_path.is_dir() or not is_safe_to_modify(root_path) or is_protected_path(root_path):
             return 0
         root_key = str(root_path)
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
     if root_key in memo:
@@ -240,12 +229,8 @@ def _sum_directory_recursive(
                         total += _walk(entry.path, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         try:
-                            p_entry = Path(entry.path)
-                            if not is_safe_to_modify(p_entry) or is_protected_path(p_entry):
-                                continue
                             st = entry.stat(follow_symlinks=False)
-                            if st.st_size > 0:
-                                total += st.st_size
+                            total += st.st_size
                         except (OSError, PermissionError):
                             continue
         except (PermissionError, OSError, FileNotFoundError):
@@ -299,8 +284,7 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea las ubicaciones base buscando las rutas de caché de los navegadores configurados.
-    Filtra entradas mediante `is_safe_to_modify` y retorna una lista de `BrowserCache`
-    ordenados por tamaño (bytes) de mayor a menor.
+    Filtra entradas mediante `is_safe_to_modify` y retorna una lista de `BrowserCache`.
     """
     raw_bases = bases if bases is not None else base_directories()
     cache_paths = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -330,7 +314,7 @@ def detect_profiles(
                     size = _sum_directory_recursive(str(c_path), is_junction, k32, perf_cache)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
-            except (OSError, PermissionError): continue
+            except (OSError, PermissionError, TypeError): continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)
     return found

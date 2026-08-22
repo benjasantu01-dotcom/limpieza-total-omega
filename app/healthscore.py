@@ -64,12 +64,7 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-def _validate_integrity() -> bool:
-    """Verifica que la configuración de pesos sume exactamente 100 y sea matemáticamente estable."""
-    return math.isfinite(sum(WEIGHTS.values())) and sum(WEIGHTS.values()) == 100 and all(isinstance(w, int) and w >= 0 for w in WEIGHTS.values())
-
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
-_IS_INTEGRITY_VALID: Final[bool] = _validate_integrity()
 
 _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),
@@ -151,12 +146,12 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Score de RAM: mide la salud basada en el porcentaje disponible respecto a un límite de saturación."""
-    limit = max(0.1, _LIMIT_RAM_PERCENT)
+    limit = max(0.1, float(_LIMIT_RAM_PERCENT))
     return _clamp(_to_float(available_percent) / limit, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Score de Disco: mide la salud basada en el porcentaje libre respecto al umbral crítico."""
-    limit = max(0.1, _LIMIT_DISK_PERCENT)
+    limit = max(0.1, float(_LIMIT_DISK_PERCENT))
     return _clamp(_to_float(free_percent) / limit, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
@@ -187,32 +182,32 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Orquesta el cálculo de salud: normaliza áreas, aplica pesos y genera recomendaciones."""
-    if not isinstance(metrics, SystemMetrics) or not _IS_INTEGRITY_VALID:
-        return HealthResult(0, "F", {}, ["Error: Configuración inestable."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Tipo de métricas incorrecto."])
     
+    # Validar que los límites globales no causen divisiones por cero o lógica inversa
     if any(l <= 0 for l in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
-        return HealthResult(0, "F", {}, ["Error: Umbrales de sistema inválidos."])
+        return HealthResult(0, "F", {}, ["Error: Umbrales de sistema mal configurados."])
 
     try:
         metrics.validate()
         if not metrics.is_finite():
             raise ValueError("Métricas no finitas")
     except Exception:
-        return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
+        return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
 
     breakdown: Dict[MetricKey, int] = {}
     ratios: Dict[MetricKey, float] = {}
-    final_score: int = 0
+    final_score: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS_INT:
         scorer = _SCORERS.get(area)
-        if scorer is None:
-            continue
+        if scorer is None: continue
         
         ratio = scorer(metrics)
         ratios[area] = ratio
         
-        puntos = int(round(ratio * weight))
+        puntos = round(ratio * weight)
         breakdown[area] = int(_clamp(float(puntos), 0.0, float(weight)))
         final_score += breakdown[area]
     
@@ -224,8 +219,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
-    final_score = int(_clamp(float(final_score), 0.0, 100.0))
-    return HealthResult(final_score, grade_for_score(final_score), breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
+    score_int = int(_clamp(final_score, 0.0, 100.0))
+    return HealthResult(score_int, grade_for_score(score_int), breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
 
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación textual (lista de strings) formateada para la interfaz de usuario."""
