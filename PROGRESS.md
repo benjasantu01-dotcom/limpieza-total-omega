@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 93 | 7 | 12 | 9 | 83 |
-| 2026-08-22 | 140 | 9 | 18 | 14 | 119 |
+| 2026-08-21 | 93 | 7 | 12 | 9 | 79 |
+| 2026-08-22 | 141 | 10 | 19 | 14 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **48**
+- seguridad defensiva: **49**
 - rendimiento: **40**
 - robustez ante casos límite: **37**
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **21**
 - `settings.py`: **21**
 - `assistant.py`: **20**
+- `scanner.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
-- `scanner.py`: **18**
 - `quarantine.py`: **14**
 - `branding.py`: **14**
 - `main.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T12:58:06` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (diseñado para operaciones de escritura/modificación) por `is_protected_path`, evitando el error de lógica donde el escáner se bloqueaba a sí mismo al evaluar rutas que solo necesita leer.
 - `2026-08-22T12:48:13` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de path traversal y evitar que se manipulen archivos fuera de la jerarquía permitida, validando que el destino final resuelto sea efectivamente hijo del directorio de revisión antes de cualquier operación de movimiento.
 - `2026-08-22T12:48:03` **memory.py** (seguridad defensiva): Se añadió la verificación `os.path.exists` en `trim_working_set` para validar que el ejecutable asociado al PID efectivamente exista en el sistema antes de proceder con el manejo de memoria, reforzando la seguridad defensiva contra posibles condiciones de carrera (Race Conditions) donde el PID podría haber sido reciclado.
 - `2026-08-22T12:47:35` **main.py** (seguridad defensiva): He refactorizado `_worker_thread_logic` para que el chequeo de seguridad mediante `ensure_safe_to_modify` ocurra de forma obligatoria y previa a cualquier ejecución, consolidando la lógica de protección del hilo en un único punto centralizado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T12:05:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y agregué una validación de coherencia en `compute_score` para asegurar que las métricas de porcentaje no excedan el 100% incluso ante lecturas de hardware erráticas.
 - `2026-08-22T11:55:05` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el acceso directo a `PALETTE` por el método `color()` para prevenir excepciones por claves faltantes en tiempo de ejecución.
 - `2026-08-22T11:54:33` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de tipos y rangos en el mapeo de palabras clave (`_KEYWORD_MAP` a `_HANDLERS`), asegurando que si la configuración de métricas es nula o malintencionada, la app no lance excepciones no capturadas al invocar métodos en `None` o valores inesperados.
-- `2026-08-22T11:45:04` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetitivas de disco por una validación de `st_mtime` basada en `stat()` y eliminando la recarga innecesaria del archivo al llamar a `update()`.

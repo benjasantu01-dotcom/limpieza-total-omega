@@ -663,3 +663,41 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-22T12:48:13` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó `stage_for_review` para prevenir ataques de path traversal y evitar que se manipulen archivos fuera de la jerarquía permitida, validando que el destino final resuelto sea efectivamente hijo del directorio de revisión antes de cualquier operación de movimiento.
 - `2026-08-22T12:48:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T12:48:13` Corrida terminada. Total usado hoy: 300.
+- `2026-08-22T12:55:09` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-22T12:56:11` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-22T12:56:46` Tests FALLARON:
+```
+......                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_quarantine_moves_the_file_without_deleting_it ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_moves_the_file0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_moves_the_file0/_Cuarentena')
+
+    def test_quarantine_moves_the_file_without_deleting_it(tmp_path, cuarentena):
+        origen = tmp_path / "sospechoso.exe"
+        origen.write_text("contenido importante")
+    
+        item = quarantine.quarantine_file(origen, reason="prueba", base=cuarentena)
+    
+>       assert not origen.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_moves_the_file0/sospechoso.exe').exists
+
+evolve/tests/test_safety.py:184: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_moves_the_file0/sospechoso.exe').exists
+1 failed, 298 passed in 1.22s
+
+```
+- `2026-08-22T12:56:46` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: He reemplazado la llamada genérica a `os.remove` en `quarantine_file` por un uso controlado de `_safe_unlink`, asegurando que la eliminación del archivo original tras su aislamiento pase por las validaciones de seguridad centralizadas (`is_safe_to_modify`).
+- `2026-08-22T12:57:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-22T12:57:32` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-22T12:58:06` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del escáner en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (diseñado para operaciones de escritura/modificación) por `is_protected_path`, evitando el error de lógica donde el escáner se bloqueaba a sí mismo al evaluar rutas que solo necesita leer.
+- `2026-08-22T12:58:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T12:58:06` Corrida terminada. Total usado hoy: 304.

@@ -111,8 +111,8 @@ class Scanner:
         try:
             target_path = Path(entry.path)
             
-            # Filtro de seguridad obligatorio antes de cualquier operación de I/O
-            if not is_safe_to_modify(target_path) or is_protected_path(target_path) or entry.path.startswith("\\\\"):
+            # Solo lectura: usamos is_protected_path para evitar errores innecesarios de is_safe_to_modify
+            if is_protected_path(target_path) or entry.path.startswith("\\\\"):
                 return
             if not self._is_safe_entry(target_path):
                 return
@@ -228,7 +228,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not raw_path.is_dir() or not raw_path.exists():
             return []
         path_input: Path = raw_path.resolve(strict=True)
-        if is_protected_path(path_input) or not is_safe_to_modify(path_input):
+        if is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):
         return []
