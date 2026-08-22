@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 27
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 142 | 12 | 19 | 14 | 145 |
-| 2026-08-22 | 79 | 5 | 8 | 6 | 74 |
+| 2026-08-21 | 140 | 11 | 18 | 14 | 145 |
+| 2026-08-22 | 80 | 5 | 9 | 7 | 75 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **43**
+- seguridad defensiva: **41**
 - rendimiento: **39**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
 - `duplicates.py`: **21**
 - `settings.py`: **20**
+- `memory.py`: **20**
+- `diskreport.py`: **19**
 - `assistant.py`: **18**
-- `diskreport.py`: **18**
 - `scanner.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
-- `organizer.py`: **15**
+- `organizer.py`: **14**
 - `safety.py`: **14**
 - `main.py`: **14**
 - `quarantine.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T07:30:10` **diskreport.py** (robustez ante casos límite): Se ha añadido un chequeo de disponibilidad de unidad previo en `all_drives_usage` para evitar cuelgues ante unidades de red o soportes extraíbles que no responden, mejorando la robustez frente a casos límite de hardware inaccesible.
 - `2026-08-22T07:20:11` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante la recepción de objetos `SystemContext` parciales o mal formados, garantizando que los datos numéricos siempre pasen por la validación de rango y tipo antes de ser asignados, evitando estados inconsistentes o errores de ejecución.
 - `2026-08-22T07:19:26` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` evitando la serialización completa y la revalidación innecesaria en `update()` al comparar valores antes de persistir, y mejoré la eficiencia de `_CACHE` usando `pathlib.Path` directamente como clave para evitar conversiones redundantes de `str()`.
 - `2026-08-22T07:18:58` **scanner.py** (rendimiento): Optimizamos `check_recent_executable_in_downloads` para evitar conversiones redundantes de `path.parts` a conjuntos (evitando la creación de colecciones temporales en cada iteración) utilizando el método `any()` con una verificación de subcadena más directa y eficiente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T06:39:09` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings normalizados y explícitos, clarificando la lógica de las funciones de chequeo y la estructura de la clase `Scanner` para facilitar su mantenimiento sin alterar la funcionalidad.
 - `2026-08-22T06:38:33` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `safety.py` añadiendo docstrings descriptivos a los criterios de integridad y unificando el estilo de los comentarios, facilitando la comprensión del flujo de validación para futuros desarrolladores.
 - `2026-08-22T06:23:29` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google) en funciones críticas para clarificar el flujo de seguridad, y añadí type hints explícitos en retornos y parámetros para mejorar la mantenibilidad del código.
-- `2026-08-22T06:23:01` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los tipos de datos y funciones clave, incluyendo explicaciones sobre parámetros y retornos, para facilitar el mantenimiento y la comprensión de las APIs de Windows utilizadas.

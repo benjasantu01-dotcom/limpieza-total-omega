@@ -1247,3 +1247,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T07:20:11` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante la recepción de objetos `SystemContext` parciales o mal formados, garantizando que los datos numéricos siempre pasen por la validación de rango y tipo antes de ser asignados, evitando estados inconsistentes o errores de ejecución.
 - `2026-08-22T07:20:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T07:20:11` Corrida terminada. Total usado hoy: 172.
+- `2026-08-22T07:28:46` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-22T07:29:18` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-22T07:29:43` 🛑 Propuesta bloqueada por la guardia en browser.py (enfoque: robustez ante casos límite): desaparecieron símbolos que existían antes: summarize
+- `2026-08-22T07:30:10` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de disponibilidad de unidad previo en `all_drives_usage` para evitar cuelgues ante unidades de red o soportes extraíbles que no responden, mejorando la robustez frente a casos límite de hardware inaccesible.
+- `2026-08-22T07:30:18` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se fortaleció la resiliencia de `_collect_candidates` ante archivos bloqueados o inaccesibles añadiendo una captura de `OSError` específica en la lectura de atributos, evitando que una denegación de acceso en un único archivo interrumpa el escaneo completo de un directorio.
+- `2026-08-22T07:30:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T07:30:18` Corrida terminada. Total usado hoy: 176.

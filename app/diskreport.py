@@ -185,6 +185,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     if mounts is None:
         if os.name == "nt":
             import string
+            # Verificamos disponibilidad rápida usando os.path.exists antes de intentar acceder
             mounts = [f"{letter}:\\" for letter in string.ascii_uppercase
                       if os.path.exists(f"{letter}:\\")]
         else:
