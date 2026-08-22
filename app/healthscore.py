@@ -102,8 +102,9 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        """Verifica que todas las métricas sean valores numéricos finitos."""
+        """Verifica que todas las métricas sean valores numéricos finitos y no nulos."""
         for val in self.__dict__.values():
+            if val is None: return False
             if isinstance(val, (int, float)) and not math.isfinite(float(val)):
                 return False
         return True
@@ -197,9 +198,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not all(safe_limits):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema mal configurados."])
 
-    metrics.validate()
-    if not metrics.is_finite():
-        return HealthResult(0, "F", {}, ["Error: Métricas de entrada no finitas."])
+    try:
+        metrics.validate()
+        if not metrics.is_finite():
+            return HealthResult(0, "F", {}, ["Error: Métricas de entrada no finitas."])
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error: Fallo al validar métricas."])
 
     breakdown: Dict[MetricKey, int] = {}
     ratios: Dict[MetricKey, float] = {}
@@ -209,9 +213,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         scorer = _SCORERS.get(area)
         if scorer is None: continue
         
-        ratio = scorer(metrics)
-        ratios[area] = ratio
+        try:
+            ratio = scorer(metrics)
+        except Exception:
+            ratio = 0.0
         
+        ratios[area] = ratio
         puntos = round(ratio * weight)
         breakdown[area] = int(_clamp(float(puntos), 0.0, float(weight)))
         final_score += breakdown[area]

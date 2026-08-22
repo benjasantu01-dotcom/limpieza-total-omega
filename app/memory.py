@@ -179,8 +179,8 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     parts = [p.strip().strip("'\"") for p in csv_line.split(",")]
     if len(parts) != 3:
         return None
-    name, pid_str, ws_str = parts
     try:
+        name, pid_str, ws_str = parts
         if not name or not pid_str.isdigit() or not ws_str.isdigit():
             return None
         return ProcessMemory(name=name, pid=int(pid_str), working_set=int(ws_str))
@@ -215,7 +215,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
     try:
         total = int(stat.ullTotalPhys)
         avail = int(stat.ullAvailPhys)
-        # Validación defensiva contra valores reportados incoherentes
         if total <= 0 or avail > total: return MemorySnapshot(0, 0)
         return MemorySnapshot(total=total, available=avail)
     except (ValueError, TypeError, OverflowError):
@@ -240,7 +239,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     global _last_proc_fetch, _cached_proc_output
     if os.name != "nt": return []
     
-    # Refresh cache cada 30 segundos; operación de E/S costosa minimizada
     if (time.time() - _last_proc_fetch) > 30:
         cmd = 'Get-Process | Select-Object -Property Name,Id,WorkingSet | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
         try:
@@ -320,7 +318,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
-        # Normalización estricta antes de la validación de seguridad
         normalized_path = os.normcase(os.path.abspath(path))
         if is_protected_path(normalized_path):
             return False, "Operación denegada: ruta de ejecutable protegida."
@@ -358,7 +355,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         kernel32.CloseHandle(proc_handle)
 
 if __name__ == "__main__":
-    # Ejemplo de uso para depuración del módulo
     snap = read_snapshot()
     print(f"Estado: {pressure_level(snap)}")
     for line in diagnose(snap):
