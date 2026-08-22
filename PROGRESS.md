@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-20 | 31 | 2 | 4 | 1 | 24 |
+| 2026-08-20 | 31 | 2 | 4 | 1 | 20 |
 | 2026-08-21 | 153 | 13 | 20 | 15 | 149 |
-| 2026-08-22 | 47 | 2 | 5 | 3 | 35 |
+| 2026-08-22 | 49 | 2 | 5 | 3 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **22**
+- `settings.py`: **21**
 - `assistant.py`: **20**
 - `diskreport.py`: **20**
 - `memory.py`: **20**
-- `settings.py`: **20**
 - `healthscore.py`: **18**
 - `scanner.py`: **17**
 - `organizer.py`: **16**
@@ -43,10 +43,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **14**
 - `safety.py`: **12**
 - `branding.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T04:01:13` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` al añadir una validación estricta contra rutas con caracteres nulos o secuencias de escape (vía `os.path.abspath`) y al asegurar que la resolución de `realpath` no siga enlaces simbólicos, previniendo así posibles ataques de "link traversal" o redirecciones inesperadas hacia áreas protegidas del sistema.
+- `2026-08-22T04:01:02` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` sobre el directorio padre (`parent`) antes de intentar cualquier operación de escritura, asegurando que ni siquiera se creen carpetas en ubicaciones restringidas del sistema.
 - `2026-08-22T03:50:57` **quarantine.py** (seguridad defensiva): Se implementó un bloqueo preventivo de rutas mediante `path.absolute()` y una validación de `st_dev` (ID de dispositivo) durante la restauración para asegurar que el archivo no sea movido fuera del volumen de destino y prevenir ataques de enlace simbólico o secuestro de rutas entre particiones.
 - `2026-08-22T03:50:25` **organizer.py** (seguridad defensiva): Se ha añadido una validación estricta de "cross-device move" en `stage_for_review` para prevenir el fallo de `shutil.move` al intentar mover archivos entre volúmenes distintos, lo cual es una operación propensa a errores que podría dejar el estado del sistema en una inconsistencia no controlada.
 - `2026-08-22T03:50:00` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al integrar `is_protected_path` en `trim_working_set` antes de abrir el proceso, asegurando que no se intente interactuar con ejecutables en rutas críticas incluso antes de realizar la validación mediante el handle del proceso.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T03:21:40` **scanner.py** (robustez ante casos límite): Se ha mejorado `Scanner.process_entry` para capturar errores de acceso a atributos de `os.DirEntry` (como `is_file` o `is_dir`) que pueden fallar por condiciones de carrera o restricciones de sistema operativo, evitando la propagación de excepciones que detendrían el escaneo prematuramente ante archivos bloqueados por el SO.
 - `2026-08-22T03:20:49` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `is_running_as_admin` y `is_protected_path` ante errores de entorno (como falta de variables de sistema o permisos denegados al consultar atributos), evitando que una excepción en la validación bloquee la aplicación y garantizando una gestión de errores silenciosa y segura frente a estados inusuales del SO.
 - `2026-08-22T03:11:24` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite mediante la adición de un chequeo de espacio libre preventivo y la gestión de permisos denegados en `_get_sha256`, garantizando que el sistema no falle silenciosamente ni en condiciones de disco lleno ni al encontrar archivos bloqueados por permisos durante el cálculo de integridad.
-- `2026-08-22T03:10:33` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra valores `None` o corruptos en `_parse_csv_row` y `_yield_processes` para evitar excepciones imprevistas al procesar salidas de PowerShell que podrían estar truncadas o malformadas, reforzando la tolerancia a fallos ante entradas inesperadas.
-- `2026-08-22T03:00:02` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos límite añadiendo una validación explícita de `is_finite` en los valores de entrada y reforzando la integridad de los resultados, asegurando que ante cualquier dato corrupto o no finito la función retorne un estado de salud seguro y predecible en lugar de fallar o generar un score inválido.

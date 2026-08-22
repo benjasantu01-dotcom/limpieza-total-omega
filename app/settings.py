@@ -265,7 +265,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         try: parent.mkdir(parents=True, exist_ok=True)
         except OSError: return None
     
-    if not _Validators._is_safe_path(str(parent)) or is_protected_path(str(ruta)): return None
+    if is_protected_path(str(parent)) or is_protected_path(str(ruta)) or not _Validators._is_safe_path(str(parent)): return None
     
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):

@@ -118,14 +118,17 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """Normaliza, valida la existencia y resuelve la ruta real en disco, usando caché."""
-        if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*'):
+        if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*\0'):
             return ""
         
         if path_str in _EXISTS_CACHE:
             return path_str if _EXISTS_CACHE[path_str] else path_str
         
         try:
-            p: Path = Path(path_str)
+            # Validar integridad contra caracteres de escape en la ruta absoluta
+            abs_path = os.path.abspath(path_str)
+            p: Path = Path(abs_path)
+            
             if not p.is_absolute():
                 _EXISTS_CACHE[path_str] = False
                 return path_str
@@ -134,7 +137,8 @@ class StartupEntry:
                 _EXISTS_CACHE[path_str] = False
                 return path_str
             
-            real_path_str: str = os.path.realpath(str(p))
+            # Resolver ruta real sin seguir enlaces simbólicos (evita bypass)
+            real_path_str: str = os.path.realpath(abs_path)
             real_path: Path = Path(real_path_str)
             
             if not real_path_str or not real_path.exists() or is_protected_path(real_path):
