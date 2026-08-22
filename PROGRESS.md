@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 139 | 11 | 18 | 14 | 134 |
-| 2026-08-22 | 87 | 5 | 10 | 8 | 78 |
+| 2026-08-21 | 139 | 11 | 18 | 14 | 130 |
+| 2026-08-22 | 90 | 5 | 10 | 8 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **42**
+- seguridad defensiva: **45**
 - rendimiento: **39**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `duplicates.py`: **22**
 - `memory.py`: **21**
 - `settings.py`: **20**
 - `assistant.py`: **19**
 - `diskreport.py`: **19**
+- `healthscore.py`: **18**
 - `scanner.py`: **17**
-- `healthscore.py`: **17**
-- `browser.py`: **16**
+- `browser.py`: **17**
 - `organizer.py`: **14**
 - `quarantine.py`: **14**
 - `safety.py`: **14**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T08:12:53` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación estricta de finitud y tipos en `SystemMetrics` antes de cualquier cálculo, garantizando que el motor de scoring no procese estados inconsistentes.
+- `2026-08-22T08:12:43` **duplicates.py** (seguridad defensiva): Se ha mejorado `_collect_candidates` para integrar una validación de rutas absoluta antes de procesarlas y garantizar que no se sigan enlaces simbólicos durante la recursión mediante `Path.resolve()` y validación estricta, reforzando el control contra accesos no autorizados a rutas de sistema.
+- `2026-08-22T08:10:35` **browser.py** (seguridad defensiva): Se reforzó `_is_system_hidden` para incluir una validación estricta contra archivos que posean atributos de solo lectura, mitigando el riesgo de intentar procesar archivos que el sistema protege activamente a nivel de file-system.
 - `2026-08-22T08:01:02` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` implementando una validación previa mediante `is_protected_path` sobre la ruta resuelta, reforzando la seguridad defensiva al evitar accesos a directorios críticos antes de intentar cualquier operación de escritura.
 - `2026-08-22T08:00:45` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` añadiendo un filtro de validación de caracteres de control y rutas en la respuesta cruda recibida de la API antes de cualquier procesamiento, asegurando que incluso si el modelo remoto fuera comprometido, su salida nunca pueda inyectar caracteres peligrosos o estructuras de ruta en el flujo de la aplicación.
 - `2026-08-22T07:59:46` **settings.py** (robustez ante casos límite): Reforcé la robustez del cargador de configuración añadiendo una verificación explícita para archivos vacíos o corrompidos mediante el manejo de `json.JSONDecodeError` y validando que el archivo resultante sea efectivamente un diccionario antes de procesarlo, evitando errores de tipo durante la ejecución.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T07:19:26` **settings.py** (rendimiento): Optimicé el rendimiento de `settings.py` evitando la serialización completa y la revalidación innecesaria en `update()` al comparar valores antes de persistir, y mejoré la eficiencia de `_CACHE` usando `pathlib.Path` directamente como clave para evitar conversiones redundantes de `str()`.
 - `2026-08-22T07:18:58` **scanner.py** (rendimiento): Optimizamos `check_recent_executable_in_downloads` para evitar conversiones redundantes de `path.parts` a conjuntos (evitando la creación de colecciones temporales en cada iteración) utilizando el método `any()` con una verificación de subcadena más directa y eficiente.
 - `2026-08-22T07:10:52` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al reemplazar los múltiples `any()` con una verificación de conjunto (set lookup) para las partes de la ruta, aprovechando que `PROTECTED_DIR_NAMES` ya es un `frozenset`, lo cual reduce la complejidad algorítmica de O(N) a O(1) por cada componente de la ruta.
-- `2026-08-22T07:09:18` **quarantine.py** (rendimiento): Optimizé la función `purge_all` para evitar lecturas innecesarias del disco y el uso de bucles ineficientes, reemplazando la lógica de validación por un mapeo directo y utilizando un `set` para búsquedas O(1) de los ítems a purgar, mejorando el rendimiento en directorios de cuarentena con muchos archivos.
-- `2026-08-22T07:08:48` **organizer.py** (rendimiento): Optimizé la función `_is_safe_for_disk_op` para evitar llamadas redundantes a `stat()` y `exists()` mediante un orden lógico de validación (primero lo más barato, luego `stat` una sola vez) y sustituí `os.path.expandvars` por `pathlib` en la constante `DEFAULT_SCAN_DIRS` para mejorar la consistencia y rendimiento en el inicio.
-- `2026-08-22T07:00:13` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución costosa de un comando de PowerShell por una implementación más eficiente que reduce la carga del sistema al cachear agresivamente la salida y filtrar los procesos directamente en el bucle, evitando subprocesos recurrentes innecesarios.

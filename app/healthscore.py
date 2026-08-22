@@ -103,7 +103,10 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que todas las métricas sean valores numéricos finitos."""
-        return all(isinstance(v, (int, float)) and math.isfinite(float(v)) for v in self.__dict__.values())
+        for val in self.__dict__.values():
+            if isinstance(val, (int, float)) and not math.isfinite(float(val)):
+                return False
+        return True
 
 @dataclass
 class HealthResult:
@@ -185,7 +188,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incorrecto."])
     
-    # Validar que los límites globales no causen divisiones por cero
+    # Validar que los límites globales no causen divisiones por cero y que los datos sean seguros
     safe_limits = [
         _LIMIT_JUNK_MB > 0, _LIMIT_RAM_PERCENT > 0, 
         _LIMIT_DISK_PERCENT > 0, _LIMIT_DUPLICATE_MB > 0, 
@@ -194,12 +197,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not all(safe_limits):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema mal configurados."])
 
-    try:
-        metrics.validate()
-        if not metrics.is_finite():
-            raise ValueError("Métricas no finitas")
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error: Datos de entrada corruptos."])
+    metrics.validate()
+    if not metrics.is_finite():
+        return HealthResult(0, "F", {}, ["Error: Métricas de entrada no finitas."])
 
     breakdown: Dict[MetricKey, int] = {}
     ratios: Dict[MetricKey, float] = {}

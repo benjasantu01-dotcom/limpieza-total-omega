@@ -1275,3 +1275,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T08:01:02` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` implementando una validación previa mediante `is_protected_path` sobre la ruta resuelta, reforzando la seguridad defensiva al evitar accesos a directorios críticos antes de intentar cualquier operación de escritura.
 - `2026-08-22T08:01:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T08:01:02` Corrida terminada. Total usado hoy: 188.
+- `2026-08-22T08:09:32` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-22T08:10:35` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó `_is_system_hidden` para incluir una validación estricta contra archivos que posean atributos de solo lectura, mitigando el riesgo de intentar procesar archivos que el sistema protege activamente a nivel de file-system.
+- `2026-08-22T08:10:40` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-22T08:11:04` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-22T08:11:22` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-22T08:12:04` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-22T08:12:43` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado `_collect_candidates` para integrar una validación de rutas absoluta antes de procesarlas y garantizar que no se sigan enlaces simbólicos durante la recursión mediante `Path.resolve()` y validación estricta, reforzando el control contra accesos no autorizados a rutas de sistema.
+- `2026-08-22T08:12:53` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación estricta de finitud y tipos en `SystemMetrics` antes de cualquier cálculo, garantizando que el motor de scoring no procese estados inconsistentes.
+- `2026-08-22T08:12:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T08:12:53` Corrida terminada. Total usado hoy: 192.

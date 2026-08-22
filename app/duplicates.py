@@ -93,7 +93,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None: return groups
     for p in paths:
         try:
-            target = Path(p)
+            target = Path(p).resolve()
             # Solo procesar si el archivo es accesible y pasa los filtros de seguridad
             if target.is_file() and not is_protected_path(target) and is_safe_to_modify(target):
                 st = target.stat()
@@ -120,18 +120,18 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # Usar el objeto DirEntry para evitar llamadas extras a stat()
+                        # Validar seguridad básica antes de entrar a cualquier subdirectorio
+                        entry_path = Path(entry.path).resolve()
+                        if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
+                            continue
+
                         if entry.is_dir(follow_symlinks=False):
                             entry_stat = entry.stat(follow_symlinks=False)
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
                                 visited_device_inodes.add(device_inode)
-                                _scan(Path(entry.path))
+                                _scan(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            entry_path = Path(entry.path)
-                            if skip_protected and (is_protected_path(entry_path) or not is_safe_to_modify(entry_path)):
-                                continue
-                            
                             entry_stat = entry.stat(follow_symlinks=False)
                             # Ignorar puntos de reparse/links simbólicos (0x400 es FILE_ATTRIBUTE_REPARSE_POINT)
                             if getattr(entry_stat, 'st_file_attributes', 0) & 0x400: continue

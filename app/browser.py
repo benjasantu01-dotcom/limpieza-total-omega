@@ -154,7 +154,7 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 
 def _is_system_hidden(entry_path: str | None, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Verifica mediante API de Windows (Win32) si un archivo tiene atributos de sistema u oculto.
+    Verifica mediante API de Windows (Win32) si un archivo tiene atributos de sistema, oculto o solo lectura.
     Se utiliza como filtro defensivo para evitar procesar archivos críticos del SO.
     """
     if not kernel32 or not isinstance(entry_path, str) or not entry_path:
@@ -165,8 +165,8 @@ def _is_system_hidden(entry_path: str | None, kernel32: Optional[ctypes.WinDLL])
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False
-        # 0x02 = FILE_ATTRIBUTE_HIDDEN, 0x04 = FILE_ATTRIBUTE_SYSTEM
-        return bool(attrs & 0x04 or attrs & 0x02)
+        # 0x02 = HIDDEN, 0x04 = SYSTEM, 0x01 = READONLY
+        return bool(attrs & 0x01 or attrs & 0x04 or attrs & 0x02)
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False
 
