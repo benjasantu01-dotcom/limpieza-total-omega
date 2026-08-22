@@ -189,7 +189,11 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incorrecto."])
     
-    # Validar que los límites globales no causen divisiones por cero y que los datos sean seguros
+    # Validar coherencia de porcentajes de entrada (0-100)
+    metrics.memory_available_percent = _clamp(metrics.memory_available_percent, 0.0, 100.0)
+    metrics.disk_free_percent = _clamp(metrics.disk_free_percent, 0.0, 100.0)
+    
+    # Validar que los límites globales no causen divisiones por cero
     safe_limits = [
         _LIMIT_JUNK_MB > 0, _LIMIT_RAM_PERCENT > 0, 
         _LIMIT_DISK_PERCENT > 0, _LIMIT_DUPLICATE_MB > 0, 
@@ -209,7 +213,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios: Dict[MetricKey, float] = {}
     final_score: float = 0.0
     
-    # Cacheamos referencias locales para iteración rápida
     scorers = _SCORERS
     for area, weight in _WEIGHT_ITEMS_INT:
         scorer = scorers.get(area)

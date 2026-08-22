@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 216
+- Rechazadas por guardia de seguridad: 29
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 95 | 7 | 13 | 9 | 100 |
-| 2026-08-22 | 128 | 8 | 17 | 11 | 116 |
+| 2026-08-21 | 93 | 7 | 12 | 9 | 99 |
+| 2026-08-22 | 130 | 8 | 17 | 13 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **42**
 - rendimiento: **40**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
 - `duplicates.py`: **21**
 - `memory.py`: **21**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **19**
 - `browser.py`: **17**
 - `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `quarantine.py`: **14**
 - `branding.py`: **14**
-- `safety.py`: **13**
+- `main.py`: **12**
 - `organizer.py`: **12**
-- `main.py`: **11**
+- `safety.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-22T12:10:11` **main.py** (robustez ante casos límite): Se implementó un mecanismo de protección para el pool de hilos y las tareas encoladas durante el cierre de la aplicación, asegurando que las operaciones pendientes con el disco se cancelen correctamente mediante `cancel_futures=True` y se verifique el estado `self._closing` antes de intentar cualquier interacción con la interfaz gráfica, previniendo errores de `TclError` y condiciones de carrera al salir.
+- `2026-08-22T12:05:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y agregué una validación de coherencia en `compute_score` para asegurar que las métricas de porcentaje no excedan el 100% incluso ante lecturas de hardware erráticas.
 - `2026-08-22T11:55:05` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta contra rutas `None` o mal formadas en `save_logo_svg` y se reemplazó el acceso directo a `PALETTE` por el método `color()` para prevenir excepciones por claves faltantes en tiempo de ejecución.
 - `2026-08-22T11:54:33` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de inferencia local añadiendo validación de tipos y rangos en el mapeo de palabras clave (`_KEYWORD_MAP` a `_HANDLERS`), asegurando que si la configuración de métricas es nula o malintencionada, la app no lance excepciones no capturadas al invocar métodos en `None` o valores inesperados.
 - `2026-08-22T11:45:04` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando lecturas repetitivas de disco por una validación de `st_mtime` basada en `stat()` y eliminando la recarga innecesaria del archivo al llamar a `update()`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T11:14:42` **branding.py** (rendimiento): Se optimizó el cálculo de la paleta RGB eliminando la re-iteración dentro de un list comprehension innecesario en el ámbito global y consolidando las transformaciones de color mediante la reutilización de `PALETTE_RGB` en `_hex_to_rgb`, evitando conversiones redundantes en cada llamada.
 - `2026-08-22T11:14:09` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` evitando iterar sobre todos los validadores para cada fuente, transformando la lógica de búsqueda a un acceso directo por clave (`O(1)` en lugar de `O(N*M)`), lo cual es más eficiente al procesar diccionarios de métricas.
 - `2026-08-22T11:13:34` **startup.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de procesamiento de datos y validación en `StartupEntry`, clarificando el propósito de cada método y mejorando la legibilidad técnica del código fuente.
-- `2026-08-22T11:04:11` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante docstrings detallados en funciones clave y la adición de tipos claros para las heurísticas, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar la lógica.
-- `2026-08-22T11:03:46` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de los validadores internos mediante la estandarización de los docstrings, facilitando la comprensión del flujo de seguridad para futuros colaboradores.

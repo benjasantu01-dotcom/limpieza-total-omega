@@ -990,9 +990,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._set_busy(True)
         tab = self._current_tab()
         
-        if not self._closing and self._executor:
-            # La validación se delega al worker thread para mayor seguridad
-            self._executor.submit(self._worker_thread_logic, fn, tab, target_path if check_safety else None)
+        with self._task_lock:
+            if not self._closing and self._executor:
+                # La validación se delega al worker thread para mayor seguridad
+                self._executor.submit(self._worker_thread_logic, fn, tab, target_path if check_safety else None)
 
     def _current_tab(self) -> str:
         """Determina la pestaña activa actualmente."""

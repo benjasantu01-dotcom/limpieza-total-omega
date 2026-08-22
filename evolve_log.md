@@ -596,3 +596,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-22T11:55:38` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
 - `2026-08-22T11:55:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-22T11:55:38` Corrida terminada. Total usado hoy: 280.
+- `2026-08-22T12:04:06` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-08-22T12:05:10` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se añadió una validación explícita en `_collect_candidates` para verificar que `entry` sea un archivo antes de obtener su `stat`, evitando errores en enlaces simbólicos rotos o entradas especiales que provocaban excepciones innecesarias durante el escaneo.
+- `2026-08-22T12:05:40` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `score_memory` y `score_disk` para evitar divisiones por cero ante configuraciones erróneas y agregué una validación de coherencia en `compute_score` para asegurar que las métricas de porcentaje no excedan el 100% incluso ante lecturas de hardware erráticas.
+- `2026-08-22T12:06:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-22T12:07:43` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-22T12:08:49` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-22T12:10:11` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un mecanismo de protección para el pool de hilos y las tareas encoladas durante el cierre de la aplicación, asegurando que las operaciones pendientes con el disco se cancelen correctamente mediante `cancel_futures=True` y se verifique el estado `self._closing` antes de intentar cualquier interacción con la interfaz gráfica, previniendo errores de `TclError` y condiciones de carrera al salir.
+- `2026-08-22T12:10:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-22T12:10:38` ➖ Sin cambios en memory.py (enfoque: robustez ante casos límite). Motivo: Se ha añadido un chequeo de integridad en `trim_working_set` para prevenir fugas de recursos (handles abiertos) ante excepciones inesperadas durante la validación o la ejecución, garantizando que `CloseHandle` siempre se invoque incluso si la validación falla antes de entrar al `try` interno.
+- `2026-08-22T12:10:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-22T12:10:38` Corrida terminada. Total usado hoy: 284.
