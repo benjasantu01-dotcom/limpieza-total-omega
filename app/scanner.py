@@ -109,8 +109,8 @@ class Scanner:
         try:
             target_path = Path(entry.path)
             
-            # Chequeo de seguridad: omitir si está protegido o fuera de la raíz
-            if is_protected_path(target_path) or entry.path.startswith("\\\\"):
+            # Chequeo de seguridad: omitir si está protegido, fuera de raíz o es ruta inválida
+            if is_protected_path(target_path) or not is_safe_to_modify(target_path) or entry.path.startswith("\\\\"):
                 return
             if not self._is_safe_entry(target_path):
                 return
@@ -246,7 +246,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         if not raw_path.exists():
             return []
         path_input: Path = raw_path.resolve(strict=True)
-        if not path_input.is_dir() or is_protected_path(path_input):
+        if not path_input.is_dir() or is_protected_path(path_input) or not is_safe_to_modify(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError) as e:
         logger.debug(f"Entrada de directorio inválida o inaccesible: {e}")
