@@ -185,8 +185,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incorrecto."])
     
-    # Validar que los límites globales no causen divisiones por cero o lógica inversa
-    if any(l <= 0 for l in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
+    # Validar que los límites globales no causen divisiones por cero
+    safe_limits = [
+        _LIMIT_JUNK_MB > 0, _LIMIT_RAM_PERCENT > 0, 
+        _LIMIT_DISK_PERCENT > 0, _LIMIT_DUPLICATE_MB > 0, 
+        _LIMIT_STARTUP_COUNT > 0
+    ]
+    if not all(safe_limits):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema mal configurados."])
 
     try:

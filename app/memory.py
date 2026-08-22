@@ -215,8 +215,9 @@ def _read_windows_snapshot() -> MemorySnapshot:
     try:
         total = int(stat.ullTotalPhys)
         avail = int(stat.ullAvailPhys)
-        if total <= 0: return MemorySnapshot(0, 0)
-        return MemorySnapshot(total=total, available=min(avail, total))
+        # Validación defensiva contra valores reportados incoherentes
+        if total <= 0 or avail > total: return MemorySnapshot(0, 0)
+        return MemorySnapshot(total=total, available=avail)
     except (ValueError, TypeError, OverflowError):
         return MemorySnapshot(0, 0)
 
@@ -225,11 +226,14 @@ def read_snapshot() -> MemorySnapshot:
     if os.name == "nt":
         try: return _read_windows_snapshot()
         except (AttributeError, OSError, ctypes.ArgumentError): return MemorySnapshot(0, 0)
+    
     try:
-        with open("/proc/meminfo", encoding="utf-8", errors="replace") as f:
-            return parse_linux_meminfo(f.read())
+        if os.path.exists("/proc/meminfo"):
+            with open("/proc/meminfo", encoding="utf-8", errors="replace") as f:
+                return parse_linux_meminfo(f.read())
     except (OSError, PermissionError):
-        return MemorySnapshot(0, 0)
+        pass
+    return MemorySnapshot(0, 0)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Retorna los procesos más pesados mediante cacheo de llamada a PowerShell."""
