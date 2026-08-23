@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 37
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **214** (42.6% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 219
 
@@ -16,16 +16,16 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 62 | 6 | 10 | 6 | 72 |
-| 2026-08-23 | 152 | 9 | 27 | 13 | 147 |
+| 2026-08-22 | 61 | 5 | 9 | 6 | 71 |
+| 2026-08-23 | 153 | 9 | 27 | 13 | 148 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **39**
 - rendimiento: **39**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `scanner.py`: **20**
 - `duplicates.py`: **20**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `settings.py`: **16**
 - `branding.py`: **15**
-- `organizer.py`: **14**
+- `organizer.py`: **13**
 - `browser.py`: **12**
 - `main.py`: **8**
 - `startup.py`: **7**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T15:01:12` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_collect_summary_data` para evitar el agotamiento de memoria en directorios con millones de archivos, reemplazando la lista completa `all_files` por un heap gestionado que solo mantiene los N archivos más grandes durante la iteración.
 - `2026-08-23T14:51:37` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, asegurando que `extra` sea procesado de forma segura y consistente sin depender de `getattr` sobre tipos no controlados.
 - `2026-08-23T14:41:22` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_file` y los chequeos asociados evitando múltiples conversiones a string, extracciones innecesarias de rutas y chequeos redundantes de extensiones mediante el uso directo de `path.parts` y operaciones sobre variables ya resueltas.
 - `2026-08-23T14:32:57` **memory.py** (rendimiento): Optimizé la generación de la lista de procesos implementando un filtrado más eficiente dentro del generador `_yield_processes` y reemplazando la lógica de filtrado de duplicados/redundancias por un procesamiento lineal, reduciendo la carga de memoria al evitar construcciones de listas intermedias innecesarias antes de la ordenación final.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T13:59:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos (incluyendo la lógica de detección de bloqueos y seguridad) y se han estandarizado las anotaciones de tipo para mayor claridad, respetando estrictamente las restricciones de seguridad y el enfoque de documentación.
 - `2026-08-23T13:51:07` **memory.py** (legibilidad y documentación): Mejoré la documentación de `memory.py` incluyendo type hints explícitos en los argumentos y retornos, aclarando la semántica de las unidades de medida en el código, y estandarizando la estructura de las docstrings para facilitar su lectura y mantenimiento.
 - `2026-08-23T13:50:54` **main.py** (legibilidad y documentación): Mejoré la documentación de los métodos de gestión de hilos y seguridad en `main.py` mediante el uso de docstrings que clarifican el propósito técnico, las restricciones de seguridad y el manejo de excepciones de cada operación.
-- `2026-08-23T13:49:49` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la adición de docstrings técnicos explicativos en funciones críticas y tipado explícito, clarificando el propósito de los umbrales de puntuación y asegurando que las reglas de recomendación sean interpretadas sin ambigüedades.

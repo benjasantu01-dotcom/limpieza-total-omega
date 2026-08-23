@@ -1175,3 +1175,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T14:51:53` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-08-23T14:51:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T14:51:53` Corrida terminada. Total usado hoy: 348.
+- `2026-08-23T15:00:19` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-23T15:00:44` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-23T15:01:12` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado `_collect_summary_data` para evitar el agotamiento de memoria en directorios con millones de archivos, reemplazando la lista completa `all_files` por un heap gestionado que solo mantiene los N archivos más grandes durante la iteración.
+- `2026-08-23T15:01:12` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-23T15:01:12` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T15:01:12` Corrida terminada. Total usado hoy: 350.

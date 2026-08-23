@@ -404,20 +404,24 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     
-    # Usamos un generador para alimentar el heap sin almacenar todos los archivos en memoria
-    file_generator = walk_files(directory, skip_protected)
+    # Mantiene solo los 8 archivos más grandes en memoria usando un heap
+    top_files_heap: List[Tuple[int, Path]] = []
     
-    # Capturamos todos los datos en una sola pasada de generator
-    all_files = []
-    for path, size in file_generator:
+    for path, size in walk_files(directory, skip_protected):
         total_bytes += size
         total_files += 1
         ext = path.suffix.lower() or "(sin extensión)"
         ext_sizes[ext] += size
         ext_counts[ext] += 1
-        all_files.append((size, path))
+        
+        # Mantenemos el heap ordenado por tamaño
+        if len(top_files_heap) < 8:
+            heapq.heappush(top_files_heap, (size, path))
+        elif size > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (size, path))
             
-    top_files = heapq.nlargest(8, all_files, key=lambda x: x[0])
+    # Devolvemos ordenado de mayor a menor
+    top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files)
 
