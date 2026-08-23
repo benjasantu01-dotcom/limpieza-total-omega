@@ -268,7 +268,8 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
                     continue
                 if any(c in cmd for c in '<>|?*'):
                     continue
-                if is_protected_path(Path(cmd)):
+                # Seguridad defensiva adicional: evitar procesar rutas protegidas detectadas
+                if is_protected_path(Path(cmd).expanduser()):
                     continue
                     
                 parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))

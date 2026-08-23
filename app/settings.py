@@ -147,7 +147,7 @@ class _Validators:
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Valida una cadena de ruta contra políticas de seguridad."""
-        if not path_str: return False
+        if not path_str or ".." in path_str: return False
         try:
             return _Validators._run_safety_checks(Path(path_str).resolve(strict=False))
         except (OSError, RuntimeError, PermissionError, AttributeError):
@@ -178,7 +178,7 @@ class _Validators:
         """Valida rutas absolutas y asegura que no apunten a directorios restringidos."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        if not path_string or len(path_string) > 4096 or any(c in path_string for c in ("\0", "\n", "\r")) or ".." in path_string: return None
+        if not path_string or len(path_string) > 4096 or any(ord(c) < 32 for c in path_string) or ".." in path_string: return None
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
