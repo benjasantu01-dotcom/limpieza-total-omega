@@ -342,7 +342,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
-    """Delvuelve explicaciones pedagógicas de los módulos de la app."""
+    """Devuelve explicaciones pedagógicas de los módulos de la app."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
         

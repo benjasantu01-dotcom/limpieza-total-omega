@@ -25,7 +25,16 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]  # (Color, Etiqueta)
 RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 
 class PaletteDict(TypedDict):
-    """Contrato de claves requerido para la paleta cromática completa."""
+    """
+    Contrato de claves para la paleta cromática.
+    
+    Estructura lógica:
+    - Fondos (background, surface, surface_alt, card): Define la jerarquía de elevación.
+    - Accents (accent, accent2, accent3): Colores primarios y secundarios de marca.
+    - Estados (success, info, warning, danger): Semántica de estado para feedback al usuario.
+    - Textos (text, text_muted, text_dim): Escala de legibilidad.
+    - Utilitarios (border, glow): Elementos de acentuación estructural.
+    """
     background: HexColor
     surface: HexColor
     surface_alt: HexColor
@@ -370,7 +379,7 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas dentro del polígono."""
+    """Renderiza las franjas degradadas internas calculando el ancho relativo al factor 'scale'."""
     try:
         if scale <= 0: return
         franjas_count: int = max(6, int(28 * scale))
@@ -378,6 +387,7 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
         for color_hex, start, end in _get_grouped_segments(colores):
             mid: float = (start + end) / 2
             progreso: float = mid / (franjas_count - 1)
+            # El ancho de la franja se estrecha en los extremos del escudo
             w: float = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             y_ini: float = canvas_y + 18 * scale + start * (92 * scale / franjas_count)
             y_fin: float = canvas_y + 18 * scale + end * (92 * scale / franjas_count)
@@ -389,11 +399,12 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
     except Exception: pass
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo corporativo en un widget Tkinter Canvas."""
+    """Dibuja el escudo corporativo aplicando una transformación de escala sobre las coordenadas base."""
     if not hasattr(canvas, "create_polygon"): return
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128))
         base_coords: List[float] = _get_shield_coords(scale)
+        # Ajuste de posición (offset) basado en canvas_x, canvas_y
         contorno: List[float] = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
         for paso in range(4, 0, -1):
             r: float = 56 * scale * (0.6 + paso * 0.12)
@@ -414,7 +425,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con degradado decorativo en el canvas."""
+    """Renderiza una línea horizontal con degradado, permitiendo posicionamiento absoluto en canvas."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho: int = max(1, int(width))
@@ -427,10 +438,9 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular (donut) de progreso."""
+    """Dibuja un indicador circular (donut) de progreso centrado en las coordenadas provistas."""
     if not hasattr(canvas, "create_arc"): return
     try:
-        # Validación robusta de tipo y rango
         valor = float(percent) if percent is not None else 0.0
         valor = max(0.0, min(100.0, valor))
         diametro = max(20, int(size))

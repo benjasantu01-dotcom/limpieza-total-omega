@@ -236,12 +236,8 @@ def validate(raw_values: Any) -> AppSettings:
         key = _STR_TO_ENUM.get(key_str)
         if key and key in _VALIDATOR_MAP:
             validated = _VALIDATOR_MAP[key](key, val)
-            if validated is not None: config[key_str] = validated # type: ignore
-    
-    for k in DEFAULTS:
-        if k not in config:
-            config[k] = DEFAULTS[k] # type: ignore
-            
+            if validated is not None:
+                config[key.value] = validated # type: ignore
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -276,7 +272,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(custom_base)
     
     try:
-        # Validación de seguridad defensiva: no escribir si la ruta o directorio padre son inseguros
         ensure_safe_to_modify(str(ruta))
     except (OSError, RuntimeError, PermissionError):
         return None
