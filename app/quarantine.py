@@ -409,10 +409,11 @@ def quarantine_file(
         save_manifest(items, base)
         
         try:
-            if source_path.exists():
-                os.remove(source_path)
-        except OSError:
-            pass
+            if source_path.is_file():
+                source_path.unlink()
+        except OSError as e:
+            # Si el borrado falla, el archivo está aislado pero queda duplicado
+            raise RuntimeError(f"Aislamiento exitoso, pero no se pudo limpiar el origen: {e}")
             
         return quarantine_item
     except Exception as e:

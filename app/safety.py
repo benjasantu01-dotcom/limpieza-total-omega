@@ -159,8 +159,10 @@ def _is_file_in_use(path: Path) -> bool:
         handle = os.open(path, os.O_RDONLY)
         os.close(handle)
         return False
-    except (OSError, PermissionError):
+    except (PermissionError, OSError):
         return True
+    except Exception:
+        return False
 
 
 def _check_file_integrity(path: Path) -> None:

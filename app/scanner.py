@@ -116,14 +116,18 @@ class Scanner:
 
         if is_dir:
             if not self._is_reparse_point(entry):
-                path_str = str(target_path.resolve())
-                if path_str not in self.seen:
-                    self.seen.add(path_str)
-                    stack.append(path_str)
+                try:
+                    path_str = str(target_path.resolve())
+                    if path_str not in self.seen:
+                        self.seen.add(path_str)
+                        stack.append(path_str)
+                except (OSError, RuntimeError):
+                    pass
             return
 
         if is_file:
             try:
+                # Verificamos tamaño solo si es posible acceder a los stats
                 if entry.stat(follow_symlinks=False).st_size == 0:
                     return
             except (OSError, PermissionError):
@@ -157,7 +161,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
         
     try:
-        stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'stat')) else path.stat()
+        if entry and entry.path == str(path):
+            stats = entry.stat(follow_symlinks=False)
+        else:
+            stats = path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, PermissionError, AttributeError, ValueError):
@@ -232,7 +239,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if entry:
+                    if entry is not None:
                         scanner.process_entry(entry, stack)
         except (PermissionError, OSError) as e:
             logger.debug(f"Error accediendo a directorio {current_dir}: {e}")

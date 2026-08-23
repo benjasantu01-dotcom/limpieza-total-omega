@@ -1431,3 +1431,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-23T04:20:08` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-23T04:20:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T04:20:08` Corrida terminada. Total usado hoy: 100.
+- `2026-08-23T04:28:06` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-23T04:28:39` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` envolviendo la eliminación del archivo original en una verificación de estado atómica y capturando errores de forma específica, evitando que un error al borrar el archivo original invalide un proceso de aislamiento que ya fue exitoso.
+- `2026-08-23T04:29:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-23T04:29:27` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_file_in_use` capturando errores específicos de acceso durante la apertura del descriptor, evitando que excepciones inesperadas del sistema interrumpan el flujo de validación de archivos.
+- `2026-08-23T04:29:35` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las verificaciones en `scanner.py` integrando validaciones de estado de los objetos `os.DirEntry` y protegiendo las operaciones de `stat` ante errores de acceso, asegurando que el bucle de escaneo no se interrumpa ante metadatos corruptos o bloqueados.
+- `2026-08-23T04:29:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T04:29:35` Corrida terminada. Total usado hoy: 104.
