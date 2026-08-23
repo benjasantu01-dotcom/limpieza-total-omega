@@ -72,6 +72,11 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada, sea de carpetas o registro.
     
+    Esta clase implementa una estrategia de resolución de rutas 'lazy' (perezosa).
+    El comando crudo se limpia y analiza solo al acceder a la propiedad 
+    'executable', utilizando caché interno para evitar llamadas repetitivas 
+    al sistema de archivos.
+
     Attributes:
         name: Nombre descriptivo del programa.
         command: Línea de comando original desde el registro o carpeta.
@@ -84,22 +89,22 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida mediante extensión y seguridad de sistema si la ruta es ejecutable."""
+        """Verifica si la extensión es ejecutable y asegura que no sea un enlace simbólico."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia caracteres de control (ASCII < 32) de la línea de comando cruda."""
+        """Elimina caracteres de control y espacios innecesarios de la línea de comando."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Extrae y valida rutas contenidas entre comillas, descartando secuencias
-        con caracteres no permitidos en sistemas de archivos Windows.
+        Extrae una ruta de archivo contenida entre comillas.
+        Si la ruta está protegida o contiene caracteres inválidos, retorna vacío.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -121,8 +126,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Normaliza una ruta, verifica su existencia real mediante realpath y la 
-        almacena en _EXISTS_CACHE para optimizar lecturas recurrentes.
+        Normaliza y verifica la existencia de un ejecutable en disco.
+        Usa _EXISTS_CACHE para evitar el costo de I/O en chequeos repetidos.
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*\0'):
             return ""
@@ -157,8 +162,8 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, cmd: str) -> str:
         """
-        Interpreta comandos de ejecución (con/sin comillas o argumentos) 
-        para aislar la ruta del binario principal.
+        Aísla la ruta del ejecutable principal desde la línea de comando cruda,
+        manejando tanto rutas entre comillas como comandos simples.
         """
         if not cmd or not isinstance(cmd, str):
             return ""
@@ -179,8 +184,8 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Retorna la ruta absoluta del ejecutable. Utiliza una estrategia de 
-        resolución perezosa con memoización para minimizar llamadas al sistema.
+        Retorna la ruta absoluta del ejecutable. Realiza la resolución la primera 
+        vez que se invoca y almacena el resultado en _exec_cache.
         """
         if self._checked_exists:
             return self._exec_cache or ""

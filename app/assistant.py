@@ -176,14 +176,14 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
 )
 
-_EXPLICACIONES: Final[tuple[AreaExplanation, ...]] = (
-    AreaExplanation("basura", "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo."),
-    AreaExplanation("seguridad", "Archivos con señales de riesgo: extensiones inusuales o ejecutables sin firma, requieren revisión manual."),
-    AreaExplanation("memoria", "Recursos de acceso rápido: si la memoria disponible es baja, Windows utiliza el disco duro, ralentizando todo."),
-    AreaExplanation("disco", "Almacenamiento disponible: niveles inferiores al 10% afectan la estabilidad y velocidad de escritura de Windows."),
-    AreaExplanation("duplicados", "Copias idénticas del mismo archivo: se pueden eliminar de forma segura ya que el archivo original permanece."),
-    AreaExplanation("inicio", "Programas que arrancan con Windows: cada entrada incrementa el tiempo de inicio y el consumo base de memoria."),
-)
+_EXPLANATION_MAP: Final[dict[str, str]] = {
+    "basura": "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo.",
+    "seguridad": "Archivos con señales de riesgo: extensiones inusuales o ejecutables sin firma, requieren revisión manual.",
+    "memoria": "Recursos de acceso rápido: si la memoria disponible es baja, Windows utiliza el disco duro, ralentizando todo.",
+    "disco": "Almacenamiento disponible: niveles inferiores al 10% afectan la estabilidad y velocidad de escritura de Windows.",
+    "duplicados": "Copias idénticas del mismo archivo: se pueden eliminar de forma segura ya que el archivo original permanece.",
+    "inicio": "Programas que arrancan con Windows: cada entrada incrementa el tiempo de inicio y el consumo base de memoria.",
+}
 
 _VALIDATORS: Final[dict[str, ValidatorSpec]] = {
     "junk_mb": (float, 0.0, 1e9),
@@ -199,9 +199,11 @@ _VALIDATORS: Final[dict[str, ValidatorSpec]] = {
     "score": (int, 0, 100),
 }
 
+_FORBIDDEN_TYPES: Final[set[type]] = {list, dict, set, tuple, bool}
+
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Conversión segura a float. Retorna default si el valor no es numérico o es infinito."""
-    if val is None or isinstance(val, (list, dict, set, tuple, bool)):
+    if val is None or type(val) in _FORBIDDEN_TYPES:
         return default
     try:
         f = float(val)
@@ -275,7 +277,7 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     else:
         return False
     
-    if val is None or isinstance(val, (dict, list, set, tuple)):
+    if val is None or type(val) in _FORBIDDEN_TYPES:
         return False
 
     clean_val = _safe_float(val, -1.0)
@@ -295,8 +297,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     found_data = False
     
+    sources = (metrics, health, extra)
     for key, spec in _VALIDATORS.items():
-        for src in (metrics, health, extra):
+        for src in sources:
             if src is not None and _validate_and_assign(ctx, src, key, spec):
                 found_data = True
                 break
@@ -306,7 +309,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
         if isinstance(g_val, (str, int, float)):
             g_str = str(g_val)[:10].strip()
-            # Validación estricta: evita inyecciones o rutas protegidas disfrazadas de grado
             if _ensure_safe_text(g_str) and not is_protected_path(g_str):
                 ctx.grade = g_str
             
@@ -350,13 +352,7 @@ def explain_area(area: Any) -> str:
     """Devuelve explicaciones pedagógicas de los módulos de la app."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
-        
-    query = area.strip().lower()
-    for item in _EXPLICACIONES:
-        if item.key == query:
-            return _validate_response_length(item.description)
-            
-    return "No tengo una explicación para esa área."
+    return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Recopila la lista de problemas actuales basándose en los criterios definidos."""
@@ -449,12 +445,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
-    tokens = set(_TOKEN_REGEX.findall(q_sanitized))
-    found_key = next((_KEYWORD_MAP[t] for t in tokens if t in _KEYWORD_MAP), None)
-    
-    handler = _HANDLERS.get(found_key) if found_key else None
-    if handler:
-        return handler(context, question)
+    for token in _TOKEN_REGEX.findall(q_sanitized):
+        handler_key = _KEYWORD_MAP.get(token)
+        if handler_key:
+            return _HANDLERS[handler_key](context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"

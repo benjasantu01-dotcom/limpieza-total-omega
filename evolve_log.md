@@ -678,3 +678,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T09:35:17` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante docstrings normalizados y el uso de anotaciones de tipo más precisas para clarificar el flujo de datos y las responsabilidades de cada función de escaneo heurístico.
 - `2026-08-23T09:35:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T09:35:17` Corrida terminada. Total usado hoy: 224.
+- `2026-08-23T09:44:09` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-08-23T09:44:36` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._run_safety_checks, _Validators._validate_enum_str, _Validators.bool, _Validators.int, _Validators.path, _Validators.str
+- `2026-08-23T09:45:02` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). He mejorado la documentación de la clase `StartupEntry` y sus métodos clave mediante docstrings que detallan los supuestos de diseño y las estrategias de resolución (memoización, limpieza de comandos, filtrado de seguridad), facilitando el mantenimiento y la comprensión de la lógica de resolución de rutas.
+- `2026-08-23T09:45:37` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` y `local_answer` evitando repeticiones innecesarias: transformé las listas de validación y mapeo en estructuras `set` y `dict` constantes para búsquedas de tiempo constante O(1), y moví la lógica de `tokens` a un conjunto precalculado.
+- `2026-08-23T09:45:54` Tests FALLARON:
+```
+. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+__________________ test_blend_on_invalid_color_does_not_crash __________________
+
+    def test_blend_on_invalid_color_does_not_crash():
+>       assert branding.blend("no-es-color", "#ffffff", 0.5).startswith("#")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_modules.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/branding.py:266: in blend
+    r1, g1, b1 = _hex_to_rgb(start)
+                 ^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = 'no-es-color'
+
+    @lru_cache(maxsize=128)
+    def _hex_to_rgb(value: HexColor) -> RGBTuple:
+        """Convierte un color hexadecimal (#RRGGBB) a una tupla de enteros RGB."""
+        # Acceso directo por índice es más eficiente que el lookup de diccionario para valores no cacheados
+>       return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
+                ^^^^^^^^^^^^^^^^^^^
+E       ValueError: invalid literal for int() with base 16: 'o-'
+
+app/branding.py:259: ValueError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash - ValueError: invalid literal for int() with base 16: 'o-'
+1 failed, 298 passed in 1.06s
+
+```
+- `2026-08-23T09:45:54` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó `_hex_to_rgb` eliminando la llamada innecesaria a `HEX_TO_KEY` y los bloques `try/except` pesados, reemplazándolos por una lógica de extracción directa de tuplas basada en los índices de la cadena hexadecimal, lo que reduce la carga computacional en renderizados frecuentes.
+- `2026-08-23T09:45:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T09:45:54` Corrida terminada. Total usado hoy: 228.
