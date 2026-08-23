@@ -34,7 +34,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec
 
-from safety import is_safe_to_modify, is_protected_path
+from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 T = TypeVar("T")
@@ -274,14 +274,14 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
+    
+    try:
+        # Validación de seguridad defensiva: no escribir si la ruta o directorio padre son inseguros
+        ensure_safe_to_modify(str(ruta))
+    except (OSError, RuntimeError, PermissionError):
+        return None
+    
     parent = ruta.parent.resolve(strict=False)
-    
-    if is_protected_path(str(ruta)) or not _Validators._is_safe_path(str(parent)):
-        return None
-    
-    if ruta.exists() and not os.access(ruta, os.W_OK):
-        return None
-    
     if not parent.exists():
         try: parent.mkdir(parents=True, exist_ok=True)
         except OSError: return None

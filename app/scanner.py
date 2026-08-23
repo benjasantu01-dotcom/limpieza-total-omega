@@ -74,12 +74,15 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root_str: str = str(base_root.resolve())
+        self.base_root: Path = base_root.resolve()
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_safe_entry(self, entry_path: str) -> bool:
-        """Verifica que la ruta esté contenida dentro del alcance de la raíz original."""
-        return entry_path.startswith(self.base_root_str)
+    def _is_safe_entry(self, entry_path: Path) -> bool:
+        """Verifica que la ruta resuelta esté contenida dentro del alcance de la raíz original."""
+        try:
+            return str(entry_path.resolve()).startswith(str(self.base_root))
+        except (OSError, RuntimeError):
+            return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
@@ -99,10 +102,10 @@ class Scanner:
         if entry is None or not hasattr(entry, 'path'):
             return
         
-        path_str = entry.path
-        if is_protected_path(Path(path_str)) or path_str.startswith("\\\\"):
+        target_path = Path(entry.path)
+        if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
             return
-        if not self._is_safe_entry(path_str):
+        if not self._is_safe_entry(target_path):
             return
 
         try:
@@ -113,6 +116,7 @@ class Scanner:
 
         if is_dir:
             if not self._is_reparse_point(entry):
+                path_str = str(target_path.resolve())
                 if path_str not in self.seen:
                     self.seen.add(path_str)
                     stack.append(path_str)
@@ -125,7 +129,6 @@ class Scanner:
             except (OSError, PermissionError):
                 return
 
-            target_path = Path(path_str)
             if RTL_CHAR_RE.search(target_path.name):
                 self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
             

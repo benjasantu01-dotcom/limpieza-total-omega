@@ -1204,3 +1204,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-23T02:23:16` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `quarantine_file` añadiendo una comprobación explícita de `is_safe_to_modify` para el directorio de destino, asegurando que ni siquiera el sandbox pueda ser redirigido accidentalmente a una ruta protegida mediante manipulaciones externas o errores de resolución de rutas.
 - `2026-08-23T02:23:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T02:23:16` Corrida terminada. Total usado hoy: 56.
+- `2026-08-23T02:30:54` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-23T02:31:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-23T02:31:42` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-23T02:32:07` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las validaciones de ruta dentro de `Scanner` para prevenir el "path traversal" mediante el uso de `pathlib.Path.resolve()` en cada entrada procesada, asegurando que el chequeo de seguridad `_is_safe_entry` se realice siempre contra rutas normalizadas y absolutas, evitando bypasses por enlaces simbólicos o rutas relativas manipuladas.
+- `2026-08-23T02:32:19` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). He mejorado la seguridad del módulo `settings.py` integrando `ensure_safe_to_modify` dentro de la función `save` para garantizar que la escritura del archivo de configuración no sea una operación ciega, bloqueando cualquier intento de escritura si la ruta de destino es insegura según nuestras políticas de seguridad defensiva.
+- `2026-08-23T02:32:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T02:32:19` Corrida terminada. Total usado hoy: 60.
