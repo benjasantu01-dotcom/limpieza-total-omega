@@ -132,11 +132,16 @@ class StartupEntry:
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*\0'):
             return ""
         
+        # Prevenir procesamiento de rutas UNC de red
+        norm = os.path.normpath(path_str)
+        if norm.startswith(r"\\"):
+            return ""
+        
         if path_str in _EXISTS_CACHE:
             return path_str if _EXISTS_CACHE[path_str] else path_str
         
         try:
-            abs_path = os.path.abspath(path_str)
+            abs_path = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
             if not p.is_absolute():

@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 104 | 9 | 15 | 12 | 96 |
-| 2026-08-23 | 124 | 8 | 19 | 10 | 107 |
+| 2026-08-22 | 104 | 9 | 15 | 12 | 92 |
+| 2026-08-23 | 125 | 8 | 20 | 10 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **44**
+- seguridad defensiva: **45**
 - rendimiento: **41**
 - robustez ante casos límite: **38**
 
@@ -42,10 +42,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **14**
 - `main.py`: **9**
 - `safety.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T11:37:31` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante el uso de `os.path.normpath` y una verificación explícita contra rutas UNC, previniendo el procesamiento accidental de recursos compartidos de red que podrían causar bloqueos o comportamientos inesperados en el escaneo de inicio.
 - `2026-08-23T11:26:56` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` implementando una validación explícita para asegurar que el archivo temporal creado en el sandbox reside estrictamente dentro del directorio de cuarentena antes de cualquier operación de I/O, previniendo ataques de escalada de privilegios mediante paths manipulados.
 - `2026-08-23T11:18:00` **memory.py** (seguridad defensiva): Mejoré `_is_safe_to_trim` para prevenir una posible denegación de servicio o manipulación de estado al asegurar que la operación `EmptyWorkingSet` no se ejecute sobre procesos del sistema operativo ni ejecutables críticos usando un filtrado de rutas mediante `is_protected_path`, garantizando que la validación ocurra antes de interactuar con el handle del proceso.
 - `2026-08-23T11:16:13` **duplicates.py** (seguridad defensiva): Se ha optimizado la seguridad defensiva en `group_by_size` y `_collect_candidates` consolidando las comprobaciones de seguridad (`is_protected_path` y `is_safe_to_modify`) antes de acceder a las propiedades del archivo para evitar condiciones de carrera o intentos de acceso sobre rutas no permitidas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T10:35:26` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir una verificación explícita mediante `is_dir()` antes de iniciar el iterador `os.scandir` y asegurando que las rutas base resueltas no sean nulas ni inválidas.
 - `2026-08-23T10:26:18` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` al reemplazar `Path.expanduser().resolve()` por una secuencia de validación defensiva que evita el colapso ante rutas mal formadas o caracteres inválidos en el sistema de archivos.
 - `2026-08-23T10:25:13` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por una lógica que utiliza un conjunto (`set`) para las extensiones, acelerando la verificación de tipos, y agregando una pre-validación de `is_protected_path` sobre la carpeta misma antes de abrir el `os.scandir` para evitar excepciones innecesarias.
-- `2026-08-23T10:15:25` **safety.py** (rendimiento): Se optimizó el rendimiento mediante la implementación de `functools.lru_cache` en `is_protected_path` y la reducción de llamadas redundantes a `os.access` y `path.stat` dentro del flujo de `_check_file_integrity`, minimizando las operaciones de E/S que son los cuellos de botella críticos en el escaneo de directorios.
