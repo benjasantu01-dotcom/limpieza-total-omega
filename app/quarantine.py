@@ -320,7 +320,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         if os.path.exists(temp_path):
             try: os.remove(temp_path)
             except OSError: pass
-        raise RuntimeError(f"Error fatal al persistir manifiesto de cuarentena: {e}")
+        raise RuntimeError(f"Fallo en I/O al persistir manifiesto en {target_path}: {e}")
     return target_path
 
 

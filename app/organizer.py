@@ -167,6 +167,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Valida la integridad de una operación de E/S aplicando controles de seguridad, 
     de reparse points y bloqueo de archivos.
+    
+    Retorna True solo si el archivo no está en uso y cumple con los guiones de seguridad.
     """
     try:
         # Validación lógica: primero lo que no requiere I/O, luego lo pesado
@@ -191,6 +193,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
     Validación de alto nivel previa al movimiento.
+    Comprueba existencia, protección de ruta y seguridad de la operación I/O.
     """
     if not isinstance(junk_file, JunkFile): return False
     try:
@@ -261,6 +264,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Mueve los archivos candidatos a una carpeta de revisión segura.
+    Valida espacio en disco y permisos de seguridad antes de cada movimiento.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
@@ -304,6 +308,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de forma segura tras revisión del usuario.
+    Verifica que cada archivo a borrar mantenga los criterios de seguridad definidos.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
