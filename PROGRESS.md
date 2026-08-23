@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 218
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 81 | 7 | 13 | 10 | 77 |
-| 2026-08-23 | 133 | 8 | 22 | 12 | 141 |
+| 2026-08-22 | 78 | 7 | 13 | 9 | 77 |
+| 2026-08-23 | 136 | 8 | 22 | 12 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **49**
+- legibilidad y documentación: **47**
 - seguridad defensiva: **45**
-- legibilidad y documentación: **44**
-- rendimiento: **38**
 - robustez ante casos límite: **38**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `assistant.py`: **21**
+- `memory.py`: **21**
 - `scanner.py`: **20**
-- `assistant.py`: **20**
-- `quarantine.py`: **19**
 - `duplicates.py`: **19**
 - `settings.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **18**
-- `diskreport.py`: **17**
+- `quarantine.py`: **18**
 - `branding.py`: **15**
-- `organizer.py`: **14**
-- `browser.py`: **12**
+- `browser.py`: **13**
+- `organizer.py`: **13**
 - `startup.py`: **7**
 - `main.py`: **7**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T13:40:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos de retorno explícitos en los docstrings y refinando la descripción de las funciones de alto nivel para facilitar la auditoría de seguridad y la comprensión de los algoritmos de recolección de datos.
+- `2026-08-23T13:40:31` **browser.py** (legibilidad y documentación): Documenté con precisión los parámetros y el comportamiento de las funciones de navegación de archivos y recursión, clarificando las expectativas de seguridad y el manejo de excepciones para mejorar la mantenibilidad.
+- `2026-08-23T13:39:25` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `assistant.py` mediante docstrings detallados en las funciones de procesamiento de lenguaje natural y el uso de tipos de datos, clarificando los límites de responsabilidad de cada motor.
 - `2026-08-23T13:29:27` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `process_entry` y `scan_directory` aplicando validación estricta de rutas y tipos, asegurando que cualquier entrada `None` o ruta malformada se descarte mediante verificaciones defensivas explícitas antes de cualquier operación.
 - `2026-08-23T13:19:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y `restore_item` al centralizar y reforzar la validación de rutas y el manejo de excepciones de E/S, evitando que estados inconsistentes del sistema de archivos bloqueen la ejecución del bucle.
 - `2026-08-23T13:19:23` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas (tipo, existencia y limpieza) antes de realizar operaciones de disco, evitando el procesamiento de rutas potencialmente corruptas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T11:26:56` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` implementando una validación explícita para asegurar que el archivo temporal creado en el sandbox reside estrictamente dentro del directorio de cuarentena antes de cualquier operación de I/O, previniendo ataques de escalada de privilegios mediante paths manipulados.
 - `2026-08-23T11:18:00` **memory.py** (seguridad defensiva): Mejoré `_is_safe_to_trim` para prevenir una posible denegación de servicio o manipulación de estado al asegurar que la operación `EmptyWorkingSet` no se ejecute sobre procesos del sistema operativo ni ejecutables críticos usando un filtrado de rutas mediante `is_protected_path`, garantizando que la validación ocurra antes de interactuar con el handle del proceso.
 - `2026-08-23T11:16:13` **duplicates.py** (seguridad defensiva): Se ha optimizado la seguridad defensiva en `group_by_size` y `_collect_candidates` consolidando las comprobaciones de seguridad (`is_protected_path` y `is_safe_to_modify`) antes de acceder a las propiedades del archivo para evitar condiciones de carrera o intentos de acceso sobre rutas no permitidas.
-- `2026-08-23T11:07:59` **diskreport.py** (seguridad defensiva): Se ha añadido una validación estricta de "traversal" en `walk_files` y `largest_folders` para asegurar que el `base_path` sea un directorio real y no un enlace simbólico o un punto de reparse que pueda evadir las restricciones de seguridad al resolverse, reforzando la protección contra fugas de contexto fuera de la ruta autorizada.
-- `2026-08-23T10:56:40` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.path` para manejar correctamente rutas que no existen o tienen permisos denegados, evitando fallos en tiempo de ejecución al validar configuraciones en carpetas personalizadas.
-- `2026-08-23T10:56:12` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de resolución de rutas en el método `_is_safe_entry` y `scan_directory` para evitar cierres inesperados ante enlaces simbólicos circulares o rutas que devuelven errores de sistema al intentar resolverse.

@@ -60,7 +60,7 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
         size_bytes: Cantidad de bytes a convertir.
         
     Returns:
-        Valor en MB redondeado a dos decimales. Retorna 0.0 para entradas inválidas.
+        float: Valor en MB redondeado a dos decimales. Retorna 0.0 para entradas inválidas.
     """
     if not isinstance(size_bytes, (int, float)):
         return 0.0
@@ -84,7 +84,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
-        """Retorna el peso del archivo convertido a MB."""
+        """float: Retorna el peso del archivo convertido a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -104,7 +104,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
-        """Retorna el peso total del grupo de archivos convertido a MB."""
+        """float: Retorna el peso total del grupo de archivos convertido a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -124,7 +124,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
-        """Retorna el peso total del directorio convertido a MB."""
+        """float: Retorna el peso total del directorio convertido a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -146,14 +146,14 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
-        """Calcula el porcentaje de ocupación de la unidad (0.0 a 100.0)."""
+        """float: Calcula el porcentaje de ocupación de la unidad (0.0 a 100.0)."""
         if self.total <= 0:
             return 0.0
         return round(self.used / self.total * 100, 1)
 
     @property
     def is_almost_full(self) -> bool:
-        """Retorna True si el espacio libre es menor al 10% de la capacidad total."""
+        """bool: Retorna True si el espacio libre es menor al 10% de la capacidad total."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
@@ -165,7 +165,7 @@ def format_size(num: Union[int, float, None]) -> str:
         num: Valor numérico en bytes.
         
     Returns:
-        String formateado con la unidad correspondiente. '0 B' si la entrada es inválida.
+        str: String formateado con la unidad correspondiente. '0 B' si la entrada es inválida.
     """
     if num is None or not isinstance(num, (int, float)):
         return "0 B"
@@ -185,6 +185,9 @@ def format_size(num: Union[int, float, None]) -> str:
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad específica.
+    
+    Returns:
+        Optional[DriveUsage]: Objeto de datos con el estado, o None si la ruta es inaccesible o inválida.
     """
     if not mount or not isinstance(mount, (str, os.PathLike)):
         return None
@@ -210,6 +213,9 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
     Obtiene el uso de almacenamiento de todas las unidades detectadas en el sistema.
+    
+    Returns:
+        List[DriveUsage]: Lista de estados por cada unidad detectada.
     """
     if mounts is None:
         if os.name == "nt":
@@ -234,6 +240,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente para listar archivos.
+    
+    Yields:
+        Tuple[Path, int]: Cada tupla contiene la ruta absoluta y el tamaño en bytes del archivo.
     """
     if not directory:
         return
@@ -288,7 +297,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Identifica los N archivos más grandes en un directorio usando un heap para eficiencia."""
+    """
+    Identifica los N archivos más grandes en un directorio usando un heap para eficiencia.
+    
+    Returns:
+        List[FileEntry]: Lista de archivos ordenados de mayor a menor tamaño.
+    """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -300,7 +314,12 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """Agrupa el uso de espacio total por extensión de archivo."""
+    """
+    Agrupa el uso de espacio total por extensión de archivo.
+    
+    Returns:
+        List[ExtensionUsage]: Lista de extensiones ordenadas por uso total de bytes.
+    """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
         
@@ -321,7 +340,12 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """Identifica las subcarpetas de primer nivel que ocupan más espacio."""
+    """
+    Identifica las subcarpetas de primer nivel que ocupan más espacio.
+    
+    Returns:
+        List[FolderUsage]: Lista de carpetas de primer nivel ordenadas por peso.
+    """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -354,7 +378,12 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
-    """Calcula el tamaño total en bytes y el conteo de archivos en un directorio."""
+    """
+    Calcula el tamaño total en bytes y el conteo de archivos en un directorio.
+    
+    Returns:
+        Tuple[int, int]: (Total en bytes, Cantidad de archivos).
+    """
     total_bytes, file_count = 0, 0
     if not directory:
         return 0, 0
@@ -367,6 +396,9 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Recolección unificada de datos para resumen optimizando la lectura de disco.
+    
+    Returns:
+        SummaryData: Estructura conteniendo métricas agregadas del escaneo.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -394,7 +426,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
-    """Genera un informe textual unificado con los hallazgos del análisis."""
+    """
+    Genera un informe textual unificado con los hallazgos del análisis.
+    
+    Returns:
+        List[str]: Líneas del reporte formateado.
+    """
     if not directory:
         return ["Error: Ruta no proporcionada."]
 
