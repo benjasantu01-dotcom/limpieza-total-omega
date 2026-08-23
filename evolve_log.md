@@ -1096,3 +1096,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-08-23T01:13:03` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-23T01:13:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T01:13:03` Corrida terminada. Total usado hoy: 28.
+- `2026-08-23T01:19:37` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-23T01:20:06` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo reemplazando la lógica de resolución de rutas en el bucle principal por una verificación de prefijo de string más rápida y evitando llamadas redundantes a `Path.resolve()` en `process_entry`.
+- `2026-08-23T01:20:47` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando lecturas redundantes del sistema de archivos mediante una verificación de `st_mtime` previa, eliminando la necesidad de re-parsear el JSON en cada llamada si el archivo no cambió.
+- `2026-08-23T01:21:12` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-23T01:21:32` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas mal formadas asegurando que `_validate_and_assign` no acceda a atributos inexistentes en objetos genéricos y añadiendo una validación explícita para evitar errores de tipo en las métricas.
+- `2026-08-23T01:21:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T01:21:32` Corrida terminada. Total usado hoy: 32.

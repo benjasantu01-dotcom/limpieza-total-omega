@@ -74,16 +74,12 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root: Path = base_root.resolve()
+        self.base_root_str: str = str(base_root.resolve())
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_safe_entry(self, entry_path: Path) -> bool:
+    def _is_safe_entry(self, entry_path: str) -> bool:
         """Verifica que la ruta esté contenida dentro del alcance de la raíz original."""
-        try:
-            resolved = entry_path.resolve(strict=False)
-            return self.base_root == resolved or self.base_root in resolved.parents
-        except (OSError, RuntimeError):
-            return False
+        return entry_path.startswith(self.base_root_str)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
@@ -103,46 +99,39 @@ class Scanner:
         if entry is None or not hasattr(entry, 'path'):
             return
         
-        try:
-            target_path = Path(entry.path)
-            
-            if is_protected_path(target_path) or entry.path.startswith("\\\\"):
-                return
-            if not self._is_safe_entry(target_path):
-                return
+        path_str = entry.path
+        if is_protected_path(Path(path_str)) or path_str.startswith("\\\\"):
+            return
+        if not self._is_safe_entry(path_str):
+            return
 
+        try:
+            is_dir = entry.is_dir(follow_symlinks=False)
+            is_file = entry.is_file(follow_symlinks=False)
+        except (OSError, PermissionError):
+            return
+
+        if is_dir:
+            if not self._is_reparse_point(entry):
+                if path_str not in self.seen:
+                    self.seen.add(path_str)
+                    stack.append(path_str)
+            return
+
+        if is_file:
             try:
-                is_dir = entry.is_dir(follow_symlinks=False)
-                is_file = entry.is_file(follow_symlinks=False)
+                if entry.stat(follow_symlinks=False).st_size == 0:
+                    return
             except (OSError, PermissionError):
                 return
 
-            if is_dir:
-                if not self._is_reparse_point(entry):
-                    path_str = str(target_path)
-                    if path_str not in self.seen:
-                        self.seen.add(path_str)
-                        stack.append(path_str)
-                return
-
-            if is_file:
-                try:
-                    stats = entry.stat(follow_symlinks=False)
-                    if stats.st_size == 0:
-                        return
-                except (OSError, PermissionError):
-                    return
-
-                if RTL_CHAR_RE.search(target_path.name):
-                    self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
-                
-                suffix = target_path.suffix.lower()
-                if suffix in SUSPICIOUS_EXECUTABLE_EXT or DOUBLE_EXTENSION_RE.search(target_path.name):
-                    self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
-                
-        except Exception as e:
-            logger.debug(f"Error procesando {entry.path}: {e}")
-
+            target_path = Path(path_str)
+            if RTL_CHAR_RE.search(target_path.name):
+                self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
+            
+            suffix = target_path.suffix.lower()
+            if suffix in SUSPICIOUS_EXECUTABLE_EXT or DOUBLE_EXTENSION_RE.search(target_path.name):
+                self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta nombres con extensiones múltiples engañosas (ej: imagen.jpg.exe) que ocultan la extensión ejecutable real."""

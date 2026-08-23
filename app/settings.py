@@ -248,10 +248,12 @@ def validate(raw_values: Any) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     try:
-        if not ruta.exists() or not ruta.is_file() or ruta.stat().st_size == 0: 
+        if not ruta.exists() or not ruta.is_file(): 
             return _get_default_config()
         
         stat = ruta.stat()
+        if stat.st_size == 0: return _get_default_config()
+        
         mtime = stat.st_mtime
         if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
             return cached[1]
@@ -264,9 +266,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
         if not isinstance(data, dict): return _get_default_config()
         
-        # Validación de integridad de estructura
         config = validate(data)
-        
         _CACHE[ruta] = (mtime, config)
         return config
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):

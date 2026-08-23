@@ -263,17 +263,16 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     """Extrae y valida una métrica individual desde una fuente de datos."""
     cast, min_v, max_v = spec
     
-    # Solo aceptamos dicts o tipos objeto que soporten getattr
-    if not isinstance(source, dict) and not hasattr(source, "__dict__") and not hasattr(source, key):
-        return False
-
-    try:
-        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-    except (AttributeError, TypeError):
+    # Verificación estricta de existencia y tipo de la fuente
+    if isinstance(source, dict):
+        val = source.get(key)
+    elif hasattr(source, key):
+        val = getattr(source, key, None)
+    else:
         return False
     
-    # Validamos que el valor no sea una estructura compleja
-    if isinstance(val, (dict, list, set, tuple)):
+    # Validamos que el valor no sea una estructura compleja o nulo
+    if val is None or isinstance(val, (dict, list, set, tuple)):
         return False
 
     clean_val = _safe_float(val, -1.0)
@@ -301,7 +300,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
 
     for src in (health, extra):
         if src is None: continue
-        # Extraemos el grado de forma segura evitando errores de tipo
         g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
         if isinstance(g_val, (str, int, float)):
             g_str = str(g_val)[:10].strip()
