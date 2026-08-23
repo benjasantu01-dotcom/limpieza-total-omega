@@ -63,7 +63,7 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo. Retorna None en caso de error de acceso."""
     path_obj = Path(path)
-    if not is_safe_to_modify(path_obj): return None
+    if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
         digest = hashlib.sha256()
         with open(path_obj, "rb") as f:
@@ -77,7 +77,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash de los primeros N bytes para filtrado rápido."""
     path_obj = Path(path)
-    if not is_safe_to_modify(path_obj): return None
+    if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
         with open(path_obj, "rb") as f:
             content = f.read(read_bytes)

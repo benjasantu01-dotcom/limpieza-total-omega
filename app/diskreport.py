@@ -283,10 +283,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 visited_inodes.add(inode_key)
                                 stack.append(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            yield entry_path, entry.stat(follow_symlinks=False).st_size
-                    except (PermissionError, FileNotFoundError):
+                            f_stat = entry.stat(follow_symlinks=False)
+                            yield entry_path, f_stat.st_size
+                    except (PermissionError, FileNotFoundError, OSError):
                         continue
-        except (PermissionError, FileNotFoundError):
+        except (PermissionError, FileNotFoundError, OSError):
             continue
 
 
