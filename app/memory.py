@@ -321,16 +321,15 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if not path or not os.path.exists(path): 
             return False, "No se pudo verificar la ubicación del ejecutable."
         
-        # Validación robusta de reparse points y enlaces
-        if os.path.normcase(path) != os.path.normcase(os.path.realpath(path)):
-            return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse."
-        
         # Filtro contra técnicas de ofuscación de nombres (RTL overrides)
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
         
         normalized_path = os.normcase(os.path.abspath(path))
+        # Defensa contra reparse points y rutas protegidas
+        if os.path.normcase(path) != os.path.normcase(os.path.realpath(path)):
+            return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse."
         if is_protected_path(normalized_path):
             return False, "Operación denegada: ruta de ejecutable protegida."
     except (ctypes.ArgumentError, Exception):

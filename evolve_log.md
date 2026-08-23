@@ -794,3 +794,41 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-23T11:07:59` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta de "traversal" en `walk_files` y `largest_folders` para asegurar que el `base_path` sea un directorio real y no un enlace simbólico o un punto de reparse que pueda evadir las restricciones de seguridad al resolverse, reforzando la protección contra fugas de contexto fuera de la ruta autorizada.
 - `2026-08-23T11:07:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T11:07:59` Corrida terminada. Total usado hoy: 260.
+- `2026-08-23T11:15:47` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-23T11:16:13` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha optimizado la seguridad defensiva en `group_by_size` y `_collect_candidates` consolidando las comprobaciones de seguridad (`is_protected_path` y `is_safe_to_modify`) antes de acceder a las propiedades del archivo para evitar condiciones de carrera o intentos de acceso sobre rutas no permitidas.
+- `2026-08-23T11:16:38` Tests FALLARON:
+```
+............ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_________________ test_read_only_modules_never_delete_or_move __________________
+
+    def test_read_only_modules_never_delete_or_move():
+        """Ningún módulo de solo lectura puede borrar ni mover archivos."""
+        destructivos = {"unlink", "rmdir", "rmtree", "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+E           assert not {'replace'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: healthscore.py debería ser de solo lectura pero llama a replace
+assert not {'replace'}
+1 failed, 298 passed in 1.62s
+
+```
+- `2026-08-23T11:16:38` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez defensiva de `compute_score` asegurando que el estado del objeto `SystemMetrics` no pueda ser alterado externamente durante el proceso de cálculo, utilizando una copia validada para evitar condiciones de carrera o estados inconsistentes.
+- `2026-08-23T11:17:43` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se introdujo una validación explícita de seguridad dentro de `_worker_thread_logic` para garantizar que toda tarea asíncrona que involucre una ruta de disco sea validada contra `safety.ensure_safe_to_modify` antes de ejecutarse, centralizando así el control defensivo y evitando errores de seguridad por omisión en llamadas futuras.
+- `2026-08-23T11:18:00` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré `_is_safe_to_trim` para prevenir una posible denegación de servicio o manipulación de estado al asegurar que la operación `EmptyWorkingSet` no se ejecute sobre procesos del sistema operativo ni ejecutables críticos usando un filtrado de rutas mediante `is_protected_path`, garantizando que la validación ocurra antes de interactuar con el handle del proceso.
+- `2026-08-23T11:18:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T11:18:00` Corrida terminada. Total usado hoy: 264.

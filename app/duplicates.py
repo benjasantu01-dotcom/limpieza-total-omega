@@ -102,9 +102,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None: return groups
     for p in paths:
         if p is None: continue
+        target = Path(p)
+        if is_protected_path(target) or not is_safe_to_modify(target):
+            continue
         try:
-            target = Path(p)
-            if target.is_file() and not is_protected_path(target) and is_safe_to_modify(target):
+            if target.is_file():
                 st = target.stat()
                 if st.st_size > 0:
                     groups[st.st_size].append(target)
@@ -130,6 +132,12 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
+                            continue
+                        if not is_safe_to_modify(entry_path):
+                            continue
+
                         entry_stat = entry.stat(follow_symlinks=False)
                         if getattr(entry_stat, 'st_reparse_tag', 0) != 0:
                             continue
@@ -137,15 +145,11 @@ def _collect_candidates(
                         if entry.is_dir(follow_symlinks=False):
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
-                                entry_path = Path(entry.path)
-                                if not (skip_protected and is_protected_path(entry_path)) and is_safe_to_modify(entry_path):
-                                    visited_device_inodes.add(device_inode)
-                                    _scan(entry_path)
+                                visited_device_inodes.add(device_inode)
+                                _scan(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
-                                entry_path = Path(entry.path)
-                                if is_safe_to_modify(entry_path):
-                                    temp_groups[int(entry_stat.st_size)].append(entry_path)
+                                temp_groups[int(entry_stat.st_size)].append(entry_path)
                     except (OSError, PermissionError, FileNotFoundError): continue
         except (OSError, PermissionError, FileNotFoundError): pass
 
