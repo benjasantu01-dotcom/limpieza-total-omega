@@ -204,14 +204,14 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, [f"Error al procesar métricas: {str(e)}"])
 
     metric_breakdown: Dict[MetricKey, int] = {}
-    metric_ratios: Dict[MetricKey, float] = {}
+    ratios_cache: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
     
     for area, weight, scorer in _PREPARED_SCORERS:
         try:
             ratio = scorer(metrics)
             if not math.isfinite(ratio): ratio = 0.0
-            metric_ratios[area] = ratio
+            ratios_cache[area] = ratio
             weighted_points = round(ratio * float(weight))
             metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
             accumulated_points += metric_breakdown[area]
@@ -222,7 +222,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     recommendations: List[str] = []
     for rule in _RECOMMENDATION_RULES:
         try:
-            if rule.check(metrics, metric_ratios.get(rule.area, 0.0)):
+            if rule.check(metrics, ratios_cache.get(rule.area, 0.0)):
                 recommendations.append(rule.message_factory(metrics))
         except (ValueError, TypeError, AttributeError):
             continue

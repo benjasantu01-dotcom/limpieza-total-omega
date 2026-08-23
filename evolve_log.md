@@ -1153,3 +1153,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T14:21:08` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el método `_collect_candidates` para evitar redundancias en el recorrido del sistema de archivos al pre-filtrar las rutas de entrada mediante un `set` y evitar llamadas repetidas a `is_safe_to_modify` en nodos ya procesados, reduciendo así la carga de I/O y el tiempo de CPU en directorios grandes.
 - `2026-08-23T14:21:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T14:21:08` Corrida terminada. Total usado hoy: 336.
+- `2026-08-23T14:29:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-23T14:30:15` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje transformando `metric_ratios` de un `Dict` (búsqueda por hash) a una estructura indexada por posición durante el bucle de procesamiento, reduciendo la sobrecarga de consultas en el motor de recomendaciones.
+- `2026-08-23T14:31:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-23T14:32:29` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data
+- `2026-08-23T14:32:57` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la generación de la lista de procesos implementando un filtrado más eficiente dentro del generador `_yield_processes` y reemplazando la lógica de filtrado de duplicados/redundancias por un procesamiento lineal, reduciendo la carga de memoria al evitar construcciones de listas intermedias innecesarias antes de la ordenación final.
+- `2026-08-23T14:33:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-23T14:33:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T14:33:07` Corrida terminada. Total usado hoy: 340.

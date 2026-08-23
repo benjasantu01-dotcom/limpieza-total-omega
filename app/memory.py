@@ -191,10 +191,13 @@ def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
             yield proc
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Ordena procesos por consumo descendente y aplica un límite."""
+    """Ordena procesos por consumo descendente y aplica un límite usando ordenación eficiente."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
-    return sorted(_yield_processes(raw_csv_text), key=lambda p: p.working_set, reverse=True)[:max(0, limit)]
+    # Generador inline directo para evitar creación innecesaria de listas
+    procs = list(_yield_processes(raw_csv_text))
+    procs.sort(key=lambda p: p.working_set, reverse=True)
+    return procs[:max(0, limit)]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Consulta la API nativa GlobalMemoryStatusEx para obtener RAM global."""

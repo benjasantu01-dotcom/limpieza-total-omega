@@ -8,36 +8,36 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 70 | 6 | 10 | 7 | 75 |
-| 2026-08-23 | 148 | 9 | 24 | 12 | 143 |
+| 2026-08-22 | 68 | 6 | 10 | 7 | 73 |
+| 2026-08-23 | 150 | 9 | 25 | 12 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **45**
-- rendimiento: **36**
-- robustez ante casos límite: **33**
+- rendimiento: **38**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **22**
 - `assistant.py`: **21**
 - `duplicates.py`: **21**
-- `memory.py`: **21**
-- `scanner.py`: **20**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
+- `scanner.py`: **19**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `settings.py`: **17**
 - `branding.py`: **16**
+- `settings.py`: **16**
 - `organizer.py`: **14**
 - `browser.py`: **13**
 - `main.py`: **8**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T14:32:57` **memory.py** (rendimiento): Optimizé la generación de la lista de procesos implementando un filtrado más eficiente dentro del generador `_yield_processes` y reemplazando la lógica de filtrado de duplicados/redundancias por un procesamiento lineal, reduciendo la carga de memoria al evitar construcciones de listas intermedias innecesarias antes de la ordenación final.
+- `2026-08-23T14:30:15` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje transformando `metric_ratios` de un `Dict` (búsqueda por hash) a una estructura indexada por posición durante el bucle de procesamiento, reduciendo la sobrecarga de consultas en el motor de recomendaciones.
 - `2026-08-23T14:21:08` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` para evitar redundancias en el recorrido del sistema de archivos al pre-filtrar las rutas de entrada mediante un `set` y evitar llamadas repetidas a `is_safe_to_modify` en nodos ya procesados, reduciendo así la carga de I/O y el tiempo de CPU en directorios grandes.
 - `2026-08-23T14:20:59` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` y `_collect_summary_data` reemplazando la lógica de filtrado manual de top files por `heapq.nlargest` sobre un generador, eliminando el overhead de comparaciones repetitivas y mejorando la legibilidad del bucle principal.
 - `2026-08-23T14:20:08` **branding.py** (rendimiento): Optimicé el cálculo de colores RGB en `_hex_to_rgb` eliminando la búsqueda en `HEX_TO_KEY` (un diccionario extra) y delegando la lógica a una operación aritmética directa, reduciendo la presión sobre la memoria y acelerando el acceso en un punto crítico llamado frecuentemente por las funciones de renderizado.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T13:49:49` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la adición de docstrings técnicos explicativos en funciones críticas y tipado explícito, clarificando el propósito de los umbrales de puntuación y asegurando que las reglas de recomendación sean interpretadas sin ambigüedades.
 - `2026-08-23T13:49:23` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings descriptivos, se añadió tipado explícito en funciones críticas para evitar ambigüedades y se extrajo la lógica de ordenamiento de candidatos en `suggest_keeper` a una tupla de comparación más legible, cumpliendo con el enfoque de legibilidad.
 - `2026-08-23T13:40:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos de retorno explícitos en los docstrings y refinando la descripción de las funciones de alto nivel para facilitar la auditoría de seguridad y la comprensión de los algoritmos de recolección de datos.
-- `2026-08-23T13:40:31` **browser.py** (legibilidad y documentación): Documenté con precisión los parámetros y el comportamiento de las funciones de navegación de archivos y recursión, clarificando las expectativas de seguridad y el manejo de excepciones para mejorar la mantenibilidad.
-- `2026-08-23T13:39:25` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `assistant.py` mediante docstrings detallados en las funciones de procesamiento de lenguaje natural y el uso de tipos de datos, clarificando los límites de responsabilidad de cada motor.
