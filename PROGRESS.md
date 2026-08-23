@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 91 | 8 | 14 | 11 | 80 |
-| 2026-08-23 | 125 | 8 | 20 | 10 | 137 |
+| 2026-08-22 | 87 | 8 | 14 | 11 | 80 |
+| 2026-08-23 | 126 | 8 | 20 | 10 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **47**
 - seguridad defensiva: **45**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **41**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `assistant.py`: **21**
+- `memory.py`: **21**
 - `scanner.py`: **20**
-- `assistant.py`: **20**
 - `settings.py`: **19**
 - `duplicates.py`: **19**
-- `healthscore.py`: **18**
 - `quarantine.py`: **18**
+- `healthscore.py`: **17**
 - `diskreport.py`: **16**
 - `branding.py`: **15**
-- `organizer.py`: **14**
 - `browser.py`: **13**
-- `main.py`: **8**
+- `organizer.py`: **13**
 - `safety.py`: **7**
 - `startup.py`: **7**
+- `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T12:59:39` **assistant.py** (manejo de errores y validación de entradas): Reforcé la validación de `SystemContext` en `build_context` para prevenir la inyección de tipos de datos inesperados en las métricas, sustituyendo el uso de `getattr` directo por una validación estricta de tipos tras la conversión, y mejorando el manejo de errores en `_validate_and_assign` para evitar estados inconsistentes en el objeto `context`.
 - `2026-08-23T11:37:31` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante el uso de `os.path.normpath` y una verificación explícita contra rutas UNC, previniendo el procesamiento accidental de recursos compartidos de red que podrían causar bloqueos o comportamientos inesperados en el escaneo de inicio.
 - `2026-08-23T11:26:56` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` implementando una validación explícita para asegurar que el archivo temporal creado en el sandbox reside estrictamente dentro del directorio de cuarentena antes de cualquier operación de I/O, previniendo ataques de escalada de privilegios mediante paths manipulados.
 - `2026-08-23T11:18:00` **memory.py** (seguridad defensiva): Mejoré `_is_safe_to_trim` para prevenir una posible denegación de servicio o manipulación de estado al asegurar que la operación `EmptyWorkingSet` no se ejecute sobre procesos del sistema operativo ni ejecutables críticos usando un filtrado de rutas mediante `is_protected_path`, garantizando que la validación ocurra antes de interactuar con el handle del proceso.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T10:36:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `SystemMetrics.is_finite` y `compute_score` frente a casos donde las métricas podrían contener valores `NaN` o `Inf` (especialmente útil si algún módulo fuente falla al calcular divisiones), añadiendo chequeos explícitos para asegurar que `accumulated_points` no se vea afectado por valores no finitos, protegiendo la integridad del cálculo final.
 - `2026-08-23T10:35:26` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir una verificación explícita mediante `is_dir()` antes de iniciar el iterador `os.scandir` y asegurando que las rutas base resueltas no sean nulas ni inválidas.
 - `2026-08-23T10:26:18` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` al reemplazar `Path.expanduser().resolve()` por una secuencia de validación defensiva que evita el colapso ante rutas mal formadas o caracteres inválidos en el sistema de archivos.
-- `2026-08-23T10:25:13` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por una lógica que utiliza un conjunto (`set`) para las extensiones, acelerando la verificación de tipos, y agregando una pre-validación de `is_protected_path` sobre la carpeta misma antes de abrir el `os.scandir` para evitar excepciones innecesarias.

@@ -285,9 +285,12 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
         return False
     
     try:
-        if clean_val >= 0:
-            clamped = max(float(min_v), min(clean_val, float(max_v)))
-            setattr(ctx, key, cast(clamped))
+        clamped = max(float(min_v), min(clean_val, float(max_v)))
+        casted_val = cast(clamped)
+        # Verificación final de tipo tras el cast
+        if not isinstance(casted_val, (int, float)):
+            return False
+        setattr(ctx, key, casted_val)
         return True
     except (OverflowError, ValueError, TypeError):
         return False
@@ -349,7 +352,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
-    """Devuelve explicaciones pedagógicas de los módulos de la app."""
+    """Delvuelve explicaciones pedagógicas de los módulos de la app."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
