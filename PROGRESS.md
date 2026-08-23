@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 29
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 19 | 3 | 2 | 0 | 14 |
+| 2026-08-21 | 17 | 2 | 2 | 0 | 13 |
 | 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
-| 2026-08-23 | 52 | 3 | 7 | 5 | 49 |
+| 2026-08-23 | 55 | 3 | 8 | 5 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **53**
+- legibilidad y documentación: **56**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **51**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **34**
 - rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **23**
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `duplicates.py`: **20**
 - `assistant.py`: **20**
 - `healthscore.py`: **19**
+- `scanner.py`: **19**
 - `diskreport.py`: **18**
-- `scanner.py`: **18**
-- `browser.py`: **17**
 - `quarantine.py`: **17**
-- `branding.py`: **15**
+- `browser.py`: **16**
+- `branding.py`: **14**
 - `organizer.py`: **13**
+- `safety.py`: **11**
 - `main.py`: **10**
-- `safety.py`: **10**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T05:10:21` **settings.py** (legibilidad y documentación): He refactorizado la clase `_Validators` para mejorar la legibilidad y mantenibilidad, consolidando la lógica de validación de rutas mediante un método privado unificado y añadiendo docstrings descriptivos que aclaran el flujo de validación.
+- `2026-08-23T05:10:07` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante type hints explícitos en los retornos y docstrings detallados que clarifican el propósito de las funciones auxiliares de escaneo y su integración con el orquestador `scan_file`.
+- `2026-08-23T05:09:41` **safety.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de validación interna para clarificar el propósito de las comprobaciones de bajo nivel y mejorar la mantenibilidad, sin alterar la lógica de seguridad.
 - `2026-08-23T05:00:55` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones internas de validación (`_check_windows_file_attributes`, `_check_path_syntax_integrity`) y se refactorizó la lógica de los chequeos de integridad para mejorar la legibilidad y mantenimiento del código bajo las guías exigidas.
 - `2026-08-23T05:00:39` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la refactorización de la lógica de ordenamiento (ahora definida como una constante mapeada), la adición de docstrings técnicos explicativos sobre las validaciones de seguridad y el uso de type hints para clarificar las estructuras de datos, manteniendo la integridad funcional.
 - `2026-08-23T05:00:15` **memory.py** (legibilidad y documentación): Mejoré la documentación de `trim_working_set` y sus funciones auxiliares con docstrings explicativos que aclaran el flujo de seguridad y las restricciones de acceso, asegurando que el propósito de cada chequeo defensivo esté explícito para auditorías futuras.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T04:38:47` **settings.py** (manejo de errores y validación de entradas): Refactoricé la lógica de `validate` para asegurar que el diccionario de configuración resultante mantenga la integridad de tipos (garantizando que siempre existan las claves necesarias) y eliminé el uso de `type: ignore` mediante una asignación explícita que respeta el esquema de `AppSettings`.
 - `2026-08-23T04:29:35` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las verificaciones en `scanner.py` integrando validaciones de estado de los objetos `os.DirEntry` y protegiendo las operaciones de `stat` ante errores de acceso, asegurando que el bucle de escaneo no se interrumpa ante metadatos corruptos o bloqueados.
 - `2026-08-23T04:29:27` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_file_in_use` capturando errores específicos de acceso durante la apertura del descriptor, evitando que excepciones inesperadas del sistema interrumpan el flujo de validación de archivos.
-- `2026-08-23T04:28:39` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la eliminación del archivo original en una verificación de estado atómica y capturando errores de forma específica, evitando que un error al borrar el archivo original invalide un proceso de aislamiento que ya fue exitoso.
-- `2026-08-23T04:20:00` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente el `handle` de proceso para prevenir fugas de memoria o uso de punteros inválidos, e integré una verificación de excepciones más precisa en la apertura del proceso.
-- `2026-08-23T04:19:31` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `on_trim_process` y `on_save_settings` mediante la validación estricta de las entradas del usuario antes de que sean procesadas por la lógica de negocio, evitando excepciones innecesarias y asegurando que solo datos tipados (números positivos) lleguen a los módulos internos.

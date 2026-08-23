@@ -137,15 +137,18 @@ class _Validators:
     """Motor de validación de datos de entrada para `config.json`."""
     
     @staticmethod
+    def _run_safety_checks(path_obj: Path) -> bool:
+        """Verifica que la ruta sea segura contra reparse points y restricciones de sistema."""
+        if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
+            return False
+        return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
+
+    @staticmethod
     def _is_safe_path(path_str: str) -> bool:
-        """Verifica recursivamente si una ruta está libre de junctions y protegida por sistema."""
+        """Valida una cadena de ruta contra políticas de seguridad."""
         if not path_str: return False
         try:
-            path_obj = Path(path_str).resolve(strict=False)
-            if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
-                return False
-            if is_protected_path(str(path_obj)): return False
-            return is_safe_to_modify(str(path_obj))
+            return _Validators._run_safety_checks(Path(path_str).resolve(strict=False))
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
 

@@ -141,7 +141,7 @@ class Scanner:
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta nombres con extensiones múltiples engañosas (ej: imagen.jpg.exe) que ocultan la extensión ejecutable real."""
+    """Valida si el archivo posee una extensión doble engañosa y retorna una sospecha si aplica."""
     if not path or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -151,8 +151,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Verifica si un ejecutable ha sido creado/modificado recientemente en carpetas de alto riesgo.
-    Compara el timestamp de modificación con el umbral definido en RECENT_FILE_THRESHOLD_HOURS.
+    Evalúa si un ejecutable es reciente en carpetas monitorizadas basándose en el timestamp de modificación.
+    Retorna una instancia de Suspicion si el archivo fue creado/modificado dentro de RECENT_FILE_THRESHOLD_HOURS.
     """
     if path is None or is_protected_path(path):
         return None
@@ -174,8 +174,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta archivos que imitan nombres de procesos críticos del sistema (ej: svchost.exe)
-    cuando se encuentran fuera del directorio protegido System32.
+    Verifica si un ejecutable comparte nombre con procesos críticos del sistema (ej: svchost.exe) 
+    pero se encuentra en ubicaciones no autorizadas.
     """
     if path is None or not path.name:
         return None
@@ -188,8 +188,11 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Orquestador de reglas heurísticas para un archivo dado. Aplica validaciones básicas
-    de extensión y delega en el conjunto de chequeos definidos en EXECUTABLE_CHECKS.
+    Orquestador principal de reglas heurísticas para un archivo.
+    Ejecuta validaciones estáticas y recorre EXECUTABLE_CHECKS para análisis de comportamiento de ejecución.
+    
+    Returns:
+        Una lista de objetos Suspicion encontrados.
     """
     if not path:
         return []
@@ -212,8 +215,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Realiza un escaneo recursivo del sistema de archivos a partir de un directorio base.
-    Gestiona la pila de directorios y utiliza os.scandir para un rendimiento eficiente.
+    Inicia un escaneo recursivo desde un directorio base y retorna la lista completa de hallazgos.
     """
     if not directory:
         return []

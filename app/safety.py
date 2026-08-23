@@ -152,7 +152,10 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _is_file_in_use(path: Path) -> bool:
-    """Determina si un archivo está bloqueado intentando abrir un descriptor de lectura exclusivo."""
+    """
+    Determina si un archivo está bloqueado intentando abrir un descriptor exclusivo.
+    Utiliza el manejo de descriptores a nivel de SO para verificar disponibilidad.
+    """
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
     try:
