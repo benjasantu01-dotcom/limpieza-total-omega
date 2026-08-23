@@ -62,7 +62,7 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo. Retorna None en caso de error de acceso."""
-    path_obj = Path(path)
+    path_obj = Path(path).resolve()
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
         digest = hashlib.sha256()
@@ -76,7 +76,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash de los primeros N bytes para filtrado rápido."""
-    path_obj = Path(path)
+    path_obj = Path(path).resolve()
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
         with open(path_obj, "rb") as f:
@@ -194,7 +194,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            p_obj = Path(p)
+            p_obj = Path(p).resolve()
             if p_obj.exists() and p_obj.is_file() and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))

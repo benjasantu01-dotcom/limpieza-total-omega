@@ -157,7 +157,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     Filtro de seguridad para `os.scandir`. Omite elementos protegidos, 
     puntos de reparse o archivos con atributos de sistema.
     """
-    if _is_excluded_file(entry.name):
+    if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     
     try:
@@ -184,7 +184,7 @@ def _sum_directory_recursive(
         return memo[root_dir]
 
     def _walk(current_dir: str, depth: int) -> int:
-        if depth > MAX_SCAN_DEPTH:
+        if depth > MAX_SCAN_DEPTH or is_protected_path(Path(current_dir)):
             return 0
         
         total: int = 0

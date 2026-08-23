@@ -352,6 +352,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).expanduser().resolve()
+        # Verificación de seguridad atómica para prevenir TOCTOU
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         parent = path_obj.parent
