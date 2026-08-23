@@ -346,7 +346,12 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     if destination.exists():
         raise FileExistsError(f"Conflicto: {destination.name} ya existe.")
     
-    temp_dest = destination.parent / f".tmp_{uuid.uuid4().hex}"
+    # Asegurar que el destino temporal está estrictamente dentro del sandbox
+    dest_dir = destination.parent.resolve()
+    temp_dest = (dest_dir / f".tmp_{uuid.uuid4().hex}").resolve()
+    if not _is_valid_quarantine_path(temp_dest, dest_dir):
+        raise UnsafePathError("Error de integridad en sandbox: ruta temporal no permitida.")
+        
     try:
         shutil.copy2(source, temp_dest)
         if temp_dest.stat().st_size != file_size:
