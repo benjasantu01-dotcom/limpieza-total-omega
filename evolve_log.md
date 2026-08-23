@@ -780,3 +780,10 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-23T10:46:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-23T10:46:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T10:46:39` Corrida terminada. Total usado hoy: 252.
+- `2026-08-23T10:55:20` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-23T10:55:49` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-23T10:56:12` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de resolución de rutas en el método `_is_safe_entry` y `scan_directory` para evitar cierres inesperados ante enlaces simbólicos circulares o rutas que devuelven errores de sistema al intentar resolverse.
+- `2026-08-23T10:56:40` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.path` para manejar correctamente rutas que no existen o tienen permisos denegados, evitando fallos en tiempo de ejecución al validar configuraciones en carpetas personalizadas.
+- `2026-08-23T10:56:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-23T10:56:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T10:56:51` Corrida terminada. Total usado hoy: 256.

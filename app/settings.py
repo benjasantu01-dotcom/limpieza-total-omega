@@ -227,9 +227,12 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
-    base = Path(custom_base).expanduser().resolve(strict=False)
-    if _Validators._is_safe_path(str(base)):
-        return base / SETTINGS_FILE
+    try:
+        base = Path(custom_base).expanduser().resolve(strict=False)
+        if _Validators._is_safe_path(str(base)):
+            return base / SETTINGS_FILE
+    except (OSError, RuntimeError):
+        pass
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
