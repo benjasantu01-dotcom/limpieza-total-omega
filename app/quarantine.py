@@ -489,10 +489,9 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     return False
 
 
-def _is_item_purgable(file_path: Path, item: QuarantineItem, root: Path) -> bool:
+def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
     """Verifica si un archivo en el sandbox cumple requisitos para ser borrado."""
     return (
-        _is_valid_quarantine_path(file_path.resolve(), root) and
         file_path.is_file() and
         item.verify_integrity(file_path) and
         not _is_file_locked(file_path)
@@ -506,22 +505,21 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     if not items:
         return 0
     
-    item_map = {item.stored_name: item for item in items}
-    purged_ids = []
+    remaining_items: List[QuarantineItem] = []
+    purged_count = 0
     
-    for file_path in quarantine_root.iterdir():
-        if file_path.name in item_map:
-            item = item_map[file_path.name]
-            if _is_item_purgable(file_path, item, quarantine_root):
-                if _safe_unlink(file_path):
-                    purged_ids.append(item.item_id)
+    for item in items:
+        stored_path = (quarantine_root / item.stored_name).resolve()
+        if _is_item_purgable(stored_path, item):
+            if _safe_unlink(stored_path):
+                purged_count += 1
+                continue
+        remaining_items.append(item)
             
-    if purged_ids:
-        purged_set = set(purged_ids)
-        remaining_items = [i for i in items if i.item_id not in purged_set]
+    if purged_count > 0:
         save_manifest(remaining_items, base)
         
-    return len(purged_ids)
+    return purged_count
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:

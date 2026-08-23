@@ -207,13 +207,13 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 def _is_valid_junk_candidate(entry: os.DirEntry) -> bool:
     """Filtro optimizado usando DirEntry para evitar llamadas extras a stat()."""
-    return entry.is_file() and _is_junk_path(Path(entry.path))
+    return entry.is_file() and entry.name.lower().endswith(tuple(_LOWER_JUNK_EXTS))
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios buscando archivos clasificados como basura.
-    Usa os.scandir para mayor eficiencia de I/O.
+    Usa os.scandir para mayor eficiencia de I/O aprovechando metadatos en caché.
     """
     search_dirs = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []

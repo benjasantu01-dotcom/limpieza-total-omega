@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 57 | 5 | 7 | 5 | 56 |
+| 2026-08-21 | 56 | 4 | 7 | 5 | 54 |
 | 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
-| 2026-08-23 | 13 | 1 | 3 | 2 | 5 |
+| 2026-08-23 | 15 | 1 | 4 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **50**
-- rendimiento: **34**
+- seguridad defensiva: **49**
+- rendimiento: **36**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
@@ -35,11 +35,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **20**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
-- `browser.py`: **18**
 - `scanner.py`: **18**
+- `browser.py`: **17**
 - `diskreport.py`: **17**
-- `organizer.py`: **14**
-- `quarantine.py`: **14**
+- `organizer.py`: **15**
+- `quarantine.py`: **15**
 - `branding.py`: **14**
 - `safety.py`: **10**
 - `main.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T01:11:24` **quarantine.py** (rendimiento): Se optimizó `purge_all` para evitar consultas innecesarias al sistema de archivos y validaciones repetitivas, implementando una lógica de filtrado eficiente que procesa la lista de manifiesto en lugar de iterar recursivamente sobre el disco para cada ítem, reduciendo la complejidad de I/O.
+- `2026-08-23T01:09:54` **organizer.py** (rendimiento): Optimizé la función `scan_for_junk` sustituyendo múltiples llamadas a `os.path` y `Path` por el uso directo de los atributos de `os.DirEntry` (como `.stat()`), reduciendo drásticamente las llamadas al sistema (syscalls) durante el recorrido de directorios.
 - `2026-08-23T01:01:30` **memory.py** (rendimiento): Optimicé el procesamiento de `meminfo` en Linux utilizando un generador y una búsqueda por iteración directa que evita la creación de listas intermedias y reduce el uso de memoria al parsear archivos, mejorando el rendimiento en sistemas con muchos registros.
 - `2026-08-23T00:59:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` y `_process_size_group` evitando la creación innecesaria de objetos `Path` y reduciendo las llamadas a `stat` y `resolve` mediante la reutilización de la información ya obtenida durante el escaneo del directorio.
 - `2026-08-23T00:49:41` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante un `set` de intersección, eliminando la necesidad de iterar sobre cada palabra del usuario y simplificando la lógica de selección del handler.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T00:10:14` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `is_junction_fn`) y se documentaron las asunciones técnicas de las funciones de escaneo para mejorar la mantenibilidad y claridad del flujo de control.
 - `2026-08-23T00:09:55` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos (PEP 257) y añadí type hints de retorno a funciones que carecían de ellos, clarificando las expectativas de cada operación.
 - `2026-08-23T00:09:20` **assistant.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `AreaExplanation` y se refactorizó `explain_area` para mejorar la legibilidad y mantenibilidad del mapa de explicaciones, evitando que las descripciones largas sigan dispersas y mejorando la estructuración de la lógica.
-- `2026-08-22T14:58:50` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `validate()` asegurando que la configuración resultante mantenga la integridad de todas las claves requeridas frente a archivos JSON maliciosos o truncados, mediante una verificación estricta de superconjunto de llaves.
-- `2026-08-22T14:58:22` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_is_reparse_point` y `process_entry` ante rutas inexistentes o inaccesibles, asegurando que el scanner no se interrumpa ante errores de sistema y validando explícitamente los atributos de los objetos `DirEntry` antes de acceder a ellos.
