@@ -253,18 +253,27 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
+    
     resolved_source = source_path.resolve()
+    
+    # Validaciones de existencia y tipo
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares.")
+        
+    # Validaciones de seguridad de ruta (Safety API)
     if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta origen está protegida por el sistema.")
     if is_protected_path(dest_dir) or is_protected_path(dest_dir.parent):
         raise UnsafePathError("Destino inválido: directorio de cuarentena en ruta protegida.")
+        
+    # Validaciones de contexto de operación
     if _is_valid_quarantine_path(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     if resolved_source.drive.lower() != dest_dir.drive.lower():
         raise UnsafePathError("Operación prohibida: origen y destino en dispositivos diferentes.")
+        
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
+    
     if _is_file_locked(resolved_source):
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
 

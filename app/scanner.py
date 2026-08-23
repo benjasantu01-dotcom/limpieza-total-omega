@@ -144,7 +144,7 @@ class Scanner:
                 self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Valida si el archivo posee una extensión doble engañosa y retorna una sospecha si aplica."""
+    """Evalúa la presencia de una extensión doble técnica como indicador de engaño."""
     if not path or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -154,8 +154,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Evalúa si un ejecutable es reciente en carpetas monitorizadas basándose en el timestamp de modificación.
-    Retorna una instancia de Suspicion si el archivo fue creado/modificado dentro de RECENT_FILE_THRESHOLD_HOURS.
+    Determina si un archivo ejecutable ha sido modificado recientemente en directorios de riesgo.
+    Compara el tiempo de modificación contra el umbral RECENT_FILE_THRESHOLD_HOURS.
     """
     if path is None or is_protected_path(path):
         return None
@@ -177,8 +177,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Verifica si un ejecutable comparte nombre con procesos críticos del sistema (ej: svchost.exe) 
-    pero se encuentra en ubicaciones no autorizadas.
+    Identifica ejecutables cuyo nombre colisiona con procesos críticos (ej: svchost.exe)
+    cuando se alojan fuera de directorios de sistema (system32).
     """
     if path is None or not path.name:
         return None
@@ -192,10 +192,15 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Orquestador principal de reglas heurísticas para un archivo.
-    Ejecuta validaciones estáticas y recorre EXECUTABLE_CHECKS para análisis de comportamiento de ejecución.
+    Ejecuta validaciones estáticas y recorre EXECUTABLE_CHECKS para análisis de comportamiento.
     
+    Args:
+        path: Ruta del archivo.
+        now_ts: Timestamp actual.
+        entry: Objeto DirEntry opcional para optimizar llamadas al sistema.
+
     Returns:
-        Una lista de objetos Suspicion encontrados.
+        Lista de hallazgos (Suspicion) encontrados.
     """
     if not path:
         return []
