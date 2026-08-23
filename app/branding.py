@@ -322,7 +322,10 @@ def _get_shield_coords(s: float) -> List[float]:
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
     """Genera la representación XML (SVG) del logotipo de la aplicación."""
-    s: int = max(1, min(4096, int(size)))
+    try:
+        s: int = max(1, min(4096, int(size)))
+    except (ValueError, TypeError):
+        s = 128
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">
@@ -352,7 +355,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).expanduser().resolve()
-        # Verificación de seguridad atómica para prevenir TOCTOU
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         parent = path_obj.parent
@@ -361,7 +363,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None
-        # Validación final de seguridad antes de escritura
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
@@ -402,7 +403,8 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
     """Dibuja el escudo corporativo aplicando una transformación de escala sobre las coordenadas base."""
     if not hasattr(canvas, "create_polygon"): return
     try:
-        scale: float = max(0.1, min(10.0, float(size) / 128))
+        scale_val = float(size) / 128
+        scale: float = max(0.1, min(10.0, scale_val))
         base_coords: List[float] = _get_shield_coords(scale)
         # Ajuste de posición (offset) basado en canvas_x, canvas_y
         contorno: List[float] = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]

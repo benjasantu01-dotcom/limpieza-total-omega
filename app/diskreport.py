@@ -186,7 +186,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad específica.
     """
-    if mount is None or not isinstance(mount, (str, os.PathLike)):
+    if not mount or not isinstance(mount, (str, os.PathLike)):
         return None
         
     try:
@@ -405,7 +405,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """Genera un informe textual unificado con los hallazgos del análisis."""
-    if directory is None:
+    if not directory:
         return ["Error: Ruta no proporcionada."]
 
     try:
