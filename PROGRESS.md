@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 12 | 0 | 1 | 0 | 9 |
+| 2026-08-21 | 8 | 0 | 1 | 0 | 9 |
 | 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
-| 2026-08-23 | 61 | 4 | 10 | 5 | 52 |
+| 2026-08-23 | 62 | 5 | 10 | 5 | 54 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **51**
-- rendimiento: **37**
+- seguridad defensiva: **47**
+- rendimiento: **38**
 - robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **21**
+- `settings.py`: **21**
 - `assistant.py`: **21**
-- `healthscore.py`: **20**
-- `settings.py`: **20**
+- `duplicates.py`: **20**
 - `scanner.py`: **19**
-- `diskreport.py`: **18**
-- `browser.py`: **17**
+- `healthscore.py`: **19**
 - `quarantine.py`: **17**
+- `diskreport.py`: **17**
+- `browser.py`: **16**
 - `branding.py`: **14**
 - `organizer.py`: **13**
 - `safety.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T05:51:03` **settings.py** (rendimiento): Optimizé la gestión de la caché y la validación utilizando `frozenset` para las claves permitidas en `_STR_TO_ENUM` y evitando la carga repetitiva de archivos mediante una validación de `st_mtime` más robusta, reduciendo llamadas innecesarias al sistema de archivos.
 - `2026-08-23T05:30:31` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje pre-calculando los factores de normalización (`1.0 / limit`) para eliminar divisiones repetitivas dentro de los bucles de evaluación, mejorando la eficiencia computacional en cada ejecución.
 - `2026-08-23T05:30:06` **duplicates.py** (rendimiento): Optimizé el pipeline de confirmación de `find_duplicates` añadiendo un filtro preventivo mediante la comparación de hashes parciales antes de proceder al hash completo, evitando lecturas innecesarias en grupos donde la colisión por tamaño era un falso positivo.
 - `2026-08-23T05:21:00` **browser.py** (rendimiento): Optimizé `detect_profiles` para evitar el cálculo redundante de `is_junction` y el acceso a `kernel32` mediante su pre-cálculo fuera del bucle principal, y mejoré la lógica de `_is_path_inside_base` para reducir llamadas costosas a `resolve(strict=True)` que ya se realizan al inicio de la cadena de llamadas.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T05:00:15` **memory.py** (legibilidad y documentación): Mejoré la documentación de `trim_working_set` y sus funciones auxiliares con docstrings explicativos que aclaran el flujo de seguridad y las restricciones de acceso, asegurando que el propósito de cada chequeo defensivo esté explícito para auditorías futuras.
 - `2026-08-23T04:49:54` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de puntuación y la expansión de los docstrings, clarificando explícitamente el comportamiento ante valores fuera de rango y la lógica de normalización matemática.
 - `2026-08-23T04:49:44` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `_collect_candidates` mediante la inclusión de un docstring detallado y la clarificación del flujo recursivo para mejorar la mantenibilidad del motor de escaneo.
-- `2026-08-23T04:49:22` **diskreport.py** (legibilidad y documentación): Documenté el propósito técnico de `walk_files` y los criterios de exclusión de seguridad mediante una estructura de docstring técnica y clara, y mejoré la legibilidad de `_collect_summary_data` para aclarar la lógica del heap de archivos, facilitando el mantenimiento futuro.

@@ -94,6 +94,7 @@ VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
 
 _CACHE: dict[Path, tuple[float, AppSettings]] = {}
+_STR_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
 def _get_default_config() -> AppSettings:
     """Retorna el estado de fábrica de la configuración (valores seguros)."""
@@ -223,8 +224,6 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
     ConfigKey.TOP_PROCESOS: _Validators.int
 }
 
-_STR_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
-
 def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve(strict=False)
@@ -252,8 +251,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         stat = ruta.stat()
         if stat.st_size == 0: return _get_default_config()
         
-        mtime = stat.st_mtime
-        if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
+        # Uso eficiente de caché con marca de tiempo
+        if (cached := _CACHE.get(ruta)) and cached[0] == stat.st_mtime:
             return cached[1]
             
         if stat.st_size > MAX_SETTINGS_SIZE:
@@ -265,7 +264,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if not isinstance(data, dict): return _get_default_config()
         
         config = validate(data)
-        _CACHE[ruta] = (mtime, config)
+        _CACHE[ruta] = (stat.st_mtime, config)
         return config
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):
         return _get_default_config()

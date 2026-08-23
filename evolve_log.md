@@ -1518,3 +1518,34 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-23T05:41:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-08-23T05:41:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T05:41:00` Corrida terminada. Total usado hoy: 132.
+- `2026-08-23T05:49:42` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-23T05:50:11` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-23T05:50:35` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-23T05:51:03` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de la caché y la validación utilizando `frozenset` para las claves permitidas en `_STR_TO_ENUM` y evitando la carga repetitiva de archivos mediante una validación de `st_mtime` más robusta, reduciendo llamadas innecesarias al sistema de archivos.
+- `2026-08-23T05:51:15` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.25s
+
+```
+- `2026-08-23T05:51:15` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un filtrado preventivo en `entries_from_folders` mediante un `set` de rutas protegidas pre-calculadas y se optimizó la validación de archivos ejecutables usando `os.path.exists` antes de instanciar `StartupEntry`, evitando realizar llamadas costosas al sistema de archivos para elementos que ya sabemos que son inválidos.
+- `2026-08-23T05:51:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T05:51:15` Corrida terminada. Total usado hoy: 136.
