@@ -177,19 +177,14 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Tipo de métricas incorrecto."])
+        return HealthResult(0, "F", {}, ["Error interno: Tipo de datos de métricas inválido."])
     
     try:
         metrics.validate()
         if not metrics.is_finite():
-            return HealthResult(0, "F", {}, ["Error: Métricas de entrada no finitas."])
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error: Fallo al validar métricas."])
-
-    if sum(WEIGHTS.values()) != 100:
-        return HealthResult(0, "F", {}, ["Error: Configuración de pesos inválida."])
-    if not all(area in _SCORERS for area in WEIGHTS):
-        return HealthResult(0, "F", {}, ["Error: Mapeo de áreas incompleto."])
+            return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos o no numéricos."])
+    except Exception as e:
+        return HealthResult(0, "F", {}, [f"Error al procesar métricas: {str(e)}"])
 
     metric_breakdown: Dict[MetricKey, int] = {}
     metric_ratios: Dict[MetricKey, float] = {}
@@ -207,12 +202,16 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
             accumulated_points += metric_breakdown[area]
         except Exception:
+            metric_breakdown[area] = 0
             continue
     
     recommendations: List[str] = []
     for rule in _RECOMMENDATION_RULES:
-        if rule.check(metrics, metric_ratios.get(rule.area, 0.0)):
-            recommendations.append(rule.message_factory(metrics))
+        try:
+            if rule.check(metrics, metric_ratios.get(rule.area, 0.0)):
+                recommendations.append(rule.message_factory(metrics))
+        except Exception:
+            continue
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
@@ -226,7 +225,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     )
 
 def summarize(result: HealthResult) -> List[str]:
-    if not isinstance(result, HealthResult): return ["Error: Formato inválido."]
+    if not isinstance(result, HealthResult): return ["Error: Formato de informe inválido."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
         puntos = result.breakdown.get(area, 0)

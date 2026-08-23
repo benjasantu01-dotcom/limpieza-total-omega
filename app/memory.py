@@ -289,7 +289,7 @@ def _is_system_process(pid: int) -> bool:
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     """Obtiene la ruta absoluta del ejecutable vía API de Windows."""
-    if not handle: return None
+    if not handle or handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
     buffer_size = 1024
@@ -302,9 +302,7 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """
-    Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet.
-    """
+    """Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet."""
     if not proc_handle: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
@@ -323,7 +321,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if not path or not os.path.exists(path): 
             return False, "No se pudo verificar la ubicación del ejecutable."
         
-        # Validación defensiva contra puntos de reparse (junctions)
         if os.path.islink(path):
             return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse."
         
@@ -339,9 +336,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Solicita al sistema la liberación de memoria residente (Working Set).
-    """
+    """Solicita al sistema la liberación de memoria residente (Working Set)."""
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):
@@ -357,7 +352,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     proc_handle = None
     try:
         proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
-        if not proc_handle: 
+        if not proc_handle or proc_handle == -1: 
             return False, "Acceso denegado al proceso (podría requerir privilegios elevados)."
             
         valid, reason = _is_safe_to_trim(proc_handle, target_pid)
@@ -369,7 +364,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        if proc_handle:
+        if proc_handle and proc_handle != -1:
             kernel32.CloseHandle(proc_handle)
 
 if __name__ == "__main__":

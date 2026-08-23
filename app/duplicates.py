@@ -62,6 +62,7 @@ class DuplicateGroup:
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """Calcula el hash SHA256 completo de un archivo. Retorna None en caso de error de acceso."""
+    if path is None: return None
     path_obj = Path(path).resolve()
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
@@ -76,6 +77,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash de los primeros N bytes para filtrado rápido."""
+    if path is None: return None
     path_obj = Path(path).resolve()
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
@@ -92,8 +94,8 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups
     for p in paths:
+        if p is None: continue
         try:
-            if not p: continue
             target = Path(p).resolve()
             if target.is_file() and not is_protected_path(target) and is_safe_to_modify(target):
                 st = target.stat()
@@ -152,7 +154,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
     """Agrupa rutas idénticas aplicando una función de hash."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if (digest := hash_func(path)):
+        if path and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -184,7 +186,8 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma total de espacio recuperable (bytes)."""
-    return sum(g.wasted_bytes for g in groups) if groups is not None else 0
+    if groups is None: return 0
+    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
@@ -193,9 +196,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         return None
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if not p: continue
         try:
             p_obj = Path(p).resolve()
-            if p_obj.exists() and p_obj.is_file() and is_safe_to_modify(p_obj):
+            if p_obj.is_file() and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
         except (OSError, PermissionError, FileNotFoundError):
