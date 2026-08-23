@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 111 | 9 | 16 | 12 | 116 |
-| 2026-08-23 | 110 | 7 | 17 | 8 | 98 |
+| 2026-08-22 | 107 | 9 | 16 | 12 | 116 |
+| 2026-08-23 | 112 | 7 | 17 | 8 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **47**
-- rendimiento: **40**
-- robustez ante casos límite: **29**
+- seguridad defensiva: **43**
+- rendimiento: **41**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
 - `assistant.py`: **21**
+- `memory.py`: **21**
 - `duplicates.py`: **20**
-- `healthscore.py`: **19**
 - `settings.py`: **19**
 - `scanner.py`: **19**
 - `quarantine.py`: **18**
+- `healthscore.py`: **18**
 - `diskreport.py`: **16**
+- `branding.py`: **16**
 - `browser.py`: **15**
-- `branding.py`: **15**
-- `organizer.py`: **14**
-- `main.py`: **9**
+- `organizer.py`: **13**
+- `main.py`: **8**
 - `safety.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T10:26:18` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` al reemplazar `Path.expanduser().resolve()` por una secuencia de validación defensiva que evita el colapso ante rutas mal formadas o caracteres inválidos en el sistema de archivos.
+- `2026-08-23T10:25:13` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por una lógica que utiliza un conjunto (`set`) para las extensiones, acelerando la verificación de tipos, y agregando una pre-validación de `is_protected_path` sobre la carpeta misma antes de abrir el `os.scandir` para evitar excepciones innecesarias.
 - `2026-08-23T10:15:25` **safety.py** (rendimiento): Se optimizó el rendimiento mediante la implementación de `functools.lru_cache` en `is_protected_path` y la reducción de llamadas redundantes a `os.access` y `path.stat` dentro del flujo de `_check_file_integrity`, minimizando las operaciones de E/S que son los cuellos de botella críticos en el escaneo de directorios.
 - `2026-08-23T10:06:38` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante la eliminación de una búsqueda lineal innecesaria en `list_items`, aprovechando que la deserialización y el almacenamiento en caché ya garantizan una estructura eficiente para el acceso por ID.
 - `2026-08-23T10:06:22` **organizer.py** (rendimiento): Optimizamos la recursión de `scan_for_junk` y la validación de extensiones utilizando un `frozenset` para búsquedas $O(1)$ y evitando la creación redundante de tuplas en el loop crítico, reduciendo la presión sobre el recolector de basura.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T09:34:23` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `_validate_isolation_request` para utilizar una estructura de guardias explícita, mejorando la claridad de las validaciones de seguridad sin alterar el comportamiento.
 - `2026-08-23T09:25:47` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `organizer.py` añadiendo docstrings detallados en funciones críticas y normalizando las anotaciones de tipo para clarificar las expectativas del contrato de interfaz, garantizando que cada función explique el PORQUÉ de sus validaciones de seguridad.
 - `2026-08-23T09:25:36` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de bajo nivel de la API de Windows para aclarar por qué se realizan ciertas validaciones de seguridad, facilitando el mantenimiento y la auditoría del código.
-- `2026-08-23T09:25:09` **main.py** (legibilidad y documentación): Se introdujo un sistema de gestión centralizada de "botones con estado" para evitar que el usuario lance múltiples operaciones asíncronas simultáneas (que podrían colisionar), añadiendo una lógica de desactivación de botones durante la ejecución y una clara separación de responsabilidades para mejorar la mantenibilidad de la interfaz.
-- `2026-08-23T09:15:06` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los tipos en `duplicates.py`, clarificando el flujo de datos mediante docstrings detallados y asegurando que las funciones auxiliares utilicen type hints más robustos.

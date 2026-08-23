@@ -354,19 +354,25 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None:
         return None
     try:
-        path_obj = Path(destination).expanduser().resolve()
+        path_obj = Path(destination)
+        if not path_obj.is_absolute():
+            path_obj = path_obj.absolute()
+        
+        # Validar seguridad antes de intentar cualquier operación de disco
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
+            
         parent = path_obj.parent
         if not parent.exists():
             if not is_safe_to_modify(parent): return None
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None
+            
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError, ValueError):
         return None
 
 def logo_ascii() -> str:

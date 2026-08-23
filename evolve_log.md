@@ -759,3 +759,10 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-23T10:15:59` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a las configuraciones convirtiendo el diccionario `_CACHE` en un `MutableMapping` con un límite de tamaño (LRU cache) para evitar fugas de memoria si se invocan múltiples rutas de configuración, y se sustituyó la validación secuencial del diccionario `validate` por un acceso directo mapeado para reducir la complejidad temporal.
 - `2026-08-23T10:15:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T10:15:59` Corrida terminada. Total usado hoy: 240.
+- `2026-08-23T10:24:45` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-23T10:25:13` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `entries_from_folders` reemplazando la iteración secuencial de archivos por una lógica que utiliza un conjunto (`set`) para las extensiones, acelerando la verificación de tipos, y agregando una pre-validación de `is_protected_path` sobre la carpeta misma antes de abrir el `os.scandir` para evitar excepciones innecesarias.
+- `2026-08-23T10:25:46` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-08-23T10:26:18` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` al reemplazar `Path.expanduser().resolve()` por una secuencia de validación defensiva que evita el colapso ante rutas mal formadas o caracteres inválidos en el sistema de archivos.
+- `2026-08-23T10:26:26` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-23T10:26:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T10:26:26` Corrida terminada. Total usado hoy: 244.
