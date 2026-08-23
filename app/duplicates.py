@@ -203,21 +203,27 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Selecciona el mejor archivo para conservar dentro de un grupo:
-    Prioriza antigüedad (mtime) y luego longitud de ruta.
+    Prioriza antigüedad (mtime: más antiguo primero) y luego longitud de ruta (más corta).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
-    keepers: List[Tuple[float, int, Path]] = []
+        
+    # Estructura para almacenar (timestamp, path_length, path_object)
+    candidates: List[Tuple[float, int, Path]] = []
+    
     for p in group.paths:
         if p is None: continue
         try:
             p_obj = Path(p)
             if p_obj.is_file() and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
-                keepers.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
+                # La tupla permite ordenar: primero mtime (ascendente), luego len(path) (ascendente)
+                criteria = (float(stat_info.st_mtime), len(str(p_obj)), p_obj)
+                candidates.append(criteria)
         except (OSError, PermissionError, FileNotFoundError):
             continue
-    return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
+            
+    return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

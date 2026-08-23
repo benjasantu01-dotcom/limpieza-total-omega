@@ -966,7 +966,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._validate_and_log_error(e, tab)
 
     def _worker_thread_logic(self, fn: Callable[[], Any], tab: str, target: Optional[str]) -> None:
-        """Wrapper de ejecución para hilos de trabajo con validación de seguridad obligatoria."""
+        """
+        Wrapper de ejecución para hilos de trabajo con validación de seguridad.
+        Asegura que cualquier modificación en disco pase por el filtro `ensure_safe_to_modify`.
+        """
         try:
             if target:
                 safety.ensure_safe_to_modify(Path(target).resolve(strict=True))
@@ -979,7 +982,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
 
     def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:
-        """Envía tareas intensivas a un pool de hilos de forma no bloqueante."""
+        """
+        Envía tareas intensivas a un pool de hilos de forma no bloqueante.
+        Si 'check_safety' es True, garantiza la validación de ruta antes de ejecutar el worker.
+        """
         if self._closing: return
         
         target_path = target or self.scan_target
@@ -991,7 +997,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._executor.submit(self._worker_thread_logic, fn, tab, target_path if check_safety else None)
 
     def _current_tab(self) -> str:
-        """Determina la pestaña activa actualmente."""
+        """Determina la pestaña activa actualmente mediante el componente tabview."""
         try:
             etiqueta = self.tabview.get()
             if not isinstance(etiqueta, str): return "Limpieza"
@@ -1002,10 +1008,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return nombre
         return "Limpieza"
 
-    def _ask_folder(self, title: str) -> Optional[str]:
+    def _ask_folder(self) -> Optional[str]:
         """Abre un diálogo de selección de carpeta validada por seguridad."""
         try:
-            folder = filedialog.askdirectory(title=title)
+            folder = filedialog.askdirectory(title="Seleccionar carpeta")
             if not folder:
                 return None
             
@@ -1017,11 +1023,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return None
 
     def _confirm(self, title: str, message: str) -> bool:
-        """Solicita confirmación al usuario para acciones irreversibles."""
+        """Solicita confirmación al usuario para acciones potencialmente irreversibles."""
         return messagebox.askyesno(title, message, icon="warning")
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
-        """Reúne métricas de todos los módulos para calcular el puntaje global."""
+        """Reúne métricas de todos los módulos para calcular el puntaje global de salud."""
         hallazgos = self._get_cached("suspicions") or []
         arranque = self._get_cached("startup") or []
         junk = self._get_cached("junk") or []
@@ -1130,7 +1136,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_target_choice_changed(self, choice: str) -> None:
         """Maneja el selector de destinos del escaneo."""
         if choice == "Elegir carpeta...":
-            folder = self._ask_folder("Elegí una carpeta para escanear")
+            folder = self._ask_folder()
             if folder:
                 self.scan_target = folder
                 self.target_label.configure(text=folder)
@@ -1269,7 +1275,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_heuristic_scan_folder(self) -> None:
         """Permite al usuario elegir carpeta para escaneo heurístico."""
-        folder = self._ask_folder("Elegí una carpeta para escanear")
+        folder = self._ask_folder()
         if folder:
             self.scan_target = folder
             self._run_heuristic_scan(folder)
@@ -1477,7 +1483,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_disk_analysis(self) -> None:
         """Analiza la distribución de uso de una carpeta."""
-        folder = self._ask_folder("Elegí una carpeta para analizar")
+        folder = self._ask_folder()
         if not folder:
             return
         
@@ -1497,7 +1503,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_find_duplicates(self) -> None:
         """Buscador de archivos duplicados por hash."""
-        folder = self._ask_folder("Elegí una carpeta donde buscar duplicados")
+        folder = self._ask_folder()
         if not folder:
             return
 

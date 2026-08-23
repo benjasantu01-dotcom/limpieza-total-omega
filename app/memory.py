@@ -107,13 +107,13 @@ class MemorySnapshot:
 
     @property
     def used_percent(self) -> float:
-        """Porcentaje de RAM utilizada."""
+        """Porcentaje de RAM utilizada (0.0 a 100.0)."""
         if self.total <= 0: return 0.0
         return round((self.used / self.total) * 100, 1)
 
     @property
     def available_percent(self) -> float:
-        """Porcentaje de RAM disponible."""
+        """Porcentaje de RAM disponible (0.0 a 100.0)."""
         if self.total <= 0: return 0.0
         return round((self.available / self.total) * 100, 1)
 
@@ -131,7 +131,7 @@ class ProcessMemory:
         return round(self.working_set / BYTES_IN_MB, 1)
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte un valor en bytes a una cadena legible (ej: 1.5 MB)."""
+    """Convierte un valor en bytes a una cadena legible (ej: '1.5 MB')."""
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -209,7 +209,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
     try:
         total = int(stat.ullTotalPhys)
         avail = int(stat.ullAvailPhys)
-        # Validar que los datos de la API sean físicamente posibles
         if total <= 0 or avail > total: 
             return MemorySnapshot(0, 0)
         return MemorySnapshot(total=total, available=avail)
@@ -263,7 +262,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un informe descriptivo sobre el estado de la RAM."""
+    """Genera un informe descriptivo (lista de strings) sobre el estado de la RAM."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     report: List[str] = [
@@ -305,8 +304,7 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet.
-    Verifica la identidad del proceso, estado de actividad, y protege contra 
-    rutas de sistema, junctions o caracteres sospechosos que intenten evadir la seguridad.
+    Verifica identidad, actividad, rutas de sistema y evita caracteres sospechosos.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
@@ -326,14 +324,12 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if not path or not os.path.exists(path): 
             return False, "No se pudo verificar la ubicación del ejecutable."
         
-        # Filtro contra técnicas de ofuscación de nombres (RTL overrides)
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
         
         normalized_path = os.normcase(os.path.abspath(path))
-        # Defensa contra reparse points y rutas protegidas
-        if os.path.normcase(path) != os.path.normcase(os.path.realpath(path)):
+        if os.normcase(path) != os.normcase(os.path.realpath(path)):
             return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse."
         if is_protected_path(normalized_path):
             return False, "Operación denegada: ruta de ejecutable protegida."
@@ -342,7 +338,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita al sistema la liberación de memoria residente (Working Set)."""
+    """Solicita al sistema la liberación de memoria residente (Working Set) de un PID."""
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):
