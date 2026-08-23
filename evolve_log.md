@@ -416,3 +416,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T06:52:56` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `stage_for_review` y `delete_reviewed` para prevenir ataques de *path traversal* mediante la validación estricta de que los archivos destino y sus padres inmediatos se mantengan dentro del ámbito del directorio de revisión (`is_relative_to`), evitando cualquier manipulación fuera de la zona segura definida por el usuario.
 - `2026-08-23T06:52:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T06:52:56` Corrida terminada. Total usado hoy: 160.
+- `2026-08-23T07:00:58` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-23T07:01:31` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine_file` al introducir una verificación de existencia de archivos "shadow" o colisiones en el sandbox antes de la operación de copia, además de asegurar que la validación de integridad (`_validate_isolation_request`) se ejecute inmediatamente antes de mover el archivo para minimizar condiciones de carrera.
+- `2026-08-23T07:01:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-23T07:02:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-23T07:02:25` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `process_entry` al verificar `is_safe_to_modify` antes de procesar cualquier entrada, asegurando que las comprobaciones de seguridad sean previas a cualquier lógica de navegación o escaneo heurístico, evitando además el acceso a rutas que podrían haber sido alteradas o ser malintencionadas.
+- `2026-08-23T07:02:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T07:02:25` Corrida terminada. Total usado hoy: 164.

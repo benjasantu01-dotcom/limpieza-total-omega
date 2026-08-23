@@ -395,6 +395,10 @@ def quarantine_file(
     stored_name = _generate_safe_stored_name(source_path, item_id)
     destination = dest_dir / stored_name
     
+    # Pre-validar que no exista un archivo residual o colisión antes de la operación
+    if destination.exists():
+        raise FileExistsError(f"Colisión de nombre en el sandbox: {destination.name}")
+
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:

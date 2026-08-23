@@ -103,6 +103,8 @@ class Scanner:
             return
         
         target_path = Path(entry.path)
+        if not is_safe_to_modify(target_path):
+            return
         if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
             return
         if not self._is_safe_entry(target_path):
