@@ -116,6 +116,7 @@ def _is_junk_path(path: Path) -> bool:
 def _generate_unique_target(target: Path) -> Path:
     """
     Calcula un nombre de archivo único para evitar colisiones durante el movimiento.
+    Itera hasta encontrar un nombre disponible o alcanza el límite de seguridad (999).
     """
     if not target.exists():
         return target
@@ -138,7 +139,8 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Verifica si un archivo está bloqueado intentando abrirlo en modo lectura binaria exclusiva.
+    Verifica si un archivo está en uso intentando abrirlo en modo lectura binaria exclusiva.
+    Retorna True si el archivo está siendo bloqueado por otro proceso del sistema.
     """
     try:
         with open(path, "rb") as f:
@@ -150,6 +152,7 @@ def _is_file_locked(path: Path) -> bool:
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
     Previene la recursividad infinita durante operaciones de archivo.
+    Verifica que el destino no sea un subdirectorio de la fuente.
     """
     try:
         s, d = src.resolve(), dest.resolve()
@@ -161,6 +164,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Valida la integridad de una operación de E/S.
+    Combina chequeos de seguridad de `safety.py` con validaciones de estado de archivo.
     """
     try:
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest):
@@ -172,6 +176,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not stat.st_mode: return False
         
         if os.name == "nt":
+            # 0x46: FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM
             if stat.st_file_attributes & 0x46: 
                 return False
         
@@ -182,7 +187,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
-    Validación de alto nivel antes del movimiento.
+    Validación de alto nivel antes del movimiento mediante chequeo de rutas protegidas.
     """
     if not isinstance(junk_file, JunkFile) or junk_file.path is None: return False
     try:
@@ -195,13 +200,14 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 
 def _is_valid_junk_candidate(entry: os.DirEntry) -> bool:
-    """Filtro de archivos optimizado."""
+    """Filtro de archivos optimizado basado en `os.DirEntry`."""
     return entry.is_file() and entry.name.lower().endswith(tuple(JUNK_EXTENSIONS))
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios buscando archivos clasificados como basura.
+    Utiliza `os.scandir` para un rendimiento eficiente en sistemas con muchos archivos.
     """
     search_dirs = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -247,6 +253,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Mueve los archivos candidatos a una carpeta de revisión segura.
+    Valida la disponibilidad de espacio en disco y la seguridad de la ruta destino antes de mover.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
@@ -285,6 +292,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de forma segura tras la revisión explícita del usuario.
+    Verifica individualmente cada archivo antes de proceder con el borrado definitivo.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0

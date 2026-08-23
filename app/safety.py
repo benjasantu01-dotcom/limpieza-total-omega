@@ -170,8 +170,10 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(path: Path) -> None:
     """
-    Ejecuta el conjunto completo de validaciones de seguridad físicas sobre una ruta.
-    Lanza UnsafePathError si detecta cualquier atributo que impida la modificación segura.
+    Ejecuta validaciones físicas sobre la ruta.
+    
+    Lanza UnsafePathError si el archivo está en uso, es un punto de reparse,
+    es de solo lectura, o viola atributos de integridad del sistema.
     """
     if not isinstance(path, Path):
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
@@ -327,8 +329,11 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
-    Función de entrada principal para validar si una ruta puede ser modificada.
-    Realiza una secuencia completa de chequeos estructurales y de integridad física.
+    Valida si una ruta es apta para escritura.
+    
+    Es el punto de entrada principal para toda operación destructiva.
+    Lanza UnsafePathError si la ruta es inválida, externa al base_dir,
+    pertenece al sistema o posee atributos de protección física.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")

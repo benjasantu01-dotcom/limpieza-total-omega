@@ -113,17 +113,22 @@ class QuarantineItem:
         except (ValueError, TypeError):
             return None
 
+    def _validate_integrity(self, stored_path: Path) -> bool:
+        """Verifica que el archivo físico exista, sea regular y su tamaño coincida."""
+        return (
+            stored_path.is_file() and 
+            not stored_path.is_symlink() and 
+            stored_path.stat().st_size == self.size_bytes
+        )
+
     def verify_integrity(self, stored_path: Path) -> bool:
         """
         Verifica que el archivo físico en el sandbox sea bit-a-bit idéntico al original.
         Utiliza el hash SHA256 almacenado en el manifiesto como fuente de verdad.
         """
-        if not stored_path or not stored_path.is_file() or stored_path.is_symlink():
+        if not stored_path or not self._validate_integrity(stored_path):
             return False
         try:
-            stats = stored_path.stat()
-            if stats.st_size != self.size_bytes:
-                return False
             actual_hash = _get_sha256(stored_path)
             return bool(self.sha256 and actual_hash == self.sha256)
         except (OSError, PermissionError):
@@ -256,17 +261,14 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     
     resolved_source = source_path.resolve()
     
-    # Validaciones de existencia y tipo
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares.")
         
-    # Validaciones de seguridad de ruta (Safety API)
     if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta origen está protegida por el sistema.")
     if is_protected_path(dest_dir) or is_protected_path(dest_dir.parent):
         raise UnsafePathError("Destino inválido: directorio de cuarentena en ruta protegida.")
         
-    # Validaciones de contexto de operación
     if _is_valid_quarantine_path(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     if resolved_source.drive.lower() != dest_dir.drive.lower():
@@ -346,7 +348,6 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     if destination.exists():
         raise FileExistsError(f"Conflicto: {destination.name} ya existe.")
     
-    # Asegurar que el destino temporal está estrictamente dentro del sandbox
     dest_dir = destination.parent.resolve()
     temp_dest = (dest_dir / f".tmp_{uuid.uuid4().hex}").resolve()
     if not _is_valid_quarantine_path(temp_dest, dest_dir):
