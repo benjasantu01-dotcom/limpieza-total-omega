@@ -253,24 +253,20 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
-        ensure_safe_to_modify(dest_base.parent)
-        if is_protected_path(dest_base): return None
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if not dest_base.is_dir() or not is_safe_to_modify(dest_base): return None
+        if not dest_base.is_dir() or not is_safe_to_modify(dest_base) or is_protected_path(dest_base): return None
     except (OSError, PermissionError, RuntimeError):
-        return None
-
-    total_size = sum(f.size_bytes for f in files if isinstance(f, JunkFile))
-    try:
-        if shutil.disk_usage(dest_base).free < total_size:
-            return None
-    except OSError:
         return None
 
     for junk_file in files:
         if not isinstance(junk_file, JunkFile): continue
         try:
             src_path: Path = junk_file.path.resolve()
+            # Validación de espacio antes de cada operación individual
+            if shutil.disk_usage(dest_base).free < src_path.stat().st_size:
+                logger.warning(f"Espacio insuficiente para {src_path.name}")
+                continue
+                
             if src_path.anchor != dest_base.anchor: continue
             if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base): continue
             
@@ -282,7 +278,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             ensure_safe_to_modify(src_path)
             shutil.move(str(src_path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
-            logger.warning(f"No se pudo mover el archivo: {junk_file.path}")
             continue
     return dest_base
 
@@ -306,6 +301,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         try:
             if not item.is_file() or _is_junction(item): continue
             if not item.is_relative_to(dest): continue
+            
+            # Verificar si existe antes de intentar cualquier operación
+            if not item.exists(): continue
             
             if is_safe_to_modify(item) and not _is_file_locked(item):
                 ensure_safe_to_modify(item)

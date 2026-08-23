@@ -527,11 +527,17 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     for item in items:
         stored_path = (quarantine_root / item.stored_name).resolve()
-        if _is_item_purgable(stored_path, item):
+        # Verificar estado del archivo: si existe pero está bloqueado, se mantiene en el manifiesto
+        if stored_path.exists() and not _is_item_purgable(stored_path, item):
+            remaining_items.append(item)
+        elif _is_item_purgable(stored_path, item):
             if _safe_unlink(stored_path):
                 purged_count += 1
-                continue
-        remaining_items.append(item)
+            else:
+                remaining_items.append(item)
+        else:
+            # Archivo inexistente o corrupto, se descarta del manifiesto
+            pass
             
     if purged_count > 0:
         save_manifest(remaining_items, base)

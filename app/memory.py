@@ -321,7 +321,8 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if not path or not os.path.exists(path): 
             return False, "No se pudo verificar la ubicación del ejecutable."
         
-        if os.path.islink(path):
+        # Validación robusta de reparse points y enlaces
+        if os.path.normcase(path) != os.path.normcase(os.path.realpath(path)):
             return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse."
         
         # Filtro contra técnicas de ofuscación de nombres (RTL overrides)
