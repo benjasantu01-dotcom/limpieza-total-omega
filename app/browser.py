@@ -138,8 +138,8 @@ def _is_excluded_file(name: str) -> bool:
 
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Consulta atributos Win32 para identificar archivos marcados como Ocultos, 
-    Sistema o Solo Lectura mediante máscaras de bits (0x01, 0x02, 0x04).
+    Identifica archivos marcados como Ocultos (0x02), Sistema (0x04) o 
+    Solo Lectura (0x01) utilizando GetFileAttributesW.
     """
     if not kernel32:
         return False
@@ -147,21 +147,23 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
-        return bool(attrs & 0x01 or attrs & 0x04 or attrs & 0x02)
+        # Máscaras: 0x01 (FILE_ATTRIBUTE_READONLY), 0x02 (FILE_ATTRIBUTE_HIDDEN), 0x04 (FILE_ATTRIBUTE_SYSTEM)
+        return bool(attrs & (0x01 | 0x02 | 0x04))
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Filtro de seguridad para `os.scandir`. Omite elementos protegidos, 
-    puntos de reparse o archivos con atributos de sistema.
+    Determina si un archivo o carpeta debe ser omitido basándose en seguridad,
+    atributos de sistema o si es un punto de reparse.
     """
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     
     try:
-        if entry.is_symlink() or is_junction_fn(entry.path):
+        is_reparse = entry.is_symlink() or is_junction_fn(entry.path)
+        if is_reparse:
             return True
         if _is_system_hidden(entry.path, kernel32):
             return True

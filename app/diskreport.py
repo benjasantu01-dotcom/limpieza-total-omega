@@ -394,7 +394,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        # Mantenimiento del heap para los N archivos más grandes
+        # Mantenimiento del heap para los N archivos más grandes:
+        # size es el primer elemento de la tupla, usado como clave de ordenamiento.
         if len(top_files_heap) < MAX_TOP_FILES:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:
@@ -434,6 +435,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         lines.append(f"  {ext:<18} {format_size(size):>10}  ({data.ext_counts[ext]} archivos)")
         
     lines.extend(["", "Archivos más grandes:"])
-    for size, path in sorted(data.top_files, key=lambda x: x[0], reverse=True):
+    # Ordenar el heap resultante de mayor a menor para presentación
+    for size, path in sorted(data.top_files, key=lambda entry: entry[0], reverse=True):
         lines.append(f"  {format_size(size):>10}  {path}")
     return lines
