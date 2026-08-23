@@ -87,18 +87,18 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta si la entrada es un punto de reanálisis (reparse point).
+        Detecta si la entrada es un punto de reanálisis (reparse point) usando atributos de archivo.
+        El valor 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) identifica junctions o symlinks.
         """
         try:
-            # Usamos stat sin seguir enlaces para verificar atributos de reanálisis
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError, TypeError):
-            # Ante error al leer metadatos, se considera inseguro continuar
             return True 
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
         Analiza un elemento del sistema de archivos mediante reglas de seguridad.
+        Si es directorio, lo agrega al stack de navegación; si es archivo, evalúa heurísticas.
         """
         if entry is None or not hasattr(entry, 'path'):
             return
@@ -111,7 +111,6 @@ class Scanner:
             if not self._is_safe_entry(target_path):
                 return
 
-            # Validar existencia antes de comprobar tipo
             try:
                 is_dir = entry.is_dir(follow_symlinks=False)
                 is_file = entry.is_file(follow_symlinks=False)
@@ -146,7 +145,7 @@ class Scanner:
 
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta nombres con extensiones múltiples engañosas (ej: imagen.jpg.exe)."""
+    """Detecta nombres con extensiones múltiples engañosas (ej: imagen.jpg.exe) que ocultan la extensión ejecutable real."""
     if not path or not path.name:
         return None
     if DOUBLE_EXTENSION_RE.search(path.name):
@@ -156,7 +155,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Verifica la antigüedad de un ejecutable en carpetas de alto riesgo.
+    Verifica si un ejecutable ha sido creado/modificado recientemente en carpetas de alto riesgo.
+    Compara el timestamp de modificación con el umbral definido en RECENT_FILE_THRESHOLD_HOURS.
     """
     if path is None or is_protected_path(path):
         return None
@@ -175,7 +175,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta archivos con nombres de procesos del sistema ubicados fuera de System32.
+    Detecta archivos que imitan nombres de procesos críticos del sistema (ej: svchost.exe)
+    cuando se encuentran fuera del directorio protegido System32.
     """
     if path is None or not path.name:
         return None
@@ -188,7 +189,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Orquestador de reglas heurísticas para un archivo dado.
+    Orquestador de reglas heurísticas para un archivo dado. Aplica validaciones básicas
+    de extensión y delega en el conjunto de chequeos definidos en EXECUTABLE_CHECKS.
     """
     if not path:
         return []
@@ -211,7 +213,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Realiza un escaneo recursivo del sistema de archivos.
+    Realiza un escaneo recursivo del sistema de archivos a partir de un directorio base.
+    Gestiona la pila de directorios y utiliza os.scandir para un rendimiento eficiente.
     """
     if not directory:
         return []
@@ -248,7 +251,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 
 def run_windows_defender_quick_scan() -> str:
     """
-    Ejecuta un escaneo rápido mediante la API de Windows Defender.
+    Ejecuta un escaneo rápido mediante la API de Windows Defender a través de PowerShell.
+    Requiere que la protección en tiempo real esté activa.
     """
     try:
         status = subprocess.run(
