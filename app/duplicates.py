@@ -111,7 +111,7 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad por el sistema de archivos,
-    evitando ciclos y puntos de reparse, aplicando filtros de seguridad.
+    evitando ciclos (via inodos) y puntos de reparse, aplicando filtros de seguridad.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
@@ -153,8 +153,8 @@ def _collect_candidates(
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Toma un conjunto de archivos con tamaño idéntico y los reclasifica según el 
-    resultado de hash_func, descartando grupos resultantes que contengan un único archivo.
+    Agrupa rutas idénticas aplicando una función de hash determinada; 
+    descarta grupos donde no se encuentren al menos dos archivos colisionando.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
@@ -165,14 +165,18 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Aplica el pipeline de refinamiento: filtra por hash parcial (rápido) y
-    finaliza con hash completo (SHA256) para confirmar duplicados exactos.
+    Pipeline de confirmación: reduce candidatos inicialmente por tamaño,
+    luego por hash parcial y finalmente por hash completo (SHA256).
     """
     if not paths or size <= 0: return []
     confirmed_groups: List[DuplicateGroup] = []
+    
+    # Reducción inicial de candidatos mediante hash rápido de cabecera
     partial_results: Dict[str, List[Path]] = _refine_by_hash(paths, partial_hash)
     for partial_candidates in partial_results.values():
         if len(partial_candidates) < 2: continue
+        
+        # Confirmación de identidad byte a byte mediante SHA256 completo
         full_hash_groups: Dict[str, List[Path]] = _refine_by_hash(partial_candidates, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
             if len(confirmed_paths) > 1:
@@ -196,7 +200,10 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Selecciona el archivo candidato a conservar basado en antigüedad y longitud de ruta."""
+    """
+    Selecciona el mejor archivo para conservar: prioriza la antigüedad (mtime)
+    y, en igualdad de condiciones, el archivo con la ruta más corta.
+    """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     keepers: List[Tuple[float, int, Path]] = []

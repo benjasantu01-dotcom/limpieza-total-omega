@@ -72,7 +72,13 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
 
 @dataclass
 class FileEntry:
-    """Representa un archivo individual y su peso en bytes."""
+    """
+    Registro de un archivo detectado durante el escaneo.
+    
+    Attributes:
+        path: Objeto Path con la ubicación absoluta del archivo.
+        size_bytes: Tamaño del archivo en bytes (del sistema de archivos).
+    """
     path: Path
     size_bytes: int
 
@@ -84,7 +90,14 @@ class FileEntry:
 
 @dataclass
 class ExtensionUsage:
-    """Estadística agregada para archivos de una misma extensión."""
+    """
+    Agrupación estadística de archivos por extensión.
+    
+    Attributes:
+        extension: La extensión encontrada (ej: '.png') o '(sin extensión)'.
+        size_bytes: Sumatoria del tamaño de todos los archivos con esta extensión.
+        count: Cantidad total de archivos procesados para este grupo.
+    """
     extension: str
     size_bytes: int
     count: int
@@ -97,7 +110,14 @@ class ExtensionUsage:
 
 @dataclass
 class FolderUsage:
-    """Métrica de uso de espacio para un directorio específico."""
+    """
+    Métrica de uso de espacio para un directorio específico (ej. subcarpetas directas).
+    
+    Attributes:
+        path: Ruta del directorio analizado.
+        size_bytes: Tamaño acumulado de todos los archivos en el árbol del directorio.
+        file_count: Cantidad de archivos contenidos en este directorio y sus subcarpetas.
+    """
     path: Path
     size_bytes: int
     file_count: int
@@ -110,7 +130,15 @@ class FolderUsage:
 
 @dataclass
 class DriveUsage:
-    """Estado de almacenamiento de una unidad lógica montada."""
+    """
+    Estado de almacenamiento de una unidad lógica montada.
+    
+    Attributes:
+        mount: Cadena con la letra de unidad o punto de montaje.
+        total: Capacidad total en bytes.
+        used: Espacio ocupado en bytes.
+        free: Espacio libre disponible en bytes.
+    """
     mount: str
     total: int
     used: int
@@ -157,7 +185,12 @@ def format_size(num: Union[int, float, None]) -> str:
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad específica.
-    Retorna None si la ruta es inaccesible, UNC o inválida.
+    
+    Args:
+        mount: Ruta o letra de unidad a consultar.
+        
+    Returns:
+        Objeto DriveUsage si la unidad existe y es accesible, None en caso contrario.
     """
     if mount is None or not isinstance(mount, (str, os.PathLike)):
         return None
@@ -205,6 +238,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente para listar archivos.
+    
+    Utiliza una pila interna para evitar la recursión profunda y un set de inodos
+    visitados para prevenir ciclos en sistemas de archivos (hard links/reparse points).
+    
+    Args:
+        directory: Ruta base de inicio del escaneo.
+        skip_protected: Si es True, ignora rutas marcadas por `safety.is_protected_path`.
     """
     if not directory:
         return

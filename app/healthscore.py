@@ -43,7 +43,7 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos para la lógica de scoring
+# Umbrales críticos (puntos de inflexión donde la salud comienza a degradarse)
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
@@ -196,13 +196,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     except Exception:
         return HealthResult(0, "F", {}, ["Error: Fallo al validar métricas."])
 
-    # Validar que los límites globales no causen divisiones por cero
+    # Validar que los límites globales no causen divisiones por cero en los scorers
     if any(limit <= 0 for limit in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema mal configurados."])
 
-    breakdown: Dict[MetricKey, int] = {}
-    ratios: Dict[MetricKey, float] = {}
-    final_score: float = 0.0
+    metric_breakdown: Dict[MetricKey, int] = {}
+    metric_ratios: Dict[MetricKey, float] = {}
+    accumulated_points: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS_INT:
         scorer = _SCORERS.get(area)
@@ -210,23 +210,28 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         
         try:
             ratio = scorer(metrics)
-            ratios[area] = ratio
-            puntos = round(ratio * weight)
-            breakdown[area] = int(_clamp(float(puntos), 0.0, float(weight)))
-            final_score += breakdown[area]
+            metric_ratios[area] = ratio
+            weighted_points = round(ratio * weight)
+            metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
+            accumulated_points += metric_breakdown[area]
         except Exception:
             continue
     
-    recommendations = []
-    for r in _RECOMMENDATION_RULES:
-        if r.check(metrics, ratios.get(r.area, 0.0)):
-            recommendations.append(r.message_factory(metrics))
+    recommendations: List[str] = []
+    for rule in _RECOMMENDATION_RULES:
+        if rule.check(metrics, metric_ratios.get(rule.area, 0.0)):
+            recommendations.append(rule.message_factory(metrics))
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
-    score_int = int(_clamp(final_score, 0.0, 100.0))
-    return HealthResult(score_int, grade_for_score(score_int), breakdown, recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."])
+    final_score = int(_clamp(accumulated_points, 0.0, 100.0))
+    return HealthResult(
+        score=final_score, 
+        grade=grade_for_score(final_score), 
+        breakdown=metric_breakdown, 
+        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+    )
 
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación textual (lista de strings) formateada para la interfaz de usuario."""
