@@ -1473,3 +1473,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-23T05:21:00` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé `detect_profiles` para evitar el cálculo redundante de `is_junction` y el acceso a `kernel32` mediante su pre-cálculo fuera del bucle principal, y mejoré la lógica de `_is_path_inside_base` para reducir llamadas costosas a `resolve(strict=True)` que ya se realizan al inicio de la cadena de llamadas.
 - `2026-08-23T05:21:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T05:21:00` Corrida terminada. Total usado hoy: 124.
+- `2026-08-23T05:29:16` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-23T05:29:42` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-23T05:30:06` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el pipeline de confirmación de `find_duplicates` añadiendo un filtro preventivo mediante la comparación de hashes parciales antes de proceder al hash completo, evitando lecturas innecesarias en grupos donde la colisión por tamaño era un falso positivo.
+- `2026-08-23T05:30:31` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje pre-calculando los factores de normalización (`1.0 / limit`) para eliminar divisiones repetitivas dentro de los bucles de evaluación, mejorando la eficiencia computacional en cada ejecución.
+- `2026-08-23T05:31:22` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data
+- `2026-08-23T05:31:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T05:31:22` Corrida terminada. Total usado hoy: 128.

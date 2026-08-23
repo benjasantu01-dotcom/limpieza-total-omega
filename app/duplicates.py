@@ -111,10 +111,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en profundidad por los directorios dados.
-    
-    Evita puntos de reparse (junctions/symlinks) para prevenir bucles infinitos
-    o escaneo de unidades montadas externas, utilizando la tupla (dev, ino) 
-    para detectar cruces de sistemas de archivos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
@@ -125,7 +121,6 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
-                        # Ignorar puntos de reparse (Windows Junctions/Symlinks)
                         if getattr(entry_stat, 'st_reparse_tag', 0) != 0:
                             continue
                             
@@ -163,10 +158,13 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Pipeline de confirmación reduciendo candidatos."""
+    """Pipeline de confirmación: reduce candidatos usando hash parcial y luego hash completo."""
     confirmed_groups: List[DuplicateGroup] = []
     
+    # 1. Filtro mediante hash parcial (ahorro de E/S en archivos no duplicados)
     partial_results = _refine_by_hash(paths, partial_hash)
+    
+    # 2. Solo los que coinciden en el hash parcial pasan al hash completo
     for partial_candidates in partial_results.values():
         full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
