@@ -70,7 +70,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             while (buffer := f.read(chunk_size)):
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, FileNotFoundError):
         return None
 
 
@@ -83,7 +83,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, FileNotFoundError):
         return None
 
 
@@ -136,8 +136,8 @@ def _collect_candidates(
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size and is_safe_to_modify(entry_path):
                                 temp_groups[int(entry_stat.st_size)].append(entry_path)
-                    except (OSError, PermissionError): continue
-        except (OSError, PermissionError): pass
+                    except (OSError, PermissionError, FileNotFoundError): continue
+        except (OSError, PermissionError, FileNotFoundError): pass
 
     if directories is not None:
         for item in directories:
@@ -195,7 +195,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         try:
             p_obj = Path(p)
-            if p_obj.is_file() and is_safe_to_modify(p_obj):
+            if p_obj.exists() and p_obj.is_file() and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
         except (OSError, PermissionError, FileNotFoundError):

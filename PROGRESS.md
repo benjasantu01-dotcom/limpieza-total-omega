@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 215
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 4 | 0 | 1 | 0 | 9 |
+| 2026-08-21 | 1 | 0 | 0 | 0 | 9 |
 | 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
-| 2026-08-23 | 65 | 5 | 10 | 5 | 55 |
+| 2026-08-23 | 67 | 5 | 10 | 6 | 56 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **43**
+- seguridad defensiva: **40**
 - rendimiento: **38**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **22**
 - `assistant.py`: **22**
-- `settings.py`: **21**
-- `memory.py`: **21**
-- `duplicates.py`: **20**
-- `scanner.py`: **19**
+- `duplicates.py`: **21**
+- `settings.py`: **20**
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
+- `scanner.py`: **18**
 - `browser.py`: **16**
 - `quarantine.py`: **16**
 - `branding.py`: **15**
 - `organizer.py`: **12**
-- `safety.py`: **10**
+- `safety.py`: **9**
 - `main.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T06:12:12` **memory.py** (robustez ante casos límite): Se ha robustecido el escaneo de procesos en `top_memory_processes` añadiendo un manejo de excepciones específico para el caso donde `Get-Process` devuelve datos incompletos o mal formados, garantizando que el bucle de procesamiento de memoria no falle ante valores inesperados en el CSV y se mantenga la integridad del diagnóstico.
+- `2026-08-23T06:10:28` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` ante errores de acceso a disco, asegurando que los métodos manejen correctamente archivos que desaparecen entre la detección y el procesamiento, evitando cierres inesperados por `FileNotFoundError` o `PermissionError`.
 - `2026-08-23T06:01:42` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `drive_usage` y `all_drives_usage` ante fallos de acceso o unidades sin soporte (como unidades de red o volúmenes no montados) mediante la adición de comprobaciones explícitas de acceso y un manejo de errores más específico para evitar cierres inesperados.
 - `2026-08-23T06:01:05` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` validando la existencia y el tipo de la ruta padre antes de intentar operaciones de escritura para prevenir errores en sistemas de archivos con permisos restringidos o rutas inexistentes.
 - `2026-08-23T06:00:32` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados en los diccionarios de configuración/fuentes de datos, asegurando que `grade` sea una cadena limpia antes de su uso y evitando inyecciones de control.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T05:10:21` **settings.py** (legibilidad y documentación): He refactorizado la clase `_Validators` para mejorar la legibilidad y mantenibilidad, consolidando la lógica de validación de rutas mediante un método privado unificado y añadiendo docstrings descriptivos que aclaran el flujo de validación.
 - `2026-08-23T05:10:07` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante type hints explícitos en los retornos y docstrings detallados que clarifican el propósito de las funciones auxiliares de escaneo y su integración con el orquestador `scan_file`.
 - `2026-08-23T05:09:41` **safety.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de validación interna para clarificar el propósito de las comprobaciones de bajo nivel y mejorar la mantenibilidad, sin alterar la lógica de seguridad.
-- `2026-08-23T05:00:55` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones internas de validación (`_check_windows_file_attributes`, `_check_path_syntax_integrity`) y se refactorizó la lógica de los chequeos de integridad para mejorar la legibilidad y mantenimiento del código bajo las guías exigidas.
-- `2026-08-23T05:00:39` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la refactorización de la lógica de ordenamiento (ahora definida como una constante mapeada), la adición de docstrings técnicos explicativos sobre las validaciones de seguridad y el uso de type hints para clarificar las estructuras de datos, manteniendo la integridad funcional.

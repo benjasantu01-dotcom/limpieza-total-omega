@@ -186,9 +186,12 @@ def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
     if not isinstance(raw_csv_text, str):
         return
     for line in raw_csv_text.splitlines():
-        proc = _parse_csv_row(line)
-        if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
-            yield proc
+        try:
+            proc = _parse_csv_row(line)
+            if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
+                yield proc
+        except Exception:
+            continue
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Ordena procesos por consumo descendente y aplica un límite."""
