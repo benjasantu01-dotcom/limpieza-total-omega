@@ -726,3 +726,10 @@ FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash 
 - `2026-08-23T09:55:36` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cálculo de `compute_score` cacheando las referencias de los scorers en una lista de tuplas para evitar múltiples llamadas a `dict.get()` por cada iteración, mejorando el rendimiento en el hot path.
 - `2026-08-23T09:55:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T09:55:36` Corrida terminada. Total usado hoy: 232.
+- `2026-08-23T10:04:26` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-23T10:05:31` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se optimizó el método `_compile_metrics` para evitar cálculos repetitivos sobre el caché y se introdujo un uso más eficiente de `lru_cache` para el acceso a disco, reduciendo la redundancia de E/S durante el refresco del dashboard de Salud.
+- `2026-08-23T10:05:58` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de caché que evita subprocesos innecesarios, además de refactorizar `_yield_processes` para evitar la creación de listas intermedias mediante el uso directo de un generador.
+- `2026-08-23T10:06:22` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizamos la recursión de `scan_for_junk` y la validación de extensiones utilizando un `frozenset` para búsquedas $O(1)$ y evitando la creación redundante de tuplas en el loop crítico, reduciendo la presión sobre el recolector de basura.
+- `2026-08-23T10:06:38` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` mediante la eliminación de una búsqueda lineal innecesaria en `list_items`, aprovechando que la deserialización y el almacenamiento en caché ya garantizan una estructura eficiente para el acceso por ID.
+- `2026-08-23T10:06:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T10:06:38` Corrida terminada. Total usado hoy: 236.

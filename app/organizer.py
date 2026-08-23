@@ -40,11 +40,9 @@ SORT_REGISTRY: Final[Dict[str, SortConfig]] = {
 }
 
 # Extensiones típicas de archivos "basura" / temporales
-JUNK_EXTENSIONS: Final[set[str]] = {
+JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
-}
-# Pre-calculado para eficiencia en loops
-_LOWER_JUNK_EXTS: Final[set[str]] = {ext.lower() for ext in JUNK_EXTENSIONS}
+})
 
 # Carpetas típicas donde se acumula basura
 DEFAULT_SCAN_DIRS: Final[List[Path]] = [
@@ -54,9 +52,9 @@ DEFAULT_SCAN_DIRS: Final[List[Path]] = [
 ]
 
 # Carpetas de sistema críticas que nunca se recorren para prevenir daños al SO
-SYSTEM_FOLDER_BLOCKLIST: Final[set[str]] = {
+SYSTEM_FOLDER_BLOCKLIST: Final[frozenset[str]] = frozenset({
     "windows", "program files", "program files (x86)", "$recycle.bin", "system volume information"
-}
+})
 
 
 def list_available_drives() -> List[str]:
@@ -112,14 +110,12 @@ def _is_junction(path: Path) -> bool:
 
 def _is_junk_path(path: Path) -> bool:
     """Valida la extensión del archivo contra la lista permitida de basura."""
-    return path.suffix.lower() in _LOWER_JUNK_EXTS
+    return path.suffix.lower() in JUNK_EXTENSIONS
 
 
 def _generate_unique_target(target: Path) -> Path:
     """
     Calcula un nombre de archivo único para evitar colisiones durante el movimiento.
-    Implementa una estrategia de sufijo numérico (_1, _2...) para prevenir sobrescrituras 
-    accidentales si el archivo ya existe en la carpeta de destino.
     """
     if not target.exists():
         return target
@@ -143,8 +139,6 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado intentando abrirlo en modo lectura binaria exclusiva.
-    La incapacidad de obtener un descriptor de archivo indica que el SO tiene el archivo 
-    en uso (ej. proceso activo, log abierto).
     """
     try:
         with open(path, "rb") as f:
@@ -155,8 +149,7 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Previene la recursividad infinita durante operaciones de archivo verificando 
-    que el destino no sea un ancestro del origen (evitando mover carpetas dentro de sí mismas).
+    Previene la recursividad infinita durante operaciones de archivo.
     """
     try:
         s, d = src.resolve(), dest.resolve()
@@ -168,8 +161,6 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Valida la integridad de una operación de E/S.
-    Combina checks de `safety.py` con verificaciones de sistema (archivos ocultos/sistema) 
-    y validaciones de estado de archivo (locks) para asegurar que el movimiento es seguro.
     """
     try:
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest):
@@ -181,7 +172,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not stat.st_mode: return False
         
         if os.name == "nt":
-            # 0x02: Hidden, 0x04: System, 0x40: Reparse Point
             if stat.st_file_attributes & 0x46: 
                 return False
         
@@ -193,8 +183,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
     Validación de alto nivel antes del movimiento.
-    Verifica la existencia del objeto, protección de rutas mediante listas blancas/negras 
-    y validación final de la operación de E/S.
     """
     if not isinstance(junk_file, JunkFile): return False
     try:
@@ -207,14 +195,13 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 
 def _is_valid_junk_candidate(entry: os.DirEntry) -> bool:
-    """Filtro de archivos optimizado usando os.DirEntry para reducir llamadas a stat()."""
-    return entry.is_file() and entry.name.lower().endswith(tuple(_LOWER_JUNK_EXTS))
+    """Filtro de archivos optimizado."""
+    return entry.is_file() and entry.name.lower().endswith(tuple(JUNK_EXTENSIONS))
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
     Recorre recursivamente los directorios buscando archivos clasificados como basura.
-    Usa `os.scandir` para minimizar el impacto de I/O aprovechando metadatos en caché del sistema.
     """
     search_dirs = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -248,7 +235,6 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
     Ordena la lista de archivos basada en el registro `SORT_REGISTRY`.
-    Permite extender los criterios de ordenamiento sin modificar la lógica interna.
     """
     if not isinstance(files, list) or not all(isinstance(f, JunkFile) for f in files):
         return []
@@ -261,15 +247,12 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Mueve los archivos candidatos a una carpeta de revisión segura.
-    Realiza una verificación de espacio disponible en disco y validación de seguridad 
-    `ensure_safe_to_modify` antes de cada operación de mover archivo.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
 
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
-        # Validación de seguridad: el destino debe ser una ruta permitida
         ensure_safe_to_modify(dest_base.parent)
         if is_protected_path(dest_base): return None
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
@@ -307,8 +290,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de forma segura tras la revisión explícita del usuario.
-    Verifica mediante `ensure_safe_to_modify` que el archivo sea seguro antes de la 
-    operación unlink, garantizando que no se eliminen elementos protegidos.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -326,7 +307,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not item.is_file() or _is_junction(item): continue
             if not item.is_relative_to(dest): continue
             
-            # Validación lógica: check de seguridad antes de ejecutar unlink
             if is_safe_to_modify(item) and not _is_file_locked(item):
                 ensure_safe_to_modify(item)
                 item.unlink()

@@ -445,6 +445,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem inválido o vacío.")
         
     items = load_manifest(base)
+    # Ya que load_manifest retorna una lista, el rendimiento es O(N), aceptable para el tamaño de cuarentena.
+    # El uso de ID asegura la unicidad.
     quarantine_item = next((item for item in items if item.item_id == item_id), None)
     if not quarantine_item:
         raise KeyError(f"No se encontró el ítem: {item_id}")

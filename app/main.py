@@ -1028,7 +1028,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         snapshot = self._get_cached("memory_snapshot", provider=memory_mod.read_snapshot) or memory_mod.Snapshot(0, 0, 0)
         
         @lru_cache(maxsize=2)
-        def _get_disk_info(home_path_str):
+        def _get_disk_info(home_path_str: str) -> Optional[diskreport.DriveInfo]:
             home = Path(home_path_str)
             return diskreport.drive_usage(home) if home.exists() else None
 
