@@ -360,12 +360,13 @@ def explain_area(area: Any) -> str:
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa el contexto actual contra los criterios de salud y retorna una lista de problemas detectados."""
-    problemas: list[str] = []
+    problemas = []
     for crit in _CRITERIOS_SALUD:
         msg = crit.format_if_triggered(ctx)
         if msg:
             problemas.append(msg)
-            if len(problemas) >= 3: break
+            if len(problemas) >= 3:
+                break
     return problemas
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:

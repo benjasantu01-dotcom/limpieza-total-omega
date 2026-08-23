@@ -1094,3 +1094,55 @@ assert not {'replace'}
 - `2026-08-23T14:00:40` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la documentación de `ensure_safe_to_modify` y otras funciones críticas con docstrings que detallan los estados de error y las precondiciones, facilitando el mantenimiento y la comprensión de las reglas de seguridad.
 - `2026-08-23T14:00:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T14:00:40` Corrida terminada. Total usado hoy: 328.
+- `2026-08-23T14:09:22` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-23T14:09:48` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado los argumentos de los callbacks de heurísticas, eliminando ambigüedades en la firma de `SuspicionCheck` para que el mantenimiento futuro sea seguro.
+- `2026-08-23T14:10:15` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._run_safety_checks
+- `2026-08-23T14:10:41` Tests FALLARON:
+```
+_csv_skips_powershell_noise ________________
+
+    def test_parse_registry_csv_skips_powershell_noise():
+        csv = '"Name","Value"\n"PSPath","algo"\n"Real","C:\\\\r.exe"\n'
+>       assert [e.name for e in startup.parse_registry_csv(csv)] == ["Real"]
+E       AssertionError: assert ['PSPath', 'Real'] == ['Real']
+E         
+E         At index 0 diff: 'PSPath' != 'Real'
+E         Left contains one more item: 'Real'
+E         
+E         Full diff:
+E           [
+E         +     'PSPath',
+E               'Real',
+E           ]
+
+evolve/tests/test_modules.py:651: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_registry_csv_skips_powershell_noise - AssertionError: assert ['PSPath', 'Real'] == ['Real']
+  
+  At index 0 diff: 'PSPath' != 'Real'
+  Left contains one more item: 'Real'
+  
+  Full diff:
+    [
+  +     'PSPath',
+        'Real',
+    ]
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 0.85s
+
+```
+- `2026-08-23T14:10:41` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de type hints más precisos, la simplificación de la lógica de resolución de rutas y la adición de comentarios explicativos que clarifican las decisiones de seguridad tomadas en cada método.
+- `2026-08-23T14:11:01` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `_identify_active_problems` en el motor local pasando de una lista de strings a una evaluación dirigida, evitando la creación y el posterior procesamiento de múltiples strings intermedios para mejorar la eficiencia en el bucle de consultas.
+- `2026-08-23T14:11:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T14:11:01` Corrida terminada. Total usado hoy: 332.

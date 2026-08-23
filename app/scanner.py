@@ -33,8 +33,10 @@ class Suspicion:
     reason: str
     severity: str
 
-# Alias para funciones que evalúan un archivo y retornan una sospecha o None.
-# Reciben el archivo, su entrada de directorio opcional y el timestamp base del escaneo.
+# Alias para funciones que evalúan un archivo.
+# - path: Objeto Path del archivo a inspeccionar.
+# - entry: Opcional, objeto os.DirEntry del sistema de archivos para evitar re-escaneo.
+# - now_ts: Timestamp en formato float (Unix epoch) para cálculos de antigüedad.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
 # Alias para representar una colección de hallazgos.
