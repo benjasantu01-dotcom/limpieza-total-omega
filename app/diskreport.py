@@ -249,10 +249,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        path_obj = Path(os.fspath(directory))
-        if not path_obj.exists() or not path_obj.is_dir():
+        p_in = Path(os.fspath(directory))
+        # Validar que sea directorio físico y no un enlace que apunte fuera
+        if not p_in.exists() or not p_in.is_dir() or p_in.is_symlink():
             return
-        base_path = path_obj.resolve(strict=False)
+        base_path = p_in.resolve(strict=True)
         if skip_protected and is_protected_path(base_path):
             return
     except (OSError, RuntimeError, TypeError, ValueError):
@@ -340,8 +341,12 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        base = Path(os.fspath(directory)).resolve(strict=False)
-        if not base.is_dir() or (skip_protected and is_protected_path(base)):
+        p_base = Path(os.fspath(directory))
+        if not p_base.is_dir() or p_base.is_symlink():
+            return []
+            
+        base = p_base.resolve(strict=True)
+        if skip_protected and is_protected_path(base):
             return []
             
         sums: Dict[Path, int] = defaultdict(int)

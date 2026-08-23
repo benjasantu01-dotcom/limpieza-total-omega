@@ -787,3 +787,10 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-23T10:56:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-08-23T10:56:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T10:56:51` Corrida terminada. Total usado hoy: 256.
+- `2026-08-23T11:05:34` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-23T11:06:11` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: seguridad defensiva).
+- `2026-08-23T11:06:52` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-23T11:07:46` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-23T11:07:59` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha añadido una validación estricta de "traversal" en `walk_files` y `largest_folders` para asegurar que el `base_path` sea un directorio real y no un enlace simbólico o un punto de reparse que pueda evadir las restricciones de seguridad al resolverse, reforzando la protección contra fugas de contexto fuera de la ruta autorizada.
+- `2026-08-23T11:07:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T11:07:59` Corrida terminada. Total usado hoy: 260.
