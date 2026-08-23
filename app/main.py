@@ -1464,7 +1464,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 self.log(f"Error al intentar liberar proceso: {e}", "Memoria")
 
-        self.run_async(task)
+        self.run_async(task, check_safety=True)
 
     def on_drives_report(self) -> None:
         """Reporta el uso de espacio en todas las unidades locales."""
@@ -1754,3 +1754,4 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 if __name__ == "__main__":
     app = LimpiezaTotalOmegaApp()
     app.mainloop()
+

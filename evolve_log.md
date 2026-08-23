@@ -1424,3 +1424,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-23T04:04:34` ➖ Sin cambios en duplicates.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha robustecido el manejo de errores en `suggest_keeper` y `format_group`, añadiendo validaciones de tipo y estructura para prevenir fallos inesperados al manipular objetos `DuplicateGroup` potencialmente malformados o vacíos, manteniendo la integridad operativa ante entradas nulas o atípicas.
 - `2026-08-23T04:04:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T04:04:34` Corrida terminada. Total usado hoy: 96.
+- `2026-08-23T04:17:54` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-23T04:18:21` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-23T04:19:31` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `on_trim_process` y `on_save_settings` mediante la validación estricta de las entradas del usuario antes de que sean procesadas por la lógica de negocio, evitando excepciones innecesarias y asegurando que solo datos tipados (números positivos) lleguen a los módulos internos.
+- `2026-08-23T04:20:00` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente el `handle` de proceso para prevenir fugas de memoria o uso de punteros inválidos, e integré una verificación de excepciones más precisa en la apertura del proceso.
+- `2026-08-23T04:20:08` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-23T04:20:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T04:20:08` Corrida terminada. Total usado hoy: 100.

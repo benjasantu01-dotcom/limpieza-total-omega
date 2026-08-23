@@ -345,11 +345,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid) or target_pid == os.getpid():
         return False, "Operación denegada: PID fuera de rango o protegido."
 
-    proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
-    if not proc_handle: 
-        return False, "Acceso denegado al proceso (podría requerir privilegios elevados)."
-        
+    proc_handle = None
     try:
+        proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
+        if not proc_handle: 
+            return False, "Acceso denegado al proceso (podría requerir privilegios elevados)."
+            
         valid, reason = _is_safe_to_trim(proc_handle, target_pid)
         if not valid: 
             return False, reason or "Validación de proceso fallida."
