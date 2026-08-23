@@ -220,18 +220,21 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Inicia un escaneo recursivo desde un directorio base y retorna la lista completa de hallazgos.
     """
-    if not directory:
+    if not directory or str(directory).strip() == "":
         return []
         
     try:
         raw_path = Path(directory)
         if str(raw_path).startswith(("\\\\", "//")):
             return []
-        if not raw_path.is_dir() or not raw_path.exists():
+        if not raw_path.exists():
             return []
+        
         path_input: Path = raw_path.resolve(strict=True)
-        if is_protected_path(path_input):
+        
+        if not path_input.is_dir() or is_protected_path(path_input):
             return []
+            
     except (OSError, TypeError, ValueError, RuntimeError):
         return []
 

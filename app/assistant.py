@@ -250,7 +250,12 @@ def _is_safe_text_structure(text: str) -> bool:
     return True
 
 def _ensure_safe_text(text: Any) -> bool:
-    """Validación exhaustiva de integridad y seguridad para texto de entrada/salida."""
+    """
+    Validación de seguridad crítica: Verifica que el texto no contenga:
+    - Caracteres de control o de escape (evita inyecciones de terminal/log).
+    - Patrones de rutas (previene filtrado de estructura local).
+    - Longitud excesiva (previene DoS por procesamiento de strings grandes).
+    """
     if not isinstance(text, str) or not text:
         return False
     if len(text) > _MAX_TEXT_LENGTH:
@@ -473,7 +478,13 @@ def _call_gemini(
     api_key: str, 
     model: str
 ) -> Optional[str]:
-    """Invoca la API de Gemini enviando un prompt construido bajo estrictas políticas."""
+    """
+    Invoca la API de Gemini enviando un prompt construido bajo estrictas políticas:
+    1. Validaciones de esquema (API Key/Modelo) para evitar inyecciones.
+    2. Filtrado estricto del input de usuario y contexto con `_ensure_safe_text`.
+    3. Límites estrictos de payload y respuesta para evitar agotamiento de memoria/red.
+    4. El resultado final se vuelve a validar para garantizar que sea texto plano seguro.
+    """
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     # Validaciones defensivas de configuración
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None

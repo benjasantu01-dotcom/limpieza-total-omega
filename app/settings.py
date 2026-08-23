@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import tempfile
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec
@@ -287,25 +288,23 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         
-    temp_path = ruta.with_suffix(f"{ruta.suffix}.{os.getpid()}_{int(time.time())}.tmp")
-    for attempt in range(3):
-        try:
-            encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
-            if len(encoded_data) > MAX_SETTINGS_SIZE: return None
-            with open(temp_path, "wb") as f:
-                f.write(encoded_data)
-                f.flush()
-                os.fsync(f.fileno())
-            os.replace(temp_path, ruta)
-            _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
-            return ruta
-        except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
-            time.sleep(0.1 * (attempt + 1))
-            continue
-    if temp_path.exists():
-        try: temp_path.unlink()
-        except OSError: pass
-    return None
+    try:
+        encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+        if len(encoded_data) > MAX_SETTINGS_SIZE: return None
+        
+        with tempfile.NamedTemporaryFile("wb", dir=parent, delete=False) as tf:
+            tf.write(encoded_data)
+            tf.flush()
+            os.fsync(tf.fileno())
+            temp_name = tf.name
+            
+        os.replace(temp_name, ruta)
+        _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
+        return ruta
+    except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
+        if "temp_name" in locals() and os.path.exists(temp_name):
+            os.remove(temp_name)
+        return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     current = load(custom_base).copy()

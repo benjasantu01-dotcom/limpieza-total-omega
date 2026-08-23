@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 129 | 10 | 18 | 14 | 125 |
-| 2026-08-23 | 89 | 5 | 13 | 8 | 93 |
+| 2026-08-22 | 127 | 10 | 18 | 14 | 123 |
+| 2026-08-23 | 93 | 5 | 13 | 8 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **51**
-- manejo de errores y validación de entradas: **47**
-- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **50**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **38**
-- rendimiento: **37**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **21**
-- `assistant.py`: **21**
-- `settings.py`: **20**
+- `assistant.py`: **22**
+- `settings.py`: **21**
+- `duplicates.py`: **20**
 - `healthscore.py`: **19**
-- `scanner.py`: **18**
+- `scanner.py`: **19**
 - `diskreport.py`: **17**
 - `quarantine.py`: **17**
 - `browser.py`: **15**
 - `branding.py`: **15**
 - `organizer.py`: **12**
 - `safety.py`: **9**
-- `main.py`: **8**
-- `startup.py`: **4**
+- `main.py`: **7**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T09:04:54` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `assistant.py` mediante docstrings detallados en `_call_gemini` y `_ensure_safe_text`, clarificando el propósito de las validaciones de seguridad y los límites de procesamiento para facilitar el mantenimiento y la auditoría.
+- `2026-08-23T09:04:35` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación defensiva del comando antes de crear objetos `StartupEntry`, evitando posibles excepciones al intentar convertir cadenas mal formadas a rutas `Path`, y añadí un chequeo explícito para evitar procesar rutas que superen los límites de longitud o contengan caracteres inválidos antes de invocar `is_protected_path`.
+- `2026-08-23T09:04:10` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `save()` reemplazando la creación manual de archivos temporales por el uso del módulo `tempfile` de la librería estándar, garantizando operaciones atómicas seguras y un manejo de excepciones más limpio ante problemas de escritura.
+- `2026-08-23T09:03:42` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` validando explícitamente que la entrada no sea None ni una ruta vacía antes de procesarla, además de asegurar que las conversiones a `Path` y `resolve()` se realicen de forma defensiva para evitar excepciones no capturadas al inicio del escaneo.
 - `2026-08-23T08:54:03` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la verificación de espacio y la creación del identificador único en un bloque que previene estados inconsistentes, además de asegurar que la validación de `source_path` sea exhaustiva mediante una comprobación explícita de `is_file()` antes de cualquier operación de I/O.
 - `2026-08-23T08:53:31` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `stage_for_review` y `delete_reviewed` mediante una validación de parámetros más estricta (tipado y contenido) y el uso de `ensure_safe_to_modify` como medida de seguridad preventiva contra rutas maliciosas, evitando ejecuciones fallidas ante entradas inesperadas.
 - `2026-08-23T08:45:03` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_path` validando explícitamente los handles de procesos y manejando posibles errores de API antes de operar, evitando el uso de punteros nulos o estados inesperados.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T07:11:38` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_Validators.path` y `_Validators._is_safe_path` al forzar el uso de `resolve(strict=False)` antes de cualquier verificación, evitando errores de resolución en rutas inexistentes y bloqueando explícitamente caracteres de control y posibles inyecciones de directorios (via `..`) antes de que lleguen a `safety.py`.
 - `2026-08-23T07:02:25` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `process_entry` al verificar `is_safe_to_modify` antes de procesar cualquier entrada, asegurando que las comprobaciones de seguridad sean previas a cualquier lógica de navegación o escaneo heurístico, evitando además el acceso a rutas que podrían haber sido alteradas o ser malintencionadas.
 - `2026-08-23T07:01:31` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` al introducir una verificación de existencia de archivos "shadow" o colisiones en el sandbox antes de la operación de copia, además de asegurar que la validación de integridad (`_validate_isolation_request`) se ejecute inmediatamente antes de mover el archivo para minimizar condiciones de carrera.
-- `2026-08-23T06:52:56` **organizer.py** (seguridad defensiva): Se reforzó la seguridad en `stage_for_review` y `delete_reviewed` para prevenir ataques de *path traversal* mediante la validación estricta de que los archivos destino y sus padres inmediatos se mantengan dentro del ámbito del directorio de revisión (`is_relative_to`), evitando cualquier manipulación fuera de la zona segura definida por el usuario.
-- `2026-08-23T06:52:46` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `_is_safe_to_trim` para verificar que la ruta del ejecutable no sea una unión (junction) o punto de reparse, previniendo así la navegación accidental fuera de las estructuras esperadas durante la inspección de procesos.
-- `2026-08-23T06:52:18` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo `ensure_safe_to_modify` antes de cualquier operación destructiva o de movimiento en las funciones `on_stage`, `on_delete_reviewed`, `on_quarantine_findings` y `on_restore_quarantine`, centralizando la validación antes de ejecutar la lógica de E/S.
-- `2026-08-23T06:51:12` **healthscore.py** (seguridad defensiva): Mejoré la robustez de `SystemMetrics` ante valores `NaN` o `Inf` durante la serialización o creación, reforzando la seguridad defensiva mediante una validación estricta y explícita en `__post_init__` para garantizar que ningún cálculo numérico derive en estados no definidos.
