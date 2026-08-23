@@ -166,7 +166,7 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
-_SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
+_SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
     "disco": lambda m: score_disk(m.disk_free_percent),
     "memoria": lambda m: score_memory(m.memory_available_percent),
@@ -174,6 +174,10 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "duplicados": lambda m: score_duplicates(m.duplicate_mb),
     "arranque": lambda m: score_startup(m.startup_count)
 }
+
+_PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio]]]] = [
+    (area, weight, _SCORER_MAP[area]) for area, weight in _WEIGHT_ITEMS_INT if area in _SCORER_MAP
+]
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
@@ -190,10 +194,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     metric_ratios: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
     
-    for area, weight in _WEIGHT_ITEMS_INT:
-        scorer = _SCORERS.get(area)
-        if scorer is None: continue
-        
+    for area, weight, scorer in _PREPARED_SCORERS:
         try:
             ratio = scorer(metrics)
             if not math.isfinite(ratio): ratio = 0.0

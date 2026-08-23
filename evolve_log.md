@@ -719,3 +719,10 @@ FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash 
 - `2026-08-23T09:45:54` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó `_hex_to_rgb` eliminando la llamada innecesaria a `HEX_TO_KEY` y los bloques `try/except` pesados, reemplazándolos por una lógica de extracción directa de tuplas basada en los índices de la cadena hexadecimal, lo que reduce la carga computacional en renderizados frecuentes.
 - `2026-08-23T09:45:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T09:45:54` Corrida terminada. Total usado hoy: 228.
+- `2026-08-23T09:54:14` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-23T09:54:38` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-23T09:55:03` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-23T09:55:27` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente al cachear los resultados de `stat()` para evitar múltiples llamadas al sistema por archivo, y eliminé redundancias al consolidar las comprobaciones de seguridad (`is_safe_to_modify`) dentro del flujo de recolección para evitar llamadas repetitivas sobre la misma instancia de `Path`.
+- `2026-08-23T09:55:36` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cálculo de `compute_score` cacheando las referencias de los scorers en una lista de tuplas para evitar múltiples llamadas a `dict.get()` por cada iteración, mejorando el rendimiento en el hot path.
+- `2026-08-23T09:55:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T09:55:36` Corrida terminada. Total usado hoy: 232.

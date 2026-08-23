@@ -67,7 +67,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Retorna el hash en formato hexadecimal o None si el acceso es denegado o falla.
     """
     if path is None: return None
-    path_obj = Path(path).resolve()
+    path_obj = Path(path)
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
         digest = hashlib.sha256()
@@ -82,7 +82,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash de los primeros N bytes para filtrado heurístico rápido."""
     if path is None: return None
-    path_obj = Path(path).resolve()
+    path_obj = Path(path)
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
         with open(path_obj, "rb") as f:
@@ -103,7 +103,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if p is None: continue
         try:
-            target = Path(p).resolve()
+            target = Path(p)
             if target.is_file() and not is_protected_path(target) and is_safe_to_modify(target):
                 st = target.stat()
                 if st.st_size > 0:
@@ -134,25 +134,25 @@ def _collect_candidates(
                         if getattr(entry_stat, 'st_reparse_tag', 0) != 0:
                             continue
                             
-                        entry_path = Path(entry.path).resolve()
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
-                            
                         if entry.is_dir(follow_symlinks=False):
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
-                                visited_device_inodes.add(device_inode)
-                                _scan(entry_path)
+                                entry_path = Path(entry.path)
+                                if not (skip_protected and is_protected_path(entry_path)) and is_safe_to_modify(entry_path):
+                                    visited_device_inodes.add(device_inode)
+                                    _scan(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            if entry_stat.st_size >= min_size and is_safe_to_modify(entry_path):
-                                temp_groups[int(entry_stat.st_size)].append(entry_path)
+                            if entry_stat.st_size >= min_size:
+                                entry_path = Path(entry.path)
+                                if is_safe_to_modify(entry_path):
+                                    temp_groups[int(entry_stat.st_size)].append(entry_path)
                     except (OSError, PermissionError, FileNotFoundError): continue
         except (OSError, PermissionError, FileNotFoundError): pass
 
     if directories is not None:
         for item in directories:
             if item:
-                root_path = Path(item).resolve()
+                root_path = Path(item)
                 if root_path.is_dir() and not is_protected_path(root_path) and is_safe_to_modify(root_path):
                     _scan(root_path)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
@@ -171,10 +171,8 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Pipeline de confirmación: reduce candidatos usando hash parcial y luego hash completo."""
     confirmed_groups: List[DuplicateGroup] = []
     
-    # 1. Filtro mediante hash parcial (ahorro de E/S en archivos no duplicados)
     partial_results = _refine_by_hash(paths, partial_hash)
     
-    # 2. Solo los que coinciden en el hash parcial pasan al hash completo
     for partial_candidates in partial_results.values():
         full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
@@ -209,7 +207,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         if not p: continue
         try:
-            p_obj = Path(p).resolve()
+            p_obj = Path(p)
             if p_obj.is_file() and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
                 keepers.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
