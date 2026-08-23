@@ -1052,3 +1052,10 @@ assert not {'replace'}
 - `2026-08-23T13:00:18` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-23T13:00:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T13:00:18` Corrida terminada. Total usado hoy: 304.
+- `2026-08-23T13:08:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-23T13:08:40` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `drive_usage` capturando errores específicos en las llamadas a `os.scandir` y `shutil.disk_usage` para evitar cierres inesperados, y añadí validación de entrada en los `heappush/heapreplace` de `_collect_summary_data` para prevenir errores de comparación si los tamaños fueran inválidos.
+- `2026-08-23T13:09:04` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `reclaimable_bytes` ante entradas inválidas o parcialmente nulas, validando explícitamente la integridad de los datos antes de operar y evitando excepciones inesperadas durante el procesamiento de grupos.
+- `2026-08-23T13:09:28` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y los validadores de `SystemMetrics` mediante la captura explícita de errores de desbordamiento aritmético y el uso de un manejo de estados más conservador ante entradas inesperadas.
+- `2026-08-23T13:10:18` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejora la robustez del manejo de entradas en `on_trim_process` y `on_restore_quarantine` mediante validaciones de tipo y estado más explícitas, previniendo errores de ejecución si los widgets son manipulados o si el usuario ingresa datos inesperados, siguiendo el enfoque de manejo de errores y validación de parámetros.
+- `2026-08-23T13:10:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T13:10:18` Corrida terminada. Total usado hoy: 308.

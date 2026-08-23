@@ -209,7 +209,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         return None
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not p: continue
+        if p is None: continue
         try:
             p_obj = Path(p)
             if p_obj.is_file() and is_safe_to_modify(p_obj):

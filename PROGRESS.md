@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 220
 
@@ -16,14 +16,14 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 87 | 8 | 14 | 11 | 80 |
-| 2026-08-23 | 126 | 8 | 20 | 10 | 140 |
+| 2026-08-22 | 85 | 8 | 13 | 10 | 80 |
+| 2026-08-23 | 129 | 8 | 20 | 11 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **45**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **45**
 - rendimiento: **41**
 - robustez ante casos límite: **38**
 
@@ -31,21 +31,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **21**
 - `memory.py`: **21**
-- `scanner.py`: **20**
+- `duplicates.py`: **20**
 - `settings.py`: **19**
-- `duplicates.py`: **19**
+- `scanner.py`: **19**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
-- `diskreport.py`: **16**
+- `healthscore.py`: **18**
+- `diskreport.py`: **17**
 - `branding.py`: **15**
 - `browser.py`: **13**
 - `organizer.py`: **13**
-- `safety.py`: **7**
 - `startup.py`: **7**
 - `main.py`: **7**
+- `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T13:09:28` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y los validadores de `SystemMetrics` mediante la captura explícita de errores de desbordamiento aritmético y el uso de un manejo de estados más conservador ante entradas inesperadas.
+- `2026-08-23T13:09:04` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `reclaimable_bytes` ante entradas inválidas o parcialmente nulas, validando explícitamente la integridad de los datos antes de operar y evitando excepciones inesperadas durante el procesamiento de grupos.
+- `2026-08-23T13:08:40` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` capturando errores específicos en las llamadas a `os.scandir` y `shutil.disk_usage` para evitar cierres inesperados, y añadí validación de entrada en los `heappush/heapreplace` de `_collect_summary_data` para prevenir errores de comparación si los tamaños fueran inválidos.
 - `2026-08-23T12:59:39` **assistant.py** (manejo de errores y validación de entradas): Reforcé la validación de `SystemContext` en `build_context` para prevenir la inyección de tipos de datos inesperados en las métricas, sustituyendo el uso de `getattr` directo por una validación estricta de tipos tras la conversión, y mejorando el manejo de errores en `_validate_and_assign` para evitar estados inconsistentes en el objeto `context`.
 - `2026-08-23T11:37:31` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante el uso de `os.path.normpath` y una verificación explícita contra rutas UNC, previniendo el procesamiento accidental de recursos compartidos de red que podrían causar bloqueos o comportamientos inesperados en el escaneo de inicio.
 - `2026-08-23T11:26:56` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` implementando una validación explícita para asegurar que el archivo temporal creado en el sandbox reside estrictamente dentro del directorio de cuarentena antes de cualquier operación de I/O, previniendo ataques de escalada de privilegios mediante paths manipulados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T10:46:02` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de espacio en disco más precisas y manejo explícito de excepciones durante la iteración, previniendo fallos ante archivos que desaparecen (condiciones de carrera) o volúmenes no alcanzables.
 - `2026-08-23T10:45:38` **memory.py** (robustez ante casos límite): Se ha implementado una validación de existencia de ruta usando `os.path.realpath` en `_is_safe_to_trim` para detectar de forma robusta enlaces simbólicos y puntos de reparse, evitando seguir rutas que el usuario no debería manipular en el contexto de gestión de memoria.
 - `2026-08-23T10:37:01` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios en la UI (`_task_lock` y `_tasks_running`) para evitar condiciones de carrera si el usuario dispara múltiples análisis concurrentes, asegurando que el estado visual de la barra de progreso y la disponibilidad de botones sea siempre consistente y no se bloquee.
-- `2026-08-23T10:36:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `SystemMetrics.is_finite` y `compute_score` frente a casos donde las métricas podrían contener valores `NaN` o `Inf` (especialmente útil si algún módulo fuente falla al calcular divisiones), añadiendo chequeos explícitos para asegurar que `accumulated_points` no se vea afectado por valores no finitos, protegiendo la integridad del cálculo final.
-- `2026-08-23T10:35:26` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante errores de entrada y condiciones de carrera en el sistema de archivos al añadir una verificación explícita mediante `is_dir()` antes de iniciar el iterador `os.scandir` y asegurando que las rutas base resueltas no sean nulas ni inválidas.
-- `2026-08-23T10:26:18` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` al reemplazar `Path.expanduser().resolve()` por una secuencia de validación defensiva que evita el colapso ante rutas mal formadas o caracteres inválidos en el sistema de archivos.

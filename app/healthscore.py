@@ -107,10 +107,10 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        for val in self.__dict__.values():
-            if isinstance(val, (int, float)) and not math.isfinite(float(val)):
-                return False
-        return True
+        try:
+            return all(math.isfinite(float(v)) for v in self.__dict__.values() if isinstance(v, (int, float)))
+        except (ValueError, TypeError):
+            return False
 
 @dataclass
 class HealthResult:
@@ -124,8 +124,11 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    val = float(value)
-    return max(low, min(high, val)) if math.isfinite(val) else low
+    try:
+        val = float(value)
+        return max(low, min(high, val)) if math.isfinite(val) else low
+    except (TypeError, ValueError):
+        return low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     try:
@@ -185,8 +188,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     try:
         metrics.validate()
         if not metrics.is_finite():
-            return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos o no numéricos."])
-    except Exception as e:
+            return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos."])
+    except (ValueError, TypeError, OverflowError) as e:
         return HealthResult(0, "F", {}, [f"Error al procesar métricas: {str(e)}"])
 
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -198,12 +201,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             ratio = scorer(metrics)
             if not math.isfinite(ratio): ratio = 0.0
             metric_ratios[area] = ratio
-            weighted_points = round(ratio * weight)
-            points_val = float(weighted_points)
-            final_points = _clamp(points_val, 0.0, float(weight)) if math.isfinite(points_val) else 0.0
-            metric_breakdown[area] = int(final_points)
+            weighted_points = round(ratio * float(weight))
+            metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
             accumulated_points += metric_breakdown[area]
-        except Exception:
+        except (ValueError, TypeError, OverflowError):
             metric_breakdown[area] = 0
             continue
     
@@ -212,7 +213,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         try:
             if rule.check(metrics, metric_ratios.get(rule.area, 0.0)):
                 recommendations.append(rule.message_factory(metrics))
-        except Exception:
+        except (ValueError, TypeError, AttributeError):
             continue
             
     if metrics.quarantined_count > 0:
