@@ -238,7 +238,6 @@ def validate(raw_values: Any) -> AppSettings:
             validated = _VALIDATOR_MAP[key](key, val)
             if validated is not None: config[key_str] = validated # type: ignore
     
-    # Asegurar que todas las llaves requeridas existan, incluso si el JSON era parcial
     for k in DEFAULTS:
         if k not in config:
             config[k] = DEFAULTS[k] # type: ignore
@@ -278,6 +277,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     parent = ruta.parent.resolve(strict=False)
     
     if is_protected_path(str(ruta)) or not _Validators._is_safe_path(str(parent)):
+        return None
+    
+    if ruta.exists() and not os.access(ruta, os.W_OK):
         return None
     
     if not parent.exists():

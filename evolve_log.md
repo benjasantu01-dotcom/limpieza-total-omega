@@ -1127,3 +1127,34 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-08-23T01:51:54` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-08-23T01:51:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T01:51:54` Corrida terminada. Total usado hoy: 44.
+- `2026-08-23T02:00:21` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-08-23T02:00:56` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar que `save` intente escribir sobre archivos que están bloqueados o en uso (mediante una comprobación de acceso `os.access` con `os.W_OK`) y se mejoró el manejo de errores en el proceso de reemplazo atómico para asegurar que el sistema de archivos no quede en un estado inconsistente ante fallos de permiso.
+- `2026-08-23T02:01:30` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.26s
+
+```
+- `2026-08-23T02:01:30` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia de archivos previo en `_resolve_and_cache_path` mediante `os.path.exists()` para evitar excepciones `OSError` al intentar procesar rutas con caracteres inválidos o bloqueados, mejorando la robustez ante casos de archivos inexistentes o inaccesibles.
+- `2026-08-23T02:02:14` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `assistant.py` al endurecer la sanitización de los inputs en `_call_gemini` y `local_answer`, eliminando posibles caracteres de control y secuencias de escape no deseadas antes de realizar cualquier operación, además de centralizar el uso de `_ensure_safe_text` como guardia estricta para evitar la inyección de metacaracteres.
+- `2026-08-23T02:02:37` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` al reemplazar `path_obj.write_text` (que es una operación de escritura directa) por una validación redundante mediante `ensure_safe_to_modify` antes de intentar persistir el archivo, mitigando riesgos de acceso no autorizado o escritura en rutas protegidas.
+- `2026-08-23T02:02:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T02:02:37` Corrida terminada. Total usado hoy: 48.

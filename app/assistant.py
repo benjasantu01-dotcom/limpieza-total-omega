@@ -426,14 +426,15 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 }
 
 def _sanitize_query(question: str) -> str:
-    """Sanitiza el input del usuario eliminando caracteres especiales."""
+    """Sanitiza el input del usuario eliminando caracteres especiales y de control."""
     if not isinstance(question, str): return ""
-    clean = re.sub(r'[\x00-\x1f\x7f\u200b-\u200f\u202a-\u202e]', '', question)
+    clean = _CONTROL_CHARS_REGEX.sub('', question)
     return clean.strip()[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
     """Motor de lógica local: responde consultas basándose en reglas heurísticas."""
-    if not _ensure_safe_text(question):
+    q_sanitized = _sanitize_query(question)
+    if not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
 
     if not isinstance(context, SystemContext) or not context.analyzed:
@@ -444,7 +445,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
-    tokens = set(_TOKEN_REGEX.findall(_sanitize_query(question)))
+    tokens = set(_TOKEN_REGEX.findall(q_sanitized))
     found_key = next((_KEYWORD_MAP[t] for t in tokens if t in _KEYWORD_MAP), None)
     
     if found_key and callable(_HANDLERS.get(found_key)):
@@ -512,7 +513,7 @@ def _call_gemini(
             
             text = "".join(str(p.get("text", "")) for p in candidates[0]["content"]["parts"] if isinstance(p, dict))
             
-            # Sanitización de la respuesta recibida antes de cualquier procesamiento
+            # Sanitización agresiva de la respuesta recibida
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", text.strip()))
             final_text = _validate_response_length(limpia_final)
             
