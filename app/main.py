@@ -33,7 +33,7 @@ que consume el asistente. El estado de análisis pesados se cachea por sesión.
 Se emplea invalidación selectiva para evitar procesado redundante en disco.
 Se optimizan eventos de redibujo UI y se utiliza gestión de colas de eventos 
 para evitar saturación del hilo principal durante el logueo masivo.
-Carga perezosa de pestañas implementada para acelerar el inicio de la app.
+Carga perezosa de pestañas implementada para alertar el inicio de la app.
 
 Instalar dependencias:
     pip install customtkinter
@@ -1209,6 +1209,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Verificación de seguridad antes de la operación destructiva/movimiento
+            safety.ensure_safe_to_modify(Path(".").resolve())
             self.set_status("Moviendo a revisión...")
             dest = stage_for_review(aptos)
             self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
@@ -1226,12 +1228,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación de seguridad previa al borrado
-            base_dir = Path(".").resolve()
-            if not base_dir.exists() or not safety.is_safe_to_modify(base_dir):
-                self.log("Error: La carpeta de revisión no es accesible o es insegura.", "Limpieza")
-                return
-            
+            # Verificación de seguridad antes de la operación destructiva/borrado
+            safety.ensure_safe_to_modify(Path(".").resolve())
             try:
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()
@@ -1311,6 +1309,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Verificación de seguridad antes de mover archivos a cuarentena
+            safety.ensure_safe_to_modify(Path(".").resolve())
             self.set_status("Aislando archivos...")
             aislados = 0
             for item_s in aptos:
@@ -1350,6 +1350,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Verificación de seguridad antes de restauración
+            safety.ensure_safe_to_modify(Path(".").resolve())
             if not quarantine.item_exists(raw_id):
                 self.log(f"Error: El ID '{raw_id}' no existe.", "Cuarentena")
                 return
@@ -1386,6 +1388,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Verificación de seguridad antes de borrar
+            safety.ensure_safe_to_modify(Path(".").resolve())
             borrados = quarantine.purge_all()
             self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
 
@@ -1567,6 +1571,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Verificación de seguridad antes de aislar duplicados
+            safety.ensure_safe_to_modify(Path(".").resolve())
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
             for ruta in aptos:
@@ -1754,4 +1760,3 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 if __name__ == "__main__":
     app = LimpiezaTotalOmegaApp()
     app.mainloop()
-

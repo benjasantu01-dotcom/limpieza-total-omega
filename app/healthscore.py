@@ -125,7 +125,8 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    return max(low, min(high, value)) if math.isfinite(value) else low
+    val = float(value)
+    return max(low, min(high, val)) if math.isfinite(val) else low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     try:

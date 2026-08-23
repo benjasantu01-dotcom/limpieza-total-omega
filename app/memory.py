@@ -303,11 +303,7 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
-    Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet:
-    1. Verifica que el proceso no haya muerto (exit code).
-    2. Valida la identidad del proceso (PID del handle).
-    3. Inspecciona la ruta para evitar ejecución sobre binarios protegidos.
-    4. Detecta caracteres ocultos (RTL) que puedan indicar ofuscación de path.
+    Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
@@ -327,6 +323,10 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if not path or not os.path.exists(path): 
             return False, "No se pudo verificar la ubicación del ejecutable."
         
+        # Validación defensiva contra puntos de reparse (junctions)
+        if os.path.islink(path):
+            return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse."
+        
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
@@ -341,11 +341,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Solicita al sistema la liberación de memoria residente (Working Set).
-    
-    Esta función implementa un guardado estricto mediante la apertura del proceso
-    con permisos limitados y una serie de chequeos de integridad ejecutados por 
-    `_is_safe_to_trim`. Si la ruta del proceso es protegida o su identidad es 
-    dudosa, la operación es rechazada explícitamente.
     """
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
