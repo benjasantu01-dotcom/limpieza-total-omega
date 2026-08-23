@@ -103,14 +103,6 @@ _PALETTE_RAW: Final[dict[str, HexColor]] = {
 }
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_RAW)
 
-# PALETTE_RGB: Caché pre-calculada de la paleta en formato tupla RGB
-PALETTE_RGB: Final[Mapping[str, RGBTuple]] = MappingProxyType({
-    k: (int(v[1:3], 16), int(v[3:5], 16), int(v[5:7], 16)) for k, v in _PALETTE_RAW.items()
-})
-
-# HEX_TO_KEY: Mapa inverso para optimizar búsquedas de claves a partir de valores HEX
-HEX_TO_KEY: Final[Mapping[HexColor, str]] = MappingProxyType({v: k for k, v in _PALETTE_RAW.items()})
-
 # FONT_SIZES: Definición de tamaños de fuente aplicados en la jerarquía visual
 FONT_SIZES: FontSizesDict = {
     "display": 46,
@@ -255,15 +247,9 @@ def bar(percent: Union[float, int, None], width: int = 24,
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """Convierte un color hexadecimal (#RRGGBB) a una tupla de enteros RGB."""
-    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
-        return (0, 0, 0)
-    
-    if (key := HEX_TO_KEY.get(value)):
-        return PALETTE_RGB.get(key, (0, 0, 0))
-        
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except (ValueError, IndexError):
+    except (ValueError, IndexError, AttributeError):
         return (0, 0, 0)
 
 @lru_cache(maxsize=64)

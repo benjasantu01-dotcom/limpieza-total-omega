@@ -126,8 +126,11 @@ def _collect_candidates(
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
+    processed_dirs: set[Path] = set()
 
     def _scan(current_dir: Path) -> None:
+        if current_dir in processed_dirs: return
+        processed_dirs.add(current_dir)
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
@@ -154,7 +157,7 @@ def _collect_candidates(
         except (OSError, PermissionError, FileNotFoundError): pass
 
     if directories is not None:
-        for item in directories:
+        for item in set(directories):
             if item:
                 root_path = Path(item)
                 if root_path.is_dir() and not is_protected_path(root_path) and is_safe_to_modify(root_path):

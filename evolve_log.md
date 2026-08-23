@@ -1146,3 +1146,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T14:11:01` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el cálculo de `_identify_active_problems` en el motor local pasando de una lista de strings a una evaluación dirigida, evitando la creación y el posterior procesamiento de múltiples strings intermedios para mejorar la eficiencia en el bucle de consultas.
 - `2026-08-23T14:11:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T14:11:01` Corrida terminada. Total usado hoy: 332.
+- `2026-08-23T14:19:34` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-23T14:20:08` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de colores RGB en `_hex_to_rgb` eliminando la búsqueda en `HEX_TO_KEY` (un diccionario extra) y delegando la lógica a una operación aritmética directa, reduciendo la presión sobre la memoria y acelerando el acceso en un punto crítico llamado frecuentemente por las funciones de renderizado.
+- `2026-08-23T14:20:31` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-23T14:20:59` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `summarize` y `_collect_summary_data` reemplazando la lógica de filtrado manual de top files por `heapq.nlargest` sobre un generador, eliminando el overhead de comparaciones repetitivas y mejorando la legibilidad del bucle principal.
+- `2026-08-23T14:21:08` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el método `_collect_candidates` para evitar redundancias en el recorrido del sistema de archivos al pre-filtrar las rutas de entrada mediante un `set` y evitar llamadas repetidas a `is_safe_to_modify` en nodos ya procesados, reduciendo así la carga de I/O y el tiempo de CPU en directorios grandes.
+- `2026-08-23T14:21:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T14:21:08` Corrida terminada. Total usado hoy: 336.

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 218
 
@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 72 | 6 | 11 | 7 | 76 |
-| 2026-08-23 | 145 | 9 | 24 | 12 | 142 |
+| 2026-08-22 | 70 | 6 | 10 | 7 | 75 |
+| 2026-08-23 | 148 | 9 | 24 | 12 | 143 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **35**
-- rendimiento: **33**
+- rendimiento: **36**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
 - `assistant.py`: **21**
+- `duplicates.py`: **21**
+- `memory.py`: **21**
 - `scanner.py`: **20**
-- `duplicates.py`: **20**
-- `quarantine.py`: **19**
 - `healthscore.py`: **18**
+- `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `settings.py`: **17**
-- `diskreport.py`: **17**
-- `branding.py`: **15**
+- `branding.py`: **16**
 - `organizer.py`: **14**
 - `browser.py`: **13**
 - `main.py`: **8**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T14:21:08` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` para evitar redundancias en el recorrido del sistema de archivos al pre-filtrar las rutas de entrada mediante un `set` y evitar llamadas repetidas a `is_safe_to_modify` en nodos ya procesados, reduciendo así la carga de I/O y el tiempo de CPU en directorios grandes.
+- `2026-08-23T14:20:59` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` y `_collect_summary_data` reemplazando la lógica de filtrado manual de top files por `heapq.nlargest` sobre un generador, eliminando el overhead de comparaciones repetitivas y mejorando la legibilidad del bucle principal.
+- `2026-08-23T14:20:08` **branding.py** (rendimiento): Optimicé el cálculo de colores RGB en `_hex_to_rgb` eliminando la búsqueda en `HEX_TO_KEY` (un diccionario extra) y delegando la lógica a una operación aritmética directa, reduciendo la presión sobre la memoria y acelerando el acceso en un punto crítico llamado frecuentemente por las funciones de renderizado.
 - `2026-08-23T14:11:01` **assistant.py** (rendimiento): Optimicé el cálculo de `_identify_active_problems` en el motor local pasando de una lista de strings a una evaluación dirigida, evitando la creación y el posterior procesamiento de múltiples strings intermedios para mejorar la eficiencia en el bucle de consultas.
 - `2026-08-23T14:09:48` **scanner.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de los callbacks de heurísticas, eliminando ambigüedades en la firma de `SuspicionCheck` para que el mantenimiento futuro sea seguro.
 - `2026-08-23T14:00:40` **safety.py** (legibilidad y documentación): Mejoré la documentación de `ensure_safe_to_modify` y otras funciones críticas con docstrings que detallan los estados de error y las precondiciones, facilitando el mantenimiento y la comprensión de las reglas de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T13:40:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos de retorno explícitos en los docstrings y refinando la descripción de las funciones de alto nivel para facilitar la auditoría de seguridad y la comprensión de los algoritmos de recolección de datos.
 - `2026-08-23T13:40:31` **browser.py** (legibilidad y documentación): Documenté con precisión los parámetros y el comportamiento de las funciones de navegación de archivos y recursión, clarificando las expectativas de seguridad y el manejo de excepciones para mejorar la mantenibilidad.
 - `2026-08-23T13:39:25` **assistant.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `assistant.py` mediante docstrings detallados en las funciones de procesamiento de lenguaje natural y el uso de tipos de datos, clarificando los límites de responsabilidad de cada motor.
-- `2026-08-23T13:29:27` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `process_entry` y `scan_directory` aplicando validación estricta de rutas y tipos, asegurando que cualquier entrada `None` o ruta malformada se descarte mediante verificaciones defensivas explícitas antes de cualquier operación.
-- `2026-08-23T13:19:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y `restore_item` al centralizar y reforzar la validación de rutas y el manejo de excepciones de E/S, evitando que estados inconsistentes del sistema de archivos bloqueen la ejecución del bucle.
-- `2026-08-23T13:19:23` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas (tipo, existencia y limpieza) antes de realizar operaciones de disco, evitando el procesamiento de rutas potencialmente corruptas.

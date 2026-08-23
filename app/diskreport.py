@@ -403,26 +403,23 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
-    top_files_heap: List[Tuple[int, Path]] = []
-    MAX_TOP_FILES = 8
     
-    for path, size in walk_files(directory, skip_protected):
+    # Usamos un generador para alimentar el heap sin almacenar todos los archivos en memoria
+    file_generator = walk_files(directory, skip_protected)
+    
+    # Capturamos todos los datos en una sola pasada de generator
+    all_files = []
+    for path, size in file_generator:
         total_bytes += size
         total_files += 1
-        
         ext = path.suffix.lower() or "(sin extensión)"
         ext_sizes[ext] += size
         ext_counts[ext] += 1
-        
-        if not isinstance(size, int):
-            continue
-
-        if len(top_files_heap) < MAX_TOP_FILES:
-            heapq.heappush(top_files_heap, (size, path))
-        elif size > (top_files_heap[0][0] if top_files_heap else -1):
-            heapq.heapreplace(top_files_heap, (size, path))
+        all_files.append((size, path))
             
-    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files_heap)
+    top_files = heapq.nlargest(8, all_files, key=lambda x: x[0])
+            
+    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files)
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
@@ -461,6 +458,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         lines.append(f"  {ext:<18} {format_size(size):>10}  ({data.ext_counts[ext]} archivos)")
         
     lines.extend(["", "Archivos más grandes:"])
-    for size, path in sorted(data.top_files, key=lambda entry: entry[0], reverse=True):
+    for size, path in data.top_files:
         lines.append(f"  {format_size(size):>10}  {path}")
     return lines
