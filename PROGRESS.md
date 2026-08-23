@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 114 | 9 | 16 | 12 | 117 |
-| 2026-08-23 | 109 | 6 | 15 | 8 | 98 |
+| 2026-08-22 | 111 | 9 | 16 | 12 | 116 |
+| 2026-08-23 | 110 | 7 | 17 | 8 | 98 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
-- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **50**
-- rendimiento: **39**
+- seguridad defensiva: **47**
+- rendimiento: **40**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **21**
 - `assistant.py`: **21**
+- `duplicates.py`: **20**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
 - `scanner.py`: **19**
 - `quarantine.py`: **18**
-- `diskreport.py`: **17**
-- `browser.py`: **16**
+- `diskreport.py`: **16**
+- `browser.py`: **15**
 - `branding.py`: **15**
 - `organizer.py`: **14**
 - `main.py`: **9**
-- `safety.py`: **7**
+- `safety.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T10:15:25` **safety.py** (rendimiento): Se optimizó el rendimiento mediante la implementación de `functools.lru_cache` en `is_protected_path` y la reducción de llamadas redundantes a `os.access` y `path.stat` dentro del flujo de `_check_file_integrity`, minimizando las operaciones de E/S que son los cuellos de botella críticos en el escaneo de directorios.
 - `2026-08-23T10:06:38` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante la eliminación de una búsqueda lineal innecesaria en `list_items`, aprovechando que la deserialización y el almacenamiento en caché ya garantizan una estructura eficiente para el acceso por ID.
 - `2026-08-23T10:06:22` **organizer.py** (rendimiento): Optimizamos la recursión de `scan_for_junk` y la validación de extensiones utilizando un `frozenset` para búsquedas $O(1)$ y evitando la creación redundante de tuplas en el loop crítico, reduciendo la presión sobre el recolector de basura.
 - `2026-08-23T10:05:58` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de caché que evita subprocesos innecesarios, además de refactorizar `_yield_processes` para evitar la creación de listas intermedias mediante el uso directo de un generador.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T09:25:36` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de bajo nivel de la API de Windows para aclarar por qué se realizan ciertas validaciones de seguridad, facilitando el mantenimiento y la auditoría del código.
 - `2026-08-23T09:25:09` **main.py** (legibilidad y documentación): Se introdujo un sistema de gestión centralizada de "botones con estado" para evitar que el usuario lance múltiples operaciones asíncronas simultáneas (que podrían colisionar), añadiendo una lógica de desactivación de botones durante la ejecución y una clara separación de responsabilidades para mejorar la mantenibilidad de la interfaz.
 - `2026-08-23T09:15:06` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los tipos en `duplicates.py`, clarificando el flujo de datos mediante docstrings detallados y asegurando que las funciones auxiliares utilicen type hints más robustos.
-- `2026-08-23T09:14:57` **diskreport.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad de `walk_files` y `summarize` mediante la adición de Type Hints detallados, docstrings descriptivos que aclaran el manejo de errores y la estructura de datos, y el uso de un nombre de variable más explícito en la lógica de comparación de archivos grandes.

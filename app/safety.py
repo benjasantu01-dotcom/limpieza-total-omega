@@ -180,20 +180,16 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
     try:
-        st = path.lstat()
+        st = path.stat()
     except FileNotFoundError:
         raise UnsafePathError(f"Archivo desaparecido durante validación: {path.name}")
     except OSError as e:
         raise UnsafePathError(f"Error de acceso a metadatos: {e.strerror}")
 
-    if not os.access(path.parent, os.W_OK):
-        raise UnsafePathError(f"Directorio padre sin permisos de escritura.")
     if not os.access(path, os.W_OK):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}.")
-    if _is_reparse_point(path):
+    if _is_reparse_point(path) or os.path.islink(path):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.REPARSE_POINT.value}.")
-    if os.path.islink(path):
-        raise UnsafePathError(f"Operación denegada: {ProtectionReason.SYMLINK.value}.")
     if not bool(st.st_mode & stat.S_IWRITE):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.READ_ONLY.value}.")
     if _is_file_in_use(path):

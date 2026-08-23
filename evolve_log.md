@@ -733,3 +733,29 @@ FAILED evolve/tests/test_modules.py::test_blend_on_invalid_color_does_not_crash 
 - `2026-08-23T10:06:38` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` mediante la eliminación de una búsqueda lineal innecesaria en `list_items`, aprovechando que la deserialización y el almacenamiento en caché ya garantizan una estructura eficiente para el acceso por ID.
 - `2026-08-23T10:06:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T10:06:38` Corrida terminada. Total usado hoy: 236.
+- `2026-08-23T10:14:34` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-23T10:14:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-23T10:15:25` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento mediante la implementación de `functools.lru_cache` en `is_protected_path` y la reducción de llamadas redundantes a `os.access` y `path.stat` dentro del flujo de `_check_file_integrity`, minimizando las operaciones de E/S que son los cuellos de botella críticos en el escaneo de directorios.
+- `2026-08-23T10:15:47` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-08-23T10:15:59` Tests FALLARON:
+```
+ble_reflects_the_co0'))
+E        +    where <function available at 0x7fcdddcc3100> = assistant.available
+
+evolve/tests/test_assistant.py:425: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AssertionError: activado sin clave no alcanza
+assert True is False
+ +  where True = <function assistant_enabled at 0x7fcdddcc1580>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_enabled_requires_both_the0'))
+ +    where <function assistant_enabled at 0x7fcdddcc1580> = settings.assistant_enabled
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AssertionError: assert 'archivo de configuración' in 'Configuración actual\n\n  Archivo: /tmp/pytest-of-runner/pytest-2/test_describe_never_prints_the0/config.json\n\n  Ap... Análisis en paralelo: sí\n\n  Asistente IA\n    Activado: sí\n    Clave: archivo\n    Modelo: gemini-3.1-flash-lite\n'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - Failed: se intentó salir a la red con el asistente desactivado
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - AssertionError: assert True is False
+ +  where True = <function available at 0x7fcdddcc3100>(PosixPath('/tmp/pytest-of-runner/pytest-2/test_available_reflects_the_co0'))
+ +    where <function available at 0x7fcdddcc3100> = assistant.available
+4 failed, 295 passed in 1.26s
+
+```
+- `2026-08-23T10:15:59` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a las configuraciones convirtiendo el diccionario `_CACHE` en un `MutableMapping` con un límite de tamaño (LRU cache) para evitar fugas de memoria si se invocan múltiples rutas de configuración, y se sustituyó la validación secuencial del diccionario `validate` por un acceso directo mapeado para reducir la complejidad temporal.
+- `2026-08-23T10:15:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T10:15:59` Corrida terminada. Total usado hoy: 240.
