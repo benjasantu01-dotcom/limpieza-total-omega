@@ -141,33 +141,33 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud: penaliza linealmente el exceso de basura hasta llegar a _LIMIT_JUNK_MB (salud 0)."""
+    """Calcula salud normalizada [0-1] basándose en el exceso de basura frente a _LIMIT_JUNK_MB."""
     return 0.0 if _LIMIT_JUNK_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(junk_mb)) / _LIMIT_JUNK_MB), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula salud: penaliza 5% por hallazgo estándar y 25% por cada advertencia crítica."""
+    """Calcula salud normalizada [0-1]: penaliza 0.05 por hallazgo y 0.25 por advertencia crítica."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula salud: normaliza el porcentaje libre respecto al umbral definido. >100% retorna 1.0."""
+    """Calcula salud normalizada [0-1]: evalúa el porcentaje libre contra _LIMIT_RAM_PERCENT."""
     limit = max(0.1, float(_LIMIT_RAM_PERCENT))
     return _clamp(_to_float(available_percent) / limit, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula salud: normaliza el porcentaje libre respecto al umbral crítico definido."""
+    """Calcula salud normalizada [0-1]: evalúa el porcentaje libre contra _LIMIT_DISK_PERCENT."""
     limit = max(0.1, float(_LIMIT_DISK_PERCENT))
     return _clamp(_to_float(free_percent) / limit, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud: penaliza la ocupación de espacio por duplicados respecto al límite tolerable."""
+    """Calcula salud normalizada [0-1]: penaliza ocupación de duplicados contra _LIMIT_DUPLICATE_MB."""
     return 0.0 if _LIMIT_DUPLICATE_MB <= 0.0 else _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) / _LIMIT_DUPLICATE_MB), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula salud: penaliza el exceso de procesos de inicio. 0 procesos = 100% de salud."""
+    """Calcula salud normalizada [0-1]: penaliza linealmente el número de programas de inicio contra el límite."""
     return 0.0 if _LIMIT_STARTUP_COUNT <= 0 else _clamp(1.0 - (max(0, _to_int(startup_count)) / _LIMIT_STARTUP_COUNT), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Convierte puntaje numérico (0-100) a nota cualitativa (A-F)."""
+    """Convierte puntaje numérico (0-100) a nota cualitativa (A-F) usando rangos estándar."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"

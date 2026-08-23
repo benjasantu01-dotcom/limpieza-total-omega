@@ -238,9 +238,12 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente para listar archivos.
-    
-    Utiliza una pila interna para evitar la recursión profunda y un set de inodos
-    visitados para prevenir ciclos en sistemas de archivos (hard links/reparse points).
+
+    Implementación de seguridad:
+    - Utiliza `safety.is_protected_path` para filtrar rutas del sistema.
+    - Evita recursión infinita mediante detección de inodos visitados.
+    - Ignora symlinks y junctions para prevenir ciclos y escapes de contexto.
+    - Limita la profundidad de escaneo a 100 niveles.
     """
     if not directory:
         return
@@ -371,12 +374,17 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
-    Recolección unificada de datos para resumen (optimiza la lectura de disco).
+    Recolección unificada de datos para resumen optimizando la lectura de disco.
+    
+    Utiliza una cola de prioridad (heap) de tamaño fijo para mantener los 8
+    archivos más grandes encontrados durante el recorrido, evitando ordenar
+    toda la lista de archivos.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, Path]] = []
+    MAX_TOP_FILES = 8
     
     for path, size in walk_files(directory, skip_protected):
         total_bytes += size
@@ -386,7 +394,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        if len(top_files_heap) < 8:
+        # Mantenimiento del heap para los N archivos más grandes
+        if len(top_files_heap) < MAX_TOP_FILES:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, path))

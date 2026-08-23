@@ -110,7 +110,11 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo en profundidad por el sistema de archivos.
+    Realiza un recorrido recursivo en profundidad por los directorios dados.
+    
+    Evita puntos de reparse (junctions/symlinks) para prevenir bucles infinitos
+    o escaneo de unidades montadas externas, utilizando la tupla (dev, ino) 
+    para detectar cruces de sistemas de archivos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
@@ -121,6 +125,7 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         entry_stat = entry.stat(follow_symlinks=False)
+                        # Ignorar puntos de reparse (Windows Junctions/Symlinks)
                         if getattr(entry_stat, 'st_reparse_tag', 0) != 0:
                             continue
                             
