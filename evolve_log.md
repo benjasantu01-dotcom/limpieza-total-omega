@@ -643,3 +643,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T08:45:03` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y `_get_process_path` validando explícitamente los handles de procesos y manejando posibles errores de API antes de operar, evitando el uso de punteros nulos o estados inesperados.
 - `2026-08-23T08:45:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T08:45:03` Corrida terminada. Total usado hoy: 204.
+- `2026-08-23T08:53:05` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-23T08:53:31` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `stage_for_review` y `delete_reviewed` mediante una validación de parámetros más estricta (tipado y contenido) y el uso de `ensure_safe_to_modify` como medida de seguridad preventiva contra rutas maliciosas, evitando ejecuciones fallidas ante entradas inesperadas.
+- `2026-08-23T08:54:03` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` envolviendo la verificación de espacio y la creación del identificador único en un bloque que previene estados inconsistentes, además de asegurar que la validación de `source_path` sea exhaustiva mediante una comprobación explícita de `is_file()` antes de cualquier operación de I/O.
+- `2026-08-23T08:54:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-23T08:54:33` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-23T08:54:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T08:54:33` Corrida terminada. Total usado hoy: 208.

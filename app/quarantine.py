@@ -368,10 +368,8 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).expanduser().resolve()
-    if not source_path.exists():
-        raise FileNotFoundError(f"El archivo origen no existe: {source_path}")
     if not source_path.is_file():
-        raise UnsafePathError("Solo se aceptan archivos regulares, no directorios.")
+        raise FileNotFoundError(f"El archivo origen no existe o es inválido: {source_path}")
     
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
@@ -395,7 +393,6 @@ def quarantine_file(
     stored_name = _generate_safe_stored_name(source_path, item_id)
     destination = dest_dir / stored_name
     
-    # Pre-validar que no exista un archivo residual o colisión antes de la operación
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en el sandbox: {destination.name}")
 
@@ -419,7 +416,6 @@ def quarantine_file(
             if source_path.exists() and source_path.is_file():
                 source_path.unlink()
         except OSError as e:
-            # Si el borrado falla, el archivo está aislado pero queda duplicado
             raise RuntimeError(f"Aislamiento exitoso, pero no se pudo limpiar el origen: {e}")
             
         return quarantine_item
@@ -448,7 +444,6 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     stored_file = (base_path / quarantine_item.stored_name).resolve()
     
     if not stored_file.exists():
-        # Fallo de integridad: registro sin archivo físico
         raise FileNotFoundError(f"Archivo en cuarentena {quarantine_item.stored_name} no hallado.")
         
     if not quarantine_item.verify_integrity(stored_file):

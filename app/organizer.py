@@ -264,6 +264,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
+        # Validación de seguridad proactiva
+        ensure_safe_to_modify(dest_base.parent)
         if is_protected_path(dest_base): return None
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         if not dest_base.is_dir() or not is_safe_to_modify(dest_base): return None
@@ -287,7 +289,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
             target = _generate_unique_target(dest_base / safe_name).resolve()
             
-            # Verificación estricta: el target debe permanecer dentro del directorio de revisión
             if not target.is_relative_to(dest_base): continue
                 
             ensure_safe_to_modify(src_path)
@@ -314,20 +315,16 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         return 0
 
     count: int = 0
-    try:
-        for item in dest.iterdir():
-            try:
-                # Verificación estricta: el item debe estar dentro de la carpeta de revisión
-                if not item.is_file() or _is_junction(item): continue
-                if not item.is_relative_to(dest): continue
-                
-                if is_safe_to_modify(item):
-                    if not _is_file_locked(item):
-                        ensure_safe_to_modify(item)
-                        item.unlink()
-                        count += 1
-            except (PermissionError, OSError, ValueError):
-                continue
-    except OSError:
-        pass
+    for item in dest.iterdir():
+        try:
+            if not item.is_file() or _is_junction(item): continue
+            if not item.is_relative_to(dest): continue
+            
+            # Validación doble: check lógico y chequeo de seguridad de sistema
+            if is_safe_to_modify(item) and not _is_file_locked(item):
+                ensure_safe_to_modify(item)
+                item.unlink()
+                count += 1
+        except (PermissionError, OSError, ValueError):
+            continue
     return count
