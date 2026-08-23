@@ -308,13 +308,19 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
                 found_data = True
                 break
 
+    # Procesamiento de grado de salud de manera segura
+    grade_val = None
     for src in (health, extra):
         if src is None: continue
-        g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
-        if isinstance(g_val, (str, int, float)):
-            g_str = str(g_val)[:10].strip()
-            if _ensure_safe_text(g_str) and not is_protected_path(g_str):
-                ctx.grade = g_str
+        val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
+        if val is not None:
+            grade_val = val
+            break
+            
+    if isinstance(grade_val, (str, int, float)):
+        g_str = str(grade_val)[:10].strip()
+        if _ensure_safe_text(g_str) and not is_protected_path(g_str):
+            ctx.grade = g_str
             
     ctx.analyzed = found_data
     return ctx
@@ -353,7 +359,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
-    """Devuelve explicaciones pedagógicas de los módulos de la aplicación basado en su clave."""
+    """Delvuelve explicaciones pedagógicas de los módulos de la aplicación basado en su clave."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))

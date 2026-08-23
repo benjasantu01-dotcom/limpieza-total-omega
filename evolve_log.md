@@ -1168,3 +1168,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T14:41:22` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_file` y los chequeos asociados evitando múltiples conversiones a string, extracciones innecesarias de rutas y chequeos redundantes de extensiones mediante el uso directo de `path.parts` y operaciones sobre variables ya resueltas.
 - `2026-08-23T14:41:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T14:41:22` Corrida terminada. Total usado hoy: 344.
+- `2026-08-23T14:50:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-23T14:50:36` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._run_safety_checks
+- `2026-08-23T14:51:01` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-23T14:51:37` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, asegurando que `extra` sea procesado de forma segura y consistente sin depender de `getattr` sobre tipos no controlados.
+- `2026-08-23T14:51:53` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-23T14:51:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T14:51:53` Corrida terminada. Total usado hoy: 348.
