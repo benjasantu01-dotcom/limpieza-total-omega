@@ -196,9 +196,13 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     except Exception:
         return HealthResult(0, "F", {}, ["Error: Fallo al validar métricas."])
 
-    # Validar que los límites globales no causen divisiones por cero en los scorers
+    # Validaciones defensivas de configuración
+    if sum(WEIGHTS.values()) != 100:
+        return HealthResult(0, "F", {}, ["Error: Configuración de pesos inválida."])
     if any(limit <= 0 for limit in [_LIMIT_JUNK_MB, _LIMIT_RAM_PERCENT, _LIMIT_DISK_PERCENT, _LIMIT_DUPLICATE_MB, _LIMIT_STARTUP_COUNT]):
         return HealthResult(0, "F", {}, ["Error: Umbrales de sistema mal configurados."])
+    if not all(area in _SCORERS for area in WEIGHTS):
+        return HealthResult(0, "F", {}, ["Error: Mapeo de áreas incompleto."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
     metric_ratios: Dict[MetricKey, float] = {}

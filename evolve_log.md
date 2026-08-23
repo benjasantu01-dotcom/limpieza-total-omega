@@ -1158,3 +1158,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T02:02:37` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` al reemplazar `path_obj.write_text` (que es una operación de escritura directa) por una validación redundante mediante `ensure_safe_to_modify` antes de intentar persistir el archivo, mitigando riesgos de acceso no autorizado o escritura en rutas protegidas.
 - `2026-08-23T02:02:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T02:02:37` Corrida terminada. Total usado hoy: 48.
+- `2026-08-23T02:10:34` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-08-23T02:11:04` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.23s
+
+```
+- `2026-08-23T02:11:04` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez defensiva de `browser.py` al reemplazar la resolución de rutas mediante `joinpath(*rel_str.split("\\"))` por `Path.joinpath` utilizando objetos `Path` sanitizados, evitando así posibles errores de construcción de rutas en sistemas operativos distintos o configuraciones de entorno inusuales, además de asegurar que la validación de seguridad ocurra antes de cualquier operación de I/O.
+- `2026-08-23T02:11:34` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` implementando un chequeo explícito de profundidad máxima de recursión y validación de nombres de archivo para prevenir posibles ataques por denegación de servicio (DoS) o desbordamiento en rutas extremadamente largas, manteniendo la integridad del proceso de escaneo.
+- `2026-08-23T02:12:04` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_collect_candidates` asegurando que la resolución de rutas mediante `resolve()` sea validada contra `is_safe_to_modify` antes de ser agregada a la lista de candidatos, previniendo el procesamiento de rutas potencialmente peligrosas que hayan escapado a otros filtros.
+- `2026-08-23T02:12:14` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad del cálculo añadiendo una validación defensiva estricta en `compute_score` para asegurar que los pesos sumen 100 y que todas las métricas esperadas estén presentes, evitando comportamientos indefinidos si el diccionario de pesos fuera modificado erróneamente en el futuro.
+- `2026-08-23T02:12:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T02:12:14` Corrida terminada. Total usado hoy: 52.

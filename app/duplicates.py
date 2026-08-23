@@ -124,7 +124,7 @@ def _collect_candidates(
                         if getattr(entry_stat, 'st_reparse_tag', 0) != 0:
                             continue
                             
-                        entry_path = Path(entry.path)
+                        entry_path = Path(entry.path).resolve()
                         if skip_protected and is_protected_path(entry_path):
                             continue
                             

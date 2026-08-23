@@ -241,10 +241,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     
     Utiliza una pila interna para evitar la recursión profunda y un set de inodos
     visitados para prevenir ciclos en sistemas de archivos (hard links/reparse points).
-    
-    Args:
-        directory: Ruta base de inicio del escaneo.
-        skip_protected: Si es True, ignora rutas marcadas por `safety.is_protected_path`.
     """
     if not directory:
         return
@@ -260,11 +256,16 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [base_path]
+    # stack guarda (ruta, profundidad) para evitar estructuras de archivos demasiado profundas
+    stack: List[Tuple[Path, int]] = [(base_path, 0)]
+    MAX_DEPTH = 100
     
     while stack:
-        current_dir = stack.pop()
+        current_dir, depth = stack.pop()
         
+        if depth > MAX_DEPTH:
+            continue
+            
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
@@ -272,6 +273,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
+                        # Validación defensiva contra nombres inusualmente largos
+                        if len(entry.name) > 255:
+                            continue
+                            
                         entry_path = Path(entry.path)
                         if skip_protected and is_protected_path(entry_path):
                             continue
@@ -281,7 +286,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(entry_path)
+                                stack.append((entry_path, depth + 1))
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
                             yield entry_path, f_stat.st_size
