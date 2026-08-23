@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 19
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 68 | 6 | 10 | 7 | 73 |
-| 2026-08-23 | 150 | 9 | 25 | 12 | 144 |
+| 2026-08-22 | 65 | 6 | 10 | 7 | 72 |
+| 2026-08-23 | 151 | 9 | 26 | 13 | 145 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **45**
-- rendimiento: **38**
+- seguridad defensiva: **42**
+- rendimiento: **39**
 - robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `assistant.py`: **21**
 - `duplicates.py`: **21**
+- `scanner.py`: **20**
+- `assistant.py`: **20**
 - `healthscore.py`: **19**
-- `scanner.py`: **19**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `branding.py`: **16**
 - `settings.py`: **16**
+- `branding.py`: **15**
 - `organizer.py`: **14**
-- `browser.py`: **13**
+- `browser.py`: **12**
 - `main.py`: **8**
 - `startup.py`: **7**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T14:41:22` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_file` y los chequeos asociados evitando múltiples conversiones a string, extracciones innecesarias de rutas y chequeos redundantes de extensiones mediante el uso directo de `path.parts` y operaciones sobre variables ya resueltas.
 - `2026-08-23T14:32:57` **memory.py** (rendimiento): Optimizé la generación de la lista de procesos implementando un filtrado más eficiente dentro del generador `_yield_processes` y reemplazando la lógica de filtrado de duplicados/redundancias por un procesamiento lineal, reduciendo la carga de memoria al evitar construcciones de listas intermedias innecesarias antes de la ordenación final.
 - `2026-08-23T14:30:15` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje transformando `metric_ratios` de un `Dict` (búsqueda por hash) a una estructura indexada por posición durante el bucle de procesamiento, reduciendo la sobrecarga de consultas en el motor de recomendaciones.
 - `2026-08-23T14:21:08` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` para evitar redundancias en el recorrido del sistema de archivos al pre-filtrar las rutas de entrada mediante un `set` y evitar llamadas repetidas a `is_safe_to_modify` en nodos ya procesados, reduciendo así la carga de I/O y el tiempo de CPU en directorios grandes.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T13:50:54` **main.py** (legibilidad y documentación): Mejoré la documentación de los métodos de gestión de hilos y seguridad en `main.py` mediante el uso de docstrings que clarifican el propósito técnico, las restricciones de seguridad y el manejo de excepciones de cada operación.
 - `2026-08-23T13:49:49` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y la robustez del código mediante la adición de docstrings técnicos explicativos en funciones críticas y tipado explícito, clarificando el propósito de los umbrales de puntuación y asegurando que las reglas de recomendación sean interpretadas sin ambigüedades.
 - `2026-08-23T13:49:23` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings descriptivos, se añadió tipado explícito en funciones críticas para evitar ambigüedades y se extrajo la lógica de ordenamiento de candidatos en `suggest_keeper` a una tupla de comparación más legible, cumpliendo con el enfoque de legibilidad.
-- `2026-08-23T13:40:45` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos de retorno explícitos en los docstrings y refinando la descripción de las funciones de alto nivel para facilitar la auditoría de seguridad y la comprensión de los algoritmos de recolección de datos.
