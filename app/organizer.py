@@ -33,6 +33,12 @@ class SortConfig(NamedTuple):
     field: str
     key_func: Callable[[JunkFile], SortKey]
 
+# Mapeo centralizado de criterios de ordenamiento para facilitar la extensión
+SORT_REGISTRY: Final[Dict[str, SortConfig]] = {
+    "size": SortConfig("size", lambda f: f.size_bytes),
+    "date": SortConfig("date", lambda f: f.modified)
+}
+
 # Extensiones típicas de archivos "basura" / temporales
 JUNK_EXTENSIONS: Final[set[str]] = {
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
@@ -95,12 +101,7 @@ class JunkFile:
 def _is_junction(path: Path) -> bool:
     """
     Detecta puntos de reparse (Junctions/Symlinks).
-    
-    Args:
-        path: Ruta a evaluar.
-        
-    Returns:
-        bool: True si es un vínculo simbólico o punto de reparse, False en otro caso.
+    Utiliza el atributo 0x400 (FILE_ATTRIBUTE_REPARSE_POINT) en Windows.
     """
     try:
         return path.is_symlink() or (os.name == "nt" and bool(path.stat().st_file_attributes & 0x400))
@@ -140,9 +141,7 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado intentando abrirlo en modo lectura binaria exclusiva.
-    
-    Returns:
-        bool: True si el archivo está en uso por otro proceso, False si es accesible.
+    Si el SO deniega el acceso, asumimos que el archivo está en uso.
     """
     try:
         with open(path, "rb") as f:
@@ -154,7 +153,7 @@ def _is_file_locked(path: Path) -> bool:
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
     Previene la recursividad infinita durante operaciones de archivo verificando 
-    la jerarquía entre origen y destino.
+    que el destino no sea un ancestro del origen.
     """
     try:
         s, d = src.resolve(), dest.resolve()
@@ -166,9 +165,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Valida la integridad de una operación de E/S aplicando controles de seguridad, 
-    de reparse points y bloqueo de archivos.
-    
-    Retorna True solo si el archivo no está en uso y cumple con los guiones de seguridad.
+    verificando reparse points y bloqueos de archivos en tiempo real.
     """
     try:
         # Validación lógica: primero lo que no requiere I/O, luego lo pesado
@@ -178,7 +175,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
             return False
         
         stat = src.stat()
-        if not stat.st_mode: return False # Verifica si es un archivo válido
+        if not stat.st_mode: return False
         
         if os.name == "nt":
             # 0x02: Hidden, 0x04: System, 0x40: Reparse Point
@@ -246,18 +243,14 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
     """
-    Ordena los archivos encontrados según un criterio definido (tamaño o fecha).
+    Ordena los archivos encontrados según un criterio definido (tamaño o fecha)
+    utilizando el registro de configuraciones predefinido.
     """
     if not isinstance(files, list) or not all(isinstance(f, JunkFile) for f in files):
         return []
         
-    registry: Dict[str, SortConfig] = {
-        "size": SortConfig("size", lambda f: f.size_bytes),
-        "date": SortConfig("date", lambda f: f.modified)
-    }
-    
     key: str = by.lower() if isinstance(by, str) else "size"
-    config: SortConfig = registry.get(key, registry["size"])
+    config: SortConfig = SORT_REGISTRY.get(key, SORT_REGISTRY["size"])
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
 
 
@@ -294,7 +287,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
             target = _generate_unique_target(dest_base / safe_name).resolve()
             
-            # Verificación estricta: asegurar que el destino resuelto resida dentro de dest_base
             if not target.is_relative_to(dest_base): continue
                 
             ensure_safe_to_modify(src_path)
@@ -308,7 +300,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina archivos de forma segura tras revisión del usuario.
-    Verifica que cada archivo a borrar mantenga los criterios de seguridad definidos.
+    Verifica mediante `ensure_safe_to_modify` que el archivo sea seguro antes de la operación unlink.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -326,7 +318,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             try:
                 if not item.is_file() or _is_junction(item): continue
                 
-                # Validar que el archivo esté realmente dentro de la carpeta de revisión
                 if item.is_relative_to(dest) and is_safe_to_modify(item):
                     if not _is_file_locked(item):
                         ensure_safe_to_modify(item)

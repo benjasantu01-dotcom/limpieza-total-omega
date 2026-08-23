@@ -213,7 +213,10 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 
 
 def _check_windows_file_attributes(path_str: str) -> None:
-    """Verifica atributos de SO en Windows (oculto, sistema) para evitar errores de acceso."""
+    """
+    Verifica los atributos del sistema de archivos en Windows (oculto, sistema)
+    para evitar intentar mover archivos que el SO protege activamente.
+    """
     if os.name != 'nt':
         return
     import ctypes
@@ -227,8 +230,8 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 def _check_path_syntax_integrity(path: Path) -> None:
     """
-    Valida la sintaxis de la ruta para prevenir Directory Traversal, inyección
-    o profundidad excesiva que podría causar fallos en las APIs de sistema.
+    Valida sintácticamente la ruta del archivo para prevenir técnicas de Directory
+    Traversal, inyección de caracteres o desbordamiento de profundidad de API.
     """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
@@ -245,8 +248,8 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
-    Filtro de seguridad exhaustivo previo a mover un archivo. Comprueba la integridad 
-    de la ruta, permisos y que no se trate de una operación entre discos diferentes.
+    Realiza una auditoría exhaustiva de seguridad antes de permitir el aislamiento:
+    valida permisos, integridad de la ruta y asegura que la operación sea local.
     """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
@@ -327,7 +330,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
     """
     Realiza la copia física al sandbox mediante un archivo temporal, verificando integridad 
-    por hash y tamaño antes de confirmar la operación.
+    por hash y tamaño antes de confirmar la operación de reemplazo atómico.
     """
     if source.is_symlink() or ":" in str(source):
         raise UnsafePathError("Origen no es archivo regular.")
