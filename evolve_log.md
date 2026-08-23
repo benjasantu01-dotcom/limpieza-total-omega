@@ -1120,3 +1120,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-08-23T01:45:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-23T01:45:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T01:45:48` Corrida terminada. Total usado hoy: 40.
+- `2026-08-23T01:50:11` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-23T01:50:54` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se mejora la robustez de `quarantine_file` añadiendo una verificación de espacio libre y manejo de errores ante fallos de escritura atómica para evitar dejar archivos huérfanos o manifiestos inconsistentes en situaciones de disco lleno o permisos denegados.
+- `2026-08-23T01:51:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-08-23T01:51:45` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-23T01:51:54` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-23T01:51:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T01:51:54` Corrida terminada. Total usado hoy: 44.

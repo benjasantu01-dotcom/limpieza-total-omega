@@ -382,8 +382,8 @@ def quarantine_file(
         raise OSError(f"No se pudo determinar el tamaño del archivo origen: {e}")
     
     usage = shutil.disk_usage(dest_dir)
-    if usage.free < (file_size * 1.05):
-        raise OSError("Espacio insuficiente en disco para el aislamiento.")
+    if usage.free < (file_size + 1024 * 1024):
+        raise OSError("Espacio insuficiente en disco (mínimo 1MB libre requerido).")
         
     item_id = uuid.uuid4().hex[:12]
     stored_name = _generate_safe_stored_name(source_path, item_id)

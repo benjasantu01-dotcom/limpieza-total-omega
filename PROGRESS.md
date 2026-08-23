@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 50 | 4 | 6 | 2 | 52 |
+| 2026-08-21 | 50 | 4 | 6 | 2 | 48 |
 | 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
-| 2026-08-23 | 23 | 1 | 4 | 2 | 10 |
+| 2026-08-23 | 24 | 1 | 5 | 2 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,7 +26,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **43**
 - rendimiento: **38**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -38,7 +38,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `scanner.py`: **18**
-- `quarantine.py`: **15**
+- `quarantine.py`: **16**
 - `organizer.py`: **14**
 - `branding.py`: **14**
 - `safety.py`: **10**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T01:50:54` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` añadiendo una verificación de espacio libre y manejo de errores ante fallos de escritura atómica para evitar dejar archivos huérfanos o manifiestos inconsistentes en situaciones de disco lleno o permisos denegados.
 - `2026-08-23T01:45:35` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_read_windows_snapshot` para gestionar de forma segura valores de retorno inesperados de la API de Windows, asegurando que `MemorySnapshot` no se cree con valores nulos o inconsistentes que pudieran causar errores de división por cero en otras partes del módulo.
 - `2026-08-23T01:40:27` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `compute_score` agregando una validación explícita para evitar divisiones por cero en los `scorers` mediante una verificación de los límites definidos y manejando proactivamente los casos donde `metrics` podría contener valores fuera de rango que no disparan errores de tipo pero sí de lógica (como `NaN` o `inf`).
 - `2026-08-23T01:31:32` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `_collect_candidates` ante archivos que desaparecen o son inaccesibles durante la ejecución, integrando validaciones de existencia mediante `is_file()` antes de realizar operaciones de metadatos, evitando así errores de concurrencia típicos en sistemas de archivos dinámicos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T00:59:33` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` y `_process_size_group` evitando la creación innecesaria de objetos `Path` y reduciendo las llamadas a `stat` y `resolve` mediante la reutilización de la información ya obtenida durante el escaneo del directorio.
 - `2026-08-23T00:49:41` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante un `set` de intersección, eliminando la necesidad de iterar sobre cada palabra del usuario y simplificando la lógica de selección del handler.
 - `2026-08-23T00:39:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de las funciones de chequeo y enriqueciendo los docstrings para explicar la lógica de las heurísticas de seguridad, facilitando así el mantenimiento futuro.
-- `2026-08-23T00:30:21` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, documentación detallada en funciones críticas y la estandarización de logs de error en `save_manifest` para facilitar la depuración técnica.
