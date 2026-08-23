@@ -1480,3 +1480,41 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-23T05:31:22` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data
 - `2026-08-23T05:31:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T05:31:22` Corrida terminada. Total usado hoy: 128.
+- `2026-08-23T05:39:31` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-23T05:40:01` Tests FALLARON:
+```
+__
+
+    def test_diagnose_explains_that_free_ram_is_not_the_goal():
+        lineas = memory.diagnose(memory.MemorySnapshot(total=1000, available=500))
+        texto = " ".join(lineas).lower()
+        assert "memoria total" in texto
+        # El mensaje honesto tiene que estar: es la diferencia con un limpiador falso.
+>       assert "liberar" in texto or "caché" in texto
+E       AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+
+evolve/tests/test_modules.py:381: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not_the_goal - AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+3 failed, 296 passed in 1.26s
+
+```
+- `2026-08-23T05:40:01` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de métricas de memoria al eliminar la recreación innecesaria de objetos en cada iteración y mejorar la eficiencia del filtrado de procesos mediante la pre-compilación de la lógica de exclusión.
+- `2026-08-23T05:40:25` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-23T05:40:57` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-08-23T05:41:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-08-23T05:41:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T05:41:00` Corrida terminada. Total usado hoy: 132.
