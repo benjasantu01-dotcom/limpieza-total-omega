@@ -1066,3 +1066,10 @@ assert not {'replace'}
 - `2026-08-23T13:20:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-08-23T13:20:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T13:20:00` Corrida terminada. Total usado hoy: 312.
+- `2026-08-23T13:28:35` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-23T13:29:03` ➖ Sin cambios en safety.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de las validaciones en `ensure_safe_to_modify` para prevenir condiciones de carrera mediante el manejo explícito de `FileNotFoundError` durante la etapa de metadatos, evitando que el proceso aborte ante archivos que desaparecen entre la verificación y el acceso, manteniendo la integridad del bucle.
+- `2026-08-23T13:29:27` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `process_entry` y `scan_directory` aplicando validación estricta de rutas y tipos, asegurando que cualquier entrada `None` o ruta malformada se descarte mediante verificaciones defensivas explícitas antes de cualquier operación.
+- `2026-08-23T13:29:54` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: manejo de errores y validación de entradas): desaparecieron símbolos que existían antes: type_check
+- `2026-08-23T13:30:04` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-23T13:30:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T13:30:04` Corrida terminada. Total usado hoy: 316.

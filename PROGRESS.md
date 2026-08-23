@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 219
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 22
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 83 | 7 | 13 | 10 | 79 |
-| 2026-08-23 | 132 | 8 | 21 | 11 | 140 |
+| 2026-08-22 | 81 | 7 | 13 | 10 | 77 |
+| 2026-08-23 | 133 | 8 | 22 | 12 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **48**
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **45**
 - legibilidad y documentación: **44**
-- rendimiento: **40**
+- rendimiento: **38**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **20**
+- `scanner.py`: **20**
 - `assistant.py`: **20**
 - `quarantine.py`: **19**
-- `scanner.py`: **19**
+- `duplicates.py`: **19**
 - `settings.py`: **18**
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
 - `branding.py`: **15**
 - `organizer.py`: **14**
-- `browser.py`: **13**
+- `browser.py`: **12**
 - `startup.py`: **7**
 - `main.py`: **7**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T13:29:27` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `process_entry` y `scan_directory` aplicando validación estricta de rutas y tipos, asegurando que cualquier entrada `None` o ruta malformada se descarte mediante verificaciones defensivas explícitas antes de cualquier operación.
 - `2026-08-23T13:19:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y `restore_item` al centralizar y reforzar la validación de rutas y el manejo de excepciones de E/S, evitando que estados inconsistentes del sistema de archivos bloqueen la ejecución del bucle.
 - `2026-08-23T13:19:23` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas (tipo, existencia y limpieza) antes de realizar operaciones de disco, evitando el procesamiento de rutas potencialmente corruptas.
 - `2026-08-23T13:18:59` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_windows_snapshot` y `read_snapshot` añadiendo validaciones explícitas contra valores negativos o inesperados de la API de memoria, evitando que la app reporte un estado irreal o "cero" debido a errores transitorios de lectura.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T11:07:59` **diskreport.py** (seguridad defensiva): Se ha añadido una validación estricta de "traversal" en `walk_files` y `largest_folders` para asegurar que el `base_path` sea un directorio real y no un enlace simbólico o un punto de reparse que pueda evadir las restricciones de seguridad al resolverse, reforzando la protección contra fugas de contexto fuera de la ruta autorizada.
 - `2026-08-23T10:56:40` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.path` para manejar correctamente rutas que no existen o tienen permisos denegados, evitando fallos en tiempo de ejecución al validar configuraciones en carpetas personalizadas.
 - `2026-08-23T10:56:12` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de resolución de rutas en el método `_is_safe_entry` y `scan_directory` para evitar cierres inesperados ante enlaces simbólicos circulares o rutas que devuelven errores de sistema al intentar resolverse.
-- `2026-08-23T10:46:36` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante bloqueos de archivos persistentes o errores de acceso durante la purga, añadiendo una validación de estado de bloqueo en `_is_item_purgable` para evitar estados inconsistentes en el manifiesto.

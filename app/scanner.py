@@ -103,15 +103,16 @@ class Scanner:
         if entry is None or not hasattr(entry, 'path'):
             return
         
-        target_path = Path(entry.path)
-        if not is_safe_to_modify(target_path):
-            return
-        if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
-            return
-        if not self._is_safe_entry(target_path):
-            return
-
         try:
+            target_path = Path(entry.path)
+            # Validación de seguridad defensiva antes de procesar
+            if not is_safe_to_modify(target_path) or is_protected_path(target_path):
+                return
+            if str(target_path).startswith("\\\\"):
+                return
+            if not self._is_safe_entry(target_path):
+                return
+
             is_dir = entry.is_dir(follow_symlinks=False)
             is_file = entry.is_file(follow_symlinks=False)
         except (OSError, PermissionError):
@@ -130,8 +131,6 @@ class Scanner:
 
         if is_file:
             try:
-                # Verificamos tamaño solo si es posible acceder a los stats, 
-                # manejando casos de archivos bloqueados o inaccesibles
                 if entry.stat(follow_symlinks=False).st_size == 0:
                     return
             except (OSError, PermissionError):
@@ -226,12 +225,12 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
     Inicia un escaneo recursivo desde un directorio base y retorna la lista completa de hallazgos.
     """
-    if not directory or str(directory).strip() == "":
+    if not directory:
         return []
         
     try:
         raw_path = Path(directory)
-        if str(raw_path).startswith(("\\\\", "//")):
+        if str(raw_path).strip() == "" or str(raw_path).startswith(("\\\\", "//")):
             return []
         if not raw_path.exists():
             return []
