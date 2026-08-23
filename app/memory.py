@@ -212,7 +212,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
     try:
         total = int(stat.ullTotalPhys)
         avail = int(stat.ullAvailPhys)
-        # Validación de integridad para prevenir valores absurdos o división por cero
         if total <= 0 or avail > total: 
             return MemorySnapshot(0, 0)
         return MemorySnapshot(total=total, available=avail)
@@ -302,7 +301,11 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet."""
+    """
+    Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet.
+    Verifica la identidad del proceso, estado de actividad, y protege contra 
+    rutas de sistema, junctions o caracteres sospechosos que intenten evadir la seguridad.
+    """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
@@ -324,6 +327,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if os.path.islink(path):
             return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse."
         
+        # Filtro contra técnicas de ofuscación de nombres (RTL overrides)
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."

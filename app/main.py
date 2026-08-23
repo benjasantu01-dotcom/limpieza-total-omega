@@ -130,6 +130,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._task_lock = threading.Lock()
         self._closing = False
         self._log_scheduled = False
+        self._active_buttons: List[ctk.CTkButton] = []
         
         self._setup_application()
 
@@ -151,7 +152,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         pool de hilos y destruye la instancia de la interfaz.
         """
         self._closing = True
-        # Limpieza de hilos: evitamos que nuevas tareas se encolen y liberamos recursos
         with self._task_lock:
             if self._executor:
                 self._executor.shutdown(wait=False, cancel_futures=True)
@@ -172,12 +172,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         en el directorio base y directorios de trabajo.
         """
         try:
-            # 1. Verificar permisos básicos del usuario
             home = Path.home().resolve(strict=True)
             if not os.access(home, os.R_OK | os.W_OK):
                 raise OSError(f"Permisos insuficientes en directorio usuario: {home}")
             
-            # 2. Asegurar que la ruta donde vive la app sea segura para evitar riesgos de ejecución maliciosa
             current_app_dir = Path(__file__).resolve().parent
             safety.ensure_safe_to_modify(current_app_dir)
                 
@@ -221,6 +219,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         self._debounces: Dict[str, str] = {}
         
+    def _toggle_ui_availability(self, active: bool) -> None:
+        """Habilita o deshabilita botones durante tareas asíncronas."""
+        for btn in self._active_buttons:
+            if btn.winfo_exists():
+                btn.configure(state="normal" if active else "disabled")
+
     def _debounce_action(self, key: str, delay: int, callback: Callable[[], Any]) -> None:
         """
         Retrasa la ejecución de un callback para consolidar eventos rápidos 
@@ -285,13 +289,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 danger: bool = False, column: int = 0, secondary: bool = False) -> ctk.CTkButton:
         """
         Crea un botón con colores semánticos basados en el riesgo de la operación.
-        
-        :param parent: Widget contenedor padre.
-        :param text: Texto del botón.
-        :param command: Función a ejecutar.
-        :param danger: Define si es una operación destructiva (color rojo).
-        :param secondary: Define si es una acción secundaria (color secundario).
-        :return: Botón configurado (ctk.CTkButton).
         """
         if danger:
             fondo, hover, texto = ("danger", "danger_hover", "text")
@@ -309,6 +306,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             width=190, height=36, corner_radius=9,
         )
         button.grid(row=0, column=column, padx=6, pady=4, sticky="w")
+        self._active_buttons.append(button)
         return button
 
     def _hint(self, parent: ctk.CTk, text: str) -> None:
@@ -361,10 +359,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         constructor = getattr(self, method_name, None)
         tab_frame = self.tabs.get(name)
         
-        # Validar seguridad antes de invocar constructor
         if constructor and tab_frame and tab_frame.winfo_exists():
             try:
-                # Comprobar seguridad del entorno base antes de montar contenido dinámico
                 safety.ensure_safe_to_modify(Path(".").resolve())
                 constructor()
                 self._initialized_tabs[name] = True
@@ -393,7 +389,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for name in TABS:
             self.tabs[name] = self.tabview.add(branding.tab_label(name))
             
-        # Inicializar solo la primera pestaña al arrancar
         self._tab_factory(TABS[0])
 
     def _on_tab_change(self, tab_label: str) -> None:
@@ -826,11 +821,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _get_cached(self, key: str, provider: Optional[Callable[[], Any]] = None, force: bool = False) -> Any:
         """
         Recupera datos del caché LRU o ejecuta el provider si el TTL expiró.
-        Si la caché para 'key' no existe o expiró, utiliza 'provider' para refrescarla.
-        El sistema utiliza un TTL para asegurar que los análisis no se vuelvan obsoletos.
         """
         now = time.time()
-        # Invalidation check: Si el provider es None y no forzamos, solo leemos
         if not force and key in self._cache:
             data, timestamp = self._cache[key]
             if now - timestamp < self._cache_ttl:
@@ -885,7 +877,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pendientes = self._log_queue
             self._log_queue = []
         
-        # Agrupamos por pestaña para reducir llamadas a métodos de UI
         logs_por_tab = {}
         for tab, msg in pendientes:
             if tab not in logs_por_tab:
@@ -933,6 +924,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if busy:
             self._tasks_running += 1
             if self._tasks_running == 1:
+                self._toggle_ui_availability(False)
                 try:
                     self.activity.pack(side="right")
                     self.activity.start()
@@ -941,6 +933,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         else:
             self._tasks_running = max(0, self._tasks_running - 1)
             if self._tasks_running == 0:
+                self._toggle_ui_availability(True)
                 try:
                     self.activity.stop()
                     self.activity.pack_forget()
@@ -993,7 +986,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         with self._task_lock:
             if not self._closing and self._executor:
-                # La validación se realiza dentro de _worker_thread_logic
                 self._executor.submit(self._worker_thread_logic, fn, tab, target_path if check_safety else None)
 
     def _current_tab(self) -> str:
@@ -1033,7 +1025,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         junk = self._get_cached("junk") or []
         dups = self._get_cached("dups") or []
 
-        # Uso de caché persistente para E/S costosa
         snapshot = self._get_cached("memory_snapshot", provider=memory_mod.read_snapshot) or memory_mod.Snapshot(0, 0, 0)
         
         @lru_cache(maxsize=2)
@@ -1209,7 +1200,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación de seguridad antes de la operación destructiva/movimiento
             safety.ensure_safe_to_modify(Path(".").resolve())
             self.set_status("Moviendo a revisión...")
             dest = stage_for_review(aptos)
@@ -1228,7 +1218,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación de seguridad antes de la operación destructiva/borrado
             safety.ensure_safe_to_modify(Path(".").resolve())
             try:
                 self.set_status("Vaciando la carpeta de revisión...")
@@ -1240,11 +1229,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task, check_safety=True)
 
     def _run_heuristic_scan(self, folder: str) -> None:
-        """
-        Ejecuta el escaneo de seguridad en una ruta específica.
-        La función delega el escaneo al hilo de trabajo y procesa los resultados
-        asincrónicamente mediante una caché para evitar cálculos repetitivos.
-        """
+        """Ejecuta el escaneo de seguridad en una ruta específica."""
         def task() -> None:
             self.set_status(f"Escaneando {folder}...")
             self.clear("Seguridad")
@@ -1309,7 +1294,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación de seguridad antes de mover archivos a cuarentena
             safety.ensure_safe_to_modify(Path(".").resolve())
             self.set_status("Aislando archivos...")
             aislados = 0
@@ -1350,7 +1334,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación de seguridad antes de restauración
             safety.ensure_safe_to_modify(Path(".").resolve())
             if not quarantine.item_exists(raw_id):
                 self.log(f"Error: El ID '{raw_id}' no existe.", "Cuarentena")
@@ -1361,7 +1344,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.log("Error: Manifiesto corrupto.", "Cuarentena")
                 return
             
-            # Validación de seguridad: verificamos ruta original antes de procesar
             if not self._is_safe_path(item.original_path):
                 self.log("Error: La ruta original del archivo no es segura para restauración.", "Cuarentena")
                 return
@@ -1388,7 +1370,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación de seguridad antes de borrar
             safety.ensure_safe_to_modify(Path(".").resolve())
             borrados = quarantine.purge_all()
             self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
@@ -1445,7 +1426,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
             
         raw = self.pid_entry.get().strip()
-        # Validación de entrada para evitar excepciones por malformación o vacío
         if not raw.isdigit():
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
@@ -1571,7 +1551,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación de seguridad antes de aislar duplicados
             safety.ensure_safe_to_modify(Path(".").resolve())
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
@@ -1637,12 +1616,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def on_ask_assistant(self, question: Optional[str] = None) -> None:
-        """
-        Procesa consultas con el asistente local.
-        El motor de IA es local por diseño y garantiza que los datos sensibles
-        no salgan de la máquina. La función `ask` retorna una respuesta procesada
-        por el motor local o una sugerencia de acción.
-        """
+        """Procesa consultas con el asistente local."""
         texto = (question or (self.question_entry.get() if hasattr(self, 'question_entry') else "")).strip()
         texto = "".join(c for c in texto if c.isprintable())[:500]
         
@@ -1684,7 +1658,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 continue
         
         try:
-            # Validaciones preventivas para asegurar integridad de configuración
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
                     self.min_dup_entry.get(), 64
@@ -1697,7 +1670,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 
             if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
                 clave_raw = self.api_key_entry.get().strip()
-                # Filtrar caracteres no imprimibles o peligrosos en API key
                 clave_api = "".join(c for c in clave_raw if c.isprintable())
                 if clave_api:
                     valores["asistente_clave_api"] = clave_api
