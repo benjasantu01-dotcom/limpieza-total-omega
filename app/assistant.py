@@ -91,6 +91,11 @@ class ProblemCriterion(NamedTuple):
         
         return self.message_format.format(val)[:_MAX_MSG_CHUNK] if is_triggered else None
 
+class AreaExplanation(NamedTuple):
+    """Documentación pedagógica de las áreas de la aplicación."""
+    key: str
+    description: str
+
 # TypeAliases para mejorar la legibilidad de las firmas de funciones
 MetricSource: TypeAlias = dict[str, Any] | object
 ScoreSource: TypeAlias = dict[str, Any] | object
@@ -169,6 +174,15 @@ _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("junk_mb", 1000.0, ">", "{:.0f} MB de basura"),
     ProblemCriterion("duplicate_mb", 500.0, ">", "{:.0f} MB en duplicados"),
     ProblemCriterion("startup_count", 15, ">", "{:d} programas de inicio")
+)
+
+_EXPLICACIONES: Final[tuple[AreaExplanation, ...]] = (
+    AreaExplanation("basura", "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo."),
+    AreaExplanation("seguridad", "Archivos con señales de riesgo: extensiones inusuales o ejecutables sin firma, requieren revisión manual."),
+    AreaExplanation("memoria", "Recursos de acceso rápido: si la memoria disponible es baja, Windows utiliza el disco duro, ralentizando todo."),
+    AreaExplanation("disco", "Almacenamiento disponible: niveles inferiores al 10% afectan la estabilidad y velocidad de escritura de Windows."),
+    AreaExplanation("duplicados", "Copias idénticas del mismo archivo: se pueden eliminar de forma segura ya que el archivo original permanece."),
+    AreaExplanation("inicio", "Programas que arrancan con Windows: cada entrada incrementa el tiempo de inicio y el consumo base de memoria."),
 )
 
 _VALIDATORS: Final[dict[str, ValidatorSpec]] = {
@@ -332,16 +346,14 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
 
 def explain_area(area: Any) -> str:
     """Devuelve explicaciones pedagógicas de los módulos de la app."""
-    explicaciones: Final[dict[str, str]] = {
-        "basura": "Archivos temporales y restos de instaladores: ocupan espacio innecesario sin aportar valor operativo.",
-        "seguridad": "Archivos con señales de riesgo: extensiones inusuales o ejecutables sin firma, requieren revisión manual.",
-        "memoria": "Recursos de acceso rápido: si la memoria disponible es baja, Windows utiliza el disco duro, ralentizando todo.",
-        "disco": "Almacenamiento disponible: niveles inferiores al 10% afectan la estabilidad y velocidad de escritura de Windows.",
-        "duplicados": "Copias idénticas del mismo archivo: se pueden eliminar de forma segura ya que el archivo original permanece.",
-        "inicio": "Programas que arrancan con Windows: cada entrada incrementa el tiempo de inicio y el consumo base de memoria.",
-    }
-    if isinstance(area, str):
-        return _validate_response_length(explicaciones.get(area.strip().lower(), "No tengo una explicación para esa área."))
+    if not isinstance(area, str):
+        return "No tengo una explicación para esa área."
+        
+    query = area.strip().lower()
+    for item in _EXPLICACIONES:
+        if item.key == query:
+            return _validate_response_length(item.description)
+            
     return "No tengo una explicación para esa área."
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:

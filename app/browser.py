@@ -63,6 +63,9 @@ SAFETY_NOTE: str = (
 
 MAX_SCAN_DEPTH: int = 15
 
+# Tipo alias para claridad en funciones de callback de sistema
+JunctionChecker = Callable[[str], bool]
+
 @dataclass
 class BrowserCache:
     """Representación de una carpeta de caché detectada y su peso en disco."""
@@ -116,7 +119,6 @@ def _is_path_inside_base(target_path: Path, base_path: Path) -> bool:
         real_base = base_path.resolve(strict=True)
         real_target = target_path.resolve(strict=True)
         
-        # Seguridad defensiva: verificar que no haya intentos de escape mediante segmentos '..'
         if ".." in real_target.parts:
             return False
         
@@ -126,7 +128,7 @@ def _is_path_inside_base(target_path: Path, base_path: Path) -> bool:
         if real_target.parts[:len(real_base.parts)] != real_base.parts:
             return False
 
-        is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
+        is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
         if real_target.is_symlink() or is_junction(str(real_target)):
             return False
 
@@ -155,7 +157,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
         return False
 
 
-def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: Callable[[str], bool]) -> bool:
+def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """Filtro de seguridad para determinar si un archivo/directorio debe ignorarse."""
     if _is_excluded_file(entry.name):
         return True
@@ -172,7 +174,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 def _sum_directory_recursive(
     root_dir: str, 
-    is_junction_fn: Callable[[str], bool], 
+    is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int]
 ) -> int:
@@ -230,7 +232,7 @@ def directory_size(path: Union[str, Path]) -> int:
         if not p_obj.is_dir() or not is_safe_to_modify(p_obj) or is_protected_path(p_obj):
             return 0
         
-        is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
+        is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
         return _sum_directory_recursive(str(p_obj), is_junction, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
@@ -252,14 +254,19 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Escanea las ubicaciones base buscando las rutas de caché de los navegadores configurados."""
+    """
+    Escanea las ubicaciones base buscando las rutas de caché de los navegadores configurados.
+    
+    Nota: Utiliza un diccionario `perf_cache` para memoizar el tamaño de los directorios 
+    ya recorridos, optimizando el escaneo cuando múltiples navegadores comparten estructura.
+    """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
     if not raw_bases or not browser_map:
         return []
     
-    is_junction: Callable[[str], bool] = getattr(os.path, 'isjunction', lambda _: False)
+    is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
     perf_cache: Dict[str, int] = {}
@@ -273,10 +280,8 @@ def detect_profiles(
             for browser_name, rel_str in browser_map.items():
                 if not rel_str:
                     continue
-                # Convertimos rel_str a una ruta absoluta de forma eficiente
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 
-                # Verificamos si ya procesamos esta rama específica
                 if str(candidate) in perf_cache:
                     continue
 
