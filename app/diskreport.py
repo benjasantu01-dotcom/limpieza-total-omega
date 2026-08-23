@@ -228,7 +228,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     
     results: List[DriveUsage] = []
     for mount in mounts:
-        if mount:
+        if isinstance(mount, str) and mount:
             usage = drive_usage(mount)
             if usage:
                 results.append(usage)
@@ -256,7 +256,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    # stack guarda (ruta, profundidad) para evitar estructuras de archivos demasiado profundas
     stack: List[Tuple[Path, int]] = [(base_path, 0)]
     MAX_DEPTH = 100
     
@@ -270,11 +269,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Saltar reparse points y junctions explícitamente
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        # Validación defensiva contra nombres inusualmente largos
-                        if len(entry.name) > 255:
+                        # Validación contra nombres inválidos o excesivamente largos
+                        if not entry.name or len(entry.name) > 255:
                             continue
                             
                         entry_path = Path(entry.path)

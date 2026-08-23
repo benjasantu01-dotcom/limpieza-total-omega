@@ -352,7 +352,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None
-        # Validación final de seguridad antes de escritura
+        # Validación final antes de escritura para evitar Race Conditions
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
@@ -430,13 +430,17 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
     """Dibuja un indicador circular (donut) de progreso."""
     if not hasattr(canvas, "create_arc"): return
     try:
-        valor: float = max(0.0, min(100.0, float(percent)))
-        diametro: int = max(20, int(size))
-        grosor: int = max(2, min(int(thickness), diametro // 2 - 1))
-        color_fondo: HexColor = track or color("surface_alt")
-        color_avance: HexColor = fill or score_color(valor)
-        borde: float = grosor / 2
-        caja: Tuple[float, float, float, float] = (
+        # Validación robusta de tipo y rango
+        valor = float(percent) if percent is not None else 0.0
+        valor = max(0.0, min(100.0, valor))
+        diametro = max(20, int(size))
+        grosor = max(2, min(int(thickness), diametro // 2 - 1))
+        
+        color_fondo = track if isinstance(track, str) else color("surface_alt")
+        color_avance = fill if isinstance(fill, str) else score_color(valor)
+        borde = grosor / 2
+        
+        caja = (
             canvas_x + borde, canvas_y + borde, 
             canvas_x + diametro - borde, canvas_y + diametro - borde
         )

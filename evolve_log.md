@@ -1417,3 +1417,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-23T03:56:16` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Reforcé la validación en `build_context` para prevenir la propagación de datos potencialmente corruptos al sistema, asegurando que `grade` y las métricas pasen por filtros de seguridad antes de ser asignadas.
 - `2026-08-23T03:56:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T03:56:16` Corrida terminada. Total usado hoy: 92.
+- `2026-08-23T04:02:44` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-23T04:03:21` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` y `draw_ring` reemplazando validaciones implícitas por guardas explícitas y manejo de tipos más seguro, evitando errores silenciosos ante entradas mal formadas o nulas.
+- `2026-08-23T04:03:47` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-23T04:04:23` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `drive_usage` validando explícitamente el tipo de las entradas y capturando excepciones de sistema de forma granular para evitar que condiciones de carrera o dispositivos desconectados interrumpan el análisis.
+- `2026-08-23T04:04:34` ➖ Sin cambios en duplicates.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha robustecido el manejo de errores en `suggest_keeper` y `format_group`, añadiendo validaciones de tipo y estructura para prevenir fallos inesperados al manipular objetos `DuplicateGroup` potencialmente malformados o vacíos, manteniendo la integridad operativa ante entradas nulas o atípicas.
+- `2026-08-23T04:04:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T04:04:34` Corrida terminada. Total usado hoy: 96.
