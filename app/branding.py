@@ -78,7 +78,7 @@ UI_FONT_FAMILY: Final[str] = "Segoe UI"
 UI_FONT_BOLD: Final[str] = "bold"
 
 # PALETTE: Diccionario inmutable con los valores HEX maestros de la marca
-PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
+_PALETTE_RAW: Final[dict[str, HexColor]] = {
     "background": "#0a0e17",
     "surface": "#141b2d",
     "surface_alt": "#1e2740",
@@ -100,15 +100,16 @@ PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "text_dim": "#5c6b85",
     "border": "#2a3654",
     "glow": "#00f0c0",
-})
+}
+PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_RAW)
 
 # PALETTE_RGB: Caché pre-calculada de la paleta en formato tupla RGB
 PALETTE_RGB: Final[Mapping[str, RGBTuple]] = MappingProxyType({
-    k: (int(v[1:3], 16), int(v[3:5], 16), int(v[5:7], 16)) for k, v in PALETTE.items()
+    k: (int(v[1:3], 16), int(v[3:5], 16), int(v[5:7], 16)) for k, v in _PALETTE_RAW.items()
 })
 
 # HEX_TO_KEY: Mapa inverso para optimizar búsquedas de claves a partir de valores HEX
-HEX_TO_KEY: Final[Mapping[HexColor, str]] = MappingProxyType({v: k for k, v in PALETTE.items()})
+HEX_TO_KEY: Final[Mapping[HexColor, str]] = MappingProxyType({v: k for k, v in _PALETTE_RAW.items()})
 
 # FONT_SIZES: Definición de tamaños de fuente aplicados en la jerarquía visual
 FONT_SIZES: FontSizesDict = {

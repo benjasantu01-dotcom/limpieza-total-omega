@@ -111,30 +111,19 @@ def base_directories() -> List[Path]:
         return []
 
 
-def _is_path_inside_base(target_path: Path, base_path: Path) -> bool:
+def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
-    Verifica que 'target_path' pertenezca a 'base_path' para evitar ataques
-    de Path Traversal. Además valida que no sea un punto de reparse (Junction/Symlink).
+    Verifica que 'real_target' pertenezca a 'real_base' para evitar ataques
+    de Path Traversal. Valida que no sea un punto de reparse (Junction/Symlink).
     """
     try:
-        real_base = base_path.resolve(strict=True)
-        real_target = target_path.resolve(strict=True)
-        
-        # Prevenir escalada de directorios mediante segmentos '..'
         if ".." in real_target.parts:
             return False
         
-        # Validar permisos de seguridad globales
         if not is_safe_to_modify(real_target) or not is_safe_to_modify(real_base):
             return False
 
-        # Verificar contención mediante prefijo de ruta absoluta
         if real_target.parts[:len(real_base.parts)] != real_base.parts:
-            return False
-
-        # Excluir explícitamente puntos de reparse para evitar bucles o escaneo fuera de rango
-        is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
-        if real_target.is_symlink() or is_junction(str(real_target)):
             return False
 
         return True
@@ -189,18 +178,10 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el peso total en bytes de un directorio mediante recursión controlada.
-    Usa 'memo' para cachear resultados de carpetas ya visitadas (ej. carpetas compartidas).
+    Usa 'memo' para cachear resultados de carpetas ya visitadas.
     """
-    try:
-        root_path = Path(root_dir).resolve(strict=True)
-        if not root_path.is_dir() or not is_safe_to_modify(root_path) or is_protected_path(root_path):
-            return 0
-        root_key = str(root_path)
-    except (OSError, PermissionError, RuntimeError, ValueError):
-        return 0
-
-    if root_key in memo:
-        return memo[root_key]
+    if root_dir in memo:
+        return memo[root_dir]
 
     def _walk(current_dir: str, depth: int) -> int:
         if depth > MAX_SCAN_DEPTH:
@@ -224,8 +205,8 @@ def _sum_directory_recursive(
             return 0
         return total
 
-    result = _walk(root_key, 0)
-    memo[root_key] = result
+    result = _walk(root_dir, 0)
+    memo[root_dir] = result
     return result
 
 
@@ -247,14 +228,18 @@ def directory_size(path: Union[str, Path]) -> int:
         return 0
 
 
-def _is_valid_cache_path(candidate: Path, base_path: Path) -> bool:
+def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Realiza las validaciones de seguridad finales sobre una ruta candidata."""
     try:
-        return (candidate.is_dir() and 
-                is_safe_to_modify(candidate) and 
-                not is_protected_path(candidate) and
-                _is_path_inside_base(candidate, base_path) and 
-                not _is_excluded_file(candidate.name))
+        if not candidate.exists(): return False
+        real_candidate = candidate.resolve(strict=True)
+        
+        if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or
+            not real_candidate.is_dir() or not is_safe_to_modify(real_candidate) or 
+            is_protected_path(real_candidate) or not _is_path_inside_base(real_candidate, base_path) or 
+            _is_excluded_file(real_candidate.name)):
+            return False
+        return True
     except (OSError, PermissionError, RuntimeError):
         return False
 
@@ -265,7 +250,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Detecta cachés instaladas buscando rutas predefinidas.
-    Usa `perf_cache` para evitar cálculos redundantes sobre la misma estructura.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -280,19 +264,16 @@ def detect_profiles(
     found: List[BrowserCache] = []
     
     for base in raw_bases:
-        if not base:
-            continue
+        if not base: continue
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
-                if not rel_str:
-                    continue
+                if not rel_str: continue
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 
-                if str(candidate) in perf_cache:
-                    continue
+                if str(candidate) in perf_cache: continue
 
-                if _is_valid_cache_path(candidate, real_base):
+                if _is_valid_cache_path(candidate, real_base, is_junction):
                     c_path = candidate.resolve()
                     size = _sum_directory_recursive(str(c_path), is_junction, k32, perf_cache)
                     if size > 0:

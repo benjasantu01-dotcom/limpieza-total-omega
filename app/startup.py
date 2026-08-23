@@ -84,22 +84,22 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la extensión corresponde a un ejecutable y no es un symlink (seguridad)."""
+        """Valida mediante extensión y seguridad de sistema si la ruta es ejecutable."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_cmd: str) -> str:
-        """Limpia la cadena de comando eliminando caracteres no imprimibles o de control."""
+        """Limpia caracteres de control (ASCII < 32) de la línea de comando cruda."""
         if not isinstance(raw_cmd, str):
             return ""
         return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_cmd: str) -> str:
         """
-        Analiza cadenas entrecomilladas buscando rutas de archivo válidas, 
-        evitando caracteres peligrosos y rutas protegidas.
+        Extrae y valida rutas contenidas entre comillas, descartando secuencias
+        con caracteres no permitidos en sistemas de archivos Windows.
         """
         if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
             return ""
@@ -121,8 +121,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_str: str) -> str:
         """
-        Normaliza, valida existencia en disco y cachea el resultado.
-        Evita seguir enlaces simbólicos para prevenir ataques de redirección.
+        Normaliza una ruta, verifica su existencia real mediante realpath y la 
+        almacena en _EXISTS_CACHE para optimizar lecturas recurrentes.
         """
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*\0'):
             return ""
@@ -157,8 +157,8 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, cmd: str) -> str:
         """
-        Determina la ruta del binario a partir de un comando crudo, gestionando 
-        tanto rutas simples como comandos con argumentos o comillas.
+        Interpreta comandos de ejecución (con/sin comillas o argumentos) 
+        para aislar la ruta del binario principal.
         """
         if not cmd or not isinstance(cmd, str):
             return ""

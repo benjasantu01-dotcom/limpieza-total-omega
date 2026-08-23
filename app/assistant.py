@@ -447,8 +447,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     tokens = set(_TOKEN_REGEX.findall(q_sanitized))
     found_key = next((_KEYWORD_MAP[t] for t in tokens if t in _KEYWORD_MAP), None)
     
-    if found_key and callable(_HANDLERS.get(found_key)):
-        return _HANDLERS[found_key](context, question)
+    handler = _HANDLERS.get(found_key) if found_key else None
+    if handler:
+        return handler(context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
