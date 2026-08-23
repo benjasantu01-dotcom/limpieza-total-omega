@@ -287,7 +287,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         
-    temp_path = ruta.with_suffix(f"{ruta.suffix}.{os.getpid()}.tmp")
+    temp_path = ruta.with_suffix(f"{ruta.suffix}.{os.getpid()}_{int(time.time())}.tmp")
     for attempt in range(3):
         try:
             encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")

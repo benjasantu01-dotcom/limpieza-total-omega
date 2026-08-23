@@ -127,7 +127,8 @@ class Scanner:
 
         if is_file:
             try:
-                # Verificamos tamaño solo si es posible acceder a los stats
+                # Verificamos tamaño solo si es posible acceder a los stats, 
+                # manejando casos de archivos bloqueados o inaccesibles
                 if entry.stat(follow_symlinks=False).st_size == 0:
                     return
             except (OSError, PermissionError):

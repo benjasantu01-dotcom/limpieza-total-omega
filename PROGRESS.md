@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 0 | 0 | 0 | 0 | 6 |
+| 2026-08-21 | 0 | 0 | 0 | 0 | 2 |
 | 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
-| 2026-08-23 | 68 | 5 | 11 | 6 | 58 |
+| 2026-08-23 | 71 | 5 | 11 | 6 | 59 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **39**
+- seguridad defensiva: **40**
 - rendimiento: **38**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **23**
 - `memory.py`: **22**
-- `assistant.py`: **22**
 - `duplicates.py`: **21**
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `healthscore.py`: **19**
+- `scanner.py`: **19**
 - `diskreport.py`: **18**
-- `scanner.py`: **18**
 - `quarantine.py`: **17**
 - `browser.py`: **16**
 - `branding.py`: **15**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T06:32:03` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva de `build_context` implementando una validación explícita mediante `is_protected_path` sobre los datos de configuración (específicamente el campo `grade`), evitando que una configuración maliciosa inyecte rutas potencialmente peligrosas en el estado del sistema.
+- `2026-08-23T06:31:18` **settings.py** (robustez ante casos límite): Se mejora la robustez ante estados de carrera y fallos en el sistema de archivos al implementar un manejo más estricto del archivo temporal de configuración mediante `os.replace` y asegurando que las operaciones de validación de rutas no dependan de estados mutables del sistema durante el reemplazo.
+- `2026-08-23T06:30:49` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante errores de acceso a archivos al añadir un manejo explícito de excepciones (capturando `OSError` y `PermissionError`) durante la lectura de atributos de archivo en `process_entry`, asegurando que el bucle de escaneo no se interrumpa ante metadatos corruptos o archivos bloqueados por el sistema.
 - `2026-08-23T06:21:12` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` añadiendo una verificación de existencia previa al `unlink` y un manejo más estricto del estado del sistema de archivos, asegurando que la operación de aislamiento sea atómica y no deje estados inconsistentes en caso de fallos de E/S.
 - `2026-08-23T06:12:12` **memory.py** (robustez ante casos límite): Se ha robustecido el escaneo de procesos en `top_memory_processes` añadiendo un manejo de excepciones específico para el caso donde `Get-Process` devuelve datos incompletos o mal formados, garantizando que el bucle de procesamiento de memoria no falle ante valores inesperados en el CSV y se mantenga la integridad del diagnóstico.
 - `2026-08-23T06:10:28` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` ante errores de acceso a disco, asegurando que los métodos manejen correctamente archivos que desaparecen entre la detección y el procesamiento, evitando cierres inesperados por `FileNotFoundError` o `PermissionError`.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T05:21:00` **browser.py** (rendimiento): Optimizé `detect_profiles` para evitar el cálculo redundante de `is_junction` y el acceso a `kernel32` mediante su pre-cálculo fuera del bucle principal, y mejoré la lógica de `_is_path_inside_base` para reducir llamadas costosas a `resolve(strict=True)` que ya se realizan al inicio de la cadena de llamadas.
 - `2026-08-23T05:20:51` **branding.py** (rendimiento): Optimicé el cálculo de `PALETTE_RGB` y `HEX_TO_KEY` convirtiéndolos en iteraciones de una sola pasada sobre el diccionario original, eliminando la redundancia de procesamiento y el uso de `MappingProxyType` innecesario durante la construcción de la caché estática.
 - `2026-08-23T05:20:18` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo `_TOKEN_REGEX.findall(q_sanitized)` en un set de tokens una sola vez y aplicando un mapeo eficiente mediante un diccionario, evitando re-procesamientos innecesarios.
-- `2026-08-23T05:19:42` **startup.py** (legibilidad y documentación): He mejorado la documentación de la clase `StartupEntry` y sus métodos privados mediante Type Hinting avanzado y docstrings descriptivos, aclarando las responsabilidades de resolución y validación de rutas para garantizar la mantenibilidad y legibilidad.
-- `2026-08-23T05:10:21` **settings.py** (legibilidad y documentación): He refactorizado la clase `_Validators` para mejorar la legibilidad y mantenibilidad, consolidando la lógica de validación de rutas mediante un método privado unificado y añadiendo docstrings descriptivos que aclaran el flujo de validación.
-- `2026-08-23T05:10:07` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` mediante type hints explícitos en los retornos y docstrings detallados que clarifican el propósito de las funciones auxiliares de escaneo y su integración con el orquestador `scan_file`.

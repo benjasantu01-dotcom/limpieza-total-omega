@@ -301,8 +301,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         g_val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
         if isinstance(g_val, (str, int, float)):
             g_str = str(g_val)[:10].strip()
-            # Validación estricta para grado: evita inyecciones de control o rutas
-            if _ensure_safe_text(g_str):
+            # Validación estricta: evita inyecciones o rutas protegidas disfrazadas de grado
+            if _ensure_safe_text(g_str) and not is_protected_path(g_str):
                 ctx.grade = g_str
             
     ctx.analyzed = found_data
