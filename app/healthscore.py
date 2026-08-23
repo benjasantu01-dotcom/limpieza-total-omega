@@ -210,6 +210,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         
         try:
             ratio = scorer(metrics)
+            if not math.isfinite(ratio): ratio = 0.0
             metric_ratios[area] = ratio
             weighted_points = round(ratio * weight)
             metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))

@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 52 | 4 | 6 | 2 | 54 |
+| 2026-08-21 | 50 | 4 | 6 | 2 | 52 |
 | 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
-| 2026-08-23 | 21 | 1 | 4 | 2 | 8 |
+| 2026-08-23 | 23 | 1 | 4 | 2 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **45**
+- seguridad defensiva: **43**
 - rendimiento: **38**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `memory.py`: **23**
 - `assistant.py`: **21**
 - `duplicates.py`: **21**
-- `settings.py`: **20**
-- `scanner.py`: **19**
+- `settings.py`: **19**
+- `healthscore.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
-- `healthscore.py`: **18**
+- `scanner.py`: **18**
 - `quarantine.py`: **15**
 - `organizer.py`: **14**
 - `branding.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T01:45:35` **memory.py** (robustez ante casos límite): Mejoré la robustez de `_read_windows_snapshot` para gestionar de forma segura valores de retorno inesperados de la API de Windows, asegurando que `MemorySnapshot` no se cree con valores nulos o inconsistentes que pudieran causar errores de división por cero en otras partes del módulo.
+- `2026-08-23T01:40:27` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante casos límite en `compute_score` agregando una validación explícita para evitar divisiones por cero en los `scorers` mediante una verificación de los límites definidos y manejando proactivamente los casos donde `metrics` podría contener valores fuera de rango que no disparan errores de tipo pero sí de lógica (como `NaN` o `inf`).
 - `2026-08-23T01:31:32` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `_collect_candidates` ante archivos que desaparecen o son inaccesibles durante la ejecución, integrando validaciones de existencia mediante `is_file()` antes de realizar operaciones de metadatos, evitando así errores de concurrencia típicos en sistemas de archivos dinámicos.
 - `2026-08-23T01:31:23` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` ante archivos bloqueados o con metadatos inconsistentes mediante un bloque `try-except` más granular en el acceso a atributos `stat` y el manejo de rutas, evitando interrupciones prematuras por errores de acceso de solo lectura.
 - `2026-08-23T01:30:55` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos que bloquean el acceso durante la iteración o presentan estructuras no convencionales, asegurando que `OSError` o `PermissionError` durante la lectura de atributos no interrumpan la operación completa ni dejen estados inconsistentes.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T00:49:41` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante un `set` de intersección, eliminando la necesidad de iterar sobre cada palabra del usuario y simplificando la lógica de selección del handler.
 - `2026-08-23T00:39:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de las funciones de chequeo y enriqueciendo los docstrings para explicar la lógica de las heurísticas de seguridad, facilitando así el mantenimiento futuro.
 - `2026-08-23T00:30:21` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, documentación detallada en funciones críticas y la estandarización de logs de error en `save_manifest` para facilitar la depuración técnica.
-- `2026-08-23T00:29:38` **organizer.py** (legibilidad y documentación): Se ha añadido documentación explícita en formato docstring y type hints mejorados a las funciones internas de validación y recorrido para clarificar el propósito de cada chequeo de seguridad, facilitando el mantenimiento y la auditoría del código.
-- `2026-08-23T00:29:07` **memory.py** (legibilidad y documentación): Mejoré la documentación de `memory.py` incluyendo type hints explícitos en retornos de funciones, aclarando la intención de constantes y parámetros mediante docstrings enriquecidos, y reordenando el módulo para agrupar mejor las funciones de utilidad, facilitando la comprensión y mantenimiento del código fuente.

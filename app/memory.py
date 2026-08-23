@@ -209,7 +209,9 @@ def _read_windows_snapshot() -> MemorySnapshot:
     try:
         total = int(stat.ullTotalPhys)
         avail = int(stat.ullAvailPhys)
-        if total <= 0 or avail > total: return MemorySnapshot(0, 0)
+        # Validación de integridad para prevenir valores absurdos o división por cero
+        if total <= 0 or avail > total: 
+            return MemorySnapshot(0, 0)
         return MemorySnapshot(total=total, available=avail)
     except (ValueError, TypeError, OverflowError):
         return MemorySnapshot(0, 0)
