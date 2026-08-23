@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 8 | 0 | 1 | 0 | 9 |
+| 2026-08-21 | 4 | 0 | 1 | 0 | 9 |
 | 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
-| 2026-08-23 | 62 | 5 | 10 | 5 | 54 |
+| 2026-08-23 | 65 | 5 | 10 | 5 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **47**
+- seguridad defensiva: **43**
 - rendimiento: **38**
-- robustez ante casos límite: **30**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `assistant.py`: **22**
 - `settings.py`: **21**
-- `assistant.py`: **21**
+- `memory.py`: **21**
 - `duplicates.py`: **20**
 - `scanner.py`: **19**
 - `healthscore.py`: **19**
-- `quarantine.py`: **17**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `browser.py`: **16**
-- `branding.py`: **14**
-- `organizer.py`: **13**
+- `quarantine.py`: **16**
+- `branding.py`: **15**
+- `organizer.py`: **12**
 - `safety.py`: **10**
-- `main.py`: **9**
+- `main.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T06:01:42` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `drive_usage` y `all_drives_usage` ante fallos de acceso o unidades sin soporte (como unidades de red o volúmenes no montados) mediante la adición de comprobaciones explícitas de acceso y un manejo de errores más específico para evitar cierres inesperados.
+- `2026-08-23T06:01:05` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` validando la existencia y el tipo de la ruta padre antes de intentar operaciones de escritura para prevenir errores en sistemas de archivos con permisos restringidos o rutas inexistentes.
+- `2026-08-23T06:00:32` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados en los diccionarios de configuración/fuentes de datos, asegurando que `grade` sea una cadena limpia antes de su uso y evitando inyecciones de control.
 - `2026-08-23T05:51:03` **settings.py** (rendimiento): Optimizé la gestión de la caché y la validación utilizando `frozenset` para las claves permitidas en `_STR_TO_ENUM` y evitando la carga repetitiva de archivos mediante una validación de `st_mtime` más robusta, reduciendo llamadas innecesarias al sistema de archivos.
 - `2026-08-23T05:30:31` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje pre-calculando los factores de normalización (`1.0 / limit`) para eliminar divisiones repetitivas dentro de los bucles de evaluación, mejorando la eficiencia computacional en cada ejecución.
 - `2026-08-23T05:30:06` **duplicates.py** (rendimiento): Optimizé el pipeline de confirmación de `find_duplicates` añadiendo un filtro preventivo mediante la comparación de hashes parciales antes de proceder al hash completo, evitando lecturas innecesarias en grupos donde la colisión por tamaño era un falso positivo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T05:09:41` **safety.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de validación interna para clarificar el propósito de las comprobaciones de bajo nivel y mejorar la mantenibilidad, sin alterar la lógica de seguridad.
 - `2026-08-23T05:00:55` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones internas de validación (`_check_windows_file_attributes`, `_check_path_syntax_integrity`) y se refactorizó la lógica de los chequeos de integridad para mejorar la legibilidad y mantenimiento del código bajo las guías exigidas.
 - `2026-08-23T05:00:39` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la refactorización de la lógica de ordenamiento (ahora definida como una constante mapeada), la adición de docstrings técnicos explicativos sobre las validaciones de seguridad y el uso de type hints para clarificar las estructuras de datos, manteniendo la integridad funcional.
-- `2026-08-23T05:00:15` **memory.py** (legibilidad y documentación): Mejoré la documentación de `trim_working_set` y sus funciones auxiliares con docstrings explicativos que aclaran el flujo de seguridad y las restricciones de acceso, asegurando que el propósito de cada chequeo defensivo esté explícito para auditorías futuras.
-- `2026-08-23T04:49:54` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de puntuación y la expansión de los docstrings, clarificando explícitamente el comportamiento ante valores fuera de rango y la lógica de normalización matemática.
-- `2026-08-23T04:49:44` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `_collect_candidates` mediante la inclusión de un docstring detallado y la clarificación del flujo recursivo para mejorar la mantenibilidad del motor de escaneo.

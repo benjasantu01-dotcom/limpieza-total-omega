@@ -355,14 +355,12 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         parent = path_obj.parent
-        if is_protected_path(parent):
-            return None
         if not parent.exists():
             if not is_safe_to_modify(parent): return None
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None
-        # Validación final antes de escritura para evitar Race Conditions
+        # Validación final de seguridad antes de escritura
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj

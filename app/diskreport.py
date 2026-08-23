@@ -185,26 +185,26 @@ def format_size(num: Union[int, float, None]) -> str:
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad específica.
-    
-    Args:
-        mount: Ruta o letra de unidad a consultar.
-        
-    Returns:
-        Objeto DriveUsage si la unidad existe y es accesible, None en caso contrario.
     """
     if mount is None or not isinstance(mount, (str, os.PathLike)):
         return None
         
     try:
         p = Path(os.fspath(mount)).resolve(strict=False)
-        if not p.exists():
+        # Verificar accesibilidad básica del punto de montaje
+        if not os.access(p, os.R_OK):
             return None
             
         str_mount = str(p)
+        # Ignorar rutas UNC o remotas para evitar bloqueos por latencia
         if str_mount.startswith(("\\\\", "//")):
             return None
             
         usage = shutil.disk_usage(p)
+        # Filtrar unidades que devuelven ceros (común en dispositivos no listos)
+        if usage.total == 0:
+            return None
+            
         return DriveUsage(mount=str_mount, total=usage.total, used=usage.used, free=usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
         return None
@@ -213,11 +213,11 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
     Obtiene el uso de almacenamiento de todas las unidades detectadas en el sistema.
-    En Windows escanea letras de unidad; en sistemas POSIX asume la raíz '/'.
     """
     if mounts is None:
         if os.name == "nt":
             import string
+            # Comprobar existencia y disponibilidad mínima mediante os.path.exists
             mounts = [f"{letter}:\\" for letter in string.ascii_uppercase
                       if os.path.exists(f"{letter}:\\")]
         else:

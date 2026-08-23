@@ -1549,3 +1549,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T05:51:15` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un filtrado preventivo en `entries_from_folders` mediante un `set` de rutas protegidas pre-calculadas y se optimizó la validación de archivos ejecutables usando `os.path.exists` antes de instanciar `StartupEntry`, evitando realizar llamadas costosas al sistema de archivos para elementos que ya sabemos que son inválidos.
 - `2026-08-23T05:51:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T05:51:15` Corrida terminada. Total usado hoy: 136.
+- `2026-08-23T05:59:55` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-23T06:00:32` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados en los diccionarios de configuración/fuentes de datos, asegurando que `grade` sea una cadena limpia antes de su uso y evitando inyecciones de control.
+- `2026-08-23T06:01:05` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save_logo_svg` validando la existencia y el tipo de la ruta padre antes de intentar operaciones de escritura para prevenir errores en sistemas de archivos con permisos restringidos o rutas inexistentes.
+- `2026-08-23T06:01:30` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-23T06:01:42` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `drive_usage` y `all_drives_usage` ante fallos de acceso o unidades sin soporte (como unidades de red o volúmenes no montados) mediante la adición de comprobaciones explícitas de acceso y un manejo de errores más específico para evitar cierres inesperados.
+- `2026-08-23T06:01:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T06:01:42` Corrida terminada. Total usado hoy: 140.
