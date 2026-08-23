@@ -450,8 +450,6 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem inválido o vacío.")
         
     items = load_manifest(base)
-    # Ya que load_manifest retorna una lista, el rendimiento es O(N), aceptable para el tamaño de cuarentena.
-    # El uso de ID asegura la unicidad.
     quarantine_item = next((item for item in items if item.item_id == item_id), None)
     if not quarantine_item:
         raise KeyError(f"No se encontró el ítem: {item_id}")
@@ -474,8 +472,9 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise FileExistsError(f"Error: el destino {destination} ya existe.")
     
     try:
-        if not destination.parent.exists():
-            destination.parent.mkdir(parents=True, exist_ok=True)
+        parent = destination.parent
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
             
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:
@@ -522,32 +521,33 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Elimina todos los archivos verificables del sandbox y actualiza el manifiesto."""
-    quarantine_root = quarantine_dir(base)
-    items = load_manifest(base)
-    if not items:
-        return 0
-    
-    remaining_items: List[QuarantineItem] = []
-    purged_count = 0
-    
-    for item in items:
-        stored_path = (quarantine_root / item.stored_name).resolve()
-        # Verificar estado del archivo: si existe pero está bloqueado, se mantiene en el manifiesto
-        if stored_path.exists() and not _is_item_purgable(stored_path, item):
-            remaining_items.append(item)
-        elif _is_item_purgable(stored_path, item):
-            if _safe_unlink(stored_path):
-                purged_count += 1
+    try:
+        quarantine_root = quarantine_dir(base)
+        items = load_manifest(base)
+        if not items:
+            return 0
+        
+        remaining_items: List[QuarantineItem] = []
+        purged_count = 0
+        
+        for item in items:
+            stored_path = (quarantine_root / item.stored_name).resolve()
+            if not stored_path.exists():
+                continue
+            
+            if _is_item_purgable(stored_path, item):
+                if _safe_unlink(stored_path):
+                    purged_count += 1
+                else:
+                    remaining_items.append(item)
             else:
                 remaining_items.append(item)
-        else:
-            # Archivo inexistente o corrupto, se descarta del manifiesto
-            pass
-            
-    if purged_count > 0:
-        save_manifest(remaining_items, base)
-        
-    return purged_count
+                
+        if purged_count > 0:
+            save_manifest(remaining_items, base)
+        return purged_count
+    except (OSError, UnsafePathError):
+        return 0
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:

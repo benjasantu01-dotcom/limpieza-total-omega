@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 33
+- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 85 | 8 | 13 | 10 | 80 |
-| 2026-08-23 | 129 | 8 | 20 | 11 | 140 |
+| 2026-08-22 | 83 | 7 | 13 | 10 | 79 |
+| 2026-08-23 | 132 | 8 | 21 | 11 | 140 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **45**
-- manejo de errores y validación de entradas: **45**
-- rendimiento: **41**
+- legibilidad y documentación: **44**
+- rendimiento: **40**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `memory.py`: **21**
+- `memory.py`: **22**
 - `duplicates.py`: **20**
-- `settings.py`: **19**
+- `assistant.py`: **20**
+- `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `quarantine.py`: **18**
+- `settings.py`: **18**
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
 - `branding.py`: **15**
+- `organizer.py`: **14**
 - `browser.py`: **13**
-- `organizer.py`: **13**
 - `startup.py`: **7**
 - `main.py`: **7**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T13:19:56` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y `restore_item` al centralizar y reforzar la validación de rutas y el manejo de excepciones de E/S, evitando que estados inconsistentes del sistema de archivos bloqueen la ejecución del bucle.
+- `2026-08-23T13:19:23` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas (tipo, existencia y limpieza) antes de realizar operaciones de disco, evitando el procesamiento de rutas potencialmente corruptas.
+- `2026-08-23T13:18:59` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_read_windows_snapshot` y `read_snapshot` añadiendo validaciones explícitas contra valores negativos o inesperados de la API de memoria, evitando que la app reporte un estado irreal o "cero" debido a errores transitorios de lectura.
 - `2026-08-23T13:09:28` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y los validadores de `SystemMetrics` mediante la captura explícita de errores de desbordamiento aritmético y el uso de un manejo de estados más conservador ante entradas inesperadas.
 - `2026-08-23T13:09:04` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `reclaimable_bytes` ante entradas inválidas o parcialmente nulas, validando explícitamente la integridad de los datos antes de operar y evitando excepciones inesperadas durante el procesamiento de grupos.
 - `2026-08-23T13:08:40` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` capturando errores específicos en las llamadas a `os.scandir` y `shutil.disk_usage` para evitar cierres inesperados, y añadí validación de entrada en los `heappush/heapreplace` de `_collect_summary_data` para prevenir errores de comparación si los tamaños fueran inválidos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T10:56:40` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.path` para manejar correctamente rutas que no existen o tienen permisos denegados, evitando fallos en tiempo de ejecución al validar configuraciones en carpetas personalizadas.
 - `2026-08-23T10:56:12` **scanner.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de resolución de rutas en el método `_is_safe_entry` y `scan_directory` para evitar cierres inesperados ante enlaces simbólicos circulares o rutas que devuelven errores de sistema al intentar resolverse.
 - `2026-08-23T10:46:36` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine.py` ante bloqueos de archivos persistentes o errores de acceso durante la purga, añadiendo una validación de estado de bloqueo en `_is_item_purgable` para evitar estados inconsistentes en el manifiesto.
-- `2026-08-23T10:46:02` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de espacio en disco más precisas y manejo explícito de excepciones durante la iteración, previniendo fallos ante archivos que desaparecen (condiciones de carrera) o volúmenes no alcanzables.
-- `2026-08-23T10:45:38` **memory.py** (robustez ante casos límite): Se ha implementado una validación de existencia de ruta usando `os.path.realpath` en `_is_safe_to_trim` para detectar de forma robusta enlaces simbólicos y puntos de reparse, evitando seguir rutas que el usuario no debería manipular en el contexto de gestión de memoria.
-- `2026-08-23T10:37:01` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados intermedios en la UI (`_task_lock` y `_tasks_running`) para evitar condiciones de carrera si el usuario dispara múltiples análisis concurrentes, asegurando que el estado visual de la barra de progreso y la disponibilidad de botones sea siempre consistente y no se bloquee.

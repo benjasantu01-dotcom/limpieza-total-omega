@@ -184,7 +184,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
     Validación de alto nivel antes del movimiento.
     """
-    if not isinstance(junk_file, JunkFile): return False
+    if not isinstance(junk_file, JunkFile) or junk_file.path is None: return False
     try:
         current_path: Path = junk_file.path
         if not current_path.exists() or is_protected_path(current_path) or is_protected_path(dest):
@@ -259,16 +259,16 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return None
 
     for junk_file in files:
-        if not isinstance(junk_file, JunkFile): continue
+        if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
         try:
             src_path: Path = junk_file.path.resolve()
-            # Validación de espacio antes de cada operación individual
-            if shutil.disk_usage(dest_base).free < src_path.stat().st_size:
-                logger.warning(f"Espacio insuficiente para {src_path.name}")
+            
+            # Validación previa de espacio y existencia
+            if not src_path.exists() or shutil.disk_usage(dest_base).free < src_path.stat().st_size:
                 continue
                 
             if src_path.anchor != dest_base.anchor: continue
-            if not src_path.exists() or not _is_safe_to_move(junk_file, dest_base): continue
+            if not _is_safe_to_move(junk_file, dest_base): continue
             
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
             target = _generate_unique_target(dest_base / safe_name).resolve()
@@ -301,10 +301,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         try:
             if not item.is_file() or _is_junction(item): continue
             if not item.is_relative_to(dest): continue
-            
-            # Verificar si existe antes de intentar cualquier operación
             if not item.exists(): continue
             
+            # Chequeo de seguridad antes de cada eliminación individual
             if is_safe_to_modify(item) and not _is_file_locked(item):
                 ensure_safe_to_modify(item)
                 item.unlink()

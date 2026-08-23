@@ -209,6 +209,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
     try:
         total = int(stat.ullTotalPhys)
         avail = int(stat.ullAvailPhys)
+        # Validar que los datos de la API sean físicamente posibles
         if total <= 0 or avail > total: 
             return MemorySnapshot(0, 0)
         return MemorySnapshot(total=total, available=avail)
@@ -218,13 +219,17 @@ def _read_windows_snapshot() -> MemorySnapshot:
 def read_snapshot() -> MemorySnapshot:
     """Detecta el SO y lee el estado de memoria actual."""
     if os.name == "nt":
-        try: return _read_windows_snapshot()
-        except (AttributeError, OSError, ctypes.ArgumentError): return MemorySnapshot(0, 0)
+        try: 
+            return _read_windows_snapshot()
+        except (AttributeError, OSError, ctypes.ArgumentError): 
+            return MemorySnapshot(0, 0)
     
     try:
         if os.path.exists("/proc/meminfo"):
             with open("/proc/meminfo", encoding="utf-8", errors="replace") as f:
-                return parse_linux_meminfo(f.read())
+                content = f.read()
+                if content:
+                    return parse_linux_meminfo(content)
     except (OSError, PermissionError):
         pass
     return MemorySnapshot(0, 0)
