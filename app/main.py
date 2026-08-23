@@ -131,6 +131,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._closing = False
         self._log_scheduled = False
         self._active_buttons: List[ctk.CTkButton] = []
+        self._tasks_running = 0
         
         self._setup_application()
 
@@ -215,7 +216,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.cards: Dict[str, ctk.CTkLabel] = {}
         self.area_bars: Dict[str, Tuple[ctk.CTkProgressBar, ctk.CTkLabel]] = {}
         
-        self._tasks_running = 0
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         self._debounces: Dict[str, str] = {}
         
@@ -921,24 +921,26 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _set_busy(self, busy: bool) -> None:
         """Gestiona el estado visual de la barra de progreso asíncrona."""
         if self._closing or not hasattr(self, 'activity') or not self.activity.winfo_exists(): return
-        if busy:
-            self._tasks_running += 1
-            if self._tasks_running == 1:
-                self._toggle_ui_availability(False)
-                try:
-                    self.activity.pack(side="right")
-                    self.activity.start()
-                except tk.TclError:
-                    pass
-        else:
-            self._tasks_running = max(0, self._tasks_running - 1)
-            if self._tasks_running == 0:
-                self._toggle_ui_availability(True)
-                try:
-                    self.activity.stop()
-                    self.activity.pack_forget()
-                except tk.TclError:
-                    pass
+        
+        with self._task_lock:
+            if busy:
+                self._tasks_running += 1
+                if self._tasks_running == 1:
+                    self._toggle_ui_availability(False)
+                    try:
+                        self.activity.pack(side="right")
+                        self.activity.start()
+                    except tk.TclError:
+                        pass
+            else:
+                self._tasks_running = max(0, self._tasks_running - 1)
+                if self._tasks_running == 0:
+                    self._toggle_ui_availability(True)
+                    try:
+                        self.activity.stop()
+                        self.activity.pack_forget()
+                    except tk.TclError:
+                        pass
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
         """Traduce excepciones de bajo nivel en mensajes claros para el log de la UI."""

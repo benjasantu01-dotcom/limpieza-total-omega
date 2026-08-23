@@ -250,7 +250,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
     try:
         path_obj = Path(os.fspath(directory))
-        if not path_obj.is_dir():
+        if not path_obj.exists() or not path_obj.is_dir():
             return
         base_path = path_obj.resolve(strict=False)
         if skip_protected and is_protected_path(base_path):
@@ -269,6 +269,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             continue
             
         try:
+            if not current_dir.is_dir():
+                continue
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:

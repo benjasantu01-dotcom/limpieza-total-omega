@@ -108,7 +108,6 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         for val in self.__dict__.values():
-            if val is None: return False
             if isinstance(val, (int, float)) and not math.isfinite(float(val)):
                 return False
         return True
@@ -200,7 +199,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             if not math.isfinite(ratio): ratio = 0.0
             metric_ratios[area] = ratio
             weighted_points = round(ratio * weight)
-            metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
+            points_val = float(weighted_points)
+            final_points = _clamp(points_val, 0.0, float(weight)) if math.isfinite(points_val) else 0.0
+            metric_breakdown[area] = int(final_points)
             accumulated_points += metric_breakdown[area]
         except Exception:
             metric_breakdown[area] = 0
