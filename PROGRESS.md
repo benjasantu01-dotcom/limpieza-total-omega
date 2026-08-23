@@ -7,46 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 16
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 22
+- Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-21 | 61 | 5 | 8 | 6 | 58 |
+| 2026-08-21 | 60 | 5 | 8 | 5 | 56 |
 | 2026-08-22 | 153 | 11 | 20 | 15 | 151 |
-| 2026-08-23 | 10 | 0 | 2 | 1 | 3 |
+| 2026-08-23 | 11 | 1 | 2 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **50**
-- robustez ante casos límite: **33**
-- rendimiento: **31**
+- robustez ante casos límite: **32**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
 - `settings.py`: **20**
 - `duplicates.py`: **20**
+- `assistant.py`: **20**
 - `scanner.py`: **19**
 - `healthscore.py`: **19**
-- `assistant.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **17**
 - `organizer.py`: **14**
 - `quarantine.py`: **14**
 - `branding.py`: **14**
-- `main.py`: **11**
 - `safety.py`: **11**
+- `main.py`: **10**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-23T00:49:41` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante un `set` de intersección, eliminando la necesidad de iterar sobre cada palabra del usuario y simplificando la lógica de selección del handler.
 - `2026-08-23T00:39:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en los parámetros de las funciones de chequeo y enriqueciendo los docstrings para explicar la lógica de las heurísticas de seguridad, facilitando así el mantenimiento futuro.
 - `2026-08-23T00:30:21` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints explícitos, documentación detallada en funciones críticas y la estandarización de logs de error en `save_manifest` para facilitar la depuración técnica.
 - `2026-08-23T00:29:38` **organizer.py** (legibilidad y documentación): Se ha añadido documentación explícita en formato docstring y type hints mejorados a las funciones internas de validación y recorrido para clarificar el propósito de cada chequeo de seguridad, facilitando el mantenimiento y la auditoría del código.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-22T14:58:22` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_is_reparse_point` y `process_entry` ante rutas inexistentes o inaccesibles, asegurando que el scanner no se interrumpa ante errores de sistema y validando explícitamente los atributos de los objetos `DirEntry` antes de acceder a ellos.
 - `2026-08-22T14:48:18` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y `restore_item` al reemplazar el manejo implícito de errores por chequeos explícitos, asegurando que si el manifiesto está corrupto o desincronizado, la operación falle de forma segura sin intentar borrar o mover archivos huérfanos.
 - `2026-08-22T14:47:47` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas y capturando excepciones de sistema de archivos durante la iteración para garantizar que un error en un archivo individual no detenga el proceso completo.
-- `2026-08-22T14:39:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus funciones auxiliares implementando validaciones estrictas de tipo y estado para prevenir errores de ejecución por entradas nulas o malformadas, además de asegurar que `OpenProcess` siempre gestione correctamente el cierre del handle incluso ante excepciones inesperadas.

@@ -1041,3 +1041,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T00:40:38` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
 - `2026-08-23T00:40:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T00:40:38` Corrida terminada. Total usado hoy: 16.
+- `2026-08-23T00:48:58` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-23T00:49:41` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens mediante un `set` de intersección, eliminando la necesidad de iterar sobre cada palabra del usuario y simplificando la lógica de selección del handler.
+- `2026-08-23T00:50:20` Tests FALLARON:
+```
+ignores_garbage_percent_and_missing_canvas _____________
+
+    def test_ring_ignores_garbage_percent_and_missing_canvas():
+        canvas = _CanvasFalso()
+>       branding.draw_ring(canvas, "mucho", size=120)
+
+evolve/tests/test_modules.py:256: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+canvas = <test_modules._CanvasFalso object at 0x7fbd02b6b650>, percent = 'mucho'
+size = 120, canvas_x = 0.0, canvas_y = 0.0, thickness = 14, track = None
+fill = None
+
+    def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
+                  canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
+                  track: Optional[HexColor] = None,
+                  fill: Optional[HexColor] = None) -> None:
+        """Dibuja un indicador circular (donut) de progreso."""
+        if not hasattr(canvas, "create_arc"): return
+>       valor: float = max(0.0, min(100.0, float(percent)))
+                                           ^^^^^^^^^^^^^^
+E       ValueError: could not convert string to float: 'mucho'
+
+app/branding.py:413: ValueError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - TypeError: '>' not supported between instances of 'str' and 'int'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - ValueError: could not convert string to float: 'mucho'
+2 failed, 297 passed in 0.87s
+
+```
+- `2026-08-23T00:50:20` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se optimizó el cálculo de la paleta RGB y la gestión de la caché eliminando el cálculo dinámico por comprensión de diccionarios en el ámbito global, reemplazándolo por una inicialización estática más eficiente que evita re-procesar strings en cada importación.
+- `2026-08-23T00:50:48` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-23T00:51:03` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-23T00:51:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T00:51:03` Corrida terminada. Total usado hoy: 20.

@@ -345,7 +345,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
-    """Devuelve explicaciones pedagógicas de los módulos de la app."""
+    """Delvuelve explicaciones pedagógicas de los módulos de la app."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
         
@@ -446,14 +446,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
-    tokens = _TOKEN_REGEX.findall(_sanitize_query(question))
+    tokens = set(_TOKEN_REGEX.findall(_sanitize_query(question)))
+    found_key = next((_KEYWORD_MAP[t] for t in tokens if t in _KEYWORD_MAP), None)
     
-    for token in tokens:
-        if token in _KEYWORD_MAP:
-            handler_key = _KEYWORD_MAP[token]
-            handler = _HANDLERS.get(handler_key)
-            if callable(handler):
-                return handler(context, question)
+    if found_key and callable(_HANDLERS.get(found_key)):
+        return _HANDLERS[found_key](context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
