@@ -150,24 +150,21 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return MemorySnapshot(0, 0)
     
-    mem_total, mem_available, mem_free, cached = 0, 0, 0, 0
+    vals: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
     
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
         key, rest = line.split(":", 1)
-        key = key.strip()
-        if key not in {"MemTotal", "MemAvailable", "MemFree", "Cached"}: continue
-        
-        try:
-            val = int(rest.split()[0]) * 1024
-            if key == "MemTotal": mem_total = val
-            elif key == "MemAvailable": mem_available = val
-            elif key == "MemFree": mem_free = val
-            elif key == "Cached": cached = val
-        except (ValueError, IndexError): continue
+        k = key.strip()
+        if k in vals:
+            try:
+                vals[k] = int(rest.split()[0]) * 1024
+            except (ValueError, IndexError):
+                continue
     
-    available = mem_available if mem_available > 0 else mem_free
-    return MemorySnapshot(total=mem_total, available=min(available, mem_total), cached=cached)
+    total = vals["MemTotal"]
+    available = vals["MemAvailable"] if vals["MemAvailable"] > 0 else vals["MemFree"]
+    return MemorySnapshot(total=total, available=min(available, total), cached=vals["Cached"])
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     """Convierte una línea CSV (formato Name,ID,WS) a un modelo ProcessMemory."""

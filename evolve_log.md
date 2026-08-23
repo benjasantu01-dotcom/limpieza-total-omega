@@ -1080,3 +1080,10 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-08-23T00:51:03` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-08-23T00:51:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-23T00:51:03` Corrida terminada. Total usado hoy: 20.
+- `2026-08-23T00:59:07` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-23T00:59:33` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` y `_process_size_group` evitando la creación innecesaria de objetos `Path` y reduciendo las llamadas a `stat` y `resolve` mediante la reutilización de la información ya obtenida durante el escaneo del directorio.
+- `2026-08-23T01:00:00` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.is_finite
+- `2026-08-23T01:01:11` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el método `_compile_metrics` introduciendo un caché local (`lru_cache`) para la obtención de información de la unidad de disco, evitando así llamadas repetitivas y costosas al sistema de archivos durante la consolidación del puntaje de salud.
+- `2026-08-23T01:01:30` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el procesamiento de `meminfo` en Linux utilizando un generador y una búsqueda por iteración directa que evita la creación de listas intermedias y reduce el uso de memoria al parsear archivos, mejorando el rendimiento en sistemas con muchos registros.
+- `2026-08-23T01:01:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-23T01:01:30` Corrida terminada. Total usado hoy: 24.

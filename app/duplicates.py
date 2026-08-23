@@ -110,8 +110,7 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo en profundidad por el sistema de archivos,
-    evitando ciclos (via inodos) y puntos de reparse, aplicando filtros de seguridad.
+    Realiza un recorrido recursivo en profundidad por el sistema de archivos.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
@@ -121,24 +120,22 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # 0x400 es IO_REPARSE_TAG_REPARSE_POINT (Junctions, Symlinks, etc)
                         entry_stat = entry.stat(follow_symlinks=False)
                         if getattr(entry_stat, 'st_reparse_tag', 0) != 0:
                             continue
                             
-                        if skip_protected and is_protected_path(Path(entry.path)):
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
                             continue
                             
                         if entry.is_dir(follow_symlinks=False):
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
                                 visited_device_inodes.add(device_inode)
-                                _scan(Path(entry.path))
+                                _scan(entry_path)
                         elif entry.is_file(follow_symlinks=False):
-                            if entry_stat.st_size >= min_size:
-                                path_obj = Path(entry.path)
-                                if is_safe_to_modify(path_obj):
-                                    temp_groups[int(entry_stat.st_size)].append(path_obj)
+                            if entry_stat.st_size >= min_size and is_safe_to_modify(entry_path):
+                                temp_groups[int(entry_stat.st_size)].append(entry_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -152,10 +149,7 @@ def _collect_candidates(
 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """
-    Agrupa rutas idénticas aplicando una función de hash determinada; 
-    descarta grupos donde no se encuentren al menos dos archivos colisionando.
-    """
+    """Agrupa rutas idénticas aplicando una función de hash."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -164,23 +158,14 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """
-    Pipeline de confirmación: reduce candidatos inicialmente por tamaño,
-    luego por hash parcial y finalmente por hash completo (SHA256).
-    """
-    if not paths or size <= 0: return []
+    """Pipeline de confirmación reduciendo candidatos."""
     confirmed_groups: List[DuplicateGroup] = []
     
-    # Reducción inicial de candidatos mediante hash rápido de cabecera
-    partial_results: Dict[str, List[Path]] = _refine_by_hash(paths, partial_hash)
+    partial_results = _refine_by_hash(paths, partial_hash)
     for partial_candidates in partial_results.values():
-        if len(partial_candidates) < 2: continue
-        
-        # Confirmación de identidad byte a byte mediante SHA256 completo
-        full_hash_groups: Dict[str, List[Path]] = _refine_by_hash(partial_candidates, hash_file)
+        full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
-            if len(confirmed_paths) > 1:
-                confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
+            confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
     return confirmed_groups
 
 
@@ -195,35 +180,28 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Suma total de espacio recuperable (bytes) de una lista de grupos."""
+    """Suma total de espacio recuperable (bytes)."""
     return sum(g.wasted_bytes for g in groups) if groups is not None else 0
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """
-    Selecciona el mejor archivo para conservar: prioriza la antigüedad (mtime)
-    y, en igualdad de condiciones, el archivo con la ruta más corta.
-    """
+    """Selecciona el mejor archivo para conservar: prioriza antigüedad y ruta corta."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
     keepers: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, (Path, str)): continue
-        p_obj = Path(p)
         try:
-            if not p_obj.exists() or not p_obj.is_file() or not is_safe_to_modify(p_obj):
-                continue
-            stat_info = p_obj.stat()
-            keepers.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
+            p_obj = Path(p)
+            if p_obj.is_file() and is_safe_to_modify(p_obj):
+                stat_info = p_obj.stat()
+                keepers.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
         except (OSError, PermissionError, FileNotFoundError):
             continue
-    if not keepers:
-        return None
-    return min(keepers, key=lambda x: (x[0], x[1]))[2]
+    return min(keepers, key=lambda x: (x[0], x[1]))[2] if keepers else None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Retorna una representación legible para reportes, marcando el archivo a conservar."""
+    """Retorna una representación legible para reportes."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
     keeper = suggest_keeper(group)
