@@ -298,19 +298,26 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     except (OSError, ctypes.ArgumentError): pass
     return None
 
-def _is_safe_to_trim(proc_handle: wintypes.HANDLE) -> Tuple[bool, Optional[str]]:
-    """Valida seguridad: verifica estado activo, rutas protegidas y caracteres sospechosos."""
+def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
+    """Valida seguridad: verifica estado activo, rutas protegidas y consistencia de identidad."""
     if not proc_handle: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
     try:
+        # Validación de consistencia: verificar que el PID del handle coincida con el esperado
+        actual_pid = kernel32.GetProcessId(proc_handle)
+        if actual_pid != pid:
+            return False, "Error de validación: el proceso identificado cambió."
+
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):
             return False, "No se pudo obtener el estado del proceso."
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
+        
         path = _get_process_path(proc_handle)
-        if not path or not os.path.exists(path): return False, "No se pudo verificar la ubicación del ejecutable."
+        if not path or not os.path.exists(path): 
+            return False, "No se pudo verificar la ubicación del ejecutable."
         
         # Filtro: prevenir rutas con caracteres RTL (Right-To-Left)
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
@@ -343,7 +350,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Acceso denegado al proceso (podría requerir privilegios elevados)."
         
     try:
-        valid, reason = _is_safe_to_trim(proc_handle)
+        valid, reason = _is_safe_to_trim(proc_handle, target_pid)
         if not valid: 
             return False, reason or "Validación de proceso fallida."
         if not psapi.EmptyWorkingSet(proc_handle):

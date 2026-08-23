@@ -373,6 +373,9 @@ def quarantine_file(
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
     dest_dir = quarantine_dir(base)
+    if not is_safe_to_modify(dest_dir):
+        raise UnsafePathError("El directorio de cuarentena no es una ruta segura para operar.")
+        
     _validate_isolation_request(source_path, dest_dir)
     
     try:
