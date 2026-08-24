@@ -257,11 +257,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Lee y valida el archivo de configuración desde disco, usando caché para rendimiento."""
     ruta = settings_path(custom_base)
     try:
-        if not ruta.exists() or not ruta.is_file(): 
+        try:
+            stat = ruta.stat()
+        except OSError:
             return _get_default_config()
-        
-        stat = ruta.stat()
-        if stat.st_size == 0: return _get_default_config()
+            
+        if not stat.st_size: return _get_default_config()
         
         if (cached := _CACHE.get(ruta)) and cached[0] == stat.st_mtime:
             return cached[1]

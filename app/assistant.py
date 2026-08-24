@@ -301,7 +301,6 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
         return False
 
     clean_val = _safe_float(val, -1.0)
-    # score es el único campo que puede no haber sido calculado aún (valor -1)
     if clean_val < 0 and key != "score": 
         return False
     
@@ -318,12 +317,9 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
     Construye el objeto SystemContext validando datos contra los validadores registrados.
-    Agrupa métricas de distintas fuentes en una única estructura segura.
     """
     ctx = SystemContext()
     found_data = False
-    
-    # Pre-aplanamos las fuentes para evitar recorridos anidados costosos
     sources = [metrics, health, extra]
     
     for key, spec in _VALIDATORS.items():
@@ -332,9 +328,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
                 found_data = True
                 break
 
-    # Manejo seguro de la calificación cualitativa (grade)
     for src in [health, extra]:
-        if src is None: continue
+        if not isinstance(src, dict) and not hasattr(src, "grade"): continue
         val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
         if isinstance(val, str):
             g_str = val[:10].strip()
@@ -351,7 +346,7 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa el estado del sistema en un formato de texto plano y seguro para logs o el LLM."""
+    """Serializa el estado del sistema en un formato de texto plano y seguro."""
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
@@ -379,13 +374,13 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
-    """Delvuelve explicaciones pedagógicas de los módulos de la aplicación basado en su clave."""
+    """Devuelve explicaciones pedagógicas de los módulos."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """Evalúa el contexto actual contra los criterios de salud y retorna una lista de problemas detectados."""
+    """Evalúa el contexto actual contra los criterios de salud."""
     problemas = []
     if not isinstance(ctx, SystemContext): return problemas
     for crit in _CRITERIOS_SALUD:
@@ -410,7 +405,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Lógica específica para consultas sobre almacenamiento y espacio en disco."""
+    """Lógica específica para consultas sobre almacenamiento."""
     recuperable = _safe_float(ctx.junk_mb) + _safe_float(ctx.duplicate_mb) + _safe_float(ctx.browser_cache_mb)
     
     linea1 = f"Tenés {ctx.disk_free_percent:.0f}% libre en disco."
@@ -421,7 +416,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{linea1} {linea2}{alerta}{cierre}"), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Lógica para responder dudas sobre archivos sospechosos sin violar la privacidad."""
+    """Lógica para responder dudas sobre archivos sospechosos."""
     if ctx.suspicious_count == 0:
         texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación."
     else:
@@ -433,7 +428,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Lógica para explicar el puntaje de salud global del sistema."""
+    """Lógica para explicar el puntaje de salud global."""
     score_val = ctx.score if ctx.score is not None else "N/A"
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
     problemas = _identify_active_problems(ctx)
@@ -459,13 +454,13 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 }
 
 def _sanitize_query(question: str) -> str:
-    """Elimina caracteres de control y acorta el texto de entrada para mayor seguridad."""
+    """Elimina caracteres de control y acorta el texto de entrada."""
     if not isinstance(question, str): return ""
     clean = _CONTROL_CHARS_REGEX.sub('', question)
     return clean.strip()[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """Motor de lógica local: responde consultas heurísticas sin salir del dispositivo."""
+    """Motor de lógica local: responde consultas heurísticas."""
     q_sanitized = _sanitize_query(question)
     if not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
@@ -504,11 +499,7 @@ def _call_gemini(
     api_key: str, 
     model: str
 ) -> Optional[str]:
-    """
-    Invoca la API de Gemini enviando un prompt estandarizado y limitado.
-    Implementa capas de validación: sanitización de inputs, límite de tokens,
-    validación post-respuesta y cifrado de configuración.
-    """
+    """Invoca la API de Gemini."""
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
@@ -548,17 +539,15 @@ def _call_gemini(
                 return None
             
             text = "".join(str(p.get("text", "")) for p in candidates[0]["content"]["parts"] if isinstance(p, dict))
-            
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", text.strip()))
             final_text = _validate_response_length(limpia_final)
-            
             return final_text if _ensure_safe_text(final_text) else None
     except (urllib.error.URLError, KeyError, TypeError, ValueError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """Orquestador de consultas: elige entre el motor local seguro y la nube (Gemini)."""
+    """Orquestador de consultas."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
         

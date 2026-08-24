@@ -995,3 +995,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T08:31:31` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `check_recent_executable_in_downloads` y `check_system_lookalike` convirtiendo las verificaciones de pertenencia de `list` a `set` mediante la pre-conversión de `path.parts` a un conjunto, evitando iteraciones repetitivas y mejorando la eficiencia del escaneo.
 - `2026-08-24T08:31:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T08:31:31` Corrida terminada. Total usado hoy: 204.
+- `2026-08-24T08:40:18` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-24T08:40:48` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando la llamada redundante a `ruta.stat()` mediante el almacenamiento del resultado de `ruta.exists()` y `stat()` en una sola operación, y eliminé redundancias en el acceso al diccionario `_CACHE`.
+- `2026-08-24T08:41:11` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-24T08:41:45` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados en los diccionarios de configuración/métricas, evitando errores de ejecución y asegurando la integridad de los datos procesados mediante validación defensiva estricta.
+- `2026-08-24T08:42:02` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de archivos en `save_logo_svg` y se eliminó la posibilidad de excepciones silenciosas en el procesamiento de rutas, validando explícitamente la existencia de componentes de `Path` para evitar errores en sistemas con archivos bloqueados o estructuras de directorios inexistentes.
+- `2026-08-24T08:42:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T08:42:02` Corrida terminada. Total usado hoy: 208.

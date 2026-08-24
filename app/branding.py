@@ -401,10 +401,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificar integridad del path antes de operar
-        if not path_obj or not str(path_obj).strip():
-            return None
         
+        # Validar componentes de ruta antes de operar para evitar errores
+        if not path_obj.anchor:
+            return None
+            
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         
