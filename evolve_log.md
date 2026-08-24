@@ -1561,3 +1561,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-24T14:29:30` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `purge_all` implementando un control de alcance explícito mediante `is_within_directory` y validación de `path.resolve()` antes de cada borrado, asegurando que el proceso nunca pueda escapar del sandbox incluso si el manifiesto ha sido corrompido o manipulado.
 - `2026-08-24T14:29:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T14:29:30` Corrida terminada. Total usado hoy: 336.
+- `2026-08-24T14:37:04` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-24T14:37:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-24T14:38:01` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-24T14:38:52` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_entry` reemplazando el uso de `startswith` en strings crudos por una comparación de componentes de `Path` resueltos, evitando falsos positivos cuando una carpeta tiene un nombre que es prefijo de otra (ej. `/data` y `/database`).
+- `2026-08-24T14:39:40` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se endureció la validación de rutas en `_Validators.path` para prevenir ataques de Directory Traversal y asegurar que la ruta resuelta no abandone el sistema de archivos raíz, protegiendo contra manipulaciones maliciosas del archivo JSON.
+- `2026-08-24T14:39:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T14:39:40` Corrida terminada. Total usado hoy: 340.

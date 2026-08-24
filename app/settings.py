@@ -180,7 +180,8 @@ class _Validators:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
             resolved = path_obj.resolve(strict=False)
-            if not resolved.anchor or not str(resolved).startswith(str(path_obj.anchor)): return None
+            # Validar que la ruta resuelta no contenga trazas de escape y sea absoluta bajo una raíz válida
+            if not resolved.is_absolute() or str(resolved).startswith(".."): return None
             return str(resolved) if _Validators._is_safe_path(str(resolved)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None

@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 71 | 4 | 15 | 7 | 71 |
-| 2026-08-24 | 142 | 15 | 20 | 18 | 141 |
+| 2026-08-23 | 71 | 4 | 15 | 7 | 67 |
+| 2026-08-24 | 144 | 15 | 21 | 18 | 142 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **42**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
@@ -36,16 +36,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `organizer.py`: **18**
 - `diskreport.py`: **17**
-- `scanner.py`: **16**
+- `scanner.py`: **17**
 - `branding.py`: **14**
+- `settings.py`: **12**
 - `main.py`: **12**
-- `settings.py`: **11**
 - `browser.py`: **10**
 - `safety.py`: **10**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T14:39:40` **settings.py** (seguridad defensiva): Se endureció la validación de rutas en `_Validators.path` para prevenir ataques de Directory Traversal y asegurar que la ruta resuelta no abandone el sistema de archivos raíz, protegiendo contra manipulaciones maliciosas del archivo JSON.
+- `2026-08-24T14:38:52` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_entry` reemplazando el uso de `startswith` en strings crudos por una comparación de componentes de `Path` resueltos, evitando falsos positivos cuando una carpeta tiene un nombre que es prefijo de otra (ej. `/data` y `/database`).
 - `2026-08-24T14:29:30` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` implementando un control de alcance explícito mediante `is_within_directory` y validación de `path.resolve()` antes de cada borrado, asegurando que el proceso nunca pueda escapar del sandbox incluso si el manifiesto ha sido corrompido o manipulado.
 - `2026-08-24T14:29:12` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` mediante la validación explícita `is_safe_to_modify` antes de llamar a `ensure_safe_to_modify`, garantizando que el bucle de borrado no sea interrumpido por excepciones de seguridad innecesarias y asegurando que solo archivos dentro de la carpeta de revisión sean procesados.
 - `2026-08-24T14:28:46` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_to_trim` implementando una validación adicional contra rutas de tipo Junction/Reparse Point utilizando `os.path.realpath`, lo cual previene la manipulación de procesos cuya ubicación física sea distinta a la declarada, mitigando vectores de ataque basados en enlaces simbólicos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T13:56:47` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación de "espacio en disco disponible" antes de cualquier operación de movimiento hacia la cuarentena para prevenir fallos por saturación del volumen y garantizar la atomicidad del proceso.
 - `2026-08-24T13:28:08` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_safe_to_trim` implementando una validación explícita para evitar errores de acceso en procesos privilegiados o de sistema que el manejador `OpenProcess` no pudo abrir, asegurando que la función retorne un estado claro de error en lugar de fallar silenciosamente o permitir validaciones incompletas.
 - `2026-08-24T13:16:54` **browser.py** (robustez ante casos límite): Se mejora la robustez de `_is_system_hidden` añadiendo una validación explícita de `entry_path` para evitar errores al intentar acceder a rutas que, aunque existen en el iterador, pueden haber sido bloqueadas o eliminadas por el sistema justo antes de la llamada a la API.
-- `2026-08-24T13:08:22` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores corruptos o inesperados dentro de la fuente de datos (`metrics`), asegurando que la validación de tipos sea estricta y que `getattr` no falle ante objetos inesperados.
-- `2026-08-24T13:07:36` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración reemplazando el acceso frecuente a disco mediante `stat()` por un sistema de detección de cambios más inteligente y directo en la función `load`.

@@ -82,7 +82,8 @@ class Scanner:
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """Verifica que la ruta resuelta esté contenida dentro del alcance de la raíz original."""
         try:
-            return str(entry_path.resolve(strict=False)).startswith(str(self.base_root))
+            resolved = entry_path.resolve(strict=False)
+            return self.base_root in resolved.parents or resolved == self.base_root
         except (OSError, RuntimeError):
             return False
 
