@@ -83,7 +83,8 @@ class JunkFile:
 
     def __post_init__(self) -> None:
         """Normaliza la ruta a absoluta para evitar ambigüedades en comparaciones."""
-        self.path = self.path.resolve()
+        if self.path:
+            self.path = self.path.resolve()
 
     @property
     def size_mb(self) -> float:
@@ -189,7 +190,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
     Validación de alto nivel antes del movimiento mediante chequeo de rutas protegidas.
     """
-    if not isinstance(junk_file, JunkFile) or junk_file.path is None: return False
+    if not isinstance(junk_file, JunkFile) or not junk_file.path: return False
     try:
         current_path: Path = junk_file.path
         if not current_path.exists() or is_protected_path(current_path) or is_protected_path(dest):
@@ -266,7 +267,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return None
 
     for junk_file in files:
-        if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
+        if not isinstance(junk_file, JunkFile) or not junk_file.path: continue
         try:
             src_path: Path = junk_file.path.resolve()
             

@@ -154,7 +154,6 @@ def _is_reparse_point(path: Path) -> bool:
 def _is_file_in_use(path: Path) -> bool:
     """
     Determina si un archivo está bloqueado intentando abrir un descriptor exclusivo.
-    Utiliza el manejo de descriptores a nivel de SO para verificar disponibilidad.
     """
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
@@ -171,9 +170,6 @@ def _is_file_in_use(path: Path) -> bool:
 def _check_file_integrity(path: Path) -> None:
     """
     Ejecuta validaciones físicas sobre la ruta.
-    
-    Lanza UnsafePathError si el archivo está en uso, es un punto de reparse,
-    es de solo lectura, o viola atributos de integridad del sistema.
     """
     if not isinstance(path, Path):
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
@@ -288,6 +284,8 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
 @lru_cache(maxsize=2048)
 def is_sensitive_file(path: PathLike) -> bool:
     """Verifica si una extensión coincide con tipos de archivos sensibles de configuración."""
+    if not path:
+        return True
     try:
         return Path(str(path)).suffix.lower() in SENSITIVE_EXTENSIONS
     except (TypeError, ValueError, OSError):
@@ -330,10 +328,6 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Valida si una ruta es apta para escritura.
-    
-    Es el punto de entrada principal para toda operación destructiva.
-    Lanza UnsafePathError si la ruta es inválida, externa al base_dir,
-    pertenece al sistema o posee atributos de protección física.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")

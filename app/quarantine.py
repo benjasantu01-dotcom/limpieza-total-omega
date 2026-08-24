@@ -115,11 +115,14 @@ class QuarantineItem:
 
     def _validate_integrity(self, stored_path: Path) -> bool:
         """Verifica que el archivo físico exista, sea regular y su tamaño coincida."""
-        return (
-            stored_path.is_file() and 
-            not stored_path.is_symlink() and 
-            stored_path.stat().st_size == self.size_bytes
-        )
+        try:
+            return (
+                stored_path.is_file() and 
+                not stored_path.is_symlink() and 
+                stored_path.stat().st_size == self.size_bytes
+            )
+        except OSError:
+            return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
         """
@@ -322,20 +325,22 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
-    temp_fd, temp_path = tempfile.mkstemp(dir=base_path, text=True)
+    
+    # Usar un contexto de archivo seguro con manejo explícito de errores
     try:
-        with os.fdopen(temp_fd, 'w', encoding='utf-8') as f:
-            json.dump([item.to_dict() for item in items], f, indent=2, ensure_ascii=False)
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(temp_path, target_path)
+        with tempfile.NamedTemporaryFile("w", dir=base_path, encoding="utf-8", delete=False) as tf:
+            temp_name = tf.name
+            json.dump([item.to_dict() for item in items], tf, indent=2, ensure_ascii=False)
+            tf.flush()
+            os.fsync(tf.fileno())
+        
+        os.replace(temp_name, target_path)
         _load_manifest_internal.cache_clear()
-    except (OSError, PermissionError, TypeError, IOError) as e:
-        if os.path.exists(temp_path):
-            try: os.remove(temp_path)
-            except OSError: pass
-        raise RuntimeError(f"Fallo en I/O al persistir manifiesto en {target_path}: {e}")
-    return target_path
+        return target_path
+    except (OSError, TypeError, IOError) as e:
+        if 'temp_name' in locals() and os.path.exists(temp_name):
+            os.remove(temp_name)
+        raise RuntimeError(f"Fallo crítico al persistir manifiesto: {e}")
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
@@ -344,11 +349,10 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     por hash y tamaño antes de confirmar la operación de reemplazo atómico.
     """
     resolved_source = source.resolve()
-    # Doble validación: la fuente debe ser un archivo regular que no sea symlink
-    if resolved_source.is_symlink() or not resolved_source.is_file() or ":" in str(resolved_source):
+    
+    if resolved_source.is_symlink() or not resolved_source.is_file():
         raise UnsafePathError("Origen no es archivo regular o es un enlace sospechoso.")
     
-    # Validar que el origen no haya sido movido fuera de su contexto (Directory Traversal)
     if not resolved_source.exists():
          raise FileNotFoundError("Archivo origen no encontrado.")
 
@@ -356,9 +360,10 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         raise FileExistsError(f"Conflicto: {destination.name} ya existe.")
     
     dest_dir = destination.parent.resolve()
-    temp_dest = (dest_dir / f".tmp_{uuid.uuid4().hex}").resolve()
-    if not _is_valid_quarantine_path(temp_dest, dest_dir):
-        raise UnsafePathError("Error de integridad en sandbox: ruta temporal no permitida.")
+    
+    # Crear archivo temporal dentro del destino para asegurar mismos permisos/volumen
+    temp_fd, temp_path_str = tempfile.mkstemp(dir=dest_dir, prefix=".tmp_q_")
+    temp_dest = Path(temp_path_str)
         
     try:
         shutil.copy2(resolved_source, temp_dest)
