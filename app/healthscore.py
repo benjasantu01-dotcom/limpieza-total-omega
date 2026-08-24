@@ -193,10 +193,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or sum(WEIGHTS.values()) != 100:
         return HealthResult(0, "F", {}, ["Error interno: Configuración inválida."])
     
-    # Asegurar sanitización profunda antes de cualquier cálculo aritmético
+    # Asegurar sanitización profunda y finitud de los valores
     metrics.validate()
     if not metrics.is_finite():
-        return HealthResult(0, "F", {}, ["Error interno: Datos corruptos."])
+        return HealthResult(0, "F", {}, ["Error interno: Datos corruptos o no finitos."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios_cache: Dict[MetricKey, float] = {}

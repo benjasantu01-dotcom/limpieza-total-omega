@@ -1277,3 +1277,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-24T11:16:29` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-24T11:16:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T11:16:29` Corrida terminada. Total usado hoy: 268.
+- `2026-08-24T11:23:39` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-24T11:24:05` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T11:24:30` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T11:24:52` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T11:25:02` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` agregando una verificación de integridad de métricas basada en `is_finite()` antes de realizar cálculos, evitando resultados inesperados (NaN/Inf) que podrían derivar de un objeto `SystemMetrics` mal inicializado, y asegurando que cualquier error en la configuración global no silencie el resultado sino que devuelva un estado informativo.
+- `2026-08-24T11:25:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T11:25:02` Corrida terminada. Total usado hoy: 272.

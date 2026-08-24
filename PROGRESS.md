@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **205** (40.7% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 103 | 6 | 20 | 8 | 99 |
-| 2026-08-24 | 104 | 9 | 14 | 11 | 130 |
+| 2026-08-23 | 100 | 6 | 19 | 8 | 99 |
+| 2026-08-24 | 105 | 9 | 14 | 11 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **44**
 - rendimiento: **39**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `duplicates.py`: **20**
 - `memory.py`: **20**
 - `assistant.py`: **19**
+- `healthscore.py`: **19**
+- `quarantine.py`: **19**
 - `scanner.py`: **18**
-- `healthscore.py`: **18**
-- `organizer.py`: **16**
 - `branding.py`: **15**
 - `diskreport.py`: **15**
+- `organizer.py`: **15**
 - `settings.py`: **11**
 - `main.py`: **11**
-- `safety.py`: **10**
+- `safety.py`: **9**
 - `browser.py`: **8**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T11:25:02` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando una verificación de integridad de métricas basada en `is_finite()` antes de realizar cálculos, evitando resultados inesperados (NaN/Inf) que podrían derivar de un objeto `SystemMetrics` mal inicializado, y asegurando que cualquier error en la configuración global no silencie el resultado sino que devuelva un estado informativo.
 - `2026-08-24T11:16:13` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validaciones específicas para `SystemContext` ante entradas malformadas, evitando que valores inesperados en el diccionario de origen corrompan la integridad de los datos del asistente.
 - `2026-08-24T09:52:10` **safety.py** (seguridad defensiva): Se ha mejorado `_is_file_in_use` utilizando un método de apertura con permisos de acceso mínimos (`0`) en lugar de `0x80000000` (GENERIC_READ), asegurando que la verificación no bloquee accidentalmente el archivo ni dependa de permisos de lectura que podrían no estar disponibles para el usuario actual.
 - `2026-08-24T09:42:57` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita mediante `is_within_directory` sobre el `temp_dest` generado, para asegurar que ninguna falla en la creación del archivo temporal permita escribir fuera del sandbox de cuarentena, cerrando una brecha de potencial escalada de ruta.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T09:02:16` **memory.py** (robustez ante casos límite): Mejoré `parse_linux_meminfo` para manejar robustamente entradas malformadas o archivos vacíos detectando explícitamente errores de conversión y valores fuera de rango, evitando así que una lectura fallida en `/proc/meminfo` devuelva un snapshot con datos inválidos o potencialmente negativos.
 - `2026-08-24T08:51:45` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de la existencia de archivos antes de invocar `stat()`, evitando excepciones innecesarias en entornos donde los archivos pueden desaparecer entre el listado (`scandir`) y el acceso (`stat`).
 - `2026-08-24T08:42:02` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de archivos en `save_logo_svg` y se eliminó la posibilidad de excepciones silenciosas en el procesamiento de rutas, validando explícitamente la existencia de componentes de `Path` para evitar errores en sistemas con archivos bloqueados o estructuras de directorios inexistentes.
-- `2026-08-24T08:41:45` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados en los diccionarios de configuración/métricas, evitando errores de ejecución y asegurando la integridad de los datos procesados mediante validación defensiva estricta.
