@@ -349,8 +349,10 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             return None
             
         parent = path_obj.parent
+        # Validar que el directorio padre también sea seguro antes de crearlo
         if not parent.exists():
-            if not is_safe_to_modify(parent): return None
+            if is_protected_path(parent) or not is_safe_to_modify(parent):
+                return None
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None

@@ -67,7 +67,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Retorna el hash en formato hexadecimal o None si el acceso es denegado o falla.
     """
     if path is None: return None
-    path_obj = Path(path)
+    path_obj = Path(path).resolve()
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
         digest = hashlib.sha256()
@@ -82,7 +82,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash de los primeros N bytes para filtrado heurístico rápido."""
     if path is None: return None
-    path_obj = Path(path)
+    path_obj = Path(path).resolve()
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
     try:
         with open(path_obj, "rb") as f:
@@ -102,7 +102,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None: return groups
     for p in paths:
         if p is None: continue
-        target = Path(p)
+        target = Path(p).resolve()
         if is_protected_path(target) or not is_safe_to_modify(target):
             continue
         try:
@@ -129,13 +129,14 @@ def _collect_candidates(
     processed_dirs: set[Path] = set()
 
     def _scan(current_dir: Path) -> None:
-        if current_dir in processed_dirs: return
-        processed_dirs.add(current_dir)
+        resolved_dir = current_dir.resolve()
+        if resolved_dir in processed_dirs: return
+        processed_dirs.add(resolved_dir)
         try:
-            with os.scandir(current_dir) as it:
+            with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
-                        entry_path = Path(entry.path)
+                        entry_path = Path(entry.path).resolve()
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         if not is_safe_to_modify(entry_path):
@@ -159,7 +160,7 @@ def _collect_candidates(
     if directories is not None:
         for item in set(directories):
             if item:
-                root_path = Path(item)
+                root_path = Path(item).resolve()
                 if root_path.is_dir() and not is_protected_path(root_path) and is_safe_to_modify(root_path):
                     _scan(root_path)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
@@ -211,16 +212,14 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
-    # Estructura para almacenar (timestamp, path_length, path_object)
     candidates: List[Tuple[float, int, Path]] = []
     
     for p in group.paths:
         if p is None: continue
         try:
-            p_obj = Path(p)
+            p_obj = Path(p).resolve()
             if p_obj.is_file() and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
-                # La tupla permite ordenar: primero mtime (ascendente), luego len(path) (ascendente)
                 criteria = (float(stat_info.st_mtime), len(str(p_obj)), p_obj)
                 candidates.append(criteria)
         except (OSError, PermissionError, FileNotFoundError):
@@ -238,6 +237,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
-        label = 'conservar' if keeper is not None and path == keeper else 'duplicado'
+        label = 'conservar' if keeper is not None and path.resolve() == keeper else 'duplicado'
         lines.append(f"   [{label}] {path}")
     return lines

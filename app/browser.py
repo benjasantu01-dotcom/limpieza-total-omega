@@ -117,16 +117,16 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     de Path Traversal. Valida que no sea un punto de reparse (Junction/Symlink).
     """
     try:
-        if ".." in real_target.parts:
-            return False
-        
         if not is_safe_to_modify(real_target) or not is_safe_to_modify(real_base):
             return False
-
-        if real_target.parts[:len(real_base.parts)] != real_base.parts:
+            
+        target_parts = real_target.resolve().parts
+        base_parts = real_base.resolve().parts
+        
+        # Validar inclusión estricta de sub-ruta
+        if len(target_parts) <= len(base_parts):
             return False
-
-        return True
+        return target_parts[:len(base_parts)] == base_parts
     except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 

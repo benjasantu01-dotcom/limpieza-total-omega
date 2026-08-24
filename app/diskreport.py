@@ -277,7 +277,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if not entry.name or len(entry.name) > 255:
                             continue
                             
-                        entry_path = Path(entry.path)
+                        entry_path = Path(entry.path).resolve()
+                        
+                        # Seguridad: verificar que no escape de la carpeta base (evitar symlink escapes)
+                        if base_path not in entry_path.parents and entry_path != base_path:
+                            continue
+
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         
