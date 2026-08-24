@@ -86,10 +86,6 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula el hash SHA256 de los primeros N bytes para filtrado heurístico rápido.
-    
-    Seguridad: Al igual que 'hash_file', requiere que la ruta sea segura para 
-    lectura y modificación. Útil para descartar candidatos por cabeceras distintas 
-    sin procesar el archivo completo.
     """
     if path is None: return None
     try:
@@ -112,11 +108,17 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups
+    # Cache para evitar resoluciones repetitivas
+    verified_cache: Dict[Path, bool] = {}
+    
     for p in paths:
         if p is None: continue
         try:
             target = Path(p).resolve()
-            if is_protected_path(target) or not is_safe_to_modify(target):
+            if target not in verified_cache:
+                verified_cache[target] = not is_protected_path(target) and is_safe_to_modify(target)
+            
+            if not verified_cache[target]:
                 continue
             st = target.stat()
             if st.st_size > 0:
@@ -131,12 +133,7 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """
-    Realiza un recorrido recursivo en el sistema de archivos buscando candidatos.
-    
-    Implementa prevención de ciclos mediante device_inodes y evita seguir junctions 
-    (reparse points) para garantizar seguridad y rendimiento.
-    """
+    """Realiza un recorrido recursivo en el sistema de archivos buscando candidatos."""
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
     processed_dirs: set[Path] = set()
@@ -150,24 +147,23 @@ def _collect_candidates(
             with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
-                        if not entry.is_file(follow_symlinks=False) and not entry.is_dir(follow_symlinks=False):
-                            continue
-                            
+                        # Obtenemos stat una sola vez durante el escaneo
                         entry_stat = entry.stat(follow_symlinks=False)
-                        entry_path = Path(entry.path).resolve()
                         
-                        if skip_protected and is_protected_path(entry_path): continue
-                        if not is_safe_to_modify(entry_path): continue
-                        if getattr(entry_stat, 'st_reparse_tag', 0) != 0: continue
-                            
                         if entry.is_dir(follow_symlinks=False):
+                            if getattr(entry_stat, 'st_reparse_tag', 0) != 0: continue
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
                                 visited_device_inodes.add(device_inode)
-                                _scan(entry_path)
+                                _scan(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            if entry_stat.st_size >= min_size:
-                                temp_groups[int(entry_stat.st_size)].append(entry_path)
+                            if entry_stat.st_size < min_size: continue
+                            
+                            entry_path = Path(entry.path).resolve()
+                            if skip_protected and is_protected_path(entry_path): continue
+                            if not is_safe_to_modify(entry_path): continue
+                            
+                            temp_groups[int(entry_stat.st_size)].append(entry_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
@@ -176,9 +172,8 @@ def _collect_candidates(
             if item:
                 try:
                     root = Path(item).resolve()
-                    if root.is_dir():
-                        if not is_protected_path(root) and is_safe_to_modify(root):
-                            _scan(root)
+                    if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
+                        _scan(root)
                 except (OSError, ValueError, RuntimeError): continue
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
@@ -195,7 +190,6 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Ejecuta el pipeline: Hash Parcial -> Hash Completo para confirmar duplicidad."""
     confirmed_groups: List[DuplicateGroup] = []
-    
     partial_results = _refine_by_hash(paths, partial_hash)
     
     for partial_candidates in partial_results.values():
@@ -222,19 +216,11 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """
-    Selecciona heurísticamente el archivo 'original' para conservar.
-    
-    Criterios: 
-    1. Archivo más antiguo (menor mtime).
-    2. Ante empate en tiempo, ruta más corta (lexicográfica).
-    Seguridad: Solo considera archivos existentes y validados por 'is_safe_to_modify'.
-    """
+    """Selecciona heurísticamente el archivo 'original' para conservar."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
     candidates: List[Tuple[float, int, Path]] = []
-    
     for p in group.paths:
         if p is None: continue
         try:
@@ -249,7 +235,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera líneas de texto formateadas para reportes, identificando el keeper."""
+    """Genera líneas de texto formateadas para reportes."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
     keeper = suggest_keeper(group)

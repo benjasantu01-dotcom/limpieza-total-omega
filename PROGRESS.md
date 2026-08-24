@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **208** (41.3% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 226
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 85 | 4 | 17 | 7 | 91 |
-| 2026-08-24 | 122 | 11 | 18 | 14 | 135 |
+| 2026-08-23 | 83 | 4 | 16 | 7 | 90 |
+| 2026-08-24 | 125 | 11 | 18 | 14 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **36**
-- robustez ante casos límite: **29**
+- rendimiento: **39**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **22**
+- `duplicates.py`: **20**
 - `assistant.py`: **19**
-- `duplicates.py`: **19**
 - `healthscore.py`: **19**
 - `quarantine.py`: **19**
-- `scanner.py`: **18**
 - `organizer.py`: **17**
+- `scanner.py`: **17**
 - `diskreport.py`: **16**
 - `branding.py`: **14**
-- `settings.py`: **11**
-- `main.py`: **11**
+- `main.py`: **12**
+- `settings.py`: **10**
 - `browser.py`: **9**
 - `safety.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T12:47:35` **memory.py** (rendimiento): Se optimizó el proceso de recolección de procesos pesados eliminando el uso redundante de `Select-Object` y `ForEach-Object` en PowerShell, reemplazándolo por una cadena de comandos más directa y eficiente que reduce significativamente el tiempo de ejecución y la carga de CPU durante el sondeo.
+- `2026-08-24T12:47:20` **main.py** (rendimiento): Se implementó una lógica de `debouncing` para la actualización de las tarjetas de métricas en la pestaña de Salud, evitando recalcular y redibujar la UI repetidamente cuando los datos no han cambiado, mejorando el rendimiento en tareas recurrentes.
+- `2026-08-24T12:45:47` **duplicates.py** (rendimiento): Se optimizó el rendimiento del proceso de descubrimiento evitando llamadas repetitivas e innecesarias a `Path.resolve()` y `is_safe_to_modify()` mediante el uso de un cache local de rutas verificadas y aprovechando los datos ya obtenidos en el `os.scandir` durante el recorrido recursivo, lo cual reduce drásticamente el impacto de I/O sobre el sistema de archivos.
 - `2026-08-24T12:36:58` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y las funciones de análisis evitando la resolución innecesaria de rutas (`realpath` se ejecuta múltiples veces por archivo en el bucle) mediante el uso de `entry.path` directamente cuando es posible, y simplifiqué la lógica de `largest_folders` para reducir la creación de objetos `Path` intermedios, logrando una traversal más rápida y eficiente en memoria.
 - `2026-08-24T12:36:42` **browser.py** (rendimiento): Se implementó un sistema de cacheo persistente (memoization) en `detect_profiles` para evitar el re-escaneo innecesario de directorios compartidos entre distintas rutas de navegadores (ej. múltiples perfiles que comparten estructuras de "User Data"), reduciendo drásticamente las llamadas al sistema operativo durante el análisis.
 - `2026-08-24T12:35:45` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` reemplazando la lógica de búsqueda anidada $O(N \times M)$ por un mapeo directo basado en el diccionario `_VALIDATORS`, eliminando la creación innecesaria de listas temporales y evitando validaciones redundantes de tipos en cada iteración.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T12:05:11` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de validación de entradas a una función privada, clarificando el flujo de control y reduciendo el anidamiento excesivo.
 - `2026-08-24T11:56:09` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante la adición de docstrings estructurados (usando el formato Google Style) que explican el propósito y las condiciones de contorno de las funciones clave, facilitando su mantenimiento y auditoría.
 - `2026-08-24T11:55:57` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos explícitos, clarificando la jerarquía de las constantes `PaletteDict` y `FontSizesDict` para facilitar el mantenimiento del sistema de diseño.
-- `2026-08-24T11:55:26` **assistant.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de lógica local (`handle_ram`, `handle_disk`, etc.) y las de orquestación, clarificando las precondiciones de seguridad y el manejo de datos para mejorar la mantenibilidad.
-- `2026-08-24T11:45:29` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` al envolver el bloque de persistencia en un `try-finally` que garantiza la limpieza de cualquier archivo temporal residual, independientemente del éxito o error de la operación de escritura, previniendo así la acumulación de archivos huérfanos.
-- `2026-08-24T11:37:17` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que `source_path` y `dest_dir` coincidan, lo cual causaría una pérdida de datos al intentar un `unlink` sobre el archivo recién movido, y reforcé el manejo de errores al capturar fallos en `Path.expanduser()` durante la inicialización.

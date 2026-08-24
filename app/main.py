@@ -1115,6 +1115,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _update_cards(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Actualiza las etiquetas de las tarjetas de métricas."""
+        # Se aplica debounce para evitar parpadeo o redibujo innecesario
+        self._debounce_action("update_cards", 100, lambda: self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre))
+
+    def _apply_card_updates(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
+        """Aplica los cambios a las etiquetas de las tarjetas."""
+        if self._closing: return
         valores = {
             "basura": f"{junk_mb:.0f} MB",
             "sospechosos": str(sospechosos),

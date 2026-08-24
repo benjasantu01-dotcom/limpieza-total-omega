@@ -251,9 +251,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt": return []
     
     if (time.time() - _last_proc_fetch) > 30:
-        cmd: str = 'Get-Process | Select-Object -Property Name,Id,WorkingSet | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
+        # Optimización: -join es más rápido que iterar por bloque ForEach-Object
+        cmd: str = 'powershell -NoProfile -Command "(Get-Process | Select-Object -Property Name,Id,WorkingSet | ForEach-Object { \'$($_.Name),$($_.Id),$($_.WorkingSet)\' }) -join [Environment]::NewLine"'
         try:
-            proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, shell=True)
             if proc.returncode == 0:
                 _cached_proc_output = proc.stdout
                 _last_proc_fetch = time.time()
