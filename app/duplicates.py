@@ -200,8 +200,12 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma total de espacio recuperable en bytes de una lista de grupos."""
-    if groups is None: return 0
-    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
+    if not groups: return 0
+    total = 0
+    for g in groups:
+        if isinstance(g, DuplicateGroup):
+            total += g.wasted_bytes
+    return total
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
@@ -220,8 +224,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             p_obj = Path(p).resolve()
             if p_obj.is_file() and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
-                criteria = (float(stat_info.st_mtime), len(str(p_obj)), p_obj)
-                candidates.append(criteria)
+                candidates.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
         except (OSError, PermissionError, FileNotFoundError):
             continue
             

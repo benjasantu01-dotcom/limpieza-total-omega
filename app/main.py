@@ -172,16 +172,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         Verifica que el entorno sea seguro, incluyendo permisos de lectura/escritura 
         en el directorio base y directorios de trabajo.
         """
+        current_app_dir = Path(__file__).resolve().parent
+        
+        # Validar si el directorio base es seguro de manipular
         try:
-            # Validar ruta de la aplicación antes de cualquier operación
-            current_app_dir = Path(__file__).resolve().parent
             safety.ensure_safe_to_modify(current_app_dir)
+        except Exception as e:
+            raise RuntimeError(f"El directorio de la aplicación no es seguro: {e}")
             
+        # Verificar permisos básicos en el perfil de usuario
+        try:
             home = Path.home().resolve(strict=True)
             if not os.access(home, os.R_OK | os.W_OK):
-                raise OSError(f"Permisos insuficientes en directorio usuario: {home}")
+                raise PermissionError(f"Sin permisos de escritura en: {home}")
         except Exception as e:
-            raise OSError(f"Fallo al validar entorno seguro: {e}")
+            raise RuntimeError(f"Entorno no válido para operación segura: {e}")
 
     def _init_window_properties(self) -> None:
         """Configura los parámetros iniciales de la ventana mediante branding.py."""

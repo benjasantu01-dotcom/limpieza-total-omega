@@ -436,3 +436,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-08-24T02:24:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-24T02:24:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T02:24:45` Corrida terminada. Total usado hoy: 60.
+- `2026-08-24T02:33:19` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-24T02:33:44` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `reclaimable_bytes` validando estrictamente los tipos de entrada y manejando posibles errores en `stat()` para evitar que una falla puntual en un archivo detenga el procesamiento de un grupo.
+- `2026-08-24T02:34:10` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` agregando un manejo defensivo ante casos donde `_PREPARED_SCORERS` pudiera intentar procesar métricas con valores nulos o inconsistentes, asegurando que el cálculo final siempre retorne un resultado válido incluso si una métrica falla en tiempo de ejecución.
+- `2026-08-24T02:35:14` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se mejora el manejo de errores en `_validate_environment` para garantizar que cualquier fallo en la validación de seguridad lance una excepción informativa y capturable, evitando que la app inicie en un estado inconsistente.
+- `2026-08-24T02:35:27` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_is_safe_to_trim` implementando validaciones de tipo explícitas y manejando de forma más estricta los retornos de las APIs de Windows, evitando que un `None` o un handle inválido provoquen errores inesperados durante la auditoría de seguridad del proceso.
+- `2026-08-24T02:35:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T02:35:27` Corrida terminada. Total usado hoy: 64.

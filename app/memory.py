@@ -309,7 +309,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet.
     Verifica identidad, actividad, rutas de sistema y evita caracteres sospechosos.
     """
-    if not proc_handle: return False, "Handle inválido."
+    if not proc_handle or proc_handle == -1: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
     try:

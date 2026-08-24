@@ -202,11 +202,14 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     accumulated_points: float = 0.0
     
     for area, weight, scorer in _PREPARED_SCORERS:
-        ratio = scorer(metrics)
-        ratios_cache[area] = ratio
-        weighted_points = round(ratio * float(weight))
-        metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
-        accumulated_points += metric_breakdown[area]
+        try:
+            ratio = scorer(metrics)
+            ratios_cache[area] = ratio
+            weighted_points = round(ratio * float(weight))
+            metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
+            accumulated_points += metric_breakdown[area]
+        except (ValueError, TypeError, ZeroDivisionError):
+            metric_breakdown[area] = 0
     
     recommendations: List[str] = []
     for rule in _RECOMMENDATION_RULES:
