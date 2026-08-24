@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **205** (40.7% de aceptación)
+- Mejoras aceptadas: **204** (40.5% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 19
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 232
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 100 | 6 | 19 | 8 | 99 |
-| 2026-08-24 | 105 | 9 | 14 | 11 | 133 |
+| 2026-08-23 | 96 | 6 | 19 | 8 | 99 |
+| 2026-08-24 | 108 | 9 | 14 | 12 | 133 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **45**
 - seguridad defensiva: **44**
-- rendimiento: **39**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **42**
+- rendimiento: **38**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **21**
 - `duplicates.py`: **20**
-- `memory.py`: **20**
-- `assistant.py`: **19**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `quarantine.py`: **19**
-- `scanner.py`: **18**
+- `assistant.py`: **18**
+- `scanner.py`: **17**
+- `organizer.py`: **16**
 - `branding.py`: **15**
 - `diskreport.py`: **15**
-- `organizer.py`: **15**
-- `settings.py`: **11**
 - `main.py`: **11**
+- `settings.py`: **10**
 - `safety.py`: **9**
 - `browser.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T11:37:17` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que `source_path` y `dest_dir` coincidan, lo cual causaría una pérdida de datos al intentar un `unlink` sobre el archivo recién movido, y reforcé el manejo de errores al capturar fallos en `Path.expanduser()` durante la inicialización.
+- `2026-08-24T11:37:00` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de entrada más estrictas y capturando excepciones de forma específica, asegurando que la función no falle silenciosamente ni opere sobre rutas inválidas o mal formadas.
+- `2026-08-24T11:36:35` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_to_trim` implementando validaciones de tipo explícitas para el `handle` y capturas de excepciones más específicas durante la interacción con la API de Windows, evitando posibles fallos ante punteros nulos o estados inesperados.
 - `2026-08-24T11:25:02` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando una verificación de integridad de métricas basada en `is_finite()` antes de realizar cálculos, evitando resultados inesperados (NaN/Inf) que podrían derivar de un objeto `SystemMetrics` mal inicializado, y asegurando que cualquier error en la configuración global no silencie el resultado sino que devuelva un estado informativo.
 - `2026-08-24T11:16:13` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validaciones específicas para `SystemContext` ante entradas malformadas, evitando que valores inesperados en el diccionario de origen corrompan la integridad de los datos del asistente.
 - `2026-08-24T09:52:10` **safety.py** (seguridad defensiva): Se ha mejorado `_is_file_in_use` utilizando un método de apertura con permisos de acceso mínimos (`0`) en lugar de `0x80000000` (GENERIC_READ), asegurando que la verificación no bloquee accidentalmente el archivo ni dependa de permisos de lectura que podrían no estar disponibles para el usuario actual.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T09:22:42` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` al directorio padre, previniendo errores de acceso o escritura en rutas críticas antes de intentar cualquier operación de creación de carpetas o archivos.
 - `2026-08-24T09:11:42` **safety.py** (robustez ante casos límite): Mejoré `is_file_in_use` para que no dependa de `os.open` (que abre el archivo y puede bloquear o fallar por permisos incluso si no está en uso), utilizando en su lugar `ctypes` para intentar obtener acceso de solo lectura sin bloquear el flujo ni el archivo, mejorando así la robustez ante archivos bloqueados por el sistema.
 - `2026-08-24T09:02:55` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de entrada y concurrencia añadiendo validaciones preventivas en las funciones de manipulación de manifiesto y asegurando que las rutas base expandan el usuario de forma consistente antes de cualquier operación.
-- `2026-08-24T09:02:16` **memory.py** (robustez ante casos límite): Mejoré `parse_linux_meminfo` para manejar robustamente entradas malformadas o archivos vacíos detectando explícitamente errores de conversión y valores fuera de rango, evitando así que una lectura fallida en `/proc/meminfo` devuelva un snapshot con datos inválidos o potencialmente negativos.
-- `2026-08-24T08:51:45` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de la existencia de archivos antes de invocar `stat()`, evitando excepciones innecesarias en entornos donde los archivos pueden desaparecer entre el listado (`scandir`) y el acceso (`stat`).
-- `2026-08-24T08:42:02` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de archivos en `save_logo_svg` y se eliminó la posibilidad de excepciones silenciosas en el procesamiento de rutas, validando explícitamente la existencia de componentes de `Path` para evitar errores en sistemas con archivos bloqueados o estructuras de directorios inexistentes.

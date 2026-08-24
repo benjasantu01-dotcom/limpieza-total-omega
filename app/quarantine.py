@@ -269,6 +269,8 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares.")
+    if resolved_source.parent == dest_dir.resolve():
+        raise UnsafePathError("Operación circular: origen y destino en la misma carpeta.")
         
     if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta origen está protegida por el sistema.")
@@ -397,7 +399,11 @@ def quarantine_file(
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
-    source_path = Path(source).expanduser().resolve()
+    try:
+        source_path = Path(source).expanduser().resolve()
+    except Exception as e:
+        raise ValueError(f"Ruta de origen malformada: {e}")
+        
     if not source_path.is_file():
         raise FileNotFoundError(f"El archivo origen no existe o es inválido: {source_path}")
     

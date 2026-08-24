@@ -253,7 +253,9 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if not dest_base.is_dir() or not is_safe_to_modify(dest_base) or is_protected_path(dest_base): return None
+        # Verificación estricta de seguridad sobre el destino final
+        if not dest_base.is_dir() or not is_safe_to_modify(dest_base) or is_protected_path(dest_base): 
+            return None
     except (OSError, PermissionError, RuntimeError):
         return None
 
@@ -264,7 +266,8 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if target:
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target))
-        except (OSError, PermissionError, shutil.Error, RuntimeError):
+        except (OSError, PermissionError, shutil.Error, RuntimeError) as e:
+            logger.error(f"Error moviendo {junk_file.path}: {e}")
             continue
     return dest_base
 
@@ -286,7 +289,10 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         try:
             if not item.is_file() or _is_junction(item) or not item.exists():
                 continue
-            if not item.resolve().is_relative_to(dest.resolve()):
+            
+            # Validación de integridad de la ruta
+            resolved_item = item.resolve()
+            if not resolved_item.is_relative_to(dest.resolve()):
                 continue
             
             # Validación exhaustiva de seguridad antes de la eliminación
@@ -294,6 +300,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 ensure_safe_to_modify(item)
                 item.unlink()
                 count += 1
-        except (PermissionError, OSError, ValueError):
+        except (PermissionError, OSError, ValueError) as e:
+            logger.error(f"Error eliminando {item}: {e}")
             continue
     return count

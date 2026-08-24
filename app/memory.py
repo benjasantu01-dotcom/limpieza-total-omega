@@ -307,14 +307,16 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     try:
         # La API escribe el tamaño real copiado en 'size'
         if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
-            if size.value > 0 and size.value < buffer_size:
+            if 0 < size.value < buffer_size:
                 return str(buf.value)
     except (OSError, ctypes.ArgumentError): pass
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet."""
-    if not proc_handle or proc_handle == -1: return False, "Handle inválido."
+    if not isinstance(pid, int) or pid <= 0: return False, "PID no válido."
+    if not proc_handle or proc_handle == -1: return False, "Handle no válido."
+    
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
     
@@ -329,7 +331,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
         
-        path: Optional[str] = _get_process_path(proc_handle)
+        path = _get_process_path(proc_handle)
         if not path or not os.path.isabs(path): 
             return False, "No se pudo verificar una ruta absoluta válida del ejecutable."
         
