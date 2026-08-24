@@ -58,9 +58,7 @@ SYSTEM_FOLDER_BLOCKLIST: Final[frozenset[str]] = frozenset({
 
 
 def list_available_drives() -> List[str]:
-    """
-    Detecta unidades montadas en Windows mediante el barrido de letras de unidad.
-    """
+    """Detecta unidades montadas en Windows mediante el barrido de letras de unidad."""
     if os.name != "nt":
         return []
     drives: List[str] = []
@@ -84,10 +82,12 @@ class JunkFile:
 
     @property
     def size_mb(self) -> float:
+        """Retorna el tamaño del archivo en MB redondeado a dos decimales."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
     @property
     def is_junk_extension(self) -> bool:
+        """Verifica si la extensión del archivo está en JUNK_EXTENSIONS."""
         return _is_junk_path(self.path)
 
 
@@ -193,7 +193,15 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
-    """Recorre recursivamente los directorios buscando archivos clasificados como basura."""
+    """
+    Recorre recursivamente los directorios buscando archivos clasificados como basura.
+    
+    Args:
+        directories: Lista opcional de rutas a escanear. Si es None, usa los DEFAULT_SCAN_DIRS.
+        
+    Returns:
+        Lista de objetos JunkFile encontrados.
+    """
     search_dirs = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     
@@ -210,13 +218,31 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
 
 
 def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -> List[JunkFile]:
-    """Ordena la lista de archivos basada en el registro `SORT_REGISTRY`."""
+    """Ordena la lista de archivos basada en el registro SORT_REGISTRY."""
     if not isinstance(files, list) or not all(isinstance(f, JunkFile) for f in files):
         return []
         
     key: str = by.lower() if isinstance(by, str) else "size"
     config: SortConfig = SORT_REGISTRY.get(key, SORT_REGISTRY["size"])
     return sorted(files, key=config.key_func, reverse=not bool(ascending))
+
+
+def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
+    """
+    Evalúa si un archivo puede ser movido a destino, devolviendo la ruta objetivo o None.
+    """
+    src_path: Path = junk_file.path.resolve()
+    if not src_path.exists() or not src_path.is_file(): return None
+    
+    if shutil.disk_usage(dest_base.anchor).free < src_path.stat().st_size: return None
+    
+    if src_path.anchor != dest_base.anchor or not _is_safe_to_move(junk_file, dest_base):
+        return None
+    
+    safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
+    target = (_generate_unique_target(dest_base / safe_name)).resolve()
+    
+    return target if target.is_relative_to(dest_base) else None
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
@@ -234,20 +260,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     for junk_file in files:
         if not isinstance(junk_file, JunkFile) or not junk_file.path: continue
         try:
-            src_path: Path = junk_file.path.resolve()
-            if not src_path.exists() or not src_path.is_file(): continue
-            if shutil.disk_usage(dest_base.anchor).free < src_path.stat().st_size: continue
-            
-            if src_path.anchor != dest_base.anchor or not _is_safe_to_move(junk_file, dest_base):
-                continue
-            
-            safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
-            target = (_generate_unique_target(dest_base / safe_name)).resolve()
-            
-            if not target.is_relative_to(dest_base): continue
-            
-            ensure_safe_to_modify(src_path)
-            shutil.move(str(src_path), str(target))
+            target = _can_move_file(junk_file, dest_base)
+            if target:
+                ensure_safe_to_modify(junk_file.path)
+                shutil.move(str(junk_file.path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError):
             continue
     return dest_base
