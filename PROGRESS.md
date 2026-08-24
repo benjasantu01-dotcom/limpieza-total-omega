@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **202** (40.1% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 22
+- Sin cambios (nada sustancial que mejorar): 24
 - Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 74 | 4 | 15 | 7 | 88 |
-| 2026-08-24 | 130 | 14 | 19 | 15 | 138 |
+| 2026-08-23 | 71 | 4 | 15 | 7 | 87 |
+| 2026-08-24 | 131 | 14 | 19 | 17 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **42**
-- seguridad defensiva: **35**
-- robustez ante casos límite: **29**
+- seguridad defensiva: **32**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **22**
 - `duplicates.py`: **19**
 - `assistant.py`: **19**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `scanner.py`: **17**
 - `organizer.py`: **17**
 - `diskreport.py`: **16**
+- `scanner.py`: **16**
 - `branding.py`: **13**
-- `settings.py`: **11**
 - `main.py`: **11**
+- `settings.py`: **10**
 - `safety.py`: **10**
 - `browser.py`: **9**
-- `startup.py`: **5**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T13:28:08` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `_is_safe_to_trim` implementando una validación explícita para evitar errores de acceso en procesos privilegiados o de sistema que el manejador `OpenProcess` no pudo abrir, asegurando que la función retorne un estado claro de error en lugar de fallar silenciosamente o permitir validaciones incompletas.
 - `2026-08-24T13:16:54` **browser.py** (robustez ante casos límite): Se mejora la robustez de `_is_system_hidden` añadiendo una validación explícita de `entry_path` para evitar errores al intentar acceder a rutas que, aunque existen en el iterador, pueden haber sido bloqueadas o eliminadas por el sistema justo antes de la llamada a la API.
 - `2026-08-24T13:08:22` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores corruptos o inesperados dentro de la fuente de datos (`metrics`), asegurando que la validación de tipos sea estricta y que `getattr` no falle ante objetos inesperados.
 - `2026-08-24T13:07:36` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración reemplazando el acceso frecuente a disco mediante `stat()` por un sistema de detección de cambios más inteligente y directo en la función `load`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T12:26:17` **settings.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos detallados en las funciones de acceso público y la estandarización de las excepciones capturadas, permitiendo entender mejor el flujo de seguridad en las operaciones con el sistema de archivos.
 - `2026-08-24T12:25:46` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del flujo de escaneo centralizando la lógica de iteración y validación de atributos dentro de `process_entry`, facilitando la extensión de nuevas heurísticas sin ensuciar la lógica principal del bucle.
 - `2026-08-24T12:15:40` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones críticas para clarificar la lógica de seguridad y el manejo de E/S, facilitando la auditoría del código conforme a los estándares exigentes del proyecto.
-- `2026-08-24T12:15:15` **memory.py** (legibilidad y documentación): Mejoré la documentación de `MEMORYSTATUSEX` y `trim_working_set` para clarificar los riesgos de seguridad y las dependencias de la API de Windows, además de añadir type hints y docstrings explicativos en funciones críticas de validación para prevenir errores de uso.

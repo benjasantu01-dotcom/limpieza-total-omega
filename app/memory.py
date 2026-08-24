@@ -339,7 +339,9 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
             return False, "El proceso seleccionado ya no está activo."
         
         path = _get_process_path(proc_handle)
-        if not path or not os.path.isabs(path): 
+        if not path:
+            return False, "Acceso denegado: no se pudo obtener información del ejecutable."
+        if not os.path.isabs(path): 
             return False, "No se pudo verificar una ruta absoluta válida del ejecutable."
         
         if path.startswith("\\\\"):
