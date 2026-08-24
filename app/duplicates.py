@@ -67,31 +67,33 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Retorna el hash en formato hexadecimal o None si el acceso es denegado o falla.
     """
     if path is None: return None
-    path_obj = Path(path).resolve()
-    if not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
-    if not os.access(path_obj, os.R_OK): return None
     try:
+        path_obj = Path(path).resolve()
+        if not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
+        if not os.access(path_obj, os.R_OK): return None
+        
         digest = hashlib.sha256()
         with open(path_obj, "rb") as f:
             while (buffer := f.read(chunk_size)):
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError, FileNotFoundError):
+    except (OSError, PermissionError, IOError, ValueError):
         return None
 
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """Calcula el hash de los primeros N bytes para filtrado heurístico rápido."""
     if path is None: return None
-    path_obj = Path(path).resolve()
-    if not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
-    if not os.access(path_obj, os.R_OK): return None
     try:
+        path_obj = Path(path).resolve()
+        if not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
+        if not os.access(path_obj, os.R_OK): return None
+        
         with open(path_obj, "rb") as f:
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError, FileNotFoundError):
+    except (OSError, PermissionError, IOError, ValueError):
         return None
 
 
@@ -104,14 +106,14 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None: return groups
     for p in paths:
         if p is None: continue
-        target = Path(p).resolve()
-        if is_protected_path(target) or not is_safe_to_modify(target):
-            continue
         try:
+            target = Path(p).resolve()
+            if is_protected_path(target) or not is_safe_to_modify(target):
+                continue
             st = target.stat()
             if st.st_size > 0:
                 groups[st.st_size].append(target)
-        except (OSError, PermissionError, FileNotFoundError, RuntimeError):
+        except (OSError, PermissionError, ValueError):
             continue
     return groups
 
@@ -130,10 +132,11 @@ def _collect_candidates(
     processed_dirs: set[Path] = set()
 
     def _scan(current_dir: Path) -> None:
-        resolved_dir = current_dir.resolve()
-        if resolved_dir in processed_dirs: return
-        processed_dirs.add(resolved_dir)
         try:
+            resolved_dir = current_dir.resolve()
+            if resolved_dir in processed_dirs: return
+            processed_dirs.add(resolved_dir)
+            
             with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
@@ -152,15 +155,17 @@ def _collect_candidates(
                         elif entry.is_file(follow_symlinks=False):
                             if entry_stat.st_size >= min_size:
                                 temp_groups[int(entry_stat.st_size)].append(entry_path)
-                    except (OSError, PermissionError, FileNotFoundError): continue
-        except (OSError, PermissionError, FileNotFoundError): pass
+                    except (OSError, PermissionError): continue
+        except (OSError, PermissionError): pass
 
     if directories is not None:
         for item in set(directories):
             if item:
-                root = Path(item).resolve()
-                if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
-                    _scan(root)
+                try:
+                    root = Path(item).resolve()
+                    if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
+                        _scan(root)
+                except (OSError, ValueError): continue
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
 
@@ -219,7 +224,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             if p_obj.is_file() and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
                 candidates.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
-        except (OSError, PermissionError, FileNotFoundError):
+        except (OSError, PermissionError, ValueError):
             continue
             
     return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
@@ -234,6 +239,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
-        label = 'conservar' if keeper is not None and path.resolve() == keeper else 'duplicado'
-        lines.append(f"   [{label}] {path}")
+        try:
+            label = 'conservar' if keeper is not None and path.resolve() == keeper else 'duplicado'
+            lines.append(f"   [{label}] {path}")
+        except (OSError, ValueError):
+            lines.append(f"   [error] {path}")
     return lines

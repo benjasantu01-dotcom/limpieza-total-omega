@@ -196,7 +196,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error interno: Datos corruptos."])
 
-    metric_breakdown: Dict[MetricKey, int] = {}
+    metric_breakdown: Dict[MetricKey, int] = {area: 0 for area in WEIGHTS}
     ratios_cache: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
     
@@ -205,15 +205,18 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
             ratio = scorer(metrics)
             ratios_cache[area] = ratio
             points = int(round(ratio * weight))
-            metric_breakdown[area] = _clamp(float(points), 0.0, float(weight))
+            metric_breakdown[area] = int(_clamp(float(points), 0.0, float(weight)))
             accumulated_points += metric_breakdown[area]
-        except Exception:
+        except (ValueError, TypeError, ZeroDivisionError):
             metric_breakdown[area] = 0
     
     recommendations: List[str] = []
     for rule in _RECOMMENDATION_RULES:
-        if rule.check(metrics, ratios_cache.get(rule.area, 0.0)):
-            recommendations.append(rule.message_factory(metrics))
+        try:
+            if rule.check(metrics, ratios_cache.get(rule.area, 0.0)):
+                recommendations.append(rule.message_factory(metrics))
+        except Exception:
+            continue
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

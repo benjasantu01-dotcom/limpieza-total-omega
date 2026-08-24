@@ -372,7 +372,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._initialized_tabs[name] = True
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
-                self._create_styled_label(tab_frame, f"Error cargando módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
+                if tab_frame.winfo_exists():
+                    self._create_styled_label(tab_frame, f"Error cargando módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
 
     def _build_tabs_container(self) -> None:
         """Genera el contenedor de pestañas (tabview) e inicializa cada una."""

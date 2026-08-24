@@ -834,3 +834,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-08-24T06:50:23` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-24T06:50:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T06:50:23` Corrida terminada. Total usado hoy: 164.
+- `2026-08-24T06:58:13` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-08-24T06:58:41` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T06:59:04` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` añadiendo validaciones preventivas de estado y manejo de excepciones más granular para evitar fallos silenciosos cuando un archivo desaparece entre la detección y el acceso.
+- `2026-08-24T06:59:28` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `compute_score` envolviendo la ejecución de las funciones `scorer` en un bloque de control de excepciones más específico y mejorando la inicialización del `metric_breakdown` para evitar errores de referencia si alguna métrica falla.
+- `2026-08-24T07:00:16` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la carga de pestañas y la ejecución de tareas asíncronas añadiendo chequeos de `winfo_exists()` y manejo de estados críticos, mitigando fallos silenciosos cuando la UI intenta actualizar widgets que ya fueron destruidos al cerrar la aplicación.
+- `2026-08-24T07:00:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T07:00:16` Corrida terminada. Total usado hoy: 168.
