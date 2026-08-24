@@ -598,3 +598,38 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T05:17:52` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `is_protected_path` añadiendo un chequeo explícito de existencia de rutas padre, previniendo que rutas relativas o mal formadas se resuelvan incorrectamente contra el directorio de ejecución actual (`CWD`) y se expongan a un escape de sandbox.
 - `2026-08-24T05:17:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T05:17:52` Corrida terminada. Total usado hoy: 128.
+- `2026-08-24T05:26:35` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-24T05:26:58` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-24T05:27:26` Tests FALLARON:
+```
+no {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
+        return [
+            "Configuración actual", "", f"  Archivo: {settings_path(custom_base)}", "",
+            "  Apariencia", f"    Tema: {current['tema']}", f"    Acento: {current['acento']}",
+            f"    Barras visuales: {'sí' if current['mostrar_barras'] else 'no'}", "",
+            "  Comportamiento", f"    Confirmar siempre: {'sí' if current['confirmar_siempre'] else 'no'}",
+            f"    Pestaña inicial: {current['abrir_en']}", f"    Recordar carpeta: {'sí' if current['recordar_ultima_carpeta'] else 'no'}", "",
+>           "  Rendimiento", f"    Duplicados desde: {current['duplicados_TAMANO_MINIMO_KB']} KB",
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            f"    Top de archivos: {current['top_archivos']}", f"    Análisis en paralelo: {'sí' if current['analisis_en_paralelo'] else 'no'}", "",
+            "  Asistente IA", f"    Activado: {'sí' if current['asistente_activado'] else 'no'}",
+            f"    Clave: {origin}", f"    Modelo: {current['asistente_modelo']}", ""
+        ]
+E       KeyError: 'duplicados_TAMANO_MINIMO_KB'
+
+app/settings.py:362: KeyError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'duplicados_TAMANO_MINIMO_KB'
+1 failed, 298 passed in 1.23s
+
+```
+- `2026-08-24T05:27:26` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `_Validators.path` y `_Validators._run_safety_checks` para que, además de verificar la protección de la ruta, validen explícitamente que la ruta no apunte a un dispositivo de bloque o ruta especial de Windows mediante `os.path.abspath` y una comprobación de prefijo, evitando inyecciones de rutas fuera del árbol permitido.
+- `2026-08-24T05:27:51` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-24T05:27:51` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-24T05:27:51` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-24T05:28:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-24T05:28:11` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-24T05:28:41` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-24T05:28:41` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-24T05:28:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T05:28:41` Corrida terminada. Total usado hoy: 132.
