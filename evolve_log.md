@@ -1023,3 +1023,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T09:12:15` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una verificación de integridad en `load()` que compara las claves del JSON cargado contra las definidas en `AppSettings`, eliminando silenciosamente cualquier clave inesperada que pudiera haber sido inyectada maliciosamente o por una versión antigua, evitando así la propagación de datos corruptos.
 - `2026-08-24T09:12:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T09:12:15` Corrida terminada. Total usado hoy: 220.
+- `2026-08-24T09:21:08` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-08-24T09:21:35` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-24T09:22:10` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Reforcé la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_text_structure` en la validación de entrada de `ask` y `local_answer`, asegurando que cualquier entrada de usuario sea filtrada preventivamente contra inyecciones de rutas o caracteres de control antes de ser procesada por cualquier lógica, garantizando que el asistente nunca propague rutas potencialmente peligrosas.
+- `2026-08-24T09:22:42` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` al directorio padre, previniendo errores de acceso o escritura en rutas críticas antes de intentar cualquier operación de creación de carpetas o archivos.
+- `2026-08-24T09:22:51` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-24T09:22:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T09:22:51` Corrida terminada. Total usado hoy: 224.
