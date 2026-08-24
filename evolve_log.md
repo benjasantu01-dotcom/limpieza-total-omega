@@ -546,3 +546,34 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-24T04:37:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-24T04:37:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T04:37:09` Corrida terminada. Total usado hoy: 112.
+- `2026-08-24T04:45:52` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-24T04:46:20` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-24T04:46:43` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se introdujo una comprobación robusta en `_is_reparse_point` para evitar el acceso a enlaces simbólicos o junctions que apunten a volúmenes o rutas fuera del alcance permitido, previniendo errores de recursión infinita o accesos indebidos fuera de la raíz del escaneo.
+- `2026-08-24T04:47:11` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save` añadiendo el manejo de un posible archivo de configuración bloqueado o en uso mediante una verificación explícita de `OSError` al intentar la operación atómica de `os.replace`, asegurando que la aplicación no colapse si un proceso externo (como un backup o antivirus) mantiene un handle sobre el JSON.
+- `2026-08-24T04:47:21` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.19s
+
+```
+- `2026-08-24T04:47:21` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez de la resolución de rutas mediante la validación de `os.path.realpath` contra posibles errores de permisos (acceso denegado) y una verificación más estricta del estado de existencia del archivo utilizando `path.is_file()` en lugar de `path.exists()`, evitando así falsos positivos con directorios que coinciden con el nombre buscado.
+- `2026-08-24T04:47:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T04:47:21` Corrida terminada. Total usado hoy: 116.

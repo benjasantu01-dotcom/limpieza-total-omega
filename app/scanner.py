@@ -88,9 +88,10 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta si la entrada es un punto de reanálisis (reparse point) usando atributos de archivo.
+        Detecta si la entrada es un punto de reanálisis o enlace simbólico.
         """
         try:
+            # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError, TypeError):
             return True 
@@ -105,10 +106,7 @@ class Scanner:
         
         try:
             target_path = Path(entry.path)
-            # Validación defensiva de solo lectura: evitamos modificar el disco
-            if is_protected_path(target_path):
-                return
-            if str(target_path).startswith("\\\\"):
+            if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
                 return
             if not self._is_safe_entry(target_path):
                 return
@@ -118,6 +116,7 @@ class Scanner:
             return
 
         if is_dir:
+            # No seguir puntos de reanálisis (links/junctions) para evitar recursión infinita/escapes
             if not self._is_reparse_point(entry):
                 try:
                     path_str = str(target_path.resolve())
@@ -128,7 +127,7 @@ class Scanner:
                     pass
             return
 
-        # Procesamiento de archivo: verificación defensiva de metadatos
+        # Procesamiento de archivo
         try:
             file_stat = entry.stat(follow_symlinks=False)
             if file_stat.st_size == 0:

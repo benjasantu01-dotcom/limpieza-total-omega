@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 225
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 11 | 0 | 1 | 1 | 29 |
+| 2026-08-22 | 11 | 0 | 1 | 1 | 25 |
 | 2026-08-23 | 153 | 9 | 27 | 13 | 148 |
-| 2026-08-24 | 49 | 3 | 7 | 5 | 48 |
+| 2026-08-24 | 50 | 4 | 7 | 6 | 49 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **37**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `assistant.py`: **20**
 - `quarantine.py`: **20**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
 - `branding.py`: **15**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T04:46:43` **scanner.py** (robustez ante casos límite): Se introdujo una comprobación robusta en `_is_reparse_point` para evitar el acceso a enlaces simbólicos o junctions que apunten a volúmenes o rutas fuera del alcance permitido, previniendo errores de recursión infinita o accesos indebidos fuera de la raíz del escaneo.
 - `2026-08-24T04:36:36` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de espacio en disco y consistencia de rutas antes de cualquier operación de E/S, evitando excepciones innecesarias ante casos límite como unidades llenas o cambios de contexto inesperados durante el procesamiento.
 - `2026-08-24T04:26:48` **healthscore.py** (robustez ante casos límite): Se ha robustecido el cálculo de `compute_score` ante posibles divisiones por cero o desbordamientos durante la inicialización de constantes globales y se ha mejorado la tolerancia a fallos en el bucle de procesamiento de métricas.
 - `2026-08-24T04:26:21` **duplicates.py** (robustez ante casos límite): Se mejora la robustez ante archivos bloqueados o en uso durante la comparación de duplicados mediante la adición de un chequeo preventivo de acceso mediante `os.access` en `hash_file` y `partial_hash`, garantizando que el acceso al archivo sea posible antes de intentar leerlo, evitando así excepciones innecesarias en entornos de alta concurrencia.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T03:45:07` **browser.py** (rendimiento): Se introdujo una estrategia de memoización persistente en `detect_profiles` y `_sum_directory_recursive` para evitar el re-cálculo costoso de tamaños en directorios compartidos o redundantes durante la misma ejecución.
 - `2026-08-24T03:35:58` **assistant.py** (rendimiento): Se optimizó el motor de búsqueda de palabras clave transformando `_KEYWORD_MAP` en un `dict` con claves optimizadas y reemplazando la iteración sobre tokens por una búsqueda directa, reduciendo la complejidad del proceso de respuesta local.
 - `2026-08-24T03:34:59` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo un docstring detallado a la clase `_Validators` para explicar su responsabilidad como motor de saneamiento y centralización de políticas de seguridad, además de normalizar la consistencia de los comentarios en los métodos de validación.
-- `2026-08-24T03:25:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en todas las funciones y métodos, especificando comportamientos, parámetros, excepciones esperadas y lógica interna para facilitar el mantenimiento y la auditoría.
