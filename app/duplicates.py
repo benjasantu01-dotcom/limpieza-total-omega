@@ -149,6 +149,10 @@ def _collect_candidates(
             with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
+                        # Verificar existencia antes de stat para manejar race conditions
+                        if not entry.is_file(follow_symlinks=False) and not entry.is_dir(follow_symlinks=False):
+                            continue
+                            
                         entry_stat = entry.stat(follow_symlinks=False)
                         entry_path = Path(entry.path).resolve()
                         

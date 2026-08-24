@@ -1002,3 +1002,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T08:42:02` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de archivos en `save_logo_svg` y se eliminó la posibilidad de excepciones silenciosas en el procesamiento de rutas, validando explícitamente la existencia de componentes de `Path` para evitar errores en sistemas con archivos bloqueados o estructuras de directorios inexistentes.
 - `2026-08-24T08:42:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T08:42:02` Corrida terminada. Total usado hoy: 208.
+- `2026-08-24T08:50:30` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-08-24T08:50:56` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-24T08:51:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-24T08:51:45` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de la existencia de archivos antes de invocar `stat()`, evitando excepciones innecesarias en entornos donde los archivos pueden desaparecer entre el listado (`scandir`) y el acceso (`stat`).
+- `2026-08-24T08:51:53` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-24T08:51:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T08:51:53` Corrida terminada. Total usado hoy: 212.
