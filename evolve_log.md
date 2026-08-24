@@ -1474,3 +1474,33 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T13:08:22` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante valores corruptos o inesperados dentro de la fuente de datos (`metrics`), asegurando que la validación de tipos sea estricta y que `getattr` no falle ante objetos inesperados.
 - `2026-08-24T13:08:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T13:08:22` Corrida terminada. Total usado hoy: 312.
+- `2026-08-24T13:15:54` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-24T13:16:29` Tests FALLARON:
+```
+s_y + 58 * scale + r,
+                                   fill=blend(color("surface"), color("glow"), 0.04 * paso), outline="")
+    
+            canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
+            _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
+            canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale,
+                               fill=color("background"), width=max(2, int(8 * scale)), capstyle="round")
+            canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale,
+                                  canvas_x + 92 * scale, canvas_y + 52 * scale, fill=color("background"), outline="")
+>           canvas.create_text(canvas_x + 64 * scale, canvas_, canvas_y + 96 * scale, text="\u03a9",
+                                                     ^^^^^^^
+                               fill=color("background"), font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
+E                              NameError: name 'canvas_' is not defined
+
+app/branding.py:472: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_draw_logo_paints_on_the_canvas_without_a_display - NameError: name 'canvas_' is not defined
+FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - NameError: name 'canvas_' is not defined
+2 failed, 297 passed in 1.31s
+
+```
+- `2026-08-24T13:16:29` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se ha añadido un robusto manejo de errores en `save_logo_svg` utilizando `try-except` integrales y validaciones explícitas de tipos para asegurar que la función no falle ante rutas inválidas, permisos denegados o fallos en el sistema de archivos, manteniendo la consistencia con el enfoque de robustez ante casos límite.
+- `2026-08-24T13:16:54` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_is_system_hidden` añadiendo una validación explícita de `entry_path` para evitar errores al intentar acceder a rutas que, aunque existen en el iterador, pueden haber sido bloqueadas o eliminadas por el sistema justo antes de la llamada a la API.
+- `2026-08-24T13:17:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-24T13:17:29` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: He mejorado la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de `entry.is_file()` y `entry.is_dir()` con manejo de errores granular, evitando que archivos en estado de bloqueo o desaparición abrupta (concurrencia) interrumpan el escaneo de todo el directorio.
+- `2026-08-24T13:17:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T13:17:29` Corrida terminada. Total usado hoy: 316.

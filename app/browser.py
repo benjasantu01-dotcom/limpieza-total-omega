@@ -151,15 +151,8 @@ def _is_excluded_file(name: str) -> bool:
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
     Consulta atributos de bajo nivel en Windows para detectar archivos de sistema.
-
-    Args:
-        entry_path: Ruta completa del archivo.
-        kernel32: Instancia de ctypes.WinDLL o None.
-
-    Returns:
-        True si el archivo está marcado como oculto, sistema o solo lectura.
     """
-    if not kernel32:
+    if not kernel32 or not entry_path:
         return False
     try:
         attrs: int = kernel32.GetFileAttributesW(entry_path)
