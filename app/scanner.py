@@ -124,9 +124,10 @@ class Scanner:
                     pass
             return
 
-        # Procesamiento de archivo
+        # Procesamiento de archivo: verificación defensiva de metadatos
         try:
-            if entry.stat(follow_symlinks=False).st_size == 0:
+            file_stat = entry.stat(follow_symlinks=False)
+            if file_stat.st_size == 0:
                 return
         except (OSError, PermissionError):
             return

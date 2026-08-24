@@ -291,22 +291,24 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         
+    temp_name = None
     try:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         
         with tempfile.NamedTemporaryFile("wb", dir=parent, delete=False) as tf:
+            temp_name = tf.name
             tf.write(encoded_data)
             tf.flush()
             os.fsync(tf.fileno())
-            temp_name = tf.name
             
         os.replace(temp_name, ruta)
         _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
-        if "temp_name" in locals() and os.path.exists(temp_name):
-            os.remove(temp_name)
+        if temp_name and os.path.exists(temp_name):
+            try: os.remove(temp_name)
+            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:

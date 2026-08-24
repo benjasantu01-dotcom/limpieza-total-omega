@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 59 | 5 | 9 | 6 | 67 |
+| 2026-08-22 | 59 | 5 | 9 | 6 | 63 |
 | 2026-08-23 | 153 | 9 | 27 | 13 | 148 |
-| 2026-08-24 | 2 | 0 | 1 | 1 | 4 |
+| 2026-08-24 | 4 | 2 | 1 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **39**
+- robustez ante casos límite: **37**
 - seguridad defensiva: **36**
-- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `memory.py`: **21**
 - `duplicates.py`: **20**
+- `scanner.py`: **20**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
-- `scanner.py`: **19**
 - `healthscore.py`: **18**
+- `settings.py`: **16**
 - `branding.py`: **15**
-- `settings.py`: **15**
 - `organizer.py`: **13**
 - `browser.py`: **12**
 - `main.py`: **9**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T00:21:38` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una verificación de atomicidad más estricta mediante `os.replace` (que es atómico en sistemas POSIX y Windows) y asegurando que, ante fallos de escritura o permisos denegados, el sistema no deje archivos temporales huérfanos o una configuración inconsistente.
+- `2026-08-24T00:21:09` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` implementando una gestión defensiva ante archivos que, aunque no son directorios, fallan al acceder a sus metadatos (como archivos bloqueados o sin permisos), asegurando que el proceso de escaneo no se detenga innecesariamente ante errores de I/O específicos.
 - `2026-08-24T00:11:27` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `purge_all` y `purge_item` implementando una gestión de excepciones más granular durante el ciclo de borrado, asegurando que si un archivo está bloqueado o falla por motivos de I/O, la operación no aborte silenciosamente y el estado del manifiesto se mantenga consistente incluso ante errores parciales.
 - `2026-08-24T00:02:22` **main.py** (robustez ante casos límite): Se ha implementado un control de robustez en la navegación de pestañas mediante `_on_tab_change`, asegurando que `_tab_factory` solo intente construir la interfaz de una pestaña si el widget contenedor sigue existiendo, evitando errores de `TclError` y potenciales fallos de sincronización si la ventana se cierra durante un cambio de pestaña rápido.
 - `2026-08-23T15:01:12` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_collect_summary_data` para evitar el agotamiento de memoria en directorios con millones de archivos, reemplazando la lista completa `all_files` por un heap gestionado que solo mantiene los N archivos más grandes durante la iteración.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T14:11:01` **assistant.py** (rendimiento): Optimicé el cálculo de `_identify_active_problems` en el motor local pasando de una lista de strings a una evaluación dirigida, evitando la creación y el posterior procesamiento de múltiples strings intermedios para mejorar la eficiencia en el bucle de consultas.
 - `2026-08-23T14:09:48` **scanner.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de los callbacks de heurísticas, eliminando ambigüedades en la firma de `SuspicionCheck` para que el mantenimiento futuro sea seguro.
 - `2026-08-23T14:00:40` **safety.py** (legibilidad y documentación): Mejoré la documentación de `ensure_safe_to_modify` y otras funciones críticas con docstrings que detallan los estados de error y las precondiciones, facilitando el mantenimiento y la comprensión de las reglas de seguridad.
-- `2026-08-23T14:00:07` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando el propósito de las funciones internas y validaciones de seguridad, además de extraer una función `_validate_integrity` dentro de `QuarantineItem` para consolidar la lógica de verificación física.
-- `2026-08-23T13:59:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos (incluyendo la lógica de detección de bloqueos y seguridad) y se han estandarizado las anotaciones de tipo para mayor claridad, respetando estrictamente las restricciones de seguridad y el enfoque de documentación.

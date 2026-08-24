@@ -1247,3 +1247,50 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T00:11:58` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-24T00:11:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T00:11:58` Corrida terminada. Total usado hoy: 8.
+- `2026-08-24T00:20:44` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-08-24T00:21:09` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scanner.py` implementando una gestión defensiva ante archivos que, aunque no son directorios, fallan al acceder a sus metadatos (como archivos bloqueados o sin permisos), asegurando que el proceso de escaneo no se detenga innecesariamente ante errores de I/O específicos.
+- `2026-08-24T00:21:38` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` implementando una verificación de atomicidad más estricta mediante `os.replace` (que es atómico en sistemas POSIX y Windows) y asegurando que, ante fallos de escritura o permisos denegados, el sistema no deje archivos temporales huérfanos o una configuración inconsistente.
+- `2026-08-24T00:22:05` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.19s
+
+```
+- `2026-08-24T00:22:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejora la robustez ante rutas inválidas o nombres de archivo corruptos en `_sanitize_command` y `parse_registry_csv`, evitando que caracteres de control o valores inesperados aborten el procesamiento del inventario.
+- `2026-08-24T00:22:25` Tests FALLARON:
+```
+sistant.py:334: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ram_question_debunks_the_ram_cleaner_myth - AssertionError: assert ('liberador de ram' in 'error procesando respuesta.' or 'más lenta' in 'error procesando respuesta.')
+FAILED evolve/tests/test_assistant.py::test_space_question_adds_up_what_can_be_recovered - AssertionError: assert '3730' in 'Error procesando respuesta'
+ +  where 'Error procesando respuesta' = <built-in method replace of str object at 0x7ffbac6db1e0>('.', '')
+ +    where <built-in method replace of str object at 0x7ffbac6db1e0> = 'Error procesando respuesta.'.replace
+ +      where 'Error procesando respuesta.' = Answer(text='Error procesando respuesta.', source='local', notice='Respondido por el motor local, sin conexión ni envío de datos.', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_explains_they_are_signals - AssertionError: assert 'señales' in 'error procesando respuesta.'
+ +  where 'error procesando respuesta.' = <built-in method lower of str object at 0x7ffbac6db1e0>()
+ +    where <built-in method lower of str object at 0x7ffbac6db1e0> = 'Error procesando respuesta.'.lower
+ +      where 'Error procesando respuesta.' = Answer(text='Error procesando respuesta.', source='local', notice='Respondido por el motor local, sin conexión ni envío de datos.', suggestions=[]).text
+3 failed, 296 passed in 1.19s
+
+```
+- `2026-08-24T00:22:25` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Reforcé la seguridad del módulo `assistant.py` al aplicar `_ensure_safe_text` sobre todas las salidas generadas por los `handlers` de respuestas, asegurando que ninguna respuesta (independientemente de su origen) pueda contener secuencias maliciosas antes de llegar a la interfaz de usuario.
+- `2026-08-24T00:22:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T00:22:25` Corrida terminada. Total usado hoy: 12.
