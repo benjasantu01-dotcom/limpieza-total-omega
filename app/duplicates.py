@@ -106,10 +106,9 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if is_protected_path(target) or not is_safe_to_modify(target):
             continue
         try:
-            if target.is_file():
-                st = target.stat()
-                if st.st_size > 0:
-                    groups[st.st_size].append(target)
+            st = target.stat()
+            if st.st_size > 0:
+                groups[st.st_size].append(target)
         except (OSError, PermissionError, FileNotFoundError, RuntimeError):
             continue
     return groups
@@ -136,16 +135,13 @@ def _collect_candidates(
             with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
-                        entry_path = Path(entry.path).resolve()
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
-                        if not is_safe_to_modify(entry_path):
-                            continue
-
+                        # Usar entry.stat directamente ahorra llamadas al sistema
                         entry_stat = entry.stat(follow_symlinks=False)
-                        # Ignorar puntos de reparse (Junctions/Symlinks) para evitar ciclos
-                        if getattr(entry_stat, 'st_reparse_tag', 0) != 0:
-                            continue
+                        entry_path = Path(entry.path).resolve()
+                        
+                        if skip_protected and is_protected_path(entry_path): continue
+                        if not is_safe_to_modify(entry_path): continue
+                        if getattr(entry_stat, 'st_reparse_tag', 0) != 0: continue
                             
                         if entry.is_dir(follow_symlinks=False):
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)

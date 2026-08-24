@@ -211,8 +211,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         try:
             ratio = scorer(metrics)
             ratios_cache[area] = ratio
-            weighted_points = round(ratio * float(weight))
-            metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
+            # Redondeo eficiente usando int() tras multiplicar por el entero weight
+            points = int(round(ratio * weight))
+            metric_breakdown[area] = points if points <= weight else weight
             accumulated_points += metric_breakdown[area]
         except (ValueError, TypeError, ZeroDivisionError):
             metric_breakdown[area] = 0
@@ -225,9 +226,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
-    final_score = int(_clamp(accumulated_points, 0.0, 100.0))
+    final_score = int(accumulated_points)
     return HealthResult(
-        score=final_score, 
+        score=final_score if final_score <= 100 else 100, 
         grade=grade_for_score(final_score), 
         breakdown=metric_breakdown, 
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
