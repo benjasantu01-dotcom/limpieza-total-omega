@@ -199,7 +199,9 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     
     for d in search_dirs:
         try:
-            base = Path(d).expanduser().resolve()
+            path_obj = Path(d)
+            if not path_obj.exists(): continue
+            base = path_obj.expanduser().resolve()
             if base.is_dir():
                 _process_directory(base, found)
         except (OSError, RuntimeError):
@@ -233,8 +235,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile) or not junk_file.path: continue
         try:
             src_path: Path = junk_file.path.resolve()
-            # Validación de existencia y espacio antes de mover
-            if not src_path.exists(): continue
+            if not src_path.exists() or not src_path.is_file(): continue
             if shutil.disk_usage(dest_base.anchor).free < src_path.stat().st_size: continue
             
             if src_path.anchor != dest_base.anchor or not _is_safe_to_move(junk_file, dest_base):
@@ -243,7 +244,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
             target = (_generate_unique_target(dest_base / safe_name)).resolve()
             
-            # Verificación estricta de límites de carpeta post-resolución
             if not target.is_relative_to(dest_base): continue
             
             ensure_safe_to_modify(src_path)
@@ -268,10 +268,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            # Validar que sea un archivo real, que no sea una carpeta y que exista
             if not item.is_file() or _is_junction(item) or not item.exists():
                 continue
-            # Asegurar que el ítem resuelto pertenece a la carpeta de cuarentena
             if not item.resolve().is_relative_to(dest.resolve()):
                 continue
                 

@@ -135,12 +135,6 @@ class ProcessMemory:
 def format_bytes(num: Optional[int | float]) -> str:
     """
     Convierte un valor en bytes a una cadena legible.
-    
-    Args:
-        num: Cantidad de bytes a formatear.
-        
-    Returns:
-        Cadena formateada con la unidad de medida adecuada (ej: '1.5 MB').
     """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
@@ -156,15 +150,7 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """
-    Parsea el contenido de /proc/meminfo devolviendo un objeto MemorySnapshot.
-    
-    Args:
-        meminfo_text: Contenido crudo del archivo /proc/meminfo.
-        
-    Returns:
-        Snapshot con la información de memoria extraída.
-    """
+    """Parsea el contenido de /proc/meminfo devolviendo un objeto MemorySnapshot."""
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return MemorySnapshot(0, 0)
     
@@ -209,9 +195,7 @@ def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
             yield proc
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """
-    Ordena procesos por consumo descendente y aplica un límite usando una lista procesada.
-    """
+    """Ordena procesos por consumo descendente y aplica un límite usando una lista procesada."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
@@ -327,13 +311,11 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet.
-    
-    Verifica que el handle sea válido, que el PID coincida, que el proceso
-    siga activo y que su ruta no sea sospechosa o protegida.
     """
     if not proc_handle or proc_handle == -1: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
+    
     try:
         actual_pid = kernel32.GetProcessId(proc_handle)
         if actual_pid != pid:
@@ -349,7 +331,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if not path: 
             return False, "No se pudo verificar la ubicación del ejecutable."
         
-        # Prevenir rutas UNC (Network) o caracteres maliciosos
         if path.startswith("\\\\"):
             return False, "Ruta bloqueada: ubicación en red (UNC) no segura."
             
@@ -357,23 +338,17 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
         
-        # Validación de integridad de ruta frente a reparse points/junctions
         normalized_path = os.path.normcase(os.path.realpath(path))
         if os.path.normcase(path) != normalized_path:
             return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse/enlace."
         if is_protected_path(normalized_path):
             return False, "Operación denegada: ruta de ejecutable protegida."
     except (ctypes.ArgumentError, Exception):
-        return False, "Error interno durante la validación de seguridad."
+        return False, "Error técnico al validar la seguridad del proceso."
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Solicita al sistema la liberación de memoria residente (Working Set) de un PID.
-    
-    Returns:
-        Tuple (éxito, mensaje de error/estado).
-    """
+    """Solicita al sistema la liberación de memoria residente de un PID."""
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):

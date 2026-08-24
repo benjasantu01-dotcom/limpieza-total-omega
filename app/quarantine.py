@@ -97,9 +97,13 @@ class QuarantineItem:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> Optional[QuarantineItem]:
         """Reconstruye una instancia desde un diccionario validando campos obligatorios."""
-        required = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
-        if not isinstance(data, dict) or not required.issubset(data.keys()):
+        if not isinstance(data, dict):
             return None
+        
+        required = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
+        if not required.issubset(data.keys()):
+            return None
+            
         try:
             return cls(
                 item_id=str(data["item_id"]),
@@ -298,10 +302,9 @@ def _load_manifest_internal(base_str: str) -> Dict[str, QuarantineItem]:
             return {}
         items = {}
         for entry in raw_data:
-            if isinstance(entry, dict):
-                item = QuarantineItem.from_dict(entry)
-                if item:
-                    items[item.item_id] = item
+            item = QuarantineItem.from_dict(entry)
+            if item:
+                items[item.item_id] = item
         return items
     except (json.JSONDecodeError, OSError, PermissionError):
         return {}
@@ -333,7 +336,8 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         return target_path
     except (OSError, TypeError, IOError) as e:
         if 'temp_name' in locals() and os.path.exists(temp_name):
-            os.remove(temp_name)
+            try: os.remove(temp_name)
+            except OSError: pass
         raise RuntimeError(f"Fallo crítico al persistir manifiesto: {e}")
 
 
@@ -347,7 +351,6 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     if resolved_source.is_symlink() or not resolved_source.is_file():
         raise UnsafePathError("Origen no es archivo regular o es un enlace sospechoso.")
     
-    # Captura de identificador único (ino) para asegurar que el archivo no cambie bajo el proceso
     original_stat = resolved_source.stat()
 
     if destination.exists():
@@ -360,7 +363,6 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     try:
         shutil.copy2(resolved_source, temp_dest)
         
-        # Validación de post-copia usando estado del archivo fuente original
         if resolved_source.stat().st_ino != original_stat.st_ino:
             raise RuntimeError("Seguridad: el archivo origen fue reemplazado durante la copia.")
         if temp_dest.stat().st_size != file_size:
