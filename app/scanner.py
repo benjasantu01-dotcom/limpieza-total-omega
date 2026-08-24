@@ -96,6 +96,10 @@ class Scanner:
             return True 
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
+        """
+        Analiza una entrada del sistema de archivos, determinando si es un directorio
+        para seguir escaneando o un archivo para aplicar reglas heurísticas.
+        """
         if entry is None or not hasattr(entry, 'path'):
             return
         
@@ -138,12 +142,14 @@ class Scanner:
         self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Detecta archivos con extensiones dobles que intentan ocultar el tipo real (ej. documento.pdf.exe)."""
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Marca ejecutables nuevos en carpetas de alto riesgo como 'Downloads' o 'Temp'."""
     path_parts_lower = {p.lower() for p in path.parts}
     if not (path_parts_lower & WATCHED_FOLDERS):
         return None
@@ -158,6 +164,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Detecta si un archivo utiliza nombres de procesos críticos del sistema fuera del directorio System32."""
     if path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in [p.lower() for p in path.parts]:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -165,6 +172,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
+    """Aplica todas las heurísticas registradas sobre un archivo individual."""
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -182,6 +190,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
+    """
+    Inicializa y ejecuta el escaneo recursivo de un directorio, 
+    gestionando la pila de directorios y la recolección de resultados.
+    """
     if not directory:
         return []
         
@@ -211,6 +223,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 
 
 def run_windows_defender_quick_scan() -> str:
+    """Invoca la API de PowerShell de Windows para ejecutar un escaneo rápido de Defender."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

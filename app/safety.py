@@ -13,7 +13,7 @@ import re
 import ctypes
 from enum import Enum, auto
 from pathlib import Path
-from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable
+from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, TypeGuard
 from functools import lru_cache
 
 PathLike: TypeAlias = Union[str, os.PathLike]
@@ -55,7 +55,6 @@ class ProtectionReason(Enum):
     MOUNT_POINT = "punto de montaje detectado"
 
 
-# DIRECTORIOS_BLOQUEADOS: Nombres que, si aparecen en una ruta, indican riesgo de sistema.
 PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
     "windows", "winnt", "system32", "syswow64", "system", "boot",
     "program files", "program files (x86)", "programdata",
@@ -67,7 +66,6 @@ PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
     "dev", "root", "library", "applications",
 })
 
-# EXTENSIONES_SENSIBLES: Archivos fundamentales para la integridad o configuración.
 SENSITIVE_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".sys", ".dll", ".exe", ".msi", ".drv", ".ocx", ".cpl", ".efi",
     ".reg", ".pol", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer",
@@ -154,6 +152,7 @@ def _is_reparse_point(path: Path) -> bool:
 def _is_file_in_use(path: Path) -> bool:
     """
     Determina si un archivo está bloqueado intentando abrir un descriptor exclusivo.
+    Utiliza el modo de apertura de solo lectura para verificar si el sistema permite acceso.
     """
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
@@ -169,7 +168,9 @@ def _is_file_in_use(path: Path) -> bool:
 
 def _check_file_integrity(path: Path) -> None:
     """
-    Ejecuta validaciones físicas sobre la ruta.
+    Ejecuta validaciones físicas sobre la ruta. Lanza UnsafePathError si alguna
+    heurística de seguridad falla, garantizando que el archivo sea seguro antes
+    de cualquier operación de escritura.
     """
     if not isinstance(path, Path):
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
@@ -327,7 +328,8 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
-    Valida si una ruta es apta para escritura.
+    Valida exhaustivamente si una ruta es apta para escritura mediante chequeos
+    lógicos, estructurales e integridad física del archivo.
     """
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
@@ -362,7 +364,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError(f"Error crítico de seguridad validando ruta: {e}")
 
 
-def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> bool:
+def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeGuard[PathLike]:
     """Wrapper booleano: devuelve True solo si la ruta supera toda validación de seguridad."""
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
