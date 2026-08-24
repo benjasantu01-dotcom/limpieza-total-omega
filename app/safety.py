@@ -149,8 +149,9 @@ def _is_file_in_use(path: Path, st: os.stat_result = None) -> bool:
     if os.name != 'nt':
         return False
     try:
+        # Intenta abrir con acceso 0 (ninguno) y modo compartido total para probar bloqueo
         handle = ctypes.windll.kernel32.CreateFileW(
-            str(path), 0x80000000, 1, None, 3, 0x00000080, None
+            str(path), 0, 7, None, 3, 0x00000080, None
         )
         if handle == -1:
             return True

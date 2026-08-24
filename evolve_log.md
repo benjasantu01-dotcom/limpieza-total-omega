@@ -1044,3 +1044,30 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T09:43:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-24T09:43:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T09:43:00` Corrida terminada. Total usado hoy: 232.
+- `2026-08-24T09:51:41` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-24T09:52:10` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado `_is_file_in_use` utilizando un método de apertura con permisos de acceso mínimos (`0`) en lugar de `0x80000000` (GENERIC_READ), asegurando que la verificación no bloquee accidentalmente el archivo ni dependa de permisos de lectura que podrían no estar disponibles para el usuario actual.
+- `2026-08-24T09:52:33` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-24T09:53:01` Tests FALLARON:
+```
+t_result' object has no attribute 'st_symlink_target'
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - AttributeError: 'os.stat_result' object has no attribute 'st_symlink_target'
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - AttributeError: 'os.stat_result' object has no attribute 'st_symlink_target'
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - AttributeError: 'os.stat_result' object has no attribute 'st_symlink_target'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - AttributeError: 'os.stat_result' object has no attribute 'st_symlink_target'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - AttributeError: 'os.stat_result' object has no attribute 'st_symlink_target'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - AttributeError: 'os.stat_result' object has no attribute 'st_symlink_target'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+12 failed, 287 passed in 1.14s
+
+```
+- `2026-08-24T09:53:01` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_Validators.path` y `_Validators.bool` eliminando el uso de `str()` sobre objetos que ya son paths o tipos seguros, y se protegió la carga de archivos `load` contra ataques de denegación de servicio por archivos linkeados o puntos de reparse mediante una verificación previa de los metadatos del archivo.
+- `2026-08-24T09:53:12` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-24T09:53:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T09:53:12` Corrida terminada. Total usado hoy: 236.
