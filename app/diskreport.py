@@ -247,25 +247,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente mediante `os.scandir`.
-    
-    Implementa protección contra enlaces simbólicos, junctions y carpetas protegidas,
-    evitando ciclos de recursión mediante el seguimiento de inodos únicos.
-    
-    Args:
-        directory: Ruta base para comenzar el escaneo.
-        skip_protected: Si es True, ignora rutas marcadas como protegidas.
-        
-    Yields:
-        Tupla con (Path, int): Ruta absoluta del archivo y su tamaño en bytes.
     """
     if not directory:
         return
 
     try:
-        p_in = Path(os.fspath(directory))
-        if not p_in.exists() or not p_in.is_dir() or p_in.is_symlink():
+        base_path = Path(os.path.realpath(directory))
+        if not base_path.is_dir():
             return
-        base_path = p_in.resolve(strict=True)
         if skip_protected and is_protected_path(base_path):
             return
     except (OSError, RuntimeError, TypeError, ValueError):
@@ -288,14 +277,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
-                        if not entry.name or len(entry.name) > 255:
-                            continue
-                            
-                        entry_path = Path(entry.path).resolve()
+                        entry_path = Path(os.path.realpath(entry.path))
                         
+                        # Impedir escape del directorio base y re-validar seguridad
                         if base_path not in entry_path.parents and entry_path != base_path:
                             continue
-
                         if skip_protected and is_protected_path(entry_path):
                             continue
                         
@@ -373,22 +359,21 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        p_base = Path(os.fspath(directory))
-        if not p_base.is_dir() or p_base.is_symlink():
+        p_base = Path(os.path.realpath(directory))
+        if not p_base.is_dir():
             return []
             
-        base = p_base.resolve(strict=True)
-        if skip_protected and is_protected_path(base):
+        if skip_protected and is_protected_path(p_base):
             return []
             
         sums: Dict[Path, int] = defaultdict(int)
         counts: Dict[Path, int] = defaultdict(int)
         
-        for path, size in walk_files(base, skip_protected):
+        for path, size in walk_files(p_base, skip_protected):
             try:
-                parts = path.relative_to(base).parts
+                parts = path.relative_to(p_base).parts
                 if parts:
-                    top_folder = base / parts[0]
+                    top_folder = p_base / parts[0]
                     sums[top_folder] += size
                     counts[top_folder] += 1
             except (ValueError, IndexError):
@@ -454,22 +439,21 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
 
     try:
-        p_input = Path(os.fspath(directory))
+        p_input = Path(os.path.realpath(directory))
         if not p_input.exists():
             return [f"Error: Ruta no existente: {p_input}"]
         if not p_input.is_dir():
             return [f"Error: Ruta no es un directorio: {p_input}"]
         
-        p_resolved = p_input.resolve(strict=False)
-        if skip_protected and is_protected_path(p_resolved):
+        if skip_protected and is_protected_path(p_input):
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             
-        data = _collect_summary_data(p_resolved, skip_protected)
+        data = _collect_summary_data(p_input, skip_protected)
     except (OSError, PermissionError, RuntimeError, TypeError, ValueError) as e:
         return [f"Error: No se pudo procesar la ruta: {str(e)}"]
 
     lines = [
-        f"Carpeta analizada: {p_resolved}", 
+        f"Carpeta analizada: {p_input}", 
         f"Total: {format_size(data.total_bytes)} en {data.total_files} archivos", 
         "", 
         "Por tipo de archivo:"

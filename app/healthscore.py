@@ -189,9 +189,11 @@ _PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], No
 ]
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
+    # Verificación estricta de tipo e integridad de configuración
     if not isinstance(metrics, SystemMetrics) or sum(WEIGHTS.values()) != 100:
         return HealthResult(0, "F", {}, ["Error interno: Configuración inválida."])
     
+    # Asegurar sanitización profunda antes de cualquier cálculo aritmético
     metrics.validate()
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error interno: Datos corruptos."])

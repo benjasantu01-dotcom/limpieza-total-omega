@@ -149,7 +149,6 @@ def _collect_candidates(
             with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
-                        # Verificar existencia antes de stat para manejar race conditions
                         if not entry.is_file(follow_symlinks=False) and not entry.is_dir(follow_symlinks=False):
                             continue
                             
@@ -176,9 +175,10 @@ def _collect_candidates(
             if item:
                 try:
                     root = Path(item).resolve()
-                    if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
-                        _scan(root)
-                except (OSError, ValueError): continue
+                    if root.is_dir():
+                        if not is_protected_path(root) and is_safe_to_modify(root):
+                            _scan(root)
+                except (OSError, ValueError, RuntimeError): continue
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
 
