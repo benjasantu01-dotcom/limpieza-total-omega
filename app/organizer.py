@@ -276,7 +276,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest):
+        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest):
             return 0
     except (OSError, RuntimeError):
         return 0
@@ -288,8 +288,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 continue
             if not item.resolve().is_relative_to(dest.resolve()):
                 continue
-                
-            if is_safe_to_modify(item) and not _is_file_locked(item):
+            
+            # Validación exhaustiva de seguridad antes de la eliminación
+            if is_safe_to_modify(item) and not is_protected_path(item) and not _is_file_locked(item):
                 ensure_safe_to_modify(item)
                 item.unlink()
                 count += 1

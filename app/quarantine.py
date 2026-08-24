@@ -360,6 +360,10 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     temp_fd, temp_path_str = tempfile.mkstemp(dir=dest_dir, prefix=".tmp_q_")
     temp_dest = Path(temp_path_str)
     os.close(temp_fd)
+    
+    if not _is_valid_quarantine_path(temp_dest, dest_dir):
+        _safe_unlink(temp_dest)
+        raise UnsafePathError("Violación de seguridad: archivo temporal fuera del sandbox.")
         
     try:
         shutil.copy2(resolved_source, temp_dest)

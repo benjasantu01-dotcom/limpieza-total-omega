@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 119 | 6 | 21 | 10 | 120 |
-| 2026-08-24 | 99 | 8 | 13 | 11 | 97 |
+| 2026-08-23 | 119 | 6 | 21 | 10 | 116 |
+| 2026-08-24 | 102 | 8 | 14 | 11 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **40**
+- seguridad defensiva: **43**
 - rendimiento: **39**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
+- `memory.py`: **22**
+- `quarantine.py`: **21**
 - `duplicates.py`: **21**
 - `assistant.py`: **20**
-- `quarantine.py`: **20**
 - `scanner.py`: **19**
 - `healthscore.py`: **19**
 - `branding.py`: **17**
 - `diskreport.py`: **17**
-- `organizer.py`: **15**
+- `organizer.py`: **16**
 - `main.py`: **12**
 - `settings.py`: **12**
 - `safety.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T09:42:57` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita mediante `is_within_directory` sobre el `temp_dest` generado, para asegurar que ninguna falla en la creación del archivo temporal permita escribir fuera del sandbox de cuarentena, cerrando una brecha de potencial escalada de ruta.
+- `2026-08-24T09:42:25` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` añadiendo un filtro explícito para verificar que el archivo a eliminar no sea una ruta de sistema ni contenga caracteres maliciosos, además de consolidar la validación de seguridad antes de llamar a `ensure_safe_to_modify`.
+- `2026-08-24T09:42:01` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` y `_is_safe_to_trim` para prevenir el desbordamiento de búfer y asegurar la integridad de la ruta del ejecutable antes de cualquier interacción, validando que el tamaño del buffer no sea excedido y que la ruta resultante sea una ruta absoluta válida y no una manipulación lógica (como rutas relativas maliciosas o caracteres de control).
 - `2026-08-24T09:32:38` **healthscore.py** (seguridad defensiva): Mejoré la integridad de los datos de entrada en `compute_score` añadiendo una validación explícita para evitar comportamientos inesperados ante inyecciones de objetos malformados, garantizando que el contrato de tipos se mantenga estricto antes de procesar cálculos.
 - `2026-08-24T09:32:13` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` asegurando que las rutas base pasadas como argumentos sean normalizadas y verificadas contra `is_protected_path` antes de iniciar cualquier recursión, evitando así posibles escapes de contexto o errores al intentar acceder a rutas mal formadas.
 - `2026-08-24T09:31:50` **diskreport.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `walk_files` mediante la validación explícita de `is_protected_path` sobre la ruta real antes de procesar cualquier entrada, y se ha fortalecido la integridad del escaneo incorporando `os.path.realpath` y verificaciones de consistencia adicionales para evitar el seguimiento inadvertido de rutas fuera del directorio base (escape de sandbox).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T08:41:45` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados en los diccionarios de configuración/métricas, evitando errores de ejecución y asegurando la integridad de los datos procesados mediante validación defensiva estricta.
 - `2026-08-24T08:40:48` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la llamada redundante a `ruta.stat()` mediante el almacenamiento del resultado de `ruta.exists()` y `stat()` en una sola operación, y eliminé redundancias en el acceso al diccionario `_CACHE`.
 - `2026-08-24T08:31:31` **scanner.py** (rendimiento): Optimicé el rendimiento de `check_recent_executable_in_downloads` y `check_system_lookalike` convirtiendo las verificaciones de pertenencia de `list` a `set` mediante la pre-conversión de `path.parts` a un conjunto, evitando iteraciones repetitivas y mejorando la eficiencia del escaneo.
-- `2026-08-24T08:31:23` **safety.py** (rendimiento): Se ha optimizado la validación de integridad (`_check_file_integrity`) para evitar llamadas redundantes a `stat()` y `path.exists()` dentro del bucle de validación, utilizando la información ya recolectada al inicio y reemplazando las lambdas del registro `_VALIDATORS` por referencias a funciones optimizadas con el fin de reducir el overhead de ejecución.
-- `2026-08-24T08:30:38` **quarantine.py** (rendimiento): Se implementó un cache en `total_quarantined_bytes` y se optimizó el acceso al manifiesto en `purge_all` para evitar lecturas redundantes de disco, mejorando el rendimiento en operaciones de limpieza masiva.
-- `2026-08-24T08:21:53` **memory.py** (rendimiento): Se optimizó el proceso de recolección de datos de procesos en `top_memory_processes` reemplazando el cálculo recursivo de `WorkingSet` en PowerShell por un formato CSV crudo más eficiente, y mejorando el manejo del cacheo para evitar llamadas redundantes a subprocesos, reduciendo el overhead de CPU y memoria.

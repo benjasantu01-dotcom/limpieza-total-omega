@@ -305,8 +305,10 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     size = ctypes.c_ulong(buffer_size)
     buf = ctypes.create_unicode_buffer(buffer_size)
     try:
+        # La API escribe el tamaño real copiado en 'size'
         if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
-            if size.value > 0: return str(buf.value)
+            if size.value > 0 and size.value < buffer_size:
+                return str(buf.value)
     except (OSError, ctypes.ArgumentError): pass
     return None
 
@@ -328,8 +330,8 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
             return False, "El proceso seleccionado ya no está activo."
         
         path: Optional[str] = _get_process_path(proc_handle)
-        if not path: 
-            return False, "No se pudo verificar la ubicación del ejecutable."
+        if not path or not os.path.isabs(path): 
+            return False, "No se pudo verificar una ruta absoluta válida del ejecutable."
         
         if path.startswith("\\\\"):
             return False, "Ruta bloqueada: ubicación en red (UNC) no segura."
