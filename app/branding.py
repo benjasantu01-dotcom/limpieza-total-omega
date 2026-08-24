@@ -26,14 +26,10 @@ RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 
 class PaletteDict(TypedDict):
     """
-    Contrato de claves para la paleta cromática.
+    Define el esquema completo de colores de la aplicación.
     
-    Estructura lógica:
-    - Fondos (background, surface, surface_alt, card): Define la jerarquía de elevación.
-    - Accents (accent, accent2, accent3): Colores primarios y secundarios de marca.
-    - Estados (success, info, warning, danger): Semántica de estado para feedback al usuario.
-    - Textos (text, text_muted, text_dim): Escala de legibilidad.
-    - Utilitarios (border, glow): Elementos de acentuación estructural.
+    Agrupa los colores por su función semántica en la UI, asegurando que cualquier
+    cambio en la identidad visual sea consistente en todos los componentes.
     """
     background: HexColor
     surface: HexColor
@@ -58,7 +54,7 @@ class PaletteDict(TypedDict):
     glow: HexColor
 
 class FontSizesDict(TypedDict):
-    """Mapeo de jerarquía tipográfica para consistencia en componentes UI."""
+    """Define los tamaños base de tipografía utilizados en el sistema de diseño."""
     display: int
     title: int
     subtitle: int

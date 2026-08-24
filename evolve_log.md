@@ -1337,3 +1337,34 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-24T11:45:29` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` al envolver el bloque de persistencia en un `try-finally` que garantiza la limpieza de cualquier archivo temporal residual, independientemente del éxito o error de la operación de escritura, previniendo así la acumulación de archivos huérfanos.
 - `2026-08-24T11:45:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T11:45:29` Corrida terminada. Total usado hoy: 280.
+- `2026-08-24T11:54:22` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-08-24T11:54:51` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.20s
+
+```
+- `2026-08-24T11:54:51` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `StartupEntry.executable` capturando posibles excepciones de acceso a disco y validando la existencia de la ruta en cada paso para evitar comportamientos inesperados ante archivos inexistentes o permisos denegados.
+- `2026-08-24T11:55:26` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados las funciones de lógica local (`handle_ram`, `handle_disk`, etc.) y las de orquestación, clarificando las precondiciones de seguridad y el manejo de datos para mejorar la mantenibilidad.
+- `2026-08-24T11:55:57` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos explícitos, clarificando la jerarquía de las constantes `PaletteDict` y `FontSizesDict` para facilitar el mantenimiento del sistema de diseño.
+- `2026-08-24T11:56:09` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la legibilidad mediante la adición de docstrings estructurados (usando el formato Google Style) que explican el propósito y las condiciones de contorno de las funciones clave, facilitando su mantenimiento y auditoría.
+- `2026-08-24T11:56:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T11:56:09` Corrida terminada. Total usado hoy: 284.

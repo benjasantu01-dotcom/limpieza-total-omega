@@ -394,7 +394,7 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     return problemas
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
-    """Lógica específica para consultas sobre memoria RAM."""
+    """Responde consultas sobre memoria RAM usando métricas de estado actual."""
     mem_pct = _safe_float(ctx.memory_available_percent, 50.0)
     total_gb = _safe_float(ctx.memory_total_gb, 0.0)
     
@@ -407,7 +407,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
-    """Lógica específica para consultas sobre almacenamiento."""
+    """Proporciona diagnóstico de espacio en disco y posibles acciones de recuperación."""
     recuperable = _safe_float(ctx.junk_mb) + _safe_float(ctx.duplicate_mb) + _safe_float(ctx.browser_cache_mb)
     
     linea1 = f"Tenés {ctx.disk_free_percent:.0f}% libre en disco."
@@ -418,7 +418,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{linea1} {linea2}{alerta}{cierre}"), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Lógica para responder dudas sobre archivos sospechosos."""
+    """Evalúa hallazgos de seguridad y explica los procedimientos de aislamiento."""
     if ctx.suspicious_count == 0:
         texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación."
     else:
@@ -430,7 +430,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
-    """Lógica para explicar el puntaje de salud global."""
+    """Explica el cálculo y significado del puntaje de salud del sistema."""
     score_val = ctx.score if ctx.score is not None else "N/A"
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
     problemas = _identify_active_problems(ctx)
@@ -440,7 +440,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
-    """Lógica para consultas sobre programas de inicio."""
+    """Analiza programas en el inicio y su impacto sugerido."""
     estado = f"Tenés {int(ctx.startup_count)} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos." if ctx.startup_count > 15 else ("Es una cantidad normal, aunque se puede recortar." if ctx.startup_count > 8 else "Está bien así.")
     cierre = " La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows."
@@ -501,7 +501,7 @@ def _call_gemini(
     api_key: str, 
     model: str
 ) -> Optional[str]:
-    """Invoca la API de Gemini."""
+    """Invoca la API de Gemini realizando validaciones de seguridad previas y posteriores."""
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
@@ -549,7 +549,7 @@ def _call_gemini(
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """Orquestador de consultas."""
+    """Orquestador de consultas que elige entre motor local y Gemini según configuración."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
         
