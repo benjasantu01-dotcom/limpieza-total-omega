@@ -419,3 +419,4 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-24T15:09:53` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T15:09:53` Corrida terminada. Total usado hoy: 350.
 - `2026-08-24T15:17:50` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-24T15:28:00` Presupuesto diario agotado (350 usados). Corte hasta mañana.
