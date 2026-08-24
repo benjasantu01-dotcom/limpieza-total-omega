@@ -289,17 +289,17 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     """Extrae y valida una métrica individual desde una fuente de datos asignándola al contexto."""
     cast, min_v, max_v = spec
     
+    val = None
     if isinstance(source, dict):
         val = source.get(key)
     elif hasattr(source, key):
         val = getattr(source, key, None)
-    else:
-        return False
     
     if val is None or type(val) in _FORBIDDEN_TYPES:
         return False
 
     clean_val = _safe_float(val, -1.0)
+    # score es el único campo que puede no haber sido calculado aún (valor -1)
     if clean_val < 0 and key != "score": 
         return False
     
@@ -321,25 +321,23 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     found_data = False
     
-    sources = (metrics, health, extra)
+    # Validamos métricas con validadores explícitos
+    sources = [metrics, health, extra]
     for key, spec in _VALIDATORS.items():
         for src in sources:
             if src is not None and _validate_and_assign(ctx, src, key, spec):
                 found_data = True
                 break
 
-    grade_val = None
-    for src in (health, extra):
+    # Manejo seguro de la calificación cualitativa (grade)
+    for src in [health, extra]:
         if src is None: continue
         val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
-        if isinstance(val, (str, int, float)):
-            grade_val = val
-            break
-            
-    if grade_val is not None:
-        g_str = str(grade_val)[:10].strip()
-        if _ensure_safe_text(g_str):
-            ctx.grade = g_str
+        if isinstance(val, str):
+            g_str = val[:10].strip()
+            if _ensure_safe_text(g_str):
+                ctx.grade = g_str
+                break
             
     ctx.analyzed = found_data
     return ctx

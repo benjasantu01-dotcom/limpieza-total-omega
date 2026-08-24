@@ -361,12 +361,13 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).resolve()
+        # Verificar integridad del path antes de operar
+        if not path_obj or not str(path_obj).strip():
+            return None
         
-        # Validar si es una ruta protegida o no modificable
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         
-        # Evitar sobrescribir directorios
         if path_obj.exists() and path_obj.is_dir():
             return None
             
@@ -395,13 +396,7 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """
-    Renderiza franjas degradadas internas del escudo.
-    Args:
-        canvas: Objeto canvas (Tkinter/CustomTkinter).
-        canvas_x, canvas_y: Desplazamiento absoluto.
-        scale: Factor de escalado de la figura.
-    """
+    """Renderiza franjas degradadas internas del escudo."""
     try:
         if scale <= 0 or not hasattr(canvas, "create_rectangle"): return
         franjas_count: int = max(6, int(28 * scale))
@@ -409,7 +404,6 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
         for color_hex, start, end in _get_grouped_segments(colores):
             mid: float = (start + end) / 2
             progreso: float = mid / (franjas_count - 1)
-            # El ancho de la franja se estrecha en los extremos del escudo
             w: float = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             y_ini: float = canvas_y + 18 * scale + start * (92 * scale / franjas_count)
             y_fin: float = canvas_y + 18 * scale + end * (92 * scale / franjas_count)
@@ -422,18 +416,19 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
 
 def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Dibuja el escudo corporativo aplicando una transformación de escala sobre las coordenadas base."""
-    if not hasattr(canvas, "create_polygon"): return
+    if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
-        scale_val = float(size) / 128
-        scale: float = max(0.1, min(10.0, scale_val))
+        s_val = float(size) if isinstance(size, (int, float)) else 56.0
+        scale: float = max(0.1, min(10.0, s_val / 128.0))
         base_coords: List[float] = _get_shield_coords(scale)
-        # Ajuste de posición (offset) basado en canvas_x, canvas_y
         contorno: List[float] = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
+        
         for paso in range(4, 0, -1):
             r: float = 56 * scale * (0.6 + paso * 0.12)
             canvas.create_oval(canvas_x + 64 * scale - r, canvas_y + 58 * scale - r, 
                                canvas_x + 64 * scale + r, canvas_y + 58 * scale + r, 
                                fill=blend(color("surface"), color("glow"), 0.04 * paso), outline="")
+        
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, 
@@ -461,22 +456,12 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Dibuja un indicador circular (donut) de progreso.
-    Args:
-        canvas: Canvas destino.
-        percent: Porcentaje de llenado (0-100).
-        size: Diámetro del anillo.
-        thickness: Grosor del trazo.
-    """
+    """Dibuja un indicador circular (donut) de progreso."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
-        # Validación de parámetros
-        valor: float = max(0.0, min(100.0, float(percent if percent is not None else 0.0)))
+        valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
         diametro: int = max(20, int(size))
         grosor: int = max(2, min(int(thickness), (diametro // 2) - 1))
-        
-        if grosor < 1: grosor = 1
         
         color_fondo = track if isinstance(track, str) else color("surface_alt")
         color_avance = fill if isinstance(fill, str) else score_color(valor)

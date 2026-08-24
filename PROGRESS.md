@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
+- Mejoras aceptadas: **206** (40.9% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 228
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 230
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 148 | 9 | 27 | 13 | 147 |
-| 2026-08-24 | 59 | 5 | 8 | 7 | 81 |
+| 2026-08-23 | 145 | 9 | 27 | 12 | 147 |
+| 2026-08-24 | 61 | 5 | 8 | 7 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **45**
+- manejo de errores y validación de entradas: **39**
 - rendimiento: **37**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
 - `quarantine.py`: **20**
+- `assistant.py`: **20**
 - `duplicates.py`: **20**
+- `memory.py`: **20**
 - `scanner.py`: **19**
-- `assistant.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **17**
 - `diskreport.py`: **16**
-- `organizer.py`: **15**
-- `branding.py`: **14**
+- `branding.py`: **15**
+- `organizer.py`: **14**
 - `settings.py`: **13**
 - `main.py`: **10**
 - `browser.py`: **9**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T06:50:15` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` centralizando validaciones de tipo y asegurando que las operaciones críticas manejen correctamente valores nulos o tipos inesperados, evitando errores silenciosos de ejecución.
+- `2026-08-24T06:49:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y sus validadores asociados para prevenir la inyección de tipos inesperados y asegurar que la extracción de métricas sea resistente a errores de formato o valores `None` durante la serialización, alineándome con el enfoque de validación de entradas.
 - `2026-08-24T05:17:52` **safety.py** (seguridad defensiva): Se reforzó la seguridad de `is_protected_path` añadiendo un chequeo explícito de existencia de rutas padre, previniendo que rutas relativas o mal formadas se resuelvan incorrectamente contra el directorio de ejecución actual (`CWD`) y se expongan a un escape de sandbox.
 - `2026-08-24T05:17:21` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` para prevenir condiciones de carrera y ataques de reemplazo de archivos, garantizando que el origen no cambie entre la validación y el movimiento, mediante el uso de la propiedad `st_ino` (inodo/índice de archivo) para confirmar la identidad única del archivo.
 - `2026-08-24T05:16:50` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `stage_for_review` y `delete_reviewed` implementando validaciones de prefijo para asegurar que los archivos manipulados se mantengan estrictamente dentro de los límites de la carpeta destino, previniendo ataques de "path traversal" o manipulación de rutas externas mediante enlaces simbólicos maliciosos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T04:36:36` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de espacio en disco y consistencia de rutas antes de cualquier operación de E/S, evitando excepciones innecesarias ante casos límite como unidades llenas o cambios de contexto inesperados durante el procesamiento.
 - `2026-08-24T04:26:48` **healthscore.py** (robustez ante casos límite): Se ha robustecido el cálculo de `compute_score` ante posibles divisiones por cero o desbordamientos durante la inicialización de constantes globales y se ha mejorado la tolerancia a fallos en el bucle de procesamiento de métricas.
 - `2026-08-24T04:26:21` **duplicates.py** (robustez ante casos límite): Se mejora la robustez ante archivos bloqueados o en uso durante la comparación de duplicados mediante la adición de un chequeo preventivo de acceso mediante `os.access` en `hash_file` y `partial_hash`, garantizando que el acceso al archivo sea posible antes de intentar leerlo, evitando así excepciones innecesarias en entornos de alta concurrencia.
-- `2026-08-24T04:16:55` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo (`draw_logo`, `draw_ring`, `draw_gradient_bar`) implementando validaciones defensivas ante entradas nulas o tipos inesperados, evitando excepciones críticas durante el renderizado o la persistencia de archivos.
-- `2026-08-24T04:16:22` **assistant.py** (robustez ante casos límite): Se reforzó la robustez ante estados inesperados mediante la validación estricta de `SystemContext` dentro de `local_answer` y el manejo defensivo de listas vacías, evitando posibles excepciones de tipo `AttributeError` o `TypeError` al procesar métricas que pudieran llegar incompletas.

@@ -822,3 +822,15 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-08-24T06:42:00` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-24T06:42:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T06:42:00` Corrida terminada. Total usado hoy: 160.
+- `2026-08-24T06:48:01` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-24T06:48:03` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-24T06:48:03` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-24T06:48:23` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-24T06:48:23` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-24T06:48:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-24T06:48:53` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-24T06:49:43` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` y sus validadores asociados para prevenir la inyección de tipos inesperados y asegurar que la extracción de métricas sea resistente a errores de formato o valores `None` durante la serialización, alineándome con el enfoque de validación de entradas.
+- `2026-08-24T06:50:15` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_logo` centralizando validaciones de tipo y asegurando que las operaciones críticas manejen correctamente valores nulos o tipos inesperados, evitando errores silenciosos de ejecución.
+- `2026-08-24T06:50:23` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T06:50:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T06:50:23` Corrida terminada. Total usado hoy: 164.
