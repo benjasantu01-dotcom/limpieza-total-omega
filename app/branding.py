@@ -158,8 +158,12 @@ def app_title() -> str:
 def color(name: str) -> HexColor:
     """
     Obtiene el color HEX desde la paleta global.
+    
     Args:
-        name: Clave en PALETTE. Retorna gris por defecto si es inválida.
+        name: Clave en PALETTE.
+        
+    Returns:
+        HexColor: El valor color, o gris por defecto si la clave no existe.
     """
     if not isinstance(name, str): return "#808080"
     return PALETTE.get(name, "#808080")
@@ -168,15 +172,27 @@ def color(name: str) -> HexColor:
 def font_size(name: str) -> int:
     """
     Recupera el valor entero del tamaño de fuente jerárquico.
+    
     Args:
-        name: Clave en FONT_SIZES. Retorna el tamaño 'body' por defecto.
+        name: Clave en FONT_SIZES.
+        
+    Returns:
+        int: Tamaño en píxeles.
     """
     if not isinstance(name, str): return FONT_SIZES["body"]
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
 @lru_cache(maxsize=32)
 def icon(section: Optional[str]) -> str:
-    """Mapea el nombre de una sección a su glifo Unicode representativo."""
+    """
+    Mapea el nombre de una sección a su glifo Unicode representativo.
+    
+    Args:
+        section: Nombre del módulo/sección.
+        
+    Returns:
+        str: Glifo Unicode o punto central como fallback.
+    """
     if not isinstance(section, str):
         return "\u2022"
     return ICONS.get(section.strip(), "\u2022")
@@ -188,14 +204,30 @@ def tab_label(section: str) -> str:
 
 @lru_cache(maxsize=16)
 def severity_color(severity: Optional[str]) -> HexColor:
-    """Resuelve el color hexadecimal asociado a una severidad (ok, info, etc)."""
+    """
+    Resuelve el color hexadecimal asociado a un nivel de severidad.
+    
+    Args:
+        severity: Cadena indicando 'ok', 'info', 'warning' o 'danger'.
+        
+    Returns:
+        HexColor: Color asociado al estado o gris neutro si es desconocido.
+    """
     if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[0]
     return color("text_muted")
 
 @lru_cache(maxsize=16)
 def severity_label(severity: Optional[str]) -> str:
-    """Traduce el código de severidad a una cadena legible por el usuario."""
+    """
+    Traduce el código de severidad a una cadena legible por el usuario.
+    
+    Args:
+        severity: Código breve de severidad.
+        
+    Returns:
+        str: Nombre legible o 'Desconocido' en caso de error.
+    """
     if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[1]
     return severity.upper() if (isinstance(severity, str) and severity.strip()) else "Desconocido"
@@ -218,8 +250,12 @@ def grade_color(grade: Optional[str]) -> HexColor:
 def score_color(score: Union[float, int, None]) -> HexColor:
     """
     Selecciona el color según el rango del puntaje de salud (0-100).
+    
     Args:
-        score: Valor numérico 0-100.
+        score: Valor numérico entre 0 y 100.
+        
+    Returns:
+        HexColor: Color de estado jerárquico.
     """
     if score is None:
         return color("text_muted")
@@ -269,11 +305,15 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
-    Interpola linealmente entre dos colores.
+    Interpola linealmente entre dos colores (mezcla de colores).
+    
     Args:
-        start: Color inicial.
-        end: Color final.
-        ratio: Factor de mezcla [0, 1].
+        start: HexColor inicial.
+        end: HexColor final.
+        ratio: Factor de interpolación [0.0, 1.0].
+        
+    Returns:
+        HexColor: Color resultante de la mezcla.
     """
     if start == end: return start
     try:
@@ -396,7 +436,7 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza franjas degradadas internas del escudo."""
+    """Renderiza franjas degradadas internas del escudo en un canvas."""
     try:
         if scale <= 0 or not hasattr(canvas, "create_rectangle"): return
         franjas_count: int = max(6, int(28 * scale))
@@ -443,7 +483,7 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con degradado, permitiendo posicionamiento absoluto en canvas."""
+    """Renderiza una línea horizontal con degradado en un canvas dado."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho: int = max(1, int(width))
@@ -456,7 +496,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular (donut) de progreso."""
+    """Dibuja un indicador circular (donut) de progreso en un canvas."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))

@@ -246,9 +246,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador iterativo que recorre directorios recursivamente para listar archivos.
+    Generador iterativo que recorre directorios recursivamente mediante `os.scandir`.
     
-    Implementa protección contra enlaces simbólicos, junctions y carpetas protegidas.
+    Implementa protección contra enlaces simbólicos, junctions y carpetas protegidas,
+    evitando ciclos de recursión mediante el seguimiento de inodos únicos.
     
     Args:
         directory: Ruta base para comenzar el escaneo.
@@ -281,9 +282,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             continue
             
         try:
+            # os.scandir es preferido por rendimiento al evitar llamadas extras a stat()
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Exclusión explícita de puntos de reparse (symlinks/junctions)
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
@@ -292,7 +295,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             
                         entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad: validar que no escape de la carpeta base (evitar symlink escapes)
+                        # Validación de límites para evitar escape mediante symlinks maliciosos
                         if base_path not in entry_path.parents and entry_path != base_path:
                             continue
 

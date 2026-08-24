@@ -104,10 +104,12 @@ class AreaExplanation(NamedTuple):
     key: str
     description: str
 
+# Tipos para validación de datos
 MetricSource: TypeAlias = dict[str, Any] | object
 ScoreSource: TypeAlias = dict[str, Any] | object
 ValidatorSpec: TypeAlias = tuple[Callable[[Any], float], float, float]
 
+# Constantes de configuración de seguridad y límites
 _MAX_TEXT_LENGTH: Final[int] = 1000
 _MAX_RESPONSE_BYTES: Final[int] = 32768
 _MAX_MSG_CHUNK: Final[int] = 200 

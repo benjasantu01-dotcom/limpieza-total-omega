@@ -172,6 +172,11 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     return False
 
 
+def _is_within_depth_limit(depth: int, current_path: str) -> bool:
+    """Verifica límites de recursión y restricciones de seguridad del sistema."""
+    return depth <= MAX_SCAN_DEPTH and not is_protected_path(Path(current_path))
+
+
 def _sum_directory_recursive(
     root_dir: str, 
     is_junction_fn: JunctionChecker, 
@@ -185,7 +190,7 @@ def _sum_directory_recursive(
         return memo[root_dir]
 
     def _walk(current_dir: str, depth: int) -> int:
-        if depth > MAX_SCAN_DEPTH or is_protected_path(Path(current_dir)):
+        if not _is_within_depth_limit(depth, current_dir):
             return 0
         
         total: int = 0
