@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 59 | 5 | 9 | 6 | 59 |
+| 2026-08-22 | 59 | 5 | 9 | 6 | 55 |
 | 2026-08-23 | 153 | 9 | 27 | 13 | 148 |
-| 2026-08-24 | 8 | 2 | 1 | 1 | 4 |
+| 2026-08-24 | 11 | 2 | 1 | 1 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **40**
+- seguridad defensiva: **43**
 - rendimiento: **39**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **22**
 - `assistant.py`: **21**
 - `duplicates.py`: **21**
-- `memory.py`: **21**
 - `diskreport.py`: **20**
 - `scanner.py`: **20**
+- `healthscore.py`: **19**
 - `quarantine.py`: **19**
-- `healthscore.py`: **18**
 - `branding.py`: **16**
 - `settings.py`: **16**
 - `browser.py`: **13**
 - `organizer.py`: **13**
-- `main.py`: **9**
+- `main.py`: **10**
 - `startup.py`: **7**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T00:43:09` **memory.py** (seguridad defensiva): Se ha mejorado `_is_safe_to_trim` para prevenir el uso de handles no cerrados en caso de excepciones y, más importante aún, para validar que la ruta del ejecutable no sea una ruta de sistema (UNC) potencialmente insegura antes de realizar operaciones sobre el proceso, reforzando la seguridad defensiva.
+- `2026-08-24T00:42:41` **main.py** (seguridad defensiva): Mejoré la seguridad de la inicialización de la app asegurando que el directorio base se resuelva y valide mediante `safety.ensure_safe_to_modify` antes de cargar configuraciones o lanzar la interfaz, previniendo así ejecuciones en entornos con permisos o rutas potencialmente comprometidas.
+- `2026-08-24T00:41:37` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `healthscore.py` al añadir una capa de validación estricta en `SystemMetrics` y los scorers, garantizando que el sistema no pueda entrar en estados inconsistentes mediante inyección de valores numéricos extremos o tipos inesperados que podrían desbordar los cálculos de salud.
 - `2026-08-24T00:32:31` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` y `suggest_keeper` asegurando que las rutas validadas mediante `is_safe_to_modify` sean resueltas mediante `.resolve()` antes de realizar chequeos, previniendo así posibles ataques de "path traversal" mediante enlaces simbólicos o rutas relativas no resueltas que podrían evadir los filtros de `safety.py`.
 - `2026-08-24T00:32:22` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` evitando que el generador siga rutas que resulten en bucles de directorios infinitos o accesos fuera de la jerarquía esperada al validar que cada subdirectorio sea un hijo real de la base analizada.
 - `2026-08-24T00:31:55` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en la resolución de rutas añadiendo una validación explícita para evitar Path Traversal mediante el uso de `path.parts`, asegurando que ninguna ruta resuelta escape del directorio base incluso si contiene segmentos `..` o intentos de elusión mediante enlaces simbólicos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T14:51:37` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, asegurando que `extra` sea procesado de forma segura y consistente sin depender de `getattr` sobre tipos no controlados.
 - `2026-08-23T14:41:22` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_file` y los chequeos asociados evitando múltiples conversiones a string, extracciones innecesarias de rutas y chequeos redundantes de extensiones mediante el uso directo de `path.parts` y operaciones sobre variables ya resueltas.
 - `2026-08-23T14:32:57` **memory.py** (rendimiento): Optimizé la generación de la lista de procesos implementando un filtrado más eficiente dentro del generador `_yield_processes` y reemplazando la lógica de filtrado de duplicados/redundancias por un procesamiento lineal, reduciendo la carga de memoria al evitar construcciones de listas intermedias innecesarias antes de la ordenación final.
-- `2026-08-23T14:30:15` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje transformando `metric_ratios` de un `Dict` (búsqueda por hash) a una estructura indexada por posición durante el bucle de procesamiento, reduciendo la sobrecarga de consultas en el motor de recomendaciones.
-- `2026-08-23T14:21:08` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` para evitar redundancias en el recorrido del sistema de archivos al pre-filtrar las rutas de entrada mediante un `set` y evitar llamadas repetidas a `is_safe_to_modify` en nodos ya procesados, reduciendo así la carga de I/O y el tiempo de CPU en directorios grandes.
-- `2026-08-23T14:20:59` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` y `_collect_summary_data` reemplazando la lógica de filtrado manual de top files por `heapq.nlargest` sobre un generador, eliminando el overhead de comparaciones repetitivas y mejorando la legibilidad del bucle principal.

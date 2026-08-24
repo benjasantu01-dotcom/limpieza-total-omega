@@ -324,15 +324,19 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
             return False, "El proceso seleccionado ya no está activo."
         
         path = _get_process_path(proc_handle)
-        if not path or not os.path.exists(path): 
+        if not path: 
             return False, "No se pudo verificar la ubicación del ejecutable."
         
+        # Prevenir rutas UNC (Network) o caracteres maliciosos
+        if path.startswith("\\\\"):
+            return False, "Ruta bloqueada: ubicación en red (UNC) no segura."
+            
         forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
         
         normalized_path = os.normcase(os.path.abspath(path))
-        if os.normcase(path) != os.normcase(os.path.realpath(path)):
+        if os.normcase(path) != normalized_path:
             return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse."
         if is_protected_path(normalized_path):
             return False, "Operación denegada: ruta de ejecutable protegida."

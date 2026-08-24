@@ -111,10 +111,7 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que todas las métricas sean números finitos (no NaN ni Inf)."""
-        try:
-            return all(math.isfinite(float(v)) for v in self.__dict__.values() if isinstance(v, (int, float)))
-        except (ValueError, TypeError):
-            return False
+        return all(math.isfinite(v) if isinstance(v, (int, float)) else True for v in self.__dict__.values())
 
 @dataclass
 class HealthResult:
@@ -196,36 +193,25 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error interno: Tipo de datos de métricas inválido."])
     
-    try:
-        metrics.validate()
-        if not metrics.is_finite():
-            return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos."])
-    except (ValueError, TypeError, OverflowError) as e:
-        return HealthResult(0, "F", {}, [f"Error al procesar métricas: {str(e)}"])
+    metrics.validate()
+    if not metrics.is_finite():
+        return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios_cache: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
     
     for area, weight, scorer in _PREPARED_SCORERS:
-        try:
-            ratio = scorer(metrics)
-            if not math.isfinite(ratio): ratio = 0.0
-            ratios_cache[area] = ratio
-            weighted_points = round(ratio * float(weight))
-            metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
-            accumulated_points += metric_breakdown[area]
-        except (ValueError, TypeError, OverflowError):
-            metric_breakdown[area] = 0
-            continue
+        ratio = scorer(metrics)
+        ratios_cache[area] = ratio
+        weighted_points = round(ratio * float(weight))
+        metric_breakdown[area] = int(_clamp(float(weighted_points), 0.0, float(weight)))
+        accumulated_points += metric_breakdown[area]
     
     recommendations: List[str] = []
     for rule in _RECOMMENDATION_RULES:
-        try:
-            if rule.check(metrics, ratios_cache.get(rule.area, 0.0)):
-                recommendations.append(rule.message_factory(metrics))
-        except (ValueError, TypeError, AttributeError):
-            continue
+        if rule.check(metrics, ratios_cache.get(rule.area, 0.0)):
+            recommendations.append(rule.message_factory(metrics))
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
