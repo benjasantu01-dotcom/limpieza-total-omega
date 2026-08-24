@@ -244,6 +244,23 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     return results
 
 
+def _is_valid_traversal_entry(entry: os.DirEntry, base_path: Path, skip_protected: bool) -> bool:
+    """Verifica si una entrada del sistema de archivos debe ser ignorada por seguridad o tipo."""
+    if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
+        return False
+    
+    entry_path = Path(os.path.realpath(entry.path))
+    
+    # Impedir escape del directorio base
+    if base_path not in entry_path.parents and entry_path != base_path:
+        return False
+    
+    if skip_protected and is_protected_path(entry_path):
+        return False
+        
+    return True
+
+
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente mediante `os.scandir`.
@@ -266,7 +283,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     
     while stack:
         current_dir, depth = stack.pop()
-        
         if depth > MAX_DEPTH:
             continue
             
@@ -274,17 +290,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
+                        if not _is_valid_traversal_entry(entry, base_path, skip_protected):
                             continue
                         
                         entry_path = Path(os.path.realpath(entry.path))
-                        
-                        # Impedir escape del directorio base y re-validar seguridad
-                        if base_path not in entry_path.parents and entry_path != base_path:
-                            continue
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
-                        
                         if entry.is_dir(follow_symlinks=False):
                             stat_data = entry.stat(follow_symlinks=False)
                             inode_key = (stat_data.st_dev, stat_data.st_ino)

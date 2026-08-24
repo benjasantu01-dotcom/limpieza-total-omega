@@ -52,8 +52,9 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización: Se pre-calculan para evitar divisiones en tiempo de ejecución 
-# y proteger al motor de cálculo ante potenciales errores de división por cero.
+# Factores de normalización: Se calculan como inversos de los límites para transformar 
+# unidades de medida (MB, %) en un ratio [0, 1] mediante multiplicación, lo cual es
+# computacionalmente más eficiente y seguro que la división en tiempo de ejecución.
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB if _LIMIT_JUNK_MB > 1e-9 else 0.0
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB if _LIMIT_DUPLICATE_MB > 1e-9 else 0.0
 _INV_STARTUP: Final[float] = 1.0 / _LIMIT_STARTUP_COUNT if _LIMIT_STARTUP_COUNT > 0 else 0.0
@@ -128,7 +129,10 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Fuerza a 'value' dentro del rango [low, high] gestionando errores de tipo y valores no finitos."""
+    """
+    Fuerza un valor numérico dentro de un rango cerrado [low, high].
+    Si el valor es inválido (infinito, NaN o tipo incorrecto), retorna el límite inferior.
+    """
     try:
         val = float(value)
         return max(low, min(high, val)) if math.isfinite(val) else low
@@ -136,14 +140,14 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
         return low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Convierte a float de forma segura, retornando el default ante datos corruptos."""
+    """Convierte a float de forma segura, descartando valores no finitos o errores de conversión."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def _to_int(value: Any, default: int = 0) -> int:
-    """Convierte a int de forma segura, retornando el default ante datos corruptos."""
+    """Convierte a int de forma segura, mediante truncamiento de flotantes y manejo de excepciones."""
     try:
         val = float(value)
         return int(val) if math.isfinite(val) else default

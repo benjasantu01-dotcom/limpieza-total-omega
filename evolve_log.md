@@ -1368,3 +1368,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T11:56:09` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la legibilidad mediante la adición de docstrings estructurados (usando el formato Google Style) que explican el propósito y las condiciones de contorno de las funciones clave, facilitando su mantenimiento y auditoría.
 - `2026-08-24T11:56:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T11:56:09` Corrida terminada. Total usado hoy: 284.
+- `2026-08-24T12:04:32` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-08-24T12:05:11` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de validación de entradas a una función privada, clarificando el flujo de control y reduciendo el anidamiento excesivo.
+- `2026-08-24T12:05:35` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica interna de `duplicates.py` mediante la actualización de los docstrings en las funciones `hash_file`, `partial_hash` y `suggest_keeper`, clarificando explícitamente el flujo de validación de seguridad y los criterios de selección de archivos, lo cual facilita el mantenimiento y la comprensión de las decisiones de diseño del módulo.
+- `2026-08-24T12:06:00` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Documenté el propósito de los factores de normalización y las funciones de ayuda para esclarecer el diseño defensivo aplicado contra datos corruptos o entradas de usuario no fiables.
+- `2026-08-24T12:06:48` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._metric_card
+- `2026-08-24T12:06:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T12:06:48` Corrida terminada. Total usado hoy: 288.

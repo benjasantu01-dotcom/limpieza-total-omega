@@ -6,22 +6,22 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **204** (40.5% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 231
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 92 | 5 | 18 | 8 | 97 |
-| 2026-08-24 | 112 | 11 | 15 | 12 | 134 |
+| 2026-08-23 | 92 | 5 | 17 | 8 | 94 |
+| 2026-08-24 | 115 | 11 | 16 | 12 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **51**
 - seguridad defensiva: **44**
 - manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **35**
@@ -30,14 +30,14 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
+- `duplicates.py`: **20**
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
-- `duplicates.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
 - `scanner.py`: **17**
+- `diskreport.py`: **16**
 - `organizer.py`: **16**
 - `branding.py`: **15**
-- `diskreport.py`: **15**
 - `settings.py`: **11**
 - `main.py`: **11**
 - `safety.py`: **9**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T12:06:00` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los factores de normalización y las funciones de ayuda para esclarecer el diseño defensivo aplicado contra datos corruptos o entradas de usuario no fiables.
+- `2026-08-24T12:05:35` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `duplicates.py` mediante la actualización de los docstrings en las funciones `hash_file`, `partial_hash` y `suggest_keeper`, clarificando explícitamente el flujo de validación de seguridad y los criterios de selección de archivos, lo cual facilita el mantenimiento y la comprensión de las decisiones de diseño del módulo.
+- `2026-08-24T12:05:11` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de validación de entradas a una función privada, clarificando el flujo de control y reduciendo el anidamiento excesivo.
 - `2026-08-24T11:56:09` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la legibilidad mediante la adición de docstrings estructurados (usando el formato Google Style) que explican el propósito y las condiciones de contorno de las funciones clave, facilitando su mantenimiento y auditoría.
 - `2026-08-24T11:55:57` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y tipos explícitos, clarificando la jerarquía de las constantes `PaletteDict` y `FontSizesDict` para facilitar el mantenimiento del sistema de diseño.
 - `2026-08-24T11:55:26` **assistant.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones de lógica local (`handle_ram`, `handle_disk`, etc.) y las de orquestación, clarificando las precondiciones de seguridad y el manejo de datos para mejorar la mantenibilidad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T09:52:10` **safety.py** (seguridad defensiva): Se ha mejorado `_is_file_in_use` utilizando un método de apertura con permisos de acceso mínimos (`0`) en lugar de `0x80000000` (GENERIC_READ), asegurando que la verificación no bloquee accidentalmente el archivo ni dependa de permisos de lectura que podrían no estar disponibles para el usuario actual.
 - `2026-08-24T09:42:57` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita mediante `is_within_directory` sobre el `temp_dest` generado, para asegurar que ninguna falla en la creación del archivo temporal permita escribir fuera del sandbox de cuarentena, cerrando una brecha de potencial escalada de ruta.
 - `2026-08-24T09:42:25` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` añadiendo un filtro explícito para verificar que el archivo a eliminar no sea una ruta de sistema ni contenga caracteres maliciosos, además de consolidar la validación de seguridad antes de llamar a `ensure_safe_to_modify`.
-- `2026-08-24T09:42:01` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_get_process_path` y `_is_safe_to_trim` para prevenir el desbordamiento de búfer y asegurar la integridad de la ruta del ejecutable antes de cualquier interacción, validando que el tamaño del buffer no sea excedido y que la ruta resultante sea una ruta absoluta válida y no una manipulación lógica (como rutas relativas maliciosas o caracteres de control).
-- `2026-08-24T09:32:38` **healthscore.py** (seguridad defensiva): Mejoré la integridad de los datos de entrada en `compute_score` añadiendo una validación explícita para evitar comportamientos inesperados ante inyecciones de objetos malformados, garantizando que el contrato de tipos se mantenga estricto antes de procesar cálculos.
-- `2026-08-24T09:32:13` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_collect_candidates` asegurando que las rutas base pasadas como argumentos sean normalizadas y verificadas contra `is_protected_path` antes de iniciar cualquier recursión, evitando así posibles escapes de contexto o errores al intentar acceder a rutas mal formadas.

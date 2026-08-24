@@ -65,9 +65,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
     
-    Verifica seguridad mediante is_safe_to_modify antes de abrir.
-    Retorna el hash en hexadecimal o None si el archivo no existe, no es legible,
-    o está protegido.
+    Seguridad: Valida la ruta mediante 'is_safe_to_modify' y permisos de lectura 
+    antes de acceder. Si la ruta está protegida o es inaccesible, retorna None.
     """
     if path is None: return None
     try:
@@ -88,7 +87,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Calcula el hash SHA256 de los primeros N bytes para filtrado heurístico rápido.
     
-    Útil para descartar candidatos que tienen el mismo tamaño pero diferente cabecera.
+    Seguridad: Al igual que 'hash_file', requiere que la ruta sea segura para 
+    lectura y modificación. Útil para descartar candidatos por cabeceras distintas 
+    sin procesar el archivo completo.
     """
     if path is None: return None
     try:
@@ -223,7 +224,11 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Selecciona heurísticamente el archivo 'original' para conservar.
-    Criterios: 1. Más antiguo (mtime), 2. Ruta más corta.
+    
+    Criterios: 
+    1. Archivo más antiguo (menor mtime).
+    2. Ante empate en tiempo, ruta más corta (lexicográfica).
+    Seguridad: Solo considera archivos existentes y validados por 'is_safe_to_modify'.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
