@@ -175,7 +175,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
-    """Recorrido recursivo de directorios recolectando archivos basura."""
+    """Recorrido recursivo optimizado recolectando archivos basura."""
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
@@ -183,7 +183,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                     if entry.is_dir(follow_symlinks=False):
                         if _is_allowed_directory(entry.name) and not _is_junction(Path(entry.path)):
                             _process_directory(Path(entry.path), found)
-                    elif entry.is_file() and _is_junk_path(Path(entry.path)):
+                    elif entry.is_file() and entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
                         stats = entry.stat()
                         found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):

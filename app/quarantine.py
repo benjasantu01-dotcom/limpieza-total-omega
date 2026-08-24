@@ -283,50 +283,44 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
 
 @lru_cache(maxsize=4)
-def _load_manifest_internal(base_str: str) -> List[QuarantineItem]:
+def _load_manifest_internal(base_str: str) -> Dict[str, QuarantineItem]:
     """
-    Carga interna: lee y deserializa el manifiesto JSON. El resultado se mantiene en 
-    caché LRU para mejorar el rendimiento sin sacrificar la coherencia con el disco.
+    Carga interna: lee y deserializa el manifiesto en un dict para acceso O(1).
     """
     base_path = Path(base_str)
     path = _manifest_path(base_path)
     if not path.exists():
-        return []
+        return {}
     try:
         with open(path, "r", encoding="utf-8") as f:
             raw_data = json.load(f)
         if not isinstance(raw_data, list):
-            return []
-        valid_items: List[QuarantineItem] = []
+            return {}
+        items = {}
         for entry in raw_data:
             if isinstance(entry, dict):
-                quarantine_item = QuarantineItem.from_dict(entry)
-                if quarantine_item:
-                    valid_items.append(quarantine_item)
-        return valid_items
+                item = QuarantineItem.from_dict(entry)
+                if item:
+                    items[item.item_id] = item
+        return items
     except (json.JSONDecodeError, OSError, PermissionError):
-        return []
+        return {}
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga la lista de ítems en cuarentena, permitiendo refrescar el caché mediante force_reload."""
+    """Carga la lista de ítems en cuarentena, permitiendo refrescar el caché."""
     base_path = quarantine_dir(base)
-    base_str = str(base_path)
     if force_reload:
         _load_manifest_internal.cache_clear()
-    return _load_manifest_internal(base_str)
+    return list(_load_manifest_internal(str(base_path)).values())
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Persiste el manifiesto usando escritura atómica: escribe en un archivo temporal 
-    y luego reemplaza el real, evitando corrupciones si ocurre un error durante el volcado.
-    """
+    """Persiste el manifiesto usando escritura atómica y refresca el caché."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     
-    # Usar un contexto de archivo seguro con manejo explícito de errores
     try:
         with tempfile.NamedTemporaryFile("w", dir=base_path, encoding="utf-8", delete=False) as tf:
             temp_name = tf.name
@@ -360,8 +354,6 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         raise FileExistsError(f"Conflicto: {destination.name} ya existe.")
     
     dest_dir = destination.parent.resolve()
-    
-    # Crear archivo temporal dentro del destino para asegurar mismos permisos/volumen
     temp_fd, temp_path_str = tempfile.mkstemp(dir=dest_dir, prefix=".tmp_q_")
     temp_dest = Path(temp_path_str)
         
@@ -426,7 +418,7 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
-        items = load_manifest(base)
+        items_dict = _load_manifest_internal(str(dest_dir))
         quarantine_item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
@@ -436,8 +428,8 @@ def quarantine_file(
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
         )
-        items.append(quarantine_item)
-        save_manifest(items, base)
+        items_dict[item_id] = quarantine_item
+        save_manifest(list(items_dict.values()), base)
         
         try:
             if source_path.exists() and source_path.is_file():
@@ -462,14 +454,14 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido o vacío.")
         
-    items = load_manifest(base)
-    quarantine_item = next((item for item in items if item.item_id == item_id), None)
+    base_path = quarantine_dir(base)
+    items_dict = _load_manifest_internal(str(base_path))
+    quarantine_item = items_dict.get(item_id)
+    
     if not quarantine_item:
         raise KeyError(f"No se encontró el ítem: {item_id}")
     
-    base_path = quarantine_dir(base)
     stored_file = (base_path / quarantine_item.stored_name).resolve()
-    
     if not stored_file.exists():
         raise FileNotFoundError(f"Archivo en cuarentena {quarantine_item.stored_name} no hallado.")
         
@@ -493,8 +485,8 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo crítico durante la restauración: {e}")
         
-    items.remove(quarantine_item)
-    save_manifest(items, base)
+    del items_dict[item_id]
+    save_manifest(list(items_dict.values()), base)
     return destination
 
 
@@ -502,27 +494,30 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     """Elimina permanentemente un ítem de la cuarentena tras verificar su integridad."""
     if not isinstance(item_id, str) or not item_id.strip():
         return False
-    items = load_manifest(base)
-    quarantine_item = next((item for item in items if item.item_id == item_id), None)
+    
+    base_path = quarantine_dir(base)
+    items_dict = _load_manifest_internal(str(base_path))
+    quarantine_item = items_dict.get(item_id)
+    
     if not quarantine_item:
         return False
-    quarantine_root = quarantine_dir(base)
-    stored_file = (quarantine_root / quarantine_item.stored_name).resolve()
+        
+    stored_file = (base_path / quarantine_item.stored_name).resolve()
     
     if not stored_file.exists():
-        items.remove(quarantine_item)
-        save_manifest(items, base)
+        del items_dict[item_id]
+        save_manifest(list(items_dict.values()), base)
         return False
         
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError("Integridad comprometida: no se puede procesar el archivo.")
         
-    if not _is_valid_quarantine_path(stored_file, quarantine_root):
+    if not _is_valid_quarantine_path(stored_file, base_path):
         raise UnsafePathError("Intento de borrado fuera del sandbox.")
         
     if _safe_unlink(stored_file):
-        items.remove(quarantine_item)
-        save_manifest(items, base)
+        del items_dict[item_id]
+        save_manifest(list(items_dict.values()), base)
         return True
     return False
 
@@ -539,31 +534,27 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Elimina todos los archivos verificables del sandbox y actualiza el manifiesto."""
     quarantine_root = quarantine_dir(base)
-    items = load_manifest(base)
-    if not items:
+    items_dict = _load_manifest_internal(str(quarantine_root))
+    if not items_dict:
         return 0
     
-    remaining_items: List[QuarantineItem] = []
     purged_count = 0
-    
-    for item in items:
+    for item_id, item in list(items_dict.items()):
         stored_path = (quarantine_root / item.stored_name).resolve()
         try:
             if not stored_path.exists():
+                del items_dict[item_id]
                 continue
             
             if _is_item_purgable(stored_path, item):
                 if _safe_unlink(stored_path):
+                    del items_dict[item_id]
                     purged_count += 1
-                else:
-                    remaining_items.append(item)
-            else:
-                remaining_items.append(item)
         except (OSError, UnsafePathError):
-            remaining_items.append(item)
+            continue
             
     if purged_count > 0:
-        save_manifest(remaining_items, base)
+        save_manifest(list(items_dict.values()), base)
     return purged_count
 
 

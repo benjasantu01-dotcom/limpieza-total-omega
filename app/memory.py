@@ -210,18 +210,12 @@ def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Ordena procesos por consumo descendente y aplica un límite.
-    
-    Args:
-        raw_csv_text: Salida de texto cruda desde PowerShell.
-        limit: Máximo número de procesos a retornar.
-        
-    Returns:
-        Lista de objetos ProcessMemory ordenados.
+    Ordena procesos por consumo descendente y aplica un límite usando una lista procesada.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
-    procs = list(_yield_processes(raw_csv_text))
+    
+    procs = [p for p in _yield_processes(raw_csv_text)]
     procs.sort(key=lambda p: p.working_set, reverse=True)
     return procs[:max(0, limit)]
 
