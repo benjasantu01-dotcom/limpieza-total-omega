@@ -1579,8 +1579,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
             for ruta in aptos:
-                quarantine.quarantine_file(ruta, reason="Copia duplicada")
-                movidos += 1
+                if self._is_safe_path(ruta):
+                    quarantine.quarantine_file(ruta, reason="Copia duplicada")
+                    movidos += 1
             self.log(f"Aisladas {movidos} copia(s). Revisá la pestaña Cuarentena.", "Duplicados")
             self._invalidate_cache("dups")
 

@@ -541,10 +541,11 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     return False
 
 
-def _is_item_purgable(file_path: Path, item: QuarantineItem) -> bool:
-    """Valida requisitos para purga masiva: existencia, integridad y ausencia de uso."""
+def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
+    """Valida requisitos para purga masiva: existencia, integridad, sandbox estricto y ausencia de uso."""
     return (
         file_path.is_file() and
+        _is_valid_quarantine_path(file_path, base_path) and
         item.verify_integrity(file_path) and
         not _is_file_locked(file_path)
     )
@@ -558,16 +559,14 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     purged_count = 0
-    # Obtenemos lista para iterar sin modificar el dict mientras recorremos
     for item_id, item in list(items_dict.items()):
         stored_path = (quarantine_root / item.stored_name).resolve()
         
-        # Saltamos si ya no existe (podría haber sido borrado manualmente)
         if not stored_path.exists():
             del items_dict[item_id]
             continue
             
-        if _is_item_purgable(stored_path, item):
+        if _is_item_purgable(stored_path, item, quarantine_root):
             if _safe_unlink(stored_path):
                 del items_dict[item_id]
                 purged_count += 1
