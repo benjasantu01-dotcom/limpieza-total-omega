@@ -146,14 +146,18 @@ def _is_reparse_point(path: Path) -> bool:
 
 def _is_file_in_use(path: Path, st: os.stat_result = None) -> bool:
     """Verifica si el sistema operativo mantiene un bloqueo exclusivo sobre el archivo."""
+    if os.name != 'nt':
+        return False
     try:
-        handle = os.open(path, os.O_RDONLY)
-        os.close(handle)
+        handle = ctypes.windll.kernel32.CreateFileW(
+            str(path), 0x80000000, 1, None, 3, 0x00000080, None
+        )
+        if handle == -1:
+            return True
+        ctypes.windll.kernel32.CloseHandle(handle)
         return False
-    except (PermissionError, OSError):
-        return True
     except Exception:
-        return False
+        return True
 
 
 _VALIDATORS: Final[list[_IntegrityCheck]] = [

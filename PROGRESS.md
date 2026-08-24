@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **213** (42.3% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 226
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 119 | 6 | 21 | 10 | 132 |
-| 2026-08-24 | 94 | 8 | 12 | 8 | 94 |
+| 2026-08-23 | 119 | 6 | 21 | 10 | 128 |
+| 2026-08-24 | 95 | 8 | 13 | 9 | 95 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **39**
 - seguridad defensiva: **36**
-- robustez ante casos límite: **34**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **15**
 - `main.py`: **12**
 - `settings.py`: **12**
-- `safety.py`: **9**
+- `safety.py`: **10**
 - `browser.py`: **9**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T09:11:42` **safety.py** (robustez ante casos límite): Mejoré `is_file_in_use` para que no dependa de `os.open` (que abre el archivo y puede bloquear o fallar por permisos incluso si no está en uso), utilizando en su lugar `ctypes` para intentar obtener acceso de solo lectura sin bloquear el flujo ni el archivo, mejorando así la robustez ante archivos bloqueados por el sistema.
 - `2026-08-24T09:02:55` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de entrada y concurrencia añadiendo validaciones preventivas en las funciones de manipulación de manifiesto y asegurando que las rutas base expandan el usuario de forma consistente antes de cualquier operación.
 - `2026-08-24T09:02:16` **memory.py** (robustez ante casos límite): Mejoré `parse_linux_meminfo` para manejar robustamente entradas malformadas o archivos vacíos detectando explícitamente errores de conversión y valores fuera de rango, evitando así que una lectura fallida en `/proc/meminfo` devuelva un snapshot con datos inválidos o potencialmente negativos.
 - `2026-08-24T08:51:45` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de la existencia de archivos antes de invocar `stat()`, evitando excepciones innecesarias en entornos donde los archivos pueden desaparecer entre el listado (`scandir`) y el acceso (`stat`).
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T08:20:19` **healthscore.py** (rendimiento): Se optimizó el motor de cálculo en `compute_score` eliminando la creación dinámica de diccionarios dentro del bucle crítico y reemplazando la lógica de validación redundante por accesos directos, mejorando la eficiencia computacional y la legibilidad al evitar la recreación de objetos por cada iteración.
 - `2026-08-24T08:11:00` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` y `_collect_summary_data` consolidando en un solo paso de lectura de disco (el bucle `walk_files`) lo que antes requería múltiples llamadas independientes o iteraciones redundantes, reduciendo la presión de I/O.
 - `2026-08-24T08:01:03` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` reemplazando la iteración anidada sobre `_VALIDATORS` y fuentes de datos por una estructura de búsqueda más eficiente, reduciendo la complejidad algorítmica de O(N*M) a O(N).
-- `2026-08-24T08:00:16` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en funciones clave y la clarificación de las responsabilidades de los validadores, facilitando el mantenimiento futuro del motor de configuración.

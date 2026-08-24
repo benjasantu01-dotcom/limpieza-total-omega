@@ -1016,3 +1016,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T09:02:55` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores de entrada y concurrencia añadiendo validaciones preventivas en las funciones de manipulación de manifiesto y asegurando que las rutas base expandan el usuario de forma consistente antes de cualquier operación.
 - `2026-08-24T09:02:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T09:02:55` Corrida terminada. Total usado hoy: 216.
+- `2026-08-24T09:10:55` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-08-24T09:11:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-24T09:11:42` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré `is_file_in_use` para que no dependa de `os.open` (que abre el archivo y puede bloquear o fallar por permisos incluso si no está en uso), utilizando en su lugar `ctypes` para intentar obtener acceso de solo lectura sin bloquear el flujo ni el archivo, mejorando así la robustez ante archivos bloqueados por el sistema.
+- `2026-08-24T09:12:03` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-24T09:12:15` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una verificación de integridad en `load()` que compara las claves del JSON cargado contra las definidas en `AppSettings`, eliminando silenciosamente cualquier clave inesperada que pudiera haber sido inyectada maliciosamente o por una versión antigua, evitando así la propagación de datos corruptos.
+- `2026-08-24T09:12:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T09:12:15` Corrida terminada. Total usado hoy: 220.
