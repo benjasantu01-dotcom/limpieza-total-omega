@@ -477,9 +477,8 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     for token in _TOKEN_REGEX.findall(q_sanitized):
-        handler_key = _KEYWORD_MAP.get(token)
-        if handler_key:
-            return _HANDLERS[handler_key](context, question)
+        if token in _KEYWORD_MAP:
+            return _HANDLERS[_KEYWORD_MAP[token]](context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"

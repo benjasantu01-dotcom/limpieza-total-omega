@@ -126,7 +126,7 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
 }
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
-    """Decorador para asegurar que los validadores manejen entradas inválidas (None/bool) antes de procesar."""
+    """Decorador para asegurar que los validadores manejen entradas inválidas antes de procesar."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         val = args[1] if len(args) > 1 else kwargs.get("val")
         if val is None or (isinstance(val, bool) and func.__name__ != "bool"):
@@ -135,7 +135,13 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     return wrapper
 
 class _Validators:
-    """Motor de validación de datos de entrada para `config.json`."""
+    """
+    Motor interno de validación de datos.
+    
+    Implementa las reglas de negocio y de seguridad para filtrar cada entrada del
+    archivo de configuración. Centraliza la sanitización de rutas, rangos numéricos
+    y normalización de tipos. Devuelve None ante cualquier dato sospechoso.
+    """
     
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
@@ -155,7 +161,7 @@ class _Validators:
 
     @staticmethod
     def bool(val: Any) -> Optional[bool]:
-        """Normaliza tipos mixtos a booleano estricto."""
+        """Normaliza tipos mixtos (str/bool/int) a booleano estricto."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -166,7 +172,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Valida y recorta enteros dentro de los límites permitidos por `_NUMERIC_LIMITS`."""
+        """Valida y recorta enteros dentro de los límites definidos en `_NUMERIC_LIMITS`."""
         try:
             parsed_value: int = int(val)
             min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
@@ -175,7 +181,7 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> Optional[str]:
-        """Valida rutas absolutas y asegura que no apunten a directorios restringidos."""
+        """Valida rutas absolutas y asegura que no apunten a directorios restringidos o inseguros."""
         if val is None or not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or len(path_string) > 4096 or any(ord(c) < 32 for c in path_string) or ".." in path_string: return None
@@ -190,7 +196,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Valida cadenas contra listas predefinidas para temas y acentos."""
+        """Valida cadenas contra listas predefinidas para enumeraciones como temas y acentos."""
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
@@ -199,7 +205,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida entrada de texto genérica, filtrando caracteres de control e inyección de rutas."""
+        """Valida entrada de texto, filtrando caracteres de control e inyección de rutas."""
         text = str(val).strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
@@ -254,7 +260,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         stat = ruta.stat()
         if stat.st_size == 0: return _get_default_config()
         
-        # Uso eficiente de caché con marca de tiempo
         if (cached := _CACHE.get(ruta)) and cached[0] == stat.st_mtime:
             return cached[1]
             
@@ -296,7 +301,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         
-        # Uso de os.tmpnam o directorio temporal global para evitar race conditions en directorios de usuario
         with tempfile.NamedTemporaryFile("wb", delete=False) as tf:
             temp_name = tf.name
             tf.write(encoded_data)
