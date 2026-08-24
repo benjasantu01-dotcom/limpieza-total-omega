@@ -7,33 +7,33 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **209** (41.5% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 229
+- Sin respuesta de la IA (error o límite): 228
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 142 | 8 | 25 | 12 | 145 |
-| 2026-08-24 | 67 | 5 | 9 | 7 | 84 |
+| 2026-08-23 | 141 | 8 | 24 | 12 | 143 |
+| 2026-08-24 | 68 | 7 | 9 | 7 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **46**
 - legibilidad y documentación: **46**
 - seguridad defensiva: **45**
-- manejo de errores y validación de entradas: **45**
 - robustez ante casos límite: **37**
-- rendimiento: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
 - `memory.py`: **21**
 - `quarantine.py`: **20**
+- `duplicates.py`: **20**
+- `scanner.py`: **19**
 - `assistant.py`: **19**
-- `scanner.py`: **18**
 - `healthscore.py`: **18**
 - `diskreport.py`: **16**
 - `organizer.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T07:19:32` **scanner.py** (manejo de errores y validación de entradas): Se introdujo un mecanismo de validación robusto en `scan_file` para evitar el uso de metadatos nulos o inaccesibles, asegurando que el scanner no intente operar sobre archivos cuyos atributos fallan al ser leídos, y se protegió la ejecución de las reglas heurísticas capturando excepciones individuales por regla para evitar que una falla puntual detenga el análisis completo.
 - `2026-08-24T07:09:50` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `QuarantineItem.from_dict` y `load_manifest` mediante validación estricta de tipos y manejo defensivo de entradas corruptas, asegurando que el sistema no falle catastróficamente ante datos externos malformados.
 - `2026-08-24T07:09:19` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones preventivas de estado antes de operar sobre el sistema de archivos, asegurando que los argumentos sean rutas válidas y que las operaciones de entrada/salida manejen correctamente las excepciones de permisos o recursos inexistentes.
 - `2026-08-24T07:08:55` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_to_trim` implementando validaciones explícitas de estado y tipo, asegurando que `proc_handle` sea siempre verificado antes de cualquier llamada a la API y capturando errores específicos de `ctypes`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T05:08:23` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita para evitar inyecciones de rutas o acceso a ejecutables mediante enlaces simbólicos o junctions que podrían apuntar fuera de las zonas seguras, asegurando la integridad del proceso antes de invocar la API `EmptyWorkingSet`.
 - `2026-08-24T05:07:06` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `compute_score` validando explícitamente que el `sum(WEIGHTS.values())` sea exactamente 100 antes de ejecutar la lógica de cálculo, evitando resultados de puntuación fuera de escala ante posibles errores de configuración manual en las constantes.
 - `2026-08-24T05:06:41` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `suggest_keeper` y `hash_file/partial_hash` asegurando que la resolución de rutas mediante `resolve()` se verifique contra el filtro de seguridad inmediatamente antes de cualquier operación de acceso a disco, evitando así condiciones de carrera o rutas maliciosas que podrían eludir los chequeos iniciales.
-- `2026-08-24T04:57:49` **diskreport.py** (seguridad defensiva): Se ha añadido un chequeo de seguridad mediante `is_protected_path` en la función `drive_usage` para evitar que el escáner de disco acceda a rutas críticas del sistema en caso de que se le solicite analizar una unidad completa o un punto de montaje específico.

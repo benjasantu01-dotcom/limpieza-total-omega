@@ -848,3 +848,67 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-08-24T07:09:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-08-24T07:09:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T07:09:54` Corrida terminada. Total usado hoy: 172.
+- `2026-08-24T07:18:40` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-24T07:19:09` Tests FALLARON:
+```
+d_chars(str(path)):
+            raise UnsafePathError("Ruta contiene caracteres inválidos o de control.")
+    
+        try:
+            p = normalize(path)
+            path_str = str(p)
+    
+            _validate_basic_path_safety(p, path_str)
+            _validate_boundary_conditions(p, base_dir)
+    
+            if p.exists():
+                _check_file_integrity(p)
+            else:
+                parent = p.parent
+                if not parent.exists():
+>                   raise UnsafePathError("Directorio padre inexistente.")
+E                   safety.UnsafePathError: Directorio padre inexistente.
+
+app/safety.py:353: UnsafePathError
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - safety.UnsafePathError: Directorio padre inexistente.
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+2 failed, 297 passed in 1.26s
+
+```
+- `2026-08-24T07:19:09` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `ensure_safe_to_modify` ante entradas no existentes, asegurando que si el padre no existe (ruta mal formada), se detecte como error y no se intente una operación de escritura inválida, además de consolidar la validación de acceso al directorio padre.
+- `2026-08-24T07:19:32` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se introdujo un mecanismo de validación robusto en `scan_file` para evitar el uso de metadatos nulos o inaccesibles, asegurando que el scanner no intente operar sobre archivos cuyos atributos fallan al ser leídos, y se protegió la ejecución de las reglas heurísticas capturando excepciones individuales por regla para evitar que una falla puntual detenga el análisis completo.
+- `2026-08-24T07:19:59` Tests FALLARON:
+```
+'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_assistant_is_off_by_default - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_save_then_load_keeps_the_values - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_env_var_wins_over_the_config_file - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - KeyError: 'asistente_activado'
+14 failed, 285 passed in 1.41s
+
+```
+- `2026-08-24T07:19:59` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de los validadores integrando `is_protected_path` directamente en la validación de rutas y capturando excepciones de sistema (como `OSError` o `AttributeError` al inspeccionar `is_junction`) para evitar que una ruta mal formada o un acceso denegado a nivel de sistema de archivos bloquee la carga de la configuración.
+- `2026-08-24T07:20:08` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T07:20:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T07:20:08` Corrida terminada. Total usado hoy: 176.

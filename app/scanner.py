@@ -173,6 +173,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Aplica todas las heurísticas registradas sobre un archivo individual."""
     findings: ScanResult = []
     
+    # Validar entrada basica antes de procesar
+    if not path or not path.exists():
+        return findings
+    
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
@@ -182,7 +186,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
                 if (result := check(path, entry, now_ts)):
                     findings.append(result)
             except Exception as e:
-                logger.debug(f"Fallo en regla heurística {check.__name__}: {e}")
+                logger.debug(f"Fallo en regla heurística {check.__name__} para {path}: {e}")
                 
     return findings
 
