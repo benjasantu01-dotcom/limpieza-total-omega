@@ -360,16 +360,17 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None:
         return None
     try:
-        path_obj = Path(destination)
-        if not path_obj.is_absolute():
-            path_obj = path_obj.absolute()
+        path_obj = Path(destination).resolve()
         
-        # Validar seguridad antes de intentar cualquier operación de disco
+        # Validar si es una ruta protegida o no modificable
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+            return None
+        
+        # Evitar sobrescribir directorios
+        if path_obj.exists() and path_obj.is_dir():
             return None
             
         parent = path_obj.parent
-        # Validar que el directorio padre también sea seguro antes de crearlo
         if not parent.exists():
             if is_protected_path(parent) or not is_safe_to_modify(parent):
                 return None

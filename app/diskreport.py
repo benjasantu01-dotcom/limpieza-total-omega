@@ -198,7 +198,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
     try:
         p = Path(os.fspath(mount)).resolve(strict=False)
-        if not os.access(p, os.R_OK):
+        if not os.access(p, os.R_OK) or is_protected_path(p):
             return None
             
         str_mount = str(p)

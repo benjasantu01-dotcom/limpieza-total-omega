@@ -528,6 +528,9 @@ def _call_gemini(
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
             
+            content_type = res.getheader("Content-Type", "")
+            if "application/json" not in content_type: return None
+
             length = res.getheader("Content-Length")
             if length and int(length) > _MAX_RESPONSE_BYTES: return None
             
