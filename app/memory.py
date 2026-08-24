@@ -158,13 +158,19 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         k = key.strip()
         if k in vals:
             try:
-                vals[k] = int(rest.split()[0]) * 1024
+                parts = rest.split()
+                if parts:
+                    vals[k] = int(parts[0]) * 1024
             except (ValueError, IndexError):
                 continue
     
     total = vals["MemTotal"]
+    if total <= 0:
+        return MemorySnapshot(0, 0)
+        
     available = vals["MemAvailable"] if vals["MemAvailable"] > 0 else vals["MemFree"]
-    return MemorySnapshot(total=total, available=min(available, total), cached=vals["Cached"])
+    # Aseguramos límites lógicos: disponible nunca puede ser mayor al total
+    return MemorySnapshot(total=total, available=min(available, total), cached=max(0, vals["Cached"]))
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     """Convierte una línea CSV a un modelo ProcessMemory."""

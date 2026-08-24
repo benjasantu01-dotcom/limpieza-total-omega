@@ -359,6 +359,7 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     dest_dir = destination.parent.resolve()
     temp_fd, temp_path_str = tempfile.mkstemp(dir=dest_dir, prefix=".tmp_q_")
     temp_dest = Path(temp_path_str)
+    os.close(temp_fd)
         
     try:
         shutil.copy2(resolved_source, temp_dest)
