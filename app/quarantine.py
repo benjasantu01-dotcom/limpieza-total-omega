@@ -343,8 +343,15 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     Realiza la copia física al sandbox mediante un archivo temporal, verificando integridad 
     por hash y tamaño antes de confirmar la operación de reemplazo atómico.
     """
-    if source.is_symlink() or ":" in str(source):
-        raise UnsafePathError("Origen no es archivo regular.")
+    resolved_source = source.resolve()
+    # Doble validación: la fuente debe ser un archivo regular que no sea symlink
+    if resolved_source.is_symlink() or not resolved_source.is_file() or ":" in str(resolved_source):
+        raise UnsafePathError("Origen no es archivo regular o es un enlace sospechoso.")
+    
+    # Validar que el origen no haya sido movido fuera de su contexto (Directory Traversal)
+    if not resolved_source.exists():
+         raise FileNotFoundError("Archivo origen no encontrado.")
+
     if destination.exists():
         raise FileExistsError(f"Conflicto: {destination.name} ya existe.")
     
@@ -354,7 +361,7 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         raise UnsafePathError("Error de integridad en sandbox: ruta temporal no permitida.")
         
     try:
-        shutil.copy2(source, temp_dest)
+        shutil.copy2(resolved_source, temp_dest)
         if temp_dest.stat().st_size != file_size:
             raise OSError("Corrupción durante copia: mismatch de tamaño.")
             

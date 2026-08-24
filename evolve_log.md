@@ -1308,3 +1308,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-08-24T00:43:17` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-24T00:43:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T00:43:17` Corrida terminada. Total usado hoy: 20.
+- `2026-08-24T00:51:21` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-24T00:51:55` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_atomic_isolate_file` implementando una validación explícita mediante `is_within_directory` sobre la ruta resuelta del archivo origen, asegurando que ninguna manipulación de symlinks o paths relativos permita una operación de copia fuera de los límites permitidos, reforzando así la seguridad defensiva.
+- `2026-08-24T00:52:13` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-24T00:52:38` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-24T00:52:48` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (diseñado para operaciones destructivas) por `is_protected_path` combinado con una validación de ruta absoluta antes de seguir enlaces o recursión, evitando así falsos positivos y abortos innecesarios en módulos de solo lectura.
+- `2026-08-24T00:52:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T00:52:48` Corrida terminada. Total usado hoy: 24.

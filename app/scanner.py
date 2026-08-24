@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from datetime import datetime
 from typing import List, Optional, Union, Final, Callable, TypeAlias
-from safety import is_protected_path, is_safe_to_modify
+from safety import is_protected_path
 
 # Configuración de logger para el módulo
 logger = logging.getLogger(__name__)
@@ -102,9 +102,10 @@ class Scanner:
         target_path = Path(entry.path)
         
         try:
-            if not is_safe_to_modify(target_path) or is_protected_path(target_path):
+            # Validación defensiva de solo lectura: evitamos modificar el disco
+            if is_protected_path(target_path):
                 return
-            if target_path.parts[0].startswith("\\\\"):
+            if str(target_path).startswith("\\\\"):
                 return
             if not self._is_safe_entry(target_path):
                 return

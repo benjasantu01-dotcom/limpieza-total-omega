@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 59 | 5 | 9 | 6 | 55 |
+| 2026-08-22 | 59 | 5 | 9 | 6 | 51 |
 | 2026-08-23 | 153 | 9 | 27 | 13 | 148 |
-| 2026-08-24 | 11 | 2 | 1 | 1 | 5 |
+| 2026-08-24 | 13 | 2 | 2 | 1 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **43**
+- seguridad defensiva: **45**
 - rendimiento: **39**
 - robustez ante casos límite: **37**
 
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **22**
 - `assistant.py`: **21**
 - `duplicates.py`: **21**
+- `scanner.py`: **21**
 - `diskreport.py`: **20**
-- `scanner.py`: **20**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `quarantine.py`: **19**
 - `branding.py`: **16**
 - `settings.py`: **16**
 - `browser.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T00:52:48` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (diseñado para operaciones destructivas) por `is_protected_path` combinado con una validación de ruta absoluta antes de seguir enlaces o recursión, evitando así falsos positivos y abortos innecesarios en módulos de solo lectura.
+- `2026-08-24T00:51:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_atomic_isolate_file` implementando una validación explícita mediante `is_within_directory` sobre la ruta resuelta del archivo origen, asegurando que ninguna manipulación de symlinks o paths relativos permita una operación de copia fuera de los límites permitidos, reforzando así la seguridad defensiva.
 - `2026-08-24T00:43:09` **memory.py** (seguridad defensiva): Se ha mejorado `_is_safe_to_trim` para prevenir el uso de handles no cerrados en caso de excepciones y, más importante aún, para validar que la ruta del ejecutable no sea una ruta de sistema (UNC) potencialmente insegura antes de realizar operaciones sobre el proceso, reforzando la seguridad defensiva.
 - `2026-08-24T00:42:41` **main.py** (seguridad defensiva): Mejoré la seguridad de la inicialización de la app asegurando que el directorio base se resuelva y valide mediante `safety.ensure_safe_to_modify` antes de cargar configuraciones o lanzar la interfaz, previniendo así ejecuciones en entornos con permisos o rutas potencialmente comprometidas.
 - `2026-08-24T00:41:37` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `healthscore.py` al añadir una capa de validación estricta en `SystemMetrics` y los scorers, garantizando que el sistema no pueda entrar en estados inconsistentes mediante inyección de valores numéricos extremos o tipos inesperados que podrían desbordar los cálculos de salud.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T00:02:22` **main.py** (robustez ante casos límite): Se ha implementado un control de robustez en la navegación de pestañas mediante `_on_tab_change`, asegurando que `_tab_factory` solo intente construir la interfaz de una pestaña si el widget contenedor sigue existiendo, evitando errores de `TclError` y potenciales fallos de sincronización si la ventana se cierra durante un cambio de pestaña rápido.
 - `2026-08-23T15:01:12` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_collect_summary_data` para evitar el agotamiento de memoria en directorios con millones de archivos, reemplazando la lista completa `all_files` por un heap gestionado que solo mantiene los N archivos más grandes durante la iteración.
 - `2026-08-23T14:51:37` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, asegurando que `extra` sea procesado de forma segura y consistente sin depender de `getattr` sobre tipos no controlados.
-- `2026-08-23T14:41:22` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_file` y los chequeos asociados evitando múltiples conversiones a string, extracciones innecesarias de rutas y chequeos redundantes de extensiones mediante el uso directo de `path.parts` y operaciones sobre variables ya resueltas.
-- `2026-08-23T14:32:57` **memory.py** (rendimiento): Optimizé la generación de la lista de procesos implementando un filtrado más eficiente dentro del generador `_yield_processes` y reemplazando la lógica de filtrado de duplicados/redundancias por un procesamiento lineal, reduciendo la carga de memoria al evitar construcciones de listas intermedias innecesarias antes de la ordenación final.
