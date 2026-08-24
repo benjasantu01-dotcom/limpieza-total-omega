@@ -450,3 +450,29 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-08-24T02:44:56` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta contra errores de tipo `None` y valores vacíos en `is_within_directory` y `is_protected_path`, garantizando que los fallos de normalización no se traduzcan en permisos falsos positivos, reforzando la integridad defensiva del módulo.
 - `2026-08-24T02:44:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T02:44:56` Corrida terminada. Total usado hoy: 68.
+- `2026-08-24T02:53:42` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-24T02:54:07` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). He mejorado la robustez de `scan_directory` y `process_entry` ante entradas de sistema malformadas o rutas inválidas, garantizando que cualquier `Path` sea validado contra `None` o errores de sistema antes de interactuar con el FS, evitando así excepciones no controladas durante la recursión.
+- `2026-08-24T02:54:35` Tests FALLARON:
+```
+'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_assistant_is_off_by_default - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_save_then_load_keeps_the_values - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_env_var_wins_over_the_config_file - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - KeyError: 'asistente_activado'
+14 failed, 285 passed in 1.40s
+
+```
+- `2026-08-24T02:54:35` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `save()` capturando excepciones específicas durante la escritura y garantizando la limpieza de archivos temporales mediante un bloque `finally`, además de añadir una validación crítica contra la inyección de caracteres nulos en los valores de configuración para prevenir comportamientos inesperados en el sistema de archivos.
+- `2026-08-24T02:54:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T02:55:18` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación de `SystemContext` y `AssistantConfig` agregando docstrings detallados que explican el propósito de cada campo, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
+- `2026-08-24T02:55:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T02:55:18` Corrida terminada. Total usado hoy: 72.

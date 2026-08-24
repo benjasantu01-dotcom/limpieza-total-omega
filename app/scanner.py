@@ -99,9 +99,8 @@ class Scanner:
         if entry is None or not hasattr(entry, 'path'):
             return
         
-        target_path = Path(entry.path)
-        
         try:
+            target_path = Path(entry.path)
             # Validación defensiva de solo lectura: evitamos modificar el disco
             if is_protected_path(target_path):
                 return
@@ -111,7 +110,7 @@ class Scanner:
                 return
 
             is_dir = entry.is_dir(follow_symlinks=False)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, TypeError):
             return
 
         if is_dir:

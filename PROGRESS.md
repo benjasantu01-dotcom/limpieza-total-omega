@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 35
+- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 225
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 34 | 5 | 5 | 4 | 38 |
+| 2026-08-22 | 31 | 5 | 4 | 4 | 38 |
 | 2026-08-23 | 153 | 9 | 27 | 13 | 148 |
-| 2026-08-24 | 23 | 2 | 3 | 1 | 39 |
+| 2026-08-24 | 25 | 3 | 3 | 1 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **47**
+- manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **44**
+- legibilidad y documentación: **45**
 - robustez ante casos límite: **37**
-- rendimiento: **36**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `duplicates.py`: **20**
-- `scanner.py`: **19**
-- `assistant.py`: **19**
+- `scanner.py`: **20**
+- `assistant.py`: **20**
+- `duplicates.py`: **19**
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
-- `healthscore.py`: **18**
+- `healthscore.py`: **17**
+- `diskreport.py`: **17**
 - `settings.py`: **16**
 - `organizer.py`: **14**
 - `branding.py`: **14**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T02:55:18` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `SystemContext` y `AssistantConfig` agregando docstrings detallados que explican el propósito de cada campo, facilitando la comprensión del flujo de datos sin alterar el comportamiento.
+- `2026-08-24T02:54:07` **scanner.py** (manejo de errores y validación de entradas): He mejorado la robustez de `scan_directory` y `process_entry` ante entradas de sistema malformadas o rutas inválidas, garantizando que cualquier `Path` sea validado contra `None` o errores de sistema antes de interactuar con el FS, evitando así excepciones no controladas durante la recursión.
 - `2026-08-24T02:44:56` **safety.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta contra errores de tipo `None` y valores vacíos en `is_within_directory` y `is_protected_path`, garantizando que los fallos de normalización no se traduzcan en permisos falsos positivos, reforzando la integridad defensiva del módulo.
 - `2026-08-24T02:44:26` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` y `_atomic_isolate_file` mediante un manejo de errores más específico y validación de precondiciones, evitando el uso de bloques `try-except` genéricos que podrían ocultar fallos de integridad del sistema de archivos.
 - `2026-08-24T02:43:54` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones más estrictas para entradas nulas o rutas inválidas, evitando accesos a métodos de objetos que podrían ser `None` y asegurando que las operaciones de sistema de archivos no fallen por rutas mal formadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T00:52:48` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (diseñado para operaciones destructivas) por `is_protected_path` combinado con una validación de ruta absoluta antes de seguir enlaces o recursión, evitando así falsos positivos y abortos innecesarios en módulos de solo lectura.
 - `2026-08-24T00:51:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_atomic_isolate_file` implementando una validación explícita mediante `is_within_directory` sobre la ruta resuelta del archivo origen, asegurando que ninguna manipulación de symlinks o paths relativos permita una operación de copia fuera de los límites permitidos, reforzando así la seguridad defensiva.
 - `2026-08-24T00:43:09` **memory.py** (seguridad defensiva): Se ha mejorado `_is_safe_to_trim` para prevenir el uso de handles no cerrados en caso de excepciones y, más importante aún, para validar que la ruta del ejecutable no sea una ruta de sistema (UNC) potencialmente insegura antes de realizar operaciones sobre el proceso, reforzando la seguridad defensiva.
-- `2026-08-24T00:42:41` **main.py** (seguridad defensiva): Mejoré la seguridad de la inicialización de la app asegurando que el directorio base se resuelva y valide mediante `safety.ensure_safe_to_modify` antes de cargar configuraciones o lanzar la interfaz, previniendo así ejecuciones en entornos con permisos o rutas potencialmente comprometidas.
-- `2026-08-24T00:41:37` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva de `healthscore.py` al añadir una capa de validación estricta en `SystemMetrics` y los scorers, garantizando que el sistema no pueda entrar en estados inconsistentes mediante inyección de valores numéricos extremos o tipos inesperados que podrían desbordar los cálculos de salud.

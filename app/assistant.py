@@ -67,7 +67,12 @@ __all__ = [
 ]
 
 class AssistantConfig(TypedDict):
-    """Esquema estricto de la configuración cargada desde el archivo de ajustes."""
+    """
+    Esquema estricto de la configuración cargada desde el archivo de ajustes.
+    asistente_api_key: Credencial para conectar a la API.
+    asistente_modelo: Identificador del modelo de lenguaje a utilizar.
+    asistente_enviar_metricas: Flag para permitir envío de métricas a la nube.
+    """
     asistente_api_key: str
     asistente_modelo: str
     asistente_enviar_metricas: bool
@@ -218,7 +223,22 @@ def _validate_response_length(text: str) -> str:
 
 @dataclass
 class SystemContext:
-    """Contenedor de estado del sistema. Mantiene únicamente métricas agregadas."""
+    """
+    Contenedor de estado del sistema. Mantiene únicamente métricas agregadas.
+    score: Puntaje global de salud (0-100).
+    grade: Calificación cualitativa (ej. 'A', 'B').
+    junk_mb: Volumen de basura en MB.
+    suspicious_count: Total de archivos detectados con heurísticas.
+    suspicious_warnings: Cantidad de archivos críticos dentro de los sospechosos.
+    memory_available_percent: Porcentaje de RAM libre.
+    memory_total_gb: Memoria total instalada en el sistema.
+    disk_free_percent: Espacio disponible en disco porcentual.
+    duplicate_mb: Volumen de archivos duplicados en MB.
+    startup_count: Cantidad de procesos registrados en el arranque.
+    quarantined_count: Cantidad de archivos en cuarentena.
+    browser_cache_mb: Tamaño total de las cachés de navegadores detectadas.
+    analyzed: Flag que indica si los datos provienen de un análisis válido.
+    """
     score: Optional[int] = None
     grade: str = ""
     junk_mb: float = 0.0
