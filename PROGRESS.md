@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **209** (41.5% de aceptación)
+- Mejoras aceptadas: **207** (41.1% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 226
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 229
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 106 | 6 | 20 | 9 | 99 |
-| 2026-08-24 | 103 | 9 | 14 | 11 | 127 |
+| 2026-08-23 | 103 | 6 | 20 | 8 | 99 |
+| 2026-08-24 | 104 | 9 | 14 | 11 | 130 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **51**
 - seguridad defensiva: **44**
 - rendimiento: **39**
-- manejo de errores y validación de entradas: **37**
+- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
-- `memory.py`: **21**
 - `quarantine.py`: **20**
-- `healthscore.py`: **19**
+- `duplicates.py`: **20**
+- `memory.py`: **20**
+- `assistant.py`: **19**
 - `scanner.py`: **18**
-- `assistant.py`: **18**
+- `healthscore.py`: **18**
 - `organizer.py`: **16**
 - `branding.py`: **15**
 - `diskreport.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T11:16:13` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validaciones específicas para `SystemContext` ante entradas malformadas, evitando que valores inesperados en el diccionario de origen corrompan la integridad de los datos del asistente.
 - `2026-08-24T09:52:10` **safety.py** (seguridad defensiva): Se ha mejorado `_is_file_in_use` utilizando un método de apertura con permisos de acceso mínimos (`0`) en lugar de `0x80000000` (GENERIC_READ), asegurando que la verificación no bloquee accidentalmente el archivo ni dependa de permisos de lectura que podrían no estar disponibles para el usuario actual.
 - `2026-08-24T09:42:57` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita mediante `is_within_directory` sobre el `temp_dest` generado, para asegurar que ninguna falla en la creación del archivo temporal permita escribir fuera del sandbox de cuarentena, cerrando una brecha de potencial escalada de ruta.
 - `2026-08-24T09:42:25` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` añadiendo un filtro explícito para verificar que el archivo a eliminar no sea una ruta de sistema ni contenga caracteres maliciosos, además de consolidar la validación de seguridad antes de llamar a `ensure_safe_to_modify`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T08:51:45` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante casos límite mediante la validación explícita de la existencia de archivos antes de invocar `stat()`, evitando excepciones innecesarias en entornos donde los archivos pueden desaparecer entre el listado (`scandir`) y el acceso (`stat`).
 - `2026-08-24T08:42:02` **branding.py** (robustez ante casos límite): Se ha robustecido el manejo de archivos en `save_logo_svg` y se eliminó la posibilidad de excepciones silenciosas en el procesamiento de rutas, validando explícitamente la existencia de componentes de `Path` para evitar errores en sistemas con archivos bloqueados o estructuras de directorios inexistentes.
 - `2026-08-24T08:41:45` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados en los diccionarios de configuración/métricas, evitando errores de ejecución y asegurando la integridad de los datos procesados mediante validación defensiva estricta.
-- `2026-08-24T08:40:48` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la llamada redundante a `ruta.stat()` mediante el almacenamiento del resultado de `ruta.exists()` y `stat()` en una sola operación, y eliminé redundancias en el acceso al diccionario `_CACHE`.

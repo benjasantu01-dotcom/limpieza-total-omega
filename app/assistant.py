@@ -322,14 +322,16 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     found_data = False
     sources = [metrics, health, extra]
     
+    # Filtrar fuentes no operables o malformadas antes de iterar
+    clean_sources = [s for s in sources if s is not None and (isinstance(s, dict) or not isinstance(s, (str, int, float)))]
+    
     for key, spec in _VALIDATORS.items():
-        for src in sources:
-            if src is not None and _validate_and_assign(ctx, src, key, spec):
+        for src in clean_sources:
+            if _validate_and_assign(ctx, src, key, spec):
                 found_data = True
                 break
 
-    for src in [health, extra]:
-        if not isinstance(src, dict) and not hasattr(src, "grade"): continue
+    for src in clean_sources:
         val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
         if isinstance(val, str):
             g_str = val[:10].strip()
