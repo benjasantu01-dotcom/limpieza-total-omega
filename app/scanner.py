@@ -154,7 +154,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Marca ejecutables nuevos en carpetas de alto riesgo (Downloads/Temp).
     Analiza la fecha de modificación (st_mtime) comparándola con 'now_ts'.
     """
-    if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
+    path_parts_lower = {p.lower() for p in path.parts}
+    if not WATCHED_FOLDERS.intersection(path_parts_lower):
         return None
         
     try:
@@ -171,7 +172,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     Detecta si un archivo utiliza nombres de procesos críticos del sistema fuera del directorio System32.
     """
     if path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in [p.lower() for p in path.parts]:
+        parts_lower = {p.lower() for p in path.parts}
+        if SYSTEM32_LOWER not in parts_lower:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 

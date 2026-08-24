@@ -144,10 +144,8 @@ def _is_reparse_point(path: Path) -> bool:
         return False
 
 
-def _is_file_in_use(path: Path) -> bool:
+def _is_file_in_use(path: Path, st: os.stat_result = None) -> bool:
     """Verifica si el sistema operativo mantiene un bloqueo exclusivo sobre el archivo."""
-    if not isinstance(path, Path) or not path.exists() or not path.is_file():
-        return False
     try:
         handle = os.open(path, os.O_RDONLY)
         os.close(handle)

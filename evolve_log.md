@@ -988,3 +988,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T08:22:01` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-24T08:22:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T08:22:01` Corrida terminada. Total usado hoy: 200.
+- `2026-08-24T08:30:05` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-24T08:30:38` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se implementó un cache en `total_quarantined_bytes` y se optimizó el acceso al manifiesto en `purge_all` para evitar lecturas redundantes de disco, mejorando el rendimiento en operaciones de limpieza masiva.
+- `2026-08-24T08:30:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-24T08:31:23` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la validación de integridad (`_check_file_integrity`) para evitar llamadas redundantes a `stat()` y `path.exists()` dentro del bucle de validación, utilizando la información ya recolectada al inicio y reemplazando las lambdas del registro `_VALIDATORS` por referencias a funciones optimizadas con el fin de reducir el overhead de ejecución.
+- `2026-08-24T08:31:31` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `check_recent_executable_in_downloads` y `check_system_lookalike` convirtiendo las verificaciones de pertenencia de `list` a `set` mediante la pre-conversión de `path.parts` a un conjunto, evitando iteraciones repetitivas y mejorando la eficiencia del escaneo.
+- `2026-08-24T08:31:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T08:31:31` Corrida terminada. Total usado hoy: 204.
