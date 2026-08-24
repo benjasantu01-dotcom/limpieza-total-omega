@@ -188,6 +188,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error interno: Tipo de datos inválido."])
     
+    # Verificación de seguridad estructural: la suma de pesos debe ser 100
+    if sum(WEIGHTS.values()) != 100:
+        return HealthResult(0, "F", {}, ["Error interno: Configuración de pesos inválida."])
+    
     metrics.validate()
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error interno: Datos corruptos."])
