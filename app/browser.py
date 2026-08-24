@@ -181,11 +181,14 @@ def _sum_directory_recursive(
     """
     Calcula el peso total en bytes de un directorio mediante recursión controlada.
     
-    :param root_dir: Ruta absoluta del directorio a sumar.
-    :param is_junction_fn: Función para detectar puntos de reparse (Windows Junctions).
-    :param kernel32: Handle a Win32 API para atributos de archivo.
-    :param memo: Diccionario de caché para evitar re-procesar subdirectorios.
-    :return: Tamaño en bytes, o 0 si el acceso es denegado o la ruta es inválida.
+    Args:
+        root_dir: Ruta absoluta a procesar.
+        is_junction_fn: Callback para verificar puntos de reparse (Windows).
+        kernel32: Instancia de ctypes para validaciones de atributos de sistema.
+        memo: Caché de resultados previos para evitar re-escaneo redundante.
+        
+    Returns:
+        int: Tamaño acumulado en bytes. Retorna 0 en caso de error de acceso.
     """
     if root_dir in memo:
         return memo[root_dir]
@@ -202,6 +205,7 @@ def _sum_directory_recursive(
                         continue
                     
                     try:
+                        # Se usa follow_symlinks=False para evitar seguir enlaces externos
                         if entry.is_dir(follow_symlinks=False):
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file(follow_symlinks=False):
@@ -258,9 +262,12 @@ def detect_profiles(
     """
     Detecta cachés instaladas buscando rutas predefinidas.
     
-    :param bases: Lista de rutas base donde buscar (por defecto LOCALAPPDATA).
-    :param cache_paths: Diccionario de rutas relativas de caché por navegador.
-    :return: Lista de objetos BrowserCache con la información recolectada.
+    Args:
+        bases: Lista de rutas base donde buscar (por defecto LOCALAPPDATA).
+        cache_paths: Diccionario de rutas relativas de caché por navegador.
+        
+    Returns:
+        List[BrowserCache]: Lista de objetos con información de caché recolectada.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

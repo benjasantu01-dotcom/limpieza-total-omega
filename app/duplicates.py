@@ -143,6 +143,7 @@ def _collect_candidates(
                             continue
 
                         entry_stat = entry.stat(follow_symlinks=False)
+                        # Ignorar puntos de reparse (Junctions/Symlinks) para evitar ciclos
                         if getattr(entry_stat, 'st_reparse_tag', 0) != 0:
                             continue
                             
@@ -160,9 +161,9 @@ def _collect_candidates(
     if directories is not None:
         for item in set(directories):
             if item:
-                root_path = Path(item).resolve()
-                if root_path.is_dir() and not is_protected_path(root_path) and is_safe_to_modify(root_path):
-                    _scan(root_path)
+                root = Path(item).resolve()
+                if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
+                    _scan(root)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
 
@@ -201,11 +202,7 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Suma total de espacio recuperable en bytes de una lista de grupos."""
     if not groups: return 0
-    total = 0
-    for g in groups:
-        if isinstance(g, DuplicateGroup):
-            total += g.wasted_bytes
-    return total
+    return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:

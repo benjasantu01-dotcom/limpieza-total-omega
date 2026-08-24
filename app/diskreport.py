@@ -186,8 +186,12 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad específica.
     
+    Args:
+        mount: Ruta de la unidad o directorio a consultar.
+        
     Returns:
-        Optional[DriveUsage]: Objeto de datos con el estado, o None si la ruta es inaccesible o inválida.
+        Optional[DriveUsage]: Estado de la unidad, o None si la ruta es inaccesible 
+        o bloqueada por motivos de seguridad.
     """
     if not mount or not isinstance(mount, (str, os.PathLike)):
         return None
@@ -212,10 +216,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
-    Obtiene el uso de almacenamiento de todas las unidades detectadas en el sistema.
+    Obtiene el uso de almacenamiento de todas las unidades detectadas.
     
+    Args:
+        mounts: Iterable opcional con rutas a consultar. Si es None, autodetecta unidades.
+        
     Returns:
-        List[DriveUsage]: Lista de estados por cada unidad detectada.
+        List[DriveUsage]: Lista de estados por cada unidad detectada con éxito.
     """
     if mounts is None:
         if os.name == "nt":
@@ -241,8 +248,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Generador iterativo que recorre directorios recursivamente para listar archivos.
     
+    Implementa protección contra enlaces simbólicos, junctions y carpetas protegidas.
+    
+    Args:
+        directory: Ruta base para comenzar el escaneo.
+        skip_protected: Si es True, ignora rutas marcadas como protegidas.
+        
     Yields:
-        Tuple[Path, int]: Cada tupla contiene la ruta absoluta y el tamaño en bytes del archivo.
+        Tupla con (Path, int): Ruta absoluta del archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -279,7 +292,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             
                         entry_path = Path(entry.path).resolve()
                         
-                        # Seguridad: verificar que no escape de la carpeta base (evitar symlink escapes)
+                        # Seguridad: validar que no escape de la carpeta base (evitar symlink escapes)
                         if base_path not in entry_path.parents and entry_path != base_path:
                             continue
 
@@ -303,8 +316,13 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
-    Identifica los N archivos más grandes en un directorio usando un heap para eficiencia.
+    Identifica los N archivos más grandes en un directorio.
     
+    Args:
+        directory: Ruta de análisis.
+        limit: Cantidad de archivos a retornar.
+        skip_protected: Flag de seguridad para ignorar rutas protegidas.
+        
     Returns:
         List[FileEntry]: Lista de archivos ordenados de mayor a menor tamaño.
     """
@@ -400,16 +418,12 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
-    Recolección unificada de datos para resumen optimizando la lectura de disco.
-    
-    Returns:
-        SummaryData: Estructura conteniendo métricas agregadas del escaneo.
+    Recolección interna de métricas para optimizar múltiples lecturas de disco.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     
-    # Mantiene solo los 8 archivos más grandes en memoria usando un heap
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
@@ -419,13 +433,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        # Mantenemos el heap ordenado por tamaño
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, path))
             
-    # Devolvemos ordenado de mayor a menor
     top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files)

@@ -156,13 +156,21 @@ def app_title() -> str:
 
 @lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
-    """Obtiene el color HEX desde la paleta global; retorna gris si la clave es inválida."""
+    """
+    Obtiene el color HEX desde la paleta global.
+    Args:
+        name: Clave en PALETTE. Retorna gris por defecto si es inválida.
+    """
     if not isinstance(name, str): return "#808080"
     return PALETTE.get(name, "#808080")
 
 @lru_cache(maxsize=16)
 def font_size(name: str) -> int:
-    """Recupera el valor entero del tamaño de fuente jerárquico."""
+    """
+    Recupera el valor entero del tamaño de fuente jerárquico.
+    Args:
+        name: Clave en FONT_SIZES. Retorna el tamaño 'body' por defecto.
+    """
     if not isinstance(name, str): return FONT_SIZES["body"]
     return FONT_SIZES.get(name, FONT_SIZES["body"])
 
@@ -208,7 +216,11 @@ def grade_color(grade: Optional[str]) -> HexColor:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
-    """Selecciona el color según el rango del puntaje de salud (0-100)."""
+    """
+    Selecciona el color según el rango del puntaje de salud (0-100).
+    Args:
+        score: Valor numérico 0-100.
+    """
     if score is None:
         return color("text_muted")
     try:
@@ -254,7 +266,13 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Interpola linealmente entre dos colores según el factor de mezcla ratio [0,1]."""
+    """
+    Interpola linealmente entre dos colores.
+    Args:
+        start: Color inicial.
+        end: Color final.
+        ratio: Factor de mezcla [0, 1].
+    """
     if start == end: return start
     try:
         ratio_clamped = max(0.0, min(1.0, float(ratio)))
@@ -374,7 +392,13 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas calculando el ancho relativo al factor 'scale'."""
+    """
+    Renderiza franjas degradadas internas del escudo.
+    Args:
+        canvas: Objeto canvas (Tkinter/CustomTkinter).
+        canvas_x, canvas_y: Desplazamiento absoluto.
+        scale: Factor de escalado de la figura.
+    """
     try:
         if scale <= 0: return
         franjas_count: int = max(6, int(28 * scale))
@@ -434,7 +458,14 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular (donut) de progreso centrado en las coordenadas provistas."""
+    """
+    Dibuja un indicador circular (donut) de progreso.
+    Args:
+        canvas: Canvas destino.
+        percent: Porcentaje de llenado (0-100).
+        size: Diámetro del anillo.
+        thickness: Grosor del trazo.
+    """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         # Validación de parámetros
