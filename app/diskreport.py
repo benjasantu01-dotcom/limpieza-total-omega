@@ -249,13 +249,7 @@ def _is_valid_traversal_entry(entry: os.DirEntry, base_path: Path, skip_protecte
     if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
         return False
     
-    entry_path = Path(os.path.realpath(entry.path))
-    
-    # Impedir escape del directorio base
-    if base_path not in entry_path.parents and entry_path != base_path:
-        return False
-    
-    if skip_protected and is_protected_path(entry_path):
+    if skip_protected and is_protected_path(Path(entry.path)):
         return False
         
     return True
@@ -270,19 +264,19 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
     try:
         base_path = Path(os.path.realpath(directory))
-        if not base_path.is_dir():
-            return
-        if skip_protected and is_protected_path(base_path):
+        if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
     except (OSError, RuntimeError, TypeError, ValueError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Tuple[Path, int]] = [(base_path, 0)]
+    stack: List[str] = [str(base_path)]
     MAX_DEPTH = 100
+    depths: Dict[str, int] = {str(base_path): 0}
     
     while stack:
-        current_dir, depth = stack.pop()
+        current_dir = stack.pop()
+        depth = depths.get(current_dir, 0)
         if depth > MAX_DEPTH:
             continue
             
@@ -293,16 +287,17 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if not _is_valid_traversal_entry(entry, base_path, skip_protected):
                             continue
                         
-                        entry_path = Path(os.path.realpath(entry.path))
                         if entry.is_dir(follow_symlinks=False):
                             stat_data = entry.stat(follow_symlinks=False)
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append((entry_path, depth + 1))
+                                path_str = entry.path
+                                stack.append(path_str)
+                                depths[path_str] = depth + 1
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
-                            yield entry_path, max(0, f_stat.st_size)
+                            yield Path(entry.path), max(0, f_stat.st_size)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
@@ -369,26 +364,24 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     
     try:
         p_base = Path(os.path.realpath(directory))
-        if not p_base.is_dir():
+        if not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
             return []
             
-        if skip_protected and is_protected_path(p_base):
-            return []
-            
-        sums: Dict[Path, int] = defaultdict(int)
-        counts: Dict[Path, int] = defaultdict(int)
+        sums: Dict[str, int] = defaultdict(int)
+        counts: Dict[str, int] = defaultdict(int)
         
         for path, size in walk_files(p_base, skip_protected):
             try:
-                parts = path.relative_to(p_base).parts
-                if parts:
-                    top_folder = p_base / parts[0]
-                    sums[top_folder] += size
-                    counts[top_folder] += 1
+                # Obtener la carpeta de nivel superior (inmediata a p_base)
+                relative = path.relative_to(p_base)
+                top_folder = p_base / relative.parts[0]
+                str_path = str(top_folder)
+                sums[str_path] += size
+                counts[str_path] += 1
             except (ValueError, IndexError):
                 continue
 
-        results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
+        results: List[FolderUsage] = [FolderUsage(Path(p), sums[p], counts[p]) for p in sums]
         return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
     except (OSError, RuntimeError, TypeError, ValueError):
         return []

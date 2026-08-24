@@ -291,11 +291,7 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     """Extrae y valida una métrica individual desde una fuente de datos asignándola al contexto."""
     cast, min_v, max_v = spec
     
-    val = None
-    if isinstance(source, dict):
-        val = source.get(key)
-    elif hasattr(source, key):
-        val = getattr(source, key, None)
+    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     
     if val is None or type(val) in _FORBIDDEN_TYPES:
         return False
@@ -307,8 +303,6 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     try:
         clamped = max(float(min_v), min(clean_val, float(max_v)))
         casted_val = cast(clamped)
-        if not isinstance(casted_val, (int, float)):
-            return False
         setattr(ctx, key, casted_val)
         return True
     except (OverflowError, ValueError, TypeError):
@@ -320,18 +314,17 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     found_data = False
-    sources = [metrics, health, extra]
     
-    # Filtrar fuentes no operables o malformadas antes de iterar
-    clean_sources = [s for s in sources if s is not None and (isinstance(s, dict) or not isinstance(s, (str, int, float)))]
+    # Fuentes extraídas eficientemente
+    sources = [s for s in [metrics, health, extra] if s is not None and not isinstance(s, (str, int, float))]
     
     for key, spec in _VALIDATORS.items():
-        for src in clean_sources:
+        for src in sources:
             if _validate_and_assign(ctx, src, key, spec):
                 found_data = True
                 break
 
-    for src in clean_sources:
+    for src in sources:
         val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
         if isinstance(val, str):
             g_str = val[:10].strip()

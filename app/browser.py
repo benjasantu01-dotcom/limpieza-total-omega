@@ -203,14 +203,7 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Realiza un recorrido en profundidad para sumar tamaños de archivo.
-
-    Args:
-        root_dir: Directorio origen.
-        memo: Diccionario para evitar re-cálculos de subdirectorios.
-
-    Returns:
-        Tamaño total en bytes.
+    Realiza un recorrido en profundidad para sumar tamaños de archivo con memoización.
     """
     if root_dir in memo:
         return memo[root_dir]
@@ -245,9 +238,6 @@ def _sum_directory_recursive(
 def directory_size(path: Union[str, Path]) -> int:
     """
     Calcula el tamaño de una carpeta tras validar que sea una ruta segura.
-    
-    Esta función es el punto de entrada para utilidades de medición;
-    bloquea cualquier ruta protegida o fuera de los límites de seguridad.
     """
     if path is None:
         return 0
@@ -264,8 +254,7 @@ def directory_size(path: Union[str, Path]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Realiza las validaciones de seguridad finales sobre una ruta candidata 
-    antes de permitir su análisis.
+    Realiza las validaciones de seguridad finales sobre una ruta candidata.
     """
     try:
         if not candidate.exists(): return False
@@ -286,10 +275,7 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea el sistema buscando rutas de caché conocidas.
-
-    Returns:
-        Lista de objetos BrowserCache encontrados, ordenados por tamaño descendente.
+    Escanea el sistema buscando rutas de caché conocidas con optimización de caché.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -300,6 +286,7 @@ def detect_profiles(
     is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
+    # Cacheo de resultados por ruta absoluta para evitar re-escaneo
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
@@ -311,11 +298,15 @@ def detect_profiles(
                 if not rel_str: continue
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 
-                if str(candidate) in perf_cache: continue
-
                 if _is_valid_cache_path(candidate, real_base, is_junction):
                     c_path = candidate.resolve()
-                    size = _sum_directory_recursive(str(c_path), is_junction, k32, perf_cache)
+                    path_str = str(c_path)
+                    
+                    if path_str not in perf_cache:
+                        size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache)
+                        perf_cache[path_str] = size
+                    
+                    size = perf_cache[path_str]
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
         except (OSError, PermissionError): 
@@ -333,9 +324,6 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
     """
     Genera un informe formateado de las cachés detectadas.
-
-    Returns:
-        Lista de strings aptos para visualización en interfaz de usuario.
     """
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
