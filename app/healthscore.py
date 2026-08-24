@@ -51,9 +51,9 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización pre-calculados para evitar divisiones en tiempo de ejecución
-_INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB if _LIMIT_JUNK_MB > 0 else 0.0
-_INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB if _LIMIT_DUPLICATE_MB > 0 else 0.0
+# Factores de normalización pre-calculados (protegidos ante división por cero)
+_INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB if _LIMIT_JUNK_MB > 1e-9 else 0.0
+_INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB if _LIMIT_DUPLICATE_MB > 1e-9 else 0.0
 _INV_STARTUP: Final[float] = 1.0 / _LIMIT_STARTUP_COUNT if _LIMIT_STARTUP_COUNT > 0 else 0.0
 _INV_RAM: Final[float] = 1.0 / max(0.1, float(_LIMIT_RAM_PERCENT))
 _INV_DISK: Final[float] = 1.0 / max(0.1, float(_LIMIT_DISK_PERCENT))
@@ -146,31 +146,24 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de basura linealmente hasta el umbral _LIMIT_JUNK_MB."""
     return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa seguridad penalizando agresivamente cada hallazgo (5%) y advertencia (25%)."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Puntúa memoria basándose en la disponibilidad respecto al umbral crítico."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Puntúa salud de disco basándose en el porcentaje libre relativo al umbral crítico."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula penalización por duplicados usando el umbral definido en _LIMIT_DUPLICATE_MB."""
     return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Puntúa la carga de arranque inversamente proporcional a la cantidad de elementos."""
     return _clamp(1.0 - (max(0, _to_int(startup_count)) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Traduce un puntaje numérico a una calificación alfabética de rendimiento."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -192,16 +185,12 @@ _PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], No
 ]
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """
-    Función principal de lógica de negocio: transforma métricas crudas en una calificación
-    de salud normalizada (0-100), ponderando cada área según su impacto crítico.
-    """
     if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error interno: Tipo de datos de métricas inválido."])
+        return HealthResult(0, "F", {}, ["Error interno: Tipo de datos inválido."])
     
     metrics.validate()
     if not metrics.is_finite():
-        return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos."])
+        return HealthResult(0, "F", {}, ["Error interno: Datos corruptos."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios_cache: Dict[MetricKey, float] = {}
@@ -211,11 +200,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         try:
             ratio = scorer(metrics)
             ratios_cache[area] = ratio
-            # Redondeo eficiente usando int() tras multiplicar por el entero weight
             points = int(round(ratio * weight))
-            metric_breakdown[area] = points if points <= weight else weight
+            metric_breakdown[area] = _clamp(float(points), 0.0, float(weight))
             accumulated_points += metric_breakdown[area]
-        except (ValueError, TypeError, ZeroDivisionError):
+        except Exception:
             metric_breakdown[area] = 0
     
     recommendations: List[str] = []
@@ -226,20 +214,19 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
-    final_score = int(accumulated_points)
+    final_score = int(round(accumulated_points))
     return HealthResult(
-        score=final_score if final_score <= 100 else 100, 
+        score=int(_clamp(float(final_score), 0.0, 100.0)), 
         grade=grade_for_score(final_score), 
         breakdown=metric_breakdown, 
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
 def summarize(result: HealthResult) -> List[str]:
-    """Genera una representación textual formateada para reportes o consola."""
     if not isinstance(result, HealthResult): return ["Error: Formato de informe inválido."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
-        puntos = result.breakdown.get(area, 0)
+        puntos = int(result.breakdown.get(area, 0))
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (max(0, maximo - puntos))}]")
     lines.extend(["", "Recomendaciones:"])
     lines.extend([f"  - {r}" for r in result.recommendations] if result.recommendations else ["  - Ninguna."])

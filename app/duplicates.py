@@ -69,6 +69,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if path is None: return None
     path_obj = Path(path).resolve()
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
+    if not os.access(path_obj, os.R_OK): return None
     try:
         digest = hashlib.sha256()
         with open(path_obj, "rb") as f:
@@ -84,6 +85,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if path is None: return None
     path_obj = Path(path).resolve()
     if not is_safe_to_modify(path_obj) or not path_obj.is_file(): return None
+    if not os.access(path_obj, os.R_OK): return None
     try:
         with open(path_obj, "rb") as f:
             content = f.read(read_bytes)

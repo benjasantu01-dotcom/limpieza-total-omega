@@ -532,3 +532,10 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-24T04:17:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-08-24T04:17:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T04:17:02` Corrida terminada. Total usado hoy: 104.
+- `2026-08-24T04:25:29` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-08-24T04:25:57` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-24T04:26:21` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se mejora la robustez ante archivos bloqueados o en uso durante la comparación de duplicados mediante la adición de un chequeo preventivo de acceso mediante `os.access` en `hash_file` y `partial_hash`, garantizando que el acceso al archivo sea posible antes de intentar leerlo, evitando así excepciones innecesarias en entornos de alta concurrencia.
+- `2026-08-24T04:26:48` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha robustecido el cálculo de `compute_score` ante posibles divisiones por cero o desbordamientos durante la inicialización de constantes globales y se ha mejorado la tolerancia a fallos en el bucle de procesamiento de métricas.
+- `2026-08-24T04:27:40` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de la aplicación ante estados inconsistentes o cerrados prematuramente mediante la adición de verificaciones de existencia de widgets (`winfo_exists`) en los callbacks de la interfaz y la implementación de un manejo seguro de excepciones en los constructores de pestañas, evitando que un error de carga bloquee toda la aplicación.
+- `2026-08-24T04:27:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T04:27:40` Corrida terminada. Total usado hoy: 108.
