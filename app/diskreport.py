@@ -282,11 +282,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             continue
             
         try:
-            # os.scandir es preferido por rendimiento al evitar llamadas extras a stat()
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Exclusión explícita de puntos de reparse (symlinks/junctions)
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
@@ -295,7 +293,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             
                         entry_path = Path(entry.path).resolve()
                         
-                        # Validación de límites para evitar escape mediante symlinks maliciosos
                         if base_path not in entry_path.parents and entry_path != base_path:
                             continue
 

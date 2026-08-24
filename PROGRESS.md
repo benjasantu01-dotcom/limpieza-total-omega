@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 226
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 131 | 8 | 23 | 11 | 139 |
-| 2026-08-24 | 81 | 8 | 11 | 7 | 85 |
+| 2026-08-23 | 129 | 8 | 22 | 11 | 138 |
+| 2026-08-24 | 82 | 8 | 11 | 7 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **45**
-- robustez ante casos límite: **32**
-- rendimiento: **31**
+- rendimiento: **32**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
-- `quarantine.py`: **20**
 - `assistant.py`: **20**
 - `duplicates.py`: **20**
+- `memory.py`: **20**
+- `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `healthscore.py`: **18**
+- `diskreport.py`: **17**
 - `branding.py`: **16**
-- `diskreport.py`: **16**
 - `organizer.py`: **15**
 - `settings.py`: **13**
 - `main.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T08:11:00` **diskreport.py** (rendimiento): Optimicé el rendimiento de `summarize` y `_collect_summary_data` consolidando en un solo paso de lectura de disco (el bucle `walk_files`) lo que antes requería múltiples llamadas independientes o iteraciones redundantes, reduciendo la presión de I/O.
 - `2026-08-24T08:01:03` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` reemplazando la iteración anidada sobre `_VALIDATORS` y fuentes de datos por una estructura de búsqueda más eficiente, reduciendo la complejidad algorítmica de O(N*M) a O(N).
 - `2026-08-24T08:00:16` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en funciones clave y la clarificación de las responsabilidades de los validadores, facilitando el mantenimiento futuro del motor de configuración.
 - `2026-08-24T07:59:48` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en el retorno de las funciones de chequeo y enriqueciendo los docstrings para clarificar el propósito y el contrato de los parámetros, facilitando el mantenimiento y la auditoría del código.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T07:29:59` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica y el tipado de `branding.py` mediante docstrings con formato Google Style y la especificación de retornos en funciones críticas, facilitando la comprensión del flujo de datos en el sistema de diseño.
 - `2026-08-24T07:29:27` **assistant.py** (legibilidad y documentación): Mejoré la documentación de `assistant.py` mediante type hints específicos en los parámetros de las funciones de manejo (`handle_...`) y estructuré mejor las constantes de validación para facilitar su lectura y mantenimiento, asegurando que la arquitectura del asistente se mantenga clara y auto-explicativa.
 - `2026-08-24T07:19:32` **scanner.py** (manejo de errores y validación de entradas): Se introdujo un mecanismo de validación robusto en `scan_file` para evitar el uso de metadatos nulos o inaccesibles, asegurando que el scanner no intente operar sobre archivos cuyos atributos fallan al ser leídos, y se protegió la ejecución de las reglas heurísticas capturando excepciones individuales por regla para evitar que una falla puntual detenga el análisis completo.
-- `2026-08-24T07:09:50` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `QuarantineItem.from_dict` y `load_manifest` mediante validación estricta de tipos y manejo defensivo de entradas corruptas, asegurando que el sistema no falle catastróficamente ante datos externos malformados.

@@ -974,3 +974,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T08:01:03` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` reemplazando la iteración anidada sobre `_VALIDATORS` y fuentes de datos por una estructura de búsqueda más eficiente, reduciendo la complejidad algorítmica de O(N*M) a O(N).
 - `2026-08-24T08:01:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T08:01:03` Corrida terminada. Total usado hoy: 192.
+- `2026-08-24T08:09:37` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-08-24T08:10:10` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-24T08:10:32` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-24T08:11:00` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `summarize` y `_collect_summary_data` consolidando en un solo paso de lectura de disco (el bucle `walk_files`) lo que antes requería múltiples llamadas independientes o iteraciones redundantes, reduciendo la presión de I/O.
+- `2026-08-24T08:11:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-24T08:11:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T08:11:07` Corrida terminada. Total usado hoy: 196.
