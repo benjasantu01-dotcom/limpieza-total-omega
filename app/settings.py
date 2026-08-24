@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import time
 import tempfile
 from enum import Enum
 from pathlib import Path
@@ -286,6 +285,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not parent.exists():
         try: parent.mkdir(parents=True, exist_ok=True)
         except OSError: return None
+    elif not parent.is_dir(): return None
     
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
@@ -296,7 +296,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         
-        with tempfile.NamedTemporaryFile("wb", dir=parent, delete=False) as tf:
+        # Uso de os.tmpnam o directorio temporal global para evitar race conditions en directorios de usuario
+        with tempfile.NamedTemporaryFile("wb", delete=False) as tf:
             temp_name = tf.name
             tf.write(encoded_data)
             tf.flush()
