@@ -260,6 +260,8 @@ def bar(percent: Union[float, int, None], width: int = 24,
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """Convierte un color hexadecimal (#RRGGBB) a una tupla de enteros RGB."""
     try:
+        if not isinstance(value, str) or len(value) != 7 or value[0] != "#":
+            return (0, 0, 0)
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
     except (ValueError, IndexError, AttributeError):
         return (0, 0, 0)
@@ -378,7 +380,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError, RuntimeError, ValueError):
+    except (OSError, PermissionError, RuntimeError, ValueError, AttributeError):
         return None
 
 def logo_ascii() -> str:
@@ -400,7 +402,7 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
         scale: Factor de escalado de la figura.
     """
     try:
-        if scale <= 0: return
+        if scale <= 0 or not hasattr(canvas, "create_rectangle"): return
         franjas_count: int = max(6, int(28 * scale))
         colores: Tuple[HexColor, ...] = gradient_colors(franjas_count)
         for color_hex, start, end in _get_grouped_segments(colores):
@@ -473,7 +475,6 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
         diametro: int = max(20, int(size))
         grosor: int = max(2, min(int(thickness), (diametro // 2) - 1))
         
-        # Evitar división por cero o configuración de radio inválida
         if grosor < 1: grosor = 1
         
         color_fondo = track if isinstance(track, str) else color("surface_alt")

@@ -525,3 +525,10 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-24T04:06:25` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
 - `2026-08-24T04:06:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T04:06:25` Corrida terminada. Total usado hoy: 100.
+- `2026-08-24T04:15:19` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-24T04:15:47` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-24T04:16:22` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante estados inesperados mediante la validación estricta de `SystemContext` dentro de `local_answer` y el manejo defensivo de listas vacías, evitando posibles excepciones de tipo `AttributeError` o `TypeError` al procesar métricas que pudieran llegar incompletas.
+- `2026-08-24T04:16:55` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo (`draw_logo`, `draw_ring`, `draw_gradient_bar`) implementando validaciones defensivas ante entradas nulas o tipos inesperados, evitando excepciones críticas durante el renderizado o la persistencia de archivos.
+- `2026-08-24T04:17:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-24T04:17:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T04:17:02` Corrida terminada. Total usado hoy: 104.
