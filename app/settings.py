@@ -316,10 +316,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
+        return None
+    finally:
         if temp_name and os.path.exists(temp_name):
             try: os.remove(temp_name)
             except OSError: pass
-        return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza campos específicos de la configuración y guarda los cambios."""

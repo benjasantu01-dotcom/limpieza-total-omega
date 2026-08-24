@@ -1292,3 +1292,48 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-24T11:37:17` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que `source_path` y `dest_dir` coincidan, lo cual causaría una pérdida de datos al intentar un `unlink` sobre el archivo recién movido, y reforcé el manejo de errores al capturar fallos en `Path.expanduser()` durante la inicialización.
 - `2026-08-24T11:37:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T11:37:17` Corrida terminada. Total usado hoy: 276.
+- `2026-08-24T11:44:05` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-24T11:44:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-24T11:44:52` Tests FALLARON:
+```
+:
+            raise UnsafePathError("Ruta contiene caracteres inválidos o de control.")
+    
+        try:
+            p = normalize(path)
+            path_str = str(p)
+    
+            _validate_basic_path_safety(p, path_str)
+            _validate_boundary_conditions(p, base_dir)
+    
+            if p.exists():
+                _check_file_integrity(p)
+            else:
+                parent = p.parent
+                if not parent.exists():
+>                   raise UnsafePathError("El directorio contenedor no existe.")
+E                   safety.UnsafePathError: El directorio contenedor no existe.
+
+app/safety.py:327: UnsafePathError
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - safety.UnsafePathError: El directorio contenedor no existe.
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+2 failed, 297 passed in 1.28s
+
+```
+- `2026-08-24T11:44:52` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación explícita para la existencia del directorio padre al crear rutas nuevas, evitando errores silenciosos o excepciones no capturadas al validar rutas que aún no existen.
+- `2026-08-24T11:45:15` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T11:45:29` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` al envolver el bloque de persistencia en un `try-finally` que garantiza la limpieza de cualquier archivo temporal residual, independientemente del éxito o error de la operación de escritura, previniendo así la acumulación de archivos huérfanos.
+- `2026-08-24T11:45:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T11:45:29` Corrida terminada. Total usado hoy: 280.
