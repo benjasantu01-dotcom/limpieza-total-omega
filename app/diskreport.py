@@ -198,7 +198,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
     try:
         p = Path(os.fspath(mount)).resolve(strict=False)
-        if not os.access(p, os.R_OK) or is_protected_path(p):
+        # Verificación defensiva contra rutas protegidas
+        if is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
         str_mount = str(p)
@@ -244,7 +245,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     return results
 
 
-def _is_valid_traversal_entry(entry: os.DirEntry, base_path: Path, skip_protected: bool) -> bool:
+def _is_valid_traversal_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
     """Verifica si una entrada del sistema de archivos debe ser ignorada por seguridad o tipo."""
     if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
         return False
@@ -276,6 +277,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     
     while stack:
         current_dir = stack.pop()
+        # Seguridad: verificar cada subdirectorio antes de escanearlo
+        if skip_protected and is_protected_path(Path(current_dir)):
+            continue
+
         depth = depths.get(current_dir, 0)
         if depth > MAX_DEPTH:
             continue
@@ -284,7 +289,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if not _is_valid_traversal_entry(entry, base_path, skip_protected):
+                        if not _is_valid_traversal_entry(entry, skip_protected):
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):

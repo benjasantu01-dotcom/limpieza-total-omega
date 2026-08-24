@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 220
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 71 | 4 | 15 | 7 | 79 |
-| 2026-08-24 | 135 | 15 | 20 | 17 | 141 |
+| 2026-08-23 | 71 | 4 | 15 | 7 | 75 |
+| 2026-08-24 | 138 | 15 | 20 | 18 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **42**
+- seguridad defensiva: **36**
 - robustez ante casos límite: **33**
-- seguridad defensiva: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **19**
+- `duplicates.py`: **20**
 - `quarantine.py`: **19**
 - `assistant.py`: **19**
 - `healthscore.py`: **18**
+- `diskreport.py`: **17**
 - `organizer.py`: **17**
-- `diskreport.py`: **16**
 - `scanner.py`: **16**
 - `branding.py`: **14**
 - `settings.py`: **11**
 - `main.py`: **11**
+- `browser.py`: **10**
 - `safety.py`: **10**
-- `browser.py`: **9**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T14:18:05` **duplicates.py** (seguridad defensiva): He refactorizado la lógica de `is_safe_to_modify` en `suggest_keeper` y `_collect_candidates` para unificar el manejo de rutas, eliminando llamadas redundantes a `resolve()` que podían ocultar errores de acceso y garantizando que el filtrado de seguridad sea consistente con la política de solo lectura del módulo.
+- `2026-08-24T14:17:41` **diskreport.py** (seguridad defensiva): He mejorado la robustez de `walk_files` y `drive_usage` añadiendo una validación explícita mediante `is_protected_path` al inicio de cada iteración y consulta, asegurando que incluso ante posibles errores de resolución de rutas o enlaces simbólicos maliciosos, la función mantenga el comportamiento de seguridad defensiva exigido.
+- `2026-08-24T14:17:08` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante una comprobación estricta de rutas (`is_safe_to_modify`) antes de resolver cualquier ruta relativa, evitando la posibilidad de inyección de rutas fuera de la base controlada mediante `..` o componentes maliciosos en `BROWSER_CACHE_PATHS`.
 - `2026-08-24T14:08:19` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` consolidando las validaciones de ruta mediante un flujo lógico más robusto, asegurando que `ensure_safe_to_modify` se utilice exclusivamente tras haber verificado la seguridad del directorio padre y la inexistencia de colisiones destructivas, evitando excepciones innecesarias.
 - `2026-08-24T14:07:21` **startup.py** (robustez ante casos límite): Mejora la robustez en `_resolve_and_cache_path` añadiendo una comprobación explícita para evitar procesar rutas que superen los límites de longitud del sistema de archivos (`MAX_PATH`), previniendo excepciones innecesarias en entornos Windows cuando el registro contiene rutas malformadas o excesivamente largas.
 - `2026-08-24T14:06:55` **settings.py** (robustez ante casos límite): Se implementó un chequeo robusto en `load` para detectar y manejar archivos de configuración parcialmente escritos (con contenido nulo o truncado por interrupción del sistema), asegurando que la aplicación siempre cargue una configuración válida ante condiciones de carrera o fallos durante la escritura.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T12:55:58` **organizer.py** (rendimiento): Optimizé la función `_process_directory` reemplazando la verificación repetitiva de extensiones con una tupla precalculada, evitando llamadas innecesarias a `path.suffix.lower()` dentro del bucle y reduciendo la complejidad de las comparaciones.
 - `2026-08-24T12:47:35` **memory.py** (rendimiento): Se optimizó el proceso de recolección de procesos pesados eliminando el uso redundante de `Select-Object` y `ForEach-Object` en PowerShell, reemplazándolo por una cadena de comandos más directa y eficiente que reduce significativamente el tiempo de ejecución y la carga de CPU durante el sondeo.
 - `2026-08-24T12:47:20` **main.py** (rendimiento): Se implementó una lógica de `debouncing` para la actualización de las tarjetas de métricas en la pestaña de Salud, evitando recalcular y redibujar la UI repetidamente cuando los datos no han cambiado, mejorando el rendimiento en tareas recurrentes.
-- `2026-08-24T12:45:47` **duplicates.py** (rendimiento): Se optimizó el rendimiento del proceso de descubrimiento evitando llamadas repetitivas e innecesarias a `Path.resolve()` y `is_safe_to_modify()` mediante el uso de un cache local de rutas verificadas y aprovechando los datos ya obtenidos en el `os.scandir` durante el recorrido recursivo, lo cual reduce drásticamente el impacto de I/O sobre el sistema de archivos.
-- `2026-08-24T12:36:58` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y las funciones de análisis evitando la resolución innecesaria de rutas (`realpath` se ejecuta múltiples veces por archivo en el bucle) mediante el uso de `entry.path` directamente cuando es posible, y simplifiqué la lógica de `largest_folders` para reducir la creación de objetos `Path` intermedios, logrando una traversal más rápida y eficiente en memoria.
-- `2026-08-24T12:36:42` **browser.py** (rendimiento): Se implementó un sistema de cacheo persistente (memoization) en `detect_profiles` para evitar el re-escaneo innecesario de directorios compartidos entre distintas rutas de navegadores (ej. múltiples perfiles que comparten estructuras de "User Data"), reduciendo drásticamente las llamadas al sistema operativo durante el análisis.

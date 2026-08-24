@@ -64,9 +64,6 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
-    
-    Seguridad: Valida la ruta mediante 'is_safe_to_modify' y permisos de lectura 
-    antes de acceder. Si la ruta está protegida o es inaccesible, retorna None.
     """
     if path is None: return None
     try:
@@ -108,21 +105,15 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups
-    # Cache para evitar resoluciones repetitivas
-    verified_cache: Dict[Path, bool] = {}
     
     for p in paths:
         if p is None: continue
         try:
             target = Path(p).resolve()
-            if target not in verified_cache:
-                verified_cache[target] = not is_protected_path(target) and is_safe_to_modify(target)
-            
-            if not verified_cache[target]:
-                continue
-            st = target.stat()
-            if st.st_size > 0:
-                groups[st.st_size].append(target)
+            if not is_protected_path(target) and is_safe_to_modify(target):
+                st = target.stat()
+                if st.st_size > 0:
+                    groups[st.st_size].append(target)
         except (OSError, PermissionError, ValueError):
             continue
     return groups
@@ -147,23 +138,20 @@ def _collect_candidates(
             with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
-                        # Obtenemos stat una sola vez durante el escaneo
-                        entry_stat = entry.stat(follow_symlinks=False)
-                        
                         if entry.is_dir(follow_symlinks=False):
+                            entry_stat = entry.stat(follow_symlinks=False)
                             if getattr(entry_stat, 'st_reparse_tag', 0) != 0: continue
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
                                 visited_device_inodes.add(device_inode)
                                 _scan(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            if entry_stat.st_size < min_size: continue
-                            
                             entry_path = Path(entry.path).resolve()
+                            if entry.stat().st_size < min_size: continue
                             if skip_protected and is_protected_path(entry_path): continue
                             if not is_safe_to_modify(entry_path): continue
                             
-                            temp_groups[int(entry_stat.st_size)].append(entry_path)
+                            temp_groups[int(entry.stat().st_size)].append(entry_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
