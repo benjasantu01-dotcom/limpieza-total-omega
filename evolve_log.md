@@ -1233,3 +1233,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-23T23:29:45` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-23T23:39:56` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-23T23:50:07` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-24T00:00:20` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-24T00:00:44` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-24T00:01:09` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `compute_score` ante posibles divisiones por cero en áreas donde el usuario podría configurar umbrales extremos (ej. tamaño cero para basura o duplicados) o donde los pesos podrían causar desbordamientos en entornos de ejecución inusuales, garantizando que el cálculo siempre resulte en un valor finito y seguro.
+- `2026-08-24T00:02:22` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha implementado un control de robustez en la navegación de pestañas mediante `_on_tab_change`, asegurando que `_tab_factory` solo intente construir la interfaz de una pestaña si el widget contenedor sigue existiendo, evitando errores de `TclError` y potenciales fallos de sincronización si la ventana se cierra durante un cambio de pestaña rápido.
+- `2026-08-24T00:02:34` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-24T00:02:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T00:02:34` Corrida terminada. Total usado hoy: 4.

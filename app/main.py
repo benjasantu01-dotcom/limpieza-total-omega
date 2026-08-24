@@ -395,7 +395,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Callback al cambiar de pestaña para inicializar el contenido bajo demanda."""
         for original_name in TABS:
             if branding.tab_label(original_name) == tab_label:
-                self._tab_factory(original_name)
+                tab_frame = self.tabs.get(original_name)
+                if tab_frame and tab_frame.winfo_exists():
+                    self._tab_factory(original_name)
                 break
 
     def _build_header(self) -> None:

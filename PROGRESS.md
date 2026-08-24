@@ -5,47 +5,49 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **214** (42.6% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 61 | 5 | 9 | 6 | 71 |
+| 2026-08-22 | 59 | 5 | 9 | 6 | 71 |
 | 2026-08-23 | 153 | 9 | 27 | 13 | 148 |
+| 2026-08-24 | 1 | 0 | 0 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **49**
 - rendimiento: **39**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **33**
+- seguridad defensiva: **36**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `memory.py`: **21**
-- `scanner.py`: **20**
 - `duplicates.py`: **20**
 - `diskreport.py`: **19**
+- `scanner.py`: **19**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `settings.py`: **16**
 - `branding.py`: **15**
+- `settings.py`: **15**
 - `organizer.py`: **13**
 - `browser.py`: **12**
-- `main.py`: **8**
+- `main.py`: **9**
 - `startup.py`: **7**
 - `safety.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T00:02:22` **main.py** (robustez ante casos límite): Se ha implementado un control de robustez en la navegación de pestañas mediante `_on_tab_change`, asegurando que `_tab_factory` solo intente construir la interfaz de una pestaña si el widget contenedor sigue existiendo, evitando errores de `TclError` y potenciales fallos de sincronización si la ventana se cierra durante un cambio de pestaña rápido.
 - `2026-08-23T15:01:12` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_collect_summary_data` para evitar el agotamiento de memoria en directorios con millones de archivos, reemplazando la lista completa `all_files` por un heap gestionado que solo mantiene los N archivos más grandes durante la iteración.
 - `2026-08-23T14:51:37` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o inesperadas, asegurando que `extra` sea procesado de forma segura y consistente sin depender de `getattr` sobre tipos no controlados.
 - `2026-08-23T14:41:22` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_file` y los chequeos asociados evitando múltiples conversiones a string, extracciones innecesarias de rutas y chequeos redundantes de extensiones mediante el uso directo de `path.parts` y operaciones sobre variables ya resueltas.
@@ -60,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-23T14:00:07` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando el propósito de las funciones internas y validaciones de seguridad, además de extraer una función `_validate_integrity` dentro de `QuarantineItem` para consolidar la lógica de verificación física.
 - `2026-08-23T13:59:35` **organizer.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del módulo mediante la adición de docstrings técnicos (incluyendo la lógica de detección de bloqueos y seguridad) y se han estandarizado las anotaciones de tipo para mayor claridad, respetando estrictamente las restricciones de seguridad y el enfoque de documentación.
 - `2026-08-23T13:51:07` **memory.py** (legibilidad y documentación): Mejoré la documentación de `memory.py` incluyendo type hints explícitos en los argumentos y retornos, aclarando la semántica de las unidades de medida en el código, y estandarizando la estructura de las docstrings para facilitar su lectura y mantenimiento.
-- `2026-08-23T13:50:54` **main.py** (legibilidad y documentación): Mejoré la documentación de los métodos de gestión de hilos y seguridad en `main.py` mediante el uso de docstrings que clarifican el propósito técnico, las restricciones de seguridad y el manejo de excepciones de cada operación.
