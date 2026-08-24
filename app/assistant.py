@@ -214,7 +214,7 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
 
 def _validate_response_length(text: str) -> str:
     """Trunca el texto para cumplir con el límite máximo de caracteres del motor."""
-    return text[:_MAX_TEXT_LENGTH]
+    return str(text)[:_MAX_TEXT_LENGTH]
 
 @dataclass
 class SystemContext:
@@ -308,18 +308,17 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
                 found_data = True
                 break
 
-    # Procesamiento de grado de salud de manera segura
     grade_val = None
     for src in (health, extra):
         if src is None: continue
         val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
-        if val is not None:
+        if isinstance(val, (str, int, float)):
             grade_val = val
             break
             
-    if isinstance(grade_val, (str, int, float)):
+    if grade_val is not None:
         g_str = str(grade_val)[:10].strip()
-        if _ensure_safe_text(g_str) and not is_protected_path(g_str):
+        if _ensure_safe_text(g_str):
             ctx.grade = g_str
             
     ctx.analyzed = found_data
@@ -413,7 +412,8 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Lógica para explicar el puntaje de salud global del sistema."""
-    score_display = f"Tu puntaje es {ctx.score if ctx.score is not None else 'N/A'}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
+    score_val = ctx.score if ctx.score is not None else "N/A"
+    score_display = f"Tu puntaje es {score_val}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
     problemas = _identify_active_problems(ctx)
     resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente para arreglar."
     explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio, con la seguridad pesando más."
@@ -490,7 +490,6 @@ def _call_gemini(
     """
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
-    if _PATH_INJECTION_REGEX.search(api_key) or _PATH_INJECTION_REGEX.search(model): return None
     
     safe_q = _sanitize_query(question)
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None

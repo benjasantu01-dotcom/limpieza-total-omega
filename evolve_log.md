@@ -429,3 +429,10 @@ FAILED evolve/tests/test_assistant.py::test_security_question_with_findings_expl
 - `2026-08-24T02:17:05` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-24T02:17:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T02:17:05` Corrida terminada. Total usado hoy: 56.
+- `2026-08-24T02:23:05` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-24T02:23:40` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Reforcé la validación de los datos recibidos en `build_context` y los manejadores de consultas (`handle_*`) para asegurar que cualquier dato atípico (None, tipos inválidos o fuera de rango) sea manejado silenciosamente sin romper el flujo de la aplicación.
+- `2026-08-24T02:24:11` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `draw_ring` mediante una validación estricta de sus argumentos de entrada y la eliminación de una división por cero potencial, asegurando que ante parámetros inválidos el canvas no genere errores silenciosos durante el renderizado.
+- `2026-08-24T02:24:34` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T02:24:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-24T02:24:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T02:24:45` Corrida terminada. Total usado hoy: 60.

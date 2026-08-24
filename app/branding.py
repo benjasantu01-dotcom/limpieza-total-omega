@@ -435,16 +435,19 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
     """Dibuja un indicador circular (donut) de progreso centrado en las coordenadas provistas."""
-    if not hasattr(canvas, "create_arc"): return
+    if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
-        valor = float(percent) if percent is not None else 0.0
-        valor = max(0.0, min(100.0, valor))
-        diametro = max(20, int(size))
-        grosor = max(2, min(int(thickness), diametro // 2 - 1))
+        # Validación de parámetros
+        valor: float = max(0.0, min(100.0, float(percent if percent is not None else 0.0)))
+        diametro: int = max(20, int(size))
+        grosor: int = max(2, min(int(thickness), (diametro // 2) - 1))
+        
+        # Evitar división por cero o configuración de radio inválida
+        if grosor < 1: grosor = 1
         
         color_fondo = track if isinstance(track, str) else color("surface_alt")
         color_avance = fill if isinstance(fill, str) else score_color(valor)
-        borde = grosor / 2
+        borde: float = grosor / 2
         
         caja = (
             canvas_x + borde, canvas_y + borde, 
@@ -454,5 +457,5 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
         if valor > 0:
             canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),
                               style="arc", outline=color_avance, width=grosor)
-    except (TypeError, ValueError, ZeroDivisionError, AttributeError): 
+    except (TypeError, ValueError, AttributeError): 
         return

@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **209** (41.5% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 223
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 42 | 5 | 8 | 5 | 38 |
+| 2026-08-22 | 40 | 5 | 7 | 4 | 38 |
 | 2026-08-23 | 153 | 9 | 27 | 13 | 148 |
-| 2026-08-24 | 14 | 2 | 2 | 1 | 37 |
+| 2026-08-24 | 16 | 2 | 2 | 1 | 39 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **47**
 - seguridad defensiva: **46**
+- manejo de errores y validación de entradas: **40**
 - rendimiento: **39**
-- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
 - `scanner.py`: **20**
-- `quarantine.py`: **19**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
+- `memory.py`: **20**
 - `duplicates.py`: **19**
 - `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `healthscore.py`: **17**
 - `settings.py`: **16**
-- `branding.py`: **14**
+- `branding.py`: **15**
 - `organizer.py`: **13**
 - `browser.py`: **11**
 - `main.py`: **10**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T02:24:11` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `draw_ring` mediante una validación estricta de sus argumentos de entrada y la eliminación de una división por cero potencial, asegurando que ante parámetros inválidos el canvas no genere errores silenciosos durante el renderizado.
+- `2026-08-24T02:23:40` **assistant.py** (manejo de errores y validación de entradas): Reforcé la validación de los datos recibidos en `build_context` y los manejadores de consultas (`handle_*`) para asegurar que cualquier dato atípico (None, tipos inválidos o fuera de rango) sea manejado silenciosamente sin romper el flujo de la aplicación.
 - `2026-08-24T01:02:03` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `tempfile` en el mismo directorio (evitando posibles ataques de race condition o visibilidad de archivos temporales) y se mejoró la robustez de `settings_path` validando explícitamente el estado del directorio de configuración antes de intentar cualquier operación de escritura.
 - `2026-08-24T00:52:48` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `process_entry` al reemplazar el chequeo de `is_safe_to_modify` (diseñado para operaciones destructivas) por `is_protected_path` combinado con una validación de ruta absoluta antes de seguir enlaces o recursión, evitando así falsos positivos y abortos innecesarios en módulos de solo lectura.
 - `2026-08-24T00:51:55` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `_atomic_isolate_file` implementando una validación explícita mediante `is_within_directory` sobre la ruta resuelta del archivo origen, asegurando que ninguna manipulación de symlinks o paths relativos permita una operación de copia fuera de los límites permitidos, reforzando así la seguridad defensiva.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T00:21:38` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una verificación de atomicidad más estricta mediante `os.replace` (que es atómico en sistemas POSIX y Windows) y asegurando que, ante fallos de escritura o permisos denegados, el sistema no deje archivos temporales huérfanos o una configuración inconsistente.
 - `2026-08-24T00:21:09` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` implementando una gestión defensiva ante archivos que, aunque no son directorios, fallan al acceder a sus metadatos (como archivos bloqueados o sin permisos), asegurando que el proceso de escaneo no se detenga innecesariamente ante errores de I/O específicos.
 - `2026-08-24T00:11:27` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `purge_all` y `purge_item` implementando una gestión de excepciones más granular durante el ciclo de borrado, asegurando que si un archivo está bloqueado o falla por motivos de I/O, la operación no aborte silenciosamente y el estado del manifiesto se mantenga consistente incluso ante errores parciales.
-- `2026-08-24T00:02:22` **main.py** (robustez ante casos límite): Se ha implementado un control de robustez en la navegación de pestañas mediante `_on_tab_change`, asegurando que `_tab_factory` solo intente construir la interfaz de una pestaña si el widget contenedor sigue existiendo, evitando errores de `TclError` y potenciales fallos de sincronización si la ventana se cierra durante un cambio de pestaña rápido.
-- `2026-08-23T15:01:12` **diskreport.py** (robustez ante casos límite): Se ha mejorado `_collect_summary_data` para evitar el agotamiento de memoria en directorios con millones de archivos, reemplazando la lista completa `all_files` por un heap gestionado que solo mantiene los N archivos más grandes durante la iteración.
