@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **210** (41.7% de aceptación)
+- Mejoras aceptadas: **211** (41.9% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 228
+- Sin respuesta de la IA (error o límite): 227
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 138 | 8 | 24 | 11 | 143 |
-| 2026-08-24 | 72 | 7 | 9 | 7 | 85 |
+| 2026-08-23 | 136 | 8 | 23 | 11 | 142 |
+| 2026-08-24 | 75 | 7 | 10 | 7 | 85 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **50**
+- legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **46**
 - seguridad defensiva: **45**
 - robustez ante casos límite: **37**
-- rendimiento: **32**
+- rendimiento: **30**
 
 ## Mejoras aceptadas por archivo
 
+- `duplicates.py`: **21**
+- `memory.py`: **21**
 - `assistant.py`: **20**
-- `duplicates.py`: **20**
-- `memory.py`: **20**
-- `scanner.py`: **19**
+- `healthscore.py`: **19**
 - `quarantine.py`: **19**
-- `healthscore.py`: **18**
+- `scanner.py`: **18**
 - `diskreport.py`: **17**
 - `branding.py`: **16**
 - `organizer.py`: **14**
-- `settings.py`: **13**
+- `settings.py`: **12**
 - `main.py`: **11**
 - `browser.py`: **10**
 - `safety.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T07:41:07` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en las funciones internas, la especificación de tipos en las colecciones y la normalización de la documentación en los docstrings para cumplir con los estándares del proyecto.
+- `2026-08-24T07:39:53` **healthscore.py** (legibilidad y documentación): He documentado el propósito técnico de los umbrales críticos y los factores de normalización, añadiendo docstrings a los helpers matemáticos para aclarar que su función es asegurar la resiliencia del cálculo ante datos de entrada malformados.
+- `2026-08-24T07:39:28` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados en funciones críticas, explicando las condiciones de borde (como el manejo de errores de acceso y el uso de `resolve()` para evitar ambigüedades de rutas), y se han clarificado las intenciones de los parámetros para facilitar el mantenimiento futuro.
 - `2026-08-24T07:30:36` **diskreport.py** (legibilidad y documentación): He mejorado la legibilidad y la robustez del módulo aplicando type hints consistentes en las funciones de recorrido, documentando explícitamente el uso de `os.scandir` para mejorar la eficiencia y clarificando mediante comentarios técnicos la lógica de exclusión de enlaces simbólicos y junction points.
 - `2026-08-24T07:30:24` **browser.py** (legibilidad y documentación): Mejora de legibilidad y robustez mediante la adición de Type Hints detallados, documentación explícita de precondiciones y la extracción del chequeo de recursión de `_sum_directory_recursive` a una función de validación de profundidad más clara.
 - `2026-08-24T07:29:59` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica y el tipado de `branding.py` mediante docstrings con formato Google Style y la especificación de retornos en funciones críticas, facilitando la comprensión del flujo de datos en el sistema de diseño.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T06:59:28` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `compute_score` envolviendo la ejecución de las funciones `scorer` en un bloque de control de excepciones más específico y mejorando la inicialización del `metric_breakdown` para evitar errores de referencia si alguna métrica falla.
 - `2026-08-24T06:59:04` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `hash_file`/`partial_hash` añadiendo validaciones preventivas de estado y manejo de excepciones más granular para evitar fallos silenciosos cuando un archivo desaparece entre la detección y el acceso.
 - `2026-08-24T06:50:15` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `draw_logo` centralizando validaciones de tipo y asegurando que las operaciones críticas manejen correctamente valores nulos o tipos inesperados, evitando errores silenciosos de ejecución.
-- `2026-08-24T06:49:43` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` y sus validadores asociados para prevenir la inyección de tipos inesperados y asegurar que la extracción de métricas sea resistente a errores de formato o valores `None` durante la serialización, alineándome con el enfoque de validación de entradas.
-- `2026-08-24T05:17:52` **safety.py** (seguridad defensiva): Se reforzó la seguridad de `is_protected_path` añadiendo un chequeo explícito de existencia de rutas padre, previniendo que rutas relativas o mal formadas se resuelvan incorrectamente contra el directorio de ejecución actual (`CWD`) y se expongan a un escape de sandbox.
-- `2026-08-24T05:17:21` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `quarantine_file` para prevenir condiciones de carrera y ataques de reemplazo de archivos, garantizando que el origen no cambie entre la validación y el movimiento, mediante el uso de la propiedad `st_ino` (inodo/índice de archivo) para confirmar la identidad única del archivo.

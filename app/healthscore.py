@@ -44,14 +44,16 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos que definen la escala de los puntajes
+# Umbrales críticos que definen la escala de los puntajes: 
+# Determinan a partir de qué valor se considera que un área está "totalmente comprometida" (puntaje 0).
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización pre-calculados (protegidos ante división por cero)
+# Factores de normalización: Se pre-calculan para evitar divisiones en tiempo de ejecución 
+# y proteger al motor de cálculo ante potenciales errores de división por cero.
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB if _LIMIT_JUNK_MB > 1e-9 else 0.0
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB if _LIMIT_DUPLICATE_MB > 1e-9 else 0.0
 _INV_STARTUP: Final[float] = 1.0 / _LIMIT_STARTUP_COUNT if _LIMIT_STARTUP_COUNT > 0 else 0.0
@@ -126,7 +128,7 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
-    """Asegura que un valor esté contenido dentro de un rango cerrado [low, high]."""
+    """Fuerza a 'value' dentro del rango [low, high] gestionando errores de tipo y valores no finitos."""
     try:
         val = float(value)
         return max(low, min(high, val)) if math.isfinite(val) else low
@@ -134,12 +136,14 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
         return low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Convierte a float de forma segura, retornando el default ante datos corruptos."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def _to_int(value: Any, default: int = 0) -> int:
+    """Convierte a int de forma segura, retornando el default ante datos corruptos."""
     try:
         val = float(value)
         return int(val) if math.isfinite(val) else default

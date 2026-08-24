@@ -133,9 +133,7 @@ class ProcessMemory:
         return round(self.working_set / BYTES_IN_MB, 1)
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """
-    Convierte un valor en bytes a una cadena legible.
-    """
+    """Convierte un valor en bytes a una cadena legible."""
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -171,10 +169,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=min(available, total), cached=vals["Cached"])
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """Convierte una línea CSV (formato Name,ID,WS) a un modelo ProcessMemory."""
+    """Convierte una línea CSV a un modelo ProcessMemory."""
     if not isinstance(csv_line, str) or not csv_line.strip():
         return None
-    parts = [p.strip().strip("'\"") for p in csv_line.split(",")]
+    parts: List[str] = [p.strip().strip("'\"") for p in csv_line.split(",")]
     if len(parts) != 3:
         return None
     try:
@@ -195,11 +193,11 @@ def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
             yield proc
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Ordena procesos por consumo descendente y aplica un límite usando una lista procesada."""
+    """Ordena procesos por consumo descendente y aplica un límite."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    procs = [p for p in _yield_processes(raw_csv_text)]
+    procs: List[ProcessMemory] = [p for p in _yield_processes(raw_csv_text)]
     procs.sort(key=lambda p: p.working_set, reverse=True)
     return procs[:max(0, limit)]
 
@@ -241,12 +239,12 @@ def read_snapshot() -> MemorySnapshot:
     return MemorySnapshot(0, 0)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene los procesos más pesados (usa cacheo de 30s para evitar saturar el sistema)."""
+    """Obtiene los procesos más pesados (usa cacheo de 30s)."""
     global _last_proc_fetch, _cached_proc_output
     if os.name != "nt": return []
     
     if (time.time() - _last_proc_fetch) > 30:
-        cmd = 'Get-Process | Select-Object -Property Name,Id,WorkingSet | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
+        cmd: str = 'Get-Process | Select-Object -Property Name,Id,WorkingSet | ForEach-Object { "$($_.Name),$($_.Id),$($_.WorkingSet)" }'
         try:
             proc = subprocess.run(["powershell", "-NoProfile", "-Command", cmd], capture_output=True, text=True, timeout=5)
             if proc.returncode == 0:
@@ -262,14 +260,14 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     """Clasifica el estrés del sistema (ok, info, warning, danger)."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return "info"
-    available = snapshot.available_percent
+    available: float = snapshot.available_percent
     if available >= 35: return "ok"
     if available >= 20: return "info"
     if available >= 10: return "warning"
     return "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera un informe descriptivo (lista de strings) sobre el estado de la RAM."""
+    """Genera un informe descriptivo sobre el estado de la RAM."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     report: List[str] = [
@@ -299,7 +297,7 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     if not handle or handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
-    buffer_size = 1024
+    buffer_size: int = 1024
     size = ctypes.c_ulong(buffer_size)
     buf = ctypes.create_unicode_buffer(buffer_size)
     try:
@@ -309,15 +307,13 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """
-    Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet.
-    """
+    """Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet."""
     if not proc_handle or proc_handle == -1: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
     
     try:
-        actual_pid = kernel32.GetProcessId(proc_handle)
+        actual_pid: int = kernel32.GetProcessId(proc_handle)
         if actual_pid != pid:
             return False, "Error de validación: el proceso identificado cambió."
 
@@ -327,18 +323,18 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso seleccionado ya no está activo."
         
-        path = _get_process_path(proc_handle)
+        path: Optional[str] = _get_process_path(proc_handle)
         if not path: 
             return False, "No se pudo verificar la ubicación del ejecutable."
         
         if path.startswith("\\\\"):
             return False, "Ruta bloqueada: ubicación en red (UNC) no segura."
             
-        forbidden_sequences = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
+        forbidden_sequences: List[bytes] = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
         
-        normalized_path = os.path.normcase(os.path.realpath(path))
+        normalized_path: str = os.path.normcase(os.path.realpath(path))
         if os.path.normcase(path) != normalized_path:
             return False, "Ruta bloqueada: el ejecutable reside en un punto de reparse/enlace."
         if is_protected_path(normalized_path):
@@ -355,13 +351,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Error de sistema: APIs de memoria no disponibles."
     
     try:
-        target_pid = int(pid)
+        target_pid: int = int(pid)
     except (ValueError, TypeError): return False, "El PID debe ser un número entero válido."
     
     if _is_system_process(target_pid) or target_pid == os.getpid():
         return False, "Operación denegada: PID fuera de rango o protegido."
 
-    proc_handle = None
+    proc_handle: Optional[wintypes.HANDLE] = None
     try:
         proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
         if not proc_handle or proc_handle == -1: 
