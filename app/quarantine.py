@@ -359,6 +359,12 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         raise FileExistsError(f"Conflicto: {destination.name} ya existe.")
     
     dest_dir = destination.parent.resolve()
+    
+    # Pre-check espacio: requerimos espacio para el archivo + buffer
+    usage = shutil.disk_usage(dest_dir)
+    if usage.free < (file_size + (1024 * 1024)):
+        raise OSError("Espacio insuficiente en disco para aislamiento seguro.")
+
     temp_fd, temp_path_str = tempfile.mkstemp(dir=dest_dir, prefix=".tmp_q_")
     temp_dest = Path(temp_path_str)
     os.close(temp_fd)
@@ -420,10 +426,6 @@ def quarantine_file(
         file_size = file_stats.st_size
     except OSError as e:
         raise OSError(f"No se pudo determinar el tamaño del archivo origen: {e}")
-    
-    usage = shutil.disk_usage(dest_dir)
-    if usage.free < (file_size + 1024 * 1024):
-        raise OSError("Espacio insuficiente en disco (mínimo 1MB libre requerido).")
         
     item_id = uuid.uuid4().hex[:12]
     stored_name = _generate_safe_stored_name(source_path, item_id)
