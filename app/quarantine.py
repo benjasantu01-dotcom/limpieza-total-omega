@@ -347,8 +347,8 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     if resolved_source.is_symlink() or not resolved_source.is_file():
         raise UnsafePathError("Origen no es archivo regular o es un enlace sospechoso.")
     
-    if not resolved_source.exists():
-         raise FileNotFoundError("Archivo origen no encontrado.")
+    # Captura de identificador único (ino) para asegurar que el archivo no cambie bajo el proceso
+    original_stat = resolved_source.stat()
 
     if destination.exists():
         raise FileExistsError(f"Conflicto: {destination.name} ya existe.")
@@ -359,6 +359,10 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         
     try:
         shutil.copy2(resolved_source, temp_dest)
+        
+        # Validación de post-copia usando estado del archivo fuente original
+        if resolved_source.stat().st_ino != original_stat.st_ino:
+            raise RuntimeError("Seguridad: el archivo origen fue reemplazado durante la copia.")
         if temp_dest.stat().st_size != file_size:
             raise OSError("Corrupción durante copia: mismatch de tamaño.")
             
@@ -373,7 +377,7 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
             _safe_unlink(temp_dest)
         raise
     finally:
-        if temp_dest.exists():
+        if temp_dest.exists() and temp_dest.is_file():
             _safe_unlink(temp_dest)
 
 

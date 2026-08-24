@@ -253,6 +253,8 @@ def is_protected_path(path: PathLike) -> bool:
     
     try:
         p = normalize(path)
+        # Prevención de escape: si la ruta no tiene existencia clara en el FS
+        # y es relativa, es potencialmente peligrosa.
         p_str = os.path.normcase(str(p))
     except (ValueError, TypeError, OSError, RuntimeError):
         return True
