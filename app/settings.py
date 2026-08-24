@@ -243,11 +243,13 @@ def validate(raw_values: Any) -> AppSettings:
 def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     try:
+        if not ruta.exists(): return _get_default_config()
         stat_info = ruta.stat()
         mtime = stat_info.st_mtime
         if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
             return cached[1]
-        if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size == 0:
+        # Validamos límites y contenido mínimo: un JSON válido de config debe tener contenido
+        if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 10:
             return _get_default_config()
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)

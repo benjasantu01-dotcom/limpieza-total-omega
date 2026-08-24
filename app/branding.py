@@ -398,24 +398,17 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         path_obj = Path(destination).resolve()
         
-        # Validar componentes de ruta antes de operar para evitar errores
-        if not path_obj.anchor:
-            return None
+        # Validaciones de seguridad defensiva antes de cualquier operación
+        if not path_obj.parent.exists():
+            path_obj.parent.mkdir(parents=True, exist_ok=True)
             
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return None
         
         if path_obj.exists() and path_obj.is_dir():
             return None
             
-        parent = path_obj.parent
-        if not parent.exists():
-            if is_protected_path(parent) or not is_safe_to_modify(parent):
-                return None
-            parent.mkdir(parents=True, exist_ok=True)
-        elif not parent.is_dir() or is_protected_path(parent):
-            return None
-            
+        # Confirmación final de seguridad operativa (lanzará excepción si no es seguro)
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj

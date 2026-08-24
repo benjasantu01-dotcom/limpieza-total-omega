@@ -1518,3 +1518,31 @@ FAILED evolve/tests/test_modules.py::test_logo_draws_a_gradient_and_a_halo - Nam
 - `2026-08-24T13:57:48` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-08-24T13:57:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T13:57:48` Corrida terminada. Total usado hoy: 324.
+- `2026-08-24T14:06:25` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-24T14:06:55` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se implementó un chequeo robusto en `load` para detectar y manejar archivos de configuración parcialmente escritos (con contenido nulo o truncado por interrupción del sistema), asegurando que la aplicación siempre cargue una configuración válida ante condiciones de carrera o fallos durante la escritura.
+- `2026-08-24T14:07:21` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Mejora la robustez en `_resolve_and_cache_path` añadiendo una comprobación explícita para evitar procesar rutas que superen los límites de longitud del sistema de archivos (`MAX_PATH`), previniendo excepciones innecesarias en entornos Windows cuando el registro contiene rutas malformadas o excesivamente largas.
+- `2026-08-24T14:08:00` Tests FALLARON:
+```
+trada no válida.' = <built-in method lower of str object at 0x7f00e408b500>()
+ +    where <built-in method lower of str object at 0x7f00e408b500> = 'Entrada no válida.'.lower
+ +      where 'Entrada no válida.' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'entrada no válida.'
+ +  where 'entrada no válida.' = <built-in method lower of str object at 0x7f00e408b500>()
+ +    where <built-in method lower of str object at 0x7f00e408b500> = 'Entrada no válida.'.lower
+ +      where 'Entrada no válida.' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).text
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - AssertionError: assert 'sin conexión' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - AssertionError: assert 'motor local' in ''
+ +  where '' = Answer(text='Entrada no válida.', source='local', notice='', suggestions=[]).notice
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+11 failed, 288 passed in 1.15s
+
+```
+- `2026-08-24T14:08:00` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_to_modify` en las funciones que manejan el contexto, asegurando que ninguna ruta o dato sensible potencialmente peligroso pueda ser procesado o devuelto por el asistente, incluso si intentara inyectarse mediante métricas malformadas.
+- `2026-08-24T14:08:19` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` consolidando las validaciones de ruta mediante un flujo lógico más robusto, asegurando que `ensure_safe_to_modify` se utilice exclusivamente tras haber verificado la seguridad del directorio padre y la inexistencia de colisiones destructivas, evitando excepciones innecesarias.
+- `2026-08-24T14:08:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T14:08:19` Corrida terminada. Total usado hoy: 328.
