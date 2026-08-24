@@ -146,21 +146,27 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula salud de basura linealmente hasta el umbral _LIMIT_JUNK_MB."""
     return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Puntúa seguridad penalizando agresivamente cada hallazgo (5%) y advertencia (25%)."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Puntúa memoria basándose en la disponibilidad respecto al umbral crítico."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Puntúa salud de disco basándose en el porcentaje libre relativo al umbral crítico."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula penalización por duplicados usando el umbral definido en _LIMIT_DUPLICATE_MB."""
     return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
+    """Puntúa la carga de arranque inversamente proporcional a la cantidad de elementos."""
     return _clamp(1.0 - (max(0, _to_int(startup_count)) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:

@@ -44,6 +44,8 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 
 # Constantes para Win32 API: permisos mínimos necesarios para diagnóstico y gestión
+# PROCESS_QUERY_LIMITED_INFORMATION: Permite acceso de lectura básico sin elevar privilegios excesivos.
+# PROCESS_SET_QUOTA: Necesario para permitir que el sistema operativo reajuste el Working Set.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -131,7 +133,15 @@ class ProcessMemory:
         return round(self.working_set / BYTES_IN_MB, 1)
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte un valor en bytes a una cadena legible (ej: '1.5 MB')."""
+    """
+    Convierte un valor en bytes a una cadena legible.
+    
+    Args:
+        num: Cantidad de bytes a formatear.
+        
+    Returns:
+        Cadena formateada con la unidad de medida adecuada (ej: '1.5 MB').
+    """
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -146,7 +156,15 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Parsea el contenido de /proc/meminfo devolviendo un objeto MemorySnapshot."""
+    """
+    Parsea el contenido de /proc/meminfo devolviendo un objeto MemorySnapshot.
+    
+    Args:
+        meminfo_text: Contenido crudo del archivo /proc/meminfo.
+        
+    Returns:
+        Snapshot con la información de memoria extraída.
+    """
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return MemorySnapshot(0, 0)
     
@@ -191,10 +209,18 @@ def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
             yield proc
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Ordena procesos por consumo descendente y aplica un límite usando ordenación eficiente."""
+    """
+    Ordena procesos por consumo descendente y aplica un límite.
+    
+    Args:
+        raw_csv_text: Salida de texto cruda desde PowerShell.
+        limit: Máximo número de procesos a retornar.
+        
+    Returns:
+        Lista de objetos ProcessMemory ordenados.
+    """
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
-    # Generador inline directo para evitar creación innecesaria de listas
     procs = list(_yield_processes(raw_csv_text))
     procs.sort(key=lambda p: p.working_set, reverse=True)
     return procs[:max(0, limit)]
@@ -307,7 +333,9 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet.
-    Verifica identidad, actividad, rutas de sistema y evita caracteres sospechosos.
+    
+    Verifica que el handle sea válido, que el PID coincida, que el proceso
+    siga activo y que su ruta no sea sospechosa o protegida.
     """
     if not proc_handle or proc_handle == -1: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
@@ -345,7 +373,12 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita al sistema la liberación de memoria residente (Working Set) de un PID."""
+    """
+    Solicita al sistema la liberación de memoria residente (Working Set) de un PID.
+    
+    Returns:
+        Tuple (éxito, mensaje de error/estado).
+    """
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):

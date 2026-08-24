@@ -253,6 +253,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         :param parent: Widget contenedor padre.
         :param text: Texto de la etiqueta.
         :param style: Estilo base definido en el branding ('title', 'body', 'caption').
+        :param kwargs: Argumentos adicionales para el widget ctk.CTkLabel.
         :return: Etiqueta configurada (ctk.CTkLabel).
         """
         font_config = {"size": branding.font_size(style)}
