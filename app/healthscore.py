@@ -189,46 +189,36 @@ _PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], No
 ]
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error interno: Tipo de datos inválido."])
-    
-    # Verificación de seguridad estructural: la suma de pesos debe ser 100
-    if sum(WEIGHTS.values()) != 100:
-        return HealthResult(0, "F", {}, ["Error interno: Configuración de pesos inválida."])
+    if not isinstance(metrics, SystemMetrics) or sum(WEIGHTS.values()) != 100:
+        return HealthResult(0, "F", {}, ["Error interno: Configuración inválida."])
     
     metrics.validate()
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error interno: Datos corruptos."])
 
-    metric_breakdown: Dict[MetricKey, int] = {area: 0 for area in WEIGHTS}
+    metric_breakdown: Dict[MetricKey, int] = {}
     ratios_cache: Dict[MetricKey, float] = {}
-    accumulated_points: float = 0.0
+    accumulated_points: int = 0
     
     for area, weight, scorer in _PREPARED_SCORERS:
-        try:
-            ratio = scorer(metrics)
-            ratios_cache[area] = ratio
-            points = int(round(ratio * weight))
-            metric_breakdown[area] = int(_clamp(float(points), 0.0, float(weight)))
-            accumulated_points += metric_breakdown[area]
-        except (ValueError, TypeError, ZeroDivisionError):
-            metric_breakdown[area] = 0
+        ratio = scorer(metrics)
+        ratios_cache[area] = ratio
+        points = int(round(ratio * weight))
+        metric_breakdown[area] = points
+        accumulated_points += points
     
-    recommendations: List[str] = []
-    for rule in _RECOMMENDATION_RULES:
-        try:
-            if rule.check(metrics, ratios_cache.get(rule.area, 0.0)):
-                recommendations.append(rule.message_factory(metrics))
-        except Exception:
-            continue
+    recommendations: List[str] = [
+        rule.message_factory(metrics) 
+        for rule in _RECOMMENDATION_RULES 
+        if rule.check(metrics, ratios_cache.get(rule.area, 0.0))
+    ]
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
-    final_score = int(round(accumulated_points))
     return HealthResult(
-        score=int(_clamp(float(final_score), 0.0, 100.0)), 
-        grade=grade_for_score(final_score), 
+        score=accumulated_points, 
+        grade=grade_for_score(accumulated_points), 
         breakdown=metric_breakdown, 
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
@@ -237,7 +227,7 @@ def summarize(result: HealthResult) -> List[str]:
     if not isinstance(result, HealthResult): return ["Error: Formato de informe inválido."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
-        puntos = int(result.breakdown.get(area, 0))
+        puntos = result.breakdown.get(area, 0)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (max(0, maximo - puntos))}]")
     lines.extend(["", "Recomendaciones:"])
     lines.extend([f"  - {r}" for r in result.recommendations] if result.recommendations else ["  - Ninguna."])

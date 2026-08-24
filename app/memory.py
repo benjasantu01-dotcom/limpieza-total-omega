@@ -44,8 +44,6 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 
 # Constantes para Win32 API: permisos mínimos necesarios para diagnóstico y gestión
-# PROCESS_QUERY_LIMITED_INFORMATION: Permite acceso de lectura básico sin elevar privilegios excesivos.
-# PROCESS_SET_QUOTA: Necesario para permitir que el sistema operativo reajuste el Working Set.
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA

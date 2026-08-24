@@ -981,3 +981,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T08:11:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-08-24T08:11:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T08:11:07` Corrida terminada. Total usado hoy: 196.
+- `2026-08-24T08:19:53` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-24T08:20:19` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el motor de cálculo en `compute_score` eliminando la creación dinámica de diccionarios dentro del bucle crítico y reemplazando la lógica de validación redundante por accesos directos, mejorando la eficiencia computacional y la legibilidad al evitar la recreación de objetos por cada iteración.
+- `2026-08-24T08:21:25` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de **invalidación de caché selectiva** en `_invalidate_cache` y un uso más eficiente de `lru_cache` para datos de solo lectura, reduciendo el overhead de recomputación en los reportes de disco durante la navegación entre pestañas.
+- `2026-08-24T08:21:53` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de datos de procesos en `top_memory_processes` reemplazando el cálculo recursivo de `WorkingSet` en PowerShell por un formato CSV crudo más eficiente, y mejorando el manejo del cacheo para evitar llamadas redundantes a subprocesos, reduciendo el overhead de CPU y memoria.
+- `2026-08-24T08:22:01` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-24T08:22:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T08:22:01` Corrida terminada. Total usado hoy: 200.

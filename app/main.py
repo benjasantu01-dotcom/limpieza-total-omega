@@ -860,9 +860,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _invalidate_cache(self, key_prefix: str) -> None:
         """Descarta entradas del caché que coincidan con un prefijo."""
-        for k in list(self._cache.keys()):
-            if k.startswith(key_prefix):
-                del self._cache[k]
+        keys_to_del = [k for k in self._cache.keys() if k.startswith(key_prefix)]
+        for k in keys_to_del:
+            del self._cache[k]
 
     def _box(self, tab: str) -> Optional[ctk.CTkTextbox]:
         """Obtiene la caja de texto (log) de una pestaña específica."""
@@ -1044,6 +1044,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         snapshot = self._get_cached("memory_snapshot", provider=memory_mod.read_snapshot) or memory_mod.Snapshot(0, 0, 0)
         
+        # Uso de lru_cache externo ya definido para persistir info de drives en sesión
         @lru_cache(maxsize=2)
         def _get_disk_info(home_path_str: str) -> Optional[diskreport.DriveInfo]:
             home = Path(home_path_str)
