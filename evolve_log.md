@@ -1442,3 +1442,35 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-24T12:57:02` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` al reemplazar la iteración sobre `PROTECTED_DIR_NAMES` por una verificación de pertenencia directa y un pre-filtrado por raíces del sistema, reduciendo la complejidad algorítmica y el uso de `lru_cache`.
 - `2026-08-24T12:57:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T12:57:02` Corrida terminada. Total usado hoy: 308.
+- `2026-08-24T13:05:42` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-24T13:06:44` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-24T13:07:09` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-24T13:07:36` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuración reemplazando el acceso frecuente a disco mediante `stat()` por un sistema de detección de cambios más inteligente y directo en la función `load`.
+- `2026-08-24T13:08:03` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.95s
+
+```
+- `2026-08-24T13:08:03` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` implementando una validación de caché `exists` centralizada antes de cualquier operación de I/O costosa, y añadí un filtro temprano mediante `os.path.exists` en el método `_resolve_and_cache_path` para reducir drásticamente las llamadas redundantes al sistema de archivos.
+- `2026-08-24T13:08:22` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` ante valores corruptos o inesperados dentro de la fuente de datos (`metrics`), asegurando que la validación de tipos sea estricta y que `getattr` no falle ante objetos inesperados.
+- `2026-08-24T13:08:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T13:08:22` Corrida terminada. Total usado hoy: 312.

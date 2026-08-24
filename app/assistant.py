@@ -291,7 +291,13 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     """Extrae y valida una métrica individual desde una fuente de datos asignándola al contexto."""
     cast, min_v, max_v = spec
     
-    val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
+    try:
+        if isinstance(source, dict):
+            val = source.get(key)
+        else:
+            val = getattr(source, key, None)
+    except Exception:
+        val = None
     
     if val is None or type(val) in _FORBIDDEN_TYPES:
         return False
@@ -325,12 +331,15 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
                 break
 
     for src in sources:
-        val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
-        if isinstance(val, str):
-            g_str = val[:10].strip()
-            if _ensure_safe_text(g_str):
-                ctx.grade = g_str
-                break
+        try:
+            val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
+            if isinstance(val, str):
+                g_str = val[:10].strip()
+                if _ensure_safe_text(g_str):
+                    ctx.grade = g_str
+                    break
+        except Exception:
+            continue
             
     ctx.analyzed = found_data
     return ctx

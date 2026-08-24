@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **207** (41.1% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **206** (40.9% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 21
 - Sin respuesta de la IA (error o límite): 225
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 80 | 4 | 16 | 7 | 89 |
-| 2026-08-24 | 127 | 12 | 19 | 14 | 136 |
+| 2026-08-23 | 77 | 4 | 16 | 7 | 88 |
+| 2026-08-24 | 129 | 13 | 19 | 14 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **41**
-- rendimiento: **41**
-- robustez ante casos límite: **27**
+- rendimiento: **42**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **20**
-- `healthscore.py`: **19**
 - `quarantine.py`: **19**
+- `duplicates.py`: **19**
+- `assistant.py`: **19**
 - `organizer.py`: **18**
-- `assistant.py`: **18**
+- `healthscore.py`: **18**
 - `scanner.py`: **17**
 - `diskreport.py`: **16**
 - `branding.py`: **13**
-- `main.py`: **12**
-- `settings.py`: **10**
+- `settings.py`: **11**
+- `main.py`: **11**
 - `safety.py`: **10**
 - `browser.py`: **8**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T13:08:22` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante valores corruptos o inesperados dentro de la fuente de datos (`metrics`), asegurando que la validación de tipos sea estricta y que `getattr` no falle ante objetos inesperados.
+- `2026-08-24T13:07:36` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración reemplazando el acceso frecuente a disco mediante `stat()` por un sistema de detección de cambios más inteligente y directo en la función `load`.
 - `2026-08-24T12:57:02` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al reemplazar la iteración sobre `PROTECTED_DIR_NAMES` por una verificación de pertenencia directa y un pre-filtrado por raíces del sistema, reduciendo la complejidad algorítmica y el uso de `lru_cache`.
 - `2026-08-24T12:55:58` **organizer.py** (rendimiento): Optimizé la función `_process_directory` reemplazando la verificación repetitiva de extensiones con una tupla precalculada, evitando llamadas innecesarias a `path.suffix.lower()` dentro del bucle y reduciendo la complejidad de las comparaciones.
 - `2026-08-24T12:47:35` **memory.py** (rendimiento): Se optimizó el proceso de recolección de procesos pesados eliminando el uso redundante de `Select-Object` y `ForEach-Object` en PowerShell, reemplazándolo por una cadena de comandos más directa y eficiente que reduce significativamente el tiempo de ejecución y la carga de CPU durante el sondeo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T12:15:40` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones críticas para clarificar la lógica de seguridad y el manejo de E/S, facilitando la auditoría del código conforme a los estándares exigentes del proyecto.
 - `2026-08-24T12:15:15` **memory.py** (legibilidad y documentación): Mejoré la documentación de `MEMORYSTATUSEX` y `trim_working_set` para clarificar los riesgos de seguridad y las dependencias de la API de Windows, además de añadir type hints y docstrings explicativos en funciones críticas de validación para prevenir errores de uso.
 - `2026-08-24T12:06:00` **healthscore.py** (legibilidad y documentación): Documenté el propósito de los factores de normalización y las funciones de ayuda para esclarecer el diseño defensivo aplicado contra datos corruptos o entradas de usuario no fiables.
-- `2026-08-24T12:05:35` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `duplicates.py` mediante la actualización de los docstrings en las funciones `hash_file`, `partial_hash` y `suggest_keeper`, clarificando explícitamente el flujo de validación de seguridad y los criterios de selección de archivos, lo cual facilita el mantenimiento y la comprensión de las decisiones de diseño del módulo.
-- `2026-08-24T12:05:11` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `walk_files` extrayendo la lógica de validación de entradas a una función privada, clarificando el flujo de control y reduciendo el anidamiento excesivo.
