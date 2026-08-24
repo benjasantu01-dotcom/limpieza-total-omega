@@ -80,7 +80,11 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura de datos Win32 (GlobalMemoryStatusEx) para consultar RAM global."""
+    """
+    Estructura de datos Win32 para la API GlobalMemoryStatusEx.
+    dwLength debe establecerse a sizeof(MEMORYSTATUSEX) antes de la llamada,
+    de lo contrario la API fallará (comportamiento estándar de Win32).
+    """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -169,7 +173,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         return MemorySnapshot(0, 0)
         
     available = vals["MemAvailable"] if vals["MemAvailable"] > 0 else vals["MemFree"]
-    # Aseguramos límites lógicos: disponible nunca puede ser mayor al total
     return MemorySnapshot(total=total, available=min(available, total), cached=max(0, vals["Cached"]))
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
@@ -313,7 +316,10 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """Realiza una auditoría defensiva antes de aplicar EmptyWorkingSet."""
+    """
+    Realiza una auditoría de seguridad previa antes de invocar la manipulación 
+    de memoria. Verifica que el proceso sea legítimo y no esté en rutas protegidas.
+    """
     if not isinstance(pid, int) or pid <= 0: return False, "PID no válido."
     if not proc_handle or proc_handle == -1: return False, "Handle no válido."
     
@@ -352,7 +358,11 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita al sistema la liberación de memoria residente de un PID."""
+    """
+    Intenta liberar páginas de memoria física del proceso indicado.
+    Requiere privilegios de depuración o acceso suficiente al proceso.
+    Esta es una operación invasiva: solo se usa tras pasar `_is_safe_to_trim`.
+    """
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"):
