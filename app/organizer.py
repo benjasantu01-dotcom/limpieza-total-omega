@@ -233,8 +233,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile) or not junk_file.path: continue
         try:
             src_path: Path = junk_file.path.resolve()
-            if not src_path.exists() or shutil.disk_usage(dest_base).free < src_path.stat().st_size:
-                continue
+            # Validación de existencia y espacio antes de mover
+            if not src_path.exists(): continue
+            if shutil.disk_usage(dest_base.anchor).free < src_path.stat().st_size: continue
+            
             if src_path.anchor != dest_base.anchor or not _is_safe_to_move(junk_file, dest_base):
                 continue
             
@@ -264,8 +266,13 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if not item.is_file() or _is_junction(item) or not item.is_relative_to(dest) or not item.exists():
+            # Validar que sea un archivo real, que no sea una carpeta y que exista
+            if not item.is_file() or _is_junction(item) or not item.exists():
                 continue
+            # Asegurar que el ítem pertenece a la carpeta de cuarentena para evitar borrado accidental
+            if not item.resolve().is_relative_to(dest.resolve()):
+                continue
+                
             if is_safe_to_modify(item) and not _is_file_locked(item):
                 ensure_safe_to_modify(item)
                 item.unlink()

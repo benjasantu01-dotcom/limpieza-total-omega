@@ -7,26 +7,26 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **213** (42.3% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 226
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 225
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-22 | 12 | 1 | 1 | 1 | 31 |
+| 2026-08-22 | 11 | 0 | 1 | 1 | 29 |
 | 2026-08-23 | 153 | 9 | 27 | 13 | 148 |
-| 2026-08-24 | 48 | 3 | 6 | 4 | 47 |
+| 2026-08-24 | 49 | 3 | 7 | 5 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **37**
 - rendimiento: **37**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,9 +37,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **19**
 - `healthscore.py`: **18**
 - `diskreport.py`: **17**
-- `settings.py`: **15**
 - `branding.py`: **15**
-- `organizer.py`: **14**
+- `organizer.py`: **15**
+- `settings.py`: **14**
 - `browser.py`: **11**
 - `main.py`: **10**
 - `safety.py`: **6**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-24T04:36:36` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones explícitas de espacio en disco y consistencia de rutas antes de cualquier operación de E/S, evitando excepciones innecesarias ante casos límite como unidades llenas o cambios de contexto inesperados durante el procesamiento.
 - `2026-08-24T04:26:48` **healthscore.py** (robustez ante casos límite): Se ha robustecido el cálculo de `compute_score` ante posibles divisiones por cero o desbordamientos durante la inicialización de constantes globales y se ha mejorado la tolerancia a fallos en el bucle de procesamiento de métricas.
 - `2026-08-24T04:26:21` **duplicates.py** (robustez ante casos límite): Se mejora la robustez ante archivos bloqueados o en uso durante la comparación de duplicados mediante la adición de un chequeo preventivo de acceso mediante `os.access` en `hash_file` y `partial_hash`, garantizando que el acceso al archivo sea posible antes de intentar leerlo, evitando así excepciones innecesarias en entornos de alta concurrencia.
 - `2026-08-24T04:16:55` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo (`draw_logo`, `draw_ring`, `draw_gradient_bar`) implementando validaciones defensivas ante entradas nulas o tipos inesperados, evitando excepciones críticas durante el renderizado o la persistencia de archivos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T03:35:58` **assistant.py** (rendimiento): Se optimizó el motor de búsqueda de palabras clave transformando `_KEYWORD_MAP` en un `dict` con claves optimizadas y reemplazando la iteración sobre tokens por una búsqueda directa, reduciendo la complejidad del proceso de respuesta local.
 - `2026-08-24T03:34:59` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo un docstring detallado a la clase `_Validators` para explicar su responsabilidad como motor de saneamiento y centralización de políticas de seguridad, además de normalizar la consistencia de los comentarios en los métodos de validación.
 - `2026-08-24T03:25:44` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en todas las funciones y métodos, especificando comportamientos, parámetros, excepciones esperadas y lógica interna para facilitar el mantenimiento y la auditoría.
-- `2026-08-24T03:25:36` **safety.py** (legibilidad y documentación): Se introdujo un `TypeGuard` en `is_safe_to_modify` para mejorar la seguridad de tipos, y se añadieron docstrings explicativos en las funciones de validación interna para clarificar el propósito y el flujo de los chequeos de integridad, facilitando el mantenimiento y auditoría del código.
