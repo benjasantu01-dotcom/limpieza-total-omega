@@ -518,3 +518,10 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-24T03:57:11` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó `load_manifest` mediante el uso de un diccionario de búsqueda en caché, evitando recorridos lineales en `purge_item`, `restore_item` y `purge_all` cuando se procesan ítems individuales.
 - `2026-08-24T03:57:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T03:57:11` Corrida terminada. Total usado hoy: 96.
+- `2026-08-24T04:05:04` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-24T04:05:25` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 101): unterminated string literal (detected at line 101)
+- `2026-08-24T04:05:53` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-24T04:06:15` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `check_recent_executable_in_downloads` para evitar la creación innecesaria de nuevos `set` y listas en cada iteración, utilizando `any()` sobre las partes de la ruta, reduciendo el consumo de memoria y CPU durante el escaneo recursivo.
+- `2026-08-24T04:06:25` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
+- `2026-08-24T04:06:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T04:06:25` Corrida terminada. Total usado hoy: 100.

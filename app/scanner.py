@@ -150,8 +150,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Marca ejecutables nuevos en carpetas de alto riesgo como 'Downloads' o 'Temp'."""
-    path_parts_lower = {p.lower() for p in path.parts}
-    if not (path_parts_lower & WATCHED_FOLDERS):
+    if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         return None
         
     try:
