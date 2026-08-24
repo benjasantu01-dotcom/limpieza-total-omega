@@ -106,38 +106,31 @@ class Scanner:
         
         try:
             target_path = Path(entry.path)
-            if is_protected_path(target_path) or str(target_path).startswith("\\\\"):
-                return
-            if not self._is_safe_entry(target_path):
+            # Validación de seguridad: rutas protegidas o fuera de raíz
+            if is_protected_path(target_path) or str(target_path).startswith("\\\\") or not self._is_safe_entry(target_path):
                 return
 
-            is_dir = entry.is_dir(follow_symlinks=False)
-        except (OSError, PermissionError, TypeError):
-            return
-
-        if is_dir:
-            if not self._is_reparse_point(entry):
-                try:
+            if entry.is_dir(follow_symlinks=False):
+                if not self._is_reparse_point(entry):
                     path_str = str(target_path.resolve())
                     if path_str not in self.seen:
                         self.seen.add(path_str)
                         stack.append(path_str)
-                except (OSError, RuntimeError):
-                    pass
-            return
-
-        # Procesamiento de archivo
-        try:
-            file_stat = entry.stat(follow_symlinks=False)
-            if file_stat.st_size == 0:
                 return
-        except (OSError, PermissionError):
+
+            # Procesamiento de archivo: verificar tamaño y aplicar heurísticas
+            if entry.stat(follow_symlinks=False).st_size > 0:
+                self._run_file_heuristics(target_path, entry)
+
+        except (OSError, PermissionError, TypeError):
             return
 
-        if RTL_CHAR_RE.search(target_path.name):
-            self.results.append(Suspicion(target_path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
+    def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
+        """Aplica reglas de análisis estático al archivo y registra sospechas encontradas."""
+        if RTL_CHAR_RE.search(path.name):
+            self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
         
-        self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
+        self.results.extend(scan_file(path, self.now_ts, entry=entry))
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """

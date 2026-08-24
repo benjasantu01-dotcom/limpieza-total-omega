@@ -254,7 +254,13 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Lee y valida el archivo de configuración desde disco, usando caché para rendimiento."""
+    """
+    Lee y valida el archivo de configuración desde disco.
+    
+    Implementa caché en memoria mediante `_CACHE` basándose en el tiempo de 
+    modificación del archivo (mtime) para minimizar accesos a disco redundantes.
+    En caso de error de lectura o corrupción, retorna los valores por defecto.
+    """
     ruta = settings_path(custom_base)
     try:
         try:
@@ -282,7 +288,13 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste la configuración en un archivo temporal y realiza un reemplazo atómico."""
+    """
+    Persiste la configuración en un archivo temporal y realiza un reemplazo atómico.
+    
+    Realiza chequeos de seguridad antes de escribir, valida el contenido y 
+    garantiza que el archivo final sea consistente utilizando `os.fsync` y 
+    `os.replace`. Retorna la ruta del archivo si la operación tuvo éxito.
+    """
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
@@ -323,7 +335,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Actualiza campos específicos de la configuración y guarda los cambios."""
+    """
+    Actualiza campos específicos de la configuración aplicando validación.
+    
+    Solo realiza la escritura a disco (`save`) si se detecta un cambio real 
+    en los valores con respecto a la configuración cargada actualmente.
+    """
     current = load(custom_base).copy()
     modified = False
     for k, v in changes.items():
@@ -343,7 +360,7 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
     return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Recupera un valor de configuración individual."""
+    """Recupera un valor de configuración individual desde la persistencia."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
