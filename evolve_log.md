@@ -933,3 +933,44 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-24T07:50:41` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de `ensure_safe_to_modify` y se han extraído las validaciones de `_check_file_integrity` en una estructura de datos `_VALIDATORS` para evitar el crecimiento desmedido de condicionales y mejorar la mantenibilidad, siguiendo el enfoque de legibilidad.
 - `2026-08-24T07:50:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T07:50:41` Corrida terminada. Total usado hoy: 188.
+- `2026-08-24T07:59:23` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-24T07:59:48` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo type hints faltantes en el retorno de las funciones de chequeo y enriqueciendo los docstrings para clarificar el propósito y el contrato de los parámetros, facilitando el mantenimiento y la auditoría del código.
+- `2026-08-24T08:00:16` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de Type Hints explícitos en funciones clave y la clarificación de las responsabilidades de los validadores, facilitando el mantenimiento futuro del motor de configuración.
+- `2026-08-24T08:00:41` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.27s
+
+```
+- `2026-08-24T08:00:41` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación y legibilidad de `StartupEntry` mediante la adopción de type hints más precisos y la conversión de los métodos internos de resolución de rutas en una estructura lógica más clara, facilitando el mantenimiento al separar explícitamente la sanitización, la extracción y la validación.
+- `2026-08-24T08:01:03` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` reemplazando la iteración anidada sobre `_VALIDATORS` y fuentes de datos por una estructura de búsqueda más eficiente, reduciendo la complejidad algorítmica de O(N*M) a O(N).
+- `2026-08-24T08:01:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T08:01:03` Corrida terminada. Total usado hoy: 192.

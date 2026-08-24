@@ -88,7 +88,7 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta si la entrada es un punto de reanálisis o enlace simbólico.
+        Detecta si la entrada es un punto de reanálisis o enlace simbólico utilizando atributos de archivo.
         """
         try:
             # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT
@@ -116,7 +116,6 @@ class Scanner:
             return
 
         if is_dir:
-            # No seguir puntos de reanálisis (links/junctions) para evitar recursión infinita/escapes
             if not self._is_reparse_point(entry):
                 try:
                     path_str = str(target_path.resolve())
@@ -141,14 +140,20 @@ class Scanner:
         self.results.extend(scan_file(target_path, self.now_ts, entry=entry))
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta archivos con extensiones dobles que intentan ocultar el tipo real (ej. documento.pdf.exe)."""
+    """
+    Detecta archivos con extensiones dobles que intentan ocultar el tipo real.
+    Devuelve un objeto Suspicion si se detecta ofuscación, o None.
+    """
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Marca ejecutables nuevos en carpetas de alto riesgo como 'Downloads' o 'Temp'."""
+    """
+    Marca ejecutables nuevos en carpetas de alto riesgo (Downloads/Temp).
+    Analiza la fecha de modificación (st_mtime) comparándola con 'now_ts'.
+    """
     if not any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         return None
         
@@ -162,7 +167,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta si un archivo utiliza nombres de procesos críticos del sistema fuera del directorio System32."""
+    """
+    Detecta si un archivo utiliza nombres de procesos críticos del sistema fuera del directorio System32.
+    """
     if path.name.lower() in SYSTEM_LOOKALIKES:
         if SYSTEM32_LOWER not in [p.lower() for p in path.parts]:
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -173,7 +180,6 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Aplica todas las heurísticas registradas sobre un archivo individual."""
     findings: ScanResult = []
     
-    # Validar entrada basica antes de procesar
     if not path or not path.exists():
         return findings
     

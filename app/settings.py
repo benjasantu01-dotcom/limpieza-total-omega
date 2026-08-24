@@ -138,9 +138,9 @@ class _Validators:
     """
     Motor interno de validación de datos.
     
-    Implementa las reglas de negocio y de seguridad para filtrar cada entrada del
-    archivo de configuración. Centraliza la sanitización de rutas, rangos numéricos
-    y normalización de tipos. Devuelve None ante cualquier dato sospechoso.
+    Centraliza la sanitización de rutas, rangos numéricos y normalización de tipos.
+    Los métodos devuelven None si el valor recibido no cumple los criterios de seguridad
+    o los rangos permitidos, forzando la reversión a valores de fábrica en la capa superior.
     """
     
     @staticmethod
@@ -231,6 +231,7 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 }
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
+    """Calcula la ruta absoluta del archivo de configuración, asegurando seguridad de escritura."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
         base = Path(custom_base).expanduser().resolve(strict=False)
@@ -241,6 +242,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
+    """Valida un diccionario de configuración bruto, retornando un objeto AppSettings sanitizado."""
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     for key_str, val in raw_values.items():
@@ -252,6 +254,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Lee y valida el archivo de configuración desde disco, usando caché para rendimiento."""
     ruta = settings_path(custom_base)
     try:
         if not ruta.exists() or not ruta.is_file(): 
@@ -278,6 +281,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
+    """Persiste la configuración en un archivo temporal y realiza un reemplazo atómico."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     
@@ -317,6 +321,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
+    """Actualiza campos específicos de la configuración y guarda los cambios."""
     current = load(custom_base).copy()
     modified = False
     for k, v in changes.items():
@@ -330,23 +335,28 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
+    """Resetea la configuración al estado inicial de fábrica."""
     default_config = _get_default_config()
     save(default_config, custom_base)
     return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
+    """Recupera un valor de configuración individual."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
+    """Obtiene la API key, priorizando la variable de entorno sobre el archivo de configuración."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
+    """Verifica si el asistente está activado y tiene una clave válida."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", ""))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
+    """Genera una representación textual legible de la configuración actual."""
     current = load(custom_base)
     key = assistant_api_key(custom_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")

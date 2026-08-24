@@ -323,8 +323,9 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     found_data = False
     
-    # Validamos métricas con validadores explícitos
+    # Pre-aplanamos las fuentes para evitar recorridos anidados costosos
     sources = [metrics, health, extra]
+    
     for key, spec in _VALIDATORS.items():
         for src in sources:
             if src is not None and _validate_and_assign(ctx, src, key, spec):
