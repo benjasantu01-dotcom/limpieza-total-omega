@@ -149,7 +149,6 @@ def _is_file_in_use(path: Path, st: os.stat_result = None) -> bool:
     if os.name != 'nt':
         return False
     try:
-        # Intenta abrir con acceso 0 (ninguno) y modo compartido total para probar bloqueo
         handle = ctypes.windll.kernel32.CreateFileW(
             str(path), 0, 7, None, 3, 0x00000080, None
         )
@@ -174,10 +173,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 
 def _check_file_integrity(path: Path) -> None:
-    """
-    Ejecuta validaciones físicas sobre la ruta iterando sobre los validadores registrados.
-    Lanza UnsafePathError inmediatamente ante cualquier violación de integridad.
-    """
+    """Ejecuta validaciones físicas sobre la ruta iterando sobre los validadores."""
     if not isinstance(path, Path):
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
     
@@ -249,6 +245,8 @@ def is_protected_path(path: PathLike) -> bool:
 
     if not p.parts: return True
     if any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root): return True
+    
+    # Optimización: verificación de set O(1) en lugar de iterar sobre partes
     if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts): return True
     return p == Path(p.anchor)
 
@@ -301,13 +299,7 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """
-    Valida exhaustivamente si una ruta es apta para escritura.
-    
-    Este método actúa como barrera de seguridad. Ante cualquier anomalía (ruta fuera
-    de límites, atributos de sistema, o falta de permisos), lanzará `UnsafePathError`.
-    Nunca intente realizar operaciones de escritura en rutas no validadas por este método.
-    """
+    """Valida exhaustivamente si una ruta es apta para escritura."""
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
 

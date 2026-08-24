@@ -44,6 +44,9 @@ JUNK_EXTENSIONS: Final[frozenset[str]] = frozenset({
     ".tmp", ".temp", ".log", ".bak", ".old", ".dmp", ".chk", ".cache",
 })
 
+# Tupla precalculada para optimizar las comparaciones de extensiones en bucles
+JUNK_EXTENSIONS_TUPLE: Final[tuple[str, ...]] = tuple(JUNK_EXTENSIONS)
+
 # Carpetas típicas donde se acumula basura
 DEFAULT_SCAN_DIRS: Final[List[Path]] = [
     Path(os.environ.get("TEMP", "C:\\Temp")),
@@ -192,7 +195,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                     if entry.is_dir(follow_symlinks=False):
                         if _is_allowed_directory(entry.name) and not _is_junction(Path(entry.path)):
                             _process_directory(Path(entry.path), found)
-                    elif entry.is_file() and entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
+                    elif entry.is_file() and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
                         found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):

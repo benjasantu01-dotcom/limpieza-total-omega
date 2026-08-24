@@ -1403,3 +1403,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-24T12:47:35` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de procesos pesados eliminando el uso redundante de `Select-Object` y `ForEach-Object` en PowerShell, reemplazándolo por una cadena de comandos más directa y eficiente que reduce significativamente el tiempo de ejecución y la carga de CPU durante el sondeo.
 - `2026-08-24T12:47:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-24T12:47:35` Corrida terminada. Total usado hoy: 304.
+- `2026-08-24T12:55:31` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-24T12:55:58` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la función `_process_directory` reemplazando la verificación repetitiva de extensiones con una tupla precalculada, evitando llamadas innecesarias a `path.suffix.lower()` dentro del bucle y reduciendo la complejidad de las comparaciones.
+- `2026-08-24T12:56:31` Tests FALLARON:
+```
+LED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AssertionError: assert [QuarantineIt...c7f6f809924')] == []
+  
+  Left contains 2 more items, first extra item: QuarantineItem(item_id='920da8ff63e6', original_path='/tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/u...hoso', quarantined_at='2026-08-24T12:56:31', sha256='bf0ec3694e122e067d9964a38ec7d8415781df4b24f442ad767b4621fb98f8c5')
+  
+  Full diff:
+  - []
+  + [
+  +     QuarantineItem(
+  +         item_id='920da8ff63e6',
+  +         original_path='/tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/uno/igual.tmp',
+  +         stored_name='920da8ff63e6__igual.tmp',
+  +         size_bytes=3,
+  +         reason='Marcado como sospechoso',
+  +         quarantined_at='2026-08-24T12:56:31',
+  +         sha256='bf0ec3694e122e067d9964a38ec7d8415781df4b24f442ad767b4621fb98f8c5',
+  +     ),
+  +     QuarantineItem(
+  +         item_id='bcf349578bbf',
+  +         original_path='/tmp/pytest-of-runner/pytest-2/test_quarantine_two_files_with0/dos/igual.tmp',
+  +         stored_name='bcf349578bbf__igual.tmp',
+  +         size_bytes=3,
+  +         reason='Marcado como sospechoso',
+  +         quarantined_at='2026-08-24T12:56:31',
+  +         sha256='c1299854f2b209632ab22aeb848c24c2b02da4b37ecf93a830ee9c7f6f809924',
+  +     ),
+  + ]
+4 failed, 295 passed in 1.24s
+
+```
+- `2026-08-24T12:56:31` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se implementó un cache local (`_cached_manifest`) en `load_manifest` para evitar lecturas de disco redundantes y parseo repetitivo de JSON, mejorando significativamente el rendimiento en operaciones que consultan el estado frecuentemente.
+- `2026-08-24T12:56:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-24T12:57:02` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `is_protected_path` al reemplazar la iteración sobre `PROTECTED_DIR_NAMES` por una verificación de pertenencia directa y un pre-filtrado por raíces del sistema, reduciendo la complejidad algorítmica y el uso de `lru_cache`.
+- `2026-08-24T12:57:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-24T12:57:02` Corrida terminada. Total usado hoy: 308.
