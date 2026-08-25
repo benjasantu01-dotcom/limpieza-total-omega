@@ -41,7 +41,7 @@ T = TypeVar("T")
 P = ParamSpec("P")
 
 class ConfigKey(Enum):
-    """Enumeración de claves permitidas en el diccionario de configuración."""
+    """Enumeración de todas las claves válidas dentro del JSON de configuración."""
     TEMA = "tema"
     ACENTO = "acento"
     MOSTRAR_BARRAS = "mostrar_barras"
@@ -60,7 +60,7 @@ class ConfigKey(Enum):
     ASISTENTE_MODELO = "asistente_modelo"
 
 class AppSettings(TypedDict):
-    """Estructura esperada de la configuración de la aplicación."""
+    """Define el esquema estricto de la configuración persistida en disco."""
     tema: str
     acento: str
     mostrar_barras: bool
@@ -79,7 +79,7 @@ class AppSettings(TypedDict):
     asistente_modelo: str
 
 class _NumericRange(NamedTuple):
-    """Define los límites mínimo y máximo permitidos para una configuración numérica."""
+    """Límites definidos para validar entradas numéricas y evitar desbordamientos."""
     min: int
     max: int
 
@@ -131,7 +131,7 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, _NumericRange]] = {
 }
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
-    """Decorador: Filtra tipos nulos y evita llamadas inconsistentes a validadores."""
+    """Decorador: Filtra llamadas inválidas o nulas antes de pasar al validador."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         val = args[1] if len(args) > 1 else kwargs.get("val")
         if val is None or (isinstance(val, bool) and func.__name__ != "bool"):
@@ -162,7 +162,7 @@ class _Validators:
 
     @staticmethod
     def bool(val: Any) -> Optional[bool]:
-        """Normaliza valores truthy a booleanos estándar."""
+        """Normaliza entradas truthy/falsy a booleanos estándar."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -197,7 +197,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Valida valores de configuración restringidos a listas específicas (Temas/Acentos)."""
+        """Valida valores de configuración restringidos a listas de enumeración."""
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
@@ -247,7 +247,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario arbitrario de datos y lo combina con los valores de fábrica."""
+    """Valida un diccionario arbitrario y lo fusiona con los valores de fábrica."""
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     validator_map = _get_validator_map()
@@ -280,7 +280,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Escribe los ajustes en disco de forma segura usando un archivo temporal y fsync."""
+    """Escribe los ajustes en disco usando una técnica atómica (temp + rename)."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     parent = ruta.parent.resolve(strict=False)
@@ -296,6 +296,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not parent.is_dir(): return None
     
     cleaned_settings = validate(values)
+    # Regla de seguridad: Si activamos el asistente, requerimos una clave válida.
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         
@@ -349,13 +350,13 @@ def assistant_api_key(custom_base: PathLike | None = None) -> str:
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Determina si el asistente IA debe estar operativo según estado y credenciales."""
+    """Determina si el asistente IA está listo para uso según credenciales configuradas."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", ""))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera un reporte legible de la configuración actual para la UI o logs."""
+    """Genera un reporte legible de la configuración actual para propósitos de log."""
     current = load(custom_base)
     key = assistant_api_key(custom_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")

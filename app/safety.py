@@ -90,6 +90,12 @@ class _IntegrityCheck(NamedTuple):
     predicate: ViolationPredicate
 
 
+class _CheckResult(NamedTuple):
+    """Resultado estructurado de un chequeo de integridad."""
+    is_safe: bool
+    reason: ProtectionReason | None = None
+
+
 def is_running_as_admin() -> bool:
     """Verifica si el proceso actual tiene privilegios elevados (Administrador)."""
     if os.name != 'nt':
@@ -176,10 +182,10 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Ejecuta validaciones físicas sobre la ruta iterando sobre los validadores definidos en _VALIDATORS."""
-    if not isinstance(path, Path):
-        raise UnsafePathError("Ruta no definida para chequeo de integridad.")
-    
+    """
+    Ejecuta validaciones físicas sobre la ruta.
+    Lanza UnsafePathError si alguna regla de integridad es violada.
+    """
     if len(path.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
@@ -328,12 +334,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         _validate_basic_path_safety(p, path_str)
         _validate_boundary_conditions(p, base_dir)
         
-        # Validación de integridad solo si el objeto persiste físicamente
+        # Validación de integridad solo si el objeto existe físicamente
         if p.exists():
             _check_file_integrity(p)
         else:
             parent = p.parent
-            # Solo validamos permisos de padre si el padre existe, para evitar race conditions
             if parent.exists():
                 if not os.access(parent, os.W_OK):
                     raise UnsafePathError("Escritura bloqueada: directorio padre restringido.")

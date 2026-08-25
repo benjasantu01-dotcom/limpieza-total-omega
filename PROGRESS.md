@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 99 | 12 | 15 | 15 | 107 |
-| 2026-08-25 | 119 | 7 | 15 | 12 | 103 |
+| 2026-08-24 | 97 | 12 | 15 | 15 | 105 |
+| 2026-08-25 | 122 | 7 | 16 | 12 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **57**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **38**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `duplicates.py`: **20**
 - `quarantine.py`: **20**
+- `duplicates.py`: **19**
 - `healthscore.py`: **18**
 - `assistant.py`: **17**
 - `diskreport.py`: **17**
-- `branding.py`: **16**
-- `settings.py`: **16**
+- `settings.py`: **17**
 - `organizer.py`: **15**
-- `scanner.py`: **14**
+- `scanner.py`: **15**
+- `branding.py`: **15**
+- `safety.py`: **14**
 - `browser.py`: **14**
-- `safety.py`: **13**
 - `main.py`: **12**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T11:08:27` **settings.py** (legibilidad y documentación): He mejorado la documentación interna y la legibilidad de `settings.py` añadiendo tipos específicos para las claves de configuración y documentando las precondiciones de validación, facilitando el mantenimiento futuro y la comprensión de las restricciones de seguridad.
+- `2026-08-25T11:07:46` **scanner.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings especializados y se refinó la tipografía del código para cumplir con estándares de claridad, facilitando la comprensión del flujo de datos en las heurísticas de escaneo sin alterar su lógica operativa.
+- `2026-08-25T11:07:22` **safety.py** (legibilidad y documentación): Se introdujo un `NamedTuple` estructurado para capturar el estado de integridad detallado dentro de `_check_file_integrity` y se reemplazó el flujo basado en excepciones genéricas por un manejo explícito de errores, mejorando la legibilidad del porqué una operación de seguridad falla (cumpliendo con la documentación del PORQUÉ).
 - `2026-08-25T10:58:37` **quarantine.py** (legibilidad y documentación): Documenté con docstrings claros y tipado estricto las funciones de bajo nivel que validan la integridad y seguridad de las rutas, mejorando la legibilidad del contrato esperado por los desarrolladores y la trazabilidad de los checks de seguridad.
 - `2026-08-25T10:57:55` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `memory.py` mediante la adición de docstrings técnicos en las estructuras de datos y funciones de bajo nivel, especificando el propósito de cada campo y la intención de las validaciones de seguridad para cumplir con el enfoque de legibilidad.
 - `2026-08-25T10:57:25` **main.py** (legibilidad y documentación): He mejorado la legibilidad del archivo `main.py` mediante la implementación de `docstrings` completos en los métodos de la clase `LimpiezaTotalOmegaApp` y la estandarización de las anotaciones de tipo (`type hints`) en métodos donde eran ambiguas, facilitando la comprensión del flujo de datos y la responsabilidad de cada componente.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T10:37:20` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `load()` capturando posibles errores de serialización JSON y excepciones críticas de E/S que podrían interrumpir la persistencia de datos, además de asegurar que `_get_validator_map` no sea invocado con claves inexistentes mediante una validación explícita en `update`.
 - `2026-08-25T10:27:02` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `scan_file`, asegurando que cualquier error al acceder a metadatos de archivos inexistentes o bloqueados sea capturado silenciosamente para evitar la interrupción del bucle de escaneo.
 - `2026-08-25T10:26:53` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y errores de acceso al normalizar el manejo de `path.exists()` y `parent.exists()`, evitando excepciones no capturadas al evaluar la integridad de archivos que pueden desaparecer durante la validación.
-- `2026-08-25T10:26:05` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación temprana y exhaustiva del espacio en disco antes de realizar cualquier operación de copia, además de centralizar la gestión de errores mediante bloques `try-finally` para asegurar que los archivos temporales sean siempre eliminados, evitando la acumulación de basura en el sandbox ante fallos.
-- `2026-08-25T10:15:45` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando explícitamente que los resultados de los `scorers` sean finitos, evitando que un cálculo matemático inesperado (como un NaN) contamine el resultado final de la función y garantizando que el usuario reciba un informe coherente incluso ante datos de entrada erróneos.
-- `2026-08-25T10:06:40` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando una validación previa estricta del tipo de archivo y existencia, centralizando el manejo de errores para evitar que excepciones de sistema durante la apertura o lectura interrumpan la ejecución del bucle.
