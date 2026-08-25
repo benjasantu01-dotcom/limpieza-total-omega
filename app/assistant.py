@@ -312,8 +312,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     found_data = False
     
-    sources = [s for s in (metrics, health, extra) 
-               if isinstance(s, (dict, object)) and not isinstance(s, (str, int, float, list, tuple, bool))]
+    sources = []
+    for s in (metrics, health, extra):
+        if isinstance(s, (dict, object)) and not isinstance(s, (str, int, float, list, tuple, bool)):
+            sources.append(s)
     
     for key, spec in _VALIDATORS.items():
         for src in sources:
@@ -322,12 +324,15 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
                 break
 
     for src in sources:
-        val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
-        if isinstance(val, str):
-            g_str = val[:10].strip()
-            if _ensure_safe_text(g_str):
-                ctx.grade = g_str
-                break
+        try:
+            val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
+            if isinstance(val, str):
+                g_str = val[:10].strip()
+                if _ensure_safe_text(g_str):
+                    ctx.grade = g_str
+                    break
+        except Exception:
+            continue
             
     ctx.analyzed = found_data
     return ctx

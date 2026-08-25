@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 117 | 12 | 18 | 17 | 112 |
-| 2026-08-25 | 101 | 6 | 14 | 10 | 97 |
+| 2026-08-24 | 113 | 12 | 18 | 17 | 112 |
+| 2026-08-25 | 102 | 6 | 14 | 10 | 100 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **50**
 - rendimiento: **46**
 - seguridad defensiva: **46**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **34**
+- manejo de errores y validación de entradas: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **20**
+- `duplicates.py`: **19**
 - `quarantine.py`: **19**
-- `healthscore.py`: **18**
-- `diskreport.py`: **17**
+- `assistant.py`: **18**
 - `organizer.py`: **17**
-- `assistant.py`: **17**
+- `healthscore.py`: **17**
 - `settings.py`: **16**
+- `diskreport.py`: **16**
 - `scanner.py`: **15**
 - `branding.py`: **14**
 - `safety.py`: **13**
 - `browser.py`: **13**
-- `main.py`: **12**
+- `main.py`: **11**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T09:58:36` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validaciones específicas para `SystemContext` ante fuentes de datos heterogéneas, evitando que tipos de datos inesperados causen excepciones silenciosas durante la carga de métricas.
 - `2026-08-25T08:34:45` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` y `settings_path` al evitar la manipulación de directorios con posibles puntos de reparse (junctions/symlinks) mediante una verificación explícita antes de cualquier operación de escritura, garantizando que `SETTINGS_DIR` no sea un destino controlado por terceros o una ruta recursiva.
 - `2026-08-25T08:28:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de aislamiento (`_atomic_isolate_file`) mediante una validación de propiedad del archivo destino (`is_safe_to_modify`) y la aplicación de un límite de tiempo de vida (TTL) implícito a través de la limpieza explícita de archivos temporales mediante `try...finally` incluso en casos de error, asegurando que no queden restos huérfanos tras fallos de escritura.
 - `2026-08-25T08:27:40` **organizer.py** (seguridad defensiva): Reforcé la integridad del proceso de escaneo recursivo mediante la validación del estado del enlace simbólico (`resolve()` y `is_symlink`) para evitar "escape" de directorios durante el barrido, y añadí una verificación de `resolve()` en la creación de rutas dentro de `_process_directory` para asegurar que el escáner se mantenga estrictamente dentro de los límites de las carpetas permitidas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T07:44:24` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo una validación explícita de `is_protected_path` sobre la ruta de destino, garantizando que ninguna operación de movimiento pueda colocar archivos accidentalmente dentro de directorios marcados como sensibles o protegidos por la lógica de `safety.py`.
 - `2026-08-25T07:44:14` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_parse_csv_row` para manejar correctamente archivos vacíos o líneas con datos truncados (como un PID presente pero un valor de memoria ausente), evitando errores de conversión y mejorando la robustez frente a lecturas parciales o inesperadas del comando PowerShell.
 - `2026-08-25T07:42:35` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante datos inconsistentes en `SystemMetrics` evitando divisiones por cero mediante protecciones explícitas en las funciones de `score` y garantizando que `_PREPARED_SCORERS` sea resiliente ante posibles configuraciones de pesos mal definidos.
-- `2026-08-25T07:23:14` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de métricas en `build_context` y `_validate_and_assign` mediante la validación estricta de tipos contra el diccionario de especificaciones, evitando que valores inesperados (como `None` o tipos incorrectos) causen errores en tiempo de ejecución o asignaciones silenciosas erróneas.
