@@ -182,9 +182,7 @@ def _safe_unlink(path: Path) -> bool:
         return False
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
-    """
-    Crea un nombre de archivo seguro para el sandbox.
-    """
+    """Crea un nombre de archivo seguro para el almacenamiento en el sandbox de cuarentena."""
     safe_name_chars = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
     parts = safe_name_chars.split('.')
     name_base = parts[0] if parts[0] else "q_file"
@@ -238,7 +236,10 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """Valida la sintaxis de la ruta para neutralizar intentos de Directory Traversal."""
+    """
+    Valida la sintaxis de la ruta para neutralizar ataques de Directory Traversal 
+    y nombres de archivo que puedan explotar debilidades del sistema de archivos.
+    """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
@@ -253,7 +254,7 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Realiza una auditoría exhaustiva antes del aislamiento."""
+    """Realiza una auditoría exhaustiva antes de proceder con el aislamiento de un archivo."""
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     
@@ -309,7 +310,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando escritura atómica."""
+    """Persiste el manifiesto usando escritura atómica para prevenir corrupción de estado."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     base_path = quarantine_dir(base)
@@ -337,14 +338,12 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     resolved_source = source.resolve()
     dest_dir = destination.parent.resolve()
     
-    # Pre-validación de espacio antes de cualquier operación
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size + (1024 * 1024)):
         raise OSError("Espacio insuficiente en disco para aislamiento seguro.")
 
     temp_path = None
     try:
-        # Usar tempfile para asegurar un nombre único y seguro en el sandbox
         with tempfile.NamedTemporaryFile(dir=dest_dir, prefix=".tmp_q_", delete=False) as tf:
             temp_path = Path(tf.name)
             

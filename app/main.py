@@ -137,7 +137,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._setup_application()
 
     def _setup_application(self) -> None:
-        """Inicialización protegida del entorno, estado y layout."""
+        """Inicialización protegida del entorno, estado y layout de la aplicación."""
         try:
             self._validate_environment()
             self._init_window_properties()
@@ -206,7 +206,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.configure(fg_color=bg_color)
 
     def _init_state(self) -> None:
-        """Inicializa cachés, hilos, estructuras de persistencia y flags."""
+        """Inicializa cachés, hilos, estructuras de persistencia y flags de la sesión."""
         self._cache: OrderedDict = OrderedDict()
         self._cache_ttl = 300
         self._cache_max_size = 20
@@ -248,8 +248,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _debounce_action(self, key: str, delay: int, callback: Callable[[], Any]) -> None:
         """
         Retrasa la ejecución de un callback para consolidar eventos rápidos 
-        (ej. redimensionado de ventana o redibujo de canvas) evitando saturar
-        el hilo principal con tareas redundantes.
+        evitando saturar el hilo principal con tareas redundantes.
         """
         if key in self._debounces:
             try:
@@ -265,12 +264,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _create_styled_label(self, parent: ctk.CTk, text: str, style: str, **kwargs: Any) -> ctk.CTkLabel:
         """
         Instancia una etiqueta con formato visual extraído del branding global.
-        
-        :param parent: Widget contenedor padre.
-        :param text: Texto de la etiqueta.
-        :param style: Estilo base definido en el branding ('title', 'body', 'caption').
-        :param kwargs: Argumentos adicionales para el widget ctk.CTkLabel.
-        :return: Etiqueta configurada (ctk.CTkLabel).
         """
         font_config = {"size": branding.font_size(style)}
         if style in ("title", "caption"): font_config["weight"] = "bold"
