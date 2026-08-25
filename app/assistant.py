@@ -291,7 +291,10 @@ def _ensure_safe_text(text: Any) -> bool:
 def _validate_and_assign(ctx: SystemContext, source: Any, is_dict: bool, key: str, spec: ValidatorSpec) -> bool:
     """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
     cast, min_v, max_v = spec
-    val = source.get(key) if is_dict else getattr(source, key, None)
+    try:
+        val = source.get(key) if is_dict else getattr(source, key, None)
+    except (AttributeError, TypeError):
+        return False
     
     if val is None or isinstance(val, bool): return False
     
@@ -320,10 +323,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
                 break
 
     for src, is_dict in src_types:
-        val = src.get("grade") if is_dict else getattr(src, "grade", None)
-        if isinstance(val, str) and _ensure_safe_text(val[:10].strip()):
-            ctx.grade = val[:10].strip()
-            break
+        try:
+            val = src.get("grade") if is_dict else getattr(src, "grade", None)
+            if isinstance(val, str) and _ensure_safe_text(val[:10].strip()):
+                ctx.grade = val[:10].strip()
+                break
+        except (AttributeError, TypeError):
+            continue
             
     ctx.analyzed = found_data
     return ctx

@@ -238,8 +238,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not directory:
         return
 
-    base_path = Path(directory).resolve()
-    if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
+    try:
+        base_path = Path(directory).resolve()
+        if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
+            return
+    except (OSError, RuntimeError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
@@ -399,7 +402,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             
         data = _collect_summary_data(p_input, skip_protected)
     except (OSError, PermissionError, RuntimeError, TypeError, ValueError) as e:
-        return [f"Error: No se pudo procesar la ruta: {str(e)}"]
+        return [f"Error al analizar el directorio: {str(e)}"]
 
     lines = [
         f"Carpeta analizada: {p_input}", 

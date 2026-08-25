@@ -139,7 +139,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     Utiliza Win32 API para identificar atributos de archivo (sistema, oculto, 
     archivo de sistema). Retorna False si no es Windows o si ocurre un error.
     """
-    if not kernel32 or not entry_path:
+    if not kernel32 or not entry_path or not isinstance(entry_path, str):
         return False
     try:
         attrs: int = kernel32.GetFileAttributesW(entry_path)
@@ -155,10 +155,13 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     Aplica filtros de seguridad (lista negra, rutas protegidas, enlaces simbólicos/junctions
     y atributos de sistema) para evitar seguir estructuras riesgosas durante la recursión.
     """
-    if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
+    if not entry or _is_excluded_file(entry.name):
         return True
-    
+        
     try:
+        # Validación de ruta protegida antes de operar
+        if is_protected_path(Path(entry.path)):
+            return True
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):
