@@ -154,8 +154,10 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Valida las condiciones de seguridad necesarias para realizar una operación
-    de E/S (lectura/movimiento), incluyendo chequeo de atributos y bloqueos.
+    Realiza una validación exhaustiva de seguridad antes de operaciones de I/O.
+    Verifica: integridad de rutas (is_safe_to_modify), prevención de recursión, 
+    restricciones de volumen (mismo anchor), atributos de sistema/ocultos, y 
+    estado de bloqueo del archivo.
     """
     try:
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest):
@@ -236,7 +238,11 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Evalúa si es factible mover un archivo, considerando espacio en disco y reglas de seguridad."""
+    """
+    Evalúa la viabilidad de mover un archivo. Verifica existencia, disponibilidad 
+    de espacio en el volumen de destino, seguridad de la ruta mediante 
+    _is_safe_to_move, y genera una ruta destino única evitando sobrescrituras.
+    """
     if not isinstance(junk_file.path, Path): return None
     try:
         src_path = junk_file.path.resolve()

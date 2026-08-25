@@ -359,6 +359,11 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     """
     Copia el archivo al sandbox. Verifica que el archivo no haya cambiado durante
     la copia y que el hash calculado en destino coincida con el esperado.
+    
+    Args:
+        source: Path original a aislar.
+        destination: Path de destino dentro del sandbox.
+        file_size: Tamaño esperado para validar integridad post-copia.
     """
     resolved_source = source.resolve()
     
