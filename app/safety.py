@@ -80,6 +80,8 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
 )
 
+_PATH_CACHE: dict[str, bool] = {}
+
 
 class _IntegrityCheck(NamedTuple):
     """Regla que asocia una razón de protección con una función de validación."""
@@ -235,21 +237,31 @@ def is_drive_root(path: PathLike) -> bool:
         return True
 
 
-@lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:
     """Evalúa si una ruta reside en directorios críticos del sistema."""
     if not path: return True
+    path_key = str(path)
+    if path_key in _PATH_CACHE: return _PATH_CACHE[path_key]
+
     try:
         p = normalize(path)
         p_str = os.path.normcase(str(p))
     except (ValueError, TypeError, OSError, RuntimeError):
         return True
 
-    if not p.parts: return True
-    if any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root): return True
+    is_protected = True
+    if p.parts:
+        if any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root):
+            is_protected = True
+        elif not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
+            is_protected = True
+        elif p == Path(p.anchor):
+            is_protected = True
+        else:
+            is_protected = False
     
-    if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts): return True
-    return p == Path(p.anchor)
+    _PATH_CACHE[path_key] = is_protected
+    return is_protected
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:

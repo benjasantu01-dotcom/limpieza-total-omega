@@ -190,19 +190,16 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     2. Detecta y previene colisiones con nombres reservados de Windows.
     3. Trunca la longitud total para evitar límites del sistema de archivos.
     """
-    # Conservamos solo caracteres seguros para el nombre de archivo
     safe_name_chars = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
     parts = safe_name_chars.split('.')
     name_base = parts[0] if parts[0] else "q_file"
     
-    # Prevenir nombres reservados de Windows (ej. CON.txt, NUL)
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
         
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
     safe_name = f"{name_base}{extension}"
     
-    # Prefijamos con el ID único para evitar colisiones y asegurar trazabilidad
     return f"{item_id}__{safe_name}"[:250]
 
 
@@ -218,7 +215,6 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
             raise UnsafePathError("Ruta de cuarentena inválida o vacía.")
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
-        # Validación extra de seguridad: confirmamos que la ruta resuelta es segura
         if not is_safe_to_modify(path):
             raise UnsafePathError("Directorio de cuarentena no cumple políticas de seguridad.")
         path.mkdir(parents=True, exist_ok=True)
@@ -374,7 +370,6 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     
     dest_dir = destination.parent.resolve()
     
-    # Pre-check espacio: requerimos espacio para el archivo + buffer
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size + (1024 * 1024)):
         raise OSError("Espacio insuficiente en disco para aislamiento seguro.")
@@ -451,7 +446,7 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
-        items_dict = _load_manifest_internal(str(dest_dir))
+        items_dict = _load_manifest_internal(str(dest_dir)).copy()
         quarantine_item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
@@ -488,7 +483,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise ValueError("ID de ítem inválido o vacío.")
         
     base_path = quarantine_dir(base)
-    items_dict = _load_manifest_internal(str(base_path))
+    items_dict = _load_manifest_internal(str(base_path)).copy()
     quarantine_item = items_dict.get(item_id)
     
     if not quarantine_item:
@@ -529,7 +524,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
     
     base_path = quarantine_dir(base)
-    items_dict = _load_manifest_internal(str(base_path))
+    items_dict = _load_manifest_internal(str(base_path)).copy()
     quarantine_item = items_dict.get(item_id)
     
     if not quarantine_item:
@@ -568,24 +563,27 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Elimina todos los archivos verificables del sandbox y sincroniza el manifiesto."""
     quarantine_root = quarantine_dir(base)
-    items_dict = _load_manifest_internal(str(quarantine_root))
+    items_dict = _load_manifest_internal(str(quarantine_root)).copy()
     if not items_dict:
         return 0
     
+    keys_to_remove = []
     purged_count = 0
-    for item_id, item in list(items_dict.items()):
+    for item_id, item in items_dict.items():
         stored_path = (quarantine_root / item.stored_name).resolve()
         
         if not stored_path.exists():
-            del items_dict[item_id]
+            keys_to_remove.append(item_id)
             continue
             
         if _is_item_purgable(stored_path, item, quarantine_root):
             if _safe_unlink(stored_path):
-                del items_dict[item_id]
+                keys_to_remove.append(item_id)
                 purged_count += 1
-            
-    if purged_count > 0:
+    
+    if keys_to_remove:
+        for k in keys_to_remove:
+            items_dict.pop(k, None)
         save_manifest(list(items_dict.values()), base)
     return purged_count
 

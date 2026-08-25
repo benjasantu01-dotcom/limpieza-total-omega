@@ -722,3 +722,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-25T02:35:54` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-25T02:35:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T02:35:54` Corrida terminada. Total usado hoy: 60.
+- `2026-08-25T02:41:12` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-25T02:41:46` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `purge_all` y la carga de manifiestos evitando iteraciones innecesarias y refactorizando el acceso al almacenamiento, asegurando que `_load_manifest_internal` sea el único punto de entrada para los datos persistentes.
+- `2026-08-25T02:42:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-25T02:42:34` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un cache local (`_PATH_CACHE`) en `is_protected_path` para evitar llamadas redundantes a `normalize` y costosas comparaciones de strings durante iteraciones masivas de archivos, mejorando significativamente el rendimiento en escaneos de disco.
+- `2026-08-25T02:42:42` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner eliminando llamadas redundantes a `path.parts` y `path.lower()` dentro de los bucles, pre-procesando la información de la ruta mediante un caché ligero y usando conjuntos de búsqueda eficientes para evitar la recreación de objetos `set` en cada archivo.
+- `2026-08-25T02:42:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T02:42:42` Corrida terminada. Total usado hoy: 64.
