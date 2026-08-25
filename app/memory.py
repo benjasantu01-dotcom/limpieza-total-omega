@@ -317,12 +317,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     """
     Realiza una auditoría de seguridad previa antes de invocar la manipulación 
     de memoria. 
-    
-    Verifica:
-    1. Que el handle corresponda al PID solicitado.
-    2. Que el proceso siga activo.
-    3. Que el ejecutable no esté en rutas protegidas o protegidas por enlaces/UNC.
-    4. Que no existan caracteres de ocultación RTL (Right-To-Left) en la ruta.
     """
     if not isinstance(pid, int) or pid <= 0: return False, "PID no válido."
     if not proc_handle or proc_handle == -1: return False, "Handle no válido."
@@ -367,9 +361,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar páginas de memoria física del proceso indicado mediante `EmptyWorkingSet`.
-    
-    REQUIERE: Privilegios de administrador o `SeDebugPrivilege` habilitado en el proceso de la app.
-    AVISO: Esta operación es invasiva y puede causar latencia temporal en el proceso objetivo.
     """
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
@@ -387,13 +378,16 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
         if not proc_handle or proc_handle == -1: 
-            return False, "Acceso denegado al proceso (requiere privilegios elevados)."
+            err = ctypes.get_last_error()
+            return False, f"Acceso denegado (Error {err}). Se requieren privilegios elevados."
             
         valid, reason = _is_safe_to_trim(proc_handle, target_pid)
         if not valid: 
             return False, reason or "Validación de proceso fallida."
+            
         if not psapi.EmptyWorkingSet(proc_handle):
-            return False, "Error al liberar memoria del proceso seleccionado."
+            err = ctypes.get_last_error()
+            return False, f"Error del sistema {err} al liberar memoria."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."

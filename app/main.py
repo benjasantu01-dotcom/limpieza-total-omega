@@ -158,7 +158,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if self._executor:
                 self._executor.shutdown(wait=False, cancel_futures=True)
                 self._executor = None
-        self.destroy()
+        try:
+            self.destroy()
+        except tk.TclError:
+            pass
 
     def _safe_run_ui_callback(self, callback: Callable[[], None]) -> None:
         """Ejecuta una actualización de UI solo si la ventana sigue abierta."""
@@ -214,7 +217,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raw = settings_mod.load()
             self.settings = raw if isinstance(raw, dict) else settings_mod.reset()
         except Exception as e:
-            logging.error("Fallo al cargar ajustes, reseteando: %e", e)
+            logging.error("Fallo al cargar ajustes, reseteando: %s", e)
             self.settings = settings_mod.reset()
             
         self.setting_vars: Dict[str, Any] = {}
@@ -228,8 +231,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _toggle_ui_availability(self, active: bool) -> None:
         """Habilita o deshabilita botones durante tareas asíncronas."""
         for btn in self._active_buttons:
-            if btn.winfo_exists():
-                btn.configure(state="normal" if active else "disabled")
+            try:
+                if btn.winfo_exists():
+                    btn.configure(state="normal" if active else "disabled")
+            except tk.TclError:
+                pass
 
     def _debounce_action(self, key: str, delay: int, callback: Callable[[], Any]) -> None:
         """
@@ -366,15 +372,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         constructor = getattr(self, method_name, None)
         tab_frame = self.tabs.get(name)
         
-        if constructor and tab_frame and tab_frame.winfo_exists():
+        if constructor and tab_frame:
             try:
-                safety.ensure_safe_to_modify(Path(".").resolve())
-                constructor()
-                self._initialized_tabs[name] = True
+                if tab_frame.winfo_exists():
+                    safety.ensure_safe_to_modify(Path(".").resolve())
+                    constructor()
+                    self._initialized_tabs[name] = True
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
-                if tab_frame.winfo_exists():
-                    self._create_styled_label(tab_frame, f"Error cargando módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
+                try:
+                    if tab_frame.winfo_exists():
+                        self._create_styled_label(tab_frame, f"Error cargando módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
+                except tk.TclError:
+                    pass
 
     def _build_tabs_container(self) -> None:
         """Genera el contenedor de pestañas (tabview) e inicializa cada una."""
@@ -404,8 +414,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for original_name in TABS:
             if branding.tab_label(original_name) == tab_label:
                 tab_frame = self.tabs.get(original_name)
-                if tab_frame and tab_frame.winfo_exists():
-                    self._tab_factory(original_name)
+                if tab_frame:
+                    try:
+                        if tab_frame.winfo_exists():
+                            self._tab_factory(original_name)
+                    except tk.TclError:
+                        pass
                 break
 
     def _build_header(self) -> None:
@@ -535,10 +549,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _render_gauge(self, score: int, grade: str) -> None:
         """Dibuja el gráfico del medidor de salud en el lienzo especificado."""
-        if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists():
-            return
-        
         try:
+            if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists():
+                return
+            
             self.gauge.delete("all")
             branding.draw_ring(self.gauge, score, size=176, thickness=15)
             
@@ -547,7 +561,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                                    font=("Segoe UI", branding.font_size("display"), "bold"))
             self.gauge.create_text(88, 116, text=f"nota {grade}", fill=color_nota,
                                    font=("Segoe UI", branding.font_size("body"), "bold"))
-        except (Exception, tk.TclError):
+        except (tk.TclError, Exception):
             pass
 
     def _build_tab_limpieza(self) -> None:
@@ -895,42 +909,48 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
         for tab, msgs in logs_por_tab.items():
             box = self._box(tab)
-            if box and box.winfo_exists():
+            if box:
                 try:
-                    box.insert("end", "\n".join(msgs) + "\n")
-                    box.see("end")
+                    if box.winfo_exists():
+                        box.insert("end", "\n".join(msgs) + "\n")
+                        box.see("end")
                 except tk.TclError:
                     pass
 
     def clear(self, tab: str = "Limpieza") -> None:
         """Limpia todo el texto del log de la pestaña especificada."""
         box = self._box(tab)
-        if box and box.winfo_exists():
-            box.delete("1.0", "end")
+        if box:
+            try:
+                if box.winfo_exists():
+                    box.delete("1.0", "end")
+            except tk.TclError:
+                pass
 
     def set_status(self, text: str) -> None:
         """Actualiza el mensaje de estado en el pie de página."""
-        if not self._closing and hasattr(self, 'status') and self.status.winfo_exists():
-            try:
+        try:
+            if not self._closing and hasattr(self, 'status') and self.status.winfo_exists():
                 self.status.configure(text=text)
-            except tk.TclError:
-                pass
+        except tk.TclError:
+            pass
 
     def log_lines(self, lines: List[str], tab: str) -> None:
         """Reemplaza el log de la pestaña con una lista de líneas nuevas."""
         self.clear(tab)
         box = self._box(tab)
-        if box and box.winfo_exists():
+        if box:
             try:
-                box.insert("1.0", "\n".join(lines))
-                box.see("1.0")
+                if box.winfo_exists():
+                    box.insert("1.0", "\n".join(lines))
+                    box.see("1.0")
             except tk.TclError:
                 pass
         self.report_data[tab.lower()] = list(lines)
 
     def _set_busy(self, busy: bool) -> None:
         """Gestiona el estado visual de la barra de progreso asíncrona."""
-        if self._closing or not hasattr(self, 'activity') or not self.activity.winfo_exists(): return
+        if self._closing or not hasattr(self, 'activity'): return
         
         with self._task_lock:
             if busy:
@@ -938,8 +958,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if self._tasks_running == 1:
                     self._toggle_ui_availability(False)
                     try:
-                        self.activity.pack(side="right")
-                        self.activity.start()
+                        if self.activity.winfo_exists():
+                            self.activity.pack(side="right")
+                            self.activity.start()
                     except tk.TclError:
                         pass
             else:
@@ -947,8 +968,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if self._tasks_running == 0:
                     self._toggle_ui_availability(True)
                     try:
-                        self.activity.stop()
-                        self.activity.pack_forget()
+                        if self.activity.winfo_exists():
+                            self.activity.stop()
+                            self.activity.pack_forget()
                     except tk.TclError:
                         pass
 
@@ -990,6 +1012,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._validate_and_log_error(e, tab)
         finally:
             if not self._closing:
+                # Usamos una lambda para manejar la posible falla de winfo_exists al set_busy
                 self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
 
     def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:
@@ -1012,7 +1035,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             etiqueta = self.tabview.get()
             if not isinstance(etiqueta, str): return "Limpieza"
-        except Exception:
+        except (Exception, tk.TclError):
             return "Limpieza"
         for nombre in TABS:
             if nombre in etiqueta:
@@ -1104,9 +1127,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._last_health_state = state_key
 
         def actualizar() -> None:
-            if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
-            
             try:
+                if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
+                
                 self._draw_gauge(resultado.score, resultado.grade)
                 self._update_cards(junk_mb, sospechosos, ram_libre, disco_libre)
                 self._update_health_bars(resultado)
@@ -1142,20 +1165,26 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             "disco": branding.score_color(disco_libre * 5),
         }
         for clave, label in self.cards.items():
-            if label.winfo_exists():
-                label.configure(text=valores[clave], text_color=colores[clave])
+            try:
+                if label.winfo_exists():
+                    label.configure(text=valores[clave], text_color=colores[clave])
+            except tk.TclError:
+                pass
 
     def _update_health_bars(self, resultado: healthscore.ScoreResult) -> None:
         """Actualiza las barras de progreso del desglose de salud."""
         for clave, (barra, label) in self.area_bars.items():
-            if barra.winfo_exists():
-                puntos = resultado.breakdown.get(clave, 0)
-                maximo = healthscore.WEIGHTS.get(clave, 1)
-                proporcion = puntos / maximo if maximo else 0
-                c = branding.score_color(proporcion * 100)
-                barra.configure(progress_color=c)
-                barra.set(proporcion)
-                label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
+            try:
+                if barra.winfo_exists():
+                    puntos = resultado.breakdown.get(clave, 0)
+                    maximo = healthscore.WEIGHTS.get(clave, 1)
+                    proporcion = puntos / maximo if maximo else 0
+                    c = branding.score_color(proporcion * 100)
+                    barra.configure(progress_color=c)
+                    barra.set(proporcion)
+                    label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
+            except tk.TclError:
+                pass
 
     def on_target_choice_changed(self, choice: str) -> None:
         """Maneja el selector de destinos del escaneo."""
@@ -1207,9 +1236,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
         box = self._box("Limpieza")
-        if box and box.winfo_exists():
-            box.delete("1.0", "end")
-            box.insert("1.0", "\n".join(lines))
+        if box:
+            try:
+                if box.winfo_exists():
+                    box.delete("1.0", "end")
+                    box.insert("1.0", "\n".join(lines))
+            except tk.TclError:
+                pass
 
     def on_stage(self) -> None:
         """Mueve los candidatos a revisión segura."""
@@ -1329,10 +1362,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             safety.ensure_safe_to_modify(Path(".").resolve())
             self.set_status("Aislando archivos...")
             aislados = 0
-            for item_s in aptos:
-                item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
-                self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
-                aislados += 1
+            for item_s in suspicions:
+                if self._is_safe_path(item_s.path):
+                    item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
+                    self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
+                    aislados += 1
             self.log(f"Listo: {aislados} aislado(s).", "Seguridad")
             self._invalidate_cache("suspicions")
 
