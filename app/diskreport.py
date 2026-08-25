@@ -198,7 +198,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
     try:
         p = Path(os.fspath(mount)).resolve(strict=False)
-        # Verificación defensiva contra rutas protegidas
         if is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
@@ -246,7 +245,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def _is_valid_traversal_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
-    """Verifica si una entrada del sistema de archivos debe ser ignorada por seguridad o tipo."""
+    """
+    Verifica si una entrada del sistema de archivos debe ser ignorada por seguridad o tipo.
+    """
     if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
         return False
     
@@ -277,8 +278,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     
     while stack:
         current_dir = stack.pop()
-        
         depth = depths.get(current_dir, 0)
+        
         if depth > MAX_DEPTH:
             continue
             
@@ -321,11 +322,8 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
-    return [FileEntry(path=p, size_bytes=s) for s, p in heapq.nlargest(
-        limit, 
-        ((s, p) for p, s in walk_files(directory, skip_protected)),
-        key=lambda x: x[0]
-    )]
+    items = ((s, p) for p, s in walk_files(directory, skip_protected))
+    return [FileEntry(path=p, size_bytes=s) for s, p in heapq.nlargest(limit, items, key=lambda x: x[0])]
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
@@ -374,7 +372,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(p_base, skip_protected):
             try:
-                # Obtener la carpeta de nivel superior inmediata a p_base
                 relative = path.relative_to(p_base)
                 if not relative.parts:
                     continue
@@ -415,6 +412,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     
+    # Heap para mantener los 8 archivos más grandes durante la iteración
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
@@ -424,14 +422,15 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
+        # Mantenimiento del heap para el top-8
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, path))
             
-    top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
+    sorted_top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
             
-    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files)
+    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, sorted_top_files)
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
