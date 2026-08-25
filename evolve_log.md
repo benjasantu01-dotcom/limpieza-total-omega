@@ -514,3 +514,39 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-25T13:00:16` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al agregar una verificación explícita mediante `is_protected_path` para prevenir la resolución o escaneo de rutas que, aunque parezcan estar dentro de la raíz, apunten a nodos del sistema protegidos (como directorios de sistema mediante enlaces o alias).
 - `2026-08-25T13:00:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T13:00:16` Corrida terminada. Total usado hoy: 304.
+- `2026-08-25T13:08:55` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-25T13:09:26` Tests FALLARON:
+```
+'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_assistant_is_off_by_default - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_save_then_load_keeps_the_values - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_env_var_wins_over_the_config_file - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - KeyError: 'asistente_activado'
+14 failed, 285 passed in 1.44s
+
+```
+- `2026-08-25T13:09:26` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `_Validators.path` y `_Validators._run_safety_checks` para prevenir ataques de *path traversal* o manipulación de enlaces simbólicos que apunten fuera del directorio esperado, asegurando que `resolve()` no ignore la estructura de permisos al procesar rutas relativas.
+- `2026-08-25T13:10:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-25T13:10:19` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-25T13:10:19` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-25T13:10:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-25T13:10:39` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-25T13:11:09` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-25T13:11:09` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-25T13:11:24` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-25T13:11:24` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-25T13:11:44` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-25T13:11:44` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-25T13:12:14` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-25T13:12:14` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-25T13:12:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T13:12:14` Corrida terminada. Total usado hoy: 308.
