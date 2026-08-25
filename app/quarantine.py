@@ -183,15 +183,26 @@ def _safe_unlink(path: Path) -> bool:
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     """
-    Crea un nombre de archivo seguro para el sandbox. Previene colisiones y evita
-    nombres de dispositivos reservados que el kernel de Windows interpretaría incorrectamente.
+    Crea un nombre de archivo seguro para el sandbox.
+    
+    Aplica una sanitización estricta:
+    1. Filtra caracteres no alfanuméricos o no permitidos.
+    2. Detecta y previene colisiones con nombres reservados de Windows.
+    3. Trunca la longitud total para evitar límites del sistema de archivos.
     """
-    safe_chars = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
-    parts = safe_chars.split('.')
+    # Conservamos solo caracteres seguros para el nombre de archivo
+    safe_name_chars = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
+    parts = safe_name_chars.split('.')
     name_base = parts[0] if parts[0] else "q_file"
+    
+    # Prevenir nombres reservados de Windows (ej. CON.txt, NUL)
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
-    safe_name = f"{name_base}.{parts[-1]}" if len(parts) > 1 else name_base
+        
+    extension = f".{parts[-1]}" if len(parts) > 1 else ""
+    safe_name = f"{name_base}{extension}"
+    
+    # Prefijamos con el ID único para evitar colisiones y asegurar trazabilidad
     return f"{item_id}__{safe_name}"[:250]
 
 

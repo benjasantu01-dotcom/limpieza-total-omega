@@ -166,6 +166,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         stat = src.stat()
         if not stat.st_mode: return False
         
+        # 0x46: FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM
         if os.name == "nt" and (stat.st_file_attributes & 0x46): 
             return False
         

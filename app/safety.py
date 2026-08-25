@@ -173,7 +173,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Ejecuta validaciones físicas sobre la ruta iterando sobre los validadores."""
+    """Ejecuta validaciones físicas sobre la ruta iterando sobre los validadores definidos en _VALIDATORS."""
     if not isinstance(path, Path):
         raise UnsafePathError("Ruta no definida para chequeo de integridad.")
     
@@ -181,16 +181,16 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
     try:
-        st = path.stat()
+        file_stat: os.stat_result = path.stat()
     except Exception as e:
         raise UnsafePathError(f"Error de acceso a metadatos: {e}")
 
     if not os.access(path, os.W_OK):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}")
 
-    for validator in _VALIDATORS:
-        if validator.predicate(path, st):
-            raise UnsafePathError(f"Operación denegada: {validator.reason.value}")
+    for rule in _VALIDATORS:
+        if rule.predicate(path, file_stat):
+            raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
 
 
 @lru_cache(maxsize=2048)
@@ -221,10 +221,6 @@ def normalize(path: PathLike) -> Path:
         
     try:
         p = Path(path_str).expanduser()
-        # Verificar integridad del objeto antes de resolver
-        if not p.anchor and len(p.parts) > 0 and p.parts[0] not in ('.', '..'):
-            # Es ruta relativa, intentamos resolverla sin arriesgar el sistema
-            pass
         return p.resolve(strict=False)
     except (OSError, RuntimeError, TypeError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
@@ -252,7 +248,6 @@ def is_protected_path(path: PathLike) -> bool:
     if not p.parts: return True
     if any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root): return True
     
-    # Optimización: verificación de set O(1) en lugar de iterar sobre partes
     if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts): return True
     return p == Path(p.anchor)
 
