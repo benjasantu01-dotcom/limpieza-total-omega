@@ -191,6 +191,9 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
     try:
         p = Path(os.fspath(mount)).resolve(strict=False)
+        # Seguridad defensiva: evitar rutas inusuales o caracteres de control
+        if any(c < ' ' for c in str(p)):
+            return None
         if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
@@ -248,6 +251,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Seguridad defensiva: rechazar reparse points y enlaces simbólicos complejos
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         

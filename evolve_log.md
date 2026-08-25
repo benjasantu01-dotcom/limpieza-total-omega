@@ -493,3 +493,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-25T12:29:52` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_call_gemini` validando el tamaño del contenido de la respuesta antes de intentar decodificarla y agregando una sanitización explícita sobre los datos recibidos de la red para prevenir la inyección de caracteres de control o rutas en el flujo de la aplicación.
 - `2026-08-25T12:29:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T12:29:52` Corrida terminada. Total usado hoy: 292.
+- `2026-08-25T12:38:22` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-08-25T12:38:57` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` consolidando el chequeo de seguridad antes de cualquier operación de I/O y utilizando `ensure_safe_to_modify` para cumplir con las guías de protección contra borrados o escrituras no autorizadas.
+- `2026-08-25T12:39:28` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-25T12:39:55` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` para detectar y rechazar explícitamente rutas que contengan caracteres de control o puntos de reparse inusuales, garantizando que el análisis de disco no pueda ser engañado por estructuras de archivos anómalas o rutas mal formadas.
+- `2026-08-25T12:40:05` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en las funciones de hashing y en `suggest_keeper` utilizando `is_protected_path` como barrera adicional antes de procesar archivos, garantizando que incluso si un archivo pasa la validación de `is_safe_to_modify`, no se incluya si explícitamente pertenece a zonas protegidas.
+- `2026-08-25T12:40:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T12:40:05` Corrida terminada. Total usado hoy: 296.

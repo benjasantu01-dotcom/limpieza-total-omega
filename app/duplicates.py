@@ -64,7 +64,8 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if path is None: return None
     try:
         path_obj = Path(path).resolve()
-        if not path_obj.exists() or not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
+        if not path_obj.exists() or not path_obj.is_file(): return None
+        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj): return None
         if not os.access(path_obj, os.R_OK): return None
         
         digest = hashlib.sha256()
@@ -81,7 +82,8 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if path is None: return None
     try:
         path_obj = Path(path).resolve()
-        if not path_obj.exists() or not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
+        if not path_obj.exists() or not path_obj.is_file(): return None
+        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj): return None
         if not os.access(path_obj, os.R_OK): return None
         
         with open(path_obj, "rb") as f:
@@ -204,7 +206,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if p is None: continue
         try:
             p_obj = Path(p).resolve()
-            if p_obj.exists() and p_obj.is_file() and is_safe_to_modify(p_obj):
+            if p_obj.exists() and p_obj.is_file() and not is_protected_path(p_obj) and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
                 candidates.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
         except (OSError, PermissionError, ValueError):
@@ -225,7 +227,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
         if not isinstance(path, Path): continue
         try:
             p_obj = path.resolve()
-            if not is_safe_to_modify(p_obj):
+            if is_protected_path(p_obj) or not is_safe_to_modify(p_obj):
                 lines.append(f"   [inseguro] {path}")
                 continue
             label = 'conservar' if keeper is not None and p_obj == keeper else 'duplicado'
