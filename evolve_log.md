@@ -447,3 +447,28 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-25T11:49:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` evitando llamadas redundantes a `os.path.realpath` y `exists()` cuando ya contamos con una entrada positiva en `_EXISTS_CACHE`, reduciendo significativamente la I/O de disco durante el escaneo.
 - `2026-08-25T11:49:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T11:49:05` Corrida terminada. Total usado hoy: 276.
+- `2026-08-25T11:57:32` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-25T11:58:09` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del motor local al añadir una validación de estado en `_identify_active_problems` y `context_as_text`, asegurando que no se procesen contextos malformados o vacíos, y añadiendo `float('inf')` a la lista de tipos prohibidos para evitar el colapso de las funciones de formateo.
+- `2026-08-25T11:58:41` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos de sistema (como falta de permisos o discos de solo lectura) mediante una validación más estricta de la ruta destino antes de intentar cualquier operación de escritura, asegurando que no se lancen excepciones inesperadas.
+- `2026-08-25T11:59:06` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se fortaleció `_sum_directory_recursive` para manejar casos de rutas inexistentes o inaccesibles dentro de la recursión, evitando que el escaneo se aborte prematuramente o falle ante cambios dinámicos del sistema de archivos mientras se recorre.
+- `2026-08-25T11:59:20` Tests FALLARON:
+```
+t has no attribute 'exists'
+
+app/diskreport.py:251: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_largest_files_sorted_descending - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_largest_files_respects_the_limit - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_groups_and_counts - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_labels_files_without_extension - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_total_size_counts_bytes_and_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_totals - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+9 failed, 290 passed in 1.44s
+
+```
+- `2026-08-25T11:59:20` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia (`entry.exists()`) dentro de `walk_files` para manejar de forma robusta condiciones de carrera donde un archivo desaparece entre la enumeración del directorio y el intento de acceso, evitando excepciones innecesarias en sistemas de archivos dinámicos.
+- `2026-08-25T11:59:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T11:59:20` Corrida terminada. Total usado hoy: 280.

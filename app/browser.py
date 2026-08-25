@@ -187,6 +187,9 @@ def _sum_directory_recursive(
     """
     if root_dir in memo:
         return memo[root_dir]
+    
+    if not os.path.exists(root_dir):
+        return 0
 
     def _walk(current_dir: str, depth: int) -> int:
         if not _is_within_depth_limit(depth, current_dir):
@@ -205,9 +208,9 @@ def _sum_directory_recursive(
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat(follow_symlinks=False)
                             total += stat.st_size
-                    except (OSError, PermissionError):
+                    except (OSError, PermissionError, FileNotFoundError):
                         continue
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, FileNotFoundError):
             return 0
         return total
 

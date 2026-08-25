@@ -7,45 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 19
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 27
+- Sin cambios (nada sustancial que mejorar): 26
 - Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 89 | 11 | 14 | 12 | 102 |
-| 2026-08-25 | 131 | 8 | 17 | 15 | 105 |
+| 2026-08-24 | 86 | 11 | 14 | 11 | 102 |
+| 2026-08-25 | 134 | 9 | 17 | 15 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - rendimiento: **46**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
-- `quarantine.py`: **21**
+- `memory.py`: **21**
+- `quarantine.py`: **20**
 - `duplicates.py`: **19**
+- `assistant.py`: **18**
 - `settings.py`: **18**
-- `assistant.py`: **17**
 - `healthscore.py`: **17**
 - `diskreport.py`: **17**
+- `branding.py`: **15**
 - `scanner.py`: **15**
-- `organizer.py`: **14**
+- `browser.py`: **15**
 - `safety.py`: **14**
-- `branding.py`: **14**
-- `browser.py`: **14**
+- `organizer.py`: **13**
 - `main.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T11:59:06` **browser.py** (robustez ante casos límite): Se fortaleció `_sum_directory_recursive` para manejar casos de rutas inexistentes o inaccesibles dentro de la recursión, evitando que el escaneo se aborte prematuramente o falle ante cambios dinámicos del sistema de archivos mientras se recorre.
+- `2026-08-25T11:58:41` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos de sistema (como falta de permisos o discos de solo lectura) mediante una validación más estricta de la ruta destino antes de intentar cualquier operación de escritura, asegurando que no se lancen excepciones inesperadas.
+- `2026-08-25T11:58:09` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local al añadir una validación de estado en `_identify_active_problems` y `context_as_text`, asegurando que no se procesen contextos malformados o vacíos, y añadiendo `float('inf')` a la lista de tipos prohibidos para evitar el colapso de las funciones de formateo.
 - `2026-08-25T11:48:49` **settings.py** (rendimiento): Optimicé el sistema de caché en `load()` para evitar llamadas innecesarias al sistema de archivos mediante una validación previa del estado (`stat`) y refactoricé el `validator_map` para que se defina como una constante estática, eliminando la creación de un nuevo diccionario y el uso de funciones lambda en cada acceso a la configuración.
 - `2026-08-25T11:48:15` **scanner.py** (rendimiento): Optimicé el bucle de escaneo evitando la resolución repetida de rutas mediante `path.parts` y `resolve()` dentro de los chequeos, usando en su lugar comprobaciones de prefijos de cadena (`str.startswith` o `in`) y acceso directo a los atributos del `os.DirEntry` ya presente en el proceso.
 - `2026-08-25T11:38:34` **quarantine.py** (rendimiento): Se implementó un enfoque de rendimiento en `purge_all` y `total_quarantined_bytes` evitando llamadas repetidas a `Path.resolve()` y `quarantine_dir()` dentro de bucles, utilizando variables locales cacheadas para reducir la sobrecarga de resolución de rutas en el sistema de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T11:08:27` **settings.py** (legibilidad y documentación): He mejorado la documentación interna y la legibilidad de `settings.py` añadiendo tipos específicos para las claves de configuración y documentando las precondiciones de validación, facilitando el mantenimiento futuro y la comprensión de las restricciones de seguridad.
 - `2026-08-25T11:07:46` **scanner.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings especializados y se refinó la tipografía del código para cumplir con estándares de claridad, facilitando la comprensión del flujo de datos en las heurísticas de escaneo sin alterar su lógica operativa.
 - `2026-08-25T11:07:22` **safety.py** (legibilidad y documentación): Se introdujo un `NamedTuple` estructurado para capturar el estado de integridad detallado dentro de `_check_file_integrity` y se reemplazó el flujo basado en excepciones genéricas por un manejo explícito de errores, mejorando la legibilidad del porqué una operación de seguridad falla (cumpliendo con la documentación del PORQUÉ).
-- `2026-08-25T10:58:37` **quarantine.py** (legibilidad y documentación): Documenté con docstrings claros y tipado estricto las funciones de bajo nivel que validan la integridad y seguridad de las rutas, mejorando la legibilidad del contrato esperado por los desarrolladores y la trazabilidad de los checks de seguridad.
-- `2026-08-25T10:57:55` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `memory.py` mediante la adición de docstrings técnicos en las estructuras de datos y funciones de bajo nivel, especificando el propósito de cada campo y la intención de las validaciones de seguridad para cumplir con el enfoque de legibilidad.
-- `2026-08-25T10:57:25` **main.py** (legibilidad y documentación): He mejorado la legibilidad del archivo `main.py` mediante la implementación de `docstrings` completos en los métodos de la clase `LimpiezaTotalOmegaApp` y la estandarización de las anotaciones de tipo (`type hints`) en métodos donde eran ambiguas, facilitando la comprensión del flujo de datos y la responsabilidad de cada componente.
