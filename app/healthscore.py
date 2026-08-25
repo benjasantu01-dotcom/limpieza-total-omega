@@ -154,24 +154,31 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud para archivos basura basados en su volumen en MB."""
     return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Calcula el ratio de salud de seguridad penalizando hallazgos y advertencias."""
     return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud de memoria basado en el porcentaje de disponibilidad."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud de disco basado en el porcentaje de espacio libre."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud para duplicados penalizando el espacio ocupado."""
     return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
+    """Calcula el ratio de salud para programas de inicio penalizando su cantidad."""
     return _clamp(1.0 - (max(0, _to_int(startup_count)) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
+    """Asigna una letra de calificación basada en el puntaje numérico (0-100)."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -193,11 +200,13 @@ _PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], No
 ]
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    # Verificación estricta de tipo e integridad de configuración
+    """
+    Computa el resultado final de salud del sistema.
+    Realiza la agregación ponderada de cada sub-métrica y genera recomendaciones.
+    """
     if not isinstance(metrics, SystemMetrics) or sum(WEIGHTS.values()) != 100:
         return HealthResult(0, "F", {}, ["Error interno: Configuración inválida."])
     
-    # Asegurar sanitización profunda y finitud de los valores
     metrics.validate()
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error interno: Datos corruptos o no finitos."])
@@ -230,6 +239,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     )
 
 def summarize(result: HealthResult) -> List[str]:
+    """Genera una representación en texto para el informe de salud del sistema."""
     if not isinstance(result, HealthResult): return ["Error: Formato de informe inválido."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:

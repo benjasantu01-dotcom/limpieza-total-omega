@@ -64,6 +64,7 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
+    Retorna el digest hexadecimal o None si el archivo es inaccesible o inseguro.
     """
     if path is None: return None
     try:
@@ -83,6 +84,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Calcula el hash SHA256 de los primeros N bytes para filtrado heurístico rápido.
+    Retorna el digest hexadecimal o None en caso de error.
     """
     if path is None: return None
     try:
@@ -100,7 +102,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
-    Clasifica una lista de rutas según su tamaño en disco (st_size).
+    Clasifica una lista de rutas según su tamaño en bytes.
     Filtra automáticamente rutas protegidas o no modificables.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
@@ -124,7 +126,10 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """Realiza un recorrido recursivo en el sistema de archivos buscando candidatos."""
+    """
+    Realiza un recorrido recursivo en el sistema de archivos buscando candidatos
+    que cumplan el umbral de tamaño mínimo.
+    """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
     processed_dirs: set[Path] = set()
@@ -167,7 +172,7 @@ def _collect_candidates(
 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica una función de hash a una lista de archivos y agrupa colisiones."""
+    """Aplica la función hash indicada a una lista de rutas y agrupa por colisiones de digest."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path and (digest := hash_func(path)):
@@ -188,7 +193,10 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 
 
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Orquesta la búsqueda recursiva y procesa los resultados por bloques de tamaño."""
+    """
+    Orquesta la búsqueda recursiva y procesa los resultados por bloques de tamaño.
+    Retorna una lista de DuplicateGroup ordenados por espacio desperdiciado descendente.
+    """
     if directories is None or min_size < 0: return []
     groups: List[DuplicateGroup] = []
     for size, paths in _collect_candidates(directories, min_size, skip_protected).items():
@@ -198,13 +206,16 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Calcula la suma total de espacio desperdiciado por los duplicados."""
+    """Calcula la suma total de bytes recuperables de un conjunto de grupos."""
     if not groups: return 0
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Selecciona heurísticamente el archivo 'original' para conservar."""
+    """
+    Selecciona heurísticamente el archivo 'original' para conservar basándose en
+    antigüedad (mtime) y brevedad de la ruta.
+    """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
@@ -223,7 +234,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera líneas de texto formateadas para reportes."""
+    """Genera una representación textual formateada de un grupo para reportes."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
     keeper = suggest_keeper(group)

@@ -82,8 +82,7 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """
     Estructura de datos Win32 para la API GlobalMemoryStatusEx.
-    dwLength debe establecerse a sizeof(MEMORYSTATUSEX) antes de la llamada,
-    de lo contrario la API fallará (comportamiento estándar de Win32).
+    dwLength debe establecerse a sizeof(MEMORYSTATUSEX) antes de la llamada.
     """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
@@ -143,7 +142,7 @@ def format_bytes(num: Optional[int | float]) -> str:
     return f"{val:.{0 if idx == 0 else 1}f} {BYTE_UNITS[idx]}"
 
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Instancia la estructura requerida por la API de Windows con dwLength inicializado."""
+    """Instancia la estructura requerida por la API de Windows."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
@@ -319,7 +318,13 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Realiza una auditoría de seguridad previa antes de invocar la manipulación 
-    de memoria. Verifica que el proceso sea legítimo y no esté en rutas protegidas.
+    de memoria. 
+    
+    Verifica:
+    1. Que el handle corresponda al PID solicitado.
+    2. Que el proceso siga activo.
+    3. Que el ejecutable no esté en rutas protegidas o protegidas por enlaces/UNC.
+    4. Que no existan caracteres de ocultación RTL (Right-To-Left) en la ruta.
     """
     if not isinstance(pid, int) or pid <= 0: return False, "PID no válido."
     if not proc_handle or proc_handle == -1: return False, "Handle no válido."
@@ -363,9 +368,10 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
-    Intenta liberar páginas de memoria física del proceso indicado.
-    Requiere privilegios de depuración o acceso suficiente al proceso.
-    Esta es una operación invasiva: solo se usa tras pasar `_is_safe_to_trim`.
+    Intenta liberar páginas de memoria física del proceso indicado mediante `EmptyWorkingSet`.
+    
+    REQUIERE: Privilegios de administrador o `SeDebugPrivilege` habilitado en el proceso de la app.
+    AVISO: Esta operación es invasiva y puede causar latencia temporal en el proceso objetivo.
     """
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
@@ -383,7 +389,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
         if not proc_handle or proc_handle == -1: 
-            return False, "Acceso denegado al proceso (podría requerir privilegios elevados)."
+            return False, "Acceso denegado al proceso (requiere privilegios elevados)."
             
         valid, reason = _is_safe_to_trim(proc_handle, target_pid)
         if not valid: 
