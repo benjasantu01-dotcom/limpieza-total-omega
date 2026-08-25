@@ -206,24 +206,25 @@ class _Validators:
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
         return _Validators._validate_enum_str(text, key)
 
-_VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
-    ConfigKey.TEMA: _Validators.str,
-    ConfigKey.ACENTO: _Validators.str,
-    ConfigKey.ABRIR_EN: _Validators.str,
-    ConfigKey.ULTIMA_CARPETA: _Validators.str,
-    ConfigKey.ASISTENTE_CLAVE_API: _Validators.str,
-    ConfigKey.ASISTENTE_MODELO: _Validators.str,
-    ConfigKey.MOSTRAR_BARRAS: lambda k, v: _Validators.bool(v),
-    ConfigKey.ANIMACIONES: lambda k, v: _Validators.bool(v),
-    ConfigKey.CONFIRMAR_SIEMPRE: lambda k, v: _Validators.bool(v),
-    ConfigKey.RECORDAR_ULTIMA_CARPETA: lambda k, v: _Validators.bool(v),
-    ConfigKey.ANALISIS_EN_PARALELO: lambda k, v: _Validators.bool(v),
-    ConfigKey.ASISTENTE_ACTIVADO: lambda k, v: _Validators.bool(v),
-    ConfigKey.ASISTENTE_ENVIAR_METRICAS: lambda k, v: _Validators.bool(v),
-    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
-    ConfigKey.TOP_ARCHIVOS: _Validators.int,
-    ConfigKey.TOP_PROCESOS: _Validators.int
-}
+def _get_validator_map() -> dict[ConfigKey, Callable[[ConfigKey, Any], Any]]:
+    return {
+        ConfigKey.TEMA: _Validators.str,
+        ConfigKey.ACENTO: _Validators.str,
+        ConfigKey.ABRIR_EN: _Validators.str,
+        ConfigKey.ULTIMA_CARPETA: _Validators.str,
+        ConfigKey.ASISTENTE_CLAVE_API: _Validators.str,
+        ConfigKey.ASISTENTE_MODELO: _Validators.str,
+        ConfigKey.MOSTRAR_BARRAS: lambda k, v: _Validators.bool(v),
+        ConfigKey.ANIMACIONES: lambda k, v: _Validators.bool(v),
+        ConfigKey.CONFIRMAR_SIEMPRE: lambda k, v: _Validators.bool(v),
+        ConfigKey.RECORDAR_ULTIMA_CARPETA: lambda k, v: _Validators.bool(v),
+        ConfigKey.ANALISIS_EN_PARALELO: lambda k, v: _Validators.bool(v),
+        ConfigKey.ASISTENTE_ACTIVADO: lambda k, v: _Validators.bool(v),
+        ConfigKey.ASISTENTE_ENVIAR_METRICAS: lambda k, v: _Validators.bool(v),
+        ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
+        ConfigKey.TOP_ARCHIVOS: _Validators.int,
+        ConfigKey.TOP_PROCESOS: _Validators.int
+    }
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
@@ -238,10 +239,11 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 def validate(raw_values: Any) -> AppSettings:
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
+    validator_map = _get_validator_map()
     for key_str, val in raw_values.items():
         key = _STR_TO_ENUM.get(key_str)
-        if key and key in _VALIDATOR_MAP:
-            validated = _VALIDATOR_MAP[key](key, val)
+        if key and key in validator_map:
+            validated = validator_map[key](key, val)
             if validated is not None:
                 config[key.value] = validated # type: ignore
     return config
@@ -302,10 +304,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     current = load(custom_base).copy()
     modified = False
+    validator_map = _get_validator_map()
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)
-        if key_enum and key_enum in _VALIDATOR_MAP:
-            val = _VALIDATOR_MAP[key_enum](key_enum, v)
+        if key_enum and key_enum in validator_map:
+            val = validator_map[key_enum](key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val # type: ignore
                 modified = True

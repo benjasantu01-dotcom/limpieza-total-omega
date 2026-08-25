@@ -311,7 +311,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     found_data = False
-    sources = [s for s in [metrics, health, extra] if s is not None and not isinstance(s, (str, int, float))]
+    
+    # Filtrar fuentes no válidas para evitar excepciones al iterar o acceder
+    sources = [s for s in [metrics, health, extra] 
+               if s is not None and isinstance(s, (dict, object)) and not isinstance(s, (str, int, float, list, tuple))]
     
     for key, spec in _VALIDATORS.items():
         for src in sources:
