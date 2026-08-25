@@ -202,13 +202,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios_cache: ScoreMap = {}
     accumulated_points: int = 0
     
-    # Cálculo ponderado del puntaje
+    # Cálculo ponderado del puntaje utilizando la lista pre-compilada
     for area, weight, scorer in _PREPARED_SCORERS:
         ratio = scorer(metrics)
         if not math.isfinite(ratio):
             ratio = 0.0
         ratios_cache[area] = ratio
-        # Se asegura que weight sea int para evitar errores de redondeo inesperados
         points = int(round(ratio * float(weight)))
         metric_breakdown[area] = points
         accumulated_points += points

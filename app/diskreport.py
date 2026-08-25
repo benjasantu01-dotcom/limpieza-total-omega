@@ -228,25 +228,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     return results
 
 
-def _is_valid_traversal_entry(entry: os.DirEntry, root: Path, skip_protected: bool) -> bool:
-    """
-    Verifica si una entrada del sistema de archivos debe ser ignorada por seguridad.
-    """
-    if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
-        return False
-    
-    entry_path = Path(entry.path).resolve()
-    try:
-        entry_path.relative_to(root)
-    except ValueError:
-        return False
-    
-    if skip_protected and is_protected_path(entry_path):
-        return False
-        
-    return True
-
-
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente mediante `os.scandir`.
@@ -258,47 +239,36 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
         return
 
-    def _process_directory(current_dir: Path, current_depth: int) -> Generator[Tuple[Path, int], None, None]:
-        """Recorre un directorio y cede archivos o añade subdirectorios a la pila."""
+    visited_inodes: set[Tuple[int, int]] = set()
+    stack: List[Path] = [base_path]
+    
+    while stack:
+        current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if not _is_valid_traversal_entry(entry, base_path, skip_protected):
-                        continue
-                    
-                    if entry.is_dir(follow_symlinks=False):
-                        if current_depth < 100:
-                            yield entry.path, current_depth + 1
-                    elif entry.is_file(follow_symlinks=False):
-                        try:
+                    try:
+                        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
+                            continue
+                        
+                        if entry.is_dir(follow_symlinks=False):
+                            p = Path(entry.path)
+                            if skip_protected and is_protected_path(p):
+                                continue
+                            
+                            st = entry.stat()
+                            inode_key = (st.st_dev, st.st_ino)
+                            if inode_key not in visited_inodes:
+                                visited_inodes.add(inode_key)
+                                stack.append(p)
+                                
+                        elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
                             yield Path(entry.path), max(0, f_stat.st_size)
-                        except (PermissionError, FileNotFoundError, OSError):
-                            continue
+                    except (PermissionError, FileNotFoundError, OSError):
+                        continue
         except (PermissionError, FileNotFoundError, OSError):
             pass
-
-    visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Tuple[Path, int]] = [(base_path, 0)]
-    
-    while stack:
-        current_dir, depth = stack.pop()
-        
-        for item, val in _process_directory(current_dir, depth):
-            if isinstance(val, int) and isinstance(item, str):
-                # Es un subdirectorio descubierto
-                p_item = Path(item)
-                try:
-                    stat_data = p_item.stat()
-                    inode_key = (stat_data.st_dev, stat_data.st_ino)
-                    if inode_key not in visited_inodes:
-                        visited_inodes.add(inode_key)
-                        stack.append((p_item, val))
-                except OSError:
-                    continue
-            else:
-                # Es un archivo y su tamaño
-                yield item, val # type: ignore
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:

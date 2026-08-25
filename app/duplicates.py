@@ -120,11 +120,6 @@ def _collect_candidates(
     visited_device_inodes: set[Tuple[int, int]] = set()
     processed_paths: set[Path] = set()
 
-    def _is_valid_file(path: Path, size: int) -> bool:
-        if size < min_size: return False
-        if skip_protected and is_protected_path(path): return False
-        return is_safe_to_modify(path)
-
     def _scan(current_dir: Path) -> None:
         try:
             resolved_dir = current_dir.resolve()
@@ -144,8 +139,9 @@ def _collect_candidates(
                                 visited_device_inodes.add(dev_inode)
                                 _scan(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
+                            if stat.st_size < min_size: continue
                             p = Path(entry.path).resolve()
-                            if _is_valid_file(p, stat.st_size):
+                            if (not skip_protected or not is_protected_path(p)) and is_safe_to_modify(p):
                                 temp_groups[int(stat.st_size)].append(p)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError, RuntimeError): pass
