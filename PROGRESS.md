@@ -7,24 +7,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 140 | 15 | 20 | 17 | 148 |
-| 2026-08-25 | 83 | 2 | 10 | 6 | 63 |
+| 2026-08-24 | 138 | 13 | 20 | 17 | 148 |
+| 2026-08-25 | 85 | 2 | 11 | 6 | 64 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **48**
+- seguridad defensiva: **46**
+- rendimiento: **45**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **43**
 - robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **22**
 - `duplicates.py`: **21**
 - `healthscore.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
-- `branding.py`: **16**
 - `scanner.py`: **16**
 - `organizer.py`: **16**
 - `settings.py`: **15**
-- `browser.py`: **14**
+- `branding.py`: **15**
 - `main.py`: **14**
-- `safety.py`: **12**
+- `safety.py`: **13**
+- `browser.py`: **13**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T07:12:56` **safety.py** (rendimiento): Se implementó un mecanismo de caché local `_VALIDATION_CACHE` dentro de `ensure_safe_to_modify` para evitar múltiples llamadas costosas a `os.access` y `stat` sobre la misma ruta dentro de una misma ejecución, mejorando significativamente el rendimiento al escanear directorios con múltiples archivos.
+- `2026-08-25T07:12:24` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total de la cuarentena eliminando la deserialización completa del manifiesto (que requiere parseo de JSON y creación de objetos) mediante una suma directa de los atributos `size_bytes` de los ítems ya cargados en memoria o una consulta ligera.
 - `2026-08-25T07:04:20` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar cálculos redundantes de disco mediante la consolidación del acceso a `diskreport` y la eliminación de la creación innecesaria de objetos `Path` dentro de bucles de alta frecuencia, mejorando la respuesta del dashboard de salud.
 - `2026-08-25T07:02:06` **healthscore.py** (rendimiento): Se optimizó el pre-procesamiento de `SystemMetrics` eliminando el uso de `getattr`/`setattr` dentro de un loop, reemplazándolo por una limpieza directa y explícita en `validate()` que ya se ejecuta al inicializar, evitando sobrecarga de introspección innecesaria.
 - `2026-08-25T07:01:42` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un conjunto de rutas ya procesadas (`set`) para evitar la re-resolución de rutas (operación costosa de E/S) y redundancia innecesaria, mejorando significativamente la velocidad en árboles de directorios profundos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T06:32:09` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo incorporando tipos explícitos en docstrings y detallando la lógica de las funciones críticas de validación (`_validate_isolation_request` y `_atomic_isolate_file`), facilitando la auditoría de seguridad del flujo de aislamiento.
 - `2026-08-25T06:31:36` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en los métodos de validación (`_is_safe_for_disk_op`, `_can_move_file`), clarificando las precondiciones de seguridad y el manejo de excepciones para facilitar el mantenimiento y auditoría del módulo.
 - `2026-08-25T06:31:10` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en parámetros críticos, normalizando la estructura de las docstrings para seguir un estilo consistente y clarificando mediante comentarios explicativos las constantes de seguridad usadas en la manipulación de procesos.
-- `2026-08-25T06:22:39` **main.py** (legibilidad y documentación): Mejora la legibilidad del código mediante la adición de docstrings técnicos detallados en los métodos de gestión de hilos y seguridad, aclarando la lógica de delegación asíncrona, el manejo de estados de la interfaz y la integración con las salvaguardas de `safety.py`.
-- `2026-08-25T06:21:45` **healthscore.py** (legibilidad y documentación): Documenté el propósito matemático de `_INV_` y `_SCORER_MAP` mediante docstrings y mejoré la legibilidad de la lógica de `compute_score` separando la validación del cálculo, facilitando la comprensión de cómo se derivan los puntajes.

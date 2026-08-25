@@ -81,6 +81,7 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 )
 
 _PATH_CACHE: dict[str, bool] = {}
+_VALIDATION_CACHE: dict[str, bool] = {}
 
 
 class _IntegrityCheck(NamedTuple):
@@ -316,6 +317,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
 
+    cache_key = f"{path}:{allow_sensitive}:{base_dir}"
+    if cache_key in _VALIDATION_CACHE:
+        return normalize(path)
+
     try:
         path_str = str(path)
         if _has_invalid_chars(path_str):
@@ -336,6 +341,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         if not allow_sensitive and is_sensitive_file(p):
             raise UnsafePathError("Extensión de archivo sensible.")
             
+        _VALIDATION_CACHE[cache_key] = True
         return p
         
     except UnsafePathError:
