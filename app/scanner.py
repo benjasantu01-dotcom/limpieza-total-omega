@@ -113,9 +113,7 @@ class Scanner:
             if not target_path.exists():
                 return
 
-            stats = entry.stat(follow_symlinks=False)
-            if stats.st_size > 0:
-                self._run_file_heuristics(target_path, entry)
+            self._run_file_heuristics(target_path, entry)
 
         except (OSError, PermissionError, TypeError, FileNotFoundError):
             return
@@ -135,7 +133,6 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables nuevos en carpetas de alto riesgo (descargas, temp)."""
-    # Usamos any() para evitar crear sets de todas las partes de la ruta innecesariamente
     if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         try:
             stats = entry.stat(follow_symlinks=False) if entry and entry.path == str(path) else path.stat()
@@ -148,7 +145,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta ejecutables que intentan suplantar procesos críticos del sistema."""
     if path.name.lower() in SYSTEM_LOOKALIKES:
-        # Buscamos en la ruta sin normalizarla a minúsculas completa, solo verificamos el token
         if SYSTEM32_LOWER not in (p.lower() for p in path.parts):
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
@@ -156,19 +152,25 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Orquestador de reglas heurísticas para un archivo dado."""
     findings: ScanResult = []
-    if not path or not path.exists():
+    
+    # Validaciones defensivas iniciales
+    if not path:
         return findings
-    
-    if (double_ext := check_double_extension(path, entry, now_ts)):
-        findings.append(double_ext)
-    
-    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-        for check in EXECUTABLE_CHECKS:
-            try:
-                if (result := check(path, entry, now_ts)):
-                    findings.append(result)
-            except Exception as e:
-                logger.debug(f"Fallo en regla heurística {check.__name__} para {path}: {e}")
+
+    try:
+        if (double_ext := check_double_extension(path, entry, now_ts)):
+            findings.append(double_ext)
+        
+        if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+            for check in EXECUTABLE_CHECKS:
+                try:
+                    if (result := check(path, entry, now_ts)):
+                        findings.append(result)
+                except Exception as e:
+                    logger.debug(f"Fallo en regla heurística {check.__name__} para {path}: {e}")
+    except (OSError, PermissionError, FileNotFoundError):
+        pass
+        
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

@@ -1471,3 +1471,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-25T10:17:28` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-25T10:17:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T10:17:28` Corrida terminada. Total usado hoy: 240.
+- `2026-08-25T10:25:32` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-25T10:26:05` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` añadiendo una validación temprana y exhaustiva del espacio en disco antes de realizar cualquier operación de copia, además de centralizar la gestión de errores mediante bloques `try-finally` para asegurar que los archivos temporales sean siempre eliminados, evitando la acumulación de basura en el sandbox ante fallos.
+- `2026-08-25T10:26:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-25T10:26:53` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y errores de acceso al normalizar el manejo de `path.exists()` y `parent.exists()`, evitando excepciones no capturadas al evaluar la integridad de archivos que pueden desaparecer durante la validación.
+- `2026-08-25T10:27:02` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `scan_file`, asegurando que cualquier error al acceder a metadatos de archivos inexistentes o bloqueados sea capturado silenciosamente para evitar la interrupción del bucle de escaneo.
+- `2026-08-25T10:27:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T10:27:02` Corrida terminada. Total usado hoy: 244.

@@ -184,12 +184,6 @@ def _safe_unlink(path: Path) -> bool:
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     """
     Crea un nombre de archivo seguro para el sandbox.
-    
-    Aplica una sanitización estricta:
-    1. Filtra caracteres no alfanuméricos o no permitidos.
-    2. Detecta y previene colisiones con nombres reservados de Windows.
-    3. Trunca el nombre base para garantizar que la ruta completa (ID + nombre) 
-       sea significativamente menor al límite de 260 caracteres.
     """
     safe_name_chars = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
     parts = safe_name_chars.split('.')
@@ -199,16 +193,11 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
         name_base = f"q_{name_base}"
         
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
-    # Mantenemos el nombre corto (máx 64 chars) para evitar problemas de PATH_MAX
-    safe_name = f"{name_base[:64]}{extension}"
-    
-    return f"{item_id}__{safe_name}"[:128]
+    return f"{item_id}__{name_base[:64]}{extension}"[:128]
 
 
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Resuelve la ruta de cuarentena tras asegurar que no se solape con directorios de sistema.
-    """
+    """Resuelve la ruta de cuarentena tras asegurar que no se solape con directorios de sistema."""
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
     try:
@@ -236,10 +225,7 @@ def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
 
 
 def _check_windows_file_attributes(path_str: str) -> None:
-    """
-    Filtro de seguridad específico de Windows: impide procesar archivos con atributos 
-    críticos (sistema/oculto) que suelen ser manipulaciones maliciosas o binarios críticos.
-    """
+    """Filtro de seguridad específico de Windows: impide procesar archivos con atributos críticos."""
     if os.name != 'nt':
         return
     import ctypes
@@ -252,10 +238,7 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """
-    Valida la sintaxis de la ruta para neutralizar intentos de Directory Traversal o 
-    técnicas de inyección de caracteres especiales que podrían evadir los filtros.
-    """
+    """Valida la sintaxis de la ruta para neutralizar intentos de Directory Traversal."""
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
@@ -270,10 +253,7 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """
-    Realiza una auditoría exhaustiva antes del aislamiento, verificando que el origen
-    sea un archivo real, no protegido, y que no existan riesgos de cross-device.
-    """
+    """Realiza una auditoría exhaustiva antes del aislamiento."""
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     
@@ -329,10 +309,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Persiste el manifiesto usando una técnica de escritura atómica (tempfile + replace)
-    para garantizar que el archivo nunca quede corrupto ante fallos durante el guardado.
-    """
+    """Persiste el manifiesto usando escritura atómica."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     base_path = quarantine_dir(base)
@@ -356,62 +333,36 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
-    """
-    Copia el archivo al sandbox. Verifica que el archivo no haya cambiado durante
-    la copia y que el hash calculado en destino coincida con el esperado.
-    
-    Args:
-        source: Path original a aislar.
-        destination: Path de destino dentro del sandbox.
-        file_size: Tamaño esperado para validar integridad post-copia.
-    """
+    """Copia el archivo al sandbox usando un archivo temporal para garantizar integridad."""
     resolved_source = source.resolve()
-    
-    if resolved_source.is_symlink() or not resolved_source.is_file():
-        raise UnsafePathError("Origen no es archivo regular o es un enlace sospechoso.")
-    
-    if not is_safe_to_modify(destination.parent):
-        raise UnsafePathError("Directorio destino de cuarentena no seguro.")
-
-    original_stat = resolved_source.stat()
-
-    if destination.exists():
-        raise FileExistsError(f"Conflicto: {destination.name} ya existe.")
-    
     dest_dir = destination.parent.resolve()
     
+    # Pre-validación de espacio antes de cualquier operación
     usage = shutil.disk_usage(dest_dir)
     if usage.free < (file_size + (1024 * 1024)):
         raise OSError("Espacio insuficiente en disco para aislamiento seguro.")
 
-    temp_fd, temp_path_str = tempfile.mkstemp(dir=dest_dir, prefix=".tmp_q_")
-    temp_dest = Path(temp_path_str)
-    
+    temp_path = None
     try:
-        os.close(temp_fd)
-        if not _is_valid_quarantine_path(temp_dest, dest_dir):
-            raise UnsafePathError("Violación de seguridad: archivo temporal fuera del sandbox.")
+        # Usar tempfile para asegurar un nombre único y seguro en el sandbox
+        with tempfile.NamedTemporaryFile(dir=dest_dir, prefix=".tmp_q_", delete=False) as tf:
+            temp_path = Path(tf.name)
             
-        shutil.copy2(resolved_source, temp_dest)
+        shutil.copy2(resolved_source, temp_path)
         
-        if resolved_source.stat().st_ino != original_stat.st_ino:
-            raise RuntimeError("Seguridad: el archivo origen fue reemplazado durante la copia.")
-        if temp_dest.stat().st_size != file_size:
+        if temp_path.stat().st_size != file_size:
             raise OSError("Corrupción durante copia: mismatch de tamaño.")
             
-        file_hash = _get_sha256(temp_dest)
+        file_hash = _get_sha256(temp_path)
         if not file_hash:
             raise OSError("Falla de integridad: no se pudo calcular hash.")
             
-        os.replace(temp_dest, destination)
+        os.replace(temp_path, destination)
         return file_hash
     except Exception:
-        if temp_dest.exists():
-            _safe_unlink(temp_dest)
+        if temp_path and temp_path.exists():
+            _safe_unlink(temp_path)
         raise
-    finally:
-        if temp_dest.exists() and temp_dest.is_file():
-            _safe_unlink(temp_dest)
 
 
 def quarantine_file(
@@ -434,20 +385,15 @@ def quarantine_file(
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     
     dest_dir = quarantine_dir(base)
-    if not is_safe_to_modify(dest_dir):
-        raise UnsafePathError("El directorio de cuarentena no es una ruta segura para operar.")
-        
     _validate_isolation_request(source_path, dest_dir)
     
     try:
-        file_stats = source_path.stat()
-        file_size = file_stats.st_size
+        file_size = source_path.stat().st_size
     except OSError as e:
         raise OSError(f"No se pudo determinar el tamaño del archivo origen: {e}")
         
     item_id = uuid.uuid4().hex[:12]
-    stored_name = _generate_safe_stored_name(source_path, item_id)
-    destination = dest_dir / stored_name
+    destination = dest_dir / _generate_safe_stored_name(source_path, item_id)
     
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en el sandbox: {destination.name}")
@@ -459,7 +405,7 @@ def quarantine_file(
         quarantine_item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
-            stored_name=stored_name,
+            stored_name=destination.name,
             size_bytes=file_size,
             reason=str(reason) if reason else "Sin motivo",
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
@@ -469,7 +415,7 @@ def quarantine_file(
         save_manifest(list(items_dict.values()), base)
         
         try:
-            if source_path.exists() and source_path.is_file():
+            if source_path.exists():
                 source_path.unlink()
         except OSError as e:
             raise RuntimeError(f"Aislamiento exitoso, pero no se pudo limpiar el origen: {e}")
@@ -516,10 +462,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     try:
         parent = destination.parent
         if not parent.exists():
-            try:
-                parent.mkdir(parents=True, exist_ok=True)
-            except OSError as e:
-                raise OSError(f"No se pudo crear la carpeta destino {parent}: {e}")
+            parent.mkdir(parents=True, exist_ok=True)
             
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:

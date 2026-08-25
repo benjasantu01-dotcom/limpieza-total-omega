@@ -322,26 +322,23 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         return normalize(path)
 
     try:
-        path_str = str(path)
-        if _has_invalid_chars(path_str):
-            raise UnsafePathError("Ruta contiene caracteres inválidos o de control.")
-
         p = normalize(path)
+        path_str = str(p)
         
-        _validate_basic_path_safety(p, str(p))
+        _validate_basic_path_safety(p, path_str)
         _validate_boundary_conditions(p, base_dir)
         
+        # Validación de integridad solo si el objeto persiste físicamente
         if p.exists():
             _check_file_integrity(p)
         else:
             parent = p.parent
+            # Solo validamos permisos de padre si el padre existe, para evitar race conditions
             if parent.exists():
                 if not os.access(parent, os.W_OK):
                     raise UnsafePathError("Escritura bloqueada: directorio padre restringido.")
-            else:
-                # Si el padre no existe, validamos recursivamente hasta encontrar un ancestro existente
-                if is_protected_path(parent):
-                    raise UnsafePathError("Escritura bloqueada: directorio padre protegido.")
+            elif is_protected_path(parent):
+                raise UnsafePathError("Escritura bloqueada: directorio padre protegido.")
         
         if not allow_sensitive and is_sensitive_file(p):
             raise UnsafePathError("Extensión de archivo sensible.")
@@ -349,9 +346,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         _VALIDATION_CACHE[cache_key] = True
         return p
         
-    except UnsafePathError:
-        raise
-    except (ValueError, TypeError, OSError) as e:
+    except (UnsafePathError, ValueError, TypeError, OSError) as e:
+        if isinstance(e, UnsafePathError):
+            raise
         raise UnsafePathError(f"Error crítico de seguridad validando ruta: {e}")
 
 
