@@ -162,7 +162,7 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        with open(path, "rb+") as f:
+        with open(path, "rb") as f:
             return False
     except (IOError, OSError, PermissionError):
         return True
@@ -188,7 +188,8 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     Aplica una sanitización estricta:
     1. Filtra caracteres no alfanuméricos o no permitidos.
     2. Detecta y previene colisiones con nombres reservados de Windows.
-    3. Trunca la longitud total para evitar límites del sistema de archivos.
+    3. Trunca el nombre base para garantizar que la ruta completa (ID + nombre) 
+       sea significativamente menor al límite de 260 caracteres.
     """
     safe_name_chars = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
     parts = safe_name_chars.split('.')
@@ -198,9 +199,10 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
         name_base = f"q_{name_base}"
         
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
-    safe_name = f"{name_base}{extension}"
+    # Mantenemos el nombre corto (máx 64 chars) para evitar problemas de PATH_MAX
+    safe_name = f"{name_base[:64]}{extension}"
     
-    return f"{item_id}__{safe_name}"[:250]
+    return f"{item_id}__{safe_name}"[:128]
 
 
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:

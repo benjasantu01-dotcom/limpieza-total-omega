@@ -796,3 +796,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-25T03:45:35` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_validate_environment` para garantizar que, además de verificar los permisos y la integridad de la carpeta base, se realice una comprobación estricta de la ruta de ejecución frente a enlaces simbólicos o puntos de reparse, previniendo la ejecución de la aplicación desde ubicaciones potencialmente engañosas o maliciosas.
 - `2026-08-25T03:45:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T03:45:35` Corrida terminada. Total usado hoy: 88.
+- `2026-08-25T03:52:34` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-25T03:53:04` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_system_process` incorporando una lógica más robusta para filtrar procesos críticos, asegurando que la validación no dependa solo de umbrales arbitrarios, sino de la lista `SYSTEM_CRITICAL_PIDS` definida explícitamente al inicio.
+- `2026-08-25T03:53:28` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-25T03:54:03` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se introdujo una comprobación de "no persistencia de handles" al abrir archivos en `_get_sha256` y una validación de longitud de nombre en `_generate_safe_stored_name` más robusta para evitar errores de `path too long` y ataques de inyección de rutas mediante nombres maliciosos.
+- `2026-08-25T03:54:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-25T03:54:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T03:54:09` Corrida terminada. Total usado hoy: 92.

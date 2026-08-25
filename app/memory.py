@@ -197,7 +197,7 @@ def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
         return
     for line in raw_csv_text.splitlines():
         proc = _parse_csv_row(line)
-        if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
+        if proc and proc.working_set > 0 and not _is_system_process(proc.pid):
             yield proc
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -292,9 +292,11 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Valida si un PID pertenece a procesos críticos o protegidos."""
-    if not isinstance(pid, int) or pid <= 0: return True
-    return pid in SYSTEM_CRITICAL_PIDS or pid < 100
+    """Valida si un PID pertenece a procesos críticos del sistema."""
+    if not isinstance(pid, int): return True
+    if pid in SYSTEM_CRITICAL_PIDS: return True
+    if pid == os.getpid(): return True
+    return False
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     """Obtiene la ruta absoluta del ejecutable vía API de Windows."""
@@ -378,8 +380,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         target_pid: int = int(pid)
     except (ValueError, TypeError): return False, "El PID debe ser un número entero válido."
     
-    if _is_system_process(target_pid) or target_pid == os.getpid():
-        return False, "Operación denegada: PID fuera de rango o protegido."
+    if _is_system_process(target_pid):
+        return False, "Operación denegada: PID de sistema o proceso protegido."
 
     proc_handle: Optional[wintypes.HANDLE] = None
     try:

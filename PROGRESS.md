@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 28 | 1 | 7 | 3 | 27 |
+| 2026-08-23 | 28 | 1 | 7 | 3 | 23 |
 | 2026-08-24 | 144 | 15 | 21 | 18 | 152 |
-| 2026-08-25 | 50 | 2 | 6 | 2 | 28 |
+| 2026-08-25 | 52 | 2 | 7 | 2 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
+- seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **43**
 - rendimiento: **43**
-- seguridad defensiva: **43**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `memory.py`: **23**
 - `duplicates.py`: **21**
 - `assistant.py`: **20**
+- `quarantine.py`: **20**
 - `healthscore.py`: **19**
-- `quarantine.py`: **19**
 - `diskreport.py`: **18**
 - `organizer.py`: **17**
 - `scanner.py`: **17**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T03:54:03` **quarantine.py** (seguridad defensiva): Se introdujo una comprobación de "no persistencia de handles" al abrir archivos en `_get_sha256` y una validación de longitud de nombre en `_generate_safe_stored_name` más robusta para evitar errores de `path too long` y ataques de inyección de rutas mediante nombres maliciosos.
+- `2026-08-25T03:53:04` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_system_process` incorporando una lógica más robusta para filtrar procesos críticos, asegurando que la validación no dependa solo de umbrales arbitrarios, sino de la lista `SYSTEM_CRITICAL_PIDS` definida explícitamente al inicio.
 - `2026-08-25T03:45:35` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_environment` para garantizar que, además de verificar los permisos y la integridad de la carpeta base, se realice una comprobación estricta de la ruta de ejecución frente a enlaces simbólicos o puntos de reparse, previniendo la ejecución de la aplicación desde ubicaciones potencialmente engañosas o maliciosas.
 - `2026-08-25T03:44:42` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `compute_score` asegurando que las métricas recibidas sean validadas explícitamente antes de procesarlas y añadiendo una comprobación de tipo estricta para evitar inyección de datos inesperados en el cálculo del puntaje.
 - `2026-08-25T03:44:16` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para asegurar que el recorrido del sistema de archivos no siga enlaces simbólicos, evitando así la posible exposición o procesamiento de rutas fuera del alcance deseado por el usuario.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T03:13:50` **organizer.py** (robustez ante casos límite): Se implementó un control de integridad en `_is_safe_for_disk_op` para validar que los archivos no sean de tamaño cero (vacíos), evitando procesar metadatos irrelevantes o potencialmente corruptos durante el escaneo y movimiento.
 - `2026-08-25T03:13:25` **memory.py** (robustez ante casos límite): Mejoré la robustez de `read_snapshot` al manejar correctamente casos donde `psutil` no existe o el sistema no puede proveer info de memoria, asegurando que la función siempre retorne una instancia válida de `MemorySnapshot` en lugar de fallar o retornar valores incoherentes ante errores de lectura de archivos en `/proc/meminfo`.
 - `2026-08-25T03:12:55` **main.py** (robustez ante casos límite): Se implementó un mecanismo de **cierre preventivo** en los métodos de callback asíncronos (`_safe_run_ui_callback` y otros) y un chequeo explícito en `_worker_thread_logic` para manejar casos donde el hilo de trabajo intenta acceder a la UI o realizar operaciones de disco justo después de que el usuario cerró la aplicación (`self._closing`), evitando así excepciones de `TclError` y condiciones de carrera en el acceso a recursos bloqueados.
-- `2026-08-25T03:03:08` **healthscore.py** (robustez ante casos límite): Se introdujo una protección contra `ZeroDivisionError` en el cálculo de factores inversos (`_INV_...`) mediante el uso de `max(..., 1e-9)` en todas las constantes de normalización, asegurando que el módulo sea robusto ante configuraciones de umbrales en cero, y se reforzó la validación de `compute_score` ante datos no finitos mediante chequeos explícitos antes de realizar cualquier aritmética.
-- `2026-08-25T03:02:58` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`path.exists()`) previo al `resolve()` en los puntos de entrada para evitar excepciones `FileNotFoundError` (o `OSError` derivados) causadas por archivos eliminados o bloqueados por otros procesos entre la lectura del directorio y el procesamiento del hash.
