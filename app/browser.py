@@ -161,8 +161,10 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     return False
 
 
-def _is_within_depth_limit(depth: int, current_path: str) -> bool:
+def _is_within_depth_limit(depth: int, current_path: Optional[str]) -> bool:
     """Verifica límites de recursión y restricciones de seguridad."""
+    if not current_path:
+        return False
     return depth <= MAX_SCAN_DEPTH and not is_protected_path(Path(current_path))
 
 
@@ -204,9 +206,9 @@ def _sum_directory_recursive(
     return result
 
 
-def directory_size(path: Union[str, Path]) -> int:
+def directory_size(path: Union[str, Path, None]) -> int:
     """Calcula el tamaño de una carpeta tras validar que sea una ruta segura."""
-    if path is None:
+    if not path:
         return 0
     try:
         p_obj = Path(path).resolve(strict=True)

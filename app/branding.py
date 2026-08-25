@@ -310,10 +310,7 @@ def _get_shield_coords(s: float) -> List[float]:
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
     """Genera una representación SVG del logotipo corporativo."""
-    try:
-        s: int = max(1, min(4096, int(size)))
-    except (ValueError, TypeError):
-        s = 128
+    s: int = max(1, min(4096, int(size)))
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">
@@ -343,20 +340,17 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).resolve()
-        # Prevenir escritura fuera del entorno de la app y chequeo de seguridad
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj) or path_obj.is_dir():
             return None
         
-        # Asegurar directorio padre
         parent = path_obj.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             
-        # Validación final de seguridad
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError, RuntimeError, ValueError, AttributeError):
+    except (OSError, PermissionError, RuntimeError):
         return None
 
 def logo_ascii() -> str:
@@ -426,7 +420,7 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
             canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
 
-def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
+def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:

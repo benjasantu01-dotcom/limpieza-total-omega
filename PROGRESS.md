@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 26
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 113 | 12 | 18 | 17 | 112 |
-| 2026-08-25 | 102 | 6 | 14 | 10 | 100 |
+| 2026-08-24 | 111 | 12 | 17 | 16 | 112 |
+| 2026-08-25 | 105 | 6 | 14 | 10 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **50**
+- legibilidad y documentación: **48**
 - rendimiento: **46**
 - seguridad defensiva: **46**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
-- `duplicates.py`: **19**
+- `memory.py`: **21**
+- `duplicates.py`: **20**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
-- `organizer.py`: **17**
 - `healthscore.py`: **17**
 - `settings.py`: **16**
+- `organizer.py`: **16**
 - `diskreport.py`: **16**
 - `scanner.py`: **15**
-- `branding.py`: **14**
+- `branding.py`: **15**
+- `browser.py`: **14**
 - `safety.py`: **13**
-- `browser.py`: **13**
 - `main.py`: **11**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T10:06:40` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando una validación previa estricta del tipo de archivo y existencia, centralizando el manejo de errores para evitar que excepciones de sistema durante la apertura o lectura interrumpan la ejecución del bucle.
+- `2026-08-25T10:06:07` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_is_within_depth_limit` validando explícitamente los parámetros de entrada y normalizando rutas para evitar comportamientos inesperados ante strings vacíos o None, mejorando la seguridad del bucle de escaneo.
+- `2026-08-25T10:05:42` **branding.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `save_logo_svg` y `draw_ring` reemplazando los bloques `try-except` genéricos por validaciones tempranas y una captura de excepciones más precisa, garantizando que los parámetros inválidos retornen valores seguros en lugar de abortar silenciosamente.
 - `2026-08-25T09:58:36` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validaciones específicas para `SystemContext` ante fuentes de datos heterogéneas, evitando que tipos de datos inesperados causen excepciones silenciosas durante la carga de métricas.
 - `2026-08-25T08:34:45` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` y `settings_path` al evitar la manipulación de directorios con posibles puntos de reparse (junctions/symlinks) mediante una verificación explícita antes de cualquier operación de escritura, garantizando que `SETTINGS_DIR` no sea un destino controlado por terceros o una ruta recursiva.
 - `2026-08-25T08:28:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de aislamiento (`_atomic_isolate_file`) mediante una validación de propiedad del archivo destino (`is_safe_to_modify`) y la aplicación de un límite de tiempo de vida (TTL) implícito a través de la limpieza explícita de archivos temporales mediante `try...finally` incluso en casos de error, asegurando que no queden restos huérfanos tras fallos de escritura.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T08:03:00` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `save` ante fallos de escritura en disco al verificar la existencia y accesibilidad de `ruta.parent` antes de intentar persistir, evitando excepciones no controladas durante la serialización o creación de directorios.
 - `2026-08-25T07:53:37` **safety.py** (robustez ante casos límite): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y archivos inexistentes añadiendo una verificación explícita de existencia mediante `os.access` en el directorio padre, previniendo excepciones no capturadas al evaluar rutas que aún no se han creado.
 - `2026-08-25T07:52:52` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo en `restore_item` para el directorio padre del destino y validaciones contra `OSError` durante la creación del mismo, mejorando la robustez ante rutas inexistentes o permisos denegados en la jerarquía de directorios.
-- `2026-08-25T07:44:24` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo una validación explícita de `is_protected_path` sobre la ruta de destino, garantizando que ninguna operación de movimiento pueda colocar archivos accidentalmente dentro de directorios marcados como sensibles o protegidos por la lógica de `safety.py`.
-- `2026-08-25T07:44:14` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_parse_csv_row` para manejar correctamente archivos vacíos o líneas con datos truncados (como un PID presente pero un valor de memoria ausente), evitando errores de conversión y mejorando la robustez frente a lecturas parciales o inesperadas del comando PowerShell.
-- `2026-08-25T07:42:35` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante datos inconsistentes en `SystemMetrics` evitando divisiones por cero mediante protecciones explícitas en las funciones de `score` y garantizando que `_PREPARED_SCORERS` sea resiliente ante posibles configuraciones de pesos mal definidos.

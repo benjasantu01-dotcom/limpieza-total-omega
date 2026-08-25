@@ -1457,3 +1457,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-25T09:58:36` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` añadiendo validaciones específicas para `SystemContext` ante fuentes de datos heterogéneas, evitando que tipos de datos inesperados causen excepciones silenciosas durante la carga de métricas.
 - `2026-08-25T09:58:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T09:58:36` Corrida terminada. Total usado hoy: 232.
+- `2026-08-25T10:05:07` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-25T10:05:42` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `save_logo_svg` y `draw_ring` reemplazando los bloques `try-except` genéricos por validaciones tempranas y una captura de excepciones más precisa, garantizando que los parámetros inválidos retornen valores seguros en lugar de abortar silenciosamente.
+- `2026-08-25T10:06:07` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `directory_size` y `_is_within_depth_limit` validando explícitamente los parámetros de entrada y normalizando rutas para evitar comportamientos inesperados ante strings vacíos o None, mejorando la seguridad del bucle de escaneo.
+- `2026-08-25T10:06:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-25T10:06:40` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando una validación previa estricta del tipo de archivo y existencia, centralizando el manejo de errores para evitar que excepciones de sistema durante la apertura o lectura interrumpan la ejecución del bucle.
+- `2026-08-25T10:06:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T10:06:40` Corrida terminada. Total usado hoy: 236.
