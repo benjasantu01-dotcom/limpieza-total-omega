@@ -51,6 +51,8 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
+# Factores de normalización: convierten valores absolutos a ratios [0, 1]
+# Evitan divisiones por cero mediante el uso de valores mínimos de seguridad
 _INV_JUNK: Final[float] = 1.0 / max(1e-9, _LIMIT_JUNK_MB)
 _INV_DUP: Final[float] = 1.0 / max(1e-9, _LIMIT_DUPLICATE_MB)
 _INV_STARTUP: Final[float] = 1.0 / max(1, _LIMIT_STARTUP_COUNT)
@@ -164,6 +166,7 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
+# Mapeo de áreas hacia su función de cálculo de salud normalizada
 _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
     "disco": lambda m: score_disk(m.disk_free_percent),
@@ -178,10 +181,11 @@ _PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], No
 ]
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
+    """Calcula el puntaje global basado en métricas normalizadas y pesos configurados."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error interno: Tipo de métricas inválido."])
     
-    # Asegurar que los atributos no sean None antes de procesar
+    # Pre-procesamiento de datos: limpieza de nulos y validación de finitud
     for field_name in metrics.__dataclass_fields__:
         if getattr(metrics, field_name) is None:
             setattr(metrics, field_name, 0.0 if "percent" in field_name or "mb" in field_name else 0)
@@ -194,6 +198,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios_cache: ScoreMap = {}
     accumulated_points: int = 0
     
+    # Cálculo ponderado del puntaje
     for area, weight, scorer in _PREPARED_SCORERS:
         ratio = scorer(metrics)
         ratios_cache[area] = ratio
@@ -201,6 +206,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         metric_breakdown[area] = points
         accumulated_points += points
     
+    # Generación de recomendaciones según reglas definidas
     recommendations = [
         rule.message_factory(metrics) 
         for rule in _RECOMMENDATION_RULES 

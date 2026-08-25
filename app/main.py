@@ -164,7 +164,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pass
 
     def _safe_run_ui_callback(self, callback: Callable[[], None]) -> None:
-        """Ejecuta una actualización de UI solo si la ventana sigue abierta."""
+        """
+        Ejecuta una actualización de UI de forma segura mediante `after_idle`.
+        Verifica el flag `_closing` para evitar intentar redibujar componentes
+        en una ventana ya destruida o en proceso de cierre.
+        """
         if not self._closing:
             try:
                 self.after_idle(callback)
@@ -229,7 +233,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._debounces: Dict[str, str] = {}
         
     def _toggle_ui_availability(self, active: bool) -> None:
-        """Habilita o deshabilita botones durante tareas asíncronas."""
+        """
+        Alterna el estado de habilitación de todos los botones registrados
+        en la lista `_active_buttons` para prevenir entradas concurrentes 
+        durante la ejecución de tareas de E/S.
+        """
         for btn in self._active_buttons:
             try:
                 if btn.winfo_exists():
@@ -240,7 +248,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _debounce_action(self, key: str, delay: int, callback: Callable[[], Any]) -> None:
         """
         Retrasa la ejecución de un callback para consolidar eventos rápidos 
-        (ej. redimensionado de ventana o redibujo de canvas).
+        (ej. redimensionado de ventana o redibujo de canvas) evitando saturar
+        el hilo principal con tareas redundantes.
         """
         if key in self._debounces:
             try:
@@ -302,6 +311,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 danger: bool = False, column: int = 0, secondary: bool = False) -> ctk.CTkButton:
         """
         Crea un botón con colores semánticos basados en el riesgo de la operación.
+        Registra el botón en `_active_buttons` para control de estado durante tareas asíncronas.
         """
         if danger:
             fondo, hover, texto = ("danger", "danger_hover", "text")
@@ -363,7 +373,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _tab_factory(self, name: str) -> None:
         """
         Delega la construcción del contenido de cada pestaña a sus métodos específicos
-        bajo un esquema de carga perezosa para optimizar el inicio.
+        bajo un esquema de carga perezosa para optimizar el inicio y la gestión de memoria.
         """
         if self._initialized_tabs.get(name):
             return
@@ -375,6 +385,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if constructor and tab_frame:
             try:
                 if tab_frame.winfo_exists():
+                    # Validación de seguridad previa antes de cargar módulos de disco
                     safety.ensure_safe_to_modify(Path(".").resolve())
                     constructor()
                     self._initialized_tabs[name] = True
@@ -949,7 +960,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.report_data[tab.lower()] = list(lines)
 
     def _set_busy(self, busy: bool) -> None:
-        """Gestiona el estado visual de la barra de progreso asíncrona."""
+        """
+        Gestiona el indicador de actividad y el estado de la UI durante 
+        tareas asíncronas, desactivando botones para evitar condiciones de carrera.
+        """
         if self._closing or not hasattr(self, 'activity'): return
         
         with self._task_lock:
@@ -975,7 +989,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                         pass
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
-        """Traduce excepciones de bajo nivel en mensajes claros para el log de la UI."""
+        """
+        Traduce excepciones de bajo nivel en mensajes claros y legibles 
+        para el usuario dentro del log de la pestaña.
+        """
         if isinstance(e, safety.UnsafePathError):
             self.log(f"Bloqueado por seguridad: {e}", tab)
         elif isinstance(e, PermissionError):
@@ -989,7 +1006,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Error inesperado: {type(e).__name__}", tab)
 
     def _safe_run(self, fn: Callable[[], Any], tab: str) -> None:
-        """Ejecuta una función dentro de un try-except para prevenir cierres de la UI."""
+        """
+        Ejecuta una función dentro de un contexto protegido para prevenir 
+        cierres inesperados de la UI ante errores en hilos secundarios.
+        """
         if self._closing: return
         try:
             fn()
@@ -1000,7 +1020,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _worker_thread_logic(self, fn: Callable[[], Any], tab: str, target: Optional[str]) -> None:
         """
         Wrapper de ejecución para hilos de trabajo con validación de seguridad.
-        Asegura que cualquier modificación en disco pase por el filtro `ensure_safe_to_modify`.
+        Asegura que, si se especifica una ruta `target`, se verifique la 
+        seguridad de la ruta antes de ejecutar la lógica del usuario.
         """
         try:
             if not self._closing and target:
@@ -1012,7 +1033,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._validate_and_log_error(e, tab)
         finally:
             if not self._closing:
-                # Usamos una lambda para manejar la posible falla de winfo_exists al set_busy
+                # Retorno al hilo principal para actualizar la UI visualmente
                 self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
 
     def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:

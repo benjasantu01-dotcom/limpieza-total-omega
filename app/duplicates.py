@@ -128,7 +128,10 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Realiza un recorrido recursivo en el sistema de archivos buscando candidatos
-    que cumplan el umbral de tamaño mínimo.
+    que cumplan el umbral de tamaño mínimo, evitando ciclos mediante inodos.
+    
+    Utiliza un sistema de bloqueo de inodos (device, inode) para prevenir
+    procesamiento redundante en enlaces simbólicos a carpetas o junctions.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
@@ -176,7 +179,12 @@ def _collect_candidates(
 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica la función hash indicada a una lista de rutas y agrupa por colisiones de digest."""
+    """
+    Aplica una estrategia de hashing para agrupar archivos por colisiones de contenido.
+    
+    Toma una lista de archivos y un ejecutor (hash_func), retornando solo aquellos
+    grupos que contienen más de un elemento, descartando archivos únicos de forma temprana.
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path and (digest := hash_func(path)):
@@ -185,7 +193,13 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Ejecuta el pipeline: Hash Parcial -> Hash Completo para confirmar duplicidad."""
+    """
+    Ejecuta el pipeline de verificación de duplicados de dos niveles.
+    
+    1. Filtra mediante hash parcial (primero N bytes).
+    2. Valida mediante hash completo (SHA256) los resultados del paso previo,
+       garantizando la integridad de la detección antes de crear DuplicateGroups.
+    """
     confirmed_groups: List[DuplicateGroup] = []
     partial_results = _refine_by_hash(paths, partial_hash)
     

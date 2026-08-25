@@ -230,7 +230,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def _is_valid_traversal_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
     """
-    Verifica si una entrada del sistema de archivos debe ser ignorada por seguridad o tipo.
+    Verifica si una entrada del sistema de archivos debe ser ignorada por seguridad.
+    Esta validación se ejecuta antes de cualquier operación de I/O sobre el path.
     """
     if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
         return False
@@ -244,6 +245,10 @@ def _is_valid_traversal_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente mediante `os.scandir`.
+    
+    Args:
+        directory: Ruta raíz de inicio.
+        skip_protected: Si es True, impide el acceso a directorios del sistema.
     """
     if not directory:
         return
