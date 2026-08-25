@@ -74,6 +74,8 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
+        if not entry_path:
+            return False
         try:
             resolved = entry_path.resolve(strict=False)
             return self.base_root in resolved.parents or resolved == self.base_root
@@ -87,7 +89,7 @@ class Scanner:
             return True 
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
-        if entry is None or not hasattr(entry, 'path'):
+        if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
         
         try:
@@ -99,7 +101,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     path_str = str(target_path.resolve(strict=False))
-                    if path_str not in self.seen:
+                    if path_str and path_str not in self.seen:
                         self.seen.add(path_str)
                         stack.append(path_str)
                 return
@@ -145,7 +147,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     findings: ScanResult = []
-    if not path.exists():
+    if not path or not path.exists():
         return findings
     
     if (double_ext := check_double_extension(path, entry, now_ts)):

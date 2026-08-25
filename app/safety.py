@@ -184,7 +184,7 @@ def _check_file_integrity(path: Path) -> None:
 
     try:
         file_stat: os.stat_result = path.stat()
-    except Exception as e:
+    except (PermissionError, OSError) as e:
         raise UnsafePathError(f"Error de acceso a metadatos: {e}")
 
     if not os.access(path, os.W_OK):
