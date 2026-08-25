@@ -328,14 +328,14 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificar permisos y seguridad antes de crear directorios o escribir
-        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+        # Validación preventiva usando filtros de solo lectura
+        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj) or path_obj.is_dir():
             return None
-        if path_obj.is_dir():
-            return None
+        # Preparación del entorno de escritura
         if path_obj.parent and not path_obj.parent.exists():
             path_obj.parent.mkdir(parents=True, exist_ok=True)
             
+        # Operación destructiva/escritura asegurada explícitamente
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj

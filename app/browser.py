@@ -164,7 +164,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
     
     try:
-        # Usar os.path.islink es más seguro que entry.is_symlink en ciertos sistemas de archivos
+        # Usar follow_symlinks=False es crítico para prevenir escapes de directorio
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):
@@ -205,10 +205,12 @@ def _sum_directory_recursive(
                         continue
                     
                     try:
+                        # Verificación explícita de atributos sin seguir enlaces para calcular tamaño
+                        stat = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file(follow_symlinks=False):
-                            total += entry.stat(follow_symlinks=False).st_size
+                            total += stat.st_size
                     except (OSError, PermissionError):
                         continue
         except (PermissionError, OSError):

@@ -132,9 +132,11 @@ class StartupEntry:
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*\0'):
             return ""
         
-        # Prevenir procesamiento de rutas UNC de red y rutas excesivamente largas
+        # Prevenir procesamiento de rutas UNC de red, rutas excesivamente largas
+        # y nombres de dispositivos reservados de Windows.
         norm = os.path.normpath(path_str)
-        if norm.startswith(r"\\") or len(norm) > 4096:
+        reserved_names = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1"}
+        if norm.startswith(r"\\") or len(norm) > 4096 or Path(norm).stem.upper() in reserved_names:
             return ""
         
         if path_str in _EXISTS_CACHE:

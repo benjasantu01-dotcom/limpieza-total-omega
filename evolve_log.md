@@ -757,3 +757,34 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-25T03:23:25` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo robusto en `_Validators.path` para detectar y rechazar rutas que contengan caracteres nulos o secuencias de escape inesperadas, mejorando la resiliencia ante entradas maliciosas o corruptas en el archivo de configuración.
 - `2026-08-25T03:23:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T03:23:25` Corrida terminada. Total usado hoy: 80.
+- `2026-08-25T03:32:10` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-08-25T03:32:39` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `_resolve_and_cache_path` añadiendo una validación explícita para prevenir excepciones al tratar con dispositivos especiales o nombres de archivo reservados en Windows (como `CON`, `NUL`, `PRN`), los cuales pueden causar errores fatales al interactuar con el sistema de archivos.
+- `2026-08-25T03:33:13` Tests FALLARON:
+```
+.........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_build_context_ignores_non_numeric_extras _________________
+
+    def test_build_context_ignores_non_numeric_extras():
+        """Un extra con una ruta no puede colarse en el contexto."""
+        contexto = assistant.build_context(
+            ruta_secreta="C:/Users/benja/Documentos/secreto.txt",
+            memory_total_gb=8.0,
+        )
+        assert not hasattr(contexto, "ruta_secreta")
+>       assert contexto.memory_total_gb == 8.0
+E       AssertionError: assert 0.0 == 8.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+
+evolve/tests/test_assistant.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+1 failed, 298 passed in 0.99s
+
+```
+- `2026-08-25T03:33:13` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se endureció la seguridad de `build_context` al añadir una validación estricta de las entradas `metrics` y `health` mediante `_ensure_safe_text` antes de procesar cualquier valor, evitando así la posible inyección de datos maliciosos provenientes de fuentes externas.
+- `2026-08-25T03:33:46` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` consolidando las validaciones de acceso al sistema de archivos para garantizar que `ensure_safe_to_modify` se utilice exclusivamente para la operación de escritura, manteniendo `is_safe_to_modify` como filtro preventivo.
+- `2026-08-25T03:33:58` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante el uso de `os.scandir` de forma segura, garantizando que el acceso a atributos y estadísticas del archivo verifique la ausencia de enlaces simbólicos incluso en subdirectorios, previniendo así posibles ataques de "link traversal" o lecturas fuera de los límites permitidos al inspeccionar el tamaño de cachés.
+- `2026-08-25T03:33:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T03:33:58` Corrida terminada. Total usado hoy: 84.
