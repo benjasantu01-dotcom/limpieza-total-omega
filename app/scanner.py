@@ -76,7 +76,9 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """Valida si la ruta está contenida dentro del directorio raíz de escaneo base."""
+        """Valida si la ruta está contenida dentro del directorio raíz de escaneo base y no está protegida."""
+        if is_protected_path(entry_path):
+            return False
         try:
             resolved = str(entry_path.resolve(strict=False)).lower()
             return resolved == self.base_root_str or resolved.startswith(self.base_root_str + os.sep)
@@ -100,8 +102,8 @@ class Scanner:
         
         try:
             target_path = Path(entry.path)
-            # Validación de seguridad antes de cualquier operación
-            if is_protected_path(target_path) or str(target_path).startswith("\\\\") or not self._is_safe_entry(target_path):
+            # Validación de seguridad: rutas externas, protegidas o con UNC bloqueadas
+            if str(target_path).startswith("\\\\") or not self._is_safe_entry(target_path):
                 return
 
             if entry.is_dir(follow_symlinks=False):

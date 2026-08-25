@@ -352,12 +352,14 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         if temp_path.stat().st_size != file_size:
             raise OSError("Corrupción durante copia: mismatch de tamaño.")
             
-        file_hash = _get_sha256(temp_path)
-        if not file_hash:
-            raise OSError("Falla de integridad: no se pudo calcular hash.")
-            
         os.replace(temp_path, destination)
+        
+        # Validación post-traslado
+        file_hash = _get_sha256(destination)
+        if not file_hash:
+            raise OSError("Falla de integridad: no se pudo verificar el hash en destino.")
         return file_hash
+            
     except Exception:
         if temp_path and temp_path.exists():
             _safe_unlink(temp_path)

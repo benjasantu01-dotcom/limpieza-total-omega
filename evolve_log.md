@@ -507,3 +507,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-25T12:50:47` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `delete_reviewed` añadiendo una comprobación explícita de atributos de archivo para impedir la eliminación de archivos de sistema u ocultos, emulando la restricción ya presente en el escáner de movimiento.
 - `2026-08-25T12:50:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T12:50:47` Corrida terminada. Total usado hoy: 300.
+- `2026-08-25T12:58:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-25T12:59:18` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se mejora la robustez de la función `_atomic_isolate_file` añadiendo una verificación post-escritura explícita del hash SHA256 sobre el archivo final en destino antes de completar la operación, mitigando riesgos de corrupción en el sistema de archivos durante la transferencia.
+- `2026-08-25T12:59:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-25T13:00:04` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-25T13:00:16` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al agregar una verificación explícita mediante `is_protected_path` para prevenir la resolución o escaneo de rutas que, aunque parezcan estar dentro de la raíz, apunten a nodos del sistema protegidos (como directorios de sistema mediante enlaces o alias).
+- `2026-08-25T13:00:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T13:00:16` Corrida terminada. Total usado hoy: 304.
