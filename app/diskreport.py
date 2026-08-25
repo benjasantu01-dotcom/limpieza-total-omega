@@ -274,6 +274,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if not _is_valid_traversal_entry(entry, skip_protected):
                             continue
                         
+                        full_path = Path(entry.path).resolve()
+                        # Verificación de seguridad: no escapar del directorio base
+                        if os.path.commonpath([str(base_path), str(full_path)]) != str(base_path):
+                            continue
+                        
                         if entry.is_dir(follow_symlinks=False):
                             stat_data = entry.stat(follow_symlinks=False)
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
@@ -283,7 +288,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 depths[entry.path] = depth + 1
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), max(0, f_stat.st_size)
+                            yield full_path, max(0, f_stat.st_size)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
@@ -341,6 +346,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(p_base, skip_protected):
             try:
+                # Verificar que el archivo está contenido bajo el base
                 relative = path.relative_to(p_base)
                 if not relative.parts:
                     continue

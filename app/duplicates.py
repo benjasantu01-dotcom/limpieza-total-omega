@@ -136,13 +136,17 @@ def _collect_candidates(
 
     def _scan(current_dir: Path) -> None:
         try:
-            resolved_dir = current_dir.resolve()
-            if not resolved_dir.exists() or resolved_dir in processed_dirs: return
+            # Resolucion estricta para evitar ataques de path traversal mediante symlinks
+            resolved_dir = current_dir.resolve(strict=True)
+            if not resolved_dir.is_dir() or resolved_dir in processed_dirs: return
             processed_dirs.add(resolved_dir)
             
             with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
+                        # Nunca seguir symlinks al iterar para mantener el aislamiento
+                        if entry.is_symlink(): continue
+                        
                         entry_stat = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
                             if getattr(entry_stat, 'st_reparse_tag', 0) != 0: continue
@@ -160,14 +164,14 @@ def _collect_candidates(
                             
                             temp_groups[int(file_size)].append(entry_path)
                     except (OSError, PermissionError): continue
-        except (OSError, PermissionError): pass
+        except (OSError, PermissionError, RuntimeError): pass
 
     if directories is not None:
         for item in set(directories):
             if item:
                 try:
-                    root = Path(item).resolve()
-                    if root.exists() and root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
+                    root = Path(item).resolve(strict=True)
+                    if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
                         _scan(root)
                 except (OSError, ValueError, RuntimeError): continue
     return {size: files for size, files in temp_groups.items() if len(files) > 1}

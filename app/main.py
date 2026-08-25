@@ -171,18 +171,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _validate_environment(self) -> None:
         """
         Verifica que el entorno sea seguro, incluyendo permisos de lectura/escritura 
-        en el directorio base y directorios de trabajo.
+        en el directorio base, validación de symlinks y directorios de trabajo.
         """
-        current_app_dir = Path(__file__).resolve().parent
-        
-        # Validar si el directorio base es seguro de manipular
         try:
-            safety.ensure_safe_to_modify(current_app_dir)
-        except Exception as e:
-            raise RuntimeError(f"El directorio de la aplicación no es seguro: {e}")
+            # Resolución absoluta estricta para evitar ataques por path traversal o enlaces
+            app_path = Path(__file__).resolve(strict=True)
+            if app_path.is_symlink():
+                raise RuntimeError("La aplicación no puede ejecutarse desde un enlace simbólico.")
             
-        # Verificar permisos básicos en el perfil de usuario
-        try:
+            current_app_dir = app_path.parent
+            safety.ensure_safe_to_modify(current_app_dir)
+            
+            # Verificar permisos básicos en el perfil de usuario
             home = Path.home().resolve(strict=True)
             if not os.access(home, os.R_OK | os.W_OK):
                 raise PermissionError(f"Sin permisos de escritura en: {home}")

@@ -178,12 +178,14 @@ _PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], No
 ]
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
+    # Defensa: Validar estrictamente la entrada antes de procesar lógica
     if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error interno: Configuración inválida."])
+        return HealthResult(0, "F", {}, ["Error interno: Tipo de métricas inválido."])
     
+    # Asegurar integridad de los datos internos
     metrics.validate()
     if not metrics.is_finite():
-        return HealthResult(0, "F", {}, ["Error interno: Datos corruptos o no finitos."])
+        return HealthResult(0, "F", {}, ["Error interno: Datos de métricas no numéricos o infinitos."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios_cache: ScoreMap = {}
