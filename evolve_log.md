@@ -790,3 +790,4 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-25T15:21:42` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-25T15:31:57` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-25T15:42:07` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-25T15:52:17` Presupuesto diario agotado (350 usados). Corte hasta mañana.
