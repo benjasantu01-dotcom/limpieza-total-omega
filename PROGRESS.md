@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 23
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 142 | 15 | 21 | 17 | 149 |
-| 2026-08-25 | 80 | 2 | 10 | 5 | 63 |
+| 2026-08-24 | 140 | 15 | 20 | 17 | 148 |
+| 2026-08-25 | 83 | 2 | 10 | 6 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **44**
-- rendimiento: **40**
-- robustez ante casos límite: **33**
+- rendimiento: **43**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **20**
-- `healthscore.py`: **18**
+- `duplicates.py`: **21**
+- `healthscore.py`: **19**
 - `quarantine.py`: **18**
 - `assistant.py`: **18**
-- `scanner.py`: **17**
 - `diskreport.py`: **17**
-- `settings.py`: **16**
 - `branding.py`: **16**
+- `scanner.py`: **16**
 - `organizer.py`: **16**
+- `settings.py`: **15**
 - `browser.py`: **14**
-- `main.py`: **13**
+- `main.py`: **14**
 - `safety.py`: **12**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T07:04:20` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar cálculos redundantes de disco mediante la consolidación del acceso a `diskreport` y la eliminación de la creación innecesaria de objetos `Path` dentro de bucles de alta frecuencia, mejorando la respuesta del dashboard de salud.
+- `2026-08-25T07:02:06` **healthscore.py** (rendimiento): Se optimizó el pre-procesamiento de `SystemMetrics` eliminando el uso de `getattr`/`setattr` dentro de un loop, reemplazándolo por una limpieza directa y explícita en `validate()` que ya se ejecuta al inicializar, evitando sobrecarga de introspección innecesaria.
+- `2026-08-25T07:01:42` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un conjunto de rutas ya procesadas (`set`) para evitar la re-resolución de rutas (operación costosa de E/S) y redundancia innecesaria, mejorando significativamente la velocidad en árboles de directorios profundos.
 - `2026-08-25T06:54:10` **diskreport.py** (rendimiento): Optimizamos `walk_files` para evitar múltiples llamadas a `os.path.realpath` y `Path.resolve()` dentro del bucle principal, utilizando `os.path.join` y validación de rutas más eficiente para reducir el impacto en I/O durante el escaneo recursivo.
 - `2026-08-25T06:53:57` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios mediante la técnica de "memoización" en `_sum_directory_recursive`, evitando la redundancia de procesar carpetas compartidas entre navegadores (ej. múltiples perfiles que apunten a una misma ruta) y reduciendo las llamadas al sistema en cada iteración del bucle principal.
 - `2026-08-25T06:52:22` **branding.py** (rendimiento): Optimicé el rendimiento de la gestión de colores en `branding.py` reemplazando los llamados repetitivos a `color()` (que involucran búsqueda en diccionario y acceso a `lru_cache`) por referencias directas a variables de la paleta ya evaluadas en tiempo de carga, reduciendo la sobrecarga de resolución de nombres durante el renderizado intenso de la UI.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T06:31:10` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en parámetros críticos, normalizando la estructura de las docstrings para seguir un estilo consistente y clarificando mediante comentarios explicativos las constantes de seguridad usadas en la manipulación de procesos.
 - `2026-08-25T06:22:39` **main.py** (legibilidad y documentación): Mejora la legibilidad del código mediante la adición de docstrings técnicos detallados en los métodos de gestión de hilos y seguridad, aclarando la lógica de delegación asíncrona, el manejo de estados de la interfaz y la integración con las salvaguardas de `safety.py`.
 - `2026-08-25T06:21:45` **healthscore.py** (legibilidad y documentación): Documenté el propósito matemático de `_INV_` y `_SCORER_MAP` mediante docstrings y mejoré la legibilidad de la lógica de `compute_score` separando la validación del cálculo, facilitando la comprensión de cómo se derivan los puntajes.
-- `2026-08-25T06:21:20` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings técnicos detallados en funciones críticas (`_collect_candidates`, `_refine_by_hash`, `_process_size_group`), clarificando las responsabilidades de cada etapa del pipeline de detección para facilitar el mantenimiento y la auditoría.
-- `2026-08-25T06:20:55` **diskreport.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados, docstrings que explican las restricciones de seguridad en las funciones de recorrido, y la consolidación de la lógica de validación de rutas en `walk_files` para evitar redundancias.
-- `2026-08-25T06:12:04` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings detallados en las funciones de bajo nivel y la clarificación de las restricciones de seguridad, facilitando la comprensión de la lógica de recursión y prevención de `Path Traversal` para futuros colaboradores.

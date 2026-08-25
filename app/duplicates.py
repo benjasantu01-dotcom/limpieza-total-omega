@@ -129,19 +129,16 @@ def _collect_candidates(
     """
     Realiza un recorrido recursivo en el sistema de archivos buscando candidatos
     que cumplan el umbral de tamaño mínimo, evitando ciclos mediante inodos.
-    
-    Utiliza un sistema de bloqueo de inodos (device, inode) para prevenir
-    procesamiento redundante en enlaces simbólicos a carpetas o junctions.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
-    processed_dirs: set[Path] = set()
+    processed_paths: set[Path] = set()
 
     def _scan(current_dir: Path) -> None:
         try:
-            resolved_dir = current_dir.resolve(strict=True)
-            if not resolved_dir.is_dir() or resolved_dir in processed_dirs: return
-            processed_dirs.add(resolved_dir)
+            resolved_dir = current_dir.resolve()
+            if not resolved_dir.is_dir() or resolved_dir in processed_paths: return
+            processed_paths.add(resolved_dir)
             
             with os.scandir(resolved_dir) as it:
                 for entry in it:
@@ -158,8 +155,11 @@ def _collect_candidates(
                         elif entry.is_file(follow_symlinks=False):
                             file_size = entry_stat.st_size
                             if file_size < min_size: continue
+                            
                             entry_path = Path(entry.path).resolve()
-                            if not entry_path.exists(): continue
+                            if entry_path in processed_paths: continue
+                            processed_paths.add(entry_path)
+                            
                             if skip_protected and is_protected_path(entry_path): continue
                             if not is_safe_to_modify(entry_path): continue
                             

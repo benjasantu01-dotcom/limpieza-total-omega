@@ -185,11 +185,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error interno: Tipo de métricas inválido."])
     
-    # Pre-procesamiento de datos: limpieza de nulos y validación de finitud
-    for field_name in metrics.__dataclass_fields__:
-        if getattr(metrics, field_name) is None:
-            setattr(metrics, field_name, 0.0 if "percent" in field_name or "mb" in field_name else 0)
-    
     metrics.validate()
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error interno: Datos de métricas no numéricos o infinitos."])

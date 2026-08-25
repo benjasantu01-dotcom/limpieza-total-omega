@@ -1075,3 +1075,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-25T06:54:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos `walk_files` para evitar múltiples llamadas a `os.path.realpath` y `Path.resolve()` dentro del bucle principal, utilizando `os.path.join` y validación de rutas más eficiente para reducir el impacto en I/O durante el escaneo recursivo.
 - `2026-08-25T06:54:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T06:54:10` Corrida terminada. Total usado hoy: 160.
+- `2026-08-25T07:01:14` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-25T07:01:42` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` utilizando un conjunto de rutas ya procesadas (`set`) para evitar la re-resolución de rutas (operación costosa de E/S) y redundancia innecesaria, mejorando significativamente la velocidad en árboles de directorios profundos.
+- `2026-08-25T07:02:06` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el pre-procesamiento de `SystemMetrics` eliminando el uso de `getattr`/`setattr` dentro de un loop, reemplazándolo por una limpieza directa y explícita en `validate()` que ya se ejecuta al inicializar, evitando sobrecarga de introspección innecesaria.
+- `2026-08-25T07:03:06` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-25T07:04:20` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` para evitar cálculos redundantes de disco mediante la consolidación del acceso a `diskreport` y la eliminación de la creación innecesaria de objetos `Path` dentro de bucles de alta frecuencia, mejorando la respuesta del dashboard de salud.
+- `2026-08-25T07:04:31` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Se optimizó el proceso de recolección de métricas de procesos eliminando el uso de `subprocess` en el ciclo principal y aprovechando el cacheo de texto crudo ya existente para evitar re-ejecuciones de PowerShell, reduciendo drásticamente la carga de CPU y la latencia en las actualizaciones de la interfaz.
+- `2026-08-25T07:04:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T07:04:31` Corrida terminada. Total usado hoy: 164.

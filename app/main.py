@@ -1090,13 +1090,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         snapshot = self._get_cached("memory_snapshot", provider=memory_mod.read_snapshot) or memory_mod.Snapshot(0, 0, 0)
         
-        # Uso de lru_cache externo ya definido para persistir info de drives en sesión
-        @lru_cache(maxsize=2)
-        def _get_disk_info(home_path_str: str) -> Optional[diskreport.DriveInfo]:
-            home = Path(home_path_str)
-            return diskreport.drive_usage(home) if home.exists() else None
-
-        disk_info = _get_disk_info(str(Path.home()))
+        # Uso de cache interno para evitar redescubrimiento de disco en cada cálculo
+        @lru_cache(maxsize=1)
+        def _get_home_disk_info() -> Optional[diskreport.DriveInfo]:
+            return diskreport.drive_usage(Path.home())
+            
+        disk_info = _get_home_disk_info()
         
         metrics = healthscore.SystemMetrics(
             junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),
