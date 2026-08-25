@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 97 | 12 | 15 | 15 | 105 |
-| 2026-08-25 | 122 | 7 | 16 | 12 | 103 |
+| 2026-08-24 | 95 | 12 | 15 | 13 | 105 |
+| 2026-08-25 | 124 | 7 | 16 | 14 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
+- legibilidad y documentación: **58**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **38**
-- robustez ante casos límite: **35**
+- rendimiento: **39**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `quarantine.py`: **20**
 - `duplicates.py`: **19**
-- `healthscore.py`: **18**
-- `assistant.py`: **17**
+- `assistant.py`: **18**
 - `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `settings.py`: **17**
-- `organizer.py`: **15**
 - `scanner.py`: **15**
 - `branding.py`: **15**
+- `organizer.py`: **14**
 - `safety.py`: **14**
 - `browser.py`: **14**
 - `main.py`: **12**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T11:17:46` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` evitando iteraciones redundantes y validaciones de tipos costosas mediante una pre-filtración de fuentes, además de refactorizar la lógica de `_validate_and_assign` para minimizar llamadas a `isinstance` dentro de los bucles críticos.
+- `2026-08-25T11:17:10` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de registro y carpetas, y clarifiqué las docstrings de `StartupEntry` para explicar el ciclo de vida de los datos y el manejo de seguridad.
 - `2026-08-25T11:08:27` **settings.py** (legibilidad y documentación): He mejorado la documentación interna y la legibilidad de `settings.py` añadiendo tipos específicos para las claves de configuración y documentando las precondiciones de validación, facilitando el mantenimiento futuro y la comprensión de las restricciones de seguridad.
 - `2026-08-25T11:07:46` **scanner.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings especializados y se refinó la tipografía del código para cumplir con estándares de claridad, facilitando la comprensión del flujo de datos en las heurísticas de escaneo sin alterar su lógica operativa.
 - `2026-08-25T11:07:22` **safety.py** (legibilidad y documentación): Se introdujo un `NamedTuple` estructurado para capturar el estado de integridad detallado dentro de `_check_file_integrity` y se reemplazó el flujo basado en excepciones genéricas por un manejo explícito de errores, mejorando la legibilidad del porqué una operación de seguridad falla (cumpliendo con la documentación del PORQUÉ).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T10:39:50` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en constantes críticas, la especificación de tipos de datos en parámetros de funciones complejas y la estandarización de las descripciones de las funciones de renderizado, garantizando una mejor mantenibilidad y legibilidad del código.
 - `2026-08-25T10:39:30` **assistant.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de funciones clave (como `_validate_and_assign` y `_call_gemini`) y se clarificaron los docstrings para documentar explícitamente el contrato de datos, mejorando la legibilidad técnica sin alterar la lógica.
 - `2026-08-25T10:37:20` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `load()` capturando posibles errores de serialización JSON y excepciones críticas de E/S que podrían interrumpir la persistencia de datos, además de asegurar que `_get_validator_map` no sea invocado con claves inexistentes mediante una validación explícita en `update`.
-- `2026-08-25T10:27:02` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `scan_file`, asegurando que cualquier error al acceder a metadatos de archivos inexistentes o bloqueados sea capturado silenciosamente para evitar la interrupción del bucle de escaneo.
-- `2026-08-25T10:26:53` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y errores de acceso al normalizar el manejo de `path.exists()` y `parent.exists()`, evitando excepciones no capturadas al evaluar la integridad de archivos que pueden desaparecer durante la validación.

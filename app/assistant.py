@@ -287,14 +287,10 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     return _is_safe_text_structure(text)
 
-def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
+def _validate_and_assign(ctx: SystemContext, source: Any, is_dict: bool, key: str, spec: ValidatorSpec) -> bool:
     """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
     cast, min_v, max_v = spec
-    
-    try:
-        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
-    except Exception:
-        val = None
+    val = source.get(key) if is_dict else getattr(source, key, None)
     
     if val is None or isinstance(val, bool): return False
     
@@ -310,29 +306,23 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
+    sources = [s for s in (metrics, health, extra) if s and not isinstance(s, (str, int, float, list, tuple, bool))]
+    
+    # Cacheo de tipos para evitar llamadas repetidas a isinstance
+    src_types = [(s, isinstance(s, dict)) for s in sources]
     found_data = False
     
-    sources = []
-    for s in (metrics, health, extra):
-        if isinstance(s, (dict, object)) and not isinstance(s, (str, int, float, list, tuple, bool)):
-            sources.append(s)
-    
     for key, spec in _VALIDATORS.items():
-        for src in sources:
-            if _validate_and_assign(ctx, src, key, spec):
+        for src, is_dict in src_types:
+            if _validate_and_assign(ctx, src, is_dict, key, spec):
                 found_data = True
                 break
 
-    for src in sources:
-        try:
-            val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
-            if isinstance(val, str):
-                g_str = val[:10].strip()
-                if _ensure_safe_text(g_str):
-                    ctx.grade = g_str
-                    break
-        except Exception:
-            continue
+    for src, is_dict in src_types:
+        val = src.get("grade") if is_dict else getattr(src, "grade", None)
+        if isinstance(val, str) and _ensure_safe_text(val[:10].strip()):
+            ctx.grade = val[:10].strip()
+            break
             
     ctx.analyzed = found_data
     return ctx
