@@ -7,38 +7,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **215** (42.7% de aceptación)
-- Rechazadas por tests: 18
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 28
+- Sin cambios (nada sustancial que mejorar): 27
 - Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 106 | 12 | 17 | 16 | 109 |
-| 2026-08-25 | 109 | 6 | 15 | 12 | 102 |
+| 2026-08-24 | 103 | 12 | 17 | 15 | 109 |
+| 2026-08-25 | 112 | 7 | 15 | 12 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **47**
 - seguridad defensiva: **46**
-- legibilidad y documentación: **45**
-- rendimiento: **44**
-- manejo de errores y validación de entradas: **42**
+- manejo de errores y validación de entradas: **43**
+- rendimiento: **41**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
-- `duplicates.py`: **20**
 - `quarantine.py`: **20**
-- `healthscore.py`: **18**
-- `assistant.py`: **17**
+- `memory.py`: **20**
+- `duplicates.py`: **19**
+- `assistant.py`: **18**
+- `healthscore.py`: **17**
 - `organizer.py`: **16**
+- `branding.py`: **16**
 - `diskreport.py`: **16**
+- `settings.py`: **16**
 - `scanner.py`: **15**
-- `branding.py`: **15**
-- `settings.py`: **15**
 - `safety.py`: **13**
 - `browser.py`: **13**
 - `main.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T10:39:50` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en constantes críticas, la especificación de tipos de datos en parámetros de funciones complejas y la estandarización de las descripciones de las funciones de renderizado, garantizando una mejor mantenibilidad y legibilidad del código.
+- `2026-08-25T10:39:30` **assistant.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de funciones clave (como `_validate_and_assign` y `_call_gemini`) y se clarificaron los docstrings para documentar explícitamente el contrato de datos, mejorando la legibilidad técnica sin alterar la lógica.
+- `2026-08-25T10:37:20` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `load()` capturando posibles errores de serialización JSON y excepciones críticas de E/S que podrían interrumpir la persistencia de datos, además de asegurar que `_get_validator_map` no sea invocado con claves inexistentes mediante una validación explícita en `update`.
 - `2026-08-25T10:27:02` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `scan_file`, asegurando que cualquier error al acceder a metadatos de archivos inexistentes o bloqueados sea capturado silenciosamente para evitar la interrupción del bucle de escaneo.
 - `2026-08-25T10:26:53` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y errores de acceso al normalizar el manejo de `path.exists()` y `parent.exists()`, evitando excepciones no capturadas al evaluar la integridad de archivos que pueden desaparecer durante la validación.
 - `2026-08-25T10:26:05` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación temprana y exhaustiva del espacio en disco antes de realizar cualquier operación de copia, además de centralizar la gestión de errores mediante bloques `try-finally` para asegurar que los archivos temporales sean siempre eliminados, evitando la acumulación de basura en el sandbox ante fallos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T08:28:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de aislamiento (`_atomic_isolate_file`) mediante una validación de propiedad del archivo destino (`is_safe_to_modify`) y la aplicación de un límite de tiempo de vida (TTL) implícito a través de la limpieza explícita de archivos temporales mediante `try...finally` incluso en casos de error, asegurando que no queden restos huérfanos tras fallos de escritura.
 - `2026-08-25T08:27:40` **organizer.py** (seguridad defensiva): Reforcé la integridad del proceso de escaneo recursivo mediante la validación del estado del enlace simbólico (`resolve()` y `is_symlink`) para evitar "escape" de directorios durante el barrido, y añadí una verificación de `resolve()` en la creación de rutas dentro de `_process_directory` para asegurar que el escáner se mantenga estrictamente dentro de los límites de las carpetas permitidas.
 - `2026-08-25T08:26:50` **memory.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_to_trim` implementando una validación estricta del árbol de directorios del ejecutable contra la lista de rutas protegidas del sistema, asegurando que no solo el archivo final, sino sus carpetas padre, sean validadas antes de realizar cualquier manipulación de memoria.
-- `2026-08-25T08:14:00` **duplicates.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `suggest_keeper` y `format_group` para asegurar que las rutas procesadas no hayan sido alteradas o eliminadas (race condition) entre la generación del grupo y su análisis, utilizando `is_safe_to_modify` antes de cualquier operación de resolución.
-- `2026-08-25T08:13:35` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `diskreport.py` implementando una validación estricta en `walk_files` para asegurar que las rutas construidas durante la iteración no escapen del árbol del directorio original (evitando ataques de path traversal mediante enlaces simbólicos o manipulaciones malintencionadas), y se centralizó el chequeo de seguridad mediante `is_protected_path` al inicio de cada iteración recursiva.
-- `2026-08-25T08:13:08` **browser.py** (seguridad defensiva): Se ha robustecido el escaneo defensivo en `_is_valid_cache_path` y `_should_skip_entry` verificando explícitamente `is_protected_path` al nivel de cada componente de la ruta, asegurando que no se acceda a directorios protegidos incluso si una ruta maliciosa intenta eludir el filtrado inicial mediante enlaces o manipulaciones de `resolve()`.

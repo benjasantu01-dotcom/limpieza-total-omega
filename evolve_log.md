@@ -1478,3 +1478,46 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-25T10:27:02` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas centralizando la validación de archivos en `scan_file`, asegurando que cualquier error al acceder a metadatos de archivos inexistentes o bloqueados sea capturado silenciosamente para evitar la interrupción del bucle de escaneo.
 - `2026-08-25T10:27:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T10:27:02` Corrida terminada. Total usado hoy: 244.
+- `2026-08-25T10:35:47` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-08-25T10:36:49` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-25T10:37:20` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `load()` capturando posibles errores de serialización JSON y excepciones críticas de E/S que podrían interrumpir la persistencia de datos, además de asegurar que `_get_validator_map` no sea invocado con claves inexistentes mediante una validación explícita en `update`.
+- `2026-08-25T10:38:20` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-25T10:38:53` Tests FALLARON:
+```
+.................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_executable_extracted_from_quoted_command _________________
+
+    def test_executable_extracted_from_quoted_command():
+        entrada = startup.StartupEntry("X", '"C:\\Program Files\\App\\app.exe" /min', "reg")
+>       assert entrada.executable == "C:\\Program Files\\App\\app.exe"
+E       AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+E         
+E         - C:\Program Files\App\app.exe
+
+evolve/tests/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed in 1.44s
+
+```
+- `2026-08-25T10:38:53` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry.executable` y sus métodos de resolución asociados, reemplazando chequeos condicionales frágiles por un manejo de errores centralizado y defensivo que garantiza que rutas mal formadas, bloqueadas por `is_protected_path` o inexistentes no interrumpan el flujo de inventario, asegurando además que no se intente operar sobre valores nulos o tipos incorrectos.
+- `2026-08-25T10:39:30` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los parámetros y retornos de funciones clave (como `_validate_and_assign` y `_call_gemini`) y se clarificaron los docstrings para documentar explícitamente el contrato de datos, mejorando la legibilidad técnica sin alterar la lógica.
+- `2026-08-25T10:39:50` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en constantes críticas, la especificación de tipos de datos en parámetros de funciones complejas y la estandarización de las descripciones de las funciones de renderizado, garantizando una mejor mantenibilidad y legibilidad del código.
+- `2026-08-25T10:39:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T10:39:50` Corrida terminada. Total usado hoy: 248.

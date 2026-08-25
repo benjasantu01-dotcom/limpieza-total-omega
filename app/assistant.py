@@ -288,7 +288,7 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spec: ValidatorSpec) -> bool:
-    """Extrae y valida una métrica individual desde una fuente de datos asignándola al contexto."""
+    """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
     cast, min_v, max_v = spec
     
     try:
@@ -371,7 +371,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
-    """Delvuelve explicaciones pedagógicas de los módulos."""
+    """Devuelve explicaciones pedagógicas de los módulos."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))

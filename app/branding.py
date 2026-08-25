@@ -97,7 +97,7 @@ _PALETTE_RAW: Final[dict[str, HexColor]] = {
 }
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_RAW)
 
-# Constantes pre-resueltas para optimización de renderizado (evita llamados a color())
+# Constantes pre-resueltas para optimización de renderizado
 C_SURFACE: Final[HexColor] = _PALETTE_RAW["surface"]
 C_BACKGROUND: Final[HexColor] = _PALETTE_RAW["background"]
 C_GLOW: Final[HexColor] = _PALETTE_RAW["glow"]
@@ -246,7 +246,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Transfomra color #RRGGBB a valores decimales (R, G, B)."""
+    """Transforma color #RRGGBB a valores decimales (R, G, B)."""
     try:
         if not isinstance(value, str) or len(value) != 7 or value[0] != "#":
             return (0, 0, 0)
@@ -382,11 +382,11 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
             )
     except Exception: pass
 
-def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
+def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Dibuja el escudo corporativo aplicando transformación de escala en el canvas."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
-        s_val = float(size) if isinstance(size, (int, float)) else 56.0
+        s_val = float(size)
         scale: float = max(0.1, min(10.0, s_val / 128.0))
         base_coords: List[float] = _get_shield_coords(scale)
         contorno: List[float] = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]

@@ -239,7 +239,6 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
         base = Path(custom_base).expanduser().resolve(strict=False)
-        # Aseguramos que la ruta base no sea un junction o symlink peligroso
         if not (base.is_symlink() or (hasattr(base, 'is_junction') and base.is_junction())):
             if _Validators._is_safe_path(str(base)):
                 return base / SETTINGS_FILE
@@ -285,7 +284,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     parent = ruta.parent.resolve(strict=False)
-    # Seguridad adicional: validar que el directorio no sea un punto de reparse
     if parent.is_symlink() or (hasattr(parent, 'is_junction') and parent.is_junction()):
         return None
     try:
@@ -296,9 +294,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         try: parent.mkdir(parents=True, exist_ok=True)
         except OSError: return None
     if not parent.is_dir(): return None
+    
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
+        
     temp_name = None
     try:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
