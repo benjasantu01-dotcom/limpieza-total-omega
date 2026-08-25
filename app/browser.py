@@ -164,8 +164,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
     
     try:
-        is_reparse = entry.is_symlink() or is_junction_fn(entry.path)
-        if is_reparse:
+        # Usar os.path.islink es más seguro que entry.is_symlink en ciertos sistemas de archivos
+        if entry.is_symlink() or is_junction_fn(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):
             return True
@@ -211,7 +211,7 @@ def _sum_directory_recursive(
                             total += entry.stat(follow_symlinks=False).st_size
                     except (OSError, PermissionError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             return 0
         return total
 

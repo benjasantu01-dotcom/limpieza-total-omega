@@ -51,9 +51,9 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-_INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB if _LIMIT_JUNK_MB > 1e-9 else 0.0
-_INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB if _LIMIT_DUPLICATE_MB > 1e-9 else 0.0
-_INV_STARTUP: Final[float] = 1.0 / _LIMIT_STARTUP_COUNT if _LIMIT_STARTUP_COUNT > 0 else 0.0
+_INV_JUNK: Final[float] = 1.0 / max(1e-9, _LIMIT_JUNK_MB)
+_INV_DUP: Final[float] = 1.0 / max(1e-9, _LIMIT_DUPLICATE_MB)
+_INV_STARTUP: Final[float] = 1.0 / max(1, _LIMIT_STARTUP_COUNT)
 _INV_RAM: Final[float] = 1.0 / max(0.1, float(_LIMIT_RAM_PERCENT))
 _INV_DISK: Final[float] = 1.0 / max(0.1, float(_LIMIT_DISK_PERCENT))
 

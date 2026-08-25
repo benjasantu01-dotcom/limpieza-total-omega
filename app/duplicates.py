@@ -69,7 +69,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if path is None: return None
     try:
         path_obj = Path(path).resolve()
-        if not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
+        if not path_obj.exists() or not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
         if not os.access(path_obj, os.R_OK): return None
         
         digest = hashlib.sha256()
@@ -89,7 +89,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if path is None: return None
     try:
         path_obj = Path(path).resolve()
-        if not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
+        if not path_obj.exists() or not path_obj.is_file() or not is_safe_to_modify(path_obj): return None
         if not os.access(path_obj, os.R_OK): return None
         
         with open(path_obj, "rb") as f:
@@ -112,7 +112,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if p is None: continue
         try:
             target = Path(p).resolve()
-            if not is_protected_path(target) and is_safe_to_modify(target):
+            if target.exists() and not is_protected_path(target) and is_safe_to_modify(target):
                 st = target.stat()
                 if st.st_size > 0:
                     groups[st.st_size].append(target)
@@ -137,7 +137,7 @@ def _collect_candidates(
     def _scan(current_dir: Path) -> None:
         try:
             resolved_dir = current_dir.resolve()
-            if resolved_dir in processed_dirs: return
+            if not resolved_dir.exists() or resolved_dir in processed_dirs: return
             processed_dirs.add(resolved_dir)
             
             with os.scandir(resolved_dir) as it:
@@ -154,6 +154,7 @@ def _collect_candidates(
                             file_size = entry_stat.st_size
                             if file_size < min_size: continue
                             entry_path = Path(entry.path).resolve()
+                            if not entry_path.exists(): continue
                             if skip_protected and is_protected_path(entry_path): continue
                             if not is_safe_to_modify(entry_path): continue
                             
@@ -166,7 +167,7 @@ def _collect_candidates(
             if item:
                 try:
                     root = Path(item).resolve()
-                    if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
+                    if root.exists() and root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
                         _scan(root)
                 except (OSError, ValueError, RuntimeError): continue
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
@@ -225,7 +226,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if p is None: continue
         try:
             p_obj = Path(p).resolve()
-            if p_obj.is_file() and is_safe_to_modify(p_obj):
+            if p_obj.exists() and p_obj.is_file() and is_safe_to_modify(p_obj):
                 stat_info = p_obj.stat()
                 candidates.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
         except (OSError, PermissionError, ValueError):
