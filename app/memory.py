@@ -195,12 +195,12 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
         return None
 
 def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
-    """Generador que procesa líneas de texto crudo de procesos excluyendo system PIDs."""
+    """Generador eficiente que filtra procesos críticos usando un set."""
     if not isinstance(raw_csv_text, str):
         return
     for line in raw_csv_text.splitlines():
         proc = _parse_csv_row(line)
-        if proc and proc.working_set > 0 and not _is_system_process(proc.pid):
+        if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
             yield proc
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
@@ -253,7 +253,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (time.time() - _last_proc_fetch) > 30:
         cmd: str = 'powershell -NoProfile -Command "Get-Process | ForEach-Object { \\"$($_.Name),$($_.Id),$($_.WorkingSet)\\" }"'
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, shell=True)
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, shell=False)
             if proc.returncode == 0:
                 _cached_proc_output = proc.stdout
                 _last_proc_fetch = time.time()
