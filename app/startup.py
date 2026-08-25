@@ -263,13 +263,17 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
         reader: csv.DictReader = csv.DictReader(f)
         for row in reader:
             try:
+                # Validar estructura mínima de la fila
                 if not isinstance(row, dict) or len(row) < 2:
                     continue
-                row_values = list(row.values())
-                if len(row_values) < 2 or row_values[0] is None or row_values[1] is None:
+                
+                row_items = list(row.items())
+                # Necesitamos al menos el nombre (key) y el comando (value)
+                if len(row_items) < 2:
                     continue
-                vals = [str(v).strip() for v in row_values[:2]]
-                name_raw, cmd_raw = vals[0], vals[1]
+                
+                name_raw = str(row_items[0][1] or "")
+                cmd_raw = str(row_items[1][1] or "")
                 
                 name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
                 cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()

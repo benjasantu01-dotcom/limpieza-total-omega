@@ -115,9 +115,11 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
-    Verifica confinamiento de ruta (evitar Path Traversal).
-    Asegura que el objetivo de escaneo sea un subdirectorio real de la base
-    autorizada, evitando escapes fuera del perfil del usuario.
+    Verifica confinamiento de ruta contra la base autorizada.
+    
+    Usa el desglose de componentes (`parts`) de las rutas resueltas para 
+    asegurar que el objetivo esté bajo el árbol de `real_base`, bloqueando
+    ataques de `..` o intentos de escape fuera del perfil de usuario.
     """
     try:
         if not is_safe_to_modify(real_target) or not is_safe_to_modify(real_base):
@@ -126,6 +128,7 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
         target_parts = real_target.resolve().parts
         base_parts = real_base.resolve().parts
         
+        # El destino debe ser más profundo o igual a la base
         if len(target_parts) <= len(base_parts):
             return False
         return target_parts[:len(base_parts)] == base_parts
@@ -140,8 +143,10 @@ def _is_excluded_file(name: str) -> bool:
 
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Consulta atributos de bajo nivel en Windows para detectar archivos de sistema.
-    Retorna True si el archivo posee atributos ocultos o de sistema críticos.
+    Consulta atributos de archivos Windows para detectar archivos de sistema.
+    
+    Retorna True si el archivo tiene los atributos:
+    0x01 (Archivo de solo lectura), 0x02 (Oculto) o 0x04 (Sistema).
     """
     if not kernel32 or not entry_path:
         return False
@@ -156,9 +161,13 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Filtro de seguridad para la recursión.
-    Evalúa si la entrada debe ser omitida por ser sistema, enlace simbólico (reparse point),
-    o si viola las políticas de `safety.py`.
+    Filtro de seguridad para la recursión de directorios.
+    
+    Implementa:
+    1. Bloqueo de nombres críticos (NEVER_TOUCH).
+    2. Bloqueo de rutas protegidas (safety.py).
+    3. Prevención de recursión en enlaces simbólicos o puntos de unión (Junctions).
+    4. Omisión de archivos con atributos de sistema/ocultos.
     """
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
@@ -175,7 +184,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_within_depth_limit(depth: int, current_path: str) -> bool:
-    """Verifica límites de recursión y restricciones de seguridad del sistema."""
+    """Verifica límites de recursión (MAX_SCAN_DEPTH) y restricciones de seguridad."""
     return depth <= MAX_SCAN_DEPTH and not is_protected_path(Path(current_path))
 
 
@@ -187,8 +196,10 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el tamaño de una estructura de directorios.
-    Utiliza memoización (`memo`) para evitar recálculos en estructuras ramificadas
-    y un limitador de profundidad (`MAX_SCAN_DEPTH`) por seguridad.
+    
+    Usa un diccionario `memo` para cachear resultados de carpetas y evitar 
+    redundancia en árboles de archivos. La recursión se detiene al alcanzar
+    MAX_SCAN_DEPTH para evitar desbordamiento de pila en estructuras profundas.
     """
     if root_dir in memo:
         return memo[root_dir]
@@ -205,11 +216,11 @@ def _sum_directory_recursive(
                         continue
                     
                     try:
-                        # Verificación explícita de atributos sin seguir enlaces para calcular tamaño
-                        stat = entry.stat(follow_symlinks=False)
+                        # Se usa follow_symlinks=False para evitar seguir accesos directos
                         if entry.is_dir(follow_symlinks=False):
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file(follow_symlinks=False):
+                            stat = entry.stat(follow_symlinks=False)
                             total += stat.st_size
                     except (OSError, PermissionError):
                         continue
@@ -242,9 +253,11 @@ def directory_size(path: Union[str, Path]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Realiza las validaciones finales antes de incluir una ruta en el reporte.
-    Asegura que el candidato sea una carpeta real, dentro de los límites
-    de seguridad definidos, y no sea un punto de unión o enlace.
+    Valida que el candidato de caché sea seguro antes de iniciar el cálculo.
+    
+    Verifica que la ruta sea un directorio existente, no sea un enlace ni
+    ruta protegida, esté contenida dentro de la base de usuario y no contenga
+    nombres bloqueados.
     """
     try:
         if not candidate.exists(): return False
@@ -265,9 +278,11 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea el sistema buscando rutas de caché conocidas.
-    La detección es optimizada mediante un mapa de rutas (`cache_paths`) y
-    memoización de resultados para reducir las llamadas de I/O al sistema.
+    Escanea el sistema buscando rutas de caché conocidas mediante heurística.
+    
+    Utiliza el mapa `cache_paths` para localizar cachés, valida la integridad
+    de cada ruta mediante `_is_valid_cache_path` y utiliza un diccionario
+    `perf_cache` para asegurar que cada carpeta se procese una sola vez.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

@@ -25,7 +25,11 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]  # (Color, Etiqueta)
 RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 
 class PaletteDict(TypedDict):
-    """Esquema de colores de la aplicación organizado por uso semántico."""
+    """
+    Definición de la paleta de colores del sistema.
+    Cada clave representa un rol funcional, permitiendo consistencia visual 
+    al referenciar colores por uso en lugar de por su valor hexadecimal.
+    """
     background: HexColor
     surface: HexColor
     surface_alt: HexColor

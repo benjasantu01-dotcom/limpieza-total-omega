@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 5 | 0 | 3 | 1 | 5 |
+| 2026-08-23 | 3 | 0 | 2 | 1 | 4 |
 | 2026-08-24 | 144 | 15 | 21 | 18 | 152 |
-| 2026-08-25 | 63 | 2 | 8 | 4 | 63 |
+| 2026-08-25 | 66 | 2 | 9 | 4 | 63 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- legibilidad y documentación: **45**
-- manejo de errores y validación de entradas: **43**
-- rendimiento: **39**
+- legibilidad y documentación: **47**
+- manejo de errores y validación de entradas: **44**
+- rendimiento: **37**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `memory.py`: **21**
 - `duplicates.py`: **19**
-- `healthscore.py`: **18**
 - `assistant.py`: **18**
 - `quarantine.py`: **18**
 - `scanner.py`: **17**
+- `healthscore.py`: **17**
 - `diskreport.py`: **16**
 - `settings.py`: **15**
+- `branding.py`: **15**
 - `organizer.py`: **15**
-- `branding.py`: **14**
 - `main.py`: **13**
-- `browser.py`: **12**
+- `browser.py`: **13**
 - `safety.py`: **12**
-- `startup.py`: **3**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T06:12:04` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings detallados en las funciones de bajo nivel y la clarificación de las restricciones de seguridad, facilitando la comprensión de la lógica de recursión y prevención de `Path Traversal` para futuros colaboradores.
+- `2026-08-25T06:11:53` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica y la mantenibilidad del archivo añadiendo docstrings descriptivos a los tipos de datos complejos (`PaletteDict`, `FontSizesDict`) y garantizando que los métodos de dibujo utilicen tipos de entrada claros, facilitando la comprensión del sistema de diseño para futuros colaboradores.
+- `2026-08-25T06:10:45` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` ante entradas de registro malformadas, añadiendo una validación explícita para evitar que filas con estructuras inconsistentes o tipos de datos inesperados causen excepciones durante la iteración.
 - `2026-08-25T06:01:18` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `Scanner.process_entry` y `scan_directory` validando explícitamente los parámetros de entrada y asegurando que las operaciones críticas de archivos y rutas capturen adecuadamente estados inválidos o nulos, evitando excepciones inesperadas durante la recursión.
 - `2026-08-25T06:00:54` **safety.py** (manejo de errores y validación de entradas): Se introdujo una captura selectiva de `PermissionError` en `_is_readonly` y `_check_file_integrity` para evitar que las excepciones de acceso del SO (comunes al intentar inspeccionar archivos bloqueados o protegidos) se propaguen como errores críticos, mejorando la robustez de las validaciones.
 - `2026-08-25T05:51:31` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_is_safe_to_trim` validando explícitamente los tipos de retorno de las APIs de Windows y capturando condiciones de error sutiles mediante el uso de `ctypes.get_last_error()` para evitar suposiciones silenciosas sobre fallos de ejecución.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T04:04:45` **settings.py** (seguridad defensiva): Se ha restringido `_Validators.path` para que no solo valide el formato, sino que verifique específicamente que el destino no sea un archivo existente no regular (como dispositivos, sockets o named pipes) mediante `is_file()` o `is_dir()` con chequeo de tipo, reforzando la seguridad defensiva contra manipulaciones de rutas inusuales.
 - `2026-08-25T04:04:18` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en la resolución de rutas dentro de `Scanner.process_entry` y `scan_directory` utilizando `resolve()` con `strict=False` de manera consistente, asegurando que las comparaciones de rutas (especialmente con puntos de unión o rutas relativas) no fallen y se validen estrictamente contra `base_root` antes de cualquier procesamiento posterior.
 - `2026-08-25T03:54:03` **quarantine.py** (seguridad defensiva): Se introdujo una comprobación de "no persistencia de handles" al abrir archivos en `_get_sha256` y una validación de longitud de nombre en `_generate_safe_stored_name` más robusta para evitar errores de `path too long` y ataques de inyección de rutas mediante nombres maliciosos.
-- `2026-08-25T03:53:04` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_system_process` incorporando una lógica más robusta para filtrar procesos críticos, asegurando que la validación no dependa solo de umbrales arbitrarios, sino de la lista `SYSTEM_CRITICAL_PIDS` definida explícitamente al inicio.
-- `2026-08-25T03:45:35` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_environment` para garantizar que, además de verificar los permisos y la integridad de la carpeta base, se realice una comprobación estricta de la ruta de ejecución frente a enlaces simbólicos o puntos de reparse, previniendo la ejecución de la aplicación desde ubicaciones potencialmente engañosas o maliciosas.
-- `2026-08-25T03:44:42` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `compute_score` asegurando que las métricas recibidas sean validadas explícitamente antes de procesarlas y añadiendo una comprobación de tipo estricta para evitar inyección de datos inesperados en el cálculo del puntaje.
