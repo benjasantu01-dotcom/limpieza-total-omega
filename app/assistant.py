@@ -297,7 +297,6 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
         val = None
     
     clean_val = _safe_float(val, -1.0)
-    # Score puede ser opcional (None), pero si viene debe estar en rango
     if val is not None and (clean_val < min_v or clean_val > max_v):
         return False
     
@@ -312,8 +311,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     """
     ctx = SystemContext()
     found_data = False
-    
-    # Fuentes extraídas eficientemente
     sources = [s for s in [metrics, health, extra] if s is not None and not isinstance(s, (str, int, float))]
     
     for key, spec in _VALIDATORS.items():
@@ -323,15 +320,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
                 break
 
     for src in sources:
-        try:
-            val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
-            if isinstance(val, str):
-                g_str = val[:10].strip()
-                if _ensure_safe_text(g_str):
-                    ctx.grade = g_str
-                    break
-        except Exception:
-            continue
+        val = src.get("grade") if isinstance(src, dict) else getattr(src, "grade", None)
+        if isinstance(val, str):
+            g_str = val[:10].strip()
+            if _ensure_safe_text(g_str):
+                ctx.grade = g_str
+                break
             
     ctx.analyzed = found_data
     return ctx

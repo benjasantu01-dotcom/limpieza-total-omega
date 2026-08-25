@@ -660,3 +660,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-25T02:03:09` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `_check_file_integrity` extrayendo la lógica de validación de estado a una estructura de datos clara y añadiendo type hints más precisos, asegurando que el código sea autodocumentado.
 - `2026-08-25T02:03:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T02:03:09` Corrida terminada. Total usado hoy: 48.
+- `2026-08-25T02:10:35` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-08-25T02:11:05` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en funciones críticas para clarificar la intención del motor heurístico y mejorar la mantenibilidad del código sin alterar su lógica.
+- `2026-08-25T02:11:35` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujo un `NamedTuple` privado para encapsular los límites numéricos de configuración, reemplazando el diccionario genérico `_NUMERIC_LIMITS` para mejorar la legibilidad del código y facilitar el mantenimiento mediante acceso por atributos tipados.
+- `2026-08-25T02:12:01` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-08-25T02:12:22` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` evitando iteraciones anidadas innecesarias sobre las fuentes de datos y pre-compilando la estructura de extracción, reduciendo la complejidad algorítmica al procesar métricas.
+- `2026-08-25T02:12:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T02:12:22` Corrida terminada. Total usado hoy: 52.

@@ -90,6 +90,7 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
         Detecta si la entrada es un punto de reanálisis o enlace simbólico utilizando atributos de archivo.
+        Nota: Se considera inseguro por defecto (True) ante errores de acceso para evitar recursión circular.
         """
         try:
             # 0x400 = FILE_ATTRIBUTE_REPARSE_POINT
@@ -135,8 +136,15 @@ class Scanner:
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta archivos con extensiones dobles que intentan ocultar el tipo real.
-    Devuelve un objeto Suspicion si se detecta ofuscación, o None.
+    Detecta archivos con extensiones dobles que intentan ocultar el tipo real (ej. doc.pdf.exe).
+    
+    Args:
+        path: La ruta del archivo a inspeccionar.
+        entry: Objeto de directorio opcional para optimizar llamadas al sistema.
+        now_ts: Timestamp actual.
+    
+    Returns:
+        Un objeto Suspicion si se detecta ofuscación, None en caso contrario.
     """
     if DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -163,7 +171,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Detecta si un archivo utiliza nombres de procesos críticos del sistema fuera del directorio System32.
+    Detecta si un archivo utiliza nombres de procesos críticos del sistema (ej. svchost.exe) 
+    cuando está ubicado fuera del directorio estándar 'System32'.
     """
     if path.name.lower() in SYSTEM_LOOKALIKES:
         parts_lower = {p.lower() for p in path.parts}
@@ -173,7 +182,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Aplica todas las heurísticas registradas sobre un archivo individual."""
+    """
+    Ejecutor principal de heurísticas. Aplica todas las reglas registradas en EXECUTABLE_CHECKS
+    sobre un archivo individual si cumple las condiciones de ser ejecutable.
+    """
     findings: ScanResult = []
     
     if not path or not path.exists():

@@ -32,7 +32,7 @@ import os
 import tempfile
 from enum import Enum
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec
+from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple
 
 from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
@@ -78,6 +78,11 @@ class AppSettings(TypedDict):
     asistente_enviar_metricas: bool
     asistente_modelo: str
 
+class _NumericRange(NamedTuple):
+    """Define los límites mínimo y máximo permitidos para una configuración numérica."""
+    min: int
+    max: int
+
 __all__ = [
     "DEFAULTS", "SETTINGS_DIR", "SETTINGS_FILE", "API_KEY_ENV_VAR",
     "VALID_THEMES", "VALID_ACCENTS", "settings_path", "load", "save",
@@ -119,10 +124,10 @@ def _get_default_config() -> AppSettings:
 
 DEFAULTS: Final[AppSettings] = _get_default_config()
 
-_NUMERIC_LIMITS: Final[dict[ConfigKey, tuple[int, int]]] = {
-    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: (0, 1024 * 1024),
-    ConfigKey.TOP_ARCHIVOS: (1, 500),
-    ConfigKey.TOP_PROCESOS: (1, 500),
+_NUMERIC_LIMITS: Final[dict[ConfigKey, _NumericRange]] = {
+    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _NumericRange(0, 1024 * 1024),
+    ConfigKey.TOP_ARCHIVOS: _NumericRange(1, 500),
+    ConfigKey.TOP_PROCESOS: _NumericRange(1, 500),
 }
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
@@ -167,8 +172,8 @@ class _Validators:
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         try:
             parsed_value: int = int(val)
-            min_limit, max_limit = _NUMERIC_LIMITS.get(key, (0, 10**9))
-            return max(min_limit, min(max_limit, parsed_value))
+            limit = _NUMERIC_LIMITS.get(key, _NumericRange(0, 10**9))
+            return max(limit.min, min(limit.max, parsed_value))
         except (TypeError, ValueError, OverflowError): return None
 
     @staticmethod
