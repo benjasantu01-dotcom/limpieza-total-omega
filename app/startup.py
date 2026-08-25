@@ -89,29 +89,29 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica si la extensión es ejecutable y asegura que no sea un enlace simbólico."""
+        """Valida si la extensión es ejecutable y descarta enlaces simbólicos."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
-    def _sanitize_command(self, raw_cmd: str) -> str:
-        """Elimina caracteres de control y espacios innecesarios de la línea de comando."""
-        if not isinstance(raw_cmd, str):
+    def _sanitize_command(self, raw_command: str) -> str:
+        """Filtra caracteres no imprimibles y espacios extra del comando crudo."""
+        if not isinstance(raw_command, str):
             return ""
-        return "".join(c for c in raw_cmd.strip() if ord(c) >= 32)
+        return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
-    def _extract_quoted_path(self, raw_cmd: str) -> str:
+    def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae una ruta de archivo contenida entre comillas.
-        Si la ruta está protegida o contiene caracteres inválidos, retorna vacío.
+        Extrae y valida una ruta de archivo encerrada entre comillas.
+        Retorna la ruta limpia o cadena vacía si es inválida o está protegida.
         """
-        if not isinstance(raw_cmd, str) or len(raw_cmd) < 2:
+        if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
-        end_quote: int = raw_cmd.find('"', 1)
+        end_quote: int = raw_command.find('"', 1)
         if end_quote == -1:
             return ""
-        path_str: str = raw_cmd[1:end_quote].strip()
+        path_str: str = raw_command[1:end_quote].strip()
         
         if not path_str or any(c in path_str for c in '<>|?*'):
             return ""
@@ -124,63 +124,63 @@ class StartupEntry:
         except (OSError, ValueError, RuntimeError, TypeError):
             return ""
 
-    def _resolve_and_cache_path(self, path_str: str) -> str:
+    def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza y verifica la existencia de un ejecutable en disco.
-        Usa _EXISTS_CACHE para evitar el costo de I/O en chequeos repetidos.
+        Normaliza una ruta de archivo, verifica su existencia en disco y
+        cachea el resultado para optimizar llamadas subsiguientes.
         """
-        if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*\0'):
+        if not isinstance(path_string, str) or not path_string or any(c in path_string for c in '<>|?*\0'):
             return ""
         
-        norm = os.path.normpath(path_str)
+        norm = os.path.normpath(path_string)
         reserved_names = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         stem = Path(norm).stem.upper()
         if norm.startswith(r"\\") or len(norm) > 4096 or stem in reserved_names:
             return ""
         
-        if path_str in _EXISTS_CACHE:
-            return path_str if _EXISTS_CACHE[path_str] else path_str
+        if path_string in _EXISTS_CACHE:
+            return path_string if _EXISTS_CACHE[path_string] else path_string
         
         try:
             abs_path = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
             if not p.is_absolute():
-                _EXISTS_CACHE[path_str] = False
-                return path_str
+                _EXISTS_CACHE[path_string] = False
+                return path_string
                 
             if is_protected_path(p) or p.is_symlink():
-                _EXISTS_CACHE[path_str] = False
-                return path_str
+                _EXISTS_CACHE[path_string] = False
+                return path_string
             
             real_path_str: str = os.path.realpath(abs_path)
             real_path: Path = Path(real_path_str)
             
             if not real_path_str or not real_path.exists() or is_protected_path(real_path):
-                _EXISTS_CACHE[path_str] = False
+                _EXISTS_CACHE[path_string] = False
                 return ""
                 
             _EXISTS_CACHE[real_path_str] = True
             return real_path_str
         except (OSError, ValueError, RuntimeError, TypeError):
-            _EXISTS_CACHE[path_str] = False
-            return path_str
+            _EXISTS_CACHE[path_string] = False
+            return path_string
 
-    def _resolve_path_from_command(self, cmd: str) -> str:
+    def _resolve_path_from_command(self, command_line: str) -> str:
         """
-        Aísla la ruta del ejecutable principal desde la línea de comando cruda,
-        manejando tanto rutas entre comillas como comandos simples.
+        Descompone la línea de comando para aislar la ruta del ejecutable,
+        gestionando tanto rutas citadas como invocaciones directas.
         """
-        if not cmd or not isinstance(cmd, str):
+        if not command_line or not isinstance(command_line, str):
             return ""
-        if any(char in cmd for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
+        if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
             return ""
 
-        if cmd.startswith('"'):
-            return self._extract_quoted_path(cmd)
+        if command_line.startswith('"'):
+            return self._extract_quoted_path(command_line)
             
         try:
-            parts: List[str] = cmd.split()
+            parts: List[str] = command_line.split()
             if not parts:
                 return ""
             return self._resolve_and_cache_path(parts[0])
@@ -249,26 +249,24 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     return found_entries
 
 
-def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry]:
+def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Parsea la salida de PowerShell formateada como CSV. Valida que cada entrada 
+    Parsea la salida CSV de PowerShell. Valida que cada entrada 
     no apunte a rutas protegidas antes de instanciar StartupEntry.
     """
-    if not isinstance(text, str) or not text.strip():
+    if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
     parsed_entries: List[StartupEntry] = []
     try:
-        f = io.StringIO(text.strip())
+        f = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         for row in reader:
             try:
-                # Validar estructura mínima de la fila
                 if not isinstance(row, dict) or len(row) < 2:
                     continue
                 
                 row_items = list(row.items())
-                # Necesitamos al menos el nombre (key) y el comando (value)
                 if len(row_items) < 2:
                     continue
                 
