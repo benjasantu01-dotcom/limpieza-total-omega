@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **214** (42.5% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 26
+- Sin cambios (nada sustancial que mejorar): 28
 - Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 111 | 12 | 17 | 16 | 112 |
-| 2026-08-25 | 105 | 6 | 14 | 10 | 101 |
+| 2026-08-24 | 108 | 12 | 17 | 16 | 111 |
+| 2026-08-25 | 106 | 6 | 14 | 12 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
 - rendimiento: **46**
 - seguridad defensiva: **46**
+- legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **39**
 - robustez ante casos límite: **38**
-- manejo de errores y validación de entradas: **38**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **20**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
-- `healthscore.py`: **17**
-- `settings.py`: **16**
+- `healthscore.py`: **18**
 - `organizer.py`: **16**
 - `diskreport.py`: **16**
-- `scanner.py`: **15**
 - `branding.py`: **15**
+- `settings.py`: **15**
 - `browser.py`: **14**
-- `safety.py`: **13**
+- `scanner.py`: **14**
+- `safety.py`: **12**
 - `main.py`: **11**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T10:15:45` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando explícitamente que los resultados de los `scorers` sean finitos, evitando que un cálculo matemático inesperado (como un NaN) contamine el resultado final de la función y garantizando que el usuario reciba un informe coherente incluso ante datos de entrada erróneos.
 - `2026-08-25T10:06:40` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando una validación previa estricta del tipo de archivo y existencia, centralizando el manejo de errores para evitar que excepciones de sistema durante la apertura o lectura interrumpan la ejecución del bucle.
 - `2026-08-25T10:06:07` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_is_within_depth_limit` validando explícitamente los parámetros de entrada y normalizando rutas para evitar comportamientos inesperados ante strings vacíos o None, mejorando la seguridad del bucle de escaneo.
 - `2026-08-25T10:05:42` **branding.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `save_logo_svg` y `draw_ring` reemplazando los bloques `try-except` genéricos por validaciones tempranas y una captura de excepciones más precisa, garantizando que los parámetros inválidos retornen valores seguros en lugar de abortar silenciosamente.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T08:04:16` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de trayectoria (path traversal) mediante la normalización estricta de rutas y una validación de seguridad proactiva, garantizando que el archivo nunca se escriba fuera del contexto esperado.
 - `2026-08-25T08:03:00` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `save` ante fallos de escritura en disco al verificar la existencia y accesibilidad de `ruta.parent` antes de intentar persistir, evitando excepciones no controladas durante la serialización o creación de directorios.
 - `2026-08-25T07:53:37` **safety.py** (robustez ante casos límite): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y archivos inexistentes añadiendo una verificación explícita de existencia mediante `os.access` en el directorio padre, previniendo excepciones no capturadas al evaluar rutas que aún no se han creado.
-- `2026-08-25T07:52:52` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo en `restore_item` para el directorio padre del destino y validaciones contra `OSError` durante la creación del mismo, mejorando la robustez ante rutas inexistentes o permisos denegados en la jerarquía de directorios.
