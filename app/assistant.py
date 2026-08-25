@@ -296,7 +296,7 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     except Exception:
         val = None
     
-    if val is None: return False
+    if val is None or isinstance(val, bool): return False
     
     clean_val = _safe_float(val, -1.0)
     if clean_val < min_v or clean_val > max_v:

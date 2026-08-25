@@ -135,8 +135,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Identifica ejecutables nuevos en carpetas de alto riesgo (descargas, temp)."""
-    path_parts_lower = {p.lower() for p in path.parts}
-    if not WATCHED_FOLDERS.isdisjoint(path_parts_lower):
+    # Usamos any() para evitar crear sets de todas las partes de la ruta innecesariamente
+    if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         try:
             stats = entry.stat(follow_symlinks=False) if entry and entry.path == str(path) else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
@@ -148,7 +148,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Detecta ejecutables que intentan suplantar procesos críticos del sistema."""
     if path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in [p.lower() for p in path.parts]:
+        # Buscamos en la ruta sin normalizarla a minúsculas completa, solo verificamos el token
+        if SYSTEM32_LOWER not in (p.lower() for p in path.parts):
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 

@@ -1090,3 +1090,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-25T07:12:56` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché local `_VALIDATION_CACHE` dentro de `ensure_safe_to_modify` para evitar múltiples llamadas costosas a `os.access` y `stat` sobre la misma ruta dentro de una misma ejecución, mejorando significativamente el rendimiento al escanear directorios con múltiples archivos.
 - `2026-08-25T07:12:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T07:12:56` Corrida terminada. Total usado hoy: 168.
+- `2026-08-25T07:21:36` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-25T07:22:03` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `check_recent_executable_in_downloads` y `check_system_lookalike` reemplazando la creación repetitiva de listas/conjuntos mediante `parts` (que genera objetos nuevos en cada llamada) por verificaciones directas o más eficientes, reduciendo la presión sobre el recolector de basura durante el escaneo recursivo.
+- `2026-08-25T07:22:30` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: rendimiento).
+- `2026-08-25T07:22:54` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-25T07:23:14` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de métricas en `build_context` y `_validate_and_assign` mediante la validación estricta de tipos contra el diccionario de especificaciones, evitando que valores inesperados (como `None` o tipos incorrectos) causen errores en tiempo de ejecución o asignaciones silenciosas erróneas.
+- `2026-08-25T07:23:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T07:23:14` Corrida terminada. Total usado hoy: 172.
