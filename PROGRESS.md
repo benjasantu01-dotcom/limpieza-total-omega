@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 85 | 10 | 13 | 11 | 97 |
-| 2026-08-25 | 137 | 9 | 18 | 16 | 108 |
+| 2026-08-24 | 85 | 10 | 13 | 11 | 93 |
+| 2026-08-25 | 140 | 9 | 18 | 16 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - rendimiento: **46**
 - manejo de errores y validación de entradas: **43**
-- robustez ante casos límite: **38**
-- seguridad defensiva: **37**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `quarantine.py`: **21**
 - `duplicates.py`: **20**
-- `assistant.py`: **18**
-- `settings.py`: **18**
+- `assistant.py`: **19**
+- `settings.py`: **19**
 - `healthscore.py`: **17**
 - `diskreport.py`: **17**
+- `scanner.py`: **16**
 - `branding.py`: **15**
-- `scanner.py`: **15**
 - `browser.py`: **15**
 - `safety.py`: **14**
 - `organizer.py`: **13**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T12:29:52` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_call_gemini` validando el tamaño del contenido de la respuesta antes de intentar decodificarla y agregando una sanitización explícita sobre los datos recibidos de la red para prevenir la inyección de caracteres de control o rutas en el flujo de la aplicación.
+- `2026-08-25T12:29:05` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save` ante situaciones de concurrencia o estados intermedios del sistema de archivos, asegurando que la validación de la existencia de la carpeta sea más estricta antes de proceder con la escritura atómica.
+- `2026-08-25T12:28:36` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una validación explícita mediante `is_file()` antes de procesar heurísticas, evitando errores de acceso a metadatos en descriptores de archivo huérfanos o con permisos restringidos durante la iteración de `os.scandir`.
 - `2026-08-25T12:19:36` **safety.py** (robustez ante casos límite): Se introdujo una validación robusta contra race conditions en `ensure_safe_to_modify` utilizando `pathlib` para verificar la existencia y tipo de archivo de manera atómica, y se mejoró la gestión de excepciones en `_is_file_in_use` para distinguir entre archivos inexistentes y bloqueados, evitando falsos negativos en el chequeo de seguridad.
 - `2026-08-25T12:19:04` **quarantine.py** (robustez ante casos límite): Se añadió una validación de existencia física y de bloqueo en `restore_item` antes de intentar el reemplazo del archivo para asegurar que la restauración sea atómica y no falle por inconsistencias entre el manifiesto y el estado del disco.
 - `2026-08-25T12:08:06` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`path_obj.exists()`) previo a `is_safe_to_modify` en `hash_file` y `partial_hash` para evitar errores innecesarios ante condiciones de carrera (archivos temporales que desaparecen entre el listado y el procesamiento).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T11:37:38` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas de procesos mediante la eliminación de la ejecución redundante del shell de PowerShell y la implementación de un mecanismo de caché más eficiente con un `set` para procesos de sistema, evitando bucles innecesarios en `_yield_processes`.
 - `2026-08-25T11:28:16` **healthscore.py** (rendimiento): Se optimizó el rendimiento del motor de cálculo mediante la pre-compilación de la estructura de datos `_PREPARED_SCORERS` y la eliminación de operaciones de filtrado o búsqueda de diccionarios dentro del bucle principal de `compute_score`.
 - `2026-08-25T11:27:47` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando `os.scandir` para obtener el tamaño y el estado de los archivos en una sola llamada al sistema, eliminando las llamadas redundantes a `Path.stat()` y `path.exists()` dentro del bucle.
-- `2026-08-25T11:27:22` **diskreport.py** (rendimiento): Optimicé el método `walk_files` para reducir drásticamente el número de llamadas a `stat()` y `Path` instanciaciones innecesarias, moviendo la lógica de filtrado de inodos directamente al generador de archivos para evitar re-procesar subdirectorios ya visitados.
-- `2026-08-25T11:17:46` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` evitando iteraciones redundantes y validaciones de tipos costosas mediante una pre-filtración de fuentes, además de refactorizar la lógica de `_validate_and_assign` para minimizar llamadas a `isinstance` dentro de los bucles críticos.
-- `2026-08-25T11:17:10` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de registro y carpetas, y clarifiqué las docstrings de `StartupEntry` para explicar el ciclo de vida de los datos y el manejo de seguridad.

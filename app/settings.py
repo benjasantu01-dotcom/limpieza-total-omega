@@ -281,16 +281,18 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
     parent = ruta.parent.resolve(strict=False)
+    
     if parent.is_symlink() or (hasattr(parent, 'is_junction') and parent.is_junction()):
         return None
+        
     try:
         ensure_safe_to_modify(str(ruta))
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
+        if not parent.is_dir():
+            return None
     except (OSError, RuntimeError, PermissionError):
         return None
-    if not parent.exists():
-        try: parent.mkdir(parents=True, exist_ok=True)
-        except OSError: return None
-    if not parent.is_dir(): return None
     
     cleaned_settings = validate(values)
     # Regla de seguridad: Si activamos el asistente, requerimos una clave válida.
