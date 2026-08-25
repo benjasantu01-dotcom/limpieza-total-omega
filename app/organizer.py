@@ -164,7 +164,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
             return False
         
         stat = src.stat()
-        if not stat.st_mode: return False
+        if not stat.st_mode or stat.st_size == 0: return False
         
         # 0x46: FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM
         if os.name == "nt" and (stat.st_file_attributes & 0x46): 
@@ -198,7 +198,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                             _process_directory(Path(entry.path), found)
                     elif entry.is_file() and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
-                        found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                        if stats.st_size > 0:
+                            found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError):

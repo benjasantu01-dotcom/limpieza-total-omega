@@ -230,19 +230,16 @@ def _read_windows_snapshot() -> MemorySnapshot:
 def read_snapshot() -> MemorySnapshot:
     """Detecta el SO y lee el estado de memoria actual."""
     if os.name == "nt":
-        try: 
-            return _read_windows_snapshot()
-        except (AttributeError, OSError, ctypes.ArgumentError): 
-            return MemorySnapshot(0, 0)
+        return _read_windows_snapshot()
     
-    try:
-        if os.path.exists("/proc/meminfo"):
+    if os.path.exists("/proc/meminfo"):
+        try:
             with open("/proc/meminfo", encoding="utf-8", errors="replace") as f:
                 content = f.read()
                 if content:
                     return parse_linux_meminfo(content)
-    except (OSError, PermissionError):
-        pass
+        except (OSError, PermissionError):
+            pass
     return MemorySnapshot(0, 0)
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
@@ -251,7 +248,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt": return []
     
     if (time.time() - _last_proc_fetch) > 30:
-        # PowerShell optimizado: entrega líneas directas, sin procesar un array masivo en memoria
         cmd: str = 'powershell -NoProfile -Command "Get-Process | ForEach-Object { \\"$($_.Name),$($_.Id),$($_.WorkingSet)\\" }"'
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, shell=True)

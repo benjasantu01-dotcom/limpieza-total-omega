@@ -981,9 +981,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         Asegura que cualquier modificación en disco pase por el filtro `ensure_safe_to_modify`.
         """
         try:
-            if target:
+            if not self._closing and target:
                 safety.ensure_safe_to_modify(Path(target).resolve(strict=True))
-            self._safe_run(fn, tab)
+            if not self._closing:
+                self._safe_run(fn, tab)
         except Exception as e:
             if not self._closing:
                 self._validate_and_log_error(e, tab)
