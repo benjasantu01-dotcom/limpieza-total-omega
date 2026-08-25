@@ -513,7 +513,10 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     try:
         parent = destination.parent
         if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
+            try:
+                parent.mkdir(parents=True, exist_ok=True)
+            except OSError as e:
+                raise OSError(f"No se pudo crear la carpeta destino {parent}: {e}")
             
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:

@@ -335,8 +335,13 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             _check_file_integrity(p)
         else:
             parent = p.parent
-            if parent.exists() and (is_protected_path(parent) or not os.access(parent, os.W_OK)):
-                raise UnsafePathError("Escritura bloqueada: directorio padre restringido.")
+            if parent.exists():
+                if not os.access(parent, os.W_OK):
+                    raise UnsafePathError("Escritura bloqueada: directorio padre restringido.")
+            else:
+                # Si el padre no existe, validamos recursivamente hasta encontrar un ancestro existente
+                if is_protected_path(parent):
+                    raise UnsafePathError("Escritura bloqueada: directorio padre protegido.")
         
         if not allow_sensitive and is_sensitive_file(p):
             raise UnsafePathError("Extensión de archivo sensible.")

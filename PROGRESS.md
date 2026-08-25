@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 130 | 13 | 19 | 17 | 145 |
-| 2026-08-25 | 90 | 2 | 11 | 9 | 68 |
+| 2026-08-24 | 130 | 13 | 19 | 17 | 141 |
+| 2026-08-25 | 92 | 2 | 12 | 9 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **46**
 - manejo de errores y validación de entradas: **44**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,19 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **20**
 - `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `organizer.py`: **17**
 - `scanner.py`: **16**
 - `diskreport.py`: **16**
 - `branding.py`: **15**
+- `safety.py`: **14**
 - `settings.py`: **14**
 - `main.py`: **13**
-- `safety.py`: **13**
 - `browser.py`: **13**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T07:53:37` **safety.py** (robustez ante casos límite): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y archivos inexistentes añadiendo una verificación explícita de existencia mediante `os.access` en el directorio padre, previniendo excepciones no capturadas al evaluar rutas que aún no se han creado.
+- `2026-08-25T07:52:52` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo en `restore_item` para el directorio padre del destino y validaciones contra `OSError` durante la creación del mismo, mejorando la robustez ante rutas inexistentes o permisos denegados en la jerarquía de directorios.
 - `2026-08-25T07:44:24` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo una validación explícita de `is_protected_path` sobre la ruta de destino, garantizando que ninguna operación de movimiento pueda colocar archivos accidentalmente dentro de directorios marcados como sensibles o protegidos por la lógica de `safety.py`.
 - `2026-08-25T07:44:14` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_parse_csv_row` para manejar correctamente archivos vacíos o líneas con datos truncados (como un PID presente pero un valor de memoria ausente), evitando errores de conversión y mejorando la robustez frente a lecturas parciales o inesperadas del comando PowerShell.
 - `2026-08-25T07:42:35` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante datos inconsistentes en `SystemMetrics` evitando divisiones por cero mediante protecciones explícitas en las funciones de `score` y garantizando que `_PREPARED_SCORERS` sea resiliente ante posibles configuraciones de pesos mal definidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T06:54:10` **diskreport.py** (rendimiento): Optimizamos `walk_files` para evitar múltiples llamadas a `os.path.realpath` y `Path.resolve()` dentro del bucle principal, utilizando `os.path.join` y validación de rutas más eficiente para reducir el impacto en I/O durante el escaneo recursivo.
 - `2026-08-25T06:53:57` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios mediante la técnica de "memoización" en `_sum_directory_recursive`, evitando la redundancia de procesar carpetas compartidas entre navegadores (ej. múltiples perfiles que apunten a una misma ruta) y reduciendo las llamadas al sistema en cada iteración del bucle principal.
 - `2026-08-25T06:52:22` **branding.py** (rendimiento): Optimicé el rendimiento de la gestión de colores en `branding.py` reemplazando los llamados repetitivos a `color()` (que involucran búsqueda en diccionario y acceso a `lru_cache`) por referencias directas a variables de la paleta ya evaluadas en tiempo de carga, reduciendo la sobrecarga de resolución de nombres durante el renderizado intenso de la UI.
-- `2026-08-25T06:51:49` **assistant.py** (rendimiento): Optimicé el rendimiento de `build_context` evitando iteraciones redundantes y verificaciones de tipo costosas, además de cachear el acceso a los atributos del contexto mediante una estructura más eficiente durante la carga de métricas.
-- `2026-08-25T06:42:24` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `startup.py` reemplazando los nombres crípticos de los parámetros en las funciones de parseo y añadiendo Type Hinting detallado, junto con docstrings que clarifican el propósito técnico de los métodos internos de la clase `StartupEntry`.

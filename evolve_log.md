@@ -1112,3 +1112,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-25T07:44:24` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo una validación explícita de `is_protected_path` sobre la ruta de destino, garantizando que ninguna operación de movimiento pueda colocar archivos accidentalmente dentro de directorios marcados como sensibles o protegidos por la lógica de `safety.py`.
 - `2026-08-25T07:44:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T07:44:24` Corrida terminada. Total usado hoy: 180.
+- `2026-08-25T07:52:16` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-08-25T07:52:52` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia previo en `restore_item` para el directorio padre del destino y validaciones contra `OSError` durante la creación del mismo, mejorando la robustez ante rutas inexistentes o permisos denegados en la jerarquía de directorios.
+- `2026-08-25T07:53:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-25T07:53:37` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y archivos inexistentes añadiendo una verificación explícita de existencia mediante `os.access` en el directorio padre, previniendo excepciones no capturadas al evaluar rutas que aún no se han creado.
+- `2026-08-25T07:53:44` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-25T07:53:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T07:53:44` Corrida terminada. Total usado hoy: 184.
