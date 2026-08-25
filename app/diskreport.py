@@ -249,7 +249,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        base_path = Path(os.path.realpath(str(directory)))
+        base_path = Path(os.path.realpath(str(directory))).resolve()
         if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
     except (OSError, RuntimeError, TypeError, ValueError):
@@ -276,7 +276,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         
                         full_path = Path(entry.path).resolve()
                         # Verificación de seguridad: no escapar del directorio base
-                        if os.path.commonpath([str(base_path), str(full_path)]) != str(base_path):
+                        try:
+                            if os.path.commonpath([str(base_path), str(full_path)]) != str(base_path):
+                                continue
+                        except ValueError:
                             continue
                         
                         if entry.is_dir(follow_symlinks=False):
@@ -337,7 +340,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        p_base = Path(os.path.realpath(str(directory)))
+        p_base = Path(os.path.realpath(str(directory))).resolve()
         if not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
             return []
             
@@ -409,7 +412,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
 
     try:
-        p_input = Path(os.path.realpath(str(directory)))
+        p_input = Path(os.path.realpath(str(directory))).resolve()
         if not p_input.exists():
             return [f"Error: Ruta no existente: {p_input}"]
         if not p_input.is_dir():

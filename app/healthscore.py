@@ -178,11 +178,14 @@ _PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], No
 ]
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    # Defensa: Validar estrictamente la entrada antes de procesar lógica
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error interno: Tipo de métricas inválido."])
     
-    # Asegurar integridad de los datos internos
+    # Asegurar que los atributos no sean None antes de procesar
+    for field_name in metrics.__dataclass_fields__:
+        if getattr(metrics, field_name) is None:
+            setattr(metrics, field_name, 0.0 if "percent" in field_name or "mb" in field_name else 0)
+    
     metrics.validate()
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error interno: Datos de métricas no numéricos o infinitos."])

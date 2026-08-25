@@ -136,7 +136,6 @@ def _collect_candidates(
 
     def _scan(current_dir: Path) -> None:
         try:
-            # Resolucion estricta para evitar ataques de path traversal mediante symlinks
             resolved_dir = current_dir.resolve(strict=True)
             if not resolved_dir.is_dir() or resolved_dir in processed_dirs: return
             processed_dirs.add(resolved_dir)
@@ -144,7 +143,6 @@ def _collect_candidates(
             with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
-                        # Nunca seguir symlinks al iterar para mantener el aislamiento
                         if entry.is_symlink(): continue
                         
                         entry_stat = entry.stat(follow_symlinks=False)
@@ -213,7 +211,7 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
     """Calcula la suma total de bytes recuperables de un conjunto de grupos."""
-    if not groups: return 0
+    if not groups or not isinstance(groups, (list, tuple)): return 0
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
@@ -248,6 +246,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
+        if not isinstance(path, Path): continue
         try:
             resolved_path = path.resolve()
             label = 'conservar' if keeper is not None and resolved_path == keeper else 'duplicado'

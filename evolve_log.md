@@ -1017,3 +1017,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-25T05:32:33` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-25T05:32:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T05:32:33` Corrida terminada. Total usado hoy: 128.
+- `2026-08-25T05:39:39` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-25T05:40:06` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-25T05:40:36` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando fallos en `Path.resolve()` y `path.relative_to()`, evitando excepciones no controladas al encontrar rutas con caracteres inválidos o inaccesibles, alineándome con el enfoque de validación defensiva.
+- `2026-08-25T05:41:20` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas (`isinstance`) y el manejo defensivo de rutas inexistentes o inaccesibles, evitando que errores de acceso al disco durante el reporte interrumpan el flujo de trabajo del usuario.
+- `2026-08-25T05:41:31` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` agregando una validación temprana contra valores nulos o corruptos (`None`), evitando que `dataclass` fallara en tiempo de ejecución al intentar operar sobre tipos inesperados antes de la validación.
+- `2026-08-25T05:41:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T05:41:31` Corrida terminada. Total usado hoy: 132.
