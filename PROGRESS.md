@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 203
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 130 | 13 | 19 | 17 | 133 |
-| 2026-08-25 | 97 | 4 | 12 | 9 | 70 |
+| 2026-08-24 | 130 | 13 | 19 | 17 | 129 |
+| 2026-08-25 | 100 | 4 | 12 | 10 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **46**
+- seguridad defensiva: **45**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **42**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `memory.py`: **23**
 - `duplicates.py`: **21**
+- `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `healthscore.py`: **19**
-- `quarantine.py`: **19**
-- `organizer.py`: **17**
+- `organizer.py`: **18**
 - `diskreport.py`: **17**
 - `branding.py`: **16**
 - `scanner.py`: **16**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T08:28:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de aislamiento (`_atomic_isolate_file`) mediante una validación de propiedad del archivo destino (`is_safe_to_modify`) y la aplicación de un límite de tiempo de vida (TTL) implícito a través de la limpieza explícita de archivos temporales mediante `try...finally` incluso en casos de error, asegurando que no queden restos huérfanos tras fallos de escritura.
+- `2026-08-25T08:27:40` **organizer.py** (seguridad defensiva): Reforcé la integridad del proceso de escaneo recursivo mediante la validación del estado del enlace simbólico (`resolve()` y `is_symlink`) para evitar "escape" de directorios durante el barrido, y añadí una verificación de `resolve()` en la creación de rutas dentro de `_process_directory` para asegurar que el escáner se mantenga estrictamente dentro de los límites de las carpetas permitidas.
+- `2026-08-25T08:26:50` **memory.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_to_trim` implementando una validación estricta del árbol de directorios del ejecutable contra la lista de rutas protegidas del sistema, asegurando que no solo el archivo final, sino sus carpetas padre, sean validadas antes de realizar cualquier manipulación de memoria.
 - `2026-08-25T08:14:00` **duplicates.py** (seguridad defensiva): Se ha implementado una validación de seguridad defensiva en `suggest_keeper` y `format_group` para asegurar que las rutas procesadas no hayan sido alteradas o eliminadas (race condition) entre la generación del grupo y su análisis, utilizando `is_safe_to_modify` antes de cualquier operación de resolución.
 - `2026-08-25T08:13:35` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `diskreport.py` implementando una validación estricta en `walk_files` para asegurar que las rutas construidas durante la iteración no escapen del árbol del directorio original (evitando ataques de path traversal mediante enlaces simbólicos o manipulaciones malintencionadas), y se centralizó el chequeo de seguridad mediante `is_protected_path` al inicio de cada iteración recursiva.
 - `2026-08-25T08:13:08` **browser.py** (seguridad defensiva): Se ha robustecido el escaneo defensivo en `_is_valid_cache_path` y `_should_skip_entry` verificando explícitamente `is_protected_path` al nivel de cada componente de la ruta, asegurando que no se acceda a directorios protegidos incluso si una ruta maliciosa intenta eludir el filtrado inicial mediante enlaces o manipulaciones de `resolve()`.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T07:42:35` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante datos inconsistentes en `SystemMetrics` evitando divisiones por cero mediante protecciones explícitas en las funciones de `score` y garantizando que `_PREPARED_SCORERS` sea resiliente ante posibles configuraciones de pesos mal definidos.
 - `2026-08-25T07:23:14` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de métricas en `build_context` y `_validate_and_assign` mediante la validación estricta de tipos contra el diccionario de especificaciones, evitando que valores inesperados (como `None` o tipos incorrectos) causen errores en tiempo de ejecución o asignaciones silenciosas erróneas.
 - `2026-08-25T07:22:03` **scanner.py** (rendimiento): Optimicé el rendimiento de `check_recent_executable_in_downloads` y `check_system_lookalike` reemplazando la creación repetitiva de listas/conjuntos mediante `parts` (que genera objetos nuevos en cada llamada) por verificaciones directas o más eficientes, reduciendo la presión sobre el recolector de basura durante el escaneo recursivo.
-- `2026-08-25T07:12:56` **safety.py** (rendimiento): Se implementó un mecanismo de caché local `_VALIDATION_CACHE` dentro de `ensure_safe_to_modify` para evitar múltiples llamadas costosas a `os.access` y `stat` sobre la misma ruta dentro de una misma ejecución, mejorando significativamente el rendimiento al escanear directorios con múltiples archivos.
-- `2026-08-25T07:12:24` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total de la cuarentena eliminando la deserialización completa del manifiesto (que requiere parseo de JSON y creación de objetos) mediante una suma directa de los atributos `size_bytes` de los ítems ya cargados en memoria o una consulta ligera.
-- `2026-08-25T07:04:20` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar cálculos redundantes de disco mediante la consolidación del acceso a `diskreport` y la eliminación de la creación innecesaria de objetos `Path` dentro de bucles de alta frecuencia, mejorando la respuesta del dashboard de salud.

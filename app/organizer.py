@@ -160,7 +160,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     estado de bloqueo del archivo.
     """
     try:
-        # Validación de seguridad: ninguna ruta debe ser protegida
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest):
             return False
         if is_protected_path(src) or is_protected_path(dest):
@@ -172,7 +171,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         stat = src.stat()
         if not stat.st_mode or stat.st_size == 0: return False
         
-        # 0x46: FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM
         if os.name == "nt" and (stat.st_file_attributes & 0x46): 
             return False
         
@@ -199,13 +197,14 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
         with os.scandir(current_dir) as it:
             for entry in it:
                 try:
+                    entry_path = Path(entry.path).resolve()
                     if entry.is_dir(follow_symlinks=False):
-                        if _is_allowed_directory(entry.name) and not _is_junction(Path(entry.path)):
-                            _process_directory(Path(entry.path), found)
+                        if _is_allowed_directory(entry.name) and not _is_junction(entry_path):
+                            _process_directory(entry_path, found)
                     elif entry.is_file() and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
                         if stats.st_size > 0:
-                            found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                            found.append(JunkFile(entry_path, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError):
@@ -316,7 +315,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not resolved_item.is_relative_to(dest.resolve()):
                 continue
             
-            # Chequeo preventivo de seguridad antes de pedir confirmación destructiva
             if is_safe_to_modify(item) and not is_protected_path(item) and not _is_file_locked(item):
                 ensure_safe_to_modify(item)
                 item.unlink()

@@ -370,6 +370,9 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     if resolved_source.is_symlink() or not resolved_source.is_file():
         raise UnsafePathError("Origen no es archivo regular o es un enlace sospechoso.")
     
+    if not is_safe_to_modify(destination.parent):
+        raise UnsafePathError("Directorio destino de cuarentena no seguro.")
+
     original_stat = resolved_source.stat()
 
     if destination.exists():

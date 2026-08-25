@@ -28,6 +28,7 @@ import subprocess
 import math
 import ctypes
 import time
+from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar, TypeAlias, Final, Iterator, Set
@@ -347,12 +348,12 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
         
-        real_path = os.path.realpath(path)
-        if os.path.normcase(path) != os.path.normcase(real_path):
-            return False, "Ruta bloqueada: el ejecutable reside tras un punto de reparse/enlace."
+        p = Path(path).resolve()
+        # Verificar cada componente del path para asegurar que ningún padre esté protegido
+        for parent in [p] + list(p.parents):
+            if is_protected_path(str(parent)):
+                return False, f"Operación denegada: ruta de ejecutable protegida en {parent}."
             
-        if is_protected_path(real_path):
-            return False, "Operación denegada: ruta de ejecutable protegida."
     except (ctypes.ArgumentError, Exception):
         return False, "Error técnico al validar la seguridad del proceso."
     return True, None
