@@ -315,6 +315,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not resolved_item.is_relative_to(dest.resolve()):
                 continue
             
+            # Seguridad adicional: verificar atributos de sistema u ocultos
+            stat = item.stat()
+            if os.name == "nt" and (stat.st_file_attributes & 0x46):
+                continue
+
             if is_safe_to_modify(item) and not is_protected_path(item) and not _is_file_locked(item):
                 ensure_safe_to_modify(item)
                 item.unlink()

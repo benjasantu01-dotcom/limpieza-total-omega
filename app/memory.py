@@ -344,9 +344,10 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if path.startswith("\\\\"):
             return False, "Ruta bloqueada: ubicación en red (UNC) no segura."
             
+        # Validación anti-evasión de rutas usando secuencias RTL
         forbidden_sequences: List[bytes] = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
-            return False, "Ruta de proceso sospechosa."
+            return False, "Ruta de proceso sospechosa (ofuscación RTL)."
         
         p = Path(path).resolve()
         for parent in [p] + list(p.parents):
