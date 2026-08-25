@@ -7,31 +7,31 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 20
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 207
+- Rechazadas por tests: 19
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 86 | 11 | 14 | 11 | 102 |
-| 2026-08-25 | 134 | 9 | 17 | 15 | 105 |
+| 2026-08-24 | 85 | 10 | 13 | 11 | 101 |
+| 2026-08-25 | 135 | 9 | 17 | 16 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - rendimiento: **46**
 - manejo de errores y validación de entradas: **43**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **37**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
+- `duplicates.py`: **20**
 - `quarantine.py`: **20**
-- `duplicates.py`: **19**
 - `assistant.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **15**
 - `scanner.py`: **15**
 - `browser.py`: **15**
-- `safety.py`: **14**
 - `organizer.py`: **13**
+- `safety.py`: **13**
 - `main.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T12:08:06` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia (`path_obj.exists()`) previo a `is_safe_to_modify` en `hash_file` y `partial_hash` para evitar errores innecesarios ante condiciones de carrera (archivos temporales que desaparecen entre el listado y el procesamiento).
 - `2026-08-25T11:59:06` **browser.py** (robustez ante casos límite): Se fortaleció `_sum_directory_recursive` para manejar casos de rutas inexistentes o inaccesibles dentro de la recursión, evitando que el escaneo se aborte prematuramente o falle ante cambios dinámicos del sistema de archivos mientras se recorre.
 - `2026-08-25T11:58:41` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de entrada y fallos de sistema (como falta de permisos o discos de solo lectura) mediante una validación más estricta de la ruta destino antes de intentar cualquier operación de escritura, asegurando que no se lancen excepciones inesperadas.
 - `2026-08-25T11:58:09` **assistant.py** (robustez ante casos límite): Mejora la robustez del motor local al añadir una validación de estado en `_identify_active_problems` y `context_as_text`, asegurando que no se procesen contextos malformados o vacíos, y añadiendo `float('inf')` a la lista de tipos prohibidos para evitar el colapso de las funciones de formateo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T11:17:10` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de procesamiento de registro y carpetas, y clarifiqué las docstrings de `StartupEntry` para explicar el ciclo de vida de los datos y el manejo de seguridad.
 - `2026-08-25T11:08:27` **settings.py** (legibilidad y documentación): He mejorado la documentación interna y la legibilidad de `settings.py` añadiendo tipos específicos para las claves de configuración y documentando las precondiciones de validación, facilitando el mantenimiento futuro y la comprensión de las restricciones de seguridad.
 - `2026-08-25T11:07:46` **scanner.py** (legibilidad y documentación): Se introdujo documentación técnica detallada mediante docstrings especializados y se refinó la tipografía del código para cumplir con estándares de claridad, facilitando la comprensión del flujo de datos en las heurísticas de escaneo sin alterar su lógica operativa.
-- `2026-08-25T11:07:22` **safety.py** (legibilidad y documentación): Se introdujo un `NamedTuple` estructurado para capturar el estado de integridad detallado dentro de `_check_file_integrity` y se reemplazó el flujo basado en excepciones genéricas por un manejo explícito de errores, mejorando la legibilidad del porqué una operación de seguridad falla (cumpliendo con la documentación del PORQUÉ).

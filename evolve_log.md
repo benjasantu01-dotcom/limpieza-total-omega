@@ -472,3 +472,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-08-25T11:59:20` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia (`entry.exists()`) dentro de `walk_files` para manejar de forma robusta condiciones de carrera donde un archivo desaparece entre la enumeración del directorio y el intento de acceso, evitando excepciones innecesarias en sistemas de archivos dinámicos.
 - `2026-08-25T11:59:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T11:59:20` Corrida terminada. Total usado hoy: 280.
+- `2026-08-25T12:07:42` Arrancando corrida. Quedan hoy ~20 peticiones objetivo.
+- `2026-08-25T12:08:06` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia (`path_obj.exists()`) previo a `is_safe_to_modify` en `hash_file` y `partial_hash` para evitar errores innecesarios ante condiciones de carrera (archivos temporales que desaparecen entre el listado y el procesamiento).
+- `2026-08-25T12:08:29` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-25T12:09:39` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una verificación de seguridad proactiva mediante `_is_safe_path` en `on_stage` y `on_quarantine_duplicates` para filtrar elementos antes de solicitar confirmación, evitando así que el usuario confirme acciones sobre rutas protegidas que de todos modos fallarían o causarían un error de seguridad.
+- `2026-08-25T12:09:52` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-25T12:09:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T12:09:52` Corrida terminada. Total usado hoy: 284.
