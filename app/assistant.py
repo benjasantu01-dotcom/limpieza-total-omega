@@ -314,7 +314,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     
     # Filtrar fuentes no válidas para evitar excepciones al iterar o acceder
     sources = [s for s in [metrics, health, extra] 
-               if s is not None and isinstance(s, (dict, object)) and not isinstance(s, (str, int, float, list, tuple))]
+               if s is not None and (isinstance(s, dict) or hasattr(s, "__dict__")) 
+               and not isinstance(s, (str, int, float, list, tuple, bool))]
     
     for key, spec in _VALIDATORS.items():
         for src in sources:
@@ -535,7 +536,7 @@ def _call_gemini(
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", text.strip()))
             final_text = _validate_response_length(limpia_final)
             return final_text if _ensure_safe_text(final_text) else None
-    except (urllib.error.URLError, KeyError, TypeError, ValueError):
+    except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,

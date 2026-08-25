@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 17 | 1 | 5 | 1 | 6 |
+| 2026-08-23 | 13 | 1 | 5 | 1 | 6 |
 | 2026-08-24 | 144 | 15 | 21 | 18 | 152 |
-| 2026-08-25 | 55 | 2 | 7 | 2 | 58 |
+| 2026-08-25 | 56 | 2 | 7 | 2 | 61 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **53**
+- legibilidad y documentación: **49**
 - seguridad defensiva: **48**
 - rendimiento: **43**
 - robustez ante casos límite: **37**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
-- `duplicates.py`: **20**
+- `memory.py`: **21**
 - `quarantine.py`: **19**
-- `healthscore.py`: **18**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
+- `duplicates.py`: **19**
 - `scanner.py`: **17**
+- `healthscore.py`: **17**
 - `organizer.py`: **16**
 - `diskreport.py`: **16**
 - `branding.py`: **15**
 - `settings.py`: **15**
-- `main.py`: **13**
 - `safety.py`: **12**
+- `main.py`: **12**
 - `browser.py`: **12**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T05:32:17` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `build_context` implementando una validación explícita para evitar que tipos de datos no esperados (como `list` o `bool`) causen fallos o asignaciones incorrectas durante la extracción de métricas, y se mejoró el manejo de errores en `_call_gemini` mediante una captura más precisa de excepciones de red y procesamiento.
 - `2026-08-25T04:04:57` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante una validación estricta contra dispositivos reservados de Windows, previniendo posibles errores de I/O o comportamiento inesperado al interactuar con rutas como `NUL` o `CON`.
 - `2026-08-25T04:04:45` **settings.py** (seguridad defensiva): Se ha restringido `_Validators.path` para que no solo valide el formato, sino que verifique específicamente que el destino no sea un archivo existente no regular (como dispositivos, sockets o named pipes) mediante `is_file()` o `is_dir()` con chequeo de tipo, reforzando la seguridad defensiva contra manipulaciones de rutas inusuales.
 - `2026-08-25T04:04:18` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en la resolución de rutas dentro de `Scanner.process_entry` y `scan_directory` utilizando `resolve()` con `strict=False` de manera consistente, asegurando que las comparaciones de rutas (especialmente con puntos de unión o rutas relativas) no fallen y se validen estrictamente contra `base_root` antes de cualquier procesamiento posterior.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T03:32:39` **startup.py** (robustez ante casos límite): Se mejora la robustez de `_resolve_and_cache_path` añadiendo una validación explícita para prevenir excepciones al tratar con dispositivos especiales o nombres de archivo reservados en Windows (como `CON`, `NUL`, `PRN`), los cuales pueden causar errores fatales al interactuar con el sistema de archivos.
 - `2026-08-25T03:23:25` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo robusto en `_Validators.path` para detectar y rechazar rutas que contengan caracteres nulos o secuencias de escape inesperadas, mejorando la resiliencia ante entradas maliciosas o corruptas en el archivo de configuración.
 - `2026-08-25T03:23:12` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una excepción específica para `FileNotFoundError` (que ocurre si un archivo se elimina entre el `scandir` y el `stat`) y centralizando la validación de la existencia del archivo antes de cualquier operación de metadatos, evitando caídas silenciosas o bucles mal gestionados.
-- `2026-08-25T03:14:08` **quarantine.py** (robustez ante casos límite): He mejorado `quarantine_file` para implementar una validación de concurrencia y atomicidad más robusta, verificando que el espacio en disco sea suficiente ANTES de iniciar cualquier operación de copiado y asegurando que los manejadores de archivos se cierren correctamente ante excepciones.
