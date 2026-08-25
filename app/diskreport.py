@@ -255,44 +255,50 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     base_path = Path(directory).resolve()
-    
     if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
         return
 
-    visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [base_path]
-    depths: Dict[Path, int] = {base_path: 0}
-    MAX_DEPTH = 100
-    
-    while stack:
-        current_dir = stack.pop()
-        depth = depths.get(current_dir, 0)
-        
-        if depth > MAX_DEPTH:
-            continue
-            
+    def _process_directory(current_dir: Path, current_depth: int) -> Generator[Tuple[Path, int], None, None]:
+        """Recorre un directorio y cede archivos o añade subdirectorios a la pila."""
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    try:
-                        if not _is_valid_traversal_entry(entry, base_path, skip_protected):
-                            continue
-                        
-                        entry_path = Path(entry.path)
-                        if entry.is_dir(follow_symlinks=False):
-                            stat_data = entry.stat(follow_symlinks=False)
-                            inode_key = (stat_data.st_dev, stat_data.st_ino)
-                            if inode_key not in visited_inodes:
-                                visited_inodes.add(inode_key)
-                                stack.append(entry_path)
-                                depths[entry_path] = depth + 1
-                        elif entry.is_file(follow_symlinks=False):
-                            f_stat = entry.stat(follow_symlinks=False)
-                            yield entry_path, max(0, f_stat.st_size)
-                    except (PermissionError, FileNotFoundError, OSError):
+                    if not _is_valid_traversal_entry(entry, base_path, skip_protected):
                         continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        if current_depth < 100:
+                            yield entry.path, current_depth + 1
+                    elif entry.is_file(follow_symlinks=False):
+                        try:
+                            f_stat = entry.stat(follow_symlinks=False)
+                            yield Path(entry.path), max(0, f_stat.st_size)
+                        except (PermissionError, FileNotFoundError, OSError):
+                            continue
         except (PermissionError, FileNotFoundError, OSError):
-            continue
+            pass
+
+    visited_inodes: set[Tuple[int, int]] = set()
+    stack: List[Tuple[Path, int]] = [(base_path, 0)]
+    
+    while stack:
+        current_dir, depth = stack.pop()
+        
+        for item, val in _process_directory(current_dir, depth):
+            if isinstance(val, int) and isinstance(item, str):
+                # Es un subdirectorio descubierto
+                p_item = Path(item)
+                try:
+                    stat_data = p_item.stat()
+                    inode_key = (stat_data.st_dev, stat_data.st_ino)
+                    if inode_key not in visited_inodes:
+                        visited_inodes.add(inode_key)
+                        stack.append((p_item, val))
+                except OSError:
+                    continue
+            else:
+                # Es un archivo y su tamaño
+                yield item, val # type: ignore
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:

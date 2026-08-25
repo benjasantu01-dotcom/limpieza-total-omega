@@ -115,7 +115,8 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
-    Verifica confinamiento de ruta contra la base autorizada.
+    Valida si 'real_target' está contenido dentro del árbol de 'real_base'.
+    Previene el escape de directorios mediante resolución de rutas.
     """
     try:
         target_parts = real_target.resolve().parts
@@ -134,7 +135,10 @@ def _is_excluded_file(name: str) -> bool:
 
 
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """Consulta atributos de archivos Windows para detectar archivos de sistema."""
+    """
+    Utiliza Win32 API para identificar atributos de archivo (sistema, oculto, 
+    archivo de sistema). Retorna False si no es Windows o si ocurre un error.
+    """
     if not kernel32 or not entry_path:
         return False
     try:
@@ -147,7 +151,10 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
-    """Filtro de seguridad para la recursión de directorios."""
+    """
+    Aplica filtros de seguridad (lista negra, rutas protegidas, enlaces simbólicos/junctions
+    y atributos de sistema) para evitar seguir estructuras riesgosas durante la recursión.
+    """
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     
@@ -162,7 +169,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_within_depth_limit(depth: int, current_path: Optional[str]) -> bool:
-    """Verifica límites de recursión y restricciones de seguridad."""
+    """Verifica que la recursión no exceda MAX_SCAN_DEPTH y que la ruta sea segura."""
     if not current_path:
         return False
     return depth <= MAX_SCAN_DEPTH and not is_protected_path(Path(current_path))
@@ -174,7 +181,10 @@ def _sum_directory_recursive(
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int]
 ) -> int:
-    """Calcula recursivamente el tamaño de una estructura de directorios con memoización."""
+    """
+    Calcula recursivamente el peso de los archivos en un directorio.
+    Implementa memoización por ruta para evitar re-escaneo en estructuras complejas.
+    """
     if root_dir in memo:
         return memo[root_dir]
 
@@ -222,7 +232,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Valida que el candidato de caché sea seguro antes de iniciar el cálculo."""
+    """Realiza validaciones finales de integridad sobre una ruta de caché propuesta."""
     try:
         if not candidate.exists(): return False
         real_candidate = candidate.resolve(strict=True)

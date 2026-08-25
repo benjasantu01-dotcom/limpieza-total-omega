@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **217** (43.1% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 103 | 12 | 17 | 15 | 109 |
-| 2026-08-25 | 112 | 7 | 15 | 12 | 102 |
+| 2026-08-24 | 101 | 12 | 16 | 15 | 108 |
+| 2026-08-25 | 116 | 7 | 15 | 12 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **47**
+- legibilidad y documentación: **51**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **41**
+- rendimiento: **39**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
+- `duplicates.py`: **20**
 - `memory.py`: **20**
-- `duplicates.py`: **19**
+- `quarantine.py`: **19**
 - `assistant.py`: **18**
-- `healthscore.py`: **17**
-- `organizer.py`: **16**
+- `healthscore.py`: **18**
+- `diskreport.py`: **17**
 - `branding.py`: **16**
-- `diskreport.py`: **16**
 - `settings.py`: **16**
 - `scanner.py`: **15**
+- `organizer.py`: **15**
+- `browser.py`: **14**
 - `safety.py`: **13**
-- `browser.py`: **13**
 - `main.py`: **11**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T10:47:28` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `healthscore.py` añadiendo docstrings descriptivos a las funciones de cálculo de puntaje (`score_*`) y al método `validate`, explicitando el propósito de las transformaciones y validaciones para asegurar la mantenibilidad.
+- `2026-08-25T10:47:18` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `duplicates.py` mediante la normalización de docstrings (siguiendo PEP 257), la inclusión de type hints faltantes en el pipeline de escaneo y la simplificación de la lógica de `_collect_candidates` para evitar duplicación de chequeos de seguridad.
+- `2026-08-25T10:46:54` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `walk_files` mediante la extracción de la lógica de recursión a una función auxiliar interna, separando claramente la gestión de la pila (stack) y el estado de la visita, y añadiendo docstrings precisos que clarifican el manejo de la profundidad máxima.
+- `2026-08-25T10:46:27` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en las funciones de filtrado y recursión, clarificando el propósito de los chequeos de seguridad y el manejo de los límites de profundidad para evitar confusiones en futuras iteraciones.
 - `2026-08-25T10:39:50` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en constantes críticas, la especificación de tipos de datos en parámetros de funciones complejas y la estandarización de las descripciones de las funciones de renderizado, garantizando una mejor mantenibilidad y legibilidad del código.
 - `2026-08-25T10:39:30` **assistant.py** (legibilidad y documentación): Se introdujeron type hints en los parámetros y retornos de funciones clave (como `_validate_and_assign` y `_call_gemini`) y se clarificaron los docstrings para documentar explícitamente el contrato de datos, mejorando la legibilidad técnica sin alterar la lógica.
 - `2026-08-25T10:37:20` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `load()` capturando posibles errores de serialización JSON y excepciones críticas de E/S que podrían interrumpir la persistencia de datos, además de asegurar que `_get_validator_map` no sea invocado con claves inexistentes mediante una validación explícita en `update`.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T10:06:07` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_is_within_depth_limit` validando explícitamente los parámetros de entrada y normalizando rutas para evitar comportamientos inesperados ante strings vacíos o None, mejorando la seguridad del bucle de escaneo.
 - `2026-08-25T10:05:42` **branding.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `save_logo_svg` y `draw_ring` reemplazando los bloques `try-except` genéricos por validaciones tempranas y una captura de excepciones más precisa, garantizando que los parámetros inválidos retornen valores seguros en lugar de abortar silenciosamente.
 - `2026-08-25T09:58:36` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validaciones específicas para `SystemContext` ante fuentes de datos heterogéneas, evitando que tipos de datos inesperados causen excepciones silenciosas durante la carga de métricas.
-- `2026-08-25T08:34:45` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` y `settings_path` al evitar la manipulación de directorios con posibles puntos de reparse (junctions/symlinks) mediante una verificación explícita antes de cualquier operación de escritura, garantizando que `SETTINGS_DIR` no sea un destino controlado por terceros o una ruta recursiva.
-- `2026-08-25T08:28:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de aislamiento (`_atomic_isolate_file`) mediante una validación de propiedad del archivo destino (`is_safe_to_modify`) y la aplicación de un límite de tiempo de vida (TTL) implícito a través de la limpieza explícita de archivos temporales mediante `try...finally` incluso en casos de error, asegurando que no queden restos huérfanos tras fallos de escritura.
-- `2026-08-25T08:27:40` **organizer.py** (seguridad defensiva): Reforcé la integridad del proceso de escaneo recursivo mediante la validación del estado del enlace simbólico (`resolve()` y `is_symlink`) para evitar "escape" de directorios durante el barrido, y añadí una verificación de `resolve()` en la creación de rutas dentro de `_process_directory` para asegurar que el escáner se mantenga estrictamente dentro de los límites de las carpetas permitidas.
-- `2026-08-25T08:26:50` **memory.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_to_trim` implementando una validación estricta del árbol de directorios del ejecutable contra la lista de rutas protegidas del sistema, asegurando que no solo el archivo final, sino sus carpetas padre, sean validadas antes de realizar cualquier manipulación de memoria.

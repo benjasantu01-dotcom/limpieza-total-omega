@@ -98,6 +98,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
+        """Asegura la integridad de las métricas forzando tipos y límites aceptables."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -141,24 +142,30 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud según la cantidad de archivos basura detectados."""
     return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Calcula el ratio de seguridad penalizando hallazgos y advertencias."""
     penalty = (max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Normaliza el porcentaje de memoria libre respecto al umbral crítico."""
     ratio = _to_float(available_percent) / max(0.1, float(_LIMIT_RAM_PERCENT))
     return _clamp(ratio, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Normaliza el porcentaje de espacio en disco respecto al umbral crítico."""
     ratio = _to_float(free_percent) / max(0.1, float(_LIMIT_DISK_PERCENT))
     return _clamp(ratio, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula el ratio de salud basado en el espacio ocupado por archivos duplicados."""
     return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
+    """Calcula el ratio de salud basado en la carga de programas en el arranque."""
     return _clamp(1.0 - (max(0, _to_int(startup_count)) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
