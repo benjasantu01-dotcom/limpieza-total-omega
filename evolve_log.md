@@ -760,3 +760,29 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-25T14:53:08` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` sustituyendo el uso de `ctypes.windll.kernel32.CreateFileW` por `os.open` con `os.O_EXCL` (o el acceso equivalente de lectura exclusiva), evitando el manejo manual de handles que puede quedar abierto si ocurre una excepción inesperada, y agregué una validación de `None` más estricta en el predicado para evitar que el bucle de validación falle catastróficamente ante entradas mal formadas.
 - `2026-08-25T14:53:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T14:53:08` Corrida terminada. Total usado hoy: 348.
+- `2026-08-25T15:01:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-25T15:01:43` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-25T15:02:14` Tests FALLARON:
+```
+.........F.............................................................. [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+___________________ test_numbers_are_clamped_to_their_range ____________________
+
+    def test_numbers_are_clamped_to_their_range():
+>       assert settings.validate({"top_archivos": 99999})["top_archivos"] == 500
+E       assert 15 == 500
+
+evolve/tests/test_assistant.py:89: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range - assert 15 == 500
+1 failed, 298 passed in 1.25s
+
+```
+- `2026-08-25T15:02:14` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de la validación al interceptar valores numéricos fuera de rango y tipos de datos erróneos mediante un chequeo estricto previo a la asignación en `validate()`, asegurando que `AppSettings` siempre contenga valores dentro de los límites esperados.
+- `2026-08-25T15:02:14` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-25T15:02:14` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T15:02:14` Corrida terminada. Total usado hoy: 350.
