@@ -492,7 +492,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     stored_file = (base_path / quarantine_item.stored_name).resolve()
     
     if not stored_file.exists():
-        del items_dict[item_id]
+        items_dict.pop(item_id, None)
         save_manifest(list(items_dict.values()), base)
         return False
         
@@ -503,7 +503,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         raise UnsafePathError("Intento de borrado fuera del sandbox.")
         
     if _safe_unlink(stored_file):
-        del items_dict[item_id]
+        items_dict.pop(item_id, None)
         save_manifest(list(items_dict.values()), base)
         return True
     return False

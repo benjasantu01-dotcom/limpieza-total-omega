@@ -155,21 +155,22 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza una validación exhaustiva de seguridad antes de operaciones de I/O.
-    Verifica: integridad de rutas (is_safe_to_modify), prevención de recursión, 
-    restricciones de volumen (mismo anchor), atributos de sistema/ocultos, y 
-    estado de bloqueo del archivo.
     """
     try:
+        if not src or not dest: return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest):
             return False
         if is_protected_path(src) or is_protected_path(dest):
             return False
             
-        if _is_recursive_violation(src, dest) or src.anchor != dest.anchor:
+        if _is_recursive_violation(src, dest):
+            return False
+            
+        if not src.anchor or not dest.anchor or src.anchor != dest.anchor:
             return False
         
         stat = src.stat()
-        if not stat.st_mode or stat.st_size == 0: return False
+        if stat.st_size == 0: return False
         
         if os.name == "nt" and (stat.st_file_attributes & 0x46): 
             return False
@@ -242,18 +243,20 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
-    Evalúa la viabilidad de mover un archivo. Verifica existencia, disponibilidad 
-    de espacio en el volumen de destino, seguridad de la ruta mediante 
-    _is_safe_to_move, y genera una ruta destino única evitando sobrescrituras.
+    Evalúa la viabilidad de mover un archivo.
     """
-    if not isinstance(junk_file.path, Path): return None
+    if not isinstance(junk_file.path, Path) or not dest_base: return None
     try:
         src_path = junk_file.path.resolve()
-        if not src_path.exists() or not src_path.is_file(): return None
-        if not dest_base.is_dir(): return None
+        if not src_path.exists() or not src_path.is_file() or not dest_base.is_dir(): 
+            return None
         
+        # Validar anchor seguro para evitar cruce de unidades
+        if not src_path.anchor or not dest_base.anchor or src_path.anchor != dest_base.anchor:
+            return None
+
         if shutil.disk_usage(dest_base.anchor).free < src_path.stat().st_size: return None
-        if src_path.anchor != dest_base.anchor or not _is_safe_to_move(junk_file, dest_base):
+        if not _is_safe_to_move(junk_file, dest_base):
             return None
         
         safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
@@ -266,8 +269,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
-    Mueve archivos candidatos a una carpeta de revisión. Realiza validación de 
-    seguridad y espacio antes de cada operación individual de movimiento.
+    Mueve archivos candidatos a una carpeta de revisión.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
@@ -315,7 +317,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not resolved_item.is_relative_to(dest.resolve()):
                 continue
             
-            # Seguridad adicional: verificar atributos de sistema u ocultos
             stat = item.stat()
             if os.name == "nt" and (stat.st_file_attributes & 0x46):
                 continue

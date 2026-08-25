@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 29
+- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 29
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 64 | 8 | 10 | 11 | 67 |
-| 2026-08-25 | 153 | 10 | 19 | 18 | 144 |
+| 2026-08-24 | 63 | 7 | 10 | 11 | 65 |
+| 2026-08-25 | 156 | 10 | 20 | 18 | 144 |
 
 ## Mejoras aceptadas por enfoque
 
-- rendimiento: **46**
 - seguridad defensiva: **46**
 - legibilidad y documentación: **46**
+- rendimiento: **45**
+- manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **40**
-- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `quarantine.py`: **20**
+- `quarantine.py`: **21**
 - `duplicates.py`: **19**
-- `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
+- `assistant.py`: **17**
 - `scanner.py`: **15**
 - `browser.py`: **15**
+- `safety.py`: **14**
 - `branding.py`: **14**
-- `safety.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `main.py`: **11**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T14:53:08` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` sustituyendo el uso de `ctypes.windll.kernel32.CreateFileW` por `os.open` con `os.O_EXCL` (o el acceso equivalente de lectura exclusiva), evitando el manejo manual de handles que puede quedar abierto si ocurre una excepción inesperada, y agregué una validación de `None` más estricta en el predicado para evitar que el bucle de validación falle catastróficamente ante entradas mal formadas.
+- `2026-08-25T14:52:06` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `purge_item` y `purge_all` mediante la validación explícita de `item_id` y rutas antes de operar, previniendo errores de ejecución por diccionarios mutados o rutas inexistentes durante la iteración de purga masiva.
+- `2026-08-25T14:51:33` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo validaciones explícitas contra `None` y errores de tipo en las rutas, evitando que excepciones silenciadas por atributos inexistentes (como `.anchor` en rutas relativas o mal formadas) aborten operaciones de forma inesperada.
 - `2026-08-25T14:43:03` **memory.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `read_snapshot` y `top_memory_processes` mediante la validación explícita de recursos y la captura granular de excepciones, evitando operaciones sobre archivos inexistentes o contextos de ejecución degradados.
 - `2026-08-25T14:41:41` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando que las métricas esenciales no sean nulas o inválidas antes de iniciar el cálculo, previniendo excepciones en tiempo de ejecución al acceder a los atributos del objeto `metrics`.
 - `2026-08-25T14:32:32` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma explícita al procesar directorios base, evitando que el escaneo colapse prematuramente ante rutas inaccesibles y proporcionando feedback informativo en lugar de abortar silenciosamente.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T12:49:02` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva mediante la implementación de un mecanismo de validación de entrada "defensive-first" en `compute_score`, garantizando que la estructura de datos `SystemMetrics` no pueda ser manipulada externamente para inyectar valores que causen desbordamiento o comportamientos inesperados durante el cálculo ponderado, protegiendo así la integridad de los resultados del sistema.
 - `2026-08-25T12:40:05` **duplicates.py** (seguridad defensiva): Reforcé la seguridad defensiva en las funciones de hashing y en `suggest_keeper` utilizando `is_protected_path` como barrera adicional antes de procesar archivos, garantizando que incluso si un archivo pasa la validación de `is_safe_to_modify`, no se incluya si explícitamente pertenece a zonas protegidas.
 - `2026-08-25T12:39:55` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `drive_usage` y `walk_files` para detectar y rechazar explícitamente rutas que contengan caracteres de control o puntos de reparse inusuales, garantizando que el análisis de disco no pueda ser engañado por estructuras de archivos anómalas o rutas mal formadas.
-- `2026-08-25T12:38:57` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` consolidando el chequeo de seguridad antes de cualquier operación de I/O y utilizando `ensure_safe_to_modify` para cumplir con las guías de protección contra borrados o escrituras no autorizadas.
-- `2026-08-25T12:29:52` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_call_gemini` validando el tamaño del contenido de la respuesta antes de intentar decodificarla y agregando una sanitización explícita sobre los datos recibidos de la red para prevenir la inyección de caracteres de control o rutas en el flujo de la aplicación.
-- `2026-08-25T12:29:05` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save` ante situaciones de concurrencia o estados intermedios del sistema de archivos, asegurando que la validación de la existencia de la carpeta sea más estricta antes de proceder con la escritura atómica.

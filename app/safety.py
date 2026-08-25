@@ -155,19 +155,14 @@ def _is_reparse_point(path: Path) -> bool:
 
 def _is_file_in_use(path: Path, st: os.stat_result = None) -> bool:
     """Verifica si el sistema operativo mantiene un bloqueo exclusivo sobre el archivo."""
-    if os.name != 'nt':
+    if not path or not path.exists():
         return False
     try:
-        if not path.exists():
-            return False
-        handle = ctypes.windll.kernel32.CreateFileW(
-            str(path), 0x80000000, 0, None, 3, 0x00000080, None
-        )
-        if handle == -1:
-            return True
-        ctypes.windll.kernel32.CloseHandle(handle)
+        # Intenta abrir el archivo en modo lectura exclusiva
+        fd = os.open(path, os.O_RDONLY | os.O_EXCL)
+        os.close(fd)
         return False
-    except Exception:
+    except OSError:
         return True
 
 
