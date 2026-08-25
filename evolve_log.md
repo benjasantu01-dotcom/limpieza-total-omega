@@ -1119,3 +1119,64 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-25T07:53:44` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
 - `2026-08-25T07:53:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T07:53:44` Corrida terminada. Total usado hoy: 184.
+- `2026-08-25T08:02:29` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-08-25T08:03:00` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `save` ante fallos de escritura en disco al verificar la existencia y accesibilidad de `ruta.parent` antes de intentar persistir, evitando excepciones no controladas durante la serialización o creación de directorios.
+- `2026-08-25T08:03:26` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.24s
+
+```
+- `2026-08-25T08:03:26` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se introdujo una comprobación robusta mediante `os.access` con `os.R_OK` dentro de `_resolve_and_cache_path` para verificar permisos de lectura antes de intentar acceder a archivos, previniendo errores de sistema al encontrar ejecutables bloqueados o con permisos restringidos durante el escaneo.
+- `2026-08-25T08:04:00` Tests FALLARON:
+```
+............................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+____________ test_security_question_without_findings_is_reassuring _____________
+
+    def test_security_question_without_findings_is_reassuring():
+        contexto = _contexto_lleno()
+>       contexto.suspicious_count = 0
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_assistant.py:326: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = SystemContext(score=61, grade='C', junk_mb=2400.0, suspicious_count=3, suspicious_warnings=1, memory_available_percent...isk_free_percent=6.0, duplicate_mb=900.0, startup_count=19, quarantined_count=2, browser_cache_mb=430.0, analyzed=True)
+name = 'suspicious_count', value = 0
+
+>   ???
+E   dataclasses.FrozenInstanceError: cannot assign to field 'suspicious_count'
+
+<string>:4: FrozenInstanceError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_is_reassuring - dataclasses.FrozenInstanceError: cannot assign to field 'suspicious_count'
+1 failed, 298 passed in 1.25s
+
+```
+- `2026-08-25T08:04:00` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva mediante la restricción del `SystemContext` para que sus atributos sean inmutables tras su creación, impidiendo la manipulación accidental o malintencionada de las métricas durante el ciclo de vida del asistente, garantizando la integridad de los datos que se envían a la IA.
+- `2026-08-25T08:04:16` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir ataques de trayectoria (path traversal) mediante la normalización estricta de rutas y una validación de seguridad proactiva, garantizando que el archivo nunca se escriba fuera del contexto esperado.
+- `2026-08-25T08:04:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T08:04:16` Corrida terminada. Total usado hoy: 188.

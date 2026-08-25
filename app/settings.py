@@ -290,7 +290,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not parent.exists():
         try: parent.mkdir(parents=True, exist_ok=True)
         except OSError: return None
-    elif not parent.is_dir(): return None
+    if not parent.is_dir(): return None
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False

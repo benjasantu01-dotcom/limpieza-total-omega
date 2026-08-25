@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 15
+- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 130 | 13 | 19 | 17 | 141 |
-| 2026-08-25 | 92 | 2 | 12 | 9 | 69 |
+| 2026-08-24 | 130 | 13 | 19 | 17 | 137 |
+| 2026-08-25 | 94 | 4 | 12 | 9 | 69 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **46**
 - manejo de errores y validación de entradas: **44**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,17 +35,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **19**
 - `quarantine.py`: **19**
 - `organizer.py`: **17**
+- `branding.py`: **16**
 - `scanner.py`: **16**
 - `diskreport.py`: **16**
-- `branding.py`: **15**
+- `settings.py`: **15**
 - `safety.py`: **14**
-- `settings.py`: **14**
 - `main.py`: **13**
 - `browser.py`: **13**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T08:04:16` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir ataques de trayectoria (path traversal) mediante la normalización estricta de rutas y una validación de seguridad proactiva, garantizando que el archivo nunca se escriba fuera del contexto esperado.
+- `2026-08-25T08:03:00` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `save` ante fallos de escritura en disco al verificar la existencia y accesibilidad de `ruta.parent` antes de intentar persistir, evitando excepciones no controladas durante la serialización o creación de directorios.
 - `2026-08-25T07:53:37` **safety.py** (robustez ante casos límite): Mejoré la robustez de `ensure_safe_to_modify` ante condiciones de carrera y archivos inexistentes añadiendo una verificación explícita de existencia mediante `os.access` en el directorio padre, previniendo excepciones no capturadas al evaluar rutas que aún no se han creado.
 - `2026-08-25T07:52:52` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo en `restore_item` para el directorio padre del destino y validaciones contra `OSError` durante la creación del mismo, mejorando la robustez ante rutas inexistentes o permisos denegados en la jerarquía de directorios.
 - `2026-08-25T07:44:24` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo una validación explícita de `is_protected_path` sobre la ruta de destino, garantizando que ninguna operación de movimiento pueda colocar archivos accidentalmente dentro de directorios marcados como sensibles o protegidos por la lógica de `safety.py`.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T07:02:06` **healthscore.py** (rendimiento): Se optimizó el pre-procesamiento de `SystemMetrics` eliminando el uso de `getattr`/`setattr` dentro de un loop, reemplazándolo por una limpieza directa y explícita en `validate()` que ya se ejecuta al inicializar, evitando sobrecarga de introspección innecesaria.
 - `2026-08-25T07:01:42` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` utilizando un conjunto de rutas ya procesadas (`set`) para evitar la re-resolución de rutas (operación costosa de E/S) y redundancia innecesaria, mejorando significativamente la velocidad en árboles de directorios profundos.
 - `2026-08-25T06:54:10` **diskreport.py** (rendimiento): Optimizamos `walk_files` para evitar múltiples llamadas a `os.path.realpath` y `Path.resolve()` dentro del bucle principal, utilizando `os.path.join` y validación de rutas más eficiente para reducir el impacto en I/O durante el escaneo recursivo.
-- `2026-08-25T06:53:57` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de directorios mediante la técnica de "memoización" en `_sum_directory_recursive`, evitando la redundancia de procesar carpetas compartidas entre navegadores (ej. múltiples perfiles que apunten a una misma ruta) y reduciendo las llamadas al sistema en cada iteración del bucle principal.
-- `2026-08-25T06:52:22` **branding.py** (rendimiento): Optimicé el rendimiento de la gestión de colores en `branding.py` reemplazando los llamados repetitivos a `color()` (que involucran búsqueda en diccionario y acceso a `lru_cache`) por referencias directas a variables de la paleta ya evaluadas en tiempo de carga, reduciendo la sobrecarga de resolución de nombres durante el renderizado intenso de la UI.
