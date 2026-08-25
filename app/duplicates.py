@@ -143,20 +143,21 @@ def _collect_candidates(
             with os.scandir(resolved_dir) as it:
                 for entry in it:
                     try:
+                        entry_stat = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
-                            entry_stat = entry.stat(follow_symlinks=False)
                             if getattr(entry_stat, 'st_reparse_tag', 0) != 0: continue
                             device_inode = (entry_stat.st_dev, entry_stat.st_ino)
                             if device_inode not in visited_device_inodes:
                                 visited_device_inodes.add(device_inode)
                                 _scan(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
+                            file_size = entry_stat.st_size
+                            if file_size < min_size: continue
                             entry_path = Path(entry.path).resolve()
-                            if entry.stat().st_size < min_size: continue
                             if skip_protected and is_protected_path(entry_path): continue
                             if not is_safe_to_modify(entry_path): continue
                             
-                            temp_groups[int(entry.stat().st_size)].append(entry_path)
+                            temp_groups[int(file_size)].append(entry_path)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 

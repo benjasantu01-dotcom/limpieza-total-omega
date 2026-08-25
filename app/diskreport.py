@@ -406,31 +406,27 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
-    Recolección interna de métricas para optimizar múltiples lecturas de disco.
+    Recolección interna optimizada de métricas para evitar múltiples lecturas de disco.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
-    
-    # Heap para mantener los 8 archivos más grandes durante la iteración
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
         total_bytes += size
         total_files += 1
+        
         ext = path.suffix.lower() or "(sin extensión)"
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        # Mantenimiento del heap para el top-8
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:
             heapq.heapreplace(top_files_heap, (size, path))
             
-    sorted_top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
-            
-    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, sorted_top_files)
+    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, sorted(top_files_heap, key=lambda x: x[0], reverse=True))
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
