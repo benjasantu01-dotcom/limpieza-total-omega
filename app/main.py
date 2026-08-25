@@ -213,7 +213,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             raw = settings_mod.load()
             self.settings = raw if isinstance(raw, dict) else settings_mod.reset()
         except Exception as e:
-            logging.error("Fallo al cargar ajustes, reseteando: %s", e)
+            logging.error("Fallo al cargar ajustes, reseteando: %e", e)
             self.settings = settings_mod.reset()
             
         self.setting_vars: Dict[str, Any] = {}
@@ -1450,7 +1450,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
             
         raw = self.pid_entry.get().strip()
-        if not raw.isdigit():
+        if not raw or not raw.isdigit():
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
             

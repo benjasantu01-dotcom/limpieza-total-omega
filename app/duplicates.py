@@ -232,7 +232,8 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     for path in group.paths:
         try:
-            label = 'conservar' if keeper is not None and path.resolve() == keeper else 'duplicado'
+            resolved_path = path.resolve()
+            label = 'conservar' if keeper is not None and resolved_path == keeper else 'duplicado'
             lines.append(f"   [{label}] {path}")
         except (OSError, ValueError):
             lines.append(f"   [error] {path}")

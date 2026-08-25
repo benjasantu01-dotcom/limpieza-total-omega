@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **200** (39.7% de aceptación)
+- Mejoras aceptadas: **201** (39.9% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 227
 
@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 54 | 4 | 14 | 5 | 53 |
+| 2026-08-23 | 52 | 4 | 13 | 5 | 52 |
 | 2026-08-24 | 144 | 15 | 21 | 18 | 152 |
-| 2026-08-25 | 2 | 0 | 0 | 0 | 22 |
+| 2026-08-25 | 5 | 0 | 0 | 0 | 23 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **46**
 - rendimiento: **42**
 - seguridad defensiva: **42**
-- manejo de errores y validación de entradas: **35**
+- manejo de errores y validación de entradas: **38**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `quarantine.py`: **19**
 - `assistant.py`: **19**
-- `duplicates.py`: **18**
+- `duplicates.py`: **19**
+- `quarantine.py`: **18**
 - `healthscore.py`: **17**
-- `scanner.py`: **16**
 - `organizer.py`: **16**
-- `diskreport.py`: **15**
+- `diskreport.py`: **16**
+- `scanner.py`: **15**
 - `branding.py`: **13**
-- `main.py`: **11**
+- `main.py`: **12**
 - `settings.py`: **11**
 - `safety.py`: **10**
 - `browser.py`: **10**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T01:11:37` **main.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `on_trim_process` añadiendo una validación de entrada más estricta (`isdigit` y verificación de `None`/vacío) para prevenir excepciones de conversión y asegurar que solo se intente liberar memoria en procesos válidos.
+- `2026-08-25T01:10:17` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación de tipos y la captura de errores en la resolución de rutas, evitando que el proceso falle ante rutas inexistentes o permisos denegados al iterar sobre grupos.
+- `2026-08-25T01:09:53` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `largest_folders` capturando excepciones específicas durante la conversión a `Path` y manipulación de rutas, asegurando que entradas inválidas o rutas con caracteres no manejables no interrumpan el flujo de datos.
 - `2026-08-25T01:01:33` **browser.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones y validación en `detect_profiles` y `directory_size`, capturando específicamente posibles errores de acceso (`PermissionError`, `OSError`) al iterar directorios y validando la integridad de las rutas antes de procesarlas para evitar comportamientos inesperados en sistemas con permisos restrictivos.
 - `2026-08-25T01:00:53` **assistant.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `build_context` implementando una validación explícita para las métricas recibidas mediante `_validate_and_assign`, asegurando que los valores de entrada sean numéricos, finitos y estén dentro de rangos lógicos antes de modificar el `SystemContext`, evitando posibles estados inconsistentes del objeto.
 - `2026-08-24T14:39:40` **settings.py** (seguridad defensiva): Se endureció la validación de rutas en `_Validators.path` para prevenir ataques de Directory Traversal y asegurar que la ruta resuelta no abandone el sistema de archivos raíz, protegiendo contra manipulaciones maliciosas del archivo JSON.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T14:17:41` **diskreport.py** (seguridad defensiva): He mejorado la robustez de `walk_files` y `drive_usage` añadiendo una validación explícita mediante `is_protected_path` al inicio de cada iteración y consulta, asegurando que incluso ante posibles errores de resolución de rutas o enlaces simbólicos maliciosos, la función mantenga el comportamiento de seguridad defensiva exigido.
 - `2026-08-24T14:17:08` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante una comprobación estricta de rutas (`is_safe_to_modify`) antes de resolver cualquier ruta relativa, evitando la posibilidad de inyección de rutas fuera de la base controlada mediante `..` o componentes maliciosos en `BROWSER_CACHE_PATHS`.
 - `2026-08-24T14:08:19` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` consolidando las validaciones de ruta mediante un flujo lógico más robusto, asegurando que `ensure_safe_to_modify` se utilice exclusivamente tras haber verificado la seguridad del directorio padre y la inexistencia de colisiones destructivas, evitando excepciones innecesarias.
-- `2026-08-24T14:07:21` **startup.py** (robustez ante casos límite): Mejora la robustez en `_resolve_and_cache_path` añadiendo una comprobación explícita para evitar procesar rutas que superen los límites de longitud del sistema de archivos (`MAX_PATH`), previniendo excepciones innecesarias en entornos Windows cuando el registro contiene rutas malformadas o excesivamente largas.
-- `2026-08-24T14:06:55` **settings.py** (robustez ante casos límite): Se implementó un chequeo robusto en `load` para detectar y manejar archivos de configuración parcialmente escritos (con contenido nulo o truncado por interrupción del sistema), asegurando que la aplicación siempre cargue una configuración válida ante condiciones de carrera o fallos durante la escritura.
-- `2026-08-24T13:56:47` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación de "espacio en disco disponible" antes de cualquier operación de movimiento hacia la cuarentena para prevenir fallos por saturación del volumen y garantizar la atomicidad del proceso.

@@ -264,7 +264,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        base_path = Path(os.path.realpath(directory))
+        base_path = Path(os.path.realpath(str(directory)))
         if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
     except (OSError, RuntimeError, TypeError, ValueError):
@@ -277,10 +277,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     
     while stack:
         current_dir = stack.pop()
-        # Seguridad: verificar cada subdirectorio antes de escanearlo
-        if skip_protected and is_protected_path(Path(current_dir)):
-            continue
-
+        
         depth = depths.get(current_dir, 0)
         if depth > MAX_DEPTH:
             continue
@@ -368,7 +365,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        p_base = Path(os.path.realpath(directory))
+        p_base = Path(os.path.realpath(str(directory)))
         if not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
             return []
             
@@ -377,13 +374,15 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(p_base, skip_protected):
             try:
-                # Obtener la carpeta de nivel superior (inmediata a p_base)
+                # Obtener la carpeta de nivel superior inmediata a p_base
                 relative = path.relative_to(p_base)
+                if not relative.parts:
+                    continue
                 top_folder = p_base / relative.parts[0]
                 str_path = str(top_folder)
                 sums[str_path] += size
                 counts[str_path] += 1
-            except (ValueError, IndexError):
+            except (ValueError, IndexError, AttributeError):
                 continue
 
         results: List[FolderUsage] = [FolderUsage(Path(p), sums[p], counts[p]) for p in sums]
@@ -446,7 +445,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
 
     try:
-        p_input = Path(os.path.realpath(directory))
+        p_input = Path(os.path.realpath(str(directory)))
         if not p_input.exists():
             return [f"Error: Ruta no existente: {p_input}"]
         if not p_input.is_dir():
