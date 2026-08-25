@@ -173,14 +173,13 @@ class _Validators:
 
     @staticmethod
     def path(val: Any) -> Optional[str]:
-        if val is None or not isinstance(val, (str, Path)): return None
+        if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or len(path_string) > 4096 or any(ord(c) < 32 for c in path_string) or ".." in path_string: return None
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
             resolved = path_obj.resolve(strict=False)
-            # Validar que la ruta resuelta no contenga trazas de escape y sea absoluta bajo una raíz válida
             if not resolved.is_absolute() or str(resolved).startswith(".."): return None
             return str(resolved) if _Validators._is_safe_path(str(resolved)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
@@ -196,7 +195,8 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        text = str(val).strip()
+        if not isinstance(val, str): return None
+        text = val.strip()
         if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
         return _Validators._validate_enum_str(text, key)
@@ -249,7 +249,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         mtime = stat_info.st_mtime
         if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
             return cached[1]
-        # Validamos límites y contenido mínimo: un JSON válido de config debe tener contenido
         if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 10:
             return _get_default_config()
         with open(ruta, "r", encoding="utf-8") as f:

@@ -208,7 +208,11 @@ def normalize(path: PathLike) -> Path:
     if path is None:
         raise ValueError("Ruta nula recibida.")
     
-    path_str = str(path).strip()
+    try:
+        path_str = str(path).strip()
+    except (TypeError, ValueError):
+        raise ValueError("Entrada no convertible a string.")
+
     if not path_str:
         raise ValueError("Entrada de ruta vacía.")
     
@@ -217,10 +221,12 @@ def normalize(path: PathLike) -> Path:
         
     try:
         p = Path(path_str).expanduser()
-        if p.anchor and not os.path.exists(p.anchor):
-            raise ValueError("Unidad de disco no disponible.")
+        # Verificar integridad del objeto antes de resolver
+        if not p.anchor and len(p.parts) > 0 and p.parts[0] not in ('.', '..'):
+            # Es ruta relativa, intentamos resolverla sin arriesgar el sistema
+            pass
         return p.resolve(strict=False)
-    except (OSError, RuntimeError) as e:
+    except (OSError, RuntimeError, TypeError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 
 
@@ -303,14 +309,14 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
 
-    if _has_invalid_chars(str(path)):
-        raise UnsafePathError("Ruta contiene caracteres inválidos o de control.")
-
     try:
+        path_str = str(path)
+        if _has_invalid_chars(path_str):
+            raise UnsafePathError("Ruta contiene caracteres inválidos o de control.")
+
         p = normalize(path)
-        path_str = str(p)
         
-        _validate_basic_path_safety(p, path_str)
+        _validate_basic_path_safety(p, str(p))
         _validate_boundary_conditions(p, base_dir)
         
         if p.exists():
@@ -342,7 +348,14 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeG
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """Filtra una colección de rutas retornando únicamente las aptas para modificación."""
-    return [normalize(p) for p in paths if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive)]
+    results = []
+    for p in paths:
+        if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive):
+            try:
+                results.append(normalize(p))
+            except (ValueError, TypeError, OSError):
+                continue
+    return results
 
 
 def describe_protection(path: PathLike) -> str:

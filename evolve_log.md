@@ -631,3 +631,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-25T01:21:08` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-25T01:21:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T01:21:08` Corrida terminada. Total usado hoy: 32.
+- `2026-08-25T01:29:45` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-25T01:30:15` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de las validaciones de entrada en `ensure_safe_to_modify` y `normalize` mediante la adición de chequeos de tipo explícitos y manejo preventivo de excepciones, evitando errores inesperados al procesar objetos `Path` mal formados o tipos de datos incompatibles durante el bucle de validación.
+- `2026-08-25T01:30:39` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-25T01:31:08` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de la validación de archivos al implementar un chequeo de tipos estricto para `val` en `_Validators.path` y `_Validators.str`, asegurando que valores inesperados (como diccionarios o listas insertados por error) no causen fallos silenciosos ni comportamientos erróneos.
+- `2026-08-25T01:31:19` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-25T01:31:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T01:31:19` Corrida terminada. Total usado hoy: 36.

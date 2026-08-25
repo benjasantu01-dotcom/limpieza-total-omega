@@ -16,37 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-23 | 50 | 3 | 12 | 5 | 52 |
+| 2026-08-23 | 48 | 3 | 12 | 5 | 50 |
 | 2026-08-24 | 144 | 15 | 21 | 18 | 152 |
-| 2026-08-25 | 8 | 0 | 1 | 0 | 23 |
+| 2026-08-25 | 10 | 0 | 1 | 0 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **45**
+- manejo de errores y validación de entradas: **43**
 - seguridad defensiva: **42**
-- rendimiento: **41**
-- manejo de errores y validación de entradas: **41**
+- rendimiento: **39**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **22**
-- `duplicates.py`: **19**
 - `quarantine.py`: **19**
+- `duplicates.py`: **18**
 - `assistant.py`: **18**
-- `healthscore.py`: **17**
 - `organizer.py`: **17**
 - `diskreport.py`: **16**
+- `healthscore.py`: **16**
 - `scanner.py`: **15**
 - `branding.py`: **13**
 - `main.py`: **12**
-- `settings.py`: **11**
-- `safety.py`: **10**
+- `settings.py`: **12**
+- `safety.py`: **11**
 - `browser.py`: **10**
 - `startup.py`: **3**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T01:31:08` **settings.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la validación de archivos al implementar un chequeo de tipos estricto para `val` en `_Validators.path` y `_Validators.str`, asegurando que valores inesperados (como diccionarios o listas insertados por error) no causen fallos silenciosos ni comportamientos erróneos.
+- `2026-08-25T01:30:15` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de las validaciones de entrada en `ensure_safe_to_modify` y `normalize` mediante la adición de chequeos de tipo explícitos y manejo preventivo de excepciones, evitando errores inesperados al procesar objetos `Path` mal formados o tipos de datos incompatibles durante el bucle de validación.
 - `2026-08-25T01:21:04` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `quarantine_dir` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de intentar cualquier operación de disco, evitando así condiciones de carrera o configuraciones inseguras del usuario.
 - `2026-08-25T01:20:30` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez en `_can_move_file` y `stage_for_review` añadiendo validaciones de tipo y de estado (`is_file`, existencia y permisos) antes de intentar operaciones de sistema, previniendo excepciones innecesarias y mejorando la calidad de los mensajes en caso de fallo.
 - `2026-08-25T01:20:05` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` y `_parse_csv_row` añadiendo validaciones de tipo y estructura más estrictas para evitar errores en tiempo de ejecución ante datos malformados, siguiendo el enfoque de manejo de errores y validación.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-24T14:29:30` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` implementando un control de alcance explícito mediante `is_within_directory` y validación de `path.resolve()` antes de cada borrado, asegurando que el proceso nunca pueda escapar del sandbox incluso si el manifiesto ha sido corrompido o manipulado.
 - `2026-08-24T14:29:12` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `delete_reviewed` mediante la validación explícita `is_safe_to_modify` antes de llamar a `ensure_safe_to_modify`, garantizando que el bucle de borrado no sea interrumpido por excepciones de seguridad innecesarias y asegurando que solo archivos dentro de la carpeta de revisión sean procesados.
 - `2026-08-24T14:28:46` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_to_trim` implementando una validación adicional contra rutas de tipo Junction/Reparse Point utilizando `os.path.realpath`, lo cual previene la manipulación de procesos cuya ubicación física sea distinta a la declarada, mitigando vectores de ataque basados en enlaces simbólicos.
-- `2026-08-24T14:28:14` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `on_restore_quarantine` y `on_quarantine_duplicates` aplicando una verificación estricta de la ruta original (`_is_safe_path`) antes de proceder con cualquier movimiento o restauración, previniendo así intentos de restauración en zonas protegidas o fuera de las expectativas del usuario.
-- `2026-08-24T14:18:05` **duplicates.py** (seguridad defensiva): He refactorizado la lógica de `is_safe_to_modify` en `suggest_keeper` y `_collect_candidates` para unificar el manejo de rutas, eliminando llamadas redundantes a `resolve()` que podían ocultar errores de acceso y garantizando que el filtrado de seguridad sea consistente con la política de solo lectura del módulo.
