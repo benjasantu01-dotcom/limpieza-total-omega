@@ -228,14 +228,20 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     return results
 
 
-def _is_valid_traversal_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
+def _is_valid_traversal_entry(entry: os.DirEntry, root: Path, skip_protected: bool) -> bool:
     """
     Verifica si una entrada del sistema de archivos debe ser ignorada por seguridad.
     """
     if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
         return False
     
-    if skip_protected and is_protected_path(Path(entry.path)):
+    entry_path = Path(entry.path).resolve()
+    try:
+        entry_path.relative_to(root)
+    except ValueError:
+        return False
+    
+    if skip_protected and is_protected_path(entry_path):
         return False
         
     return True
@@ -248,15 +254,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not directory:
         return
 
-    base_path_str = os.path.realpath(str(directory))
-    base_path = Path(base_path_str)
+    base_path = Path(directory).resolve()
     
     if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[str] = [base_path_str]
-    depths: Dict[str, int] = {base_path_str: 0}
+    stack: List[Path] = [base_path]
+    depths: Dict[Path, int] = {base_path: 0}
     MAX_DEPTH = 100
     
     while stack:
@@ -270,19 +275,20 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        if not _is_valid_traversal_entry(entry, skip_protected):
+                        if not _is_valid_traversal_entry(entry, base_path, skip_protected):
                             continue
                         
+                        entry_path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
                             stat_data = entry.stat(follow_symlinks=False)
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(entry.path)
-                                depths[entry.path] = depth + 1
+                                stack.append(entry_path)
+                                depths[entry_path] = depth + 1
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), max(0, f_stat.st_size)
+                            yield entry_path, max(0, f_stat.st_size)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
@@ -331,7 +337,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        p_base = Path(os.path.realpath(str(directory))).resolve()
+        p_base = Path(directory).resolve()
         if not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
             return []
             
@@ -402,7 +408,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada."]
 
     try:
-        p_input = Path(os.path.realpath(str(directory))).resolve()
+        p_input = Path(directory).resolve()
         if not p_input.exists():
             return [f"Error: Ruta no existente: {p_input}"]
         if not p_input.is_dir():

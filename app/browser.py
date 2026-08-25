@@ -106,7 +106,7 @@ def base_directories() -> List[Path]:
     
     try:
         path_local = Path(local_env).resolve(strict=True)
-        if path_local.is_dir() and is_safe_to_modify(path_local):
+        if path_local.is_dir() and is_safe_to_modify(path_local) and not is_protected_path(path_local):
             return [path_local]
         return []
     except (OSError, RuntimeError, ValueError):
@@ -116,19 +116,11 @@ def base_directories() -> List[Path]:
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     Verifica confinamiento de ruta contra la base autorizada.
-    
-    Usa el desglose de componentes (`parts`) de las rutas resueltas para 
-    asegurar que el objetivo esté bajo el árbol de `real_base`, bloqueando
-    ataques de `..` o intentos de escape fuera del perfil de usuario.
     """
     try:
-        if not is_safe_to_modify(real_target) or not is_safe_to_modify(real_base):
-            return False
-            
         target_parts = real_target.resolve().parts
         base_parts = real_base.resolve().parts
         
-        # El destino debe ser más profundo o igual a la base
         if len(target_parts) <= len(base_parts):
             return False
         return target_parts[:len(base_parts)] == base_parts
@@ -142,12 +134,7 @@ def _is_excluded_file(name: str) -> bool:
 
 
 def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
-    """
-    Consulta atributos de archivos Windows para detectar archivos de sistema.
-    
-    Retorna True si el archivo tiene los atributos:
-    0x01 (Archivo de solo lectura), 0x02 (Oculto) o 0x04 (Sistema).
-    """
+    """Consulta atributos de archivos Windows para detectar archivos de sistema."""
     if not kernel32 or not entry_path:
         return False
     try:
@@ -160,20 +147,11 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
-    """
-    Filtro de seguridad para la recursión de directorios.
-    
-    Implementa:
-    1. Bloqueo de nombres críticos (NEVER_TOUCH).
-    2. Bloqueo de rutas protegidas (safety.py).
-    3. Prevención de recursión en enlaces simbólicos o puntos de unión (Junctions).
-    4. Omisión de archivos con atributos de sistema/ocultos.
-    """
+    """Filtro de seguridad para la recursión de directorios."""
     if _is_excluded_file(entry.name) or is_protected_path(Path(entry.path)):
         return True
     
     try:
-        # Usar follow_symlinks=False es crítico para prevenir escapes de directorio
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):
@@ -184,7 +162,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_within_depth_limit(depth: int, current_path: str) -> bool:
-    """Verifica límites de recursión (MAX_SCAN_DEPTH) y restricciones de seguridad."""
+    """Verifica límites de recursión y restricciones de seguridad."""
     return depth <= MAX_SCAN_DEPTH and not is_protected_path(Path(current_path))
 
 
@@ -194,9 +172,7 @@ def _sum_directory_recursive(
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int]
 ) -> int:
-    """
-    Calcula recursivamente el tamaño de una estructura de directorios con memoización.
-    """
+    """Calcula recursivamente el tamaño de una estructura de directorios con memoización."""
     if root_dir in memo:
         return memo[root_dir]
 
@@ -229,15 +205,12 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Union[str, Path]) -> int:
-    """
-    Calcula el tamaño de una carpeta tras validar que sea una ruta segura.
-    Actúa como interfaz de alto nivel para `_sum_directory_recursive`.
-    """
+    """Calcula el tamaño de una carpeta tras validar que sea una ruta segura."""
     if path is None:
         return 0
     try:
         p_obj = Path(path).resolve(strict=True)
-        if not p_obj.is_dir() or not is_safe_to_modify(p_obj) or is_protected_path(p_obj):
+        if not p_obj.is_dir() or is_protected_path(p_obj):
             return 0
         
         is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
@@ -247,16 +220,14 @@ def directory_size(path: Union[str, Path]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """
-    Valida que el candidato de caché sea seguro antes de iniciar el cálculo.
-    """
+    """Valida que el candidato de caché sea seguro antes de iniciar el cálculo."""
     try:
         if not candidate.exists(): return False
         real_candidate = candidate.resolve(strict=True)
         
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or
-            not real_candidate.is_dir() or not is_safe_to_modify(real_candidate) or 
-            is_protected_path(real_candidate) or not _is_path_inside_base(real_candidate, base_path) or 
+            not real_candidate.is_dir() or is_protected_path(real_candidate) or 
+            not _is_path_inside_base(real_candidate, base_path) or 
             _is_excluded_file(real_candidate.name)):
             return False
         return True
@@ -268,10 +239,7 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """
-    Escanea el sistema buscando rutas de caché conocidas mediante heurística.
-    Utiliza memoización compartida para evitar recalculaciones costosas.
-    """
+    """Escanea el sistema buscando rutas de caché conocidas mediante heurística."""
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
@@ -316,10 +284,7 @@ def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """
-    Genera un informe formateado de las cachés detectadas.
-    Retorna una lista de cadenas de texto listas para ser visualizadas.
-    """
+    """Genera un informe formateado de las cachés detectadas."""
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

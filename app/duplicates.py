@@ -262,8 +262,11 @@ def format_group(group: DuplicateGroup) -> List[str]:
     for path in group.paths:
         if not isinstance(path, Path): continue
         try:
-            resolved_path = path.resolve()
-            label = 'conservar' if keeper is not None and resolved_path == keeper else 'duplicado'
+            p_obj = path.resolve()
+            if not is_safe_to_modify(p_obj):
+                lines.append(f"   [inseguro] {path}")
+                continue
+            label = 'conservar' if keeper is not None and p_obj == keeper else 'duplicado'
             lines.append(f"   [{label}] {path}")
         except (OSError, ValueError):
             lines.append(f"   [error] {path}")
