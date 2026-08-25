@@ -162,8 +162,8 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         k = key.strip()
         if k in vals:
             try:
-                parts = rest.split()
-                if parts:
+                parts = rest.strip().split()
+                if parts and parts[0].isdigit():
                     vals[k] = int(parts[0]) * 1024
             except (ValueError, IndexError):
                 continue
@@ -176,7 +176,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total, available=min(available, total), cached=max(0, vals["Cached"]))
 
 def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """Convierte una línea CSV a un modelo ProcessMemory."""
+    """Convierte una línea CSV a un modelo ProcessMemory con validación estricta."""
     if not isinstance(csv_line, str) or not csv_line.strip():
         return None
     parts: List[str] = [p.strip().strip("'\"") for p in csv_line.split(",")]
@@ -186,7 +186,9 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
         name, pid_str, ws_str = parts
         if not name or not pid_str.isdigit() or not ws_str.isdigit():
             return None
-        return ProcessMemory(name=name, pid=int(pid_str), working_set=int(ws_str))
+        ws_val = int(ws_str)
+        if ws_val < 0: return None
+        return ProcessMemory(name=name, pid=int(pid_str), working_set=ws_val)
     except (ValueError, TypeError):
         return None
 
@@ -251,7 +253,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt": return []
     
     if (time.time() - _last_proc_fetch) > 30:
-        # Optimización: -join es más rápido que iterar por bloque ForEach-Object
         cmd: str = 'powershell -NoProfile -Command "(Get-Process | Select-Object -Property Name,Id,WorkingSet | ForEach-Object { \'$($_.Name),$($_.Id),$($_.WorkingSet)\' }) -join [Environment]::NewLine"'
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, shell=True)
@@ -309,7 +310,6 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     size = ctypes.c_ulong(buffer_size)
     buf = ctypes.create_unicode_buffer(buffer_size)
     try:
-        # La API escribe el tamaño real copiado en 'size'
         if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
             if 0 < size.value < buffer_size:
                 return str(buf.value)
@@ -351,7 +351,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
             return False, "Ruta de proceso sospechosa."
         
-        # Validar contra puntos de reparse (Junctions/Symlinks) comparando ruta resuelta
         real_path = os.path.realpath(path)
         if os.path.normcase(path) != os.path.normcase(real_path):
             return False, "Ruta bloqueada: el ejecutable reside tras un punto de reparse/enlace."

@@ -235,18 +235,22 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Evalúa si es factible mover un archivo, considerando espacio en disco y reglas de seguridad."""
-    src_path: Path = junk_file.path.resolve()
-    if not src_path.exists() or not src_path.is_file(): return None
-    
-    if shutil.disk_usage(dest_base.anchor).free < src_path.stat().st_size: return None
-    
-    if src_path.anchor != dest_base.anchor or not _is_safe_to_move(junk_file, dest_base):
+    if not isinstance(junk_file.path, Path): return None
+    try:
+        src_path = junk_file.path.resolve()
+        if not src_path.exists() or not src_path.is_file(): return None
+        if not dest_base.is_dir(): return None
+        
+        if shutil.disk_usage(dest_base.anchor).free < src_path.stat().st_size: return None
+        if src_path.anchor != dest_base.anchor or not _is_safe_to_move(junk_file, dest_base):
+            return None
+        
+        safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
+        target = (_generate_unique_target(dest_base / safe_name)).resolve()
+        
+        return target if target.is_relative_to(dest_base) else None
+    except (OSError, ValueError, AttributeError):
         return None
-    
-    safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
-    target = (_generate_unique_target(dest_base / safe_name)).resolve()
-    
-    return target if target.is_relative_to(dest_base) else None
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:

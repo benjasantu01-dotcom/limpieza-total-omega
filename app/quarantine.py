@@ -207,6 +207,9 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
             raise UnsafePathError("Ruta de cuarentena inválida o vacía.")
         if is_protected_path(path):
             raise UnsafePathError("Directorio de cuarentena reside en ruta protegida.")
+        # Validación extra de seguridad: confirmamos que la ruta resuelta es segura
+        if not is_safe_to_modify(path):
+            raise UnsafePathError("Directorio de cuarentena no cumple políticas de seguridad.")
         path.mkdir(parents=True, exist_ok=True)
         return path
     except (OSError, RuntimeError) as e:
