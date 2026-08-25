@@ -250,9 +250,6 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     Realiza las validaciones de seguridad finales sobre una ruta candidata.
     """
     try:
-        # Validación temprana de seguridad antes de resolver para evitar manipulaciones de ruta
-        if not is_safe_to_modify(candidate): return False
-        
         if not candidate.exists(): return False
         real_candidate = candidate.resolve(strict=True)
         
@@ -282,17 +279,15 @@ def detect_profiles(
     is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
-    # Cacheo de resultados por ruta absoluta para evitar re-escaneo
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
     for base in raw_bases:
-        if not base: continue
+        if not base or not base.exists(): continue
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
                 if not rel_str: continue
-                # Construcción segura evitando inyección mediante Path.joinpath
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 
                 if _is_valid_cache_path(candidate, real_base, is_junction):

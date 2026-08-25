@@ -292,27 +292,19 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     cast, min_v, max_v = spec
     
     try:
-        if isinstance(source, dict):
-            val = source.get(key)
-        else:
-            val = getattr(source, key, None)
+        val = source.get(key) if isinstance(source, dict) else getattr(source, key, None)
     except Exception:
         val = None
     
-    if val is None or type(val) in _FORBIDDEN_TYPES:
-        return False
-
     clean_val = _safe_float(val, -1.0)
-    if clean_val < 0 and key != "score": 
+    # Score puede ser opcional (None), pero si viene debe estar en rango
+    if val is not None and (clean_val < min_v or clean_val > max_v):
         return False
     
-    try:
-        clamped = max(float(min_v), min(clean_val, float(max_v)))
-        casted_val = cast(clamped)
-        setattr(ctx, key, casted_val)
+    if val is not None:
+        setattr(ctx, key, cast(clean_val))
         return True
-    except (OverflowError, ValueError, TypeError):
-        return False
+    return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
@@ -378,7 +370,7 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
 
 def explain_area(area: Any) -> str:
-    """Devuelve explicaciones pedagógicas de los módulos."""
+    """Delvuelve explicaciones pedagógicas de los módulos."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
