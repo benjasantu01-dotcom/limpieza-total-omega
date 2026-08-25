@@ -148,6 +148,9 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
             return False
+        # Validar que no sea un dispositivo o archivo especial si existe
+        if path_obj.exists() and not (path_obj.is_file() or path_obj.is_dir()):
+            return False
         return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
 
     @staticmethod
@@ -180,7 +183,6 @@ class _Validators:
     def path(val: Any) -> Optional[str]:
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        # Rechazar rutas con caracteres nulos o de control, evitar inyecciones
         if not path_string or len(path_string) > 4096 or "\0" in path_string or any(ord(c) < 32 for c in path_string) or ".." in path_string: return None
         try:
             path_obj = Path(path_string).expanduser()

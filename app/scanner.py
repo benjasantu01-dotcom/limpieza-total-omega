@@ -70,7 +70,7 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root: Path = base_root.resolve()
+        self.base_root: Path = base_root.resolve(strict=False)
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
@@ -92,12 +92,13 @@ class Scanner:
         
         try:
             target_path = Path(entry.path)
+            # Validación de seguridad antes de cualquier operación
             if is_protected_path(target_path) or str(target_path).startswith("\\\\") or not self._is_safe_entry(target_path):
                 return
 
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    path_str = str(target_path.resolve())
+                    path_str = str(target_path.resolve(strict=False))
                     if path_str not in self.seen:
                         self.seen.add(path_str)
                         stack.append(path_str)

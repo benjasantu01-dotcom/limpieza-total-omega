@@ -803,3 +803,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-25T03:54:09` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-25T03:54:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T03:54:09` Corrida terminada. Total usado hoy: 92.
+- `2026-08-25T04:02:48` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-25T04:03:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-25T04:03:53` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-25T04:04:18` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en la resolución de rutas dentro de `Scanner.process_entry` y `scan_directory` utilizando `resolve()` con `strict=False` de manera consistente, asegurando que las comparaciones de rutas (especialmente con puntos de unión o rutas relativas) no fallen y se validen estrictamente contra `base_root` antes de cualquier procesamiento posterior.
+- `2026-08-25T04:04:45` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha restringido `_Validators.path` para que no solo valide el formato, sino que verifique específicamente que el destino no sea un archivo existente no regular (como dispositivos, sockets o named pipes) mediante `is_file()` o `is_dir()` con chequeo de tipo, reforzando la seguridad defensiva contra manipulaciones de rutas inusuales.
+- `2026-08-25T04:04:57` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante una validación estricta contra dispositivos reservados de Windows, previniendo posibles errores de I/O o comportamiento inesperado al interactuar con rutas como `NUL` o `CON`.
+- `2026-08-25T04:04:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T04:04:57` Corrida terminada. Total usado hoy: 96.

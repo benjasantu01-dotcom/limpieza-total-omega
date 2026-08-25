@@ -132,11 +132,10 @@ class StartupEntry:
         if not isinstance(path_str, str) or not path_str or any(c in path_str for c in '<>|?*\0'):
             return ""
         
-        # Prevenir procesamiento de rutas UNC de red, rutas excesivamente largas
-        # y nombres de dispositivos reservados de Windows.
         norm = os.path.normpath(path_str)
-        reserved_names = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1"}
-        if norm.startswith(r"\\") or len(norm) > 4096 or Path(norm).stem.upper() in reserved_names:
+        reserved_names = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
+        stem = Path(norm).stem.upper()
+        if norm.startswith(r"\\") or len(norm) > 4096 or stem in reserved_names:
             return ""
         
         if path_str in _EXISTS_CACHE:
@@ -229,7 +228,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     found_entries: List[StartupEntry] = []
     scan_folders = folders if folders is not None else startup_folders()
     
-    # Pre-filtrado para seguridad y rendimiento antes de escanear
     valid_folders = [f for f in scan_folders if not is_protected_path(f)]
     
     for folder in valid_folders:
@@ -237,7 +235,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             with os.scandir(folder) as it:
                 for entry in it:
                     if entry.is_file(follow_symlinks=False):
-                        # La comprobación de extensión es una operación de set (O(1))
                         name, ext = os.path.splitext(entry.name)
                         if ext.lower() in EXECUTABLE_EXTS:
                             full_path = Path(entry.path)
@@ -282,7 +279,6 @@ def parse_registry_csv(text: str, source: str = "registro") -> List[StartupEntry
                 if any(c in cmd for c in '<>|?*'):
                     continue
                 
-                # Validación de seguridad: evitar rutas prohibidas antes de intentar instanciar
                 try:
                     cmd_path = Path(cmd)
                     if len(str(cmd_path)) > 4096 or is_protected_path(cmd_path):
