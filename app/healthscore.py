@@ -52,7 +52,7 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # Factores de normalización: convierten valores absolutos a ratios [0, 1]
-# Evitan divisiones por cero mediante el uso de valores mínimos de seguridad
+# Protegidos contra divisiones por cero mediante el uso de valores base mínimos
 _INV_JUNK: Final[float] = 1.0 / max(1e-9, _LIMIT_JUNK_MB)
 _INV_DUP: Final[float] = 1.0 / max(1e-9, _LIMIT_DUPLICATE_MB)
 _INV_STARTUP: Final[float] = 1.0 / max(1, _LIMIT_STARTUP_COUNT)
@@ -144,13 +144,16 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    return _clamp(1.0 - ((max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)), 0.0, 1.0)
+    penalty = (max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)
+    return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
+    ratio = _to_float(available_percent) / max(0.1, float(_LIMIT_RAM_PERCENT))
+    return _clamp(ratio, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
+    ratio = _to_float(free_percent) / max(0.1, float(_LIMIT_DISK_PERCENT))
+    return _clamp(ratio, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) * _INV_DUP), 0.0, 1.0)
@@ -166,7 +169,6 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
-# Mapeo de áreas hacia su función de cálculo de salud normalizada
 _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
     "disco": lambda m: score_disk(m.disk_free_percent),
@@ -197,7 +199,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     for area, weight, scorer in _PREPARED_SCORERS:
         ratio = scorer(metrics)
         ratios_cache[area] = ratio
-        points = int(round(ratio * weight))
+        # Se asegura que weight sea int para evitar errores de redondeo inesperados
+        points = int(round(ratio * float(weight)))
         metric_breakdown[area] = points
         accumulated_points += points
     

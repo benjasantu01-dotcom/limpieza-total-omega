@@ -160,8 +160,12 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     estado de bloqueo del archivo.
     """
     try:
+        # Validación de seguridad: ninguna ruta debe ser protegida
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest):
             return False
+        if is_protected_path(src) or is_protected_path(dest):
+            return False
+            
         if _is_recursive_violation(src, dest) or src.anchor != dest.anchor:
             return False
         

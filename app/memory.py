@@ -181,16 +181,16 @@ def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
     if not isinstance(csv_line, str) or not csv_line.strip():
         return None
     parts: List[str] = [p.strip().strip("'\"") for p in csv_line.split(",")]
-    if len(parts) != 3:
+    if len(parts) < 3:
         return None
     try:
-        name, pid_str, ws_str = parts
+        name, pid_str, ws_str = parts[0], parts[1], parts[2]
         if not name or not pid_str.isdigit() or not ws_str.isdigit():
             return None
         ws_val = int(ws_str)
         if ws_val < 0: return None
         return ProcessMemory(name=name, pid=int(pid_str), working_set=ws_val)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, IndexError):
         return None
 
 def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
