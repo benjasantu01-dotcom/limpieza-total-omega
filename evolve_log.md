@@ -1196,3 +1196,34 @@ FAILED evolve/tests/test_assistant.py::test_security_question_without_findings_i
 - `2026-08-25T08:28:00` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad del proceso de aislamiento (`_atomic_isolate_file`) mediante una validación de propiedad del archivo destino (`is_safe_to_modify`) y la aplicación de un límite de tiempo de vida (TTL) implícito a través de la limpieza explícita de archivos temporales mediante `try...finally` incluso en casos de error, asegurando que no queden restos huérfanos tras fallos de escritura.
 - `2026-08-25T08:28:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T08:28:00` Corrida terminada. Total usado hoy: 196.
+- `2026-08-25T08:33:16` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-25T08:33:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-25T08:34:06` Tests FALLARON:
+```
+raises(safety, tmp_path):
+        """`is_safe_to_modify` es la variante para usar en un `if`."""
+        assert safety.is_safe_to_modify(tmp_path / "ok.tmp") is True
+        assert safety.is_safe_to_modify(tmp_path / "Windows" / "x.txt") is False
+        assert safety.is_safe_to_modify(tmp_path.anchor) is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe") is False
+        assert safety.is_safe_to_modify(tmp_path / "prog.exe", allow_sensitive=True) is True
+        # Basura de entrada: devuelve False, no explota.
+        for basura in (None, "", 12345, [], {}):
+>           assert safety.is_safe_to_modify(basura) is False
+E           AssertionError: assert True is False
+E            +  where True = <function is_safe_to_modify at 0x7fb370b78b80>(12345)
+E            +    where <function is_safe_to_modify at 0x7fb370b78b80> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+
+evolve/tests/test_integrity.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7fb370b78b80>(12345)
+ +    where <function is_safe_to_modify at 0x7fb370b78b80> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+1 failed, 298 passed in 1.26s
+
+```
+- `2026-08-25T08:34:06` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo de identidad de dispositivos mediante `os.path.samefile` para prevenir que rutas que apuntan al mismo nodo físico (vía hard links o nombres relativos) evadan los controles de seguridad.
+- `2026-08-25T08:34:29` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: Scanner._is_reparse_point
+- `2026-08-25T08:34:45` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save` y `settings_path` al evitar la manipulación de directorios con posibles puntos de reparse (junctions/symlinks) mediante una verificación explícita antes de cualquier operación de escritura, garantizando que `SETTINGS_DIR` no sea un destino controlado por terceros o una ruta recursiva.
+- `2026-08-25T08:34:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T08:34:45` Corrida terminada. Total usado hoy: 200.

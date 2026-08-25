@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 195
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 130 | 13 | 19 | 17 | 129 |
-| 2026-08-25 | 100 | 4 | 12 | 10 | 70 |
+| 2026-08-24 | 130 | 13 | 19 | 17 | 125 |
+| 2026-08-25 | 101 | 5 | 14 | 10 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **46**
-- seguridad defensiva: **45**
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **38**
 
@@ -38,7 +38,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `branding.py`: **16**
 - `scanner.py`: **16**
-- `settings.py`: **15**
+- `settings.py`: **16**
 - `safety.py`: **14**
 - `browser.py`: **14**
 - `main.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-25T08:34:45` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` y `settings_path` al evitar la manipulación de directorios con posibles puntos de reparse (junctions/symlinks) mediante una verificación explícita antes de cualquier operación de escritura, garantizando que `SETTINGS_DIR` no sea un destino controlado por terceros o una ruta recursiva.
 - `2026-08-25T08:28:00` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad del proceso de aislamiento (`_atomic_isolate_file`) mediante una validación de propiedad del archivo destino (`is_safe_to_modify`) y la aplicación de un límite de tiempo de vida (TTL) implícito a través de la limpieza explícita de archivos temporales mediante `try...finally` incluso en casos de error, asegurando que no queden restos huérfanos tras fallos de escritura.
 - `2026-08-25T08:27:40` **organizer.py** (seguridad defensiva): Reforcé la integridad del proceso de escaneo recursivo mediante la validación del estado del enlace simbólico (`resolve()` y `is_symlink`) para evitar "escape" de directorios durante el barrido, y añadí una verificación de `resolve()` en la creación de rutas dentro de `_process_directory` para asegurar que el escáner se mantenga estrictamente dentro de los límites de las carpetas permitidas.
 - `2026-08-25T08:26:50` **memory.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_to_trim` implementando una validación estricta del árbol de directorios del ejecutable contra la lista de rutas protegidas del sistema, asegurando que no solo el archivo final, sino sus carpetas padre, sean validadas antes de realizar cualquier manipulación de memoria.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T07:44:14` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_parse_csv_row` para manejar correctamente archivos vacíos o líneas con datos truncados (como un PID presente pero un valor de memoria ausente), evitando errores de conversión y mejorando la robustez frente a lecturas parciales o inesperadas del comando PowerShell.
 - `2026-08-25T07:42:35` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante datos inconsistentes en `SystemMetrics` evitando divisiones por cero mediante protecciones explícitas en las funciones de `score` y garantizando que `_PREPARED_SCORERS` sea resiliente ante posibles configuraciones de pesos mal definidos.
 - `2026-08-25T07:23:14` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de métricas en `build_context` y `_validate_and_assign` mediante la validación estricta de tipos contra el diccionario de especificaciones, evitando que valores inesperados (como `None` o tipos incorrectos) causen errores en tiempo de ejecución o asignaciones silenciosas erróneas.
-- `2026-08-25T07:22:03` **scanner.py** (rendimiento): Optimicé el rendimiento de `check_recent_executable_in_downloads` y `check_system_lookalike` reemplazando la creación repetitiva de listas/conjuntos mediante `parts` (que genera objetos nuevos en cada llamada) por verificaciones directas o más eficientes, reduciendo la presión sobre el recolector de basura durante el escaneo recursivo.

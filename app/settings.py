@@ -239,8 +239,10 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
         base = Path(custom_base).expanduser().resolve(strict=False)
-        if _Validators._is_safe_path(str(base)):
-            return base / SETTINGS_FILE
+        # Aseguramos que la ruta base no sea un junction o symlink peligroso
+        if not (base.is_symlink() or (hasattr(base, 'is_junction') and base.is_junction())):
+            if _Validators._is_safe_path(str(base)):
+                return base / SETTINGS_FILE
     except (OSError, RuntimeError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE
@@ -282,11 +284,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Escribe los ajustes en disco de forma segura usando un archivo temporal y fsync."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
+    parent = ruta.parent.resolve(strict=False)
+    # Seguridad adicional: validar que el directorio no sea un punto de reparse
+    if parent.is_symlink() or (hasattr(parent, 'is_junction') and parent.is_junction()):
+        return None
     try:
         ensure_safe_to_modify(str(ruta))
     except (OSError, RuntimeError, PermissionError):
         return None
-    parent = ruta.parent.resolve(strict=False)
     if not parent.exists():
         try: parent.mkdir(parents=True, exist_ok=True)
         except OSError: return None
@@ -298,7 +303,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     try:
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
-        with tempfile.NamedTemporaryFile("wb", delete=False) as tf:
+        with tempfile.NamedTemporaryFile("wb", delete=False, dir=parent) as tf:
             temp_name = tf.name
             tf.write(encoded_data)
             tf.flush()
