@@ -72,15 +72,14 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root: Path = base_root.resolve(strict=False)
+        self.base_root_str: str = str(self.base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
         """Valida si la ruta está contenida dentro del directorio raíz de escaneo base."""
-        if not entry_path:
-            return False
         try:
-            resolved = entry_path.resolve(strict=False)
-            return self.base_root in resolved.parents or resolved == self.base_root
+            resolved = str(entry_path.resolve(strict=False)).lower()
+            return resolved == self.base_root_str or resolved.startswith(self.base_root_str + os.sep)
         except (OSError, RuntimeError):
             return False
 
@@ -107,14 +106,10 @@ class Scanner:
 
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    path_str = str(target_path.resolve(strict=False))
-                    if path_str and path_str not in self.seen:
+                    path_str = entry.path
+                    if path_str not in self.seen:
                         self.seen.add(path_str)
                         stack.append(path_str)
-                return
-
-            # Procesamiento de archivo
-            if not target_path.exists():
                 return
 
             self._run_file_heuristics(target_path, entry)
@@ -137,9 +132,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable es 'reciente' basado en el threshold configurado."""
-    if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
+    path_lower = str(path).lower()
+    if any(folder in path_lower for folder in WATCHED_FOLDERS):
         try:
-            stats = entry.stat(follow_symlinks=False) if entry and entry.path == str(path) else path.stat()
+            stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
         except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError):
@@ -149,7 +145,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Compara nombres de archivos contra ejecutables críticos fuera de directorios de sistema protegidos."""
     if path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in (p.lower() for p in path.parts):
+        if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
@@ -157,9 +153,6 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """Orquestador de reglas heurísticas para un archivo dado. Centraliza la ejecución de tests."""
     findings: ScanResult = []
     
-    if not path:
-        return findings
-
     try:
         if (double_ext := check_double_extension(path, entry, now_ts)):
             findings.append(double_ext)

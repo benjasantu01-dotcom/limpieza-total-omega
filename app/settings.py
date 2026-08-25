@@ -161,7 +161,7 @@ class _Validators:
             return False
 
     @staticmethod
-    def bool(val: Any) -> Optional[bool]:
+    def bool(key: ConfigKey, val: Any) -> Optional[bool]:
         """Normaliza entradas truthy/falsy a booleanos estándar."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
@@ -181,7 +181,7 @@ class _Validators:
         except (TypeError, ValueError, OverflowError): return None
 
     @staticmethod
-    def path(val: Any) -> Optional[str]:
+    def path(key: ConfigKey, val: Any) -> Optional[str]:
         """Valida y resuelve rutas de sistema, descartando aquellas inseguras."""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
@@ -210,29 +210,27 @@ class _Validators:
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
-        if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
+        if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(key, text)
         return _Validators._validate_enum_str(text, key)
 
-def _get_validator_map() -> dict[ConfigKey, Callable[[ConfigKey, Any], Any]]:
-    """Mapea cada clave de configuración a su función validadora correspondiente."""
-    return {
-        ConfigKey.TEMA: _Validators.str,
-        ConfigKey.ACENTO: _Validators.str,
-        ConfigKey.ABRIR_EN: _Validators.str,
-        ConfigKey.ULTIMA_CARPETA: _Validators.str,
-        ConfigKey.ASISTENTE_CLAVE_API: _Validators.str,
-        ConfigKey.ASISTENTE_MODELO: _Validators.str,
-        ConfigKey.MOSTRAR_BARRAS: lambda k, v: _Validators.bool(v),
-        ConfigKey.ANIMACIONES: lambda k, v: _Validators.bool(v),
-        ConfigKey.CONFIRMAR_SIEMPRE: lambda k, v: _Validators.bool(v),
-        ConfigKey.RECORDAR_ULTIMA_CARPETA: lambda k, v: _Validators.bool(v),
-        ConfigKey.ANALISIS_EN_PARALELO: lambda k, v: _Validators.bool(v),
-        ConfigKey.ASISTENTE_ACTIVADO: lambda k, v: _Validators.bool(v),
-        ConfigKey.ASISTENTE_ENVIAR_METRICAS: lambda k, v: _Validators.bool(v),
-        ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
-        ConfigKey.TOP_ARCHIVOS: _Validators.int,
-        ConfigKey.TOP_PROCESOS: _Validators.int
-    }
+_VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
+    ConfigKey.TEMA: _Validators.str,
+    ConfigKey.ACENTO: _Validators.str,
+    ConfigKey.ABRIR_EN: _Validators.str,
+    ConfigKey.ULTIMA_CARPETA: _Validators.str,
+    ConfigKey.ASISTENTE_CLAVE_API: _Validators.str,
+    ConfigKey.ASISTENTE_MODELO: _Validators.str,
+    ConfigKey.MOSTRAR_BARRAS: _Validators.bool,
+    ConfigKey.ANIMACIONES: _Validators.bool,
+    ConfigKey.CONFIRMAR_SIEMPRE: _Validators.bool,
+    ConfigKey.RECORDAR_ULTIMA_CARPETA: _Validators.bool,
+    ConfigKey.ANALISIS_EN_PARALELO: _Validators.bool,
+    ConfigKey.ASISTENTE_ACTIVADO: _Validators.bool,
+    ConfigKey.ASISTENTE_ENVIAR_METRICAS: _Validators.bool,
+    ConfigKey.DUPLICADOS_TAMANO_MINIMO_KB: _Validators.int,
+    ConfigKey.TOP_ARCHIVOS: _Validators.int,
+    ConfigKey.TOP_PROCESOS: _Validators.int
+}
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Calcula la ruta completa del archivo de configuración, validando el directorio destino."""
@@ -250,11 +248,10 @@ def validate(raw_values: Any) -> AppSettings:
     """Valida un diccionario arbitrario y lo fusiona con los valores de fábrica."""
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
-    validator_map = _get_validator_map()
     for key_str, val in raw_values.items():
         key = _STR_TO_ENUM.get(key_str)
-        if key and key in validator_map:
-            validated = validator_map[key](key, val)
+        if key and key in _VALIDATOR_MAP:
+            validated = _VALIDATOR_MAP[key](key, val)
             if validated is not None:
                 config[key.value] = validated # type: ignore
     return config
@@ -323,11 +320,10 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     """Aplica cambios específicos a la configuración actual y los persiste."""
     current = load(custom_base).copy()
     modified = False
-    validator_map = _get_validator_map()
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)
-        if key_enum and key_enum in validator_map:
-            val = validator_map[key_enum](key_enum, v)
+        if key_enum and key_enum in _VALIDATOR_MAP:
+            val = _VALIDATOR_MAP[key_enum](key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val # type: ignore
                 modified = True

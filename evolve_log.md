@@ -416,3 +416,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-25T11:38:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-08-25T11:38:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T11:38:38` Corrida terminada. Total usado hoy: 272.
+- `2026-08-25T11:47:21` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-25T11:47:52` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-25T11:48:15` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el bucle de escaneo evitando la resolución repetida de rutas mediante `path.parts` y `resolve()` dentro de los chequeos, usando en su lugar comprobaciones de prefijos de cadena (`str.startswith` o `in`) y acceso directo a los atributos del `os.DirEntry` ya presente en el proceso.
+- `2026-08-25T11:48:49` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el sistema de caché en `load()` para evitar llamadas innecesarias al sistema de archivos mediante una validación previa del estado (`stat`) y refactoricé el `validator_map` para que se defina como una constante estática, eliminando la creación de un nuevo diccionario y el uso de funciones lambda en cada acceso a la configuración.
+- `2026-08-25T11:49:05` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.25s
+
+```
+- `2026-08-25T11:49:05` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimizé la resolución de rutas en `StartupEntry` evitando llamadas redundantes a `os.path.realpath` y `exists()` cuando ya contamos con una entrada positiva en `_EXISTS_CACHE`, reduciendo significativamente la I/O de disco durante el escaneo.
+- `2026-08-25T11:49:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T11:49:05` Corrida terminada. Total usado hoy: 276.
