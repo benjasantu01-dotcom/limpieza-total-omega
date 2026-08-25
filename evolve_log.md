@@ -750,3 +750,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-25T03:14:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). He mejorado `quarantine_file` para implementar una validación de concurrencia y atomicidad más robusta, verificando que el espacio en disco sea suficiente ANTES de iniciar cualquier operación de copiado y asegurando que los manejadores de archivos se cierren correctamente ante excepciones.
 - `2026-08-25T03:14:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T03:14:08` Corrida terminada. Total usado hoy: 76.
+- `2026-08-25T03:22:01` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-08-25T03:22:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-25T03:22:49` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-25T03:23:12` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `process_entry` ante archivos bloqueados o inaccesibles añadiendo una excepción específica para `FileNotFoundError` (que ocurre si un archivo se elimina entre el `scandir` y el `stat`) y centralizando la validación de la existencia del archivo antes de cualquier operación de metadatos, evitando caídas silenciosas o bucles mal gestionados.
+- `2026-08-25T03:23:25` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo robusto en `_Validators.path` para detectar y rechazar rutas que contengan caracteres nulos o secuencias de escape inesperadas, mejorando la resiliencia ante entradas maliciosas o corruptas en el archivo de configuración.
+- `2026-08-25T03:23:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T03:23:25` Corrida terminada. Total usado hoy: 80.

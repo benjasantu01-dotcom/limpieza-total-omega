@@ -103,12 +103,15 @@ class Scanner:
                         stack.append(path_str)
                 return
 
-            # Procesamiento de archivo: pre-cachear metadatos básicos para los checks
+            # Procesamiento de archivo: chequeo de existencia previo y lectura segura
+            if not target_path.exists():
+                return
+
             stats = entry.stat(follow_symlinks=False)
             if stats.st_size > 0:
                 self._run_file_heuristics(target_path, entry)
 
-        except (OSError, PermissionError, TypeError):
+        except (OSError, PermissionError, TypeError, FileNotFoundError):
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -129,7 +132,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             stats = entry.stat(follow_symlinks=False) if entry and entry.path == str(path) else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-        except (OSError, PermissionError, AttributeError, ValueError):
+        except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError):
             pass
     return None
 

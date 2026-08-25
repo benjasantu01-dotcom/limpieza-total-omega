@@ -180,7 +180,8 @@ class _Validators:
     def path(val: Any) -> Optional[str]:
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        if not path_string or len(path_string) > 4096 or any(ord(c) < 32 for c in path_string) or ".." in path_string: return None
+        # Rechazar rutas con caracteres nulos o de control, evitar inyecciones
+        if not path_string or len(path_string) > 4096 or "\0" in path_string or any(ord(c) < 32 for c in path_string) or ".." in path_string: return None
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
@@ -202,7 +203,7 @@ class _Validators:
     def str(key: ConfigKey, val: Any) -> Optional[str]:
         if not isinstance(val, str): return None
         text = val.strip()
-        if not text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
+        if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
         if key == ConfigKey.ULTIMA_CARPETA: return _Validators.path(text)
         return _Validators._validate_enum_str(text, key)
 
