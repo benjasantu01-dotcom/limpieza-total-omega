@@ -713,3 +713,12 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_dat
 - `2026-08-25T02:23:27` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para evitar llamadas redundantes a `entry.stat().st_size` (reutilizando la información de `entry.stat()` obtenida al validar reparse points), reduciendo el número de syscalls durante el escaneo del sistema de archivos.
 - `2026-08-25T02:23:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T02:23:27` Corrida terminada. Total usado hoy: 56.
+- `2026-08-25T02:31:03` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-25T02:31:30` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cómputo en `compute_score` eliminando la re-validación costosa de `sum(WEIGHTS.values())` y la creación de listas intermedias, transformando la lógica de agregación en un proceso de una sola pasada más eficiente.
+- `2026-08-25T02:32:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-25T02:33:33` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-25T02:34:45` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el rendimiento de la interfaz implementando un caché de UI para el estado de las tarjetas de salud, evitando que los métodos de redibujo (`_update_cards`) procesen actualizaciones idénticas y minimizando el estrés en el `mainloop` durante los análisis masivos.
+- `2026-08-25T02:35:35` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé `top_memory_processes` eliminando la creación de una lista intermedia y el uso de `join` innecesario dentro de PowerShell, utilizando un formato de salida más ligero (separado por coma) y delegando la creación de objetos directamente en un generador, reduciendo el consumo de memoria y CPU durante el escaneo.
+- `2026-08-25T02:35:54` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-25T02:35:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T02:35:54` Corrida terminada. Total usado hoy: 60.

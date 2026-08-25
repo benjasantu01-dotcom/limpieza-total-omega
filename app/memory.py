@@ -205,8 +205,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    procs: List[ProcessMemory] = [p for p in _yield_processes(raw_csv_text)]
-    procs.sort(key=lambda p: p.working_set, reverse=True)
+    procs: List[ProcessMemory] = sorted(_yield_processes(raw_csv_text), key=lambda p: p.working_set, reverse=True)
     return procs[:max(0, limit)]
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -252,7 +251,8 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt": return []
     
     if (time.time() - _last_proc_fetch) > 30:
-        cmd: str = 'powershell -NoProfile -Command "(Get-Process | Select-Object -Property Name,Id,WorkingSet | ForEach-Object { \'$($_.Name),$($_.Id),$($_.WorkingSet)\' }) -join [Environment]::NewLine"'
+        # PowerShell optimizado: entrega líneas directas, sin procesar un array masivo en memoria
+        cmd: str = 'powershell -NoProfile -Command "Get-Process | ForEach-Object { \\"$($_.Name),$($_.Id),$($_.WorkingSet)\\" }"'
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, shell=True)
             if proc.returncode == 0:

@@ -132,6 +132,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._log_scheduled = False
         self._active_buttons: List[ctk.CTkButton] = []
         self._tasks_running = 0
+        self._last_card_values: Dict[str, str] = {}
         
         self._setup_application()
 
@@ -1127,6 +1128,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             "ram": f"{ram_libre:.0f}%",
             "disco": f"{disco_libre:.0f}%",
         }
+        
+        # Filtro de caché local para no tocar widgets si el texto no cambió
+        if all(self._last_card_values.get(k) == v for k, v in valores.items()):
+            return
+        self._last_card_values = valores
+
         colores = {
             "basura": branding.color("accent") if junk_mb < 1000 else branding.color("warning"),
             "sospechosos": branding.color("accent") if sospechosos == 0 else branding.color("warning"),
