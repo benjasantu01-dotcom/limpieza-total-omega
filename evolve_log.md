@@ -746,3 +746,10 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-25T14:32:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma explícita al procesar directorios base, evitando que el escaneo colapse prematuramente ante rutas inaccesibles y proporcionando feedback informativo en lugar de abortar silenciosamente.
 - `2026-08-25T14:32:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T14:32:32` Corrida terminada. Total usado hoy: 340.
+- `2026-08-25T14:40:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-25T14:41:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-25T14:41:41` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` validando que las métricas esenciales no sean nulas o inválidas antes de iniciar el cálculo, previniendo excepciones en tiempo de ejecución al acceder a los atributos del objeto `metrics`.
+- `2026-08-25T14:42:48` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de la aplicación ante configuraciones inválidas o parciales en la pestaña de ajustes, encapsulando la recolección de datos en un flujo con manejo de errores y validación explícita para evitar que estados corruptos de la UI bloqueen el guardado.
+- `2026-08-25T14:43:03` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se ha robustecido el manejo de errores en `read_snapshot` y `top_memory_processes` mediante la validación explícita de recursos y la captura granular de excepciones, evitando operaciones sobre archivos inexistentes o contextos de ejecución degradados.
+- `2026-08-25T14:43:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T14:43:03` Corrida terminada. Total usado hoy: 344.

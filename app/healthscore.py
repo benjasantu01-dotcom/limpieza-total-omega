@@ -191,8 +191,8 @@ _PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], No
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global basado en métricas normalizadas y pesos configurados."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error interno: Tipo de métricas inválido."])
+    if metrics is None or not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error interno: Datos de métricas nulos o inválidos."])
     
     # Aseguramos integridad de los datos de entrada antes de procesar
     try:

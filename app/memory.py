@@ -213,21 +213,21 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Implementa la llamada a la API nativa `GlobalMemoryStatusEx`."""
-    kernel32 = getattr(ctypes.windll, "kernel32", None)
-    if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx"):
-        return MemorySnapshot(0, 0)
-    
-    stat = _create_mem_status_ex()
-    if not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
-        return MemorySnapshot(0, 0)
-    
     try:
+        kernel32 = getattr(ctypes.windll, "kernel32", None)
+        if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx"):
+            return MemorySnapshot(0, 0)
+        
+        stat = _create_mem_status_ex()
+        if not kernel32.GlobalMemoryStatusEx(ctypes.byref(stat)):
+            return MemorySnapshot(0, 0)
+        
         total = int(stat.ullTotalPhys)
         avail = int(stat.ullAvailPhys)
         if total <= 0 or avail > total: 
             return MemorySnapshot(0, 0)
         return MemorySnapshot(total=total, available=avail)
-    except (ValueError, TypeError, OverflowError):
+    except (AttributeError, ValueError, TypeError, OverflowError, OSError):
         return MemorySnapshot(0, 0)
 
 def read_snapshot() -> MemorySnapshot:
@@ -235,13 +235,14 @@ def read_snapshot() -> MemorySnapshot:
     if os.name == "nt":
         return _read_windows_snapshot()
     
-    if os.path.exists("/proc/meminfo"):
+    path_meminfo = "/proc/meminfo"
+    if os.path.exists(path_meminfo) and os.access(path_meminfo, os.R_OK):
         try:
-            with open("/proc/meminfo", encoding="utf-8", errors="replace") as f:
+            with open(path_meminfo, encoding="utf-8", errors="replace") as f:
                 content = f.read()
                 if content:
                     return parse_linux_meminfo(content)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, IOError):
             pass
     return MemorySnapshot(0, 0)
 
@@ -251,14 +252,14 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if os.name != "nt": return []
     
     if (time.time() - _last_proc_fetch) > 30:
-        cmd: str = 'powershell -NoProfile -Command "Get-Process | ForEach-Object { \\"$($_.Name),$($_.Id),$($_.WorkingSet)\\" }"'
+        cmd: List[str] = ['powershell', '-NoProfile', '-Command', "Get-Process | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"]
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, shell=False)
-            if proc.returncode == 0:
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
+            if proc.returncode == 0 and proc.stdout:
                 _cached_proc_output = proc.stdout
                 _last_proc_fetch = time.time()
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired):
-            pass 
+            _cached_proc_output = ""
             
     return parse_windows_process_csv(_cached_proc_output, limit=limit)
 
