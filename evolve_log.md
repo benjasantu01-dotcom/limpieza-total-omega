@@ -1097,3 +1097,11 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-25T07:23:14` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de métricas en `build_context` y `_validate_and_assign` mediante la validación estricta de tipos contra el diccionario de especificaciones, evitando que valores inesperados (como `None` o tipos incorrectos) causen errores en tiempo de ejecución o asignaciones silenciosas erróneas.
 - `2026-08-25T07:23:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T07:23:14` Corrida terminada. Total usado hoy: 172.
+- `2026-08-25T07:31:49` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-25T07:32:52` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-25T07:33:15` ➖ Sin cambios en browser.py (enfoque: robustez ante casos límite). Motivo: Mejoré la resiliencia ante errores de acceso en tiempo de ejecución (`PermissionError` y `OSError`) al iterar directorios, asegurando que `_sum_directory_recursive` maneje archivos inaccesibles o bloqueados sin abortar el cálculo global del tamaño, protegiendo así la integridad de la función ante el enfoque de casos límite.
+- `2026-08-25T07:33:43` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-25T07:33:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-25T07:34:25` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `_collect_candidates` añadiendo manejo explícito de errores durante el acceso a `st_mtime` y atributos de entrada, garantizando que el escáner no aborte ante archivos bloqueados o con metadatos inaccesibles durante la iteración recursiva.
+- `2026-08-25T07:34:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T07:34:25` Corrida terminada. Total usado hoy: 176.
