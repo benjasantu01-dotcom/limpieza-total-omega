@@ -1066,3 +1066,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-08-25T06:42:24` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `startup.py` reemplazando los nombres crípticos de los parámetros en las funciones de parseo y añadiendo Type Hinting detallado, junto con docstrings que clarifican el propósito técnico de los métodos internos de la clase `StartupEntry`.
 - `2026-08-25T06:42:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-25T06:42:24` Corrida terminada. Total usado hoy: 156.
+- `2026-08-25T06:51:04` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-25T06:51:06` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-25T06:51:49` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `build_context` evitando iteraciones redundantes y verificaciones de tipo costosas, además de cachear el acceso a los atributos del contexto mediante una estructura más eficiente durante la carga de métricas.
+- `2026-08-25T06:52:22` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de la gestión de colores en `branding.py` reemplazando los llamados repetitivos a `color()` (que involucran búsqueda en diccionario y acceso a `lru_cache`) por referencias directas a variables de la paleta ya evaluadas en tiempo de carga, reduciendo la sobrecarga de resolución de nombres durante el renderizado intenso de la UI.
+- `2026-08-25T06:53:23` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-25T06:53:57` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de directorios mediante la técnica de "memoización" en `_sum_directory_recursive`, evitando la redundancia de procesar carpetas compartidas entre navegadores (ej. múltiples perfiles que apunten a una misma ruta) y reduciendo las llamadas al sistema en cada iteración del bucle principal.
+- `2026-08-25T06:54:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos `walk_files` para evitar múltiples llamadas a `os.path.realpath` y `Path.resolve()` dentro del bucle principal, utilizando `os.path.join` y validación de rutas más eficiente para reducir el impacto en I/O durante el escaneo recursivo.
+- `2026-08-25T06:54:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-25T06:54:10` Corrida terminada. Total usado hoy: 160.

@@ -195,11 +195,7 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Calcula recursivamente el tamaño de una estructura de directorios.
-    
-    Usa un diccionario `memo` para cachear resultados de carpetas y evitar 
-    redundancia en árboles de archivos. La recursión se detiene al alcanzar
-    MAX_SCAN_DEPTH para evitar desbordamiento de pila en estructuras profundas.
+    Calcula recursivamente el tamaño de una estructura de directorios con memoización.
     """
     if root_dir in memo:
         return memo[root_dir]
@@ -216,7 +212,6 @@ def _sum_directory_recursive(
                         continue
                     
                     try:
-                        # Se usa follow_symlinks=False para evitar seguir accesos directos
                         if entry.is_dir(follow_symlinks=False):
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file(follow_symlinks=False):
@@ -254,10 +249,6 @@ def directory_size(path: Union[str, Path]) -> int:
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
     Valida que el candidato de caché sea seguro antes de iniciar el cálculo.
-    
-    Verifica que la ruta sea un directorio existente, no sea un enlace ni
-    ruta protegida, esté contenida dentro de la base de usuario y no contenga
-    nombres bloqueados.
     """
     try:
         if not candidate.exists(): return False
@@ -279,10 +270,7 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea el sistema buscando rutas de caché conocidas mediante heurística.
-    
-    Utiliza el mapa `cache_paths` para localizar cachés, valida la integridad
-    de cada ruta mediante `_is_valid_cache_path` y utiliza un diccionario
-    `perf_cache` para asegurar que cada carpeta se procese una sola vez.
+    Utiliza memoización compartida para evitar recalculaciones costosas.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

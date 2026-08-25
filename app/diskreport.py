@@ -231,7 +231,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def _is_valid_traversal_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
     """
     Verifica si una entrada del sistema de archivos debe ser ignorada por seguridad.
-    Esta validación se ejecuta antes de cualquier operación de I/O sobre el path.
     """
     if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
         return False
@@ -245,25 +244,20 @@ def _is_valid_traversal_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador iterativo que recorre directorios recursivamente mediante `os.scandir`.
-    
-    Args:
-        directory: Ruta raíz de inicio.
-        skip_protected: Si es True, impide el acceso a directorios del sistema.
     """
     if not directory:
         return
 
-    try:
-        base_path = Path(os.path.realpath(str(directory))).resolve()
-        if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
-            return
-    except (OSError, RuntimeError, TypeError, ValueError):
+    base_path_str = os.path.realpath(str(directory))
+    base_path = Path(base_path_str)
+    
+    if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[str] = [str(base_path)]
+    stack: List[str] = [base_path_str]
+    depths: Dict[str, int] = {base_path_str: 0}
     MAX_DEPTH = 100
-    depths: Dict[str, int] = {str(base_path): 0}
     
     while stack:
         current_dir = stack.pop()
@@ -279,14 +273,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         if not _is_valid_traversal_entry(entry, skip_protected):
                             continue
                         
-                        full_path = Path(entry.path).resolve()
-                        # Verificación de seguridad: no escapar del directorio base
-                        try:
-                            if os.path.commonpath([str(base_path), str(full_path)]) != str(base_path):
-                                continue
-                        except ValueError:
-                            continue
-                        
                         if entry.is_dir(follow_symlinks=False):
                             stat_data = entry.stat(follow_symlinks=False)
                             inode_key = (stat_data.st_dev, stat_data.st_ino)
@@ -296,7 +282,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 depths[entry.path] = depth + 1
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
-                            yield full_path, max(0, f_stat.st_size)
+                            yield Path(entry.path), max(0, f_stat.st_size)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
@@ -354,7 +340,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         
         for path, size in walk_files(p_base, skip_protected):
             try:
-                # Verificar que el archivo está contenido bajo el base
                 relative = path.relative_to(p_base)
                 if not relative.parts:
                     continue

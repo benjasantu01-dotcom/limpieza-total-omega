@@ -296,14 +296,14 @@ def _validate_and_assign(ctx: SystemContext, source: MetricSource, key: str, spe
     except Exception:
         val = None
     
+    if val is None: return False
+    
     clean_val = _safe_float(val, -1.0)
-    if val is not None and (clean_val < min_v or clean_val > max_v):
+    if clean_val < min_v or clean_val > max_v:
         return False
     
-    if val is not None:
-        setattr(ctx, key, cast(clean_val))
-        return True
-    return False
+    setattr(ctx, key, cast(clean_val))
+    return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
     """
@@ -312,10 +312,8 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     found_data = False
     
-    # Filtrar fuentes no válidas para evitar excepciones al iterar o acceder
-    sources = [s for s in [metrics, health, extra] 
-               if s is not None and (isinstance(s, dict) or hasattr(s, "__dict__")) 
-               and not isinstance(s, (str, int, float, list, tuple, bool))]
+    sources = [s for s in (metrics, health, extra) 
+               if isinstance(s, (dict, object)) and not isinstance(s, (str, int, float, list, tuple, bool))]
     
     for key, spec in _VALIDATORS.items():
         for src in sources:

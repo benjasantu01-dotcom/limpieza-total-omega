@@ -97,6 +97,17 @@ _PALETTE_RAW: Final[dict[str, HexColor]] = {
 }
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_RAW)
 
+# Constantes pre-resueltas para optimización de renderizado (evita llamados a color())
+C_SURFACE: Final[HexColor] = _PALETTE_RAW["surface"]
+C_BACKGROUND: Final[HexColor] = _PALETTE_RAW["background"]
+C_GLOW: Final[HexColor] = _PALETTE_RAW["glow"]
+C_TEXT_MUTED: Final[HexColor] = _PALETTE_RAW["text_muted"]
+C_SUCCESS: Final[HexColor] = _PALETTE_RAW["success"]
+C_INFO: Final[HexColor] = _PALETTE_RAW["info"]
+C_WARNING: Final[HexColor] = _PALETTE_RAW["warning"]
+C_DANGER: Final[HexColor] = _PALETTE_RAW["danger"]
+C_SURFACE_ALT: Final[HexColor] = _PALETTE_RAW["surface_alt"]
+
 FONT_SIZES: FontSizesDict = {
     "display": 46,
     "title": 26,
@@ -172,7 +183,7 @@ def severity_color(severity: Optional[str]) -> HexColor:
     """Resuelve el color hexadecimal según el nivel de severidad especificado."""
     if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[0]
-    return color("text_muted")
+    return C_TEXT_MUTED
 
 @lru_cache(maxsize=16)
 def severity_label(severity: Optional[str]) -> str:
@@ -192,26 +203,26 @@ def severity_icon(severity: Optional[str]) -> str:
 def grade_color(grade: Optional[str]) -> HexColor:
     """Retorna el color asignado a una calificación (A-F)."""
     if isinstance(grade, str) and grade.strip():
-        return GRADE_COLORS.get(grade.upper()[0], color("text_muted"))
-    return color("text_muted")
+        return GRADE_COLORS.get(grade.upper()[0], C_TEXT_MUTED)
+    return C_TEXT_MUTED
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
     """Resuelve el color de un puntaje de salud (0-100) según rangos predefinidos."""
     if score is None:
-        return color("text_muted")
+        return C_TEXT_MUTED
     try:
         valor = float(score)
     except (TypeError, ValueError):
-        return color("text_muted")
+        return C_TEXT_MUTED
     
     if not (0.0 <= valor <= 100.0):
-        return color("text_muted")
+        return C_TEXT_MUTED
 
     thresholds: List[Tuple[float, HexColor]] = [
-        (90.0, color("success")),
-        (80.0, color("info")),
-        (65.0, color("warning")),
+        (90.0, C_SUCCESS),
+        (80.0, C_INFO),
+        (65.0, C_WARNING),
         (50.0, "#ff7b39")
     ]
     
@@ -219,7 +230,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
         if valor >= limit:
             return color_val
             
-    return color("danger")
+    return C_DANGER
 
 @lru_cache(maxsize=64)
 def bar(percent: Union[float, int, None], width: int = 24,
@@ -264,7 +275,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     """Genera secuencia de colores para degradados basados en puntos de control."""
     try:
         n = max(1, int(steps))
-        if not stops: return (color("accent"),) * n
+        if not stops: return (C_GLOW,) * n
         if len(stops) < 2: return (stops[0],) * n
         
         res = [stops[0]] * n
@@ -275,7 +286,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
             res[i] = blend(stops[idx], stops[idx + 1], pos - idx) if idx < tramos else stops[-1]
         return tuple(res)
     except (ValueError, TypeError):
-        return (color("accent"),) * max(1, int(steps))
+        return (C_GLOW,) * max(1, int(steps))
 
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
@@ -311,18 +322,18 @@ def logo_svg(size: int = 128) -> str:
       <stop offset="100%" stop-color="{GRADIENT_STOPS[2]}"/>
     </linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
-      <stop offset="0%" stop-color="{color('glow')}" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="{color('glow')}" stop-opacity="0"/>
+      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="128" height="128" rx="30" fill="{color('surface')}"/>
+  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>
   <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
   <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z"
         fill="url(#omegaShield)"/>
-  <path d="M41 75 L75 41" stroke="{color('background')}" stroke-width="8" stroke-linecap="round"/>
-  <path d="M75 41 L89 38 L92 52 Z" fill="{color('background')}"/>
+  <path d="M41 75 L75 41" stroke="{C_BACKGROUND}" stroke-width="8" stroke-linecap="round"/>
+  <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>
   <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26"
-        font-weight="{UI_FONT_BOLD}" fill="{color('background')}" text-anchor="middle">&#937;</text>
+        font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
 </svg>
 """
 
@@ -332,14 +343,11 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).resolve()
-        # Validación preventiva usando filtros de solo lectura
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj) or path_obj.is_dir():
             return None
-        # Preparación del entorno de escritura
         if path_obj.parent and not path_obj.parent.exists():
             path_obj.parent.mkdir(parents=True, exist_ok=True)
             
-        # Operación destructiva/escritura asegurada explícitamente
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
@@ -388,16 +396,16 @@ def draw_logo(canvas: Any, size: int = 56, canvas_x: float = 0.0, canvas_y: floa
             r: float = 56 * scale * (0.6 + paso * 0.12)
             canvas.create_oval(canvas_x + 64 * scale - r, canvas_y + 58 * scale - r, 
                                canvas_x + 64 * scale + r, canvas_y + 58 * scale + r, 
-                               fill=blend(color("surface"), color("glow"), 0.04 * paso), outline="")
+                               fill=blend(C_SURFACE, C_GLOW, 0.04 * paso), outline="")
         
         canvas.create_polygon(contorno, fill=GRADIENT_STOPS[1], outline="")
         _draw_shield_stripes(canvas, canvas_x, canvas_y, scale)
         canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, 
-                           fill=color("background"), width=max(2, int(8 * scale)), capstyle="round")
+                           fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
         canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, 
-                              canvas_x + 92 * scale, canvas_y + 52 * scale, fill=color("background"), outline="")
+                              canvas_x + 92 * scale, canvas_y + 52 * scale, fill=C_BACKGROUND, outline="")
         canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", 
-                           fill=color("background"), font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
+                           fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError):
         pass
 
@@ -424,7 +432,7 @@ def draw_ring(canvas: Any, percent: Union[float, int], size: int = 150,
         diametro: int = max(20, int(size))
         grosor: int = max(2, min(int(thickness), (diametro // 2) - 1))
         
-        color_fondo = track if isinstance(track, str) else color("surface_alt")
+        color_fondo = track if isinstance(track, str) else C_SURFACE_ALT
         color_avance = fill if isinstance(fill, str) else score_color(valor)
         borde: float = grosor / 2
         
