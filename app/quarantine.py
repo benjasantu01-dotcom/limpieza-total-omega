@@ -450,6 +450,9 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not quarantine_item.verify_integrity(stored_file):
         raise RuntimeError("Integridad comprometida: el hash no coincide con el registro.")
     
+    if _is_file_locked(stored_file):
+        raise IOError("El archivo en cuarentena está en uso y no puede restaurarse.")
+
     destination = Path(quarantine_item.original_path).absolute()
     _check_path_syntax_integrity(destination)
     

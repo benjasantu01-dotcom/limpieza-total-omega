@@ -158,8 +158,10 @@ def _is_file_in_use(path: Path, st: os.stat_result = None) -> bool:
     if os.name != 'nt':
         return False
     try:
+        if not path.exists():
+            return False
         handle = ctypes.windll.kernel32.CreateFileW(
-            str(path), 0, 7, None, 3, 0x00000080, None
+            str(path), 0x80000000, 0, None, 3, 0x00000080, None
         )
         if handle == -1:
             return True
@@ -323,38 +325,28 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None:
         raise UnsafePathError("Ruta nula recibida para validación.")
 
-    cache_key = f"{path}:{allow_sensitive}:{base_dir}"
-    if cache_key in _VALIDATION_CACHE:
-        return normalize(path)
-
-    try:
-        p = normalize(path)
-        path_str = str(p)
-        
-        _validate_basic_path_safety(p, path_str)
-        _validate_boundary_conditions(p, base_dir)
-        
-        # Validación de integridad solo si el objeto existe físicamente
-        if p.exists():
-            _check_file_integrity(p)
-        else:
-            parent = p.parent
-            if parent.exists():
-                if not os.access(parent, os.W_OK):
-                    raise UnsafePathError("Escritura bloqueada: directorio padre restringido.")
-            elif is_protected_path(parent):
-                raise UnsafePathError("Escritura bloqueada: directorio padre protegido.")
-        
-        if not allow_sensitive and is_sensitive_file(p):
-            raise UnsafePathError("Extensión de archivo sensible.")
+    p = normalize(path)
+    
+    _validate_basic_path_safety(p, str(p))
+    _validate_boundary_conditions(p, base_dir)
+    
+    # Validación de integridad física
+    if p.exists():
+        if not p.is_file() and not p.is_dir():
+            raise UnsafePathError("Tipo de archivo no soportado.")
+        _check_file_integrity(p)
+    else:
+        parent = p.parent
+        if parent.exists():
+            if not os.access(parent, os.W_OK):
+                raise UnsafePathError("Escritura bloqueada: directorio padre restringido.")
+        elif is_protected_path(parent):
+            raise UnsafePathError("Escritura bloqueada: directorio padre protegido.")
+    
+    if not allow_sensitive and is_sensitive_file(p):
+        raise UnsafePathError("Extensión de archivo sensible.")
             
-        _VALIDATION_CACHE[cache_key] = True
-        return p
-        
-    except (UnsafePathError, ValueError, TypeError, OSError) as e:
-        if isinstance(e, UnsafePathError):
-            raise
-        raise UnsafePathError(f"Error crítico de seguridad validando ruta: {e}")
+    return p
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeGuard[PathLike]:
