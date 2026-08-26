@@ -154,7 +154,7 @@ def _is_reparse_point(path: Path) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Verifica si el sistema operativo mantiene un bloqueo exclusivo sobre el archivo."""
+    """Verifica exclusividad de acceso al archivo intentando abrirlo en modo exclusivo."""
     path = Path(path_str)
     if not path.exists():
         return False
@@ -179,7 +179,11 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Ejecuta validaciones físicas sobre la ruta. Lanza UnsafePathError si es violada."""
+    """
+    Realiza validaciones físicas sobre el archivo.
+    Lanza UnsafePathError si alguna regla definida en _VALIDATORS se incumple
+    o si la profundidad de la ruta supera los umbrales seguros.
+    """
     if len(path.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
@@ -299,7 +303,10 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """Valida exhaustivamente si una ruta es apta para escritura."""
+    """
+    Valida exhaustivamente si una ruta es apta para escritura.
+    Lanza UnsafePathError si la ruta es insegura o pertenece al sistema.
+    """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
     p = normalize(path)

@@ -56,13 +56,6 @@ SYSTEM32_LOWER: Final[str] = "system32"
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 MAX_PATH_LENGTH: Final[int] = 260
 
-# Colección pre-definida de verificaciones para ejecutables
-EXECUTABLE_CHECKS: Final[List[SuspicionCheck]] = [
-    lambda p, e, t: check_system_lookalike(p, e, t),
-    lambda p, e, t: check_recent_executable_in_downloads(p, e, t)
-]
-
-
 class Scanner:
     """
     Gestiona el estado del escaneo y la navegación recursiva del sistema de archivos.
@@ -165,16 +158,24 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Orquestador principal de reglas heurísticas. 
-    Ejecuta el set de verificaciones configuradas en `EXECUTABLE_CHECKS` de forma aislada.
+    Orquestador de reglas heurísticas. Aplica validaciones genéricas y
+    específicas según el tipo de archivo (ejecutable).
     """
     findings: ScanResult = []
     
+    # Reglas aplicables a todo archivo
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
+    # Reglas exclusivas para ejecutables
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-        for check in EXECUTABLE_CHECKS:
+        # Registro de verificaciones específicas para binarios
+        executable_check_registry: List[SuspicionCheck] = [
+            check_system_lookalike,
+            check_recent_executable_in_downloads
+        ]
+        
+        for check in executable_check_registry:
             try:
                 if (result := check(path, entry, now_ts)):
                     findings.append(result)
