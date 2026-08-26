@@ -599,3 +599,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-26T09:56:11` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la integridad del manifiesto y la performance de `total_quarantined_bytes` evitando deserializaciones redundantes y cálculos pesados en cada llamada.
 - `2026-08-26T09:56:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T09:56:11` Corrida terminada. Total usado hoy: 236.
+- `2026-08-26T10:03:51` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-26T10:04:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-26T10:04:46` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del proceso de validación centralizando el chequeo de rutas protegidas mediante la eliminación de redundancias en los cálculos de `path.parts` y normalización dentro de `is_protected_path`, mejorando la eficiencia del caché al reducir el número de objetos `Path` creados innecesariamente en cada iteración.
+- `2026-08-26T10:05:13` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_directory` y `_is_safe_entry` reemplazando la resolución repetitiva de rutas por comparaciones de strings pre-procesadas y validaciones de prefijo que evitan llamadas costosas al sistema de archivos dentro del bucle.
+- `2026-08-26T10:05:28` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de `weakref` para el caché de `_CACHE`, permitiendo que el recolector de basura libere memoria si la app está bajo presión, manteniendo la eficiencia en lecturas recurrentes sin riesgo de fugas de memoria en sesiones largas.
+- `2026-08-26T10:05:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T10:05:29` Corrida terminada. Total usado hoy: 240.

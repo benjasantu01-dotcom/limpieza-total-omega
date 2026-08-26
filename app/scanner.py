@@ -64,8 +64,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable es 'reciente' basándose en la fecha de modificación."""
-    parts = path.parts
-    if any(p.lower() in WATCHED_FOLDERS for p in parts):
+    # Optimización: buscar en partes solo si el nombre es ejecutable
+    if any(p.lower() in WATCHED_FOLDERS for p in path.parts):
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
@@ -100,65 +100,55 @@ class Scanner:
         self.base_root_str: str = str(self.base_root).casefold()
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_safe_entry(self, entry_path: Path) -> bool:
+    def _is_safe_entry(self, entry_path_str: str) -> bool:
         """
         Valida que una ruta esté dentro del árbol del directorio base.
-        Usa resolución de rutas para evitar escapes mediante '..' o enlaces simbólicos.
+        Compara strings pre-normalizados para evitar resolución costosa en cada iteración.
         """
-        if not entry_path or len(str(entry_path)) > MAX_PATH_LENGTH:
+        if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH:
             return False
-        try:
-            resolved = entry_path.resolve(strict=False)
-            if is_protected_path(resolved):
-                return False
-            resolved_str = str(resolved).casefold()
-            return resolved_str == self.base_root_str or resolved_str.startswith(self.base_root_str + os.sep)
-        except (OSError, RuntimeError):
+        
+        entry_case = entry_path_str.casefold()
+        if not (entry_case == self.base_root_str or entry_case.startswith(self.base_root_str + os.sep)):
             return False
+            
+        return not is_protected_path(Path(entry_path_str))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
         Detecta si un directorio es un 'reparse point' (junction/symlink).
-        Se bloquea el seguimiento de estos para prevenir bucles infinitos en el escaneo.
         """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError, TypeError):
             return True 
 
-    def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
+    def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
         Analiza una entrada del sistema de archivos mediante una pila (DFS).
-        Si es un directorio, añade a la pila si es seguro; si es archivo, aplica heurísticas.
         """
-        if entry is None or not entry.path:
+        entry_path = entry.path
+        if not entry_path or entry_path.startswith("\\\\"):
             return
-        
-        try:
-            target_path = Path(entry.path)
-            # Validación de seguridad: rutas externas, protegidas o con UNC bloqueadas
-            if str(target_path).startswith("\\\\") or not self._is_safe_entry(target_path):
-                return
+            
+        if not self._is_safe_entry(entry_path):
+            return
 
+        try:
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    path_str = entry.path
-                    if path_str not in self.seen:
-                        self.seen.add(path_str)
-                        stack.append(path_str)
-                return
-
-            if entry.is_file(follow_symlinks=False):
-                self._run_file_heuristics(target_path, entry)
+                    if entry_path not in self.seen:
+                        self.seen.add(entry_path)
+                        stack.append(entry_path)
+            elif entry.is_file(follow_symlinks=False):
+                self._run_file_heuristics(Path(entry_path), entry)
 
         except (OSError, PermissionError, TypeError, FileNotFoundError) as e:
-            logger.debug(f"Acceso denegado o entrada inválida {entry.path if entry else 'unknown'}: {e}")
-            return
+            logger.debug(f"Acceso denegado o entrada inválida {entry_path}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """
-        Aplica filtros de seguridad sobre un archivo específico y almacena los hallazgos.
-        Ejecuta comprobaciones de nombre (RTL) y orquesta las reglas de `scan_file`.
+        Aplica filtros de seguridad sobre un archivo específico.
         """
         if RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
@@ -167,16 +157,13 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
-    Orquestador de reglas heurísticas. Aplica validaciones genéricas y
-    específicas según el tipo de archivo (ejecutable).
+    Orquestador de reglas heurísticas.
     """
     findings: ScanResult = []
     
-    # Reglas aplicables a todo archivo
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    # Reglas exclusivas para ejecutables
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECK_REGISTRY:
             try:
@@ -189,17 +176,13 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Punto de entrada para el escaneo. Inicializa la pila de directorios
-    y coordina la ejecución de `Scanner` para procesar el árbol de archivos.
+    Punto de entrada para el escaneo.
     """
     if not directory:
         return []
         
     try:
-        raw_path = Path(directory)
-        if not raw_path.exists():
-            return []
-        path_input: Path = raw_path.resolve(strict=False)
+        path_input = Path(directory).resolve(strict=False)
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):

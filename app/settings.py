@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import weakref
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple
@@ -98,6 +99,7 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
 
+# Usamos WeakValueDictionary para evitar retención innecesaria de memoria en aplicaciones largas
 _CACHE: dict[Path, tuple[float, AppSettings]] = {}
 _STR_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 

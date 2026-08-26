@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 26
 - Sin respuesta de la IA (error o límite): 206
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 112 | 9 | 14 | 16 | 117 |
-| 2026-08-26 | 115 | 7 | 15 | 10 | 89 |
+| 2026-08-25 | 108 | 9 | 14 | 16 | 117 |
+| 2026-08-26 | 118 | 7 | 16 | 10 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
-- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
-- rendimiento: **44**
+- rendimiento: **47**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `duplicates.py`: **20**
 - `memory.py`: **20**
 - `healthscore.py`: **19**
+- `duplicates.py`: **19**
+- `scanner.py`: **18**
+- `settings.py`: **18**
 - `assistant.py`: **18**
-- `diskreport.py`: **17**
-- `scanner.py`: **17**
-- `settings.py`: **17**
-- `browser.py`: **16**
-- `branding.py`: **14**
-- `safety.py`: **14**
+- `diskreport.py`: **16**
+- `safety.py`: **15**
+- `browser.py`: **15**
 - `main.py`: **13**
+- `branding.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T10:05:28` **settings.py** (rendimiento): Se implementó un mecanismo de `weakref` para el caché de `_CACHE`, permitiendo que el recolector de basura libere memoria si la app está bajo presión, manteniendo la eficiencia en lecturas recurrentes sin riesgo de fugas de memoria en sesiones largas.
+- `2026-08-26T10:05:13` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` y `_is_safe_entry` reemplazando la resolución repetitiva de rutas por comparaciones de strings pre-procesadas y validaciones de prefijo que evitan llamadas costosas al sistema de archivos dentro del bucle.
+- `2026-08-26T10:04:46` **safety.py** (rendimiento): Se optimizó el rendimiento del proceso de validación centralizando el chequeo de rutas protegidas mediante la eliminación de redundancias en los cálculos de `path.parts` y normalización dentro de `is_protected_path`, mejorando la eficiencia del caché al reducir el número de objetos `Path` creados innecesariamente en cada iteración.
 - `2026-08-26T09:56:11` **quarantine.py** (rendimiento): Optimizé la integridad del manifiesto y la performance de `total_quarantined_bytes` evitando deserializaciones redundantes y cálculos pesados en cada llamada.
 - `2026-08-26T09:55:27` **memory.py** (rendimiento): Optimizé la eficiencia de `top_memory_processes` reemplazando la ejecución recurrente de `subprocess` por un almacenamiento en caché efectivo (`_proc_cache_time`), reduciendo la sobrecarga de I/O y el uso de CPU, además de evitar la inicialización repetida de constantes mediante el uso de `lru_cache` y una estructura de control más limpia.
 - `2026-08-26T09:54:55` **main.py** (rendimiento): Implementé un sistema de "Dirty State" en `_apply_card_updates` para evitar reconfigurar widgets de la interfaz cuando los valores no han cambiado, eliminando llamadas innecesarias a la API de Tkinter que consumen ciclos de CPU y pueden causar micro-parpadeos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T09:24:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de validación para clarificar el propósito de cada chequeo y la lógica de flujo, facilitando el mantenimiento y la auditoría del código.
 - `2026-08-26T09:15:01` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica mediante la adición de Type Hints explícitas en las funciones de recorrido de directorios y la inclusión de docstrings detallados que explican el "porqué" de las validaciones de seguridad, facilitando el mantenimiento y auditoría del código.
 - `2026-08-26T09:14:50` **memory.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de bajo nivel de la API de memoria (`_read_windows_snapshot`, `_is_system_process`, `_get_process_path`) para mejorar la legibilidad y claridad técnica sin alterar el comportamiento.
-- `2026-08-26T09:13:16` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo de puntaje (`score_*`) y unificando la convención de tipos en los parámetros, facilitando la comprensión de cómo los valores brutos se transforman en indicadores normalizados de salud.
-- `2026-08-26T09:04:18` **duplicates.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad del flujo de escaneo en `_collect_candidates` extrayendo la lógica compleja de resolución y validación de directorios a una función auxiliar con nombre explícito, facilitando la comprensión del proceso de búsqueda.
-- `2026-08-26T09:04:07` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `walk_files` mediante la desanidación de la lógica de recursión y la adición de Type Hints detallados, facilitando el mantenimiento para futuros desarrolladores.

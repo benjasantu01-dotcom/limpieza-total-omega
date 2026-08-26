@@ -261,10 +261,10 @@ def is_protected_path(path: PathLike) -> bool:
 
     try:
         p = normalize(path)
-        path_parts = {part.lower() for part in p.parts}
+        normalized_str = os.path.normcase(str(p))
         
-        is_protected = any(os.path.normcase(str(p)).startswith(root) for root in _SYSTEM_ROOT_PATHS if root) or \
-                       not PROTECTED_DIR_NAMES.isdisjoint(path_parts) or \
+        is_protected = any(normalized_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root) or \
+                       not PROTECTED_DIR_NAMES.isdisjoint({part.lower() for part in p.parts}) or \
                        p == Path(p.anchor)
     except (ValueError, TypeError, OSError, RuntimeError): 
         is_protected = True
