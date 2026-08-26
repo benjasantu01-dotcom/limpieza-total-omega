@@ -76,7 +76,10 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
-        """Valida si la ruta está contenida dentro del directorio raíz de escaneo base y no está protegida."""
+        """
+        Valida que una ruta esté dentro del árbol del directorio base.
+        Usa resolución de rutas para evitar escapes mediante '..' o enlaces simbólicos.
+        """
         if is_protected_path(entry_path):
             return False
         try:
@@ -86,7 +89,10 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Verifica atributos de reanálisis para detectar junctions o symlinks."""
+        """
+        Detecta si un directorio es un 'reparse point' (junction/symlink).
+        Se bloquea el seguimiento de estos para prevenir bucles infinitos en el escaneo.
+        """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError, TypeError):
@@ -94,8 +100,8 @@ class Scanner:
 
     def process_entry(self, entry: Optional[os.DirEntry], stack: List[str]) -> None:
         """
-        Analiza una entrada del sistema de archivos. 
-        Si es directorio, lo encola si es seguro. Si es archivo, ejecuta heurísticas.
+        Analiza una entrada del sistema de archivos mediante una pila (DFS).
+        Si es un directorio, añade a la pila si es seguro; si es archivo, aplica heurísticas.
         """
         if entry is None or not hasattr(entry, 'path') or not entry.path:
             return
@@ -121,7 +127,10 @@ class Scanner:
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Aplica filtros de seguridad sobre un archivo específico."""
+        """
+        Aplica filtros de seguridad sobre un archivo específico y almacena los hallazgos.
+        Ejecuta comprobaciones de nombre (RTL) y orquesta las reglas de `scan_file`.
+        """
         if RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
         
@@ -134,7 +143,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Evalúa si un archivo ejecutable es 'reciente' basado en el threshold configurado."""
+    """Evalúa si un archivo ejecutable es 'reciente' basándose en la fecha de modificación."""
     path_lower = str(path).lower()
     if any(folder in path_lower for folder in WATCHED_FOLDERS):
         try:
@@ -153,7 +162,10 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     return None
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
-    """Orquestador de reglas heurísticas para un archivo dado. Centraliza la ejecución de tests."""
+    """
+    Orquestador principal de reglas heurísticas. 
+    Ejecuta el set de verificaciones configuradas en `EXECUTABLE_CHECKS` de forma aislada.
+    """
     findings: ScanResult = []
     
     try:
@@ -173,7 +185,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Ejecuta el escaneo recursivo completo, instanciando un Scanner con estado local."""
+    """
+    Punto de entrada para el escaneo. Inicializa la pila de directorios
+    y coordina la ejecución de `Scanner` para procesar el árbol de archivos.
+    """
     if not directory:
         return []
         

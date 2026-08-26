@@ -182,15 +182,24 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida y resuelve rutas de sistema, descartando aquellas inseguras."""
+        """
+        Valida y resuelve rutas, asegurando que sean absolutas y no apunten a 
+        ubicaciones protegidas. Retorna la ruta normalizada o None si es inválida.
+        """
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        if not path_string or len(path_string) > 4096 or "\0" in path_string or any(ord(c) < 32 for c in path_string) or ".." in path_string: return None
+        
+        # Validaciones de integridad básica de strings de ruta
+        if not path_string or len(path_string) > 4096 or "\0" in path_string or ".." in path_string: 
+            return None
+            
         try:
             path_obj = Path(path_string).expanduser()
             if not path_obj.is_absolute(): return None
+            
             resolved = path_obj.resolve(strict=False)
-            if not resolved.is_absolute() or str(resolved).startswith(".."): return None
+            if not resolved.is_absolute(): return None
+            
             return str(resolved) if _Validators._is_safe_path(str(resolved)) else None
         except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
             return None
@@ -217,7 +226,7 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
     ConfigKey.TEMA: _Validators.str,
     ConfigKey.ACENTO: _Validators.str,
     ConfigKey.ABRIR_EN: _Validators.str,
-    ConfigKey.ULTIMA_CARPETA: _Validators.str,
+    ConfigKey.ULTIMA_CARPETA: _Validators.path,
     ConfigKey.ASISTENTE_CLAVE_API: _Validators.str,
     ConfigKey.ASISTENTE_MODELO: _Validators.str,
     ConfigKey.MOSTRAR_BARRAS: _Validators.bool,

@@ -883,3 +883,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T00:24:14` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
 - `2026-08-26T00:24:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T00:24:14` Corrida terminada. Total usado hoy: 12.
+- `2026-08-26T00:32:46` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-08-26T00:33:18` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-08-26T00:33:43` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los métodos críticos del `Scanner` y se han añadido `type hints` y `docstrings` explicativos para clarificar el flujo de trabajo del escáner heurístico, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar la lógica.
+- `2026-08-26T00:34:13` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings más precisos, tipado explícito para evitar ambigüedades en el retorno de las funciones de validación y un refinamiento en el flujo de `_Validators.path` para clarificar qué condiciones fallan al validar una ruta.
+- `2026-08-26T00:34:24` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-08-26T00:34:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T00:34:24` Corrida terminada. Total usado hoy: 16.
