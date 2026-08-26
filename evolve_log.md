@@ -1191,3 +1191,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T04:11:24` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo validaciones explícitas de estado (`exists()`, `is_file()`) y manejando correctamente la posible ausencia de `anchor` en rutas relativas o mal formadas para evitar excepciones inesperadas durante la inspección de disco.
 - `2026-08-26T04:11:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T04:11:24` Corrida terminada. Total usado hoy: 100.
+- `2026-08-26T04:17:08` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-26T04:17:40` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `purge_all` y `purge_item` reemplazando la lógica de purga que fallaba silenciosamente por un mecanismo de manejo de errores explícito, asegurando que si un archivo no cumple los requisitos de integridad, la operación se detenga antes de corromper el estado del manifiesto.
+- `2026-08-26T04:17:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-26T04:18:25` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante errores de entrada introduciendo un manejo explícito de `OSError` y `PermissionError` durante el chequeo de integridad, evitando que la aplicación se detenga abruptamente si el sistema de archivos deniega el acceso a metadatos de un archivo bloqueado.
+- `2026-08-26T04:18:32` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-26T04:18:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T04:18:32` Corrida terminada. Total usado hoy: 104.

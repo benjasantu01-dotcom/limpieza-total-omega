@@ -513,7 +513,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
         
     if not quarantine_item.verify_integrity(stored_file):
-        raise UnsafePathError("Integridad comprometida: no se puede procesar el archivo.")
+        raise UnsafePathError(f"Integridad comprometida para ítem {item_id}: no se puede purgar.")
         
     if not _is_valid_quarantine_path(stored_file, base_path):
         raise UnsafePathError("Intento de borrado fuera del sandbox.")
@@ -555,6 +555,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if _safe_unlink(stored_path):
                 keys_to_remove.append(item_id)
                 purged_count += 1
+        else:
+            raise UnsafePathError(f"Purgado abortado: el archivo {item.stored_name} no superó validaciones de seguridad o integridad.")
     
     if keys_to_remove:
         for k in keys_to_remove:

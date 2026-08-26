@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 206
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 25 | 4 | 3 | 5 | 17 |
+| 2026-08-24 | 22 | 4 | 3 | 4 | 17 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 44 | 1 | 6 | 5 | 44 |
+| 2026-08-26 | 46 | 1 | 7 | 5 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
 - legibilidad y documentación: **47**
-- rendimiento: **46**
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **45**
+- rendimiento: **43**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **22**
 - `memory.py`: **21**
-- `quarantine.py`: **21**
 - `duplicates.py`: **20**
-- `assistant.py`: **19**
 - `settings.py`: **19**
-- `browser.py`: **18**
-- `diskreport.py`: **18**
+- `assistant.py`: **18**
+- `browser.py`: **17**
+- `diskreport.py`: **17**
 - `scanner.py`: **17**
 - `healthscore.py`: **16**
 - `main.py`: **13**
+- `safety.py`: **13**
 - `organizer.py`: **12**
-- `safety.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T04:18:25` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de entrada introduciendo un manejo explícito de `OSError` y `PermissionError` durante el chequeo de integridad, evitando que la aplicación se detenga abruptamente si el sistema de archivos deniega el acceso a metadatos de un archivo bloqueado.
+- `2026-08-26T04:17:40` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `purge_all` y `purge_item` reemplazando la lógica de purga que fallaba silenciosamente por un mecanismo de manejo de errores explícito, asegurando que si un archivo no cumple los requisitos de integridad, la operación se detenga antes de corromper el estado del manifiesto.
 - `2026-08-26T04:11:24` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo validaciones explícitas de estado (`exists()`, `is_file()`) y manejando correctamente la posible ausencia de `anchor` en rutas relativas o mal formadas para evitar excepciones inesperadas durante la inspección de disco.
 - `2026-08-26T04:11:07` **memory.py** (manejo de errores y validación de entradas): Mejora la robustez de `trim_working_set` y sus funciones auxiliares mediante la validación proactiva de tipos de datos, el manejo explícito de valores nulos (evitando errores `AttributeError`) y una limpieza más segura de los recursos (`finally`) para prevenir filtraciones de handles.
 - `2026-08-26T04:07:59` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando validaciones preventivas de estado antes de ejecutar la lógica de cálculo, asegurando que las reglas de recomendación no fallen si el área consultada falta en el `ratios_cache`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T02:21:29` **quarantine.py** (seguridad defensiva): Se implementó un chequeo de integridad en `restore_item` usando `is_safe_to_modify` sobre el directorio padre antes de realizar la restauración, garantizando que el destino no solo esté fuera de rutas protegidas, sino que sea efectivamente un lugar donde el usuario tenga permisos de escritura, evitando fallos de permisos tardíos.
 - `2026-08-26T02:20:47` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_directory` y `_is_safe_for_disk_op` añadiendo una validación explícita mediante `is_protected_path` antes de procesar o interactuar con cualquier ruta, garantizando que el módulo no escanee ni opere en zonas críticas aunque la heurística de carpetas fallara.
 - `2026-08-26T02:19:54` **memory.py** (seguridad defensiva): Mejoré la seguridad de `trim_working_set` añadiendo un chequeo explícito de integridad para prevenir el "Time-of-Check to Time-of-Use" (TOCTOU) mediante la validación de `GetProcessId` justo antes de la acción, asegurando que el handle abierto realmente corresponde al PID objetivo después de los chequeos iniciales.
-- `2026-08-26T02:19:24` **main.py** (seguridad defensiva): Se reforzó la seguridad del método `on_stage` validando que la carpeta de destino (`.` resuelta a absoluta) sea segura antes de iniciar el proceso, para evitar que una configuración local maliciosa altere el comportamiento del organizador.
-- `2026-08-26T02:06:14` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `compute_score` eliminando la dependencia del orden del diccionario global `_WEIGHT_ITEMS_INT` y validando estrictamente que el resultado final del puntaje acumulado se mantenga dentro de los límites esperados (0-100) incluso ante errores inesperados en las funciones de cálculo (scorrers).

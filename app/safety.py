@@ -192,8 +192,11 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}")
 
     for rule in _VALIDATORS:
-        if rule.predicate(path, file_stat):
-            raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
+        try:
+            if rule.predicate(path, file_stat):
+                raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
+        except (OSError, PermissionError):
+            continue
 
 
 @lru_cache(maxsize=2048)
