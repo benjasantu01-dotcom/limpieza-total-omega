@@ -204,12 +204,12 @@ def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
             yield proc
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Ordena una lista de procesos por uso de memoria descendente."""
+    """Ordena una lista de procesos por uso de memoria descendente usando iteradores."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    procs: List[ProcessMemory] = sorted(_yield_processes(raw_csv_text), key=lambda p: p.working_set, reverse=True)
-    return procs[:max(0, limit)]
+    # Ordenamos directamente el generador convertido a lista para optimizar
+    return sorted(_yield_processes(raw_csv_text), key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Implementa la llamada a la API nativa `GlobalMemoryStatusEx`."""

@@ -132,13 +132,14 @@ def _collect_candidates(
     """Realiza un recorrido recursivo buscando candidatos mayores a min_size."""
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
-    processed_paths: set[Path] = set()
+    processed_dirs: set[Path] = set()
+    processed_files: set[Path] = set()
 
     def _scan(current_dir: Path) -> None:
         try:
             resolved_dir = current_dir.resolve()
-            if not resolved_dir.is_dir() or resolved_dir in processed_paths: return
-            processed_paths.add(resolved_dir)
+            if resolved_dir in processed_dirs: return
+            processed_dirs.add(resolved_dir)
             
             with os.scandir(resolved_dir) as it:
                 for entry in it:
@@ -155,7 +156,9 @@ def _collect_candidates(
                         elif entry.is_file(follow_symlinks=False):
                             if stat.st_size < min_size: continue
                             p = Path(entry.path).resolve()
+                            if p in processed_files: continue
                             if (not skip_protected or not is_protected_path(p)) and is_safe_to_modify(p):
+                                processed_files.add(p)
                                 temp_groups[int(stat.st_size)].append(p)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError, RuntimeError): pass

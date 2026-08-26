@@ -897,3 +897,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T00:45:53` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix.lower()` y accesos repetidos a diccionarios, utilizando una lógica de agregación más directa que reduce la sobrecarga por iteración durante el escaneo del disco.
 - `2026-08-26T00:45:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T00:45:53` Corrida terminada. Total usado hoy: 20.
+- `2026-08-26T00:53:12` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-26T00:53:38` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` utilizando un `set` para verificar archivos procesados antes de calcular sus hashes, evitando operaciones de E/S redundantes en estructuras con enlaces simbólicos complejos o recursión circular.
+- `2026-08-26T00:54:03` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-26T00:55:11` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el sistema de caché centralizando y reduciendo la complejidad del acceso a datos repetitivos en `_compile_metrics` mediante el uso de `lru_cache` para la información de disco y evitando recálculos innecesarios de métricas de salud que ya están en memoria.
+- `2026-08-26T00:55:25` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de filtrado y ordenamiento de la lista de procesos en `parse_windows_process_csv` mediante un generador y se reemplazó la conversión iterativa de strings por un uso más eficiente de `sorted` con `key` sobre el iterador, reduciendo la carga de memoria al procesar la lista.
+- `2026-08-26T00:55:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T00:55:25` Corrida terminada. Total usado hoy: 24.
