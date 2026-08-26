@@ -281,13 +281,11 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 if any(c in cmd for c in '<>|?*'):
                     continue
                 
-                try:
-                    cmd_path = Path(cmd)
-                    if len(str(cmd_path)) > 4096 or is_protected_path(cmd_path):
-                        continue
-                except (ValueError, TypeError, OSError):
+                # Validación de seguridad: prevenir rutas protegidas desde el origen.
+                cmd_path = Path(cmd)
+                if is_protected_path(cmd_path):
                     continue
-                    
+
                 parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
             except (KeyError, ValueError, TypeError, OSError):
                 continue

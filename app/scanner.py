@@ -74,7 +74,7 @@ class Scanner:
         Valida que una ruta esté dentro del árbol del directorio base.
         Usa resolución de rutas para evitar escapes mediante '..' o enlaces simbólicos.
         """
-        if len(str(entry_path)) > MAX_PATH_LENGTH:
+        if not entry_path or len(str(entry_path)) > MAX_PATH_LENGTH:
             return False
         try:
             resolved = entry_path.resolve(strict=False)
@@ -100,7 +100,7 @@ class Scanner:
         Analiza una entrada del sistema de archivos mediante una pila (DFS).
         Si es un directorio, añade a la pila si es seguro; si es archivo, aplica heurísticas.
         """
-        if entry is None or not hasattr(entry, 'path') or not entry.path:
+        if entry is None or not entry.path:
             return
         
         try:
@@ -121,7 +121,7 @@ class Scanner:
                 self._run_file_heuristics(target_path, entry)
 
         except (OSError, PermissionError, TypeError, FileNotFoundError) as e:
-            logger.debug(f"Acceso denegado o entrada inválida {entry.path}: {e}")
+            logger.debug(f"Acceso denegado o entrada inválida {entry.path if entry else 'unknown'}: {e}")
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
@@ -197,6 +197,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         raw_path = Path(directory)
+        if not raw_path.exists():
+            return []
         path_input: Path = raw_path.resolve(strict=False)
         if not path_input.is_dir() or is_protected_path(path_input):
             return []

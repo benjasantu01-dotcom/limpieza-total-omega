@@ -504,3 +504,30 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T08:43:42` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-26T08:43:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T08:43:42` Corrida terminada. Total usado hoy: 208.
+- `2026-08-26T08:52:27` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-08-26T08:52:53` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `process_entry` y `scan_directory` añadiendo validaciones de entrada (`None`/`path` vacío) y encapsulando en bloques `try-except` específicos el acceso a atributos de `os.DirEntry`, evitando que errores transitorios de E/S o de permisos interrumpan el bucle de escaneo.
+- `2026-08-26T08:53:20` Tests FALLARON:
+```
+the_values - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_unknown_keys_are_discarded - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+FAILED evolve/tests/test_assistant.py::test_update_applies_partial_changes - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_reset_returns_to_factory - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_get_reads_a_single_value - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_env_var_wins_over_the_config_file - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_config_key_is_used_when_there_is_no_env_var - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_enabled_requires_both_the_switch_and_a_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration - KeyError: 'asistente_activado'
+15 failed, 284 passed in 1.40s
+
+```
+- `2026-08-26T08:53:21` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Reforcé la robustez del validador de rutas (`_Validators.path`) añadiendo una validación explícita de existencia mediante `is_dir()` para evitar que rutas inexistentes o nombres de archivo mal formados pasen como carpetas válidas, y mejoré el manejo de excepciones al capturar `OSError` específicamente en la resolución de rutas, evitando que un error de acceso inesperado en el sistema de archivos deje la configuración en un estado inconsistente.
+- `2026-08-26T08:53:47` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída del registro antes de procesarla, asegurando que cualquier entrada maliciosa o mal formada sea descartada de forma segura antes de ser instanciada como `StartupEntry`.
+- `2026-08-26T08:54:05` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: AreaExplanation, AssistantConfig
+- `2026-08-26T08:54:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T08:54:05` Corrida terminada. Total usado hoy: 212.
