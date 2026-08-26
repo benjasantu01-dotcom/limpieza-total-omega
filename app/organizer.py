@@ -270,13 +270,15 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
+        # Validación de seguridad reforzada: debe existir, ser directorio y ser seguro
         if not dest_base.is_dir() or not is_safe_to_modify(dest_base) or is_protected_path(dest_base): 
             return None
     except (OSError, PermissionError, RuntimeError):
         return None
 
     for junk_file in files:
-        if not isinstance(junk_file, JunkFile) or not junk_file.path: continue
+        if not isinstance(junk_file, JunkFile) or not hasattr(junk_file, 'path') or not junk_file.path: 
+            continue
         try:
             target = _can_move_file(junk_file, dest_base)
             if target:
@@ -303,8 +305,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            # Validar existencia, tipo y pertenencia estricta a la carpeta de revisión
-            if not item.is_file() or not item.exists():
+            if not isinstance(item, Path) or not item.is_file() or not item.exists():
                 continue
             
             resolved_item = item.resolve()
@@ -312,7 +313,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
                 continue
             
             stat = item.stat()
-            # Bloquear archivos de sistema o atributos especiales en Windows
             if os.name == "nt" and (stat.st_file_attributes & 0x46):
                 continue
 

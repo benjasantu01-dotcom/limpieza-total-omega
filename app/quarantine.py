@@ -409,6 +409,7 @@ def quarantine_file(
     except OSError as e:
         raise OSError(f"No se pudo determinar el tamaño del archivo origen: {e}")
         
+    # Generar ID y validar unicidad preventiva
     item_id = uuid.uuid4().hex[:12]
     destination = dest_dir / _generate_safe_stored_name(source_path, item_id)
     
@@ -419,6 +420,11 @@ def quarantine_file(
     
     try:
         items_dict = _load_manifest_internal(str(dest_dir)).copy()
+        
+        # Validar que el ID no exista en el manifiesto actual (defensa contra colisiones)
+        if item_id in items_dict:
+            raise RuntimeError(f"ID duplicado generado: {item_id}")
+            
         quarantine_item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
@@ -428,6 +434,7 @@ def quarantine_file(
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
         )
+        
         items_dict[item_id] = quarantine_item
         save_manifest(list(items_dict.values()), base)
         
@@ -438,6 +445,7 @@ def quarantine_file(
             raise RuntimeError(f"Aislamiento exitoso, pero no se pudo limpiar el origen: {e}")
             
         return quarantine_item
+        
     except Exception as e:
         if destination.exists():
             _safe_unlink(destination)

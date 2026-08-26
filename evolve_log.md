@@ -497,3 +497,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T08:34:14` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` mediante una validación más estricta de las entradas y una captura de errores más precisa para prevenir comportamientos inesperados ante archivos de sistema malformados.
 - `2026-08-26T08:34:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T08:34:14` Corrida terminada. Total usado hoy: 204.
+- `2026-08-26T08:42:14` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-26T08:42:41` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más estrictas antes de operar, evitando que llamadas con parámetros `None` o rutas inválidas provoquen errores no capturados o comportamientos inesperados.
+- `2026-08-26T08:43:12` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `item_id` para evitar posibles colisiones por estado de carrera en el sistema de archivos, y encapsulé la lógica de creación del ítem en un bloque `try-except` más granular para asegurar que si falla la creación del objeto no se deje el archivo huérfano en el disco.
+- `2026-08-26T08:43:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-26T08:43:42` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-26T08:43:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T08:43:42` Corrida terminada. Total usado hoy: 208.
