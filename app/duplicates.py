@@ -98,7 +98,7 @@ def _is_valid_candidate(path: Path) -> bool:
     """Valida que la ruta sea un archivo real, accesible y no protegido."""
     if not isinstance(path, Path): return False
     try:
-        return path.is_file() and not is_protected_path(path)
+        return path.exists() and path.is_file() and not is_protected_path(path)
     except (OSError, ValueError):
         return False
 
@@ -226,17 +226,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """
-    Selecciona el archivo 'original' para conservar basándose en heurísticas:
-    1. Archivo más antiguo (menor mtime) para preservar versiones originales.
-    2. En caso de empate en fecha, la ruta más corta (menor profundidad de árbol).
-    """
+    """Selecciona el archivo 'original' para conservar basándose en heurísticas (mtime, profundidad)."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, (Path, str)): continue
         try:
             p_obj = Path(p).resolve()
             if _is_valid_candidate(p_obj):
@@ -259,13 +254,10 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     
     for path in group.paths:
-        if not isinstance(path, (Path, str)):
-            lines.append(f"   [error] ruta inválida: {path}")
-            continue
         try:
             p_obj = Path(path).resolve()
             if not _is_valid_candidate(p_obj):
-                lines.append(f"   [inseguro] {path}")
+                lines.append(f"   [inaccesible] {path}")
                 continue
             label = 'conservar' if keeper is not None and p_obj == keeper else 'duplicado'
             lines.append(f"   [{label}] {path}")

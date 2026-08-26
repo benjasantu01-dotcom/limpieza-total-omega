@@ -211,7 +211,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     recommendations = [
         rule.message_factory(metrics) 
         for rule in _RECOMMENDATION_RULES 
-        if rule.check(metrics, ratios_cache[rule.area])
+        if rule.check(metrics, ratios_cache.get(rule.area, 0.0))
     ]
             
     if metrics.quarantined_count > 0:
