@@ -121,6 +121,17 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     return groups
 
 
+def _resolve_and_verify_root(item: Union[str, Path]) -> Optional[Path]:
+    """Valida y resuelve una ruta inicial de escaneo, retornando None si es inválida."""
+    try:
+        root = Path(item).resolve(strict=True)
+        if root.is_dir() and not is_protected_path(root):
+            return root
+    except (OSError, ValueError, RuntimeError):
+        pass
+    return None
+
+
 def _collect_candidates(
     directories: Iterable[Union[str, Path]], 
     min_size: int, 
@@ -171,14 +182,7 @@ def _collect_candidates(
         except (OSError, PermissionError, RuntimeError): pass
 
     if directories:
-        unique_roots = set()
-        for item in directories:
-            if not item: continue
-            try:
-                root = Path(item).resolve(strict=True)
-                if root.is_dir() and not is_protected_path(root):
-                    unique_roots.add(root)
-            except (OSError, ValueError, RuntimeError): continue
+        unique_roots = {r for item in directories if (r := _resolve_and_verify_root(item))}
         for root in unique_roots:
             _scan(root)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}

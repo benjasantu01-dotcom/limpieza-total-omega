@@ -63,6 +63,8 @@ SAFETY_NOTE: str = (
 )
 
 MAX_SCAN_DEPTH: int = 15
+# Atributos: FILE_ATTRIBUTE_HIDDEN (0x01) | FILE_ATTRIBUTE_SYSTEM (0x02) | FILE_ATTRIBUTE_REPARSE_POINT (0x400)
+SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x400
 
 # Tipo alias para claridad en funciones de callback de sistema
 JunctionChecker = Callable[[str], bool]
@@ -98,7 +100,8 @@ def base_directories() -> List[Path]:
     """
     Determina los directorios base de perfil de usuario (LOCALAPPDATA).
     Verifica la existencia y los permisos de seguridad antes de retornar
-    la ruta raíz para el escaneo.
+    la ruta raíz para el escaneo. Retorna una lista vacía si la ruta es
+    inaccesible o insegura según `safety.py`.
     """
     local_env = os.environ.get("LOCALAPPDATA")
     if not local_env:
@@ -147,8 +150,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
-        # 0x01: Oculto, 0x02: Sistema, 0x400: Reparse point (junction/symlink)
-        return bool(attrs & (0x01 | 0x02 | 0x400))
+        return bool(attrs & SYSTEM_HIDDEN_FLAGS)
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False
 
@@ -189,12 +191,6 @@ def _sum_directory_recursive(
     """
     Calcula recursivamente el peso en bytes de los archivos bajo root_dir.
     Usa memoización sobre el path absoluto para evitar ciclos y re-escaneos.
-    
-    Args:
-        root_dir: Ruta raíz del directorio a escanear.
-        is_junction_fn: Callback para detectar puntos de reparse (Win32).
-        kernel32: Instancia de ctypes para chequear atributos de archivo.
-        memo: Diccionario para persistir resultados de sub-árboles.
     """
     if not root_dir:
         return 0
@@ -240,7 +236,10 @@ def _sum_directory_recursive(
 
 
 def directory_size(path: Union[str, Path, None]) -> int:
-    """Calcula el tamaño de una carpeta tras validar que sea una ruta segura."""
+    """
+    Calcula el tamaño de una carpeta tras validar que sea una ruta segura.
+    Retorna 0 si la ruta está protegida, no es segura o no es un directorio.
+    """
     if not path:
         return 0
     try:

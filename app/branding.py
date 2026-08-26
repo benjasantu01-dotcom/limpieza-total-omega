@@ -25,11 +25,7 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]  # (Color, Etiqueta)
 RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 
 class PaletteDict(TypedDict):
-    """
-    Definición de la paleta de colores del sistema.
-    Cada clave representa un rol funcional, permitiendo consistencia visual 
-    al referenciar colores por uso en lugar de por su valor hexadecimal.
-    """
+    """Estructura de roles funcionales para la paleta de colores."""
     background: HexColor
     surface: HexColor
     surface_alt: HexColor
@@ -108,7 +104,7 @@ C_WARNING: Final[HexColor] = _PALETTE_RAW["warning"]
 C_DANGER: Final[HexColor] = _PALETTE_RAW["danger"]
 C_SURFACE_ALT: Final[HexColor] = _PALETTE_RAW["surface_alt"]
 
-FONT_SIZES: FontSizesDict = {
+FONT_SIZES: Final[FontSizesDict] = {
     "display": 46,
     "title": 26,
     "subtitle": 13,
@@ -187,10 +183,10 @@ def severity_color(severity: Optional[str]) -> HexColor:
 
 @lru_cache(maxsize=16)
 def severity_label(severity: Optional[str]) -> str:
-    """Traduce el código de severidad a texto legible."""
+    """Traduce el código de severidad a texto legible, usando el valor original como respaldo."""
     if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[1]
-    return severity.upper() if (isinstance(severity, str) and severity.strip()) else "Desconocido"
+    return severity.capitalize() if isinstance(severity, str) and severity.strip() else "Desconocido"
 
 def severity_icon(severity: Optional[str]) -> str:
     """Retorna el carácter Unicode representativo para estados de riesgo."""

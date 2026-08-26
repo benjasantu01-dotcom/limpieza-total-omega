@@ -243,16 +243,21 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     return results
 
 
+def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
+    """Helper interno: verifica si una entrada de directorio debe ser ignorada."""
+    try:
+        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
+            return True
+        if skip_protected and entry.is_dir(follow_symlinks=False):
+            return is_protected_path(Path(entry.path))
+    except (PermissionError, OSError):
+        return True
+    return False
+
+
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos mediante `os.scandir`.
-    
-    Args:
-        directory: Ruta raíz desde donde comenzar el escaneo.
-        skip_protected: Si es True, ignora rutas marcadas como protegidas.
-        
-    Yields:
-        Tuplas conteniendo el objeto Path del archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -272,20 +277,16 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
+                    if _is_invalid_entry(entry, skip_protected):
+                        continue
+                    
                     try:
-                        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
-                            continue
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            p = Path(entry.path)
-                            if skip_protected and is_protected_path(p):
-                                continue
-                            
                             st = entry.stat(follow_symlinks=False)
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(p)
+                                stack.append(Path(entry.path))
                                 
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
@@ -293,7 +294,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
-            pass
+            continue
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
