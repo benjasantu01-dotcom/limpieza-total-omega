@@ -152,15 +152,15 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
-        key, rest = line.split(":", 1)
-        k = key.strip()
-        if k in vals:
-            try:
+        try:
+            key, rest = line.split(":", 1)
+            k = key.strip()
+            if k in vals:
                 parts = rest.strip().split()
                 if parts and parts[0].isdigit():
                     vals[k] = int(parts[0]) * 1024
-            except (ValueError, IndexError):
-                continue
+        except (ValueError, AttributeError):
+            continue
     
     total = vals["MemTotal"]
     if total <= 0:

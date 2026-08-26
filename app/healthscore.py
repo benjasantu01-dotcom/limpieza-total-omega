@@ -194,12 +194,15 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global basado en métricas normalizadas y pesos configurados."""
-    if not isinstance(metrics, SystemMetrics):
+    if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error interno: Datos de métricas nulos o inválidos."])
     
-    metrics.validate()
-    if not metrics.is_finite():
-        return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos."])
+    try:
+        metrics.validate()
+        if not metrics.is_finite():
+            return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos."])
+    except (TypeError, ValueError, AttributeError):
+        return HealthResult(0, "F", {}, ["Error interno: Fallo en la validación de métricas."])
 
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios_cache: ScoreMap = {}

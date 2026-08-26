@@ -1505,12 +1505,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not hasattr(self, 'pid_entry') or not self.pid_entry.winfo_exists():
             return
             
-        raw = self.pid_entry.get().strip()
-        if not raw or not raw.isdigit():
-            messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
+        try:
+            raw = self.pid_entry.get().strip()
+            if not raw or not raw.isdigit():
+                messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
+                return
+            pid = int(raw)
+        except (ValueError, tk.TclError):
             return
-            
-        pid = int(raw)
+
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return
@@ -1742,6 +1745,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 continue
         
         try:
+            # Validaciones seguras verificando la existencia del widget
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
                     self.min_dup_entry.get(), 64

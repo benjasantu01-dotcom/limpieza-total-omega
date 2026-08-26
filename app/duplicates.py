@@ -135,7 +135,6 @@ def _collect_candidates(
     def _should_skip_dir(entry: os.DirEntry) -> bool:
         """Determina si un directorio debe ser ignorado por el escaneo."""
         try:
-            # Validación de seguridad: no entrar en rutas protegidas
             if skip_protected and is_protected_path(Path(entry.path)):
                 return True
             stat = entry.stat(follow_symlinks=False)
@@ -233,9 +232,9 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
+        if not isinstance(p, (Path, str)): continue
         try:
-            p_obj = p.resolve()
+            p_obj = Path(p).resolve()
             if _is_valid_candidate(p_obj):
                 stat_info = p_obj.stat()
                 candidates.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
@@ -256,11 +255,11 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     
     for path in group.paths:
-        if not isinstance(path, Path):
+        if not isinstance(path, (Path, str)):
             lines.append(f"   [error] ruta inválida: {path}")
             continue
         try:
-            p_obj = path.resolve()
+            p_obj = Path(path).resolve()
             if not _is_valid_candidate(p_obj):
                 lines.append(f"   [inseguro] {path}")
                 continue
