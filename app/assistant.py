@@ -534,11 +534,21 @@ def _call_gemini(
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
             
-            candidates = data.get("candidates", [])
-            if not candidates or not isinstance(candidates[0].get("content", {}).get("parts"), list):
-                return None
+            if not isinstance(data, dict): return None
+            candidates = data.get("candidates")
+            if not isinstance(candidates, list) or not candidates: return None
             
-            raw_text = "".join(str(p.get("text", "")) for p in candidates[0]["content"]["parts"] if isinstance(p, dict))
+            first_candidate = candidates[0]
+            if not isinstance(first_candidate, dict): return None
+            
+            content = first_candidate.get("content")
+            if not isinstance(content, dict): return None
+            
+            parts = content.get("parts")
+            if not isinstance(parts, list): return None
+            
+            raw_text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
+            
             # Sanitización crítica de salida externa antes de procesar o mostrar
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             

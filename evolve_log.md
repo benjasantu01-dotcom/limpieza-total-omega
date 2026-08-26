@@ -889,3 +889,15 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-26T12:41:03` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-26T12:41:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T12:41:03` Corrida terminada. Total usado hoy: 300.
+- `2026-08-26T12:47:08` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-26T12:47:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-26T12:47:11` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-26T12:47:31` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-26T12:47:31` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-26T12:48:01` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-26T12:48:01` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-26T12:48:53` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de datos al agregar una validación estricta de tipos y un chequeo de desbordamiento en el procesamiento de la respuesta de la API, previniendo errores de ejecución ante respuestas malformadas o inesperadamente grandes.
+- `2026-08-26T12:49:27` ➖ Sin cambios en branding.py (enfoque: manejo de errores y validación de entradas). Motivo: Se ha mejorado la robustez de las funciones `severity_label` y `severity_color` mediante una validación más estricta del tipo de entrada, evitando errores potenciales al manipular valores `None` o tipos inesperados, y asegurando que las funciones devuelvan siempre un valor válido sin elevar excepciones.
+- `2026-08-26T12:49:38` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros y capturando posibles excepciones en la inicialización de los componentes de sistema (`kernel32`, `isjunction`), evitando errores de ejecución por llamadas a métodos inexistentes o entornos mal configurados.
+- `2026-08-26T12:49:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T12:49:38` Corrida terminada. Total usado hoy: 304.

@@ -92,7 +92,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
         return None
     try:
         return ctypes.windll.kernel32
-    except (AttributeError, OSError):
+    except (AttributeError, OSError, ValueError):
         return None
 
 
@@ -166,7 +166,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
         
     try:
-        if is_protected_path(Path(entry.path)):
+        p = Path(entry.path)
+        if is_protected_path(p):
             return True
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
@@ -192,20 +193,16 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso en bytes de los archivos bajo root_dir.
     Usa memoización sobre el path absoluto para evitar ciclos y re-escaneos.
     """
-    if not root_dir:
+    if not root_dir or not os.path.exists(root_dir):
         return 0
     root_path = os.path.normpath(root_dir)
     
-    # Seguridad: no recorrer rutas protegidas dinámicamente
     if is_protected_path(Path(root_path)):
         return 0
         
     if root_path in memo:
         return memo[root_path]
     
-    if not os.path.exists(root_path):
-        return 0
-
     def _walk(current_dir: str, depth: int) -> int:
         """Función interna recursiva que recorre el árbol de archivos."""
         if not _is_within_depth_limit(depth, current_dir):
@@ -236,8 +233,7 @@ def _sum_directory_recursive(
         memo[current_abs] = total
         return total
 
-    result = _walk(root_path, 0)
-    return result
+    return _walk(root_path, 0)
 
 
 def directory_size(path: Union[str, Path, None]) -> int:
@@ -260,10 +256,9 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Valida la integridad de la ruta: existencia, límites de directorio y exclusiones."""
-    if not candidate:
+    if not candidate or not candidate.exists():
         return False
     try:
-        if not candidate.exists(): return False
         real_candidate = candidate.resolve(strict=True)
         
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or
