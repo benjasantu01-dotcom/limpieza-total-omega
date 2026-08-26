@@ -485,9 +485,9 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         parent = destination.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        # Validación extra: el directorio destino debe ser modificable y no protegido
-        if not is_safe_to_modify(parent):
-            raise UnsafePathError("Restauración denegada: directorio padre restringido o protegido.")
+        # Validación extra: el destino completo debe ser modificable y no protegido
+        if not is_safe_to_modify(parent) or not is_safe_to_modify(destination):
+            raise UnsafePathError("Restauración denegada: destino restringido o protegido.")
             
         os.replace(str(stored_file), str(destination))
     except (OSError, PermissionError) as e:

@@ -74,11 +74,14 @@ class Scanner:
         Valida que una ruta esté dentro del árbol del directorio base.
         Usa resolución de rutas para evitar escapes mediante '..' o enlaces simbólicos.
         """
-        if is_protected_path(entry_path) or len(str(entry_path)) > MAX_PATH_LENGTH:
+        if len(str(entry_path)) > MAX_PATH_LENGTH:
             return False
         try:
-            resolved = str(entry_path.resolve(strict=False)).casefold()
-            return resolved == self.base_root_str or resolved.startswith(self.base_root_str + os.sep)
+            resolved = entry_path.resolve(strict=False)
+            if is_protected_path(resolved):
+                return False
+            resolved_str = str(resolved).casefold()
+            return resolved_str == self.base_root_str or resolved_str.startswith(self.base_root_str + os.sep)
         except (OSError, RuntimeError):
             return False
 

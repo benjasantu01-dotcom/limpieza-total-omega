@@ -227,6 +227,7 @@ def normalize(path: PathLike) -> Path:
         
     try:
         p = Path(path_str).expanduser()
+        # Nota: resolve(strict=False) es necesario para manejar rutas que aún no existen
         return p.resolve(strict=False)
     except (OSError, RuntimeError, TypeError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
@@ -248,12 +249,14 @@ def is_protected_path(path: PathLike) -> bool:
 
     try:
         p = normalize(path)
-        p_str = os.path.normcase(str(p))
-    except (ValueError, TypeError, OSError, RuntimeError): return True
-
-    is_protected = any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root) or \
-                   not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts) or \
-                   p == Path(p.anchor)
+        # Comparación robusta case-insensitive normalizando a través de partes
+        path_parts = {part.lower() for part in p.parts}
+        
+        is_protected = any(os.path.normcase(str(p)).startswith(root) for root in _SYSTEM_ROOT_PATHS if root) or \
+                       not PROTECTED_DIR_NAMES.isdisjoint(path_parts) or \
+                       p == Path(p.anchor)
+    except (ValueError, TypeError, OSError, RuntimeError): 
+        is_protected = True
     
     _PROTECTION_CACHE[path_key] = is_protected
     return is_protected

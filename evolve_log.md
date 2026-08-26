@@ -1371,3 +1371,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T06:42:07` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-26T06:42:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T06:42:07` Corrida terminada. Total usado hoy: 160.
+- `2026-08-26T06:50:02` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-26T06:50:37` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `restore_item` agregando `is_safe_to_modify(destination)` antes de realizar la restauración, garantizando que no solo el directorio padre, sino el destino final sea un punto legítimo y seguro donde escribir, evitando posibles ataques de reemplazo de archivos en rutas sensibles.
+- `2026-08-26T06:50:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-26T06:51:26` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `is_protected_path` integrando el chequeo de rutas de sistema utilizando `pathlib` de forma más precisa para evitar la resolución de enlaces simbólicos maliciosos durante la normalización y asegurar que el bloqueo de carpetas de sistema sea efectivo independientemente de la caja (case-insensitivity) de Windows.
+- `2026-08-26T06:51:36` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al agregar una verificación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación, asegurando que la validación de seguridad cubra también posibles enlaces simbólicos que apunten fuera del árbol permitido.
+- `2026-08-26T06:51:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T06:51:36` Corrida terminada. Total usado hoy: 164.
