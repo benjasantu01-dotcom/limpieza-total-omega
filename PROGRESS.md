@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 101 | 9 | 13 | 16 | 113 |
-| 2026-08-26 | 124 | 7 | 18 | 11 | 92 |
+| 2026-08-25 | 101 | 9 | 13 | 16 | 109 |
+| 2026-08-26 | 125 | 8 | 18 | 11 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - rendimiento: **48**
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **37**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `healthscore.py`: **19**
 - `memory.py`: **19**
-- `scanner.py`: **17**
+- `scanner.py`: **18**
 - `settings.py`: **17**
 - `diskreport.py`: **16**
 - `browser.py`: **16**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T10:45:27` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en `process_entry` y `scan_directory` mediante la validación de existencia de rutas y un manejo más estricto de los atributos de archivo, evitando fallos en condiciones de carrera (Race Conditions) donde un archivo desaparece entre la detección y el acceso.
 - `2026-08-26T10:25:29` **healthscore.py** (robustez ante casos límite): Fortalecí la robustez ante datos faltantes o corruptos en `compute_score` agregando una validación explícita de `is_finite()` y tipos antes de procesar cualquier métrica, evitando posibles `ZeroDivisionError` o comportamientos inesperados durante el cálculo de ratios.
 - `2026-08-26T10:25:05` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `format_group` ante archivos que fueron borrados, movidos o perdieron permisos durante el análisis, evitando que el proceso completo falle y garantizando que solo se comparen candidatos efectivamente accesibles en el momento de la ejecución.
 - `2026-08-26T10:16:51` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` ante archivos que se bloquean durante el escaneo (muy común en cachés activas de navegadores) añadiendo un manejo de excepciones más granular en la lectura de estadísticas y el uso de un `finally` implícito en `scandir` para asegurar que el sistema no se quede con manejadores de archivos abiertos tras errores.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T09:54:55` **main.py** (rendimiento): Implementé un sistema de "Dirty State" en `_apply_card_updates` para evitar reconfigurar widgets de la interfaz cuando los valores no han cambiado, eliminando llamadas innecesarias a la API de Tkinter que consumen ciclos de CPU y pueden causar micro-parpadeos.
 - `2026-08-26T09:45:11` **healthscore.py** (rendimiento): Se optimizó el cálculo de los puntajes en `compute_score` eliminando la recreación de objetos y la validación redundante al iterar, aprovechando que `SystemMetrics` ya garantiza la integridad mediante su `__post_init__` y `validate`, reduciendo así la carga de procesamiento en cada llamada.
 - `2026-08-26T09:44:56` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` sustituyendo las repetidas llamadas a `Path.resolve()` por `os.path.realpath()` en el bucle principal, reduciendo drásticamente la sobrecarga de instanciación de objetos `Path` y el acceso a disco innecesario durante el recorrido recursivo.
-- `2026-08-26T09:44:28` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de `relative_to` dentro del bucle de `walk_files`, utilizando el acceso directo a `entry` para calcular el primer nivel de subcarpetas, lo que reduce la carga de procesamiento por cada archivo escaneado.

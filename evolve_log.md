@@ -629,3 +629,40 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-26T10:35:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
 - `2026-08-26T10:35:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T10:35:49` Corrida terminada. Total usado hoy: 252.
+- `2026-08-26T10:44:32` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-26T10:45:02` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-26T10:45:27` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se mejora la robustez ante casos límite en `process_entry` y `scan_directory` mediante la validación de existencia de rutas y un manejo más estricto de los atributos de archivo, evitando fallos en condiciones de carrera (Race Conditions) donde un archivo desaparece entre la detección y el acceso.
+- `2026-08-26T10:45:59` Tests FALLARON:
+```
+is_remembered ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0')
+
+    def test_a_normal_folder_is_remembered(tmp_path):
+        segura = str(tmp_path / "Descargas")
+>       assert settings.validate({"ultima_carpeta": segura})["ultima_carpeta"] == segura
+E       AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+E         
+E         - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+
+evolve/tests/test_assistant.py:124: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\)'
+    """Determina si la ruta apunta a la raíz de un volumen (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - AssertionError: assert '' == '/tmp/pytest-...mb0/Descargas'
+  
+  - /tmp/pytest-of-runner/pytest-2/test_a_normal_folder_is_rememb0/Descargas
+1 failed, 298 passed, 4 warnings in 1.02s
+
+```
+- `2026-08-26T10:45:59` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del sistema de archivos ante casos límite al añadir una validación de existencia explícita en `_Validators.path`, asegurando que `resolve()` no genere rutas inconsistentes si el directorio raíz (ej: un pendrive removido) deja de estar presente, y se protegió la escritura en `save` contra errores de permisos en el directorio padre antes de intentar crear archivos temporales.
+- `2026-08-26T10:46:15` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-26T10:46:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T10:46:15` Corrida terminada. Total usado hoy: 256.
