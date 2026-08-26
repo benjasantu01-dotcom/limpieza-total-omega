@@ -189,7 +189,6 @@ class _Validators:
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         
-        # Validaciones de integridad básica de strings de ruta
         if not path_string or len(path_string) > 4096 or "\0" in path_string or ".." in path_string: 
             return None
             
@@ -210,6 +209,7 @@ class _Validators:
         val = text.lower()
         if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
         if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
+        if key == ConfigKey.ASISTENTE_CLAVE_API: return text.strip() if len(text) <= 512 else None
         return text if len(text) <= 512 else None
 
     @staticmethod
@@ -262,7 +262,7 @@ def validate(raw_values: Any) -> AppSettings:
         if key and key in _VALIDATOR_MAP:
             validated = _VALIDATOR_MAP[key](key, val)
             if validated is not None:
-                config[key.value] = validated # type: ignore
+                config[key.value] = validated
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -308,6 +308,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
     
     cleaned_settings = validate(values)
+    # Validaciones cruzadas de integridad tras la sanitización
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         

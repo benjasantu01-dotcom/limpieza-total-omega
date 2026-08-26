@@ -388,10 +388,12 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
 def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Dibuja el escudo corporativo escalado y centrado en el canvas.
+
     Args:
-        canvas: Widget de dibujo donde renderizar.
+        canvas: Objeto de dibujo compatible con Tkinter (create_polygon, etc.).
         size: Dimensión base (128x128 es el tamaño nativo).
-        canvas_x, canvas_y: Coordenadas de origen para el dibujo.
+        canvas_x: Coordenada X de origen.
+        canvas_y: Coordenada Y de origen.
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -422,11 +424,14 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
     Renderiza una línea horizontal con degradado de color sobre el canvas.
+
     Args:
         canvas: Widget de dibujo donde renderizar.
         width: Longitud de la barra en píxeles.
         height: Espesor de la línea (default 3).
-        canvas_x, canvas_y: Coordenadas de inicio.
+        canvas_x: Coordenada X de inicio.
+        canvas_y: Coordenada Y de inicio.
+        stops: Tupla de colores para el degradado.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
@@ -442,10 +447,15 @@ def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
               fill: Optional[HexColor] = None) -> None:
     """
     Dibuja un indicador circular de progreso (donut) sobre el canvas.
+
     Args:
         percent: Valor porcentual (0.0 a 100.0) a representar.
         size: Diámetro total del anillo en píxeles.
+        canvas_x: Coordenada X del centro.
+        canvas_y: Coordenada Y del centro.
         thickness: Grosor de la banda circular.
+        track: Color de fondo de la banda.
+        fill: Color de progreso de la banda.
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:

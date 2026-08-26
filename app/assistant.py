@@ -234,19 +234,6 @@ def _validate_response_length(text: str) -> str:
 class SystemContext:
     """
     Contenedor de estado del sistema. Mantiene únicamente métricas agregadas.
-    score: Puntaje global de salud (0-100).
-    grade: Calificación cualitativa (ej. 'A', 'B').
-    junk_mb: Volumen de basura en MB.
-    suspicious_count: Total de archivos detectados con heurísticas.
-    suspicious_warnings: Cantidad de archivos críticos dentro de los sospechosos.
-    memory_available_percent: Porcentaje de RAM libre.
-    memory_total_gb: Memoria total instalada en el sistema.
-    disk_free_percent: Espacio disponible en disco porcentual.
-    duplicate_mb: Volumen de archivos duplicados en MB.
-    startup_count: Cantidad de procesos registrados en el arranque.
-    quarantined_count: Cantidad de archivos en cuarentena.
-    browser_cache_mb: Tamaño total de las cachés de navegadores detectadas.
-    analyzed: Flag que indica si los datos provienen de un análisis válido.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -261,6 +248,28 @@ class SystemContext:
     quarantined_count: int = 0
     browser_cache_mb: float = 0.0
     analyzed: bool = False
+
+    def ingest(self, source: Any) -> bool:
+        """
+        Intenta extraer y validar métricas desde una fuente externa.
+        Retorna True si se pudo poblar al menos un dato válido.
+        """
+        found_data = False
+        is_dict = isinstance(source, dict)
+        
+        for key, spec in _VALIDATORS.items():
+            if _validate_and_assign(self, source, is_dict, key, spec):
+                found_data = True
+        
+        if not self.grade:
+            try:
+                val = source.get("grade") if is_dict else getattr(source, "grade", None)
+                if isinstance(val, str) and _ensure_safe_text(val[:10].strip()):
+                    self.grade = val[:10].strip()
+            except (AttributeError, TypeError):
+                pass
+        
+        return found_data
 
 @dataclass
 class Answer:
@@ -319,25 +328,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     sources = [s for s in (metrics, health, extra) if s is not None and not isinstance(s, (str, int, float, list, tuple, bool))]
     
-    src_configs = [(s, isinstance(s, dict)) for s in sources]
-    found_data = False
-    
-    for key, spec in _VALIDATORS.items():
-        for src, is_dict in src_configs:
-            if _validate_and_assign(ctx, src, is_dict, key, spec):
-                found_data = True
-                break
-
-    for src, is_dict in src_configs:
-        try:
-            val = src.get("grade") if is_dict else getattr(src, "grade", None)
-            if isinstance(val, str) and _ensure_safe_text(val[:10].strip()):
-                ctx.grade = val[:10].strip()
-                break
-        except (AttributeError, TypeError):
-            continue
+    for src in sources:
+        if ctx.ingest(src):
+            ctx.analyzed = True
             
-    ctx.analyzed = found_data
     return ctx
 
 def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
