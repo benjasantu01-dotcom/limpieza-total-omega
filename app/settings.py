@@ -158,6 +158,7 @@ class _Validators:
         """Valida que una cadena de texto represente una ruta absoluta y segura."""
         if not path_str or ".." in path_str: return False
         try:
+            # Resolvemos primero para detectar inyecciones vía enlaces simbólicos o jerarquía
             return _Validators._run_safety_checks(Path(path_str).resolve(strict=False))
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
@@ -196,8 +197,6 @@ class _Validators:
             
         try:
             path_obj = Path(path_string).expanduser()
-            if not path_obj.is_absolute(): return None
-            
             resolved = path_obj.resolve(strict=False)
             if not resolved.is_absolute(): return None
             
@@ -247,7 +246,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     """Calcula la ruta del config.json, validando que el directorio base no sea de sistema."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
-        base = Path(custom_base).expanduser().absolute()
+        base = Path(custom_base).expanduser().resolve(strict=False)
         if _Validators._is_safe_path(str(base)):
             return base / SETTINGS_FILE
     except (OSError, RuntimeError):

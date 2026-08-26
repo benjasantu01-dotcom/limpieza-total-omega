@@ -94,15 +94,17 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root: Path = base_root.resolve(strict=False)
-        self.base_root_str: str = str(self.base_root).casefold()
+        self.base_root: Path = base_root.resolve()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path_str: str) -> bool:
         if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH:
             return False
-        entry_case = entry_path_str.casefold()
-        if not (entry_case == self.base_root_str or entry_case.startswith(self.base_root_str + os.sep)):
+        try:
+            target = Path(entry_path_str).resolve()
+            if os.path.commonpath([self.base_root, target]) != str(self.base_root):
+                return False
+        except (OSError, RuntimeError):
             return False
         return not is_protected_path(Path(entry_path_str))
 
