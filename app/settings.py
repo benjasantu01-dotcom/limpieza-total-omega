@@ -298,9 +298,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         if is_protected_path(str(parent)):
             return None
         ensure_safe_to_modify(str(ruta))
+        # Verificación estricta de existencia y permisos antes de intentar escribir
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        elif not os.access(parent, os.W_OK):
+        if not os.access(parent, os.W_OK | os.X_OK):
             return None
         if ruta.exists() and not os.access(ruta, os.W_OK):
             return None

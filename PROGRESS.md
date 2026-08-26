@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
-- Rechazadas por tests: 14
+- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 202
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 0 | 0 | 0 | 0 | 6 |
+| 2026-08-24 | 0 | 0 | 0 | 0 | 2 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 78 | 3 | 10 | 6 | 51 |
+| 2026-08-26 | 79 | 4 | 10 | 7 | 52 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - rendimiento: **47**
 - manejo de errores y validación de entradas: **46**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **41**
 - seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
@@ -34,7 +34,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `assistant.py`: **20**
 - `duplicates.py`: **20**
-- `settings.py`: **19**
+- `settings.py`: **20**
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
 - `scanner.py`: **17**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T06:20:22` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite de E/S implementando una comprobación de existencia y permisos de escritura en la carpeta padre antes de intentar crear el archivo de configuración, evitando fallos silenciosos por permisos denegados o rutas de solo lectura.
 - `2026-08-26T06:10:53` **safety.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes del sistema de archivos al añadir un chequeo de existencia (`path.exists()`) y manejo de errores específico en `_check_file_integrity` para evitar excepciones no capturadas cuando un archivo desaparece entre la validación y la lectura de metadatos (condición de carrera).
 - `2026-08-26T06:10:18` **quarantine.py** (robustez ante casos límite): Se añadió una validación de existencia previa en `restore_item` para prevenir que `os.replace` falle inesperadamente si un proceso externo crea un archivo en la ruta original mientras el ítem está en cuarentena.
 - `2026-08-26T06:09:46` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `delete_reviewed` implementando un chequeo explícito de recursividad mediante `is_relative_to` antes de cualquier operación y sanando la iteración para evitar el uso erróneo de `os.scandir` sobre elementos ya resueltos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T05:28:55` **memory.py** (rendimiento): Se implementó un mecanismo de caché local más eficiente en `top_memory_processes` utilizando `lru_cache` sobre el parser CSV y optimizando la lógica de recolección de datos, además de reducir el tamaño de las estructuras de datos en memoria eliminando las strings de caché global innecesarias.
 - `2026-08-26T05:20:23` **main.py** (rendimiento): Optimicé el rendimiento de la interfaz al reemplazar el método `on_scan_junk` con una implementación que utiliza un generador para procesar archivos y realizar la comparación de tamaño en bytes antes de la instanciación completa de objetos, evitando cuellos de botella en memoria al escanear directorios con gran cantidad de archivos pequeños.
 - `2026-08-26T05:19:31` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje transformando `_SCORER_MAP` en un diccionario que utiliza un acceso directo más eficiente y pre-calculando los factores de normalización fuera de los bucles para eliminar redundancias en la ejecución de `compute_score`.
-- `2026-08-26T05:19:06` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` para evitar redundancias en el recorrido del sistema de archivos al pre-convertir la lista de directorios de entrada en un `set` de rutas resueltas y normalizadas antes de iniciar la recursión, reduciendo así operaciones de E/S innecesarias.

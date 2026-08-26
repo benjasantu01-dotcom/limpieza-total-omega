@@ -1326,3 +1326,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T06:10:53` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante estados inconsistentes del sistema de archivos al añadir un chequeo de existencia (`path.exists()`) y manejo de errores específico en `_check_file_integrity` para evitar excepciones no capturadas cuando un archivo desaparece entre la validación y la lectura de metadatos (condición de carrera).
 - `2026-08-26T06:10:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T06:10:53` Corrida terminada. Total usado hoy: 148.
+- `2026-08-26T06:19:30` Arrancando corrida. Quedan hoy ~152 peticiones objetivo.
+- `2026-08-26T06:19:53` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-26T06:20:22` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante casos límite de E/S implementando una comprobación de existencia y permisos de escritura en la carpeta padre antes de intentar crear el archivo de configuración, evitando fallos silenciosos por permisos denegados o rutas de solo lectura.
+- `2026-08-26T06:20:49` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.20s
+
+```
+- `2026-08-26T06:20:49` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_resolve_and_cache_path` añadiendo un manejo de excepciones más granular y verificaciones de integridad adicionales para prevenir fallos ante rutas malformadas o nombres reservados de Windows, asegurando que el bucle de escaneo no se interrumpa por errores de acceso o rutas inválidas.
+- `2026-08-26T06:21:10` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Reforcé la integridad del flujo de datos en `_call_gemini` integrando `is_protected_path` como una barrera preventiva obligatoria antes de procesar cualquier respuesta externa, asegurando que ninguna salida del modelo pueda ser interpretada como una ruta sensible, manteniendo el principio de "defensa en profundidad".
+- `2026-08-26T06:21:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T06:21:10` Corrida terminada. Total usado hoy: 152.
