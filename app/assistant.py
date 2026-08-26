@@ -96,7 +96,10 @@ class ProblemCriterion(NamedTuple):
         Evalúa si la métrica contenida en el contexto supera el umbral definido.
         Retorna la cadena formateada si se cumple la condición, o None.
         """
-        val = getattr(ctx, self.metric_key, -1.0)
+        try:
+            val = getattr(ctx, self.metric_key, -1.0)
+        except AttributeError:
+            return None
         f_val = _safe_float(val, -1.0)
         if f_val < 0:
             return None
@@ -254,9 +257,6 @@ class SystemContext:
         Retorna True si se pudo poblar al menos un dato válido.
         """
         found_data = False
-        if not isinstance(source, (dict, object)):
-            return False
-            
         is_dict = isinstance(source, dict)
         
         for key, spec in _VALIDATORS.items():
@@ -264,11 +264,14 @@ class SystemContext:
                 found_data = True
         
         # Procesamiento seguro de 'grade'
-        val = source.get("grade") if is_dict else getattr(source, "grade", None)
-        if isinstance(val, str):
-            clean_grade = val[:10].strip()
-            if _ensure_safe_text(clean_grade):
-                self.grade = clean_grade
+        try:
+            val = source.get("grade") if is_dict else getattr(source, "grade", None)
+            if isinstance(val, str):
+                clean_grade = val[:10].strip()
+                if _ensure_safe_text(clean_grade):
+                    self.grade = clean_grade
+        except Exception:
+            pass
         
         return found_data
 

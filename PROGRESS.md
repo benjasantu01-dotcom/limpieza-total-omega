@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 108 | 9 | 14 | 16 | 117 |
-| 2026-08-26 | 118 | 7 | 16 | 10 | 89 |
+| 2026-08-25 | 105 | 9 | 14 | 16 | 116 |
+| 2026-08-26 | 122 | 7 | 16 | 10 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
+- rendimiento: **48**
 - manejo de errores y validación de entradas: **47**
-- rendimiento: **47**
-- seguridad defensiva: **44**
-- robustez ante casos límite: **28**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `memory.py`: **20**
-- `healthscore.py`: **19**
+- `assistant.py`: **19**
 - `duplicates.py`: **19**
+- `memory.py`: **19**
 - `scanner.py`: **18**
 - `settings.py`: **18**
-- `assistant.py`: **18**
+- `healthscore.py`: **18**
 - `diskreport.py`: **16**
+- `browser.py`: **16**
 - `safety.py`: **15**
-- `browser.py`: **15**
-- `main.py`: **13**
-- `branding.py`: **13**
+- `branding.py`: **14**
+- `main.py`: **12**
 - `organizer.py`: **12**
-- `startup.py`: **8**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T10:16:51` **browser.py** (robustez ante casos límite): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` ante archivos que se bloquean durante el escaneo (muy común en cachés activas de navegadores) añadiendo un manejo de excepciones más granular en la lectura de estadísticas y el uso de un `finally` implícito en `scandir` para asegurar que el sistema no se quede con manejadores de archivos abiertos tras errores.
+- `2026-08-26T10:16:40` **branding.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `logo_svg` ante errores inesperados de formato de color, asegurando que el contenido del SVG siempre contenga valores válidos incluso si la paleta fuera alterada o mal configurada, protegiendo así la integridad de la interfaz ante configuraciones corruptas.
+- `2026-08-26T10:16:07` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor local ante valores de métricas inesperados, reemplazando el uso de `getattr` directo (que puede fallar si la estructura cambia) por un acceso defensivo y mejorando el manejo de errores en `ingest` para asegurar que el sistema no se bloquee ante datos corruptos o tipos de datos no numéricos malformados.
+- `2026-08-26T10:14:31` **startup.py** (rendimiento): Optimicé el rendimiento de `entries_from_folders` implementando una pre-validación con `is_protected_path` sobre toda la ruta del directorio antes de realizar el escaneo (`os.scandir`), evitando lecturas de disco innecesarias en subdirectorios prohibidos.
 - `2026-08-26T10:05:28` **settings.py** (rendimiento): Se implementó un mecanismo de `weakref` para el caché de `_CACHE`, permitiendo que el recolector de basura libere memoria si la app está bajo presión, manteniendo la eficiencia en lecturas recurrentes sin riesgo de fugas de memoria en sesiones largas.
 - `2026-08-26T10:05:13` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` y `_is_safe_entry` reemplazando la resolución repetitiva de rutas por comparaciones de strings pre-procesadas y validaciones de prefijo que evitan llamadas costosas al sistema de archivos dentro del bucle.
 - `2026-08-26T10:04:46` **safety.py** (rendimiento): Se optimizó el rendimiento del proceso de validación centralizando el chequeo de rutas protegidas mediante la eliminación de redundancias en los cálculos de `path.parts` y normalización dentro de `is_protected_path`, mejorando la eficiencia del caché al reducir el número de objetos `Path` creados innecesariamente en cada iteración.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T09:44:28` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de `relative_to` dentro del bucle de `walk_files`, utilizando el acceso directo a `entry` para calcular el primer nivel de subcarpetas, lo que reduce la carga de procesamiento por cada archivo escaneado.
 - `2026-08-26T09:35:02` **branding.py** (rendimiento): Optimicé el método `color` eliminando la validación redundante de `isinstance` y aprovechando la naturaleza del `dict.get` para mejorar el rendimiento en lecturas repetidas, manteniendo la seguridad de tipos implícita.
 - `2026-08-26T09:34:12` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna de `StartupEntry` y sus métodos privados, añadiendo docstrings que explican el propósito de las técnicas de resolución "lazy" y el filtrado de seguridad, facilitando el mantenimiento futuro del motor de inventario.
-- `2026-08-26T09:24:57` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del orquestador de reglas `scan_file` mediante la definición explícita de `CHECK_REGISTRY` y `EXECUTABLE_CHECK_REGISTRY` a nivel de módulo, eliminando la instanciación repetitiva de listas dentro del bucle.
-- `2026-08-26T09:24:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de validación para clarificar el propósito de cada chequeo y la lógica de flujo, facilitando el mantenimiento y la auditoría del código.
-- `2026-08-26T09:15:01` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica mediante la adición de Type Hints explícitas en las funciones de recorrido de directorios y la inclusión de docstrings detallados que explican el "porqué" de las validaciones de seguridad, facilitando el mantenimiento y auditoría del código.
-- `2026-08-26T09:14:50` **memory.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de bajo nivel de la API de memoria (`_read_windows_snapshot`, `_is_system_process`, `_get_process_path`) para mejorar la legibilidad y claridad técnica sin alterar el comportamiento.

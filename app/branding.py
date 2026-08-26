@@ -306,6 +306,11 @@ def _get_shield_coords(s: float) -> List[float]:
 def logo_svg(size: int = 128) -> str:
     """Genera una representación SVG del logotipo corporativo."""
     s: int = max(1, min(4096, int(size)))
+    # Sanitización de colores para asegurar validez ante casos límite
+    c_bg = C_BACKGROUND if len(C_BACKGROUND) == 7 else "#000000"
+    c_surf = C_SURFACE if len(C_SURFACE) == 7 else "#101010"
+    c_glow = C_GLOW if len(C_GLOW) == 7 else "#00ff00"
+    
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">
@@ -314,18 +319,18 @@ def logo_svg(size: int = 128) -> str:
       <stop offset="100%" stop-color="{GRADIENT_STOPS[2]}"/>
     </linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
-      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
+      <stop offset="0%" stop-color="{c_glow}" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="{c_glow}" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>
+  <rect width="128" height="128" rx="30" fill="{c_surf}"/>
   <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
   <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z"
         fill="url(#omegaShield)"/>
-  <path d="M41 75 L75 41" stroke="{C_BACKGROUND}" stroke-width="8" stroke-linecap="round"/>
-  <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>
+  <path d="M41 75 L75 41" stroke="{c_bg}" stroke-width="8" stroke-linecap="round"/>
+  <path d="M75 41 L89 38 L92 52 Z" fill="{c_bg}"/>
   <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26"
-        font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
+        font-weight="{UI_FONT_BOLD}" fill="{c_bg}" text-anchor="middle">&#937;</text>
 </svg>
 """
 

@@ -221,6 +221,7 @@ def _sum_directory_recursive(
                         if entry.is_dir(follow_symlinks=False):
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file(follow_symlinks=False):
+                            # Acceder a stat puede fallar si el archivo es bloqueado mientras se recorre
                             stat = entry.stat(follow_symlinks=False)
                             total += stat.st_size
                     except (OSError, PermissionError, FileNotFoundError):
