@@ -208,7 +208,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    # Ordenamos directamente el generador convertido a lista para optimizar
     return sorted(_yield_processes(raw_csv_text), key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
@@ -224,7 +223,6 @@ def _read_windows_snapshot() -> MemorySnapshot:
         
         total = int(stat.ullTotalPhys)
         avail = int(stat.ullAvailPhys)
-        # Validación de rango lógico para evitar valores absurdos en reportes (ej. total 0 o avail > total)
         if total <= 0 or avail > total: 
             return MemorySnapshot(0, 0)
         return MemorySnapshot(total=total, available=avail)
@@ -320,13 +318,12 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     """Verifica que la ruta del ejecutable sea segura para operar."""
-    if not os.path.isabs(path):
+    if not isinstance(path, str) or not os.path.isabs(path):
         return False, "No se pudo verificar una ruta absoluta válida del ejecutable."
     
     if path.startswith("\\\\"):
         return False, "Ruta bloqueada: ubicación en red (UNC) no segura."
         
-    # Validación anti-evasión de rutas usando secuencias RTL
     forbidden_sequences: List[bytes] = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
     if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
         return False, "Ruta de proceso sospechosa (ofuscación RTL)."
@@ -346,7 +343,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
     
     try:
-        # Validación crítica: asegurar que el handle corresponde al PID esperado (anti-TOCTOU)
         if kernel32.GetProcessId(proc_handle) != pid:
             return False, "Error de validación: el proceso identificado cambió (PID mismatch)."
 
@@ -400,7 +396,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ctypes.ArgumentError, Exception):
         return False, "Ocurrió un error técnico al gestionar el proceso."
     finally:
-        if proc_handle and proc_handle != -1:
+        if proc_handle and proc_handle not in (None, -1):
             kernel32.CloseHandle(proc_handle)
 
 if __name__ == "__main__":

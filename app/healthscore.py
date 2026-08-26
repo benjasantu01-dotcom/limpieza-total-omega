@@ -209,7 +209,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios_cache: ScoreMap = {}
     accumulated_points: int = 0
     
-    # Procesar solo las claves existentes en el mapa de scorers para evitar errores de llave
+    # Procesar solo las claves existentes en el mapa de scorers para evitar errores
     for area, weight in WEIGHTS.items():
         scorer = _SCORER_MAP.get(area)
         if not scorer:
@@ -223,14 +223,14 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         metric_breakdown[area] = points
         accumulated_points += points
     
-    # Validación de seguridad: el acumulado debe estar dentro del rango lógico esperado
+    # Validación: el acumulado debe estar dentro del rango lógico esperado
     final_score = int(_clamp(float(accumulated_points), 0.0, 100.0))
     
-    # Generación de recomendaciones según reglas definidas
+    # Generación de recomendaciones: verificamos si existe el ratio antes de evaluar la regla
     recommendations = [
         rule.message_factory(metrics) 
         for rule in _RECOMMENDATION_RULES 
-        if rule.check(metrics, ratios_cache.get(rule.area, 0.0))
+        if rule.area in ratios_cache and rule.check(metrics, ratios_cache[rule.area])
     ]
             
     if metrics.quarantined_count > 0:

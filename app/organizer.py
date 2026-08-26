@@ -157,7 +157,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Realiza una validación exhaustiva de seguridad antes de operaciones de I/O.
     """
     try:
-        if not src or not dest: return False
+        if not src or not dest or not src.exists() or not src.is_file(): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest):
             return False
         if is_protected_path(src) or is_protected_path(dest):
@@ -256,7 +256,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if not src_path.exists() or not src_path.is_file() or not dest_base.is_dir(): 
             return None
         
-        # Validar anchor seguro para evitar cruce de unidades
+        # Validar anchor seguro para evitar cruce de unidades y manejo de rutas sin anchor
         if not src_path.anchor or not dest_base.anchor or src_path.anchor != dest_base.anchor:
             return None
 
