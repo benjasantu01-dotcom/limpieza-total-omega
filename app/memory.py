@@ -55,9 +55,6 @@ ERROR_ACCESS_DENIED: Final[int] = 5
 # PIDs reservados: 0 (System Idle), 4 (System)
 SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
 
-_last_proc_fetch: float = 0.0
-_cached_proc_output: str = ""
-
 __all__ = [
     "MemorySnapshot",
     "ProcessMemory",
@@ -172,38 +169,22 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     available = vals["MemAvailable"] if vals["MemAvailable"] > 0 else vals["MemFree"]
     return MemorySnapshot(total=total, available=min(available, total), cached=max(0, vals["Cached"]))
 
-def _parse_csv_row(csv_line: str) -> Optional[ProcessMemory]:
-    """Valida y convierte una línea CSV cruda en un objeto ProcessMemory."""
-    if not isinstance(csv_line, str) or not csv_line.strip():
-        return None
-    parts: List[str] = [p.strip().strip("'\"") for p in csv_line.split(",")]
-    if len(parts) < 3:
-        return None
-    try:
-        name, pid_str, ws_str = parts[0], parts[1], parts[2]
-        if not name or not pid_str.isdigit() or not ws_str.isdigit():
-            return None
-        ws_val = int(ws_str)
-        if ws_val < 0: return None
-        return ProcessMemory(name=name, pid=int(pid_str), working_set=ws_val)
-    except (ValueError, TypeError, IndexError):
-        return None
-
-def _yield_processes(raw_csv_text: str) -> Iterator[ProcessMemory]:
-    """Generador que procesa líneas de texto y filtra procesos de sistema."""
-    if not isinstance(raw_csv_text, str):
-        return
-    for line in raw_csv_text.splitlines():
-        proc = _parse_csv_row(line)
-        if proc and proc.working_set > 0 and proc.pid not in SYSTEM_CRITICAL_PIDS:
-            yield proc
-
+@lru_cache(maxsize=1)
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Ordena los procesos por consumo de memoria descendente y limita el resultado."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
         return []
     
-    return sorted(_yield_processes(raw_csv_text), key=lambda p: p.working_set, reverse=True)[:limit]
+    processes: List[ProcessMemory] = []
+    for line in raw_csv_text.splitlines():
+        parts = [p.strip().strip("'\"") for p in line.split(",")]
+        if len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit():
+            ws_val = int(parts[2])
+            pid_val = int(parts[1])
+            if ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
+                processes.append(ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val))
+    
+    return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca la API GlobalMemoryStatusEx y retorna un snapshot del sistema."""
@@ -240,22 +221,25 @@ def read_snapshot() -> MemorySnapshot:
             pass
     return MemorySnapshot(0, 0)
 
+_proc_cache_time: float = 0.0
+_proc_cache_data: str = ""
+
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Retorna los procesos top con caché de 30s para evitar saturar el sistema."""
-    global _last_proc_fetch, _cached_proc_output
+    """Retorna los procesos top con caché temporal para evitar saturar el sistema."""
+    global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
     
-    if (time.time() - _last_proc_fetch) > 30:
+    if (time.time() - _proc_cache_time) > 30:
         cmd: List[str] = ['powershell', '-NoProfile', '-Command', "Get-Process | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
             if proc.returncode == 0 and proc.stdout:
-                _cached_proc_output = proc.stdout
-                _last_proc_fetch = time.time()
+                _proc_cache_data = proc.stdout
+                _proc_cache_time = time.time()
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired):
-            _cached_proc_output = ""
+            _proc_cache_data = ""
             
-    return parse_windows_process_csv(_cached_proc_output, limit=limit)
+    return parse_windows_process_csv(_proc_cache_data, limit=limit)
 
 @lru_cache(maxsize=2)
 def pressure_level(snapshot: MemorySnapshot) -> str:

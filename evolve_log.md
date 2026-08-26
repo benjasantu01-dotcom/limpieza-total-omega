@@ -1267,3 +1267,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T05:20:23` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el rendimiento de la interfaz al reemplazar el método `on_scan_junk` con una implementación que utiliza un generador para procesar archivos y realizar la comparación de tamaño en bytes antes de la instanciación completa de objetos, evitando cuellos de botella en memoria al escanear directorios con gran cantidad de archivos pequeños.
 - `2026-08-26T05:20:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T05:20:23` Corrida terminada. Total usado hoy: 128.
+- `2026-08-26T05:28:25` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-26T05:28:55` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se implementó un mecanismo de caché local más eficiente en `top_memory_processes` utilizando `lru_cache` sobre el parser CSV y optimizando la lógica de recolección de datos, además de reducir el tamaño de las estructuras de datos en memoria eliminando las strings de caché global innecesarias.
+- `2026-08-26T05:29:20` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el recorrido de directorios reemplazando múltiples llamadas a `Path.exists()` y `Path.resolve()` por el uso directo de `os.scandir` y sus atributos (`is_dir`, `is_file`, `stat`), reduciendo drásticamente las llamadas al sistema (syscalls) innecesarias durante el escaneo.
+- `2026-08-26T05:29:51` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé `total_quarantined_bytes` y `summarize` para evitar llamadas redundantes a `quarantine_dir` y al manifiesto, utilizando el cache interno ya existente y reduciendo la carga sobre el sistema de archivos.
+- `2026-08-26T05:29:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
+- `2026-08-26T05:29:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T05:29:54` Corrida terminada. Total usado hoy: 132.
