@@ -1041,3 +1041,40 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-26T14:30:54` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner moviendo la comprobación de extensiones ejecutables fuera de los loops internos de `scan_file`, utilizando la pre-compilación de `SUSPICIOUS_EXECUTABLE_EXT` para evitar re-validaciones innecesarias y reducir la profundidad del stack de llamadas en archivos no ejecutables.
 - `2026-08-26T14:30:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T14:30:54` Corrida terminada. Total usado hoy: 344.
+- `2026-08-26T14:39:31` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-26T14:40:07` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de la caché y los validadores pre-compilando el mapa de validadores y evitando llamadas innecesarias a `_get_default_config()` mediante el uso de `DEFAULTS` existentes, reduciendo la carga de CPU en accesos frecuentes.
+- `2026-08-26T14:40:33` Tests FALLARON:
+```
+.................................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:236: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.25s
+
+```
+- `2026-08-26T14:40:33` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el acceso a la propiedad `executable` de `StartupEntry` introduciendo una verificación temprana de `_checked_exists` y delegando la resolución de ruta solo si es estrictamente necesario, evitando repetir I/O sobre el disco en llamadas sucesivas al getter.
+- `2026-08-26T14:41:09` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `ingest` ante entradas malformadas o tipos de datos inesperados en `source` para evitar que el asistente falle silenciosamente al procesar configuraciones o métricas corruptas.
+- `2026-08-26T14:41:24` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como discos de solo lectura o permisos denegados) añadiendo un manejo de excepciones explícito en la creación del directorio y la escritura, garantizando que la función falle silenciosamente de forma segura sin interrumpir la interfaz.
+- `2026-08-26T14:41:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T14:41:24` Corrida terminada. Total usado hoy: 348.

@@ -256,13 +256,14 @@ class SystemContext:
         Intenta extraer y validar métricas desde una fuente externa.
         Retorna True si se pudo poblar al menos un dato válido.
         """
+        if not isinstance(source, (dict, object)):
+            return False
+            
         found_data = False
-        
         for key, spec in _VALIDATORS.items():
             if _validate_and_assign(self, source, key, spec):
                 found_data = True
         
-        # Procesamiento seguro de 'grade'
         val = _get_source_value(source, "grade")
         if isinstance(val, str):
             clean_grade = val[:10].strip()

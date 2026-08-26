@@ -246,7 +246,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 
 def validate(raw_values: Any) -> AppSettings:
     """Valida un diccionario externo (JSON) contra el esquema, forzando valores de fábrica ante corrupción."""
-    config = _get_default_config()
+    config = DEFAULTS.copy()
     if not isinstance(raw_values, dict): return config
     for key_str, val in raw_values.items():
         key = _STR_TO_ENUM.get(key_str)
@@ -260,20 +260,20 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Lee y deserializa la configuración desde disco; utiliza caché para evitar lecturas redundantes."""
     ruta = settings_path(custom_base)
     try:
-        if not ruta.exists(): return _get_default_config()
+        if not ruta.exists(): return DEFAULTS.copy()
         stat_info = ruta.stat()
         mtime = stat_info.st_mtime
         if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
             return cached[1]
         if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
-            return _get_default_config()
+            return DEFAULTS.copy()
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
         config = validate(data)
         _CACHE[ruta] = (mtime, config)
         return config
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):
-        return _get_default_config()
+        return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Serializa y guarda la configuración de manera atómica, previniendo corrupción ante interrupciones."""
@@ -316,7 +316,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
     """Restablece la configuración del usuario a los valores definidos por defecto."""
-    default_config = _get_default_config()
+    default_config = DEFAULTS.copy()
     save(default_config, custom_base)
     return default_config
 
