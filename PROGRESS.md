@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 29
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 41 | 6 | 7 | 7 | 45 |
+| 2026-08-24 | 41 | 6 | 7 | 7 | 41 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 26 | 1 | 5 | 4 | 12 |
+| 2026-08-26 | 30 | 1 | 5 | 4 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **46**
+- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **39**
-- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **21**
 - `assistant.py`: **20**
 - `settings.py`: **20**
-- `duplicates.py`: **19**
-- `browser.py`: **17**
-- `diskreport.py`: **17**
+- `duplicates.py`: **20**
+- `browser.py`: **18**
+- `diskreport.py`: **18**
+- `healthscore.py`: **17**
 - `scanner.py`: **17**
-- `healthscore.py`: **16**
 - `branding.py`: **13**
 - `organizer.py`: **12**
 - `main.py`: **12**
@@ -47,6 +47,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T02:06:14` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `compute_score` eliminando la dependencia del orden del diccionario global `_WEIGHT_ITEMS_INT` y validando estrictamente que el resultado final del puntaje acumulado se mantenga dentro de los límites esperados (0-100) incluso ante errores inesperados en las funciones de cálculo (scorrers).
+- `2026-08-26T02:06:03` **duplicates.py** (seguridad defensiva): Se ha eliminado la redundante y potencialmente peligrosa validación `is_safe_to_modify` dentro de las funciones de lectura (`hash_file`, `partial_hash`, `_is_valid_candidate`), centralizando la responsabilidad en `is_protected_path` tal como dictan las nuevas reglas de seguridad para módulos de solo lectura.
+- `2026-08-26T02:05:36` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` para garantizar que los enlaces simbólicos y puntos de reparse no solo se detecten mediante `entry.is_symlink()`, sino que también se manejen de forma consistente utilizando `follow_symlinks=False` en las llamadas a `stat()`, evitando posibles errores de resolución de rutas externas o bucles infinitos en sistemas de archivos complejos.
+- `2026-08-26T02:05:04` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` mediante la integración explícita de `is_safe_to_modify` para asegurar que el acceso a las rutas detectadas cumpla con la política de seguridad global del proyecto antes de realizar cualquier medición de tamaño.
 - `2026-08-26T01:56:10` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre el contenido de la respuesta remota para garantizar que, incluso ante una inyección en el modelo, la app no pueda devolver rutas de sistema procesadas.
 - `2026-08-26T01:55:03` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save()` agregando un chequeo preventivo de escritura para el archivo de configuración existente (si ya existe) y para su directorio padre, asegurando que la operación de reemplazo atómico no falle silenciosamente ante permisos insuficientes o archivos de solo lectura.
 - `2026-08-26T01:45:47` **scanner.py** (robustez ante casos límite): Se ha mejorado `Scanner.process_entry` para capturar errores de acceso (como `OSError` o `PermissionError`) de forma más robusta al intentar resolver o verificar rutas, evitando que archivos bloqueados o con metadatos inaccesibles detengan el bucle de escaneo.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T01:04:56` **safety.py** (rendimiento): Se implementó un mecanismo de caché (dict privado y `lru_cache`) en los chequeos de integridad más costosos (como `is_file_in_use` y chequeos de atributos de Windows) para reducir significativamente las llamadas al sistema operativo durante las iteraciones de escaneo masivo, mejorando el rendimiento sin alterar la lógica de seguridad.
 - `2026-08-26T01:04:26` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y la carga del manifiesto evitando iteraciones redundantes y centralizando la resolución de rutas, mejorando el rendimiento en sistemas con muchos archivos en cuarentena.
 - `2026-08-26T00:55:25` **memory.py** (rendimiento): Se optimizó el proceso de filtrado y ordenamiento de la lista de procesos en `parse_windows_process_csv` mediante un generador y se reemplazó la conversión iterativa de strings por un uso más eficiente de `sorted` con `key` sobre el iterador, reduciendo la carga de memoria al procesar la lista.
-- `2026-08-26T00:55:11` **main.py** (rendimiento): Optimicé el sistema de caché centralizando y reduciendo la complejidad del acceso a datos repetitivos en `_compile_metrics` mediante el uso de `lru_cache` para la información de disco y evitando recálculos innecesarios de métricas de salud que ya están en memoria.
-- `2026-08-26T00:53:38` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando un `set` para verificar archivos procesados antes de calcular sus hashes, evitando operaciones de E/S redundantes en estructuras con enlaces simbólicos complejos o recursión circular.
-- `2026-08-26T00:45:18` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de los directorios centralizando la gestión del `memo` (perf_cache) a través de todas las llamadas recursivas, evitando la relectura redundante de subdirectorios compartidos entre distintas cachés (ej. perfiles de usuario que comparten estructura).
-- `2026-08-26T00:43:38` **assistant.py** (rendimiento): Optimicé el bucle de validación en `build_context` sustituyendo la iteración anidada sobre las fuentes por una estructura de datos más eficiente, evitando llamadas repetitivas a `isinstance` y mejorando la performance al procesar métricas.

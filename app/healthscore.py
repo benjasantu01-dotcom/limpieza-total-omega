@@ -193,16 +193,11 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
     "arranque": lambda m: score_startup(m.startup_count)
 }
 
-_PREPARED_SCORERS: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio]]]] = [
-    (area, weight, _SCORER_MAP[area]) for area, weight in _WEIGHT_ITEMS_INT if area in _SCORER_MAP
-]
-
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global basado en métricas normalizadas y pesos configurados."""
     if metrics is None or not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error interno: Datos de métricas nulos o inválidos."])
     
-    # Aseguramos integridad de los datos de entrada antes de procesar
     try:
         metrics.validate()
         if not metrics.is_finite():
@@ -214,15 +209,22 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios_cache: ScoreMap = {}
     accumulated_points: int = 0
     
-    # Cálculo ponderado del puntaje utilizando la lista pre-compilada
-    for area, weight, scorer in _PREPARED_SCORERS:
+    # Procesar solo las claves existentes en el mapa de scorers para evitar errores de llave
+    for area, weight in WEIGHTS.items():
+        scorer = _SCORER_MAP.get(area)
+        if not scorer:
+            continue
+            
         ratio = scorer(metrics)
-        if not math.isfinite(ratio):
-            ratio = 0.0
-        ratios_cache[area] = ratio
-        points = int(round(ratio * float(weight)))
+        ratio_clamped = _clamp(ratio, 0.0, 1.0)
+        
+        ratios_cache[area] = ratio_clamped
+        points = int(round(ratio_clamped * float(weight)))
         metric_breakdown[area] = points
         accumulated_points += points
+    
+    # Validación de seguridad: el acumulado debe estar dentro del rango lógico esperado
+    final_score = int(_clamp(float(accumulated_points), 0.0, 100.0))
     
     # Generación de recomendaciones según reglas definidas
     recommendations = [
@@ -235,8 +237,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
     return HealthResult(
-        score=accumulated_points, 
-        grade=grade_for_score(accumulated_points), 
+        score=final_score, 
+        grade=grade_for_score(final_score), 
         breakdown=metric_breakdown, 
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )

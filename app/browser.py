@@ -234,7 +234,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
         return 0
     try:
         p_obj = Path(path).resolve(strict=True)
-        if not p_obj.is_dir() or is_protected_path(p_obj):
+        if not p_obj.is_dir() or is_protected_path(p_obj) or not is_safe_to_modify(p_obj):
             return 0
         
         is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
@@ -251,6 +251,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
         
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or
             not real_candidate.is_dir() or is_protected_path(real_candidate) or 
+            not is_safe_to_modify(real_candidate) or
             not _is_path_inside_base(real_candidate, base_path) or 
             _is_excluded_file(real_candidate.name)):
             return False

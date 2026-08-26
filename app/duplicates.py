@@ -65,7 +65,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     try:
         path_obj = Path(path).resolve()
         if not path_obj.exists() or not path_obj.is_file(): return None
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj): return None
+        if is_protected_path(path_obj): return None
         if not os.access(path_obj, os.R_OK): return None
         
         digest = hashlib.sha256()
@@ -83,7 +83,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     try:
         path_obj = Path(path).resolve()
         if not path_obj.exists() or not path_obj.is_file(): return None
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj): return None
+        if is_protected_path(path_obj): return None
         if not os.access(path_obj, os.R_OK): return None
         
         with open(path_obj, "rb") as f:
@@ -97,11 +97,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def _is_valid_candidate(path: Path) -> bool:
     """Valida que la ruta sea un archivo real, accesible y no protegido."""
     try:
-        return (
-            path.is_file() and 
-            not is_protected_path(path) and 
-            is_safe_to_modify(path)
-        )
+        return path.is_file() and not is_protected_path(path)
     except (OSError, ValueError):
         return False
 
@@ -157,7 +153,7 @@ def _collect_candidates(
                             if stat.st_size < min_size: continue
                             p = Path(entry.path).resolve()
                             if p in processed_files: continue
-                            if (not skip_protected or not is_protected_path(p)) and is_safe_to_modify(p):
+                            if not skip_protected or not is_protected_path(p):
                                 processed_files.add(p)
                                 temp_groups[int(stat.st_size)].append(p)
                     except (OSError, PermissionError): continue
@@ -168,7 +164,7 @@ def _collect_candidates(
             if not item: continue
             try:
                 root = Path(item).resolve(strict=True)
-                if root.is_dir() and not is_protected_path(root) and is_safe_to_modify(root):
+                if root.is_dir() and not is_protected_path(root):
                     _scan(root)
             except (OSError, ValueError, RuntimeError): continue
     return {size: files for size, files in temp_groups.items() if len(files) > 1}

@@ -274,7 +274,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad defensiva: rechazar reparse points y enlaces simbólicos complejos
+                        # Seguridad defensiva: rechazar enlaces y reparse points sin seguirlos
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
@@ -283,7 +283,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             if skip_protected and is_protected_path(p):
                                 continue
                             
-                            st = entry.stat()
+                            st = entry.stat(follow_symlinks=False)
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
@@ -353,6 +353,10 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 if not relative.parts:
                     continue
                 top_folder = p_base / relative.parts[0]
+                # Validar seguridad nuevamente al reconstruir rutas
+                if is_protected_path(top_folder):
+                    continue
+                    
                 str_path = str(top_folder)
                 sums[str_path] += size
                 counts[str_path] += 1
