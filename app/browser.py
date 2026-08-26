@@ -131,6 +131,8 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
 
 def _is_excluded_file(name: str) -> bool:
     """Valida si un nombre de archivo está en la lista de bloqueo permanente."""
+    if not name:
+        return True
     return name.lower() in NEVER_TOUCH
 
 
@@ -155,11 +157,12 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     Aplica filtros de seguridad: omite rutas protegidas, enlaces simbólicos,
     puntos de reparse (junctions) y archivos con atributos de sistema/ocultos.
     """
-    if not entry or _is_excluded_file(entry.name):
+    if not entry:
+        return True
+    if _is_excluded_file(entry.name):
         return True
         
     try:
-        # Validación de ruta protegida antes de operar
         if is_protected_path(Path(entry.path)):
             return True
         if entry.is_symlink() or is_junction_fn(entry.path):
@@ -188,6 +191,8 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso en bytes de los archivos bajo root_dir.
     Usa memoización sobre el path absoluto para evitar ciclos y re-escaneos.
     """
+    if not root_dir:
+        return 0
     root_path = os.path.normpath(root_dir)
     if root_path in memo:
         return memo[root_path]
@@ -245,6 +250,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """Valida la integridad de la ruta: existencia, límites de directorio y exclusiones."""
+    if not candidate:
+        return False
     try:
         if not candidate.exists(): return False
         real_candidate = candidate.resolve(strict=True)

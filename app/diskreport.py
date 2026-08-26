@@ -262,7 +262,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         base_path = Path(directory).resolve()
         if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, TypeError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
@@ -418,8 +418,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     Returns:
         Lista de cadenas (líneas) que componen el reporte textual.
     """
-    if not directory:
-        return ["Error: Ruta no proporcionada."]
+    if not directory or not isinstance(directory, (str, Path, os.PathLike)):
+        return ["Error: Ruta no proporcionada o inválida."]
 
     try:
         p_input = Path(directory).resolve()

@@ -1176,3 +1176,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T03:50:12` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` validando explícitamente que los objetos fuente no sean tipos `bool` o `None` antes de acceder a ellos, evitando errores de tipo y posibles excepciones silenciadas que podrían comprometer la integridad del contexto.
 - `2026-08-26T03:50:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T03:50:12` Corrida terminada. Total usado hoy: 92.
+- `2026-08-26T03:56:44` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-26T03:57:16` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-26T03:57:40` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de escaneo (`_walk` y `detect_profiles`) mediante validaciones de parámetros `None` o vacíos y el uso de `try-except` granulares, evitando que excepciones en una entrada individual detengan el análisis completo del disco.
+- `2026-08-26T03:58:07` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `summarize` y `walk_files` mediante la validación proactiva de parámetros y la captura de errores específicos en la manipulación de rutas, evitando fallos silenciosos ante entradas malformadas o inaccesibles.
+- `2026-08-26T03:58:16` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `suggest_keeper` y `format_group` añadiendo validaciones de tipo explícitas y manejos de errores ante posibles rutas inexistentes o corrupciones de estado, evitando que la app colapse al procesar grupos inválidos.
+- `2026-08-26T03:58:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T03:58:16` Corrida terminada. Total usado hoy: 96.

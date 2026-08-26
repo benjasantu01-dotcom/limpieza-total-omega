@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 206
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 29 | 4 | 5 | 6 | 18 |
+| 2026-08-24 | 27 | 4 | 4 | 5 | 18 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 38 | 1 | 6 | 4 | 43 |
+| 2026-08-26 | 41 | 1 | 6 | 4 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
 - seguridad defensiva: **50**
+- legibilidad y documentación: **49**
 - rendimiento: **46**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **39**
-- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
 - `quarantine.py`: **21**
 - `settings.py`: **20**
+- `duplicates.py`: **20**
+- `memory.py`: **20**
 - `assistant.py`: **19**
-- `duplicates.py`: **19**
 - `scanner.py`: **18**
-- `browser.py`: **17**
-- `diskreport.py`: **17**
+- `browser.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **15**
 - `main.py`: **13**
-- `organizer.py`: **12**
 - `safety.py`: **12**
 - `branding.py`: **12**
+- `organizer.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T03:58:16` **duplicates.py** (manejo de errores y validación de entradas): Reforcé la robustez de `suggest_keeper` y `format_group` añadiendo validaciones de tipo explícitas y manejos de errores ante posibles rutas inexistentes o corrupciones de estado, evitando que la app colapse al procesar grupos inválidos.
+- `2026-08-26T03:58:07` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `summarize` y `walk_files` mediante la validación proactiva de parámetros y la captura de errores específicos en la manipulación de rutas, evitando fallos silenciosos ante entradas malformadas o inaccesibles.
+- `2026-08-26T03:57:40` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de escaneo (`_walk` y `detect_profiles`) mediante validaciones de parámetros `None` o vacíos y el uso de `try-except` granulares, evitando que excepciones en una entrada individual detengan el análisis completo del disco.
 - `2026-08-26T03:50:12` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` validando explícitamente que los objetos fuente no sean tipos `bool` o `None` antes de acceder a ellos, evitando errores de tipo y posibles excepciones silenciadas que podrían comprometer la integridad del contexto.
 - `2026-08-26T02:35:42` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante la verificación explícita de puntos de reparse (junctions y symlinks) utilizando `os.lstat` antes de la resolución de rutas, evitando que el escáner sea engañado por estructuras circulares o desvíos del sistema de archivos.
 - `2026-08-26T02:26:45` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre, complementando el chequeo de permisos (`os.access`) para garantizar que la configuración nunca se guarde en rutas sensibles o protegidas por sistema, independientemente de errores de privilegios.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T02:06:03` **duplicates.py** (seguridad defensiva): Se ha eliminado la redundante y potencialmente peligrosa validación `is_safe_to_modify` dentro de las funciones de lectura (`hash_file`, `partial_hash`, `_is_valid_candidate`), centralizando la responsabilidad en `is_protected_path` tal como dictan las nuevas reglas de seguridad para módulos de solo lectura.
 - `2026-08-26T02:05:36` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` para garantizar que los enlaces simbólicos y puntos de reparse no solo se detecten mediante `entry.is_symlink()`, sino que también se manejen de forma consistente utilizando `follow_symlinks=False` en las llamadas a `stat()`, evitando posibles errores de resolución de rutas externas o bucles infinitos en sistemas de archivos complejos.
 - `2026-08-26T02:05:04` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_valid_cache_path` mediante la integración explícita de `is_safe_to_modify` para asegurar que el acceso a las rutas detectadas cumpla con la política de seguridad global del proyecto antes de realizar cualquier medición de tamaño.
-- `2026-08-26T01:56:10` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre el contenido de la respuesta remota para garantizar que, incluso ante una inyección en el modelo, la app no pueda devolver rutas de sistema procesadas.
-- `2026-08-26T01:55:03` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save()` agregando un chequeo preventivo de escritura para el archivo de configuración existente (si ya existe) y para su directorio padre, asegurando que la operación de reemplazo atómico no falle silenciosamente ante permisos insuficientes o archivos de solo lectura.
-- `2026-08-26T01:45:47` **scanner.py** (robustez ante casos límite): Se ha mejorado `Scanner.process_entry` para capturar errores de acceso (como `OSError` o `PermissionError`) de forma más robusta al intentar resolver o verificar rutas, evitando que archivos bloqueados o con metadatos inaccesibles detengan el bucle de escaneo.

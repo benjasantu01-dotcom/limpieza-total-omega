@@ -96,6 +96,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def _is_valid_candidate(path: Path) -> bool:
     """Valida que la ruta sea un archivo real, accesible y no protegido."""
+    if not isinstance(path, Path): return False
     try:
         return path.is_file() and not is_protected_path(path)
     except (OSError, ValueError):
@@ -218,13 +219,14 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        p_obj = Path(p).resolve()
-        if _is_valid_candidate(p_obj):
-            try:
+        if not isinstance(p, Path): continue
+        try:
+            p_obj = p.resolve()
+            if _is_valid_candidate(p_obj):
                 stat_info = p_obj.stat()
                 candidates.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
-            except (OSError, PermissionError):
-                continue
+        except (OSError, PermissionError, ValueError):
+            continue
             
     return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
 
@@ -240,7 +242,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     
     for path in group.paths:
-        if not isinstance(path, Path): continue
+        if not isinstance(path, Path):
+            lines.append(f"   [error] ruta inválida: {path}")
+            continue
         try:
             p_obj = path.resolve()
             if not _is_valid_candidate(p_obj):
