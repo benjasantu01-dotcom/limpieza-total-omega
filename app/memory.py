@@ -317,6 +317,25 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     except (OSError, ctypes.ArgumentError): pass
     return None
 
+def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
+    """Verifica que la ruta del ejecutable sea segura para operar."""
+    if not os.path.isabs(path):
+        return False, "No se pudo verificar una ruta absoluta válida del ejecutable."
+    
+    if path.startswith("\\\\"):
+        return False, "Ruta bloqueada: ubicación en red (UNC) no segura."
+        
+    # Validación anti-evasión de rutas usando secuencias RTL
+    forbidden_sequences: List[bytes] = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
+    if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
+        return False, "Ruta de proceso sospechosa (ofuscación RTL)."
+    
+    p = Path(path).resolve()
+    for parent in [p] + list(p.parents):
+        if is_protected_path(str(parent)):
+            return False, f"Operación denegada: ruta de ejecutable protegida en {parent}."
+    return True, None
+
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """Valida integridad del proceso antes de solicitar `EmptyWorkingSet`."""
     if not isinstance(pid, int) or pid <= 0: return False, "PID no válido."
@@ -339,25 +358,11 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         path = _get_process_path(proc_handle)
         if not path:
             return False, "Acceso denegado: no se pudo obtener información del ejecutable."
-        if not os.path.isabs(path): 
-            return False, "No se pudo verificar una ruta absoluta válida del ejecutable."
-        
-        if path.startswith("\\\\"):
-            return False, "Ruta bloqueada: ubicación en red (UNC) no segura."
             
-        # Validación anti-evasión de rutas usando secuencias RTL
-        forbidden_sequences: List[bytes] = [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]
-        if any(seq in path.encode("utf-8", errors="ignore") for seq in forbidden_sequences):
-            return False, "Ruta de proceso sospechosa (ofuscación RTL)."
-        
-        p = Path(path).resolve()
-        for parent in [p] + list(p.parents):
-            if is_protected_path(str(parent)):
-                return False, f"Operación denegada: ruta de ejecutable protegida en {parent}."
+        return _validate_path_security(path)
             
     except (ctypes.ArgumentError, Exception):
         return False, "Error técnico al validar la seguridad del proceso."
-    return True, None
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """

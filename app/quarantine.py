@@ -156,8 +156,13 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta un acceso exclusivo para detectar si el SO mantiene un lock sobre el archivo.
-    Evita operaciones sobre archivos que están siendo utilizados por otros procesos.
+    Determina si un archivo está en uso mediante un intento de apertura exclusiva.
+    
+    Args:
+        path: Ruta al archivo a verificar.
+        
+    Returns:
+        True si el archivo está bloqueado o es inaccesible, False en caso contrario.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
@@ -282,7 +287,15 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 @lru_cache(maxsize=4)
 def _load_manifest_internal(base_str: str) -> Dict[str, QuarantineItem]:
-    """Carga interna: deserializa el manifiesto, retornando un diccionario para acceso O(1)."""
+    """
+    Carga interna: deserializa el manifiesto desde el disco.
+    
+    Args:
+        base_str: Ruta absoluta al directorio de cuarentena como string.
+        
+    Returns:
+        Diccionario con {item_id: QuarantineItem}.
+    """
     base_path = Path(base_str)
     path = _manifest_path(base_path)
     if not path.exists():
