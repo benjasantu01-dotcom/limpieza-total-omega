@@ -963,3 +963,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T02:21:29` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un chequeo de integridad en `restore_item` usando `is_safe_to_modify` sobre el directorio padre antes de realizar la restauración, garantizando que el destino no solo esté fuera de rutas protegidas, sino que sea efectivamente un lugar donde el usuario tenga permisos de escritura, evitando fallos de permisos tardíos.
 - `2026-08-26T02:21:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T02:21:29` Corrida terminada. Total usado hoy: 56.
+- `2026-08-26T02:24:57` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-26T02:25:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-26T02:26:01` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-26T02:26:28` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `_is_safe_entry` al forzar el uso de `casefold()` en lugar de `lower()` para la comparación de rutas, lo cual garantiza una normalización correcta en sistemas con archivos que puedan tener caracteres Unicode, y se ha añadido una validación de longitud máxima para evitar ataques de desbordamiento de buffer o rutas malformadas antes de procesar cualquier entrada.
+- `2026-08-26T02:26:45` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save()` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre, complementando el chequeo de permisos (`os.access`) para garantizar que la configuración nunca se guarde en rutas sensibles o protegidas por sistema, independientemente de errores de privilegios.
+- `2026-08-26T02:26:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T02:26:45` Corrida terminada. Total usado hoy: 60.

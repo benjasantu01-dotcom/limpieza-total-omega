@@ -54,6 +54,7 @@ WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "deskto
 # Configuración de umbrales
 SYSTEM32_LOWER: Final[str] = "system32"
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
+MAX_PATH_LENGTH: Final[int] = 260
 
 # Colección pre-definida de verificaciones para ejecutables
 EXECUTABLE_CHECKS: Final[List[SuspicionCheck]] = [
@@ -72,7 +73,7 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root: Path = base_root.resolve(strict=False)
-        self.base_root_str: str = str(self.base_root).lower()
+        self.base_root_str: str = str(self.base_root).casefold()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path: Path) -> bool:
@@ -80,10 +81,10 @@ class Scanner:
         Valida que una ruta esté dentro del árbol del directorio base.
         Usa resolución de rutas para evitar escapes mediante '..' o enlaces simbólicos.
         """
-        if is_protected_path(entry_path):
+        if is_protected_path(entry_path) or len(str(entry_path)) > MAX_PATH_LENGTH:
             return False
         try:
-            resolved = str(entry_path.resolve(strict=False)).lower()
+            resolved = str(entry_path.resolve(strict=False)).casefold()
             return resolved == self.base_root_str or resolved.startswith(self.base_root_str + os.sep)
         except (OSError, RuntimeError):
             return False
