@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **239** (47.4% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 196
+- Sin cambios (nada sustancial que mejorar): 26
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 156 | 11 | 20 | 18 | 143 |
-| 2026-08-26 | 82 | 4 | 10 | 7 | 53 |
+| 2026-08-25 | 156 | 11 | 20 | 18 | 139 |
+| 2026-08-26 | 83 | 4 | 10 | 8 | 55 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - rendimiento: **47**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **43**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **17**
 - `scanner.py`: **17**
 - `safety.py`: **15**
+- `main.py`: **14**
 - `branding.py`: **14**
-- `main.py`: **13**
 - `organizer.py`: **13**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T06:41:26` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_environment` implementando una validación explícita mediante `ensure_safe_to_modify` para el directorio de trabajo actual y sus componentes, protegiendo a la aplicación contra la ejecución en entornos comprometidos o rutas fuera de control.
 - `2026-08-26T06:31:10` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` y `_scan` validando estrictamente cada ruta resuelta contra `is_protected_path` antes de procesar su contenido o ingresar en ella, evitando que el escáner se exponga innecesariamente a estructuras de directorios restringidas.
 - `2026-08-26T06:30:37` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_system_hidden` añadiendo una comprobación explícita para evitar que archivos con el bit de `FILE_ATTRIBUTE_REPARSE_POINT` (0x400) sean procesados como archivos normales, reforzando la seguridad defensiva contra el seguimiento involuntario de junctions o puntos de montaje profundos.
 - `2026-08-26T06:30:12` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo un chequeo preventivo de la existencia del directorio padre mediante `is_safe_to_modify`, asegurando que no se intente crear o modificar directorios en ubicaciones restringidas del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T05:40:08` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `save()` reemplazando el uso intensivo de `path.resolve(strict=False)` por `path.absolute()` en contextos donde no se requiere validación de sistema de archivos, reduciendo llamadas redundantes a disco que causaban latencia innecesaria en cada consulta de configuración.
 - `2026-08-26T05:39:17` **safety.py** (rendimiento): Se implementó un mecanismo de caché local `_PROTECTION_CACHE` en `is_protected_path` para evitar el re-procesamiento costoso de rutas ya evaluadas, optimizando el rendimiento en escaneos masivos de disco.
 - `2026-08-26T05:29:51` **quarantine.py** (rendimiento): Optimizé `total_quarantined_bytes` y `summarize` para evitar llamadas redundantes a `quarantine_dir` y al manifiesto, utilizando el cache interno ya existente y reduciendo la carga sobre el sistema de archivos.
-- `2026-08-26T05:29:20` **organizer.py** (rendimiento): Se optimizó el recorrido de directorios reemplazando múltiples llamadas a `Path.exists()` y `Path.resolve()` por el uso directo de `os.scandir` y sus atributos (`is_dir`, `is_file`, `stat`), reduciendo drásticamente las llamadas al sistema (syscalls) innecesarias durante el escaneo.

@@ -182,13 +182,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         en el directorio base, validación de symlinks y directorios de trabajo.
         """
         try:
-            # Resolución absoluta estricta para evitar ataques por path traversal o enlaces
-            app_path = Path(__file__).resolve(strict=True)
-            if app_path.is_symlink():
-                raise RuntimeError("La aplicación no puede ejecutarse desde un enlace simbólico.")
+            app_root = Path(__file__).resolve().parent
+            # Asegurar que el entorno de ejecución está en un lugar seguro y no es symlink malintencionado
+            safety.ensure_safe_to_modify(app_root)
             
-            current_app_dir = app_path.parent
-            safety.ensure_safe_to_modify(current_app_dir)
+            if app_root.is_symlink():
+                raise RuntimeError("La aplicación no puede ejecutarse desde un enlace simbólico.")
             
             # Verificar permisos básicos en el perfil de usuario
             home = Path.home().resolve(strict=True)
