@@ -545,3 +545,36 @@ FAILED evolve/tests/test_assistant.py::test_available_reflects_the_configuration
 - `2026-08-26T09:15:01` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad técnica mediante la adición de Type Hints explícitas en las funciones de recorrido de directorios y la inclusión de docstrings detallados que explican el "porqué" de las validaciones de seguridad, facilitando el mantenimiento y auditoría del código.
 - `2026-08-26T09:15:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T09:15:01` Corrida terminada. Total usado hoy: 220.
+- `2026-08-26T09:23:03` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-08-26T09:23:46` Tests FALLARON:
+```
+             [100%]
+=================================== FAILURES ===================================
+_______________ test_quarantine_summary_reports_size_and_origin ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/_Cuarentena')
+
+    def test_quarantine_summary_reports_size_and_origin(tmp_path, cuarentena):
+        origen = tmp_path / "pesado.bin"
+        origen.write_bytes(b"0" * 2048)
+        quarantine.quarantine_file(origen, reason="motivo de prueba", base=cuarentena)
+    
+        texto = "\n".join(quarantine.summarize(cuarentena))
+        assert "pesado.bin" in texto
+        assert "motivo de prueba" in texto
+>       assert "restaurar" in texto
+E       AssertionError: assert 'restaurar' in '1 archivo(s) — 0.0 MB\n\n  [6bbf214d3bc1] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/pesado.bin'
+
+evolve/tests/test_safety.py:311: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - AssertionError: assert 'restaurar' in '1 archivo(s) — 0.0 MB\n\n  [6bbf214d3bc1] pesado.bin — 0.0 MB\n      Motivo: motivo de prueba\n      Origen: /tmp/pytest-of-runner/pytest-1/test_quarantine_summary_report0/pesado.bin'
+1 failed, 298 passed in 0.75s
+
+```
+- `2026-08-26T09:23:46` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación y legibilidad de `quarantine.py` mediante la adición de docstrings estructuradas en funciones críticas (siguiendo el estándar de Google Style), clarificación de tipos, y la extracción de lógica compleja de validación a funciones auxiliares más pequeñas para mejorar la mantenibilidad del bucle de seguridad.
+- `2026-08-26T09:24:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-26T09:24:47` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de validación para clarificar el propósito de cada chequeo y la lógica de flujo, facilitando el mantenimiento y la auditoría del código.
+- `2026-08-26T09:24:57` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del orquestador de reglas `scan_file` mediante la definición explícita de `CHECK_REGISTRY` y `EXECUTABLE_CHECK_REGISTRY` a nivel de módulo, eliminando la instanciación repetitiva de listas dentro del bucle.
+- `2026-08-26T09:24:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T09:24:57` Corrida terminada. Total usado hoy: 224.

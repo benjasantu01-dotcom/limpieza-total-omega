@@ -56,6 +56,37 @@ SYSTEM32_LOWER: Final[str] = "system32"
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 MAX_PATH_LENGTH: Final[int] = 260
 
+def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Detecta archivos con extensiones dobles, práctica común para ocultar binarios ejecutables."""
+    if DOUBLE_EXTENSION_RE.search(path.name):
+        return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
+    return None
+
+def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Evalúa si un archivo ejecutable es 'reciente' basándose en la fecha de modificación."""
+    parts = path.parts
+    if any(p.lower() in WATCHED_FOLDERS for p in parts):
+        try:
+            stats = entry.stat(follow_symlinks=False) if entry else path.stat()
+            if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+                return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
+        except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError):
+            pass
+    return None
+
+def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
+    """Compara nombres de archivos contra ejecutables críticos fuera de directorios de sistema protegidos."""
+    if path.name.lower() in SYSTEM_LOOKALIKES:
+        if SYSTEM32_LOWER not in str(path).lower():
+            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    return None
+
+# Registro de reglas heurísticas para ejecutables
+EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
+    check_system_lookalike,
+    check_recent_executable_in_downloads
+]
+
 class Scanner:
     """
     Gestiona el estado del escaneo y la navegación recursiva del sistema de archivos.
@@ -134,31 +165,6 @@ class Scanner:
         
         self.results.extend(scan_file(path, self.now_ts, entry=entry))
 
-def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Detecta archivos con extensiones dobles, práctica común para ocultar binarios ejecutables."""
-    if DOUBLE_EXTENSION_RE.search(path.name):
-        return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
-    return None
-
-def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Evalúa si un archivo ejecutable es 'reciente' basándose en la fecha de modificación."""
-    parts = path.parts
-    if any(p.lower() in WATCHED_FOLDERS for p in parts):
-        try:
-            stats = entry.stat(follow_symlinks=False) if entry else path.stat()
-            if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
-                return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-        except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError):
-            pass
-    return None
-
-def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Compara nombres de archivos contra ejecutables críticos fuera de directorios de sistema protegidos."""
-    if path.name.lower() in SYSTEM_LOOKALIKES:
-        if SYSTEM32_LOWER not in str(path).lower():
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
-    return None
-
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """
     Orquestador de reglas heurísticas. Aplica validaciones genéricas y
@@ -172,13 +178,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     
     # Reglas exclusivas para ejecutables
     if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-        # Registro de verificaciones específicas para binarios
-        executable_check_registry: List[SuspicionCheck] = [
-            check_system_lookalike,
-            check_recent_executable_in_downloads
-        ]
-        
-        for check in executable_check_registry:
+        for check in EXECUTABLE_CHECK_REGISTRY:
             try:
                 if (result := check(path, entry, now_ts)):
                     findings.append(result)
