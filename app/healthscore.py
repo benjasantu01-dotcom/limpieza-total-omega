@@ -52,7 +52,6 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # Factores de normalización: convierten valores absolutos a ratios [0, 1]
-# Protegidos contra divisiones por cero mediante el uso de valores base mínimos
 _INV_JUNK: Final[float] = 1.0 / max(1e-9, _LIMIT_JUNK_MB)
 _INV_DUP: Final[float] = 1.0 / max(1e-9, _LIMIT_DUPLICATE_MB)
 _INV_STARTUP: Final[float] = 1.0 / max(1, _LIMIT_STARTUP_COUNT)
@@ -123,7 +122,7 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
-        """Determina si el sistema califica como saludable."""
+        """Determina si el sistema califica como saludable (score >= 80)."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
@@ -149,34 +148,34 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud según la cantidad de archivos basura detectados."""
+    """Calcula el ratio de salud [0, 1] donde 1 es 'cero basura' y 0 es 'umbral máximo superado'."""
     return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de seguridad penalizando hallazgos y advertencias."""
+    """Calcula el ratio de seguridad, penalizando hallazgos críticos (5%) y advertencias (25%)."""
     penalty = (max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Normaliza el porcentaje de memoria libre respecto al umbral crítico."""
+    """Calcula el ratio de salud de memoria, normalizando el % disponible respecto al límite crítico."""
     ratio = _to_float(available_percent) / max(0.1, float(_LIMIT_RAM_PERCENT))
     return _clamp(ratio, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Normaliza el porcentaje de espacio en disco respecto al umbral crítico."""
+    """Calcula el ratio de salud de disco, normalizando el % libre respecto al límite crítico."""
     ratio = _to_float(free_percent) / max(0.1, float(_LIMIT_DISK_PERCENT))
     return _clamp(ratio, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud basado en el espacio ocupado por archivos duplicados."""
+    """Calcula el ratio de salud según el peso ocupado por archivos duplicados."""
     return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula el ratio de salud basado en la carga de programas en el arranque."""
+    """Calcula el ratio de salud considerando la cantidad de programas que inician con el sistema."""
     return _clamp(1.0 - (max(0, _to_int(startup_count)) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Asigna una letra de calificación según el puntaje numérico."""
+    """Asigna una letra de calificación (A-F) basada en un puntaje de 0 a 100."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -209,7 +208,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios_cache: ScoreMap = {}
     accumulated_points: int = 0
     
-    # Procesar solo las claves existentes en el mapa de scorers para evitar errores
+    # Procesar solo las claves existentes en el mapa de scorers
     for area, weight in WEIGHTS.items():
         scorer = _SCORER_MAP.get(area)
         if not scorer:
@@ -226,7 +225,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     # Validación: el acumulado debe estar dentro del rango lógico esperado
     final_score = int(_clamp(float(accumulated_points), 0.0, 100.0))
     
-    # Generación de recomendaciones: verificamos si existe el ratio antes de evaluar la regla
+    # Generación de recomendaciones basadas en reglas configuradas
     recommendations = [
         rule.message_factory(metrics) 
         for rule in _RECOMMENDATION_RULES 

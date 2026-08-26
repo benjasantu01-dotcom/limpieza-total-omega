@@ -190,6 +190,12 @@ def _sum_directory_recursive(
     """
     Calcula recursivamente el peso en bytes de los archivos bajo root_dir.
     Usa memoización sobre el path absoluto para evitar ciclos y re-escaneos.
+    
+    Args:
+        root_dir: Ruta raíz del directorio a escanear.
+        is_junction_fn: Callback para detectar puntos de reparse (Win32).
+        kernel32: Instancia de ctypes para chequear atributos de archivo.
+        memo: Diccionario para persistir resultados de sub-árboles.
     """
     if not root_dir:
         return 0
@@ -201,6 +207,7 @@ def _sum_directory_recursive(
         return 0
 
     def _walk(current_dir: str, depth: int) -> int:
+        """Función interna recursiva que recorre el árbol de archivos."""
         if not _is_within_depth_limit(depth, current_dir):
             return 0
         

@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence
 
-from safety import is_protected_path, is_safe_to_modify
+from safety import is_protected_path
 
 __all__ = [
     "DuplicateGroup",
@@ -132,6 +132,14 @@ def _collect_candidates(
     processed_dirs: set[Path] = set()
     processed_files: set[Path] = set()
 
+    def _should_skip_dir(entry: os.DirEntry) -> bool:
+        """Determina si un directorio debe ser ignorado por el escaneo."""
+        try:
+            stat = entry.stat(follow_symlinks=False)
+            return getattr(stat, 'st_reparse_tag', 0) != 0
+        except OSError:
+            return True
+
     def _scan(current_dir: Path) -> None:
         try:
             resolved_dir = current_dir.resolve()
@@ -142,15 +150,15 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         if entry.is_symlink(): continue
-                        stat = entry.stat(follow_symlinks=False)
-                        
                         if entry.is_dir(follow_symlinks=False):
-                            if getattr(stat, 'st_reparse_tag', 0) != 0: continue
+                            if _should_skip_dir(entry): continue
+                            stat = entry.stat(follow_symlinks=False)
                             dev_inode = (stat.st_dev, stat.st_ino)
                             if dev_inode not in visited_device_inodes:
                                 visited_device_inodes.add(dev_inode)
                                 _scan(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
+                            stat = entry.stat(follow_symlinks=False)
                             if stat.st_size < min_size: continue
                             p = Path(entry.path).resolve()
                             if p in processed_files: continue
