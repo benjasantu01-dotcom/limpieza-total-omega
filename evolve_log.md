@@ -1305,3 +1305,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T05:40:19` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un cache local de resultados de existencia para `is_protected_path` en `_resolve_and_cache_path`, evitando llamadas redundantes a funciones de sistema costosas dentro del bucle de resolución, mejorando significativamente el rendimiento al procesar múltiples entradas.
 - `2026-08-26T05:40:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T05:40:19` Corrida terminada. Total usado hoy: 136.
+- `2026-08-26T05:48:50` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-26T05:49:26` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `ingest` ante datos inesperados, asegurando que `source` sea un objeto con atributos o diccionario, y añadiendo validaciones específicas para cada tipo de dato antes de la inyección, evitando excepciones por tipos de datos erróneos en la configuración o el estado del sistema.
+- `2026-08-26T05:49:58` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save_logo_svg` y las funciones de dibujo del canvas agregando validaciones defensivas ante entradas numéricas malformadas, rutas inválidas y estados de canvas nulos para evitar cierres inesperados de la aplicación ante errores de entorno o datos corruptos.
+- `2026-08-26T05:50:23` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-26T05:50:36` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-26T05:50:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T05:50:36` Corrida terminada. Total usado hoy: 140.

@@ -254,6 +254,9 @@ class SystemContext:
         Retorna True si se pudo poblar al menos un dato válido.
         """
         found_data = False
+        if source is None or isinstance(source, (str, int, float, list, tuple, bool)):
+            return False
+            
         is_dict = isinstance(source, dict)
         
         for key, spec in _VALIDATORS.items():
@@ -304,14 +307,12 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _validate_and_assign(ctx: SystemContext, source: Any, is_dict: bool, key: str, spec: MetricSpec) -> bool:
     """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
-    if source is None or isinstance(source, bool):
-        return False
     try:
         val = source.get(key) if is_dict else getattr(source, key, None)
     except (AttributeError, TypeError):
         return False
     
-    if val is None or isinstance(val, bool): return False
+    if val is None or type(val) in _FORBIDDEN_TYPES: return False
     
     clean_val = _safe_float(val, -1.0)
     if clean_val < spec.min_val or clean_val > spec.max_val:
