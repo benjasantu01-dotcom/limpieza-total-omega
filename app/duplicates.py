@@ -169,13 +169,16 @@ def _collect_candidates(
         except (OSError, PermissionError, RuntimeError): pass
 
     if directories:
-        for item in set(directories):
+        unique_roots = set()
+        for item in directories:
             if not item: continue
             try:
                 root = Path(item).resolve(strict=True)
                 if root.is_dir() and not is_protected_path(root):
-                    _scan(root)
+                    unique_roots.add(root)
             except (OSError, ValueError, RuntimeError): continue
+        for root in unique_roots:
+            _scan(root)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
 

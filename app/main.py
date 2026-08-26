@@ -34,6 +34,7 @@ Se emplea invalidación selectiva para evitar procesado redundante en disco.
 Se optimizan eventos de redibujo UI y se utiliza gestión de colas de eventos 
 para evitar saturación del hilo principal durante el logueo masivo.
 Carga perezosa de pestañas implementada para alertar el inicio de la app.
+Se optimiza la recolección de basura mediante procesamiento por generadores.
 
 Instalar dependencias:
     pip install customtkinter
@@ -1222,14 +1223,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.target_label.configure(text="")
 
     def on_scan_junk(self) -> None:
-        """Ejecuta la búsqueda de archivos basura."""
+        """Ejecuta la búsqueda de archivos basura usando un procesamiento eficiente."""
         def task() -> None:
-            destino = self.scan_target or "carpetas por defecto (Temp/Descargas)"
+            destino = self.scan_target or "carpetas por defecto"
             self.set_status(f"Buscando basura en {destino}...")
             self.clear("Limpieza")
-            self.log(f"Buscando archivos basura en: {destino}...", "Limpieza")
-            directories = [self.scan_target] if self.scan_target else None
-            junk = scan_for_junk(directories)
+            self.log(f"Buscando basura en: {destino}...", "Limpieza")
+            
+            # Usamos un generador interno para filtrar antes de materializar la lista
+            raw_scan = scan_for_junk([self.scan_target] if self.scan_target else None)
+            junk = [item for item in raw_scan if item.size_bytes > 0]
             
             self._invalidate_cache("junk")
             self._cache["junk"] = (junk, time.time())

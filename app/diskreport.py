@@ -198,7 +198,6 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
     try:
         p = Path(os.fspath(mount)).resolve(strict=False)
-        # Seguridad defensiva: evitar rutas inusuales o caracteres de control
         if any(c < ' ' for c in str(p)):
             return None
         if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
@@ -274,7 +273,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Seguridad defensiva: rechazar enlaces y reparse points sin seguirlos
                         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
                             continue
                         
@@ -301,14 +299,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
     Identifica los N archivos más grandes en un directorio.
-
-    Args:
-        directory: Directorio raíz a explorar.
-        limit: Cantidad máxima de registros a retornar.
-        skip_protected: Si se debe omitir rutas protegidas.
-
-    Returns:
-        Lista ordenada de FileEntry.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -320,14 +310,6 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
     Agrupa el uso de espacio total por extensión de archivo.
-
-    Args:
-        directory: Directorio raíz a explorar.
-        limit: Cantidad máxima de grupos de extensión a retornar.
-        skip_protected: Si se debe omitir rutas protegidas.
-
-    Returns:
-        Lista ordenada de ExtensionUsage por tamaño total.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -351,14 +333,6 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Identifica las subcarpetas de primer nivel que ocupan más espacio.
-
-    Args:
-        directory: Directorio raíz a explorar.
-        limit: Cantidad máxima de subcarpetas a retornar.
-        skip_protected: Si se debe omitir rutas protegidas.
-
-    Returns:
-        Lista ordenada de FolderUsage por tamaño acumulado.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -377,7 +351,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                 if not relative.parts:
                     continue
                 top_folder = p_base / relative.parts[0]
-                # Validar seguridad nuevamente al reconstruir rutas
                 if is_protected_path(top_folder):
                     continue
                     
@@ -396,13 +369,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """
     Calcula el tamaño total en bytes y el conteo de archivos en un directorio.
-
-    Args:
-        directory: Ruta del directorio.
-        skip_protected: Si se debe omitir rutas protegidas.
-
-    Returns:
-        Tupla con (bytes_totales, cantidad_archivos).
     """
     total_bytes, file_count = 0, 0
     if not directory:
@@ -441,13 +407,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe textual unificado con los hallazgos del análisis.
-
-    Args:
-        directory: Ruta a analizar.
-        skip_protected: Si es True, no accede a rutas protegidas.
-
-    Returns:
-        Lista de cadenas que componen el reporte textual, o lista de errores.
     """
     if not directory or not isinstance(directory, (str, Path, os.PathLike)):
         return ["Error: Ruta no proporcionada o inválida."]
@@ -472,6 +431,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         "", 
         "Por tipo de archivo:"
     ]
+    
+    # Usar los datos recolectados en _collect_summary_data (Ya ordenados por extensión via dict)
     sorted_exts = heapq.nlargest(8, data.ext_sizes.items(), key=lambda item: item[1])
     for ext, size in sorted_exts:
         lines.append(f"  {ext:<18} {format_size(size):>10}  ({data.ext_counts[ext]} archivos)")

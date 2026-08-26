@@ -1260,3 +1260,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T05:10:13` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-08-26T05:10:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T05:10:13` Corrida terminada. Total usado hoy: 124.
+- `2026-08-26T05:18:14` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-26T05:18:42` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `summarize` y `_collect_summary_data` para consolidar el análisis de disco en una única pasada, eliminando redundancias y mejorando la eficiencia de la recolección de datos al evitar múltiples llamadas a funciones de escaneo.
+- `2026-08-26T05:19:06` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el método `_collect_candidates` para evitar redundancias en el recorrido del sistema de archivos al pre-convertir la lista de directorios de entrada en un `set` de rutas resueltas y normalizadas antes de iniciar la recursión, reduciendo así operaciones de E/S innecesarias.
+- `2026-08-26T05:19:31` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje transformando `_SCORER_MAP` en un diccionario que utiliza un acceso directo más eficiente y pre-calculando los factores de normalización fuera de los bucles para eliminar redundancias en la ejecución de `compute_score`.
+- `2026-08-26T05:20:23` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el rendimiento de la interfaz al reemplazar el método `on_scan_junk` con una implementación que utiliza un generador para procesar archivos y realizar la comparación de tamaño en bytes antes de la instanciación completa de objetos, evitando cuellos de botella en memoria al escanear directorios con gran cantidad de archivos pequeños.
+- `2026-08-26T05:20:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T05:20:23` Corrida terminada. Total usado hoy: 128.

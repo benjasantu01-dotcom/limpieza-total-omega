@@ -158,12 +158,12 @@ def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de memoria, normalizando el % disponible respecto al límite crítico."""
-    ratio = _to_float(available_percent) / max(0.1, float(_LIMIT_RAM_PERCENT))
+    ratio = _to_float(available_percent) * _INV_RAM
     return _clamp(ratio, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de disco, normalizando el % libre respecto al límite crítico."""
-    ratio = _to_float(free_percent) / max(0.1, float(_LIMIT_DISK_PERCENT))
+    ratio = _to_float(free_percent) * _INV_DISK
     return _clamp(ratio, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
@@ -194,7 +194,7 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global basado en métricas normalizadas y pesos configurados."""
-    if metrics is None or not isinstance(metrics, SystemMetrics):
+    if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error interno: Datos de métricas nulos o inválidos."])
     
     try:
@@ -208,28 +208,20 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios_cache: ScoreMap = {}
     accumulated_points: int = 0
     
-    # Procesar solo las claves existentes en el mapa de scorers
-    for area, weight in WEIGHTS.items():
-        scorer = _SCORER_MAP.get(area)
-        if not scorer:
-            continue
-            
+    for area, weight in _WEIGHT_ITEMS_INT:
+        scorer = _SCORER_MAP[area]
         ratio = scorer(metrics)
-        ratio_clamped = _clamp(ratio, 0.0, 1.0)
-        
-        ratios_cache[area] = ratio_clamped
-        points = int(round(ratio_clamped * float(weight)))
+        ratios_cache[area] = ratio
+        points = int(round(ratio * weight))
         metric_breakdown[area] = points
         accumulated_points += points
     
-    # Validación: el acumulado debe estar dentro del rango lógico esperado
     final_score = int(_clamp(float(accumulated_points), 0.0, 100.0))
     
-    # Generación de recomendaciones basadas en reglas configuradas
     recommendations = [
         rule.message_factory(metrics) 
         for rule in _RECOMMENDATION_RULES 
-        if rule.area in ratios_cache and rule.check(metrics, ratios_cache[rule.area])
+        if rule.check(metrics, ratios_cache.get(rule.area, 1.0))
     ]
             
     if metrics.quarantined_count > 0:
