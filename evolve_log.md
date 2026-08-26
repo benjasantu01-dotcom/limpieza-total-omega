@@ -890,3 +890,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T00:34:24` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-08-26T00:34:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T00:34:24` Corrida terminada. Total usado hoy: 16.
+- `2026-08-26T00:43:00` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-26T00:43:38` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el bucle de validación en `build_context` sustituyendo la iteración anidada sobre las fuentes por una estructura de datos más eficiente, evitando llamadas repetitivas a `isinstance` y mejorando la performance al procesar métricas.
+- `2026-08-26T00:44:52` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-26T00:45:18` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de los directorios centralizando la gestión del `memo` (perf_cache) a través de todas las llamadas recursivas, evitando la relectura redundante de subdirectorios compartidos entre distintas cachés (ej. perfiles de usuario que comparten estructura).
+- `2026-08-26T00:45:53` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimizé `_collect_summary_data` para evitar llamadas redundantes a `path.suffix.lower()` y accesos repetidos a diccionarios, utilizando una lógica de agregación más directa que reduce la sobrecarga por iteración durante el escaneo del disco.
+- `2026-08-26T00:45:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T00:45:53` Corrida terminada. Total usado hoy: 20.

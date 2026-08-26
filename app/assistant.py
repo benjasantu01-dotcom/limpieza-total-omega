@@ -317,17 +317,16 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     ctx = SystemContext()
     sources = [s for s in (metrics, health, extra) if s and not isinstance(s, (str, int, float, list, tuple, bool))]
     
-    # Cacheo de tipos para evitar llamadas repetidas a isinstance
-    src_types = [(s, isinstance(s, dict)) for s in sources]
+    src_configs = [(s, isinstance(s, dict)) for s in sources]
     found_data = False
     
     for key, spec in _VALIDATORS.items():
-        for src, is_dict in src_types:
+        for src, is_dict in src_configs:
             if _validate_and_assign(ctx, src, is_dict, key, spec):
                 found_data = True
                 break
 
-    for src, is_dict in src_types:
+    for src, is_dict in src_configs:
         try:
             val = src.get("grade") if is_dict else getattr(src, "grade", None)
             if isinstance(val, str) and _ensure_safe_text(val[:10].strip()):

@@ -188,15 +188,20 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso en bytes de los archivos bajo root_dir.
     Usa memoización sobre el path absoluto para evitar ciclos y re-escaneos.
     """
-    if root_dir in memo:
-        return memo[root_dir]
+    root_path = os.path.normpath(root_dir)
+    if root_path in memo:
+        return memo[root_path]
     
-    if not os.path.exists(root_dir):
+    if not os.path.exists(root_path):
         return 0
 
     def _walk(current_dir: str, depth: int) -> int:
         if not _is_within_depth_limit(depth, current_dir):
             return 0
+        
+        current_abs = os.path.normpath(current_dir)
+        if current_abs in memo:
+            return memo[current_abs]
         
         total: int = 0
         try:
@@ -206,7 +211,6 @@ def _sum_directory_recursive(
                         continue
                     
                     try:
-                        # follow_symlinks=False evita salirse del árbol de archivos
                         if entry.is_dir(follow_symlinks=False):
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file(follow_symlinks=False):
@@ -216,10 +220,11 @@ def _sum_directory_recursive(
                         continue
         except (PermissionError, OSError, FileNotFoundError):
             return 0
+        
+        memo[current_abs] = total
         return total
 
-    result = _walk(root_dir, 0)
-    memo[root_dir] = result
+    result = _walk(root_path, 0)
     return result
 
 
@@ -287,11 +292,7 @@ def detect_profiles(
                     c_path = candidate.resolve()
                     path_str = str(c_path)
                     
-                    if path_str not in perf_cache:
-                        size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache)
-                        perf_cache[path_str] = size
-                    
-                    size = perf_cache[path_str]
+                    size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
         except (OSError, PermissionError): 

@@ -16,28 +16,28 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 52 | 7 | 9 | 11 | 59 |
+| 2026-08-24 | 50 | 7 | 9 | 10 | 58 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 11 | 1 | 3 | 0 | 1 |
+| 2026-08-26 | 13 | 1 | 3 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **42**
-- robustez ante casos límite: **37**
-- rendimiento: **37**
+- rendimiento: **39**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
-- `quarantine.py`: **21**
+- `memory.py`: **20**
+- `quarantine.py`: **20**
 - `duplicates.py`: **19**
 - `diskreport.py`: **18**
+- `assistant.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
-- `assistant.py`: **17**
-- `browser.py`: **16**
+- `browser.py`: **17**
 - `scanner.py`: **15**
 - `branding.py`: **14**
 - `safety.py`: **13**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T00:45:18` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de los directorios centralizando la gestión del `memo` (perf_cache) a través de todas las llamadas recursivas, evitando la relectura redundante de subdirectorios compartidos entre distintas cachés (ej. perfiles de usuario que comparten estructura).
+- `2026-08-26T00:43:38` **assistant.py** (rendimiento): Optimicé el bucle de validación en `build_context` sustituyendo la iteración anidada sobre las fuentes por una estructura de datos más eficiente, evitando llamadas repetitivas a `isinstance` y mejorando la performance al procesar métricas.
 - `2026-08-26T00:34:13` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos, tipado explícito para evitar ambigüedades en el retorno de las funciones de validación y un refinamiento en el flujo de `_Validators.path` para clarificar qué condiciones fallan al validar una ruta.
 - `2026-08-26T00:33:43` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos críticos del `Scanner` y se han añadido `type hints` y `docstrings` explicativos para clarificar el flujo de trabajo del escáner heurístico, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar la lógica.
 - `2026-08-26T00:24:05` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (utilizando Google Style) y la adición de Type Hints detallados en funciones internas clave para mejorar la mantenibilidad y legibilidad del código.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T00:03:11` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de validación de métricas convirtiendo la estructura de datos `_VALIDATORS` en una clase `MetricSpec` con tipado fuerte, eliminando el uso de tuplas de tipo heterogéneo que oscurecían la intención del código.
 - `2026-08-25T14:53:08` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_in_use` sustituyendo el uso de `ctypes.windll.kernel32.CreateFileW` por `os.open` con `os.O_EXCL` (o el acceso equivalente de lectura exclusiva), evitando el manejo manual de handles que puede quedar abierto si ocurre una excepción inesperada, y agregué una validación de `None` más estricta en el predicado para evitar que el bucle de validación falle catastróficamente ante entradas mal formadas.
 - `2026-08-25T14:52:06` **quarantine.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `purge_item` y `purge_all` mediante la validación explícita de `item_id` y rutas antes de operar, previniendo errores de ejecución por diccionarios mutados o rutas inexistentes durante la iteración de purga masiva.
-- `2026-08-25T14:51:33` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo validaciones explícitas contra `None` y errores de tipo en las rutas, evitando que excepciones silenciadas por atributos inexistentes (como `.anchor` en rutas relativas o mal formadas) aborten operaciones de forma inesperada.
-- `2026-08-25T14:43:03` **memory.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `read_snapshot` y `top_memory_processes` mediante la validación explícita de recursos y la captura granular de excepciones, evitando operaciones sobre archivos inexistentes o contextos de ejecución degradados.
