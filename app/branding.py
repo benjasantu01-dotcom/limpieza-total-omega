@@ -386,7 +386,13 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
     except Exception: pass
 
 def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo corporativo aplicando transformación de escala en el canvas."""
+    """
+    Dibuja el escudo corporativo escalado y centrado en el canvas.
+    Args:
+        canvas: Widget de dibujo donde renderizar.
+        size: Dimensión base (128x128 es el tamaño nativo).
+        canvas_x, canvas_y: Coordenadas de origen para el dibujo.
+    """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         s_val = float(size)
@@ -414,7 +420,14 @@ def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: 
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con degradado de color sobre el canvas."""
+    """
+    Renderiza una línea horizontal con degradado de color sobre el canvas.
+    Args:
+        canvas: Widget de dibujo donde renderizar.
+        width: Longitud de la barra en píxeles.
+        height: Espesor de la línea (default 3).
+        canvas_x, canvas_y: Coordenadas de inicio.
+    """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         ancho: int = max(1, int(width))
@@ -427,7 +440,13 @@ def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular (donut) de progreso en un área de dibujo."""
+    """
+    Dibuja un indicador circular de progreso (donut) sobre el canvas.
+    Args:
+        percent: Valor porcentual (0.0 a 100.0) a representar.
+        size: Diámetro total del anillo en píxeles.
+        thickness: Grosor de la banda circular.
+    """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))

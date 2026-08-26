@@ -838,3 +838,34 @@ FAILED evolve/tests/test_assistant.py::test_numbers_are_clamped_to_their_range -
 - `2026-08-25T23:31:34` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-25T23:41:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-25T23:51:54` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-26T00:02:06` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-26T00:02:35` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.19s
+
+```
+- `2026-08-26T00:02:35` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `StartupEntry._resolve_and_cache_path` añadiendo validaciones preventivas de tipos y estados para evitar excepciones inesperadas, asegurando que `_EXISTS_CACHE` no sea poblado con rutas mal formadas y que la validación de integridad (`is_protected_path`) actúe de manera consistente sobre rutas normalizadas y absolutas.
+- `2026-08-26T00:03:11` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de la lógica de validación de métricas convirtiendo la estructura de datos `_VALIDATORS` en una clase `MetricSpec` con tipado fuerte, eliminando el uso de tuplas de tipo heterogéneo que oscurecían la intención del código.
+- `2026-08-26T00:03:44` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos para las funciones de dibujo (`draw_logo`, `draw_ring`, `draw_gradient_bar`) que clarifican los parámetros de entrada y el propósito de las transformaciones geométricas, mejorando la mantenibilidad del código gráfico.
+- `2026-08-26T00:03:55` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Documenté con precisión los parámetros y el comportamiento de las funciones de recursión y filtrado, clarificando la intención detrás del uso de `os.scandir` y la estrategia de seguridad al ignorar puntos de reparse, mejorando la mantenibilidad técnica del módulo.
+- `2026-08-26T00:03:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T00:03:55` Corrida terminada. Total usado hoy: 4.

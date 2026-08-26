@@ -152,8 +152,8 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Aplica filtros de seguridad (lista negra, rutas protegidas, enlaces simbólicos/junctions
-    y atributos de sistema) para evitar seguir estructuras riesgosas durante la recursión.
+    Aplica filtros de seguridad: omite rutas protegidas, enlaces simbólicos,
+    puntos de reparse (junctions) y archivos con atributos de sistema/ocultos.
     """
     if not entry or _is_excluded_file(entry.name):
         return True
@@ -185,8 +185,8 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Calcula recursivamente el peso de los archivos en un directorio.
-    Implementa memoización por ruta para evitar re-escaneo en estructuras complejas.
+    Calcula recursivamente el peso en bytes de los archivos bajo root_dir.
+    Usa memoización sobre el path absoluto para evitar ciclos y re-escaneos.
     """
     if root_dir in memo:
         return memo[root_dir]
@@ -206,6 +206,7 @@ def _sum_directory_recursive(
                         continue
                     
                     try:
+                        # follow_symlinks=False evita salirse del árbol de archivos
                         if entry.is_dir(follow_symlinks=False):
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file(follow_symlinks=False):
@@ -238,7 +239,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Realiza validaciones finales de integridad sobre una ruta de caché propuesta."""
+    """Valida la integridad de la ruta: existencia, límites de directorio y exclusiones."""
     try:
         if not candidate.exists(): return False
         real_candidate = candidate.resolve(strict=True)
@@ -257,7 +258,11 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Escanea el sistema buscando rutas de caché conocidas mediante heurística."""
+    """
+    Escanea el sistema buscando rutas de caché conocidas.
+    Usa un cache de rendimiento (perf_cache) para no recalcular sub-árboles
+    repetidos entre navegadores distintos.
+    """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     

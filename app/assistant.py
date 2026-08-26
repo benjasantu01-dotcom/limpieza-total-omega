@@ -77,6 +77,13 @@ class AssistantConfig(TypedDict):
     asistente_modelo: str
     asistente_enviar_metricas: bool
 
+@dataclass(frozen=True)
+class MetricSpec:
+    """Define los límites y el tipo de conversión para una métrica del sistema."""
+    cast_func: Callable[[Any], Any]
+    min_val: float
+    max_val: float
+
 class ProblemCriterion(NamedTuple):
     """Define una regla de salud lógica para la evaluación de métricas."""
     metric_key: str
@@ -108,7 +115,6 @@ class AreaExplanation(NamedTuple):
 # Tipos para validación de datos
 MetricSource: TypeAlias = dict[str, Any] | object
 ScoreSource: TypeAlias = dict[str, Any] | object
-ValidatorSpec: TypeAlias = tuple[Callable[[Any], float], float, float]
 
 # Constantes de configuración de seguridad y límites
 _MAX_TEXT_LENGTH: Final[int] = 1000
@@ -194,18 +200,18 @@ _EXPLANATION_MAP: Final[dict[str, str]] = {
     "inicio": "Programas que arrancan con Windows: cada entrada incrementa el tiempo de inicio y el consumo base de memoria.",
 }
 
-_VALIDATORS: Final[dict[str, ValidatorSpec]] = {
-    "junk_mb": (float, 0.0, 1e9),
-    "suspicious_count": (int, 0, 10000),
-    "suspicious_warnings": (int, 0, 10000),
-    "memory_available_percent": (float, 0.0, 100.0),
-    "memory_total_gb": (float, 0.0, 2048.0),
-    "disk_free_percent": (float, 0.0, 100.0),
-    "duplicate_mb": (float, 0.0, 1e9),
-    "startup_count": (int, 0, 1000),
-    "quarantined_count": (int, 0, 10000),
-    "browser_cache_mb": (float, 0.0, 1e6),
-    "score": (int, 0, 100),
+_VALIDATORS: Final[dict[str, MetricSpec]] = {
+    "junk_mb": MetricSpec(float, 0.0, 1e9),
+    "suspicious_count": MetricSpec(int, 0, 10000),
+    "suspicious_warnings": MetricSpec(int, 0, 10000),
+    "memory_available_percent": MetricSpec(float, 0.0, 100.0),
+    "memory_total_gb": MetricSpec(float, 0.0, 2048.0),
+    "disk_free_percent": MetricSpec(float, 0.0, 100.0),
+    "duplicate_mb": MetricSpec(float, 0.0, 1e9),
+    "startup_count": MetricSpec(int, 0, 1000),
+    "quarantined_count": MetricSpec(int, 0, 10000),
+    "browser_cache_mb": MetricSpec(float, 0.0, 1e6),
+    "score": MetricSpec(int, 0, 100),
 }
 
 _FORBIDDEN_TYPES: Final[set[type]] = {list, dict, set, tuple, bool}
@@ -288,9 +294,8 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     return _is_safe_text_structure(text)
 
-def _validate_and_assign(ctx: SystemContext, source: Any, is_dict: bool, key: str, spec: ValidatorSpec) -> bool:
+def _validate_and_assign(ctx: SystemContext, source: Any, is_dict: bool, key: str, spec: MetricSpec) -> bool:
     """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
-    cast, min_v, max_v = spec
     try:
         val = source.get(key) if is_dict else getattr(source, key, None)
     except (AttributeError, TypeError):
@@ -299,10 +304,10 @@ def _validate_and_assign(ctx: SystemContext, source: Any, is_dict: bool, key: st
     if val is None or isinstance(val, bool): return False
     
     clean_val = _safe_float(val, -1.0)
-    if clean_val < min_v or clean_val > max_v:
+    if clean_val < spec.min_val or clean_val > spec.max_val:
         return False
     
-    setattr(ctx, key, cast(clean_val))
+    setattr(ctx, key, spec.cast_func(clean_val))
     return True
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:
