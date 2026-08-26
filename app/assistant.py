@@ -387,8 +387,7 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
         msg = crit.format_if_triggered(ctx)
         if msg:
             problemas.append(msg)
-            if len(problemas) >= 3:
-                break
+            if len(problemas) >= 3: break
     return problemas
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
@@ -474,11 +473,13 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
+    # Identificar problemas una sola vez por consulta
+    problemas = _identify_active_problems(context)
+    
     for token in _TOKEN_REGEX.findall(q_sanitized):
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, question)
 
-    problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "

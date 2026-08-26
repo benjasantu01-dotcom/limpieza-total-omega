@@ -98,7 +98,6 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
 
-# Usamos dict simple, la limpieza de caché se realiza por expiración lógica
 _CACHE: dict[Path, tuple[float, AppSettings]] = {}
 _STR_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
@@ -119,7 +118,7 @@ def _get_default_config() -> AppSettings:
         "analisis_en_paralelo": True,
         "asistente_activado": False,
         "asistente_clave_api": "",
-        "asistente_enviar_METRICAS": True,
+        "asistente_enviar_metricas": True,
         "asistente_modelo": "gemini-3.1-flash-lite",
     }
 
@@ -235,7 +234,7 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 }
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Calcula la ruta del config.json, validando que el directorio base no sea de sistema."""
+    """Calcula la ruta del archivo de configuración, validando seguridad de la ruta base."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
         base = Path(custom_base).expanduser().resolve(strict=False)
@@ -246,7 +245,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario externo (JSON) contra el esquema AppSettings, forzando valores de fábrica ante corrupción."""
+    """Valida un diccionario externo (JSON) contra el esquema, forzando valores de fábrica ante corrupción."""
     config = _get_default_config()
     if not isinstance(raw_values, dict): return config
     for key_str, val in raw_values.items():
@@ -258,7 +257,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Lee configuración desde disco con caché de memoria basada en el mtime del archivo."""
+    """Lee y deserializa la configuración desde disco; utiliza caché para evitar lecturas redundantes."""
     ruta = settings_path(custom_base)
     try:
         if not ruta.exists(): return _get_default_config()
@@ -277,7 +276,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return _get_default_config()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Guarda configuración de forma atómica."""
+    """Serializa y guarda la configuración de manera atómica, previniendo corrupción ante interrupciones."""
     if not isinstance(values, dict): return None
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
@@ -302,7 +301,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Actualiza parcialmente la configuración."""
+    """Aplica actualizaciones parciales a la configuración actual y persiste los cambios."""
     current = load(custom_base).copy()
     modified = False
     for k, v in changes.items():
@@ -316,28 +315,28 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura la configuración a los valores definidos de fábrica."""
+    """Restablece la configuración del usuario a los valores definidos por defecto."""
     default_config = _get_default_config()
     save(default_config, custom_base)
     return default_config
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
-    """Accesor seguro a un valor individual."""
+    """Accesor seguro para consultar un valor individual de la configuración."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Retorna la clave de API priorizando la variable de entorno."""
+    """Obtiene la clave de API para el asistente, priorizando variables de entorno por seguridad."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente tiene los requisitos para operar."""
+    """Verifica si el asistente está configurado y habilitado correctamente."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", ""))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera un reporte legible de la configuración actual."""
+    """Genera una representación en texto plano de la configuración actual, ideal para logs."""
     current = load(custom_base)
     key = assistant_api_key(custom_base)
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")

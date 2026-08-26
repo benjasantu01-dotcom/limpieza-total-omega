@@ -118,8 +118,10 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Normaliza rutas y verifica existencia en disco. 
-        Detecta FILE_ATTRIBUTE_REPARSE_POINT para evitar seguir junctions 
-        que podrían causar bucles infinitos o escaneos innecesarios.
+        
+        La verificación detecta FILE_ATTRIBUTE_REPARSE_POINT (0x400) para no 
+        seguir puntos de reanálisis (junctions/symlinks) que podrían causar 
+        bucles infinitos o fugas de escaneo fuera de directorios de usuario.
         """
         if not isinstance(path_string, str) or not path_string or any(c in path_string for c in '<>|?*\0'):
             return ""
@@ -161,7 +163,13 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Divide la línea de comandos por espacios para aislar el ejecutable del resto de los argumentos."""
+        """
+        Divide la línea de comandos para extraer el ejecutable primario.
+        
+        La lógica ignora comandos con caracteres de control de shell para 
+        evitar que rutas maliciosas (ej. inyección de argumentos) sean 
+        validadas incorrectamente como ejecutables.
+        """
         if not command_line or not isinstance(command_line, str):
             return ""
         if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
@@ -241,7 +249,9 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
     Parsea la salida cruda de PowerShell (CSV) y crea objetos StartupEntry.
-    Filtra entradas vacías, duplicadas en estructura o protegidas.
+    
+    Retorna una lista filtrada de entradas validadas para asegurar que ninguna
+    ruta de sistema sea procesada como ejecutable de inicio.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
