@@ -148,30 +148,48 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud [0, 1] donde 1 es 'cero basura' y 0 es 'umbral máximo superado'."""
+    """
+    Calcula salud de archivos basura.
+    Asume 1.0 (óptimo) si junk_mb es 0, y decae linealmente hasta 0.0 al llegar a _LIMIT_JUNK_MB.
+    """
     return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de seguridad, penalizando hallazgos críticos (5%) y advertencias (25%)."""
+    """
+    Calcula salud de seguridad.
+    Aplica penalizaciones discretas: 5% por hallazgo sospechoso y 25% por advertencia activa.
+    """
     penalty = (max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de memoria, normalizando el % disponible respecto al límite crítico."""
+    """
+    Calcula salud de memoria.
+    Normaliza el porcentaje disponible respecto al umbral crítico definido en _LIMIT_RAM_PERCENT.
+    """
     ratio = _to_float(available_percent) * _INV_RAM
     return _clamp(ratio, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud de disco, normalizando el % libre respecto al límite crítico."""
+    """
+    Calcula salud de disco.
+    Normaliza el porcentaje de espacio libre respecto al umbral crítico definido en _LIMIT_DISK_PERCENT.
+    """
     ratio = _to_float(free_percent) * _INV_DISK
     return _clamp(ratio, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud según el peso ocupado por archivos duplicados."""
+    """
+    Calcula salud de almacenamiento.
+    Puntúa inversamente al tamaño total de archivos redundantes encontrados.
+    """
     return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula el ratio de salud considerando la cantidad de programas que inician con el sistema."""
+    """
+    Calcula salud de inicio del sistema.
+    Puntúa inversamente a la cantidad de programas que inician automáticamente con Windows.
+    """
     return _clamp(1.0 - (max(0, _to_int(startup_count)) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:

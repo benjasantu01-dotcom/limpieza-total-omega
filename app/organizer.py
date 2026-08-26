@@ -95,7 +95,10 @@ class JunkFile:
 
 
 def _is_junction(entry: os.DirEntry) -> bool:
-    """Verifica si la entrada es un punto de reparse (Junction/Symlink)."""
+    """
+    Verifica si la entrada es un punto de reparse (Junction/Symlink).
+    Se evita seguir estas rutas para prevenir ciclos infinitos o lectura de archivos fuera del scope.
+    """
     try:
         return entry.is_symlink() or (os.name == "nt" and bool(entry.stat().st_file_attributes & 0x400))
     except (OSError, AttributeError):
@@ -131,6 +134,7 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Intenta abrir el archivo en modo lectura binaria para detectar bloqueos exclusivos.
+    Si falla, se asume que el archivo está en uso por otra aplicación.
     """
     try:
         with open(path, "rb") as f:
@@ -142,6 +146,7 @@ def _is_file_locked(path: Path) -> bool:
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
     Determina si la operación de destino implica un riesgo de recursividad.
+    Previene intentar mover un directorio dentro de sí mismo.
     """
     try:
         s, d = src.resolve(), dest.resolve()
@@ -153,6 +158,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza una validación exhaustiva de seguridad antes de operaciones de I/O.
+    Verifica permisos, protecciones de sistema y bloqueos de archivo.
     """
     try:
         if not src or not dest or not src.exists() or not src.is_file(): return False
@@ -192,7 +198,8 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """
-    Realiza un recorrido eficiente usando os.scandir para evitar syscalls innecesarias.
+    Realiza un recorrido recursivo eficiente usando os.scandir.
+    Ignora junctions y carpetas protegidas para evitar accesos indebidos.
     """
     if is_protected_path(current_dir):
         return
@@ -240,7 +247,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Evalúa la viabilidad de mover un archivo."""
+    """Evalúa la viabilidad de mover un archivo verificando espacio en disco y permisos."""
     if not isinstance(junk_file.path, Path) or not dest_base: return None
     try:
         src_path = junk_file.path.resolve()

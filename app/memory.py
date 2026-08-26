@@ -187,7 +187,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Invoca la API GlobalMemoryStatusEx y retorna un snapshot del sistema."""
+    """
+    Invoca la API de Win32 'GlobalMemoryStatusEx' para obtener estadísticas
+    reales del sistema. Retorna un snapshot vacío si la llamada falla.
+    """
     try:
         kernel32 = getattr(ctypes.windll, "kernel32", None)
         if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx"):
@@ -274,14 +277,20 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Comprueba si un proceso es crítico o pertenece a la app para denegar manipulación."""
+    """
+    Verifica si un PID dado corresponde a procesos internos del sistema
+    (definidos en SYSTEM_CRITICAL_PIDS) o a la propia instancia de la app.
+    """
     if not isinstance(pid, int): return True
     if pid in SYSTEM_CRITICAL_PIDS: return True
     if pid == os.getpid(): return True
     return False
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
-    """Extrae la ruta del ejecutable usando la API QueryFullProcessImageName."""
+    """
+    Resuelve la ruta absoluta de un proceso dado un handle abierto usando
+    la función de Win32 'QueryFullProcessImageNameW'.
+    """
     if not handle or handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
