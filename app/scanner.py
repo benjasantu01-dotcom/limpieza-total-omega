@@ -155,7 +155,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if not directory:
         return []
     try:
-        path_input = Path(directory).resolve(strict=False)
+        path_input = Path(directory).expanduser().resolve(strict=False)
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):
