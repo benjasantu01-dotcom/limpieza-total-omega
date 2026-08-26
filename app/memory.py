@@ -346,9 +346,9 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
     
     try:
-        actual_pid: int = kernel32.GetProcessId(proc_handle)
-        if actual_pid != pid:
-            return False, "Error de validación: el proceso identificado cambió."
+        # Validación crítica: asegurar que el handle corresponde al PID esperado (anti-TOCTOU)
+        if kernel32.GetProcessId(proc_handle) != pid:
+            return False, "Error de validación: el proceso identificado cambió (PID mismatch)."
 
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)):

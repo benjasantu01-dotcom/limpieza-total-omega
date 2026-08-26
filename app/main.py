@@ -1276,7 +1276,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            safety.ensure_safe_to_modify(Path(".").resolve())
+            # Validación de seguridad explícita sobre el entorno de trabajo actual
+            safety.ensure_safe_to_modify(Path(".").resolve(strict=True))
             self.set_status("Moviendo a revisión...")
             dest = stage_for_review(aptos)
             self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")

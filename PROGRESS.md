@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 29
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 41 | 6 | 7 | 7 | 41 |
+| 2026-08-24 | 41 | 6 | 7 | 7 | 37 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 30 | 1 | 5 | 4 | 12 |
+| 2026-08-26 | 34 | 1 | 5 | 4 | 12 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
+- seguridad defensiva: **47**
 - rendimiento: **46**
-- seguridad defensiva: **43**
 - manejo de errores y validación de entradas: **42**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
-- `quarantine.py`: **21**
+- `memory.py`: **22**
+- `quarantine.py`: **22**
 - `assistant.py`: **20**
 - `settings.py`: **20**
 - `duplicates.py`: **20**
@@ -39,14 +39,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `scanner.py`: **17**
+- `organizer.py`: **13**
 - `branding.py`: **13**
-- `organizer.py`: **12**
-- `main.py`: **12**
+- `main.py`: **13**
 - `safety.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T02:21:29` **quarantine.py** (seguridad defensiva): Se implementó un chequeo de integridad en `restore_item` usando `is_safe_to_modify` sobre el directorio padre antes de realizar la restauración, garantizando que el destino no solo esté fuera de rutas protegidas, sino que sea efectivamente un lugar donde el usuario tenga permisos de escritura, evitando fallos de permisos tardíos.
+- `2026-08-26T02:20:47` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_process_directory` y `_is_safe_for_disk_op` añadiendo una validación explícita mediante `is_protected_path` antes de procesar o interactuar con cualquier ruta, garantizando que el módulo no escanee ni opere en zonas críticas aunque la heurística de carpetas fallara.
+- `2026-08-26T02:19:54` **memory.py** (seguridad defensiva): Mejoré la seguridad de `trim_working_set` añadiendo un chequeo explícito de integridad para prevenir el "Time-of-Check to Time-of-Use" (TOCTOU) mediante la validación de `GetProcessId` justo antes de la acción, asegurando que el handle abierto realmente corresponde al PID objetivo después de los chequeos iniciales.
+- `2026-08-26T02:19:24` **main.py** (seguridad defensiva): Se reforzó la seguridad del método `on_stage` validando que la carpeta de destino (`.` resuelta a absoluta) sea segura antes de iniciar el proceso, para evitar que una configuración local maliciosa altere el comportamiento del organizador.
 - `2026-08-26T02:06:14` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `compute_score` eliminando la dependencia del orden del diccionario global `_WEIGHT_ITEMS_INT` y validando estrictamente que el resultado final del puntaje acumulado se mantenga dentro de los límites esperados (0-100) incluso ante errores inesperados en las funciones de cálculo (scorrers).
 - `2026-08-26T02:06:03` **duplicates.py** (seguridad defensiva): Se ha eliminado la redundante y potencialmente peligrosa validación `is_safe_to_modify` dentro de las funciones de lectura (`hash_file`, `partial_hash`, `_is_valid_candidate`), centralizando la responsabilidad en `is_protected_path` tal como dictan las nuevas reglas de seguridad para módulos de solo lectura.
 - `2026-08-26T02:05:36` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` para garantizar que los enlaces simbólicos y puntos de reparse no solo se detecten mediante `entry.is_symlink()`, sino que también se manejen de forma consistente utilizando `follow_symlinks=False` en las llamadas a `stat()`, evitando posibles errores de resolución de rutas externas o bucles infinitos en sistemas de archivos complejos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T01:36:06` **memory.py** (robustez ante casos límite): Se ha robustecido `_read_windows_snapshot` y `trim_working_set` añadiendo manejo de errores para casos límite donde las llamadas a la API de Windows pueden fallar silenciosamente, asegurar que el `handle` sea cerrado siempre (incluso ante excepciones críticas) y validar que el tamaño de memoria devuelto sea físicamente posible para evitar datos basura en sistemas con configuraciones inusuales.
 - `2026-08-26T01:15:17` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de diagnóstico ante estados inesperados de las métricas, incluyendo casos donde `score` o `startup_count` sean `None`, evitando errores de tipo al procesar consultas y garantizando una respuesta coherente aunque falten datos.
 - `2026-08-26T01:14:30` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración eliminando llamadas redundantes a `load()` en funciones de acceso y transformando la caché a un modelo de "lazy loading" que evita re-parsear el archivo si no ha cambiado su timestamp.
-- `2026-08-26T01:14:01` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la evaluación de `WATCHED_FOLDERS` a un `any` sobre los componentes de la ruta en lugar de realizar múltiples llamadas a `lower()` y búsquedas de substrings innecesarias, y consolidé las verificaciones iniciales de `scan_file` para evitar redundancias.
-- `2026-08-26T01:04:56` **safety.py** (rendimiento): Se implementó un mecanismo de caché (dict privado y `lru_cache`) en los chequeos de integridad más costosos (como `is_file_in_use` y chequeos de atributos de Windows) para reducir significativamente las llamadas al sistema operativo durante las iteraciones de escaneo masivo, mejorando el rendimiento sin alterar la lógica de seguridad.
-- `2026-08-26T01:04:26` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y la carga del manifiesto evitando iteraciones redundantes y centralizando la resolución de rutas, mejorando el rendimiento en sistemas con muchos archivos en cuarentena.
-- `2026-08-26T00:55:25` **memory.py** (rendimiento): Se optimizó el proceso de filtrado y ordenamiento de la lista de procesos en `parse_windows_process_csv` mediante un generador y se reemplazó la conversión iterativa de strings por un uso más eficiente de `sorted` con `key` sobre el iterador, reduciendo la carga de memoria al procesar la lista.

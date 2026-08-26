@@ -194,11 +194,16 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """Recorrido recursivo que recolecta archivos basura evitando bucles y rutas protegidas."""
+    if is_protected_path(current_dir):
+        return
+        
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
                 try:
                     entry_path = Path(entry.path).resolve()
+                    if is_protected_path(entry_path):
+                        continue
                     if entry.is_dir(follow_symlinks=False):
                         if _is_allowed_directory(entry.name) and not _is_junction(entry_path):
                             _process_directory(entry_path, found)
@@ -222,7 +227,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     for d in search_dirs:
         try:
             path_obj = Path(d)
-            if not path_obj.exists(): continue
+            if not path_obj.exists() or is_protected_path(path_obj): continue
             base = path_obj.expanduser().resolve()
             if base.is_dir():
                 _process_directory(base, found)

@@ -953,3 +953,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T02:06:14` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `compute_score` eliminando la dependencia del orden del diccionario global `_WEIGHT_ITEMS_INT` y validando estrictamente que el resultado final del puntaje acumulado se mantenga dentro de los límites esperados (0-100) incluso ante errores inesperados en las funciones de cálculo (scorrers).
 - `2026-08-26T02:06:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T02:06:14` Corrida terminada. Total usado hoy: 52.
+- `2026-08-26T02:14:45` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-26T02:15:47` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-26T02:16:50` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-26T02:17:56` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-26T02:19:24` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad del método `on_stage` validando que la carpeta de destino (`.` resuelta a absoluta) sea segura antes de iniciar el proceso, para evitar que una configuración local maliciosa altere el comportamiento del organizador.
+- `2026-08-26T02:19:54` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad de `trim_working_set` añadiendo un chequeo explícito de integridad para prevenir el "Time-of-Check to Time-of-Use" (TOCTOU) mediante la validación de `GetProcessId` justo antes de la acción, asegurando que el handle abierto realmente corresponde al PID objetivo después de los chequeos iniciales.
+- `2026-08-26T02:20:47` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_process_directory` y `_is_safe_for_disk_op` añadiendo una validación explícita mediante `is_protected_path` antes de procesar o interactuar con cualquier ruta, garantizando que el módulo no escanee ni opere en zonas críticas aunque la heurística de carpetas fallara.
+- `2026-08-26T02:21:29` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se implementó un chequeo de integridad en `restore_item` usando `is_safe_to_modify` sobre el directorio padre antes de realizar la restauración, garantizando que el destino no solo esté fuera de rutas protegidas, sino que sea efectivamente un lugar donde el usuario tenga permisos de escritura, evitando fallos de permisos tardíos.
+- `2026-08-26T02:21:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T02:21:29` Corrida terminada. Total usado hoy: 56.
