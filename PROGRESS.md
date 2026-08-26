@@ -7,45 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **227** (45.0% de aceptación)
-- Rechazadas por tests: 17
+- Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 29
-- Sin cambios (nada sustancial que mejorar): 25
+- Sin cambios (nada sustancial que mejorar): 26
 - Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 115 | 10 | 14 | 16 | 117 |
-| 2026-08-26 | 112 | 7 | 15 | 9 | 89 |
+| 2026-08-25 | 112 | 9 | 14 | 16 | 117 |
+| 2026-08-26 | 115 | 7 | 15 | 10 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
-- rendimiento: **41**
-- robustez ante casos límite: **31**
+- rendimiento: **44**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `quarantine.py`: **22**
 - `duplicates.py`: **20**
+- `memory.py`: **20**
 - `healthscore.py`: **19**
-- `memory.py`: **19**
-- `scanner.py`: **18**
-- `settings.py`: **18**
 - `assistant.py`: **18**
 - `diskreport.py`: **17**
+- `scanner.py`: **17**
+- `settings.py`: **17**
 - `browser.py`: **16**
 - `branding.py`: **14**
 - `safety.py`: **14**
-- `main.py`: **12**
+- `main.py`: **13**
 - `organizer.py`: **12**
-- `startup.py`: **9**
+- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T09:56:11` **quarantine.py** (rendimiento): Optimizé la integridad del manifiesto y la performance de `total_quarantined_bytes` evitando deserializaciones redundantes y cálculos pesados en cada llamada.
+- `2026-08-26T09:55:27` **memory.py** (rendimiento): Optimizé la eficiencia de `top_memory_processes` reemplazando la ejecución recurrente de `subprocess` por un almacenamiento en caché efectivo (`_proc_cache_time`), reduciendo la sobrecarga de I/O y el uso de CPU, además de evitar la inicialización repetida de constantes mediante el uso de `lru_cache` y una estructura de control más limpia.
+- `2026-08-26T09:54:55` **main.py** (rendimiento): Implementé un sistema de "Dirty State" en `_apply_card_updates` para evitar reconfigurar widgets de la interfaz cuando los valores no han cambiado, eliminando llamadas innecesarias a la API de Tkinter que consumen ciclos de CPU y pueden causar micro-parpadeos.
 - `2026-08-26T09:45:11` **healthscore.py** (rendimiento): Se optimizó el cálculo de los puntajes en `compute_score` eliminando la recreación de objetos y la validación redundante al iterar, aprovechando que `SystemMetrics` ya garantiza la integridad mediante su `__post_init__` y `validate`, reduciendo así la carga de procesamiento en cada llamada.
 - `2026-08-26T09:44:56` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` sustituyendo las repetidas llamadas a `Path.resolve()` por `os.path.realpath()` en el bucle principal, reduciendo drásticamente la sobrecarga de instanciación de objetos `Path` y el acceso a disco innecesario durante el recorrido recursivo.
 - `2026-08-26T09:44:28` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la redundancia de `relative_to` dentro del bucle de `walk_files`, utilizando el acceso directo a `entry` para calcular el primer nivel de subcarpetas, lo que reduce la carga de procesamiento por cada archivo escaneado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T09:13:16` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo de puntaje (`score_*`) y unificando la convención de tipos en los parámetros, facilitando la comprensión de cómo los valores brutos se transforman en indicadores normalizados de salud.
 - `2026-08-26T09:04:18` **duplicates.py** (legibilidad y documentación): Se mejora la legibilidad y mantenibilidad del flujo de escaneo en `_collect_candidates` extrayendo la lógica compleja de resolución y validación de directorios a una función auxiliar con nombre explícito, facilitando la comprensión del proceso de búsqueda.
 - `2026-08-26T09:04:07` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `walk_files` mediante la desanidación de la lógica de recursión y la adición de Type Hints detallados, facilitando el mantenimiento para futuros desarrolladores.
-- `2026-08-26T09:03:39` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante docstrings específicos (incorporando detalles sobre el manejo de errores y validaciones de seguridad) y se ha extraído el cálculo de tamaño de atributos `0x01 | 0x02 | 0x400` a una constante con nombre explicativo (`SYSTEM_HIDDEN_FLAGS`) para eliminar números mágicos en `_is_system_hidden`.
-- `2026-08-26T09:03:11` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos, se unificaron las definiciones de las estructuras de datos (Palette, FontSizes, ICONS) como `Final` con anotaciones de tipo explícitas para mejorar la legibilidad, y se corrigió una inconsistencia en `severity_label` donde el manejo de cadenas vacías o tipos inválidos era ambiguo.
-- `2026-08-26T08:53:47` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta extraída del registro antes de procesarla, asegurando que cualquier entrada maliciosa o mal formada sea descartada de forma segura antes de ser instanciada como `StartupEntry`.
