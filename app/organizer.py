@@ -303,14 +303,16 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if not item.is_file() or _is_junction(os.scandir(item.parent).__next__()) or not item.exists():
+            # Validar existencia, tipo y pertenencia estricta a la carpeta de revisión
+            if not item.is_file() or not item.exists():
                 continue
             
             resolved_item = item.resolve()
-            if not resolved_item.is_relative_to(dest.resolve()):
+            if not resolved_item.is_relative_to(dest):
                 continue
             
             stat = item.stat()
+            # Bloquear archivos de sistema o atributos especiales en Windows
             if os.name == "nt" and (stat.st_file_attributes & 0x46):
                 continue
 

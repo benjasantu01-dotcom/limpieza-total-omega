@@ -476,8 +476,10 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     
     if is_protected_path(destination):
         raise UnsafePathError("Restauración denegada: destino protegido por sistema.")
+    
+    # Prevenir sobreescritura accidental si el archivo original reapareció
     if destination.exists():
-        raise FileExistsError(f"Error: el destino {destination} ya existe.")
+        raise FileExistsError(f"Error: el destino {destination} ya existe en el sistema.")
     
     try:
         parent = destination.parent

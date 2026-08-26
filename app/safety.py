@@ -181,16 +181,18 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity(path: Path) -> None:
     """
     Realiza validaciones físicas sobre el archivo.
-    Lanza UnsafePathError si alguna regla definida en _VALIDATORS se incumple
-    o si la profundidad de la ruta supera los umbrales seguros.
+    Lanza UnsafePathError si alguna regla definida en _VALIDATORS se incumple.
     """
     if len(path.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
+    if not path.exists():
+        raise UnsafePathError("El archivo ha dejado de existir.")
+
     try:
         file_stat: os.stat_result = path.stat()
-    except (PermissionError, OSError) as e:
-        raise UnsafePathError(f"Error de acceso a metadatos: {e}")
+    except (PermissionError, OSError):
+        raise UnsafePathError(f"Error de acceso a metadatos: {ProtectionReason.INACCESSIBLE.value}")
 
     if not os.access(path, os.W_OK):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}")
