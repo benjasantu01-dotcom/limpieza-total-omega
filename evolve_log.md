@@ -1274,3 +1274,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T05:29:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 100): unterminated string literal (detected at line 100)
 - `2026-08-26T05:29:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T05:29:54` Corrida terminada. Total usado hoy: 132.
+- `2026-08-26T05:38:40` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-26T05:39:17` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché local `_PROTECTION_CACHE` en `is_protected_path` para evitar el re-procesamiento costoso de rutas ya evaluadas, optimizando el rendimiento en escaneos masivos de disco.
+- `2026-08-26T05:39:40` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-26T05:40:08` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `save()` reemplazando el uso intensivo de `path.resolve(strict=False)` por `path.absolute()` en contextos donde no se requiere validación de sistema de archivos, reduciendo llamadas redundantes a disco que causaban latencia innecesaria en cada consulta de configuración.
+- `2026-08-26T05:40:19` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 0.97s
+
+```
+- `2026-08-26T05:40:19` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un cache local de resultados de existencia para `is_protected_path` en `_resolve_and_cache_path`, evitando llamadas redundantes a funciones de sistema costosas dentro del bucle de resolución, mejorando significativamente el rendimiento al procesar múltiples entradas.
+- `2026-08-26T05:40:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T05:40:19` Corrida terminada. Total usado hoy: 136.

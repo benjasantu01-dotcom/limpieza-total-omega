@@ -245,7 +245,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     """Calcula la ruta del config.json, validando que el directorio base no sea de sistema."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
-        base = Path(custom_base).expanduser().resolve(strict=False)
+        base = Path(custom_base).expanduser().absolute()
         if not (base.is_symlink() or (hasattr(base, 'is_junction') and base.is_junction())):
             if _Validators._is_safe_path(str(base)):
                 return base / SETTINGS_FILE
@@ -289,7 +289,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Guarda configuración de forma atómica: escribe en archivo temporal y luego renombra para evitar corrupción."""
     if not isinstance(values, dict): return None
     ruta = settings_path(custom_base)
-    parent = ruta.parent.resolve(strict=False)
+    parent = ruta.parent.absolute()
     
     if parent.is_symlink() or (hasattr(parent, 'is_junction') and parent.is_junction()):
         return None

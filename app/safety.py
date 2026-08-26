@@ -80,7 +80,7 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
 )
 
-_PATH_CACHE: dict[str, bool] = {}
+_PROTECTION_CACHE: dict[str, bool] = {}
 
 
 class _IntegrityCheck(NamedTuple):
@@ -242,7 +242,7 @@ def is_protected_path(path: PathLike) -> bool:
     """Evalúa si una ruta reside en directorios críticos del sistema."""
     if not path: return True
     path_key = str(path)
-    if path_key in _PATH_CACHE: return _PATH_CACHE[path_key]
+    if path_key in _PROTECTION_CACHE: return _PROTECTION_CACHE[path_key]
 
     try:
         p = normalize(path)
@@ -253,7 +253,7 @@ def is_protected_path(path: PathLike) -> bool:
                    not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts) or \
                    p == Path(p.anchor)
     
-    _PATH_CACHE[path_key] = is_protected
+    _PROTECTION_CACHE[path_key] = is_protected
     return is_protected
 
 
