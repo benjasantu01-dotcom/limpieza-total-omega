@@ -246,6 +246,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
     """Helper interno: verifica si una entrada de directorio debe ser ignorada."""
     try:
+        # Check for invalid control characters in path
+        if any(c < ' ' for c in entry.name):
+            return True
         if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
             return True
         if skip_protected and entry.is_dir(follow_symlinks=False):
@@ -258,20 +261,13 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos mediante `os.scandir`.
-    
-    Args:
-        directory: Ruta raíz desde donde comenzar el escaneo.
-        skip_protected: Si es True, ignora rutas bloqueadas según safety.py.
-        
-    Yields:
-        Tuplas conteniendo el objeto Path y el tamaño en bytes del archivo.
     """
     if not directory:
         return
 
     try:
-        base_path = Path(directory).resolve()
-        if not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
+        base_path = Path(directory).resolve(strict=False)
+        if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
     except (OSError, RuntimeError, TypeError):
         return
@@ -346,7 +342,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        p_base = Path(directory).resolve()
+        p_base = Path(directory).resolve(strict=False)
         if not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
             return []
             
@@ -360,11 +356,12 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                     continue
                 
                 top_folder = p_base / parts[0]
-                str_path = str(top_folder)
                 
+                # Double-check path validity
                 if skip_protected and is_protected_path(top_folder):
                     continue
                     
+                str_path = str(top_folder)
                 sums[str_path] += size
                 counts[str_path] += 1
             except (ValueError, IndexError, AttributeError):

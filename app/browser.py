@@ -123,12 +123,12 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
     try:
         target_parts = real_target.resolve().parts
-        base_parts = real_base.resolve().parts
+        base_parts = Path(real_base).resolve().parts
         
         if len(target_parts) <= len(base_parts):
             return False
         return target_parts[:len(base_parts)] == base_parts
-    except (OSError, ValueError, RuntimeError, PermissionError):
+    except (OSError, ValueError, RuntimeError, PermissionError, TypeError):
         return False
 
 

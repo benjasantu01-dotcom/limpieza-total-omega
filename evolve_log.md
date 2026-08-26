@@ -1078,3 +1078,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T14:41:24` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como discos de solo lectura o permisos denegados) añadiendo un manejo de excepciones explícito en la creación del directorio y la escritura, garantizando que la función falle silenciosamente de forma segura sin interrumpir la interfaz.
 - `2026-08-26T14:41:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T14:41:24` Corrida terminada. Total usado hoy: 348.
+- `2026-08-26T14:49:46` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-26T14:50:17` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_path_inside_base` añadiendo un manejo de excepciones más granular y convirtiendo `real_base` a un objeto `Path` garantizado, asegurando que ante rutas malformadas o errores de resolución durante el escaneo, la función retorne `False` de forma segura en lugar de propagar errores inesperados.
+- `2026-08-26T14:50:44` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Reforcé la robustez de `walk_files` y `largest_folders` ante la presencia de rutas con caracteres no imprimibles o estados corruptos del sistema de archivos, asegurando que la navegación no se interrumpa ante errores de resolución de rutas o acceso denegado durante el escaneo.
+- `2026-08-26T14:50:44` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-26T14:50:44` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T14:50:44` Corrida terminada. Total usado hoy: 350.
