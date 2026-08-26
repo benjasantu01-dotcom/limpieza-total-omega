@@ -1718,7 +1718,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.run_async(task)
 
     def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
-        """Valida que la configuración numérica sea correcta."""
+        """Valida que la entrada de configuración sea un entero positivo, retornando el default si falla."""
         try:
             if value is None or not str(value).strip():
                 return default
@@ -1728,7 +1728,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return default
 
     def _collect_settings(self) -> Dict[str, Any]:
-        """Recopila ajustes del usuario de la interfaz con validación de entradas."""
+        """
+        Recopila ajustes del usuario desde la interfaz, validando las entradas
+        numéricas y sanitizando la clave de API contra caracteres no imprimibles.
+        """
         valores = dict(self.settings)
         for clave, variable in self.setting_vars.items():
             try:

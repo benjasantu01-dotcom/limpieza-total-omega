@@ -193,7 +193,12 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
-    """Recorrido recursivo que recolecta archivos basura evitando bucles y rutas protegidas."""
+    """
+    Realiza un recorrido recursivo en profundidad del sistema de archivos.
+    
+    Ignora rutas protegidas, junctions y directorios en la lista negra.
+    Recolecta instancias de JunkFile basándose en extensiones predefinidas.
+    """
     if is_protected_path(current_dir):
         return
         
@@ -219,7 +224,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Recorre recursivamente los directorios buscando archivos clasificados como basura.
+    Escanea rutas específicas en busca de archivos basura.
+    
+    Si no se proporcionan directorios, utiliza DEFAULT_SCAN_DIRS.
+    Retorna una lista de objetos JunkFile encontrados, excluyendo rutas protegidas.
     """
     search_dirs = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
@@ -274,7 +282,10 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
-    Mueve archivos candidatos a una carpeta de revisión.
+    Mueve los archivos especificados a un directorio de cuarentena para revisión.
+    
+    Verifica que cada archivo sea seguro para mover, respeta la política de seguridad
+    de rutas y asegura que el destino exista. Retorna el Path del destino o None.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None

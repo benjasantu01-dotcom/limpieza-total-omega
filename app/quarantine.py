@@ -156,13 +156,11 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Determina si un archivo está en uso mediante un intento de apertura exclusiva.
+    Determina si un archivo está en uso exclusivo mediante intento de apertura.
     
-    Args:
-        path: Ruta al archivo a verificar.
-        
-    Returns:
-        True si el archivo está bloqueado o es inaccesible, False en caso contrario.
+    Esta función es defensiva: si el sistema operativo deniega el acceso, 
+    asumimos que el archivo está bloqueado (ocupado), evitando colisiones
+    durante las operaciones de movimiento o restauración.
     """
     if not isinstance(path, Path) or not path.exists():
         return False
@@ -218,7 +216,7 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def _manifest_path(base_dir: Path) -> Path:
-    """Obtiene la ruta absoluta al archivo JSON de manifiesto."""
+    """Resuelve la ubicación absoluta esperada para el archivo de manifiesto JSON."""
     return (base_dir / MANIFEST_NAME).resolve()
 
 
@@ -347,7 +345,13 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
-    """Copia el archivo al sandbox usando un archivo temporal para garantizar integridad."""
+    """
+    Copia atómica de un archivo sospechoso hacia el sandbox.
+    
+    Utiliza un archivo temporal en la misma partición para asegurar que la
+    operación `os.replace` sea atómica, garantizando que el archivo nunca
+    quede en un estado parcial o corrupto en caso de fallo durante la copia.
+    """
     resolved_source = source.resolve()
     dest_dir = destination.parent.resolve()
     
@@ -367,7 +371,6 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
             
         os.replace(temp_path, destination)
         
-        # Validación post-traslado
         file_hash = _get_sha256(destination)
         if not file_hash:
             raise OSError("Falla de integridad: no se pudo verificar el hash en destino.")
