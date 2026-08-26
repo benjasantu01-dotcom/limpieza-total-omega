@@ -483,3 +483,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T08:15:47` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-26T08:15:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T08:15:47` Corrida terminada. Total usado hoy: 196.
+- `2026-08-26T08:21:49` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-26T08:22:26` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la lógica de ingestión de datos en `SystemContext` centralizando la validación de tipos y rangos, eliminando la posibilidad de que atributos inesperados o malformados en `source` generen errores en tiempo de ejecución (`AttributeError`/`TypeError`) al procesar objetos arbitrarios.
+- `2026-08-26T08:22:57` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-26T08:23:22` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_system_hidden` añadiendo validación explícita para evitar errores de tipo al llamar a `kernel32` y optimicé la lógica de `_is_within_depth_limit` eliminando la comprobación redundante de `is_protected_path` (que ya se valida en `_should_skip_entry`), fortaleciendo la resiliencia ante excepciones inesperadas en el escaneo de disco.
+- `2026-08-26T08:23:35` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de entrada en la función `summarize` para evitar excepciones en el manejo de rutas malformadas o tipos de datos inesperados, asegurando que el flujo de control siempre retorne un mensaje de error legible antes de intentar cualquier operación de disco.
+- `2026-08-26T08:23:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T08:23:35` Corrida terminada. Total usado hoy: 200.

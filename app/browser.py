@@ -141,7 +141,7 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     Utiliza Win32 API para identificar atributos de archivo (sistema, oculto, 
     archivo de sistema). Retorna False si no es Windows o si ocurre un error.
     """
-    if not kernel32 or not entry_path or not isinstance(entry_path, str):
+    if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
         attrs: int = kernel32.GetFileAttributesW(entry_path)
@@ -176,10 +176,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_within_depth_limit(depth: int, current_path: Optional[str]) -> bool:
-    """Verifica que la recursión no exceda MAX_SCAN_DEPTH y que la ruta sea segura."""
-    if not current_path:
-        return False
-    return depth <= MAX_SCAN_DEPTH and not is_protected_path(Path(current_path))
+    """Verifica que la recursión no exceda MAX_SCAN_DEPTH."""
+    return depth <= MAX_SCAN_DEPTH and current_path is not None
 
 
 def _sum_directory_recursive(

@@ -254,7 +254,7 @@ class SystemContext:
         Retorna True si se pudo poblar al menos un dato válido.
         """
         found_data = False
-        if source is None or isinstance(source, (str, int, float, list, tuple, bool)):
+        if not isinstance(source, (dict, object)):
             return False
             
         is_dict = isinstance(source, dict)
@@ -263,13 +263,12 @@ class SystemContext:
             if _validate_and_assign(self, source, is_dict, key, spec):
                 found_data = True
         
-        if not self.grade:
-            try:
-                val = source.get("grade") if is_dict else getattr(source, "grade", None)
-                if isinstance(val, str) and _ensure_safe_text(val[:10].strip()):
-                    self.grade = val[:10].strip()
-            except (AttributeError, TypeError):
-                pass
+        # Procesamiento seguro de 'grade'
+        val = source.get("grade") if is_dict else getattr(source, "grade", None)
+        if isinstance(val, str):
+            clean_grade = val[:10].strip()
+            if _ensure_safe_text(clean_grade):
+                self.grade = clean_grade
         
         return found_data
 
@@ -309,7 +308,7 @@ def _validate_and_assign(ctx: SystemContext, source: Any, is_dict: bool, key: st
     """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
     try:
         val = source.get(key) if is_dict else getattr(source, key, None)
-    except (AttributeError, TypeError):
+    except Exception:
         return False
     
     if val is None or type(val) in _FORBIDDEN_TYPES: return False
@@ -326,7 +325,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
-    sources = [s for s in (metrics, health, extra) if s is not None and not isinstance(s, (str, int, float, list, tuple, bool))]
+    sources = [s for s in (metrics, health, extra) if isinstance(s, (dict, object))]
     
     for src in sources:
         if ctx.ingest(src):

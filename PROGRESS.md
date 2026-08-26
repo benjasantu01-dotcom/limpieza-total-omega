@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 205
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 141 | 11 | 19 | 17 | 120 |
-| 2026-08-26 | 87 | 5 | 11 | 8 | 85 |
+| 2026-08-25 | 138 | 11 | 19 | 16 | 120 |
+| 2026-08-26 | 90 | 5 | 11 | 8 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **53**
 - seguridad defensiva: **48**
 - rendimiento: **47**
 - robustez ante casos límite: **41**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **23**
-- `memory.py`: **20**
+- `quarantine.py`: **22**
 - `settings.py`: **20**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
 - `duplicates.py`: **19**
+- `memory.py`: **19**
 - `scanner.py`: **18**
 - `healthscore.py`: **18**
-- `diskreport.py`: **16**
+- `diskreport.py`: **17**
+- `browser.py`: **16**
 - `safety.py`: **15**
-- `browser.py`: **15**
 - `main.py`: **13**
 - `branding.py`: **13**
-- `organizer.py`: **12**
+- `organizer.py`: **11**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T08:23:35` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en la función `summarize` para evitar excepciones en el manejo de rutas malformadas o tipos de datos inesperados, asegurando que el flujo de control siempre retorne un mensaje de error legible antes de intentar cualquier operación de disco.
+- `2026-08-26T08:23:22` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_system_hidden` añadiendo validación explícita para evitar errores de tipo al llamar a `kernel32` y optimicé la lógica de `_is_within_depth_limit` eliminando la comprobación redundante de `is_protected_path` (que ya se valida en `_should_skip_entry`), fortaleciendo la resiliencia ante excepciones inesperadas en el escaneo de disco.
+- `2026-08-26T08:22:26` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de la lógica de ingestión de datos en `SystemContext` centralizando la validación de tipos y rangos, eliminando la posibilidad de que atributos inesperados o malformados en `source` generen errores en tiempo de ejecución (`AttributeError`/`TypeError`) al procesar objetos arbitrarios.
 - `2026-08-26T07:01:43` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `settings.py` al restringir la creación de archivos de configuración a directorios que no sean considerados protegidos, y se mejoró la resiliencia contra condiciones de carrera al asegurar que la validación de integridad ocurra antes de cualquier operación de escritura en el disco.
 - `2026-08-26T06:51:36` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al agregar una verificación explícita mediante `is_protected_path` sobre la ruta resuelta antes de cualquier operación, asegurando que la validación de seguridad cubra también posibles enlaces simbólicos que apunten fuera del árbol permitido.
 - `2026-08-26T06:51:26` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` integrando el chequeo de rutas de sistema utilizando `pathlib` de forma más precisa para evitar la resolución de enlaces simbólicos maliciosos durante la normalización y asegurar que el bloqueo de carpetas de sistema sea efectivo independientemente de la caja (case-insensitivity) de Windows.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T06:10:53` **safety.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes del sistema de archivos al añadir un chequeo de existencia (`path.exists()`) y manejo de errores específico en `_check_file_integrity` para evitar excepciones no capturadas cuando un archivo desaparece entre la validación y la lectura de metadatos (condición de carrera).
 - `2026-08-26T06:10:18` **quarantine.py** (robustez ante casos límite): Se añadió una validación de existencia previa en `restore_item` para prevenir que `os.replace` falle inesperadamente si un proceso externo crea un archivo en la ruta original mientras el ítem está en cuarentena.
 - `2026-08-26T06:09:46` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `delete_reviewed` implementando un chequeo explícito de recursividad mediante `is_relative_to` antes de cualquier operación y sanando la iteración para evitar el uso erróneo de `os.scandir` sobre elementos ya resueltos.
-- `2026-08-26T06:02:04` **memory.py** (robustez ante casos límite): Se introdujo una validación robusta contra la suplantación de PIDs mediante la verificación de la existencia del proceso y se protegió la llamada a `OpenProcess` contra handles nulos, además de asegurar que el buffer de ruta tenga un tamaño adecuado para evitar desbordamientos o lecturas truncadas en sistemas con rutas largas.
-- `2026-08-26T06:00:12` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a casos donde las métricas podrían contener valores `NaN` o `inf` no detectados previamente, asegurando que `validate()` y `is_finite()` protejan el bucle de cálculo ante cualquier dato de entrada atípico.
-- `2026-08-26T05:49:58` **branding.py** (robustez ante casos límite): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo del canvas agregando validaciones defensivas ante entradas numéricas malformadas, rutas inválidas y estados de canvas nulos para evitar cierres inesperados de la aplicación ante errores de entorno o datos corruptos.

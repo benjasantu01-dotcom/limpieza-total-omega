@@ -409,10 +409,10 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     Genera un informe textual unificado con los hallazgos del análisis.
     """
     if not directory or not isinstance(directory, (str, Path, os.PathLike)):
-        return ["Error: Ruta no proporcionada o inválida."]
+        return ["Error: Ruta no proporcionada o formato inválido."]
 
     try:
-        p_input = Path(directory).resolve()
+        p_input = Path(os.fspath(directory)).resolve(strict=False)
         if not p_input.exists():
             return [f"Error: Ruta no existente: {p_input}"]
         if not p_input.is_dir():
@@ -432,7 +432,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         "Por tipo de archivo:"
     ]
     
-    # Usar los datos recolectados en _collect_summary_data (Ya ordenados por extensión via dict)
     sorted_exts = heapq.nlargest(8, data.ext_sizes.items(), key=lambda item: item[1])
     for ext, size in sorted_exts:
         lines.append(f"  {ext:<18} {format_size(size):>10}  ({data.ext_counts[ext]} archivos)")
