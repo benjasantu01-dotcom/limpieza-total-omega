@@ -939,3 +939,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T01:45:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado `Scanner.process_entry` para capturar errores de acceso (como `OSError` o `PermissionError`) de forma más robusta al intentar resolver o verificar rutas, evitando que archivos bloqueados o con metadatos inaccesibles detengan el bucle de escaneo.
 - `2026-08-26T01:45:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T01:45:47` Corrida terminada. Total usado hoy: 44.
+- `2026-08-26T01:54:27` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-08-26T01:55:03` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `save()` agregando un chequeo preventivo de escritura para el archivo de configuración existente (si ya existe) y para su directorio padre, asegurando que la operación de reemplazo atómico no falle silenciosamente ante permisos insuficientes o archivos de solo lectura.
+- `2026-08-26T01:55:31` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-26T01:56:10` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre el contenido de la respuesta remota para garantizar que, incluso ante una inyección en el modelo, la app no pueda devolver rutas de sistema procesadas.
+- `2026-08-26T01:56:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-26T01:56:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T01:56:28` Corrida terminada. Total usado hoy: 48.

@@ -298,7 +298,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         ensure_safe_to_modify(str(ruta))
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        if not parent.is_dir():
+        elif not os.access(parent, os.W_OK):
+            return None
+        if ruta.exists() and not os.access(ruta, os.W_OK):
             return None
     except (OSError, RuntimeError, PermissionError):
         return None

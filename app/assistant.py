@@ -541,6 +541,10 @@ def _call_gemini(
             raw_text = "".join(str(p.get("text", "")) for p in candidates[0]["content"]["parts"] if isinstance(p, dict))
             # Sanitización crítica de salida externa antes de procesar o mostrar
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
+            
+            # Validación extra: ni siquiera el modelo debe poder emitir rutas protegidas
+            if is_protected_path(limpia_final): return None
+            
             final_text = _validate_response_length(limpia_final)
             return final_text if _ensure_safe_text(final_text) else None
     except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError):
