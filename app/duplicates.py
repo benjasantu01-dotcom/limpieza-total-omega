@@ -135,6 +135,9 @@ def _collect_candidates(
     def _should_skip_dir(entry: os.DirEntry) -> bool:
         """Determina si un directorio debe ser ignorado por el escaneo."""
         try:
+            # Validación de seguridad: no entrar en rutas protegidas
+            if skip_protected and is_protected_path(Path(entry.path)):
+                return True
             stat = entry.stat(follow_symlinks=False)
             return getattr(stat, 'st_reparse_tag', 0) != 0
         except OSError:
@@ -150,21 +153,21 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         if entry.is_symlink(): continue
+                        p = Path(entry.path).resolve()
                         if entry.is_dir(follow_symlinks=False):
                             if _should_skip_dir(entry): continue
                             stat = entry.stat(follow_symlinks=False)
                             dev_inode = (stat.st_dev, stat.st_ino)
                             if dev_inode not in visited_device_inodes:
                                 visited_device_inodes.add(dev_inode)
-                                _scan(Path(entry.path))
+                                _scan(p)
                         elif entry.is_file(follow_symlinks=False):
+                            if p in processed_files: continue
+                            if skip_protected and is_protected_path(p): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size < min_size: continue
-                            p = Path(entry.path).resolve()
-                            if p in processed_files: continue
-                            if not skip_protected or not is_protected_path(p):
-                                processed_files.add(p)
-                                temp_groups[int(stat.st_size)].append(p)
+                            processed_files.add(p)
+                            temp_groups[int(stat.st_size)].append(p)
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError, RuntimeError): pass
 

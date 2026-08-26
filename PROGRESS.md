@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 0 | 0 | 0 | 0 | 2 |
-| 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 79 | 4 | 10 | 7 | 52 |
+| 2026-08-25 | 156 | 11 | 20 | 18 | 143 |
+| 2026-08-26 | 82 | 4 | 10 | 7 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **61**
 - rendimiento: **47**
 - manejo de errores y validación de entradas: **46**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **23**
+- `duplicates.py`: **21**
 - `memory.py`: **21**
 - `assistant.py`: **20**
-- `duplicates.py`: **20**
 - `settings.py`: **20**
 - `healthscore.py`: **19**
 - `diskreport.py`: **18**
+- `browser.py`: **17**
 - `scanner.py`: **17**
-- `browser.py`: **16**
 - `safety.py`: **15**
+- `branding.py`: **14**
 - `main.py`: **13**
 - `organizer.py`: **13**
-- `branding.py`: **13**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T06:31:10` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` y `_scan` validando estrictamente cada ruta resuelta contra `is_protected_path` antes de procesar su contenido o ingresar en ella, evitando que el escáner se exponga innecesariamente a estructuras de directorios restringidas.
+- `2026-08-26T06:30:37` **browser.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_system_hidden` añadiendo una comprobación explícita para evitar que archivos con el bit de `FILE_ATTRIBUTE_REPARSE_POINT` (0x400) sean procesados como archivos normales, reforzando la seguridad defensiva contra el seguimiento involuntario de junctions o puntos de montaje profundos.
+- `2026-08-26T06:30:12` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo un chequeo preventivo de la existencia del directorio padre mediante `is_safe_to_modify`, asegurando que no se intente crear o modificar directorios en ubicaciones restringidas del sistema.
 - `2026-08-26T06:20:22` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante casos límite de E/S implementando una comprobación de existencia y permisos de escritura en la carpeta padre antes de intentar crear el archivo de configuración, evitando fallos silenciosos por permisos denegados o rutas de solo lectura.
 - `2026-08-26T06:10:53` **safety.py** (robustez ante casos límite): Mejoré la robustez ante estados inconsistentes del sistema de archivos al añadir un chequeo de existencia (`path.exists()`) y manejo de errores específico en `_check_file_integrity` para evitar excepciones no capturadas cuando un archivo desaparece entre la validación y la lectura de metadatos (condición de carrera).
 - `2026-08-26T06:10:18` **quarantine.py** (robustez ante casos límite): Se añadió una validación de existencia previa en `restore_item` para prevenir que `os.replace` falle inesperadamente si un proceso externo crea un archivo en la ruta original mientras el ítem está en cuarentena.
@@ -59,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T05:39:17` **safety.py** (rendimiento): Se implementó un mecanismo de caché local `_PROTECTION_CACHE` en `is_protected_path` para evitar el re-procesamiento costoso de rutas ya evaluadas, optimizando el rendimiento en escaneos masivos de disco.
 - `2026-08-26T05:29:51` **quarantine.py** (rendimiento): Optimizé `total_quarantined_bytes` y `summarize` para evitar llamadas redundantes a `quarantine_dir` y al manifiesto, utilizando el cache interno ya existente y reduciendo la carga sobre el sistema de archivos.
 - `2026-08-26T05:29:20` **organizer.py** (rendimiento): Se optimizó el recorrido de directorios reemplazando múltiples llamadas a `Path.exists()` y `Path.resolve()` por el uso directo de `os.scandir` y sus atributos (`is_dir`, `is_file`, `stat`), reduciendo drásticamente las llamadas al sistema (syscalls) innecesarias durante el escaneo.
-- `2026-08-26T05:28:55` **memory.py** (rendimiento): Se implementó un mecanismo de caché local más eficiente en `top_memory_processes` utilizando `lru_cache` sobre el parser CSV y optimizando la lógica de recolección de datos, además de reducir el tamaño de las estructuras de datos en memoria eliminando las strings de caché global innecesarias.
-- `2026-08-26T05:20:23` **main.py** (rendimiento): Optimicé el rendimiento de la interfaz al reemplazar el método `on_scan_junk` con una implementación que utiliza un generador para procesar archivos y realizar la comparación de tamaño en bytes antes de la instanciación completa de objetos, evitando cuellos de botella en memoria al escanear directorios con gran cantidad de archivos pequeños.
-- `2026-08-26T05:19:31` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje transformando `_SCORER_MAP` en un diccionario que utiliza un acceso directo más eficiente y pre-calculando los factores de normalización fuera de los bucles para eliminar redundancias en la ejecución de `compute_score`.

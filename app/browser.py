@@ -147,7 +147,8 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
-        return bool(attrs & (0x01 | 0x02 | 0x04))
+        # 0x01: Oculto, 0x02: Sistema, 0x400: Reparse point (junction/symlink)
+        return bool(attrs & (0x01 | 0x02 | 0x400))
     except (OSError, AttributeError, TypeError, ValueError, MemoryError, ctypes.ArgumentError):
         return False
 
