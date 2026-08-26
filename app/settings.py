@@ -246,9 +246,8 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
         base = Path(custom_base).expanduser().absolute()
-        if not (base.is_symlink() or (hasattr(base, 'is_junction') and base.is_junction())):
-            if _Validators._is_safe_path(str(base)):
-                return base / SETTINGS_FILE
+        if _Validators._is_safe_path(str(base)):
+            return base / SETTINGS_FILE
     except (OSError, RuntimeError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE
@@ -288,35 +287,28 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Guarda configuración de forma atómica: escribe en archivo temporal y luego renombra para evitar corrupción."""
     if not isinstance(values, dict): return None
-    ruta = settings_path(custom_base)
-    parent = ruta.parent.absolute()
-    
-    if parent.is_symlink() or (hasattr(parent, 'is_junction') and parent.is_junction()):
-        return None
-        
-    try:
-        if is_protected_path(str(parent)):
-            return None
-        ensure_safe_to_modify(str(ruta))
-        # Verificación estricta de existencia y permisos antes de intentar escribir
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
-        if not os.access(parent, os.W_OK | os.X_OK):
-            return None
-        if ruta.exists() and not os.access(ruta, os.W_OK):
-            return None
-    except (OSError, RuntimeError, PermissionError):
-        return None
     
     cleaned_settings = validate(values)
     # Validaciones de integridad: el asistente no puede activarse sin clave
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
-        
-    temp_name = None
+
+    ruta = settings_path(custom_base)
+    parent = ruta.parent.absolute()
+    
     try:
+        # Validación estricta de entorno antes de tocar el disco
+        if not _Validators._is_safe_path(str(parent)):
+            return None
+        ensure_safe_to_modify(str(ruta))
+        
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
+            
+        temp_name = None
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
+        
         with tempfile.NamedTemporaryFile("wb", delete=False, dir=parent) as tf:
             temp_name = tf.name
             tf.write(encoded_data)
@@ -327,10 +319,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
         return None
-    finally:
-        if temp_name and os.path.exists(temp_name):
-            try: os.remove(temp_name)
-            except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Actualiza parcialmente la configuración, persistiendo solo si hubo cambios reales validados."""
