@@ -211,7 +211,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                     if entry.is_dir(follow_symlinks=False):
                         if _is_allowed_directory(entry.name) and not _is_junction(entry):
                             _process_directory(Path(entry.path), found)
-                    elif entry.is_file() and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
+                    elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
                         if stats.st_size > 0:
                             found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
@@ -312,7 +312,8 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if not isinstance(item, Path) or not item.is_file() or not item.exists():
+            # Requisito de seguridad: solo operar sobre archivos, no symlinks/directories
+            if not item.is_file() or item.is_symlink():
                 continue
             
             resolved_item = item.resolve()

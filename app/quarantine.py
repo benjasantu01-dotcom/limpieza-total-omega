@@ -192,7 +192,7 @@ def _manifest_path(base_dir: Path) -> Path:
     return (base_dir / MANIFEST_NAME).resolve()
 
 
-def _is_valid_quarantine_path(path: Path, root: Path) -> TypeGuard[Path]:
+def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
     return is_within_directory(path, root)
 
 
@@ -234,7 +234,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("Operación prohibida: la ruta origen está protegida por el sistema.")
     if is_protected_path(dest_dir) or is_protected_path(dest_dir.parent):
         raise UnsafePathError("Destino inválido: directorio de cuarentena en ruta protegida.")
-    if _is_valid_quarantine_path(resolved_source, dest_dir):
+    if _is_within_quarantine_sandbox(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     if resolved_source.drive.lower() != dest_dir.drive.lower():
         raise UnsafePathError("Operación prohibida: origen y destino en dispositivos diferentes.")
@@ -420,7 +420,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         return False
     if not quarantine_item.verify_integrity(stored_file):
         raise UnsafePathError(f"Integridad comprometida para ítem {item_id}: no se puede purgar.")
-    if not _is_valid_quarantine_path(stored_file, base_path):
+    if not _is_within_quarantine_sandbox(stored_file, base_path):
         raise UnsafePathError("Intento de borrado fuera del sandbox.")
     if _safe_unlink(stored_file):
         items_dict.pop(item_id, None)
@@ -432,7 +432,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     return (
         file_path.is_file() and
-        _is_valid_quarantine_path(file_path, base_path) and
+        _is_within_quarantine_sandbox(file_path, base_path) and
         item.verify_integrity(file_path) and
         not _is_file_locked(file_path)
     )
