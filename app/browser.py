@@ -191,7 +191,8 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el peso en bytes de los archivos bajo root_dir.
-    Usa memoización sobre el path absoluto para evitar ciclos y re-escaneos.
+    Usa memoización en `memo` (dict) indexado por ruta absoluta para evitar 
+    recalcular subárboles compartidos y detectar ciclos.
     """
     if not root_dir or not os.path.exists(root_dir):
         return 0
@@ -204,7 +205,7 @@ def _sum_directory_recursive(
         return memo[root_path]
     
     def _walk(current_dir: str, depth: int) -> int:
-        """Función interna recursiva que recorre el árbol de archivos."""
+        """Función interna que recorre el árbol de archivos con control de profundidad."""
         if not _is_within_depth_limit(depth, current_dir):
             return 0
         
@@ -228,6 +229,7 @@ def _sum_directory_recursive(
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
+            # Fallback seguro: ignorar error de acceso y retornar parcial o cero
             return 0
         
         memo[current_abs] = total
@@ -278,8 +280,13 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea el sistema buscando rutas de caché conocidas.
-    Usa un cache de rendimiento (perf_cache) para no recalcular sub-árboles
-    repetidos entre navegadores distintos.
+    
+    Flujo:
+    1. Resuelve rutas base de usuario (LOCALAPPDATA).
+    2. Para cada navegador en `cache_paths`, construye la ruta completa.
+    3. Valida la seguridad y límites de la ruta encontrada.
+    4. Usa un diccionario `perf_cache` para memoizar tamaños de directorios 
+       compartidos entre navegadores (ej. estructuras de Google/Edge similares).
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

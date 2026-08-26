@@ -146,6 +146,13 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
 
 GRADIENT_STOPS: Final[Tuple[HexColor, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
 
+SCORE_THRESHOLDS: Final[List[Tuple[float, HexColor]]] = [
+    (90.0, C_SUCCESS),
+    (80.0, C_INFO),
+    (65.0, C_WARNING),
+    (50.0, "#ff7b39")
+]
+
 def app_title() -> str:
     """Retorna el nombre completo de la aplicación concatenado con la versión."""
     return f"{APP_NAME} v{APP_VERSION}"
@@ -214,14 +221,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
     if not (0.0 <= valor <= 100.0):
         return C_TEXT_MUTED
 
-    thresholds: List[Tuple[float, HexColor]] = [
-        (90.0, C_SUCCESS),
-        (80.0, C_INFO),
-        (65.0, C_WARNING),
-        (50.0, "#ff7b39")
-    ]
-    
-    for limit, color_val in thresholds:
+    for limit, color_val in SCORE_THRESHOLDS:
         if valor >= limit:
             return color_val
             

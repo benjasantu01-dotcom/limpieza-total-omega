@@ -257,21 +257,17 @@ class SystemContext:
         Retorna True si se pudo poblar al menos un dato válido.
         """
         found_data = False
-        is_dict = isinstance(source, dict)
         
         for key, spec in _VALIDATORS.items():
-            if _validate_and_assign(self, source, is_dict, key, spec):
+            if _validate_and_assign(self, source, key, spec):
                 found_data = True
         
         # Procesamiento seguro de 'grade'
-        try:
-            val = source.get("grade") if is_dict else getattr(source, "grade", None)
-            if isinstance(val, str):
-                clean_grade = val[:10].strip()
-                if _ensure_safe_text(clean_grade):
-                    self.grade = clean_grade
-        except Exception:
-            pass
+        val = _get_source_value(source, "grade")
+        if isinstance(val, str):
+            clean_grade = val[:10].strip()
+            if _ensure_safe_text(clean_grade):
+                self.grade = clean_grade
         
         return found_data
 
@@ -307,12 +303,18 @@ def _ensure_safe_text(text: Any) -> bool:
         return False
     return _is_safe_text_structure(text)
 
-def _validate_and_assign(ctx: SystemContext, source: Any, is_dict: bool, key: str, spec: MetricSpec) -> bool:
-    """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
+def _get_source_value(source: Any, key: str) -> Any:
+    """Centraliza la extracción de valores desde diccionarios u objetos."""
     try:
-        val = source.get(key) if is_dict else getattr(source, key, None)
+        if isinstance(source, dict):
+            return source.get(key)
+        return getattr(source, key, None)
     except Exception:
-        return False
+        return None
+
+def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
+    """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
+    val = _get_source_value(source, key)
     
     if val is None or type(val) in _FORBIDDEN_TYPES: return False
     
