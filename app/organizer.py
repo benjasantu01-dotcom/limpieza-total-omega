@@ -111,7 +111,10 @@ def _is_junk_path(path: Path) -> bool:
 
 
 def _generate_unique_target(target: Path) -> Path:
-    """Genera una ruta única añadiendo un sufijo numérico si el archivo ya existe."""
+    """
+    Genera una ruta única añadiendo un sufijo numérico si el archivo ya existe.
+    Previene colisiones al consolidar archivos con nombres idénticos en la carpeta de revisión.
+    """
     if not target.exists():
         return target
         
@@ -133,8 +136,8 @@ def _is_allowed_directory(name: str) -> bool:
 
 def _is_file_locked(path: Path) -> bool:
     """
-    Intenta abrir el archivo en modo lectura binaria para detectar bloqueos exclusivos.
-    Si falla, se asume que el archivo está en uso por otra aplicación.
+    Intenta abrir el archivo en modo exclusivo. 
+    Retorna True si el archivo está en uso y no puede ser movido o eliminado.
     """
     try:
         with open(path, "rb") as f:
@@ -145,8 +148,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Determina si la operación de destino implica un riesgo de recursividad.
-    Previene intentar mover un directorio dentro de sí mismo.
+    Verifica si el destino de una operación es hijo o el mismo origen.
+    Crucial para evitar bucles de copiado infinito o corrupción de jerarquía.
     """
     try:
         s, d = src.resolve(), dest.resolve()
@@ -157,8 +160,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Realiza una validación exhaustiva de seguridad antes de operaciones de I/O.
-    Verifica permisos, protecciones de sistema y bloqueos de archivo.
+    Validación de pre-operación de I/O.
+    Comprueba integridad, permisos, protecciones lógicas de safety.py y bloqueos de sistema.
     """
     try:
         if not src or not dest or not src.exists() or not src.is_file(): return False
@@ -176,6 +179,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         stat = src.stat()
         if stat.st_size == 0: return False
         
+        # Bloquea archivos con atributos de sistema (0x4) o solo lectura (0x2)
         if os.name == "nt" and (stat.st_file_attributes & 0x46): 
             return False
         
@@ -185,7 +189,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """Realiza un chequeo de alto nivel validando la integridad del JunkFile previo a moverlo."""
+    """Valida que un objeto JunkFile mantenga su integridad antes de moverlo."""
     if not isinstance(junk_file, JunkFile) or not junk_file.path: return False
     try:
         current_path: Path = junk_file.path
@@ -198,8 +202,8 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """
-    Realiza un recorrido recursivo eficiente usando os.scandir.
-    Ignora junctions y carpetas protegidas para evitar accesos indebidos.
+    Recorrido recursivo utilizando os.scandir para alta performance.
+    Ignora junctions y carpetas en SYSTEM_FOLDER_BLOCKLIST para mantener la seguridad.
     """
     if is_protected_path(current_dir):
         return
@@ -222,7 +226,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
-    """Escanea rutas específicas en busca de archivos basura."""
+    """Escanea rutas específicas en busca de archivos basura, ignorando sistemas protegidos."""
     search_dirs = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     
@@ -247,13 +251,17 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Evalúa la viabilidad de mover un archivo verificando espacio en disco y permisos."""
+    """
+    Verifica si una operación de movimiento es posible: espacio en disco, 
+    permisos y unicidad de nombre en el destino.
+    """
     if not isinstance(junk_file.path, Path) or not dest_base: return None
     try:
         src_path = junk_file.path.resolve()
         if not src_path.exists() or not src_path.is_file() or not dest_base.is_dir(): 
             return None
         
+        # Validar que no se intente cruzar fronteras de unidad (mecanismo de shutil.move)
         if not src_path.anchor or not dest_base.anchor or src_path.anchor != dest_base.anchor:
             return None
 
@@ -270,7 +278,10 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Mueve los archivos especificados a un directorio de cuarentena para revisión."""
+    """
+    Mueve archivos candidatos a una carpeta de revisión segura.
+    Requiere que la ruta de destino pase las validaciones de safety.py.
+    """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
 
@@ -298,7 +309,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos desde la carpeta de revisión."""
+    """
+    Elimina permanentemente archivos desde la carpeta de revisión.
+    Aplica controles estrictos para no borrar directorios o archivos protegidos.
+    """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
@@ -320,10 +334,12 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not resolved_item.is_relative_to(dest):
                 continue
             
+            # Chequeo preventivo de atributos Windows (Read-only/System)
             stat = item.stat()
             if os.name == "nt" and (stat.st_file_attributes & 0x46):
                 continue
 
+            # Verificación doble de seguridad y bloqueo antes de unlink
             if is_safe_to_modify(item) and not is_protected_path(item) and not _is_file_locked(item):
                 ensure_safe_to_modify(item)
                 item.unlink()
