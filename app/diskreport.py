@@ -185,6 +185,13 @@ def format_size(num: Union[int, float, None]) -> str:
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de almacenamiento de una unidad específica.
+
+    Args:
+        mount: Ruta o letra de unidad a consultar.
+
+    Returns:
+        DriveUsage con métricas de la unidad o None si la ruta no es válida, 
+        está protegida o inaccesible.
     """
     if not mount or not isinstance(mount, (str, os.PathLike)):
         return None
@@ -209,7 +216,13 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
-    Obtiene el uso de almacenamiento de todas las unidades detectadas.
+    Obtiene el uso de almacenamiento de una lista de unidades o detecta las locales.
+
+    Args:
+        mounts: Iterable opcional de rutas a analizar. Si es None, detecta las unidades del SO.
+
+    Returns:
+        Lista de objetos DriveUsage con la información recopilada.
     """
     if mounts is None:
         if os.name == "nt":
@@ -233,7 +246,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador iterativo que recorre directorios recursivamente mediante `os.scandir`.
+    Generador que recorre recursivamente el sistema de archivos mediante `os.scandir`.
+    
+    Args:
+        directory: Ruta raíz desde donde comenzar el escaneo.
+        skip_protected: Si es True, ignora rutas marcadas como protegidas.
+        
+    Yields:
+        Tuplas conteniendo el objeto Path del archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -386,6 +406,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe textual unificado con los hallazgos del análisis.
+
+    Args:
+        directory: Ruta a analizar.
+        skip_protected: Si es True, no accede a rutas protegidas.
+
+    Returns:
+        Lista de cadenas (líneas) que componen el reporte textual.
     """
     if not directory:
         return ["Error: Ruta no proporcionada."]

@@ -94,6 +94,18 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
         return None
 
 
+def _is_valid_candidate(path: Path) -> bool:
+    """Valida que la ruta sea un archivo real, accesible y no protegido."""
+    try:
+        return (
+            path.is_file() and 
+            not is_protected_path(path) and 
+            is_safe_to_modify(path)
+        )
+    except (OSError, ValueError):
+        return False
+
+
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """Clasifica rutas según su tamaño en bytes, filtrando rutas protegidas."""
     groups: Dict[int, List[Path]] = defaultdict(list)
@@ -103,7 +115,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if p is None: continue
         try:
             target = Path(p).resolve()
-            if target.exists() and not is_protected_path(target) and is_safe_to_modify(target):
+            if target.exists() and _is_valid_candidate(target):
                 st = target.stat()
                 if st.st_size > 0:
                     groups[st.st_size].append(target)
@@ -197,37 +209,42 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Sugiere el archivo original según antigüedad (mtime) y longitud de ruta."""
+    """
+    Selecciona el archivo 'original' para conservar basándose en heurísticas:
+    1. Archivo más antiguo (menor mtime) para preservar versiones originales.
+    2. En caso de empate en fecha, la ruta más corta (menor profundidad de árbol).
+    """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if p is None: continue
-        try:
-            p_obj = Path(p).resolve()
-            if p_obj.exists() and p_obj.is_file() and not is_protected_path(p_obj) and is_safe_to_modify(p_obj):
+        p_obj = Path(p).resolve()
+        if _is_valid_candidate(p_obj):
+            try:
                 stat_info = p_obj.stat()
                 candidates.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
-        except (OSError, PermissionError, ValueError):
-            continue
+            except (OSError, PermissionError):
+                continue
             
     return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Genera representación textual de un grupo para reportes."""
+    """Genera una representación textual formateada de un grupo para reportes."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
+        
     keeper = suggest_keeper(group)
     mb_total = round(group.size_bytes / (1024 * 1024), 2)
     mb_wasted = round(group.wasted_bytes / (1024 * 1024), 2)
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
+    
     for path in group.paths:
         if not isinstance(path, Path): continue
         try:
             p_obj = path.resolve()
-            if is_protected_path(p_obj) or not is_safe_to_modify(p_obj):
+            if not _is_valid_candidate(p_obj):
                 lines.append(f"   [inseguro] {path}")
                 continue
             label = 'conservar' if keeper is not None and p_obj == keeper else 'duplicado'

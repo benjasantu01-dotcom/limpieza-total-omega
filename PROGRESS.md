@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 29
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 59 | 7 | 10 | 11 | 63 |
+| 2026-08-24 | 56 | 7 | 9 | 11 | 63 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 3 | 1 | 0 | 0 | 0 |
+| 2026-08-26 | 7 | 1 | 0 | 0 | 0 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **53**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **42**
-- rendimiento: **41**
 - robustez ante casos límite: **40**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **21**
+- `duplicates.py`: **20**
 - `memory.py`: **20**
-- `duplicates.py`: **19**
+- `quarantine.py`: **20**
 - `settings.py`: **18**
 - `assistant.py`: **18**
-- `diskreport.py`: **17**
-- `healthscore.py`: **16**
+- `diskreport.py`: **18**
+- `healthscore.py`: **17**
 - `browser.py`: **16**
-- `scanner.py`: **15**
 - `branding.py`: **15**
-- `safety.py`: **14**
+- `scanner.py`: **14**
+- `safety.py`: **13**
 - `organizer.py`: **13**
-- `main.py`: **10**
+- `main.py`: **11**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T00:14:31` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la interfaz mediante la extracción del bloque de creación de menús de configuración (`_build_ia_settings`) y la estandarización de las llamadas de configuración en `_build_tab_ajustes`.
+- `2026-08-26T00:13:39` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes y docstrings descriptivos a las constantes y funciones de utilidad, eliminando la ambigüedad sobre las unidades (MB/porcentaje) en el proceso de cálculo.
+- `2026-08-26T00:13:14` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` mediante la refactorización de `suggest_keeper` y `format_group`, extrayendo la lógica de validación de archivos en una función interna clara y añadiendo docstrings descriptivos que explican el criterio de selección de archivos.
+- `2026-08-26T00:12:50` **diskreport.py** (legibilidad y documentación): He documentado los parámetros, retornos y el propósito de las funciones `walk_files`, `drive_usage`, `all_drives_usage` y `summarize` siguiendo el estilo de la base de código, mejorando la legibilidad técnica sin alterar la lógica.
 - `2026-08-26T00:03:55` **browser.py** (legibilidad y documentación): Documenté con precisión los parámetros y el comportamiento de las funciones de recursión y filtrado, clarificando la intención detrás del uso de `os.scandir` y la estrategia de seguridad al ignorar puntos de reparse, mejorando la mantenibilidad técnica del módulo.
 - `2026-08-26T00:03:44` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos para las funciones de dibujo (`draw_logo`, `draw_ring`, `draw_gradient_bar`) que clarifican los parámetros de entrada y el propósito de las transformaciones geométricas, mejorando la mantenibilidad del código gráfico.
 - `2026-08-26T00:03:11` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de validación de métricas convirtiendo la estructura de datos `_VALIDATORS` en una clase `MetricSpec` con tipado fuerte, eliminando el uso de tuplas de tipo heterogéneo que oscurecían la intención del código.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-25T14:32:32` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando `PermissionError` y `OSError` de forma explícita al procesar directorios base, evitando que el escaneo colapse prematuramente ante rutas inaccesibles y proporcionando feedback informativo en lugar de abortar silenciosamente.
 - `2026-08-25T14:32:17` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `_is_system_hidden` y `_should_skip_entry` añadiendo validaciones explícitas de entrada (`None` y tipos) y encapsulando el acceso a `kernel32` en un bloque de control más estricto, previniendo excepciones innecesarias en entornos donde `ctypes` falle o la ruta sea inválida.
 - `2026-08-25T14:31:18` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` añadiendo validaciones explícitas de tipo y estructura sobre `metrics` y `health` para evitar `AttributeError` o comportamientos inesperados si se pasan objetos mal formados, asegurando que la app no aborte ante datos corruptos.
-- `2026-08-25T13:00:16` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al agregar una verificación explícita mediante `is_protected_path` para prevenir la resolución o escaneo de rutas que, aunque parezcan estar dentro de la raíz, apunten a nodos del sistema protegidos (como directorios de sistema mediante enlaces o alias).
-- `2026-08-25T12:59:18` **quarantine.py** (seguridad defensiva): Se mejora la robustez de la función `_atomic_isolate_file` añadiendo una verificación post-escritura explícita del hash SHA256 sobre el archivo final en destino antes de completar la operación, mitigando riesgos de corrupción en el sistema de archivos durante la transferencia.
-- `2026-08-25T12:50:47` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `delete_reviewed` añadiendo una comprobación explícita de atributos de archivo para impedir la eliminación de archivos de sistema u ocultos, emulando la restricción ya presente en el escáner de movimiento.
-- `2026-08-25T12:50:37` **memory.py** (seguridad defensiva): Se reforzó `trim_working_set` añadiendo una validación explícita para evitar que procesos maliciosos intenten evadir el control de `is_protected_path` mediante la ofuscación de nombres con caracteres RTL (Right-To-Left), asegurando además que no se pueda manipular el proceso que ejecuta la propia herramienta.

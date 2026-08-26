@@ -85,6 +85,7 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
 
 @dataclass
 class SystemMetrics:
+    """Contenedor de datos crudos recolectados de los subsistemas del equipo."""
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -109,10 +110,12 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
+        """Verifica que todos los valores numéricos sean finitos para evitar errores en cálculos."""
         return all(math.isfinite(v) if isinstance(v, (int, float)) else True for v in self.__dict__.values())
 
 @dataclass
 class HealthResult:
+    """Resultado final del análisis de salud, listo para visualización."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -120,9 +123,11 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
+        """Determina si el sistema califica como saludable."""
         return 80 <= self.score <= 100
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+    """Restringe un número numérico a un rango específico."""
     try:
         val = float(value)
         return max(low, min(high, val)) if math.isfinite(val) else low
@@ -130,12 +135,14 @@ def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
         return low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Convierte entrada a float seguro."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def _to_int(value: Any, default: int = 0) -> int:
+    """Convierte entrada a int seguro."""
     try:
         val = float(value)
         return int(val) if math.isfinite(val) else default
@@ -169,6 +176,7 @@ def score_startup(startup_count: int) -> NormalizedRatio:
     return _clamp(1.0 - (max(0, _to_int(startup_count)) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
+    """Asigna una letra de calificación según el puntaje numérico."""
     s = _clamp(_to_float(score), 0.0, 100.0)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -234,6 +242,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     )
 
 def summarize(result: HealthResult) -> List[str]:
+    """Genera un reporte de texto legible a partir de un resultado de salud."""
     if not isinstance(result, HealthResult): return ["Error: Formato de informe inválido."]
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:

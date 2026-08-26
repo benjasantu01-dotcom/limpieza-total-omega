@@ -756,7 +756,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Ajustes", tab)
 
     def _build_ia_settings(self, tab: ctk.CTk) -> None:
-        """Crea la sección de configuración del asistente en línea."""
+        """Crea la sección de configuración del asistente en línea dentro de Ajustes."""
         self._create_styled_label(
             tab, f"{branding.icon('Asistente')}  Asistente en línea (opcional)", "title",
             anchor="w", text_color=branding.color("accent2")
