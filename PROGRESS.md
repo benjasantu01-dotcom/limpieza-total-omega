@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 205
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 27
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 49 | 7 | 8 | 9 | 57 |
+| 2026-08-24 | 48 | 7 | 8 | 8 | 55 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 16 | 1 | 3 | 1 | 3 |
+| 2026-08-26 | 18 | 1 | 4 | 1 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **46**
+- seguridad defensiva: **45**
+- rendimiento: **44**
 - manejo de errores y validación de entradas: **42**
-- rendimiento: **42**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
+- `quarantine.py`: **21**
 - `duplicates.py`: **20**
-- `quarantine.py`: **20**
 - `diskreport.py`: **18**
 - `assistant.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **17**
 - `browser.py`: **17**
 - `scanner.py`: **15**
-- `branding.py`: **14**
 - `organizer.py`: **13**
-- `safety.py`: **12**
+- `safety.py`: **13**
+- `branding.py`: **13**
 - `main.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T01:04:56` **safety.py** (rendimiento): Se implementó un mecanismo de caché (dict privado y `lru_cache`) en los chequeos de integridad más costosos (como `is_file_in_use` y chequeos de atributos de Windows) para reducir significativamente las llamadas al sistema operativo durante las iteraciones de escaneo masivo, mejorando el rendimiento sin alterar la lógica de seguridad.
+- `2026-08-26T01:04:26` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño total y la carga del manifiesto evitando iteraciones redundantes y centralizando la resolución de rutas, mejorando el rendimiento en sistemas con muchos archivos en cuarentena.
 - `2026-08-26T00:55:25` **memory.py** (rendimiento): Se optimizó el proceso de filtrado y ordenamiento de la lista de procesos en `parse_windows_process_csv` mediante un generador y se reemplazó la conversión iterativa de strings por un uso más eficiente de `sorted` con `key` sobre el iterador, reduciendo la carga de memoria al procesar la lista.
 - `2026-08-26T00:55:11` **main.py** (rendimiento): Optimicé el sistema de caché centralizando y reduciendo la complejidad del acceso a datos repetitivos en `_compile_metrics` mediante el uso de `lru_cache` para la información de disco y evitando recálculos innecesarios de métricas de salud que ya están en memoria.
 - `2026-08-26T00:53:38` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` utilizando un `set` para verificar archivos procesados antes de calcular sus hashes, evitando operaciones de E/S redundantes en estructuras con enlaces simbólicos complejos o recursión circular.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T00:13:39` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes y docstrings descriptivos a las constantes y funciones de utilidad, eliminando la ambigüedad sobre las unidades (MB/porcentaje) en el proceso de cálculo.
 - `2026-08-26T00:13:14` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` mediante la refactorización de `suggest_keeper` y `format_group`, extrayendo la lógica de validación de archivos en una función interna clara y añadiendo docstrings descriptivos que explican el criterio de selección de archivos.
 - `2026-08-26T00:12:50` **diskreport.py** (legibilidad y documentación): He documentado los parámetros, retornos y el propósito de las funciones `walk_files`, `drive_usage`, `all_drives_usage` y `summarize` siguiendo el estilo de la base de código, mejorando la legibilidad técnica sin alterar la lógica.
-- `2026-08-26T00:03:55` **browser.py** (legibilidad y documentación): Documenté con precisión los parámetros y el comportamiento de las funciones de recursión y filtrado, clarificando la intención detrás del uso de `os.scandir` y la estrategia de seguridad al ignorar puntos de reparse, mejorando la mantenibilidad técnica del módulo.
-- `2026-08-26T00:03:44` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos para las funciones de dibujo (`draw_logo`, `draw_ring`, `draw_gradient_bar`) que clarifican los parámetros de entrada y el propósito de las transformaciones geométricas, mejorando la mantenibilidad del código gráfico.

@@ -904,3 +904,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T00:55:25` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de filtrado y ordenamiento de la lista de procesos en `parse_windows_process_csv` mediante un generador y se reemplazó la conversión iterativa de strings por un uso más eficiente de `sorted` con `key` sobre el iterador, reduciendo la carga de memoria al procesar la lista.
 - `2026-08-26T00:55:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T00:55:25` Corrida terminada. Total usado hoy: 24.
+- `2026-08-26T01:03:23` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-08-26T01:03:53` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-26T01:04:26` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño total y la carga del manifiesto evitando iteraciones redundantes y centralizando la resolución de rutas, mejorando el rendimiento en sistemas con muchos archivos en cuarentena.
+- `2026-08-26T01:04:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-08-26T01:04:56` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché (dict privado y `lru_cache`) en los chequeos de integridad más costosos (como `is_file_in_use` y chequeos de atributos de Windows) para reducir significativamente las llamadas al sistema operativo durante las iteraciones de escaneo masivo, mejorando el rendimiento sin alterar la lógica de seguridad.
+- `2026-08-26T01:04:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T01:04:56` Corrida terminada. Total usado hoy: 28.

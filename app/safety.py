@@ -81,7 +81,6 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 )
 
 _PATH_CACHE: dict[str, bool] = {}
-_VALIDATION_CACHE: dict[str, bool] = {}
 
 
 class _IntegrityCheck(NamedTuple):
@@ -153,12 +152,13 @@ def _is_reparse_point(path: Path) -> bool:
         return False
 
 
-def _is_file_in_use(path: Path, st: os.stat_result = None) -> bool:
+@lru_cache(maxsize=1024)
+def _is_file_in_use(path_str: str) -> bool:
     """Verifica si el sistema operativo mantiene un bloqueo exclusivo sobre el archivo."""
-    if not path or not path.exists():
+    path = Path(path_str)
+    if not path.exists():
         return False
     try:
-        # Intenta abrir el archivo en modo lectura exclusiva
         fd = os.open(path, os.O_RDONLY | os.O_EXCL)
         os.close(fd)
         return False
@@ -169,7 +169,7 @@ def _is_file_in_use(path: Path, st: os.stat_result = None) -> bool:
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(p)),
     _IntegrityCheck(ProtectionReason.READ_ONLY, lambda _, st: not bool(st.st_mode & stat.S_IWRITE)),
-    _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(p)),
+    _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(str(p))),
     _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(p)),
     _IntegrityCheck(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
     _IntegrityCheck(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p)),
@@ -179,10 +179,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 
 def _check_file_integrity(path: Path) -> None:
-    """
-    Ejecuta validaciones físicas sobre la ruta.
-    Lanza UnsafePathError si alguna regla de integridad es violada.
-    """
+    """Ejecuta validaciones físicas sobre la ruta. Lanza UnsafePathError si es violada."""
     if len(path.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
@@ -211,19 +208,13 @@ def _is_readonly(path: Path) -> bool:
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
     """Estandariza rutas: expande '~', resuelve componentes y verifica límites."""
-    if path is None:
-        raise ValueError("Ruta nula recibida.")
-    
+    if path is None: raise ValueError("Ruta nula recibida.")
     try:
         path_str = str(path).strip()
-    except (TypeError, ValueError):
-        raise ValueError("Entrada no convertible a string.")
+    except (TypeError, ValueError): raise ValueError("Entrada no convertible a string.")
 
-    if not path_str:
-        raise ValueError("Entrada de ruta vacía.")
-    
-    if len(path_str) >= 260:
-        raise ValueError("Longitud de ruta excede el límite permitido.")
+    if not path_str: raise ValueError("Entrada de ruta vacía.")
+    if len(path_str) >= 260: raise ValueError("Longitud de ruta excede el límite permitido.")
         
     try:
         p = Path(path_str).expanduser()
@@ -237,8 +228,7 @@ def is_drive_root(path: PathLike) -> bool:
     try:
         p = normalize(path)
         return p == Path(p.anchor)
-    except (ValueError, TypeError, OSError):
-        return True
+    except (ValueError, TypeError, OSError): return True
 
 
 def is_protected_path(path: PathLike) -> bool:
@@ -250,19 +240,11 @@ def is_protected_path(path: PathLike) -> bool:
     try:
         p = normalize(path)
         p_str = os.path.normcase(str(p))
-    except (ValueError, TypeError, OSError, RuntimeError):
-        return True
+    except (ValueError, TypeError, OSError, RuntimeError): return True
 
-    is_protected = True
-    if p.parts:
-        if any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root):
-            is_protected = True
-        elif not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
-            is_protected = True
-        elif p == Path(p.anchor):
-            is_protected = True
-        else:
-            is_protected = False
+    is_protected = any(p_str.startswith(root) for root in _SYSTEM_ROOT_PATHS if root) or \
+                   not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts) or \
+                   p == Path(p.anchor)
     
     _PATH_CACHE[path_key] = is_protected
     return is_protected
@@ -275,8 +257,7 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         c, p = normalize(child), normalize(parent)
         if allow_equal and c == p: return True
         return p in c.parents
-    except (ValueError, TypeError, OSError, RuntimeError):
-        return False
+    except (ValueError, TypeError, OSError, RuntimeError): return False
 
 
 @lru_cache(maxsize=2048)
@@ -285,8 +266,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     if not path: return True
     try:
         return Path(str(path)).suffix.lower() in SENSITIVE_EXTENSIONS
-    except (TypeError, ValueError, OSError):
-        return True 
+    except (TypeError, ValueError, OSError): return True 
 
 
 def _validate_basic_path_safety(path: Path, path_str: str) -> None:
@@ -317,15 +297,12 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """Valida exhaustivamente si una ruta es apta para escritura."""
-    if path is None:
-        raise UnsafePathError("Ruta nula recibida para validación.")
+    if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
     p = normalize(path)
-    
     _validate_basic_path_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    # Validación de integridad física
     if p.exists():
         if not p.is_file() and not p.is_dir():
             raise UnsafePathError("Tipo de archivo no soportado.")
@@ -349,8 +326,7 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeG
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
-    except (UnsafePathError, TypeError, ValueError, OSError):
-        return False
+    except (UnsafePathError, TypeError, ValueError, OSError): return False
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
@@ -358,10 +334,8 @@ def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = Fals
     results = []
     for p in paths:
         if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive):
-            try:
-                results.append(normalize(p))
-            except (ValueError, TypeError, OSError):
-                continue
+            try: results.append(normalize(p))
+            except (ValueError, TypeError, OSError): continue
     return results
 
 
@@ -371,8 +345,7 @@ def describe_protection(path: PathLike) -> str:
     try:
         p = normalize(path)
         raw_str = str(path)
-    except (TypeError, ValueError):
-        return "Ruta mal formada."
+    except (TypeError, ValueError): return "Ruta mal formada."
 
     if raw_str.startswith(("\\\\", "//")): return f"'{raw_str}' es ruta de red."
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
@@ -383,7 +356,7 @@ def describe_protection(path: PathLike) -> str:
         if os.path.islink(p): return f"'{p}' es un enlace simbólico."
         if os.path.ismount(p): return f"'{p}' es un punto de montaje."
         if _is_readonly(p): return f"'{p}' es solo lectura."
-        if _is_file_in_use(p): return f"'{p}' en uso por otro proceso."
+        if _is_file_in_use(str(p)): return f"'{p}' en uso por otro proceso."
         if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema."
         if _has_alternate_data_stream(p): return f"'{p}' contiene ADS."
         if p.is_file() and p.stat().st_size == 0: return f"'{p}' es un archivo vacío."
