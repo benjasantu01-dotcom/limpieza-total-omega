@@ -950,3 +950,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-26T14:00:18` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el motor de reglas local cacheando la lista de problemas identificados en `local_answer` para evitar recálculos redundantes al acceder a los manejadores y reduje el trabajo de los bucles en `_identify_active_problems` mediante un retorno temprano.
 - `2026-08-26T14:00:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T14:00:18` Corrida terminada. Total usado hoy: 332.
+- `2026-08-26T14:08:52` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-26T14:09:31` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo del logo y los gradientes eliminando recreaciones innecesarias de listas y tuplas dentro de los bucles de renderizado, centralizando la lógica de transformación de coordenadas para evitar aritmética repetitiva en `draw_logo`.
+- `2026-08-26T14:09:57` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la recursión en `_sum_directory_recursive` evitando llamadas innecesarias a `is_protected_path` (que es costoso al requerir resolución de rutas) dentro del loop, aprovechando que el padre ya fue validado al inicio del escaneo y usando una estructura de datos `set` para `NEVER_TOUCH` en lugar de una búsqueda lineal constante.
+- `2026-08-26T14:10:23` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-26T14:10:37` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el pipeline `_process_size_group` para evitar el cálculo redundante de hashes parciales cuando el tamaño del archivo es menor o igual a `PARTIAL_READ_BYTES`, aplicando directamente el hash completo en esos casos para ahorrar una pasada de lectura al disco.
+- `2026-08-26T14:10:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T14:10:37` Corrida terminada. Total usado hoy: 336.

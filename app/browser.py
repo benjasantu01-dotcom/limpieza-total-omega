@@ -134,8 +134,6 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
 
 def _is_excluded_file(name: str) -> bool:
     """Valida si un nombre de archivo está en la lista de bloqueo permanente."""
-    if not name:
-        return True
     return name.lower() in NEVER_TOUCH
 
 
@@ -160,15 +158,10 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     Aplica filtros de seguridad: omite rutas protegidas, enlaces simbólicos,
     puntos de reparse (junctions) y archivos con atributos de sistema/ocultos.
     """
-    if not entry:
-        return True
     if _is_excluded_file(entry.name):
         return True
         
     try:
-        p = Path(entry.path)
-        if is_protected_path(p):
-            return True
         if entry.is_symlink() or is_junction_fn(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):
@@ -194,15 +187,7 @@ def _sum_directory_recursive(
     Usa memoización en `memo` (dict) indexado por ruta absoluta para evitar 
     recalcular subárboles compartidos y detectar ciclos.
     """
-    if not root_dir or not os.path.exists(root_dir):
-        return 0
     root_path = os.path.normpath(root_dir)
-    
-    if is_protected_path(Path(root_path)):
-        return 0
-        
-    if root_path in memo:
-        return memo[root_path]
     
     def _walk(current_dir: str, depth: int) -> int:
         """Función interna que recorre el árbol de archivos con control de profundidad."""
@@ -229,7 +214,6 @@ def _sum_directory_recursive(
                     except (OSError, PermissionError, FileNotFoundError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
-            # Fallback seguro: ignorar error de acceso y retornar parcial o cero
             return 0
         
         memo[current_abs] = total
@@ -280,13 +264,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea el sistema buscando rutas de caché conocidas.
-    
-    Flujo:
-    1. Resuelve rutas base de usuario (LOCALAPPDATA).
-    2. Para cada navegador en `cache_paths`, construye la ruta completa.
-    3. Valida la seguridad y límites de la ruta encontrada.
-    4. Usa un diccionario `perf_cache` para memoizar tamaños de directorios 
-       compartidos entre navegadores (ej. estructuras de Google/Edge similares).
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

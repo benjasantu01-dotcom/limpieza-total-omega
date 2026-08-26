@@ -209,14 +209,19 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Pipeline de verificación de duplicados de dos niveles (parcial y completo)."""
+    """Pipeline de verificación de duplicados: evita hash parcial si el archivo es pequeño."""
     confirmed_groups: List[DuplicateGroup] = []
-    partial_results = _refine_by_hash(paths, partial_hash)
     
-    for partial_candidates in partial_results.values():
-        full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
+    if size <= PARTIAL_READ_BYTES:
+        full_hash_groups = _refine_by_hash(paths, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
             confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
+    else:
+        partial_results = _refine_by_hash(paths, partial_hash)
+        for partial_candidates in partial_results.values():
+            full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
+            for digest, confirmed_paths in full_hash_groups.items():
+                confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
     return confirmed_groups
 
 

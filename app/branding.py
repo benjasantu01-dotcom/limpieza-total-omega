@@ -297,20 +297,15 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor,
     return tuple(segments)
 
 @lru_cache(maxsize=8)
-def _get_shield_coords(s: float) -> List[float]:
+def _get_shield_coords(s: float) -> Tuple[float, ...]:
     """Calcula vértices normalizados del logo para escalado vectorial."""
     base: List[float] = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
-    return [v * float(s) for v in base]
+    return tuple(v * float(s) for v in base)
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
     """Genera una representación SVG del logotipo corporativo."""
     s: int = max(1, min(4096, int(size)))
-    # Sanitización de colores para asegurar validez ante casos límite
-    c_bg = C_BACKGROUND if len(C_BACKGROUND) == 7 else "#000000"
-    c_surf = C_SURFACE if len(C_SURFACE) == 7 else "#101010"
-    c_glow = C_GLOW if len(C_GLOW) == 7 else "#00ff00"
-    
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
     <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">
@@ -319,18 +314,18 @@ def logo_svg(size: int = 128) -> str:
       <stop offset="100%" stop-color="{GRADIENT_STOPS[2]}"/>
     </linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
-      <stop offset="0%" stop-color="{c_glow}" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="{c_glow}" stop-opacity="0"/>
+      <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="{C_GLOW}" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="128" height="128" rx="30" fill="{c_surf}"/>
+  <rect width="128" height="128" rx="30" fill="{C_SURFACE}"/>
   <circle cx="64" cy="56" r="52" fill="url(#omegaGlow)"/>
   <path d="M64 18 L100 31 V67 C100 90 83 104 64 110 C45 104 28 90 28 67 V31 Z"
         fill="url(#omegaShield)"/>
-  <path d="M41 75 L75 41" stroke="{c_bg}" stroke-width="8" stroke-linecap="round"/>
-  <path d="M75 41 L89 38 L92 52 Z" fill="{c_bg}"/>
+  <path d="M41 75 L75 41" stroke="{C_BACKGROUND}" stroke-width="8" stroke-linecap="round"/>
+  <path d="M75 41 L89 38 L92 52 Z" fill="{C_BACKGROUND}"/>
   <text x="64" y="98" font-family="{UI_FONT_FAMILY}" font-size="26"
-        font-weight="{UI_FONT_BOLD}" fill="{c_bg}" text-anchor="middle">&#937;</text>
+        font-weight="{UI_FONT_BOLD}" fill="{C_BACKGROUND}" text-anchor="middle">&#937;</text>
 </svg>
 """
 
@@ -346,14 +341,12 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
             return None
             
         parent = path_obj.parent
-        # Validar el directorio padre antes de intentar crearlo
         if not parent.exists() and not is_safe_to_modify(parent):
             return None
             
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
             
-        # Confirmación final de seguridad antes de escritura
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
@@ -371,40 +364,32 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas del escudo en el canvas proporcionado."""
+    """Renderiza las franjas degradadas internas del escudo."""
     try:
-        if scale <= 0 or not hasattr(canvas, "create_rectangle"): return
         franjas_count: int = max(6, int(28 * scale))
-        colores: Tuple[HexColor, ...] = gradient_colors(franjas_count)
+        colores = gradient_colors(franjas_count)
+        base_y = canvas_y + 18 * scale
+        factor_y = 92 * scale / franjas_count
+        center_x = canvas_x + 64 * scale
+        
         for color_hex, start, end in _get_grouped_segments(colores):
             mid: float = (start + end) / 2
             progreso: float = mid / (franjas_count - 1)
             w: float = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
-            y_ini: float = canvas_y + 18 * scale + start * (92 * scale / franjas_count)
-            y_fin: float = canvas_y + 18 * scale + end * (92 * scale / franjas_count)
             canvas.create_rectangle(
-                canvas_x + 64 * scale - w, y_ini, 
-                canvas_x + 64 * scale + w, y_fin + 1, 
+                center_x - w, base_y + start * factor_y, 
+                center_x + w, base_y + end * factor_y + 1, 
                 fill=color_hex, outline=""
             )
     except Exception: pass
 
 def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """
-    Dibuja el escudo corporativo escalado y centrado en el canvas.
-
-    Args:
-        canvas: Objeto de dibujo compatible con Tkinter (create_polygon, etc.).
-        size: Dimensión base (128x128 es el tamaño nativo).
-        canvas_x: Coordenada X de origen.
-        canvas_y: Coordenada Y de origen.
-    """
+    """Dibuja el escudo corporativo escalado y centrado en el canvas."""
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
-        s_val = float(size)
-        scale: float = max(0.1, min(10.0, s_val / 128.0))
-        base_coords: List[float] = _get_shield_coords(scale)
-        contorno: List[float] = [canvas_x + base_coords[i] if i % 2 == 0 else canvas_y + base_coords[i] for i in range(len(base_coords))]
+        scale: float = max(0.1, min(10.0, float(size) / 128.0))
+        coords = _get_shield_coords(scale)
+        contorno = [canvas_x + coords[i] if i % 2 == 0 else canvas_y + coords[i] for i in range(len(coords))]
         
         for paso in range(4, 0, -1):
             r: float = 56 * scale * (0.6 + paso * 0.12)
@@ -426,21 +411,10 @@ def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: 
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """
-    Renderiza una línea horizontal con degradado de color sobre el canvas.
-
-    Args:
-        canvas: Widget de dibujo donde renderizar.
-        width: Longitud de la barra en píxeles.
-        height: Espesor de la línea (default 3).
-        canvas_x: Coordenada X de inicio.
-        canvas_y: Coordenada Y de inicio.
-        stops: Tupla de colores para el degradado.
-    """
+    """Renderiza una línea horizontal con degradado de color."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
-        ancho: int = max(1, int(width))
-        colores: Tuple[HexColor, ...] = gradient_colors(ancho, stops)
+        colores = gradient_colors(max(1, int(width)), stops)
         for color_hex, start, end in _get_grouped_segments(colores):
             canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
@@ -449,18 +423,7 @@ def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Dibuja un indicador circular de progreso (donut) sobre el canvas.
-
-    Args:
-        percent: Valor porcentual (0.0 a 100.0) a representar.
-        size: Diámetro total del anillo en píxeles.
-        canvas_x: Coordenada X del centro.
-        canvas_y: Coordenada Y del centro.
-        thickness: Grosor de la banda circular.
-        track: Color de fondo de la banda.
-        fill: Color de progreso de la banda.
-    """
+    """Dibuja un indicador circular de progreso (donut) sobre el canvas."""
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
@@ -471,10 +434,7 @@ def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
         color_avance = fill if isinstance(fill, str) else score_color(valor)
         borde: float = grosor / 2
         
-        caja = (
-            canvas_x + borde, canvas_y + borde, 
-            canvas_x + diametro - borde, canvas_y + diametro - borde
-        )
+        caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
         if valor > 0:
             canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9),
