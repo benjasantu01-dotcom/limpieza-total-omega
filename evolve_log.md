@@ -1312,3 +1312,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T05:50:36` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
 - `2026-08-26T05:50:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T05:50:36` Corrida terminada. Total usado hoy: 140.
+- `2026-08-26T05:59:05` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-08-26T05:59:47` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-26T06:00:12` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a casos donde las métricas podrían contener valores `NaN` o `inf` no detectados previamente, asegurando que `validate()` y `is_finite()` protejan el bucle de cálculo ante cualquier dato de entrada atípico.
+- `2026-08-26T06:01:22` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una gestión robusta de estados intermedios en la inicialización de los componentes de la interfaz (`_tab_factory`) mediante la validación de `winfo_exists()` previa a cualquier llamada de redibujado o logueo, evitando errores de `TclError` si el usuario cierra la aplicación durante la carga perezosa de una pestaña.
+- `2026-08-26T06:02:04` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra la suplantación de PIDs mediante la verificación de la existencia del proceso y se protegió la llamada a `OpenProcess` contra handles nulos, además de asegurar que el buffer de ruta tenga un tamaño adecuado para evitar desbordamientos o lecturas truncadas en sistemas con rutas largas.
+- `2026-08-26T06:02:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T06:02:04` Corrida terminada. Total usado hoy: 144.

@@ -197,11 +197,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error interno: Datos de métricas nulos o inválidos."])
     
-    try:
-        metrics.validate()
-        if not metrics.is_finite():
-            raise ValueError("Datos no finitos")
-    except Exception:
+    metrics.validate()
+    if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos."])
 
     metric_breakdown: Dict[MetricKey, int] = {}

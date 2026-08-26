@@ -285,13 +285,12 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     if not handle or handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
-    buffer_size: int = 1024
+    buffer_size: int = 4096
     size = ctypes.c_ulong(buffer_size)
     buf = ctypes.create_unicode_buffer(buffer_size)
     try:
         if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
-            if 0 < size.value < buffer_size:
-                return str(buf.value)
+            return str(buf.value)
     except (OSError, ctypes.ArgumentError): pass
     return None
 
@@ -322,7 +321,9 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     if not kernel32: return False, "No se pudo acceder a la API del sistema."
     
     try:
-        if kernel32.GetProcessId(proc_handle) != pid:
+        # Validación crítica: asegurar que el PID que abrimos sea el mismo que solicitamos
+        actual_pid = kernel32.GetProcessId(proc_handle)
+        if actual_pid != pid:
             return False, "Error de validación: el proceso identificado cambió (PID mismatch)."
 
         exit_code = ctypes.c_ulong()
@@ -362,8 +363,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
         if not proc_handle or proc_handle == -1: 
-            err = ctypes.get_last_error()
-            return False, f"Acceso denegado (Error {err}). Se requieren privilegios elevados."
+            return False, "Acceso denegado: no se pudo abrir el proceso."
             
         valid, reason = _is_safe_to_trim(proc_handle, target_pid)
         if not valid: 
