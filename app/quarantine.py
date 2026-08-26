@@ -327,22 +327,32 @@ def quarantine_file(
         raise ValueError(f"Ruta de origen malformada: {e}")
     if not source_path.is_file():
         raise FileNotFoundError(f"El archivo origen no existe o es inválido: {source_path}")
+    
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
+    
+    # Re-validar existencia post-validaciones previas para evitar race conditions
+    if not source_path.exists():
+        raise FileNotFoundError("El archivo origen desapareció antes de procesar el aislamiento.")
+        
     try:
         file_size = source_path.stat().st_size
     except OSError as e:
         raise OSError(f"No se pudo determinar el tamaño del archivo origen: {e}")
+        
     item_id = uuid.uuid4().hex[:12]
     destination = dest_dir / _generate_safe_stored_name(source_path, item_id)
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en el sandbox: {destination.name}")
+        
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
+    
     try:
         items_dict = _load_manifest_internal(str(dest_dir)).copy()
         if item_id in items_dict:
             raise RuntimeError(f"ID duplicado generado: {item_id}")
+            
         quarantine_item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
@@ -354,16 +364,17 @@ def quarantine_file(
         )
         items_dict[item_id] = quarantine_item
         save_manifest(list(items_dict.values()), base)
+        
         try:
             if source_path.exists():
                 source_path.unlink()
         except OSError as e:
             raise RuntimeError(f"Aislamiento exitoso, pero no se pudo limpiar el origen: {e}")
         return quarantine_item
-    except Exception as e:
+    except Exception:
         if destination.exists():
             _safe_unlink(destination)
-        raise RuntimeError(f"Error al finalizar el aislamiento y persistir registro: {e}")
+        raise
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

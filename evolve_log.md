@@ -908,3 +908,10 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-26T12:59:28` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de la lógica de guardado de ajustes en `on_save_settings` y `_collect_settings`, integrando validaciones estrictas y manejo de excepciones para prevenir que una entrada malformada o un widget inexistente durante un cierre de ventana bloqueen la persistencia o corrompan la configuración del usuario.
 - `2026-08-26T12:59:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T12:59:28` Corrida terminada. Total usado hoy: 308.
+- `2026-08-26T13:07:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-26T13:07:55` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-26T13:08:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-26T13:08:56` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` envolviendo la lógica de manipulación de archivos en un bloque `try...finally` más estricto y añadiendo validaciones preventivas sobre la existencia y el estado del archivo origen tras las comprobaciones iniciales, evitando así errores de desincronización en sistemas de archivos con alta concurrencia.
+- `2026-08-26T13:09:00` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-26T13:09:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T13:09:00` Corrida terminada. Total usado hoy: 312.
