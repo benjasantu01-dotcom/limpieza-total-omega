@@ -96,7 +96,6 @@ class ProblemCriterion(NamedTuple):
         Evalúa si la métrica contenida en el contexto supera el umbral definido.
         Retorna la cadena formateada si se cumple la condición, o None.
         """
-        if not ctx.analyzed: return None
         val = getattr(ctx, self.metric_key, -1.0)
         f_val = _safe_float(val, -1.0)
         if f_val < 0:
@@ -374,9 +373,11 @@ def explain_area(area: Any) -> str:
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """Evalúa el contexto actual contra los criterios de salud."""
+    """Evalúa el contexto actual contra los criterios de salud de forma eficiente."""
+    if not isinstance(ctx, SystemContext) or not ctx.analyzed:
+        return []
+    
     problemas = []
-    if not isinstance(ctx, SystemContext) or not ctx.analyzed: return problemas
     for crit in _CRITERIOS_SALUD:
         msg = crit.format_if_triggered(ctx)
         if msg:

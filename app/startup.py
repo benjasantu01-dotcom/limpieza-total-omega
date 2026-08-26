@@ -89,22 +89,22 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Valida mediante la extensión y comprobación de enlace simbólico."""
+        """Verifica que el archivo tenga una extensión ejecutable permitida y no sea un enlace simbólico."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Limpia caracteres de control o no imprimibles de la línea de comando."""
+        """Filtra caracteres de control o no imprimibles para evitar inyección en la cadena de comando."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae el contenido entre comillas. Retorna la ruta solo si no está 
-        en la lista de directorios protegidos o contiene caracteres prohibidos.
+        Extrae la ruta contenida entre comillas. Valida seguridad mediante 
+        `is_protected_path` antes de retornar el string.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
@@ -126,8 +126,8 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza una ruta y valida su existencia real en el sistema.
-        Utiliza _EXISTS_CACHE para evitar llamadas repetitivas al filesystem.
+        Normaliza una ruta, detecta reparse points y valida su existencia real 
+        en disco, usando _EXISTS_CACHE para optimización.
         """
         if not isinstance(path_string, str) or not path_string or any(c in path_string for c in '<>|?*\0'):
             return ""
@@ -170,7 +170,7 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Analiza la línea de comando para identificar el ejecutable principal."""
+        """Parsea la línea de comando cruda para aislar el ejecutable."""
         if not command_line or not isinstance(command_line, str):
             return ""
         if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
