@@ -296,6 +296,8 @@ def _ensure_safe_text(text: Any) -> bool:
 
 def _validate_and_assign(ctx: SystemContext, source: Any, is_dict: bool, key: str, spec: MetricSpec) -> bool:
     """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
+    if source is None or isinstance(source, bool):
+        return False
     try:
         val = source.get(key) if is_dict else getattr(source, key, None)
     except (AttributeError, TypeError):
@@ -315,7 +317,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
-    sources = [s for s in (metrics, health, extra) if s and not isinstance(s, (str, int, float, list, tuple, bool))]
+    sources = [s for s in (metrics, health, extra) if s is not None and not isinstance(s, (str, int, float, list, tuple, bool))]
     
     src_configs = [(s, isinstance(s, dict)) for s in sources]
     found_data = False

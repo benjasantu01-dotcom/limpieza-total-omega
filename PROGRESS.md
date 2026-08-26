@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 32 | 4 | 6 | 6 | 18 |
+| 2026-08-24 | 29 | 4 | 5 | 6 | 18 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 37 | 1 | 6 | 4 | 40 |
+| 2026-08-26 | 38 | 1 | 6 | 4 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **51**
 - seguridad defensiva: **50**
 - rendimiento: **46**
 - robustez ante casos límite: **39**
-- manejo de errores y validación de entradas: **36**
+- manejo de errores y validación de entradas: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `quarantine.py`: **21**
-- `duplicates.py`: **20**
 - `settings.py`: **20**
-- `diskreport.py`: **18**
+- `assistant.py`: **19**
+- `duplicates.py`: **19**
 - `scanner.py`: **18**
-- `assistant.py`: **18**
 - `browser.py`: **17**
-- `healthscore.py`: **16**
+- `diskreport.py`: **17**
+- `healthscore.py`: **15**
 - `main.py`: **13**
 - `organizer.py`: **12**
 - `safety.py`: **12**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T03:50:12` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` validando explícitamente que los objetos fuente no sean tipos `bool` o `None` antes de acceder a ellos, evitando errores de tipo y posibles excepciones silenciadas que podrían comprometer la integridad del contexto.
 - `2026-08-26T02:35:42` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante la verificación explícita de puntos de reparse (junctions y symlinks) utilizando `os.lstat` antes de la resolución de rutas, evitando que el escáner sea engañado por estructuras circulares o desvíos del sistema de archivos.
 - `2026-08-26T02:26:45` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita mediante `is_protected_path` sobre el directorio padre, complementando el chequeo de permisos (`os.access`) para garantizar que la configuración nunca se guarde en rutas sensibles o protegidas por sistema, independientemente de errores de privilegios.
 - `2026-08-26T02:26:28` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `_is_safe_entry` al forzar el uso de `casefold()` en lugar de `lower()` para la comparación de rutas, lo cual garantiza una normalización correcta en sistemas con archivos que puedan tener caracteres Unicode, y se ha añadido una validación de longitud máxima para evitar ataques de desbordamiento de buffer o rutas malformadas antes de procesar cualquier entrada.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T01:56:10` **assistant.py** (seguridad defensiva): Se reforzó la seguridad de `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre el contenido de la respuesta remota para garantizar que, incluso ante una inyección en el modelo, la app no pueda devolver rutas de sistema procesadas.
 - `2026-08-26T01:55:03` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save()` agregando un chequeo preventivo de escritura para el archivo de configuración existente (si ya existe) y para su directorio padre, asegurando que la operación de reemplazo atómico no falle silenciosamente ante permisos insuficientes o archivos de solo lectura.
 - `2026-08-26T01:45:47` **scanner.py** (robustez ante casos límite): Se ha mejorado `Scanner.process_entry` para capturar errores de acceso (como `OSError` o `PermissionError`) de forma más robusta al intentar resolver o verificar rutas, evitando que archivos bloqueados o con metadatos inaccesibles detengan el bucle de escaneo.
-- `2026-08-26T01:44:51` **quarantine.py** (robustez ante casos límite): Se introdujo una verificación explícita en `restore_item` para asegurar que el directorio padre del destino sea modificable antes de intentar la restauración, evitando errores de permisos o rutas de solo lectura durante el despliegue del archivo.
