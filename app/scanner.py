@@ -123,7 +123,8 @@ class Scanner:
             if entry.is_file(follow_symlinks=False):
                 self._run_file_heuristics(target_path, entry)
 
-        except (OSError, PermissionError, TypeError, FileNotFoundError):
+        except (OSError, PermissionError, TypeError, FileNotFoundError) as e:
+            logger.debug(f"Acceso denegado o entrada inválida {entry.path}: {e}")
             return
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:

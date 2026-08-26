@@ -932,3 +932,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T01:36:15` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-26T01:36:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T01:36:15` Corrida terminada. Total usado hoy: 40.
+- `2026-08-26T01:44:14` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-26T01:44:51` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una verificación explícita en `restore_item` para asegurar que el directorio padre del destino sea modificable antes de intentar la restauración, evitando errores de permisos o rutas de solo lectura durante el despliegue del archivo.
+- `2026-08-26T01:45:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-26T01:45:39` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-26T01:45:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado `Scanner.process_entry` para capturar errores de acceso (como `OSError` o `PermissionError`) de forma más robusta al intentar resolver o verificar rutas, evitando que archivos bloqueados o con metadatos inaccesibles detengan el bucle de escaneo.
+- `2026-08-26T01:45:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T01:45:47` Corrida terminada. Total usado hoy: 44.
