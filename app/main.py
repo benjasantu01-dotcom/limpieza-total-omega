@@ -280,7 +280,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
 
     def _make_output(self, tab_name: str, parent: ctk.CTk) -> ctk.CTkTextbox:
-        """Crea el componente de texto utilizado para loguear actividades de cada pestaña."""
+        """
+        Instancia un componente de log (caja de texto) dedicado para una pestaña 
+        específica, permitiendo el historial de ejecuciones en tiempo real.
+        """
         box = ctk.CTkTextbox(
             parent,
             fg_color=branding.color("card"),
@@ -295,7 +298,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return box
 
     def _button_row(self, parent: ctk.CTk) -> ctk.CTkFrame:
-        """Crea un contenedor horizontal para alinear botones de acción de forma uniforme."""
+        """Genera un contenedor de diseño horizontal para agrupar botones de acción."""
         row = ctk.CTkFrame(parent, fg_color="transparent")
         row.pack(fill="x", padx=12, pady=(12, 0))
         return row
@@ -303,8 +306,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _action(self, parent: ctk.CTk, text: str, command: Callable[[], Any], 
                 danger: bool = False, column: int = 0, secondary: bool = False) -> ctk.CTkButton:
         """
-        Crea un botón con colores semánticos basados en el riesgo de la operación.
-        Registra el botón en `_active_buttons` para control de estado durante tareas asíncronas.
+        Crea un botón de comando con colores semánticos (peligro/acción/secundario)
+        y lo registra para bloquear su estado durante procesos de larga duración.
         """
         if danger:
             fondo, hover, texto = ("danger", "danger_hover", "text")
@@ -326,7 +329,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return button
 
     def _hint(self, parent: ctk.CTk, text: str) -> None:
-        """Renderiza una descripción sutil como guía informativa bajo controles."""
+        """Renderiza una descripción sutil de ayuda informativa bajo controles."""
         self._create_styled_label(
             parent, text, "caption",
             wraplength=1010, justify="left"
@@ -334,7 +337,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _menu(self, parent: ctk.CTk, values: List[str], variable: tk.StringVar, 
               command: Optional[Callable[[str], Any]] = None, width: int = 190) -> ctk.CTkOptionMenu:
-        """Crea un menú desplegable con la paleta de colores de la aplicación."""
+        """Crea un menú desplegable con la paleta de colores de branding."""
         return ctk.CTkOptionMenu(
             parent, values=values, variable=variable, command=command, width=width,
             fg_color=branding.color("surface_alt"),
@@ -348,7 +351,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         )
 
     def _entry(self, parent: ctk.CTk, placeholder: str, width: int = 200) -> ctk.CTkEntry:
-        """Crea un campo de entrada de una sola línea estilizado."""
+        """Crea un campo de entrada de texto estilizado para parámetros de usuario."""
         return ctk.CTkEntry(
             parent, width=width, placeholder_text=placeholder,
             fg_color=branding.color("card"),
@@ -503,7 +506,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Salud", tab)
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
-        """Crea tarjetas para métricas rápidas (Basura, RAM, etc.)."""
+        """Genera una fila de tarjetas resúmen para métricas de salud rápidas."""
         metrics = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
                    ("ram", "RAM libre"), ("disco", "Disco libre"))
         for i, (clave, titulo) in enumerate(metrics):
@@ -524,7 +527,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return valor_label
 
     def _build_health_area_bars(self, parent: ctk.CTk) -> None:
-        """Configura barras de progreso para el desglose detallado de salud."""
+        """Crea el contenedor de barras de progreso para el desglose detallado."""
         area_container = ctk.CTkFrame(parent, fg_color="transparent")
         area_container.grid(row=0, column=1, sticky="ew")
         area_container.grid_columnconfigure(1, weight=1)
@@ -569,7 +572,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pass
 
     def _build_tab_limpieza(self) -> None:
-        """Construye la interfaz de limpieza: búsqueda, revisión y borrado de basura."""
+        """Construye los controles y log para la gestión de archivos basura."""
         safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Limpieza"]
         row = self._button_row(tab)
@@ -581,7 +584,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Limpieza", tab)
 
     def _build_limpieza_controls(self, tab: ctk.CTk) -> None:
-        """Construye los menús de selección de carpeta y ordenamiento para Limpieza."""
+        """Configura menús de selección de objetivos y ordenamiento para la limpieza."""
         options_container = ctk.CTkFrame(tab, fg_color="transparent")
         options_container.pack(fill="x", padx=12, pady=(12, 0))
 
@@ -613,7 +616,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Seguridad", tab)
 
     def _build_tab_cuarentena(self) -> None:
-        """Crea controles para gestionar archivos aislados en cuarentena."""
+        """Crea la interfaz para listar y restaurar archivos aislados."""
         tab = self.tabs["Cuarentena"]
         row = self._button_row(tab)
         self._action(row, "Ver cuarentena", self.on_list_quarantine, column=0)
@@ -630,7 +633,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Cuarentena", tab)
 
     def _build_tab_memoria(self) -> None:
-        """Construye las herramientas de diagnóstico y gestión de memoria RAM."""
+        """Construye el panel de diagnóstico de RAM y gestión de procesos."""
         tab = self.tabs["Memoria"]
         row = self._button_row(tab)
         self._action(row, "Diagnóstico de RAM", self.on_memory_report, column=0)
@@ -647,7 +650,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Memoria", tab)
 
     def _build_tab_disco(self) -> None:
-        """Construye los reportes de uso de disco y árbol de directorios."""
+        """Construye los reportes de uso de disco y análisis de directorios."""
         safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Disco"]
         row = self._button_row(tab)
@@ -657,7 +660,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Disco", tab)
 
     def _build_tab_duplicados(self) -> None:
-        """Crea herramientas para detectar y gestionar archivos duplicados."""
+        """Crea las herramientas de búsqueda y gestión de archivos duplicados."""
         tab = self.tabs["Duplicados"]
         row = self._button_row(tab)
         self._action(row, "Buscar duplicados", self.on_find_duplicates, column=0)
@@ -666,21 +669,21 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Duplicados", tab)
 
     def _build_tab_navegadores(self) -> None:
-        """Construye el reporte de cachés de navegadores detectados."""
+        """Construye el reporte de cachés de navegadores web."""
         tab = self.tabs["Navegadores"]
         row = self._button_row(tab)
         self._action(row, "Detectar caché", self.on_browser_report, column=0)
         self._make_output("Navegadores", tab)
 
     def _build_tab_inicio(self) -> None:
-        """Crea la vista para programas y tareas configuradas al inicio."""
+        """Crea la vista para inspección de programas y tareas de inicio."""
         tab = self.tabs["Inicio"]
         row = self._button_row(tab)
         self._action(row, "Ver programas de inicio", self.on_startup_report, column=0)
         self._make_output("Inicio", tab)
 
     def _build_tab_informe(self) -> None:
-        """Construye controles para la generación y exportación de reportes."""
+        """Configura los controles para exportación y generación de informes."""
         tab = self.tabs["Informe"]
         row = self._button_row(tab)
         self._action(row, "Armar informe", self.on_build_report, column=0)
@@ -691,7 +694,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Informe", tab)
 
     def _build_tab_asistente(self) -> None:
-        """Construye la interfaz del chat con el asistente IA local."""
+        """Construye el componente de chat interactivo con el asistente IA."""
         tab = self.tabs["Asistente"]
         row = self._button_row(tab)
         self._action(row, "Preguntar", self.on_ask_assistant, column=0)
@@ -722,7 +725,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Asistente", tab)
 
     def _build_tab_ajustes(self) -> None:
-        """Construye el formulario de configuración global."""
+        """Construye el formulario de configuración global de la aplicación."""
         tab = self.tabs["Ajustes"]
         row = self._button_row(tab)
         self._action(row, "Guardar ajustes", self.on_save_settings, column=0)
@@ -758,7 +761,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Ajustes", tab)
 
     def _build_ia_settings(self, tab: ctk.CTk) -> None:
-        """Crea la sección de configuración del asistente en línea dentro de Ajustes."""
+        """Crea la sección específica de configuración de IA dentro de Ajustes."""
         self._create_styled_label(
             tab, f"{branding.icon('Asistente')}  Asistente en línea (opcional)", "title",
             anchor="w", text_color=branding.color("accent2")
@@ -782,13 +785,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.api_key_entry.grid(row=0, column=2, sticky="w")
 
     def _add_setting_label(self, parent: ctk.CTkFrame, text: str, row: int, column: int = 0) -> None:
-        """Agrega etiqueta descriptiva a un control de ajustes."""
+        """Agrega etiqueta descriptiva para un control en el formulario de ajustes."""
         self._create_styled_label(parent, text, "body", anchor="w").grid(
             row=row, column=column, sticky="w", padx=(0, 10), pady=6
         )
 
     def _add_setting_switch(self, parent: ctk.CTkFrame, clave: str, texto: str, row: int, column: int) -> None:
-        """Agrega un switch para configuración booleana en el panel de ajustes."""
+        """Agrega un switch booleano para configuración en el panel de ajustes."""
         variable = ctk.BooleanVar(value=bool(self.settings.get(clave)))
         self.setting_vars[clave] = variable
         ctk.CTkSwitch(

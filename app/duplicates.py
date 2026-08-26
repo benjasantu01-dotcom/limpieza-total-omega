@@ -60,7 +60,16 @@ class DuplicateGroup:
 
 
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
-    """Calcula el hash SHA256 completo de un archivo mediante lectura en bloques."""
+    """
+    Calcula el hash SHA256 completo de un archivo mediante lectura en bloques.
+    
+    Args:
+        path: Ruta del archivo a procesar.
+        chunk_size: Tamaño del bloque de lectura en bytes.
+        
+    Returns:
+        String con el hash hexadecimal si es posible leer el archivo, None en caso contrario.
+    """
     if path is None: return None
     try:
         path_obj = Path(path).resolve()
@@ -77,7 +86,16 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
-    """Calcula el hash SHA256 de los primeros N bytes para filtrado heurístico."""
+    """
+    Calcula el hash SHA256 de los primeros N bytes para filtrado heurístico.
+    
+    Args:
+        path: Ruta del archivo.
+        read_bytes: Cantidad de bytes a leer desde el inicio.
+        
+    Returns:
+        Hash parcial del archivo o None si no se puede acceder o procesar.
+    """
     if path is None: return None
     try:
         path_obj = Path(path).resolve()
@@ -219,7 +237,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Selecciona el archivo 'original' para conservar basándose en heurísticas (mtime, profundidad)."""
+    """
+    Selecciona el archivo original a conservar usando fecha de modificación y longitud de ruta.
+    
+    Returns:
+        La ruta del archivo más antiguo (o de ruta más corta) a conservar, o None.
+    """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         

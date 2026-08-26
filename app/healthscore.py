@@ -84,7 +84,14 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
 
 @dataclass
 class SystemMetrics:
-    """Contenedor de datos crudos recolectados de los subsistemas del equipo."""
+    """
+    Contenedor estructurado de las variables de estado del sistema.
+    
+    Esta clase actúa como contrato de datos entre los módulos de recolección y 
+    el motor de puntuación. Incluye validaciones automáticas mediante 
+    `validate()` para asegurar que valores atípicos o no numéricos no afecten 
+    el cálculo del score global.
+    """
     junk_mb: float = 0.0
     suspicious_count: int = 0
     suspicious_warnings: int = 0
@@ -98,9 +105,8 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Asegura la integridad de las métricas forzando tipos y límites aceptables."""
+        """Forzar tipos y límites aceptables para mantener la integridad numérica."""
         if not self.is_finite():
-            # Si los datos no son finitos, reseteamos a valores seguros para evitar errores en cascada
             for field_name in self.__dataclass_fields__:
                 setattr(self, field_name, 0.0 if field_name != 'memory_available_percent' else 100.0)
         
@@ -114,12 +120,12 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        """Verifica que todos los valores numéricos sean finitos para evitar errores en cálculos."""
+        """Retorna True si todas las métricas son valores numéricos finitos."""
         return all(math.isfinite(v) if isinstance(v, (int, float)) else True for v in self.__dict__.values())
 
 @dataclass
 class HealthResult:
-    """Resultado final del análisis de salud, listo para visualización."""
+    """Modelo de salida que encapsula el puntaje final, su calificación y el contexto para el reporte."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -196,11 +202,17 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
 }
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Calcula el puntaje global basado en métricas normalizadas y pesos configurados."""
+    """
+    Calcula el puntaje global de salud del sistema.
+    
+    El proceso ocurre en tres pasos:
+    1. Normalización: cada área (memoria, disco, etc.) se transforma a un ratio [0, 1].
+    2. Ponderación: se aplican los pesos definidos en `WEIGHTS` para calcular los puntos.
+    3. Recomendación: se filtran las reglas de `_RECOMMENDATION_RULES` basadas en los ratios.
+    """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas inválido."])
     
-    # Asegurar que los datos sean coherentes antes de procesar
     metrics.validate()
     if not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
