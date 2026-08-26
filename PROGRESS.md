@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 28
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 197
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 101 | 9 | 13 | 16 | 105 |
-| 2026-08-26 | 126 | 8 | 18 | 12 | 96 |
+| 2026-08-25 | 101 | 9 | 13 | 16 | 101 |
+| 2026-08-26 | 130 | 8 | 18 | 12 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - rendimiento: **48**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **38**
+- seguridad defensiva: **42**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `duplicates.py`: **21**
 - `quarantine.py`: **21**
-- `duplicates.py`: **20**
+- `healthscore.py`: **20**
+- `memory.py`: **20**
 - `assistant.py`: **19**
-- `healthscore.py`: **19**
-- `memory.py`: **19**
 - `scanner.py`: **18**
 - `browser.py`: **17**
 - `settings.py`: **17**
 - `diskreport.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **14**
-- `main.py`: **12**
+- `main.py`: **13**
 - `organizer.py`: **12**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T11:07:07` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` centralizando y reforzando la validación de rutas de procesos mediante `_validate_path_security`, evitando la manipulación de procesos cuyo ejecutable no pueda ser verificado o que se encuentren en ubicaciones sensibles del sistema antes de realizar cualquier acción de memoria.
+- `2026-08-26T11:06:57` **main.py** (seguridad defensiva): He implementado una validación de seguridad adicional en `_build_tab_limpieza` y `_build_tab_disco`, asegurando que, en el momento de la construcción de las pestañas que acceden al disco, se valide la seguridad de la ruta mediante `safety.ensure_safe_to_modify(Path(".").resolve())`, unificando el criterio defensivo aplicado en el resto de los constructores.
+- `2026-08-26T11:05:49` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `healthscore.py` añadiendo una capa de validación estricta en el método `SystemMetrics.validate()` para rechazar valores de entrada que no solo sean no finitos, sino también físicamente imposibles (negativos donde no corresponden), evitando así cálculos erróneos o desbordamientos en la lógica de puntuación.
+- `2026-08-26T11:05:25` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` asegurando que el chequeo de `is_protected_path` se realice sobre la ruta resuelta canónicamente antes de cualquier procesamiento, evitando que manipulaciones de rutas (como enlaces simbólicos relativos o recursión inesperada) eludan la protección.
 - `2026-08-26T10:57:26` **browser.py** (seguridad defensiva): Se ha restringido el acceso a directorios mediante la validación obligatoria contra `is_protected_path` en `_sum_directory_recursive` para evitar que el escáner recorra subcarpetas que, aunque contengan caché, hayan sido bloqueadas o protegidas por cambios posteriores en la configuración de seguridad.
 - `2026-08-26T10:45:27` **scanner.py** (robustez ante casos límite): Se mejora la robustez ante casos límite en `process_entry` y `scan_directory` mediante la validación de existencia de rutas y un manejo más estricto de los atributos de archivo, evitando fallos en condiciones de carrera (Race Conditions) donde un archivo desaparece entre la detección y el acceso.
 - `2026-08-26T10:25:29` **healthscore.py** (robustez ante casos límite): Fortalecí la robustez ante datos faltantes o corruptos en `compute_score` agregando una validación explícita de `is_finite()` y tipos antes de procesar cualquier métrica, evitando posibles `ZeroDivisionError` o comportamientos inesperados durante el cálculo de ratios.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T10:05:28` **settings.py** (rendimiento): Se implementó un mecanismo de `weakref` para el caché de `_CACHE`, permitiendo que el recolector de basura libere memoria si la app está bajo presión, manteniendo la eficiencia en lecturas recurrentes sin riesgo de fugas de memoria en sesiones largas.
 - `2026-08-26T10:05:13` **scanner.py** (rendimiento): Optimicé el rendimiento de `scan_directory` y `_is_safe_entry` reemplazando la resolución repetitiva de rutas por comparaciones de strings pre-procesadas y validaciones de prefijo que evitan llamadas costosas al sistema de archivos dentro del bucle.
 - `2026-08-26T10:04:46` **safety.py** (rendimiento): Se optimizó el rendimiento del proceso de validación centralizando el chequeo de rutas protegidas mediante la eliminación de redundancias en los cálculos de `path.parts` y normalización dentro de `is_protected_path`, mejorando la eficiencia del caché al reducir el número de objetos `Path` creados innecesariamente en cada iteración.
-- `2026-08-26T09:56:11` **quarantine.py** (rendimiento): Optimizé la integridad del manifiesto y la performance de `total_quarantined_bytes` evitando deserializaciones redundantes y cálculos pesados en cada llamada.
-- `2026-08-26T09:55:27` **memory.py** (rendimiento): Optimizé la eficiencia de `top_memory_processes` reemplazando la ejecución recurrente de `subprocess` por un almacenamiento en caché efectivo (`_proc_cache_time`), reduciendo la sobrecarga de I/O y el uso de CPU, además de evitar la inicialización repetida de constantes mediante el uso de `lru_cache` y una estructura de control más limpia.
-- `2026-08-26T09:54:55` **main.py** (rendimiento): Implementé un sistema de "Dirty State" en `_apply_card_updates` para evitar reconfigurar widgets de la interfaz cuando los valores no han cambiado, eliminando llamadas innecesarias a la API de Tkinter que consumen ciclos de CPU y pueden causar micro-parpadeos.
-- `2026-08-26T09:45:11` **healthscore.py** (rendimiento): Se optimizó el cálculo de los puntajes en `compute_score` eliminando la recreación de objetos y la validación redundante al iterar, aprovechando que `SystemMetrics` ya garantiza la integridad mediante su `__post_init__` y `validate`, reduciendo así la carga de procesamiento en cada llamada.

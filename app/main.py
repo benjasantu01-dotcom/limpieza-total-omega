@@ -570,6 +570,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_limpieza(self) -> None:
         """Construye la interfaz de limpieza: búsqueda, revisión y borrado de basura."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Limpieza"]
         row = self._button_row(tab)
         self._action(row, "Buscar basura", self.on_scan_junk, column=0)
@@ -647,6 +648,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_disco(self) -> None:
         """Construye los reportes de uso de disco y árbol de directorios."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Disco"]
         row = self._button_row(tab)
         self._action(row, "Espacio por unidad", self.on_drives_report, column=0)

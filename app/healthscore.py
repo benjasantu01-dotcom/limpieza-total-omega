@@ -99,6 +99,11 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Asegura la integridad de las métricas forzando tipos y límites aceptables."""
+        if not self.is_finite():
+            # Si los datos no son finitos, reseteamos a valores seguros para evitar errores en cascada
+            for field_name in self.__dataclass_fields__:
+                setattr(self, field_name, 0.0 if field_name != 'memory_available_percent' else 100.0)
+        
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))

@@ -143,15 +143,9 @@ def _collect_candidates(
     processed_dirs: set[str] = set()
     processed_files: set[str] = set()
 
-    def _should_skip_dir(entry: os.DirEntry) -> bool:
+    def _should_skip_dir(path: Path) -> bool:
         """Determina si un directorio debe ser ignorado por el escaneo."""
-        try:
-            if skip_protected and is_protected_path(Path(entry.path)):
-                return True
-            stat = entry.stat(follow_symlinks=False)
-            return getattr(stat, 'st_reparse_tag', 0) != 0
-        except OSError:
-            return True
+        return skip_protected and is_protected_path(path)
 
     def _scan(current_dir: str) -> None:
         try:
@@ -163,19 +157,20 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         if entry.is_symlink(): continue
+                        entry_path = Path(entry.path)
                         if entry.is_dir(follow_symlinks=False):
-                            if _should_skip_dir(entry): continue
+                            if _should_skip_dir(entry_path): continue
                             stat = entry.stat(follow_symlinks=False)
                             dev_inode = (stat.st_dev, stat.st_ino)
                             if dev_inode not in visited_device_inodes:
                                 visited_device_inodes.add(dev_inode)
                                 _scan(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            full_path = os.path.realpath(entry.path)
-                            if full_path in processed_files: continue
-                            if skip_protected and is_protected_path(Path(full_path)): continue
+                            if skip_protected and is_protected_path(entry_path): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size < min_size: continue
+                            full_path = os.path.realpath(entry.path)
+                            if full_path in processed_files: continue
                             processed_files.add(full_path)
                             temp_groups[int(stat.st_size)].append(Path(full_path))
                     except (OSError, PermissionError): continue

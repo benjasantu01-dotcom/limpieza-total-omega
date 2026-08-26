@@ -247,9 +247,11 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
         return False, "Ruta inválida o en red."
     if any(seq in path.encode("utf-8", errors="ignore") for seq in [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]):
         return False, "Ruta de proceso sospechosa."
-    p = Path(path).resolve()
-    for parent in [p] + list(p.parents):
-        if is_protected_path(str(parent)): return False, f"Ruta protegida en {parent}."
+    try:
+        p = Path(path).resolve()
+        for parent in [p] + list(p.parents):
+            if is_protected_path(str(parent)): return False, f"Ruta protegida en {parent.name}."
+    except Exception: return False, "Error resolviendo ruta."
     return True, None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
@@ -259,7 +261,8 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
         return False, "Proceso inactivo."
     path = _get_process_path(proc_handle)
-    return (False, "Ruta inaccesible") if not path else _validate_path_security(path)
+    if not path: return False, "Ruta inaccesible."
+    return _validate_path_security(path)
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if os.name != "nt": return False, "Solo disponible en Windows."
