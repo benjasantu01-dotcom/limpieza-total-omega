@@ -145,11 +145,14 @@ class StartupEntry:
             abs_path = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            if not p.is_absolute():
-                _EXISTS_CACHE[path_string] = False
-                return path_string
-                
-            if is_protected_path(p) or p.is_symlink():
+            # Verificación de reparse point usando lstat (no sigue symlinks)
+            if p.exists():
+                stat_info = p.lstat()
+                if (stat_info.st_file_attributes & 0x00000400) != 0: # FILE_ATTRIBUTE_REPARSE_POINT
+                    _EXISTS_CACHE[path_string] = False
+                    return ""
+
+            if not p.is_absolute() or is_protected_path(p) or p.is_symlink():
                 _EXISTS_CACHE[path_string] = False
                 return path_string
             
