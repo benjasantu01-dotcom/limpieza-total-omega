@@ -195,6 +195,11 @@ def _sum_directory_recursive(
     if not root_dir:
         return 0
     root_path = os.path.normpath(root_dir)
+    
+    # Seguridad: no recorrer rutas protegidas dinámicamente
+    if is_protected_path(Path(root_path)):
+        return 0
+        
     if root_path in memo:
         return memo[root_path]
     
@@ -221,7 +226,6 @@ def _sum_directory_recursive(
                         if entry.is_dir(follow_symlinks=False):
                             total += _walk(entry.path, depth + 1)
                         elif entry.is_file(follow_symlinks=False):
-                            # Acceder a stat puede fallar si el archivo es bloqueado mientras se recorre
                             stat = entry.stat(follow_symlinks=False)
                             total += stat.st_size
                     except (OSError, PermissionError, FileNotFoundError):

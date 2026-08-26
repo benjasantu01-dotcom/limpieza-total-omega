@@ -666,3 +666,11 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-26T10:46:15` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
 - `2026-08-26T10:46:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T10:46:15` Corrida terminada. Total usado hoy: 256.
+- `2026-08-26T10:54:46` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-26T10:55:48` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-26T10:56:26` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva de `assistant.py` mediante la implementación de `_is_safe_text_structure` dentro de `_ensure_safe_text` (ya utilizada) para rechazar explícitamente cualquier entrada que contenga patrones de inyección de rutas, incluso si son sintácticamente válidas como texto, protegiendo al motor de posibles inyecciones en el prompt de la IA.
+- `2026-08-26T10:56:59` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-08-26T10:57:26` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha restringido el acceso a directorios mediante la validación obligatoria contra `is_protected_path` en `_sum_directory_recursive` para evitar que el escáner recorra subcarpetas que, aunque contengan caché, hayan sido bloqueadas o protegidas por cambios posteriores en la configuración de seguridad.
+- `2026-08-26T10:57:37` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-08-26T10:57:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T10:57:37` Corrida terminada. Total usado hoy: 260.
