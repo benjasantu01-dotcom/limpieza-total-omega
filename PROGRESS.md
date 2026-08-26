@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 121 | 10 | 15 | 16 | 118 |
-| 2026-08-26 | 107 | 7 | 14 | 9 | 87 |
+| 2026-08-25 | 117 | 10 | 15 | 16 | 118 |
+| 2026-08-26 | 109 | 7 | 15 | 9 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **59**
+- legibilidad y documentación: **60**
 - seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **37**
-- rendimiento: **37**
+- rendimiento: **38**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **22**
-- `duplicates.py`: **20**
-- `memory.py`: **20**
-- `healthscore.py`: **19**
+- `duplicates.py`: **19**
+- `memory.py`: **19**
 - `scanner.py`: **18**
 - `settings.py`: **18**
+- `healthscore.py`: **18**
 - `assistant.py`: **18**
 - `browser.py`: **16**
 - `diskreport.py`: **16**
+- `branding.py`: **14**
 - `safety.py`: **14**
-- `main.py`: **13**
 - `organizer.py`: **13**
-- `branding.py`: **13**
-- `startup.py`: **8**
+- `main.py`: **12**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T09:35:02` **branding.py** (rendimiento): Optimicé el método `color` eliminando la validación redundante de `isinstance` y aprovechando la naturaleza del `dict.get` para mejorar el rendimiento en lecturas repetidas, manteniendo la seguridad de tipos implícita.
+- `2026-08-26T09:34:12` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna de `StartupEntry` y sus métodos privados, añadiendo docstrings que explican el propósito de las técnicas de resolución "lazy" y el filtrado de seguridad, facilitando el mantenimiento futuro del motor de inventario.
 - `2026-08-26T09:24:57` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del orquestador de reglas `scan_file` mediante la definición explícita de `CHECK_REGISTRY` y `EXECUTABLE_CHECK_REGISTRY` a nivel de módulo, eliminando la instanciación repetitiva de listas dentro del bucle.
 - `2026-08-26T09:24:47` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en las funciones de validación para clarificar el propósito de cada chequeo y la lógica de flujo, facilitando el mantenimiento y la auditoría del código.
 - `2026-08-26T09:15:01` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica mediante la adición de Type Hints explícitas en las funciones de recorrido de directorios y la inclusión de docstrings detallados que explican el "porqué" de las validaciones de seguridad, facilitando el mantenimiento y auditoría del código.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T08:52:53` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `process_entry` y `scan_directory` añadiendo validaciones de entrada (`None`/`path` vacío) y encapsulando en bloques `try-except` específicos el acceso a atributos de `os.DirEntry`, evitando que errores transitorios de E/S o de permisos interrumpan el bucle de escaneo.
 - `2026-08-26T08:43:12` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita de `item_id` para evitar posibles colisiones por estado de carrera en el sistema de archivos, y encapsulé la lógica de creación del ítem en un bloque `try-except` más granular para asegurar que si falla la creación del objeto no se deje el archivo huérfano en el disco.
 - `2026-08-26T08:42:41` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones de tipo y estado más estrictas antes de operar, evitando que llamadas con parámetros `None` o rutas inválidas provoquen errores no capturados o comportamientos inesperados.
-- `2026-08-26T08:34:14` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante una validación más estricta de las entradas y una captura de errores más precisa para prevenir comportamientos inesperados ante archivos de sistema malformados.
-- `2026-08-26T08:34:00` **main.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en las operaciones de entrada del usuario en los paneles de "Memoria" y "Ajustes", reemplazando validaciones implícitas por métodos robustos que capturan estados inesperados de los widgets, evitando cierres inesperados de la aplicación.

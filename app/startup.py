@@ -72,15 +72,9 @@ class StartupEntry:
     """
     Representa una entrada de inicio detectada, sea de carpetas o registro.
     
-    Esta clase implementa una estrategia de resolución de rutas 'lazy':
-    la validación de existencia en disco ocurre solo cuando se solicita la 
-    propiedad 'executable' para minimizar el impacto en el rendimiento al 
-    escanear.
-
-    Attributes:
-        name: Nombre identificativo del proceso o acceso directo.
-        command: Cadena original proveniente del origen (registro o PATH).
-        source: Tipo de origen ('carpeta' o 'registro').
+    Estrategia 'lazy': la resolución real de la ruta en disco (validación de 
+    existencia, reparse points y normalización) solo ocurre al acceder a 
+    la propiedad .executable, ahorrando ciclos de I/O durante el escaneo inicial.
     """
     name: str
     command: str
@@ -89,23 +83,20 @@ class StartupEntry:
     _checked_exists: bool = field(default=False, init=False)
 
     def _is_valid_executable(self, path: Path) -> bool:
-        """Verifica que el archivo tenga una extensión ejecutable permitida y no sea un enlace simbólico."""
+        """Filtra archivos por extensión y asegura que no sean enlaces simbólicos para evitar bucles."""
         try:
             return path.suffix.lower() in EXECUTABLE_EXTS and not path.is_symlink()
         except (OSError, ValueError, RuntimeError, TypeError):
             return False
 
     def _sanitize_command(self, raw_command: str) -> str:
-        """Filtra caracteres de control o no imprimibles para evitar inyección en la cadena de comando."""
+        """Limpia la cadena de entrada eliminando caracteres no imprimibles antes del parseo."""
         if not isinstance(raw_command, str):
             return ""
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """
-        Extrae la ruta contenida entre comillas. Valida seguridad mediante 
-        `is_protected_path` antes de retornar el string.
-        """
+        """Extrae rutas que vienen entrecomilladas en la línea de comando (formato estándar)."""
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
         end_quote: int = raw_command.find('"', 1)
@@ -126,8 +117,9 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza una ruta, detecta reparse points y valida su existencia real 
-        en disco, usando _EXISTS_CACHE para optimización.
+        Normaliza rutas y verifica existencia en disco. 
+        Detecta FILE_ATTRIBUTE_REPARSE_POINT para evitar seguir junctions 
+        que podrían causar bucles infinitos o escaneos innecesarios.
         """
         if not isinstance(path_string, str) or not path_string or any(c in path_string for c in '<>|?*\0'):
             return ""
@@ -145,7 +137,6 @@ class StartupEntry:
             abs_path = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            # Verificación de reparse point usando lstat (no sigue symlinks)
             if p.exists():
                 stat_info = p.lstat()
                 if (stat_info.st_file_attributes & 0x00000400) != 0: # FILE_ATTRIBUTE_REPARSE_POINT
@@ -170,7 +161,7 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Parsea la línea de comando cruda para aislar el ejecutable."""
+        """Divide la línea de comandos por espacios para aislar el ejecutable del resto de los argumentos."""
         if not command_line or not isinstance(command_line, str):
             return ""
         if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
@@ -190,8 +181,8 @@ class StartupEntry:
     @property
     def executable(self) -> str:
         """
-        Retorna la ruta absoluta del ejecutable tras su resolución.
-        La resolución se realiza una única vez por instancia.
+        Retorna la ruta absoluta del ejecutable.
+        La resolución se realiza una única vez (memoización interna).
         """
         if self._checked_exists:
             return self._exec_cache or ""

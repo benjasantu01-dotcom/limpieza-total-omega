@@ -153,7 +153,6 @@ def app_title() -> str:
 @lru_cache(maxsize=32)
 def color(name: str) -> HexColor:
     """Obtiene el color HEX desde la paleta global o un gris neutro de respaldo."""
-    if not isinstance(name, str): return "#808080"
     return PALETTE.get(name, "#808080")
 
 @lru_cache(maxsize=16)

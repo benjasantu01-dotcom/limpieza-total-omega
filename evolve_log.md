@@ -578,3 +578,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-26T09:24:57` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del orquestador de reglas `scan_file` mediante la definición explícita de `CHECK_REGISTRY` y `EXECUTABLE_CHECK_REGISTRY` a nivel de módulo, eliminando la instanciación repetitiva de listas dentro del bucle.
 - `2026-08-26T09:24:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T09:24:57` Corrida terminada. Total usado hoy: 224.
+- `2026-08-26T09:33:17` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-08-26T09:33:46` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: AppSettings
+- `2026-08-26T09:34:12` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna de `StartupEntry` y sus métodos privados, añadiendo docstrings que explican el propósito de las técnicas de resolución "lazy" y el filtrado de seguridad, facilitando el mantenimiento futuro del motor de inventario.
+- `2026-08-26T09:34:45` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: rendimiento).
+- `2026-08-26T09:35:02` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el método `color` eliminando la validación redundante de `isinstance` y aprovechando la naturaleza del `dict.get` para mejorar el rendimiento en lecturas repetidas, manteniendo la seguridad de tipos implícita.
+- `2026-08-26T09:35:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T09:35:02` Corrida terminada. Total usado hoy: 228.
