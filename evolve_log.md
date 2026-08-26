@@ -585,3 +585,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-26T09:35:02` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el método `color` eliminando la validación redundante de `isinstance` y aprovechando la naturaleza del `dict.get` para mejorar el rendimiento en lecturas repetidas, manteniendo la seguridad de tipos implícita.
 - `2026-08-26T09:35:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T09:35:02` Corrida terminada. Total usado hoy: 228.
+- `2026-08-26T09:43:29` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-26T09:43:57` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-26T09:44:28` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la redundancia de `relative_to` dentro del bucle de `walk_files`, utilizando el acceso directo a `entry` para calcular el primer nivel de subcarpetas, lo que reduce la carga de procesamiento por cada archivo escaneado.
+- `2026-08-26T09:44:56` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` sustituyendo las repetidas llamadas a `Path.resolve()` por `os.path.realpath()` en el bucle principal, reduciendo drásticamente la sobrecarga de instanciación de objetos `Path` y el acceso a disco innecesario durante el recorrido recursivo.
+- `2026-08-26T09:45:11` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el cálculo de los puntajes en `compute_score` eliminando la recreación de objetos y la validación redundante al iterar, aprovechando que `SystemMetrics` ya garantiza la integridad mediante su `__post_init__` y `validate`, reduciendo así la carga de procesamiento en cada llamada.
+- `2026-08-26T09:45:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T09:45:11` Corrida terminada. Total usado hoy: 232.

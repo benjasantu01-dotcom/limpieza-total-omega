@@ -345,17 +345,24 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
             
         sums: Dict[str, int] = defaultdict(int)
         counts: Dict[str, int] = defaultdict(int)
-        
+
+        # Pre-cache de entradas de primer nivel para mapear archivos rápidamente
+        base_folders = {p_base / e.name: str(p_base / e.name) 
+                        for e in os.scandir(p_base) if e.is_dir()}
+
         for path, size in walk_files(p_base, skip_protected):
             try:
-                relative = path.relative_to(p_base)
-                if not relative.parts:
+                # Encontrar el ancestro inmediato a p_base
+                parts = path.relative_to(p_base).parts
+                if not parts:
                     continue
-                top_folder = p_base / relative.parts[0]
-                if is_protected_path(top_folder):
+                
+                top_folder = p_base / parts[0]
+                str_path = str(top_folder)
+                
+                if skip_protected and is_protected_path(top_folder):
                     continue
                     
-                str_path = str(top_folder)
                 sums[str_path] += size
                 counts[str_path] += 1
             except (ValueError, IndexError, AttributeError):

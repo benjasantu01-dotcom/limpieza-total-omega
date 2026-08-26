@@ -148,53 +148,33 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """
-    Calcula salud de archivos basura.
-    Asume 1.0 (óptimo) si junk_mb es 0, y decae linealmente hasta 0.0 al llegar a _LIMIT_JUNK_MB.
-    """
-    return _clamp(1.0 - (max(0.0, _to_float(junk_mb)) * _INV_JUNK), 0.0, 1.0)
+    """Calcula salud de archivos basura."""
+    return _clamp(1.0 - (float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """
-    Calcula salud de seguridad.
-    Aplica penalizaciones discretas: 5% por hallazgo sospechoso y 25% por advertencia activa.
-    """
-    penalty = (max(0, _to_int(suspicious_count)) * 0.05) + (max(0, _to_int(warnings)) * 0.25)
+    """Calcula salud de seguridad."""
+    penalty = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """
-    Calcula salud de memoria.
-    Normaliza el porcentaje disponible respecto al umbral crítico definido en _LIMIT_RAM_PERCENT.
-    """
-    ratio = _to_float(available_percent) * _INV_RAM
-    return _clamp(ratio, 0.0, 1.0)
+    """Calcula salud de memoria."""
+    return _clamp(float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """
-    Calcula salud de disco.
-    Normaliza el porcentaje de espacio libre respecto al umbral crítico definido en _LIMIT_DISK_PERCENT.
-    """
-    ratio = _to_float(free_percent) * _INV_DISK
-    return _clamp(ratio, 0.0, 1.0)
+    """Calcula salud de disco."""
+    return _clamp(float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """
-    Calcula salud de almacenamiento.
-    Puntúa inversamente al tamaño total de archivos redundantes encontrados.
-    """
-    return _clamp(1.0 - (max(0.0, _to_float(duplicate_mb)) * _INV_DUP), 0.0, 1.0)
+    """Calcula salud de almacenamiento."""
+    return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """
-    Calcula salud de inicio del sistema.
-    Puntúa inversamente a la cantidad de programas que inician automáticamente con Windows.
-    """
-    return _clamp(1.0 - (max(0, _to_int(startup_count)) * _INV_STARTUP), 0.0, 1.0)
+    """Calcula salud de inicio del sistema."""
+    return _clamp(1.0 - (float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
     """Asigna una letra de calificación (A-F) basada en un puntaje de 0 a 100."""
-    s = _clamp(_to_float(score), 0.0, 100.0)
+    s = float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
     if s >= 65: return "C"
@@ -212,34 +192,26 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global basado en métricas normalizadas y pesos configurados."""
-    if metrics is None or not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error interno: Datos de métricas nulos o inválidos."])
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
+        return HealthResult(0, "F", {}, ["Error: Datos de métricas inválidos o corruptos."])
     
-    try:
-        metrics.validate()
-        if not metrics.is_finite():
-            return HealthResult(0, "F", {}, ["Error interno: Datos de métricas corruptos."])
-    except (TypeError, ValueError, AttributeError):
-        return HealthResult(0, "F", {}, ["Error interno: Fallo en la validación de métricas."])
-
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios_cache: ScoreMap = {}
-    accumulated_points: int = 0
+    accumulated_points: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS_INT:
-        scorer = _SCORER_MAP[area]
-        ratio = scorer(metrics)
+        ratio = _SCORER_MAP[area](metrics)
         ratios_cache[area] = ratio
-        points = int(round(ratio * weight))
-        metric_breakdown[area] = points
+        points = round(ratio * weight)
+        metric_breakdown[area] = int(points)
         accumulated_points += points
     
-    final_score = int(_clamp(float(accumulated_points), 0.0, 100.0))
+    final_score = int(_clamp(accumulated_points, 0.0, 100.0))
     
     recommendations = [
         rule.message_factory(metrics) 
         for rule in _RECOMMENDATION_RULES 
-        if rule.check(metrics, ratios_cache.get(rule.area, 1.0))
+        if rule.check(metrics, ratios_cache[rule.area])
     ]
             
     if metrics.quarantined_count > 0:

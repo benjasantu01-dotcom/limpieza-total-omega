@@ -140,8 +140,8 @@ def _collect_candidates(
     """Realiza un recorrido recursivo buscando candidatos mayores a min_size."""
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
-    processed_dirs: set[Path] = set()
-    processed_files: set[Path] = set()
+    processed_dirs: set[str] = set()
+    processed_files: set[str] = set()
 
     def _should_skip_dir(entry: os.DirEntry) -> bool:
         """Determina si un directorio debe ser ignorado por el escaneo."""
@@ -153,36 +153,36 @@ def _collect_candidates(
         except OSError:
             return True
 
-    def _scan(current_dir: Path) -> None:
+    def _scan(current_dir: str) -> None:
         try:
-            resolved_dir = current_dir.resolve()
-            if resolved_dir in processed_dirs: return
-            processed_dirs.add(resolved_dir)
+            resolved_path = os.path.realpath(current_dir)
+            if resolved_path in processed_dirs: return
+            processed_dirs.add(resolved_path)
             
-            with os.scandir(resolved_dir) as it:
+            with os.scandir(resolved_path) as it:
                 for entry in it:
                     try:
                         if entry.is_symlink(): continue
-                        p = Path(entry.path).resolve()
                         if entry.is_dir(follow_symlinks=False):
                             if _should_skip_dir(entry): continue
                             stat = entry.stat(follow_symlinks=False)
                             dev_inode = (stat.st_dev, stat.st_ino)
                             if dev_inode not in visited_device_inodes:
                                 visited_device_inodes.add(dev_inode)
-                                _scan(p)
+                                _scan(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            if p in processed_files: continue
-                            if skip_protected and is_protected_path(p): continue
+                            full_path = os.path.realpath(entry.path)
+                            if full_path in processed_files: continue
+                            if skip_protected and is_protected_path(Path(full_path)): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size < min_size: continue
-                            processed_files.add(p)
-                            temp_groups[int(stat.st_size)].append(p)
+                            processed_files.add(full_path)
+                            temp_groups[int(stat.st_size)].append(Path(full_path))
                     except (OSError, PermissionError): continue
         except (OSError, PermissionError, RuntimeError): pass
 
     if directories:
-        unique_roots = {r for item in directories if (r := _resolve_and_verify_root(item))}
+        unique_roots = {os.path.realpath(str(r)) for item in directories if (r := _resolve_and_verify_root(item))}
         for root in unique_roots:
             _scan(root)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
