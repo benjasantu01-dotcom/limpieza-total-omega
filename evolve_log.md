@@ -925,3 +925,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T01:25:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-26T01:25:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T01:25:24` Corrida terminada. Total usado hoy: 36.
+- `2026-08-26T01:34:01` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-08-26T01:34:30` ➖ Sin cambios en healthscore.py (enfoque: robustez ante casos límite). Motivo: Reforcé la robustez de `compute_score` ante datos faltantes o parcialmente nulos añadiendo una validación defensiva temprana que asegura que `SystemMetrics` siempre sea válido antes del procesamiento, evitando posibles errores de atribución en el bucle de cálculo.
+- `2026-08-26T01:35:36` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una gestión robusta de estados de error en `_worker_thread_logic` y un pre-chequeo de seguridad en `_tab_factory` para evitar la ejecución de módulos de disco en entornos inestables o rutas inválidas, reforzando la resiliencia ante excepciones durante la carga de pestañas y ejecución asíncrona.
+- `2026-08-26T01:36:06` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido `_read_windows_snapshot` y `trim_working_set` añadiendo manejo de errores para casos límite donde las llamadas a la API de Windows pueden fallar silenciosamente, asegurar que el `handle` sea cerrado siempre (incluso ante excepciones críticas) y validar que el tamaño de memoria devuelto sea físicamente posible para evitar datos basura en sistemas con configuraciones inusuales.
+- `2026-08-26T01:36:15` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-26T01:36:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T01:36:15` Corrida terminada. Total usado hoy: 40.

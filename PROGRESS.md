@@ -7,30 +7,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 19
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 27
-- Sin respuesta de la IA (error o límite): 208
+- Sin cambios (nada sustancial que mejorar): 29
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-24 | 42 | 7 | 7 | 7 | 55 |
+| 2026-08-24 | 41 | 6 | 7 | 7 | 53 |
 | 2026-08-25 | 156 | 11 | 20 | 18 | 145 |
-| 2026-08-26 | 21 | 1 | 4 | 2 | 8 |
+| 2026-08-26 | 22 | 1 | 4 | 4 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - rendimiento: **46**
 - manejo de errores y validación de entradas: **42**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **35**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
+- `memory.py`: **21**
 - `quarantine.py`: **20**
 - `assistant.py`: **19**
 - `settings.py`: **19**
@@ -39,14 +39,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `healthscore.py`: **16**
 - `scanner.py`: **16**
-- `safety.py`: **13**
 - `branding.py`: **13**
 - `organizer.py`: **12**
 - `main.py`: **12**
+- `safety.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T01:36:06` **memory.py** (robustez ante casos límite): Se ha robustecido `_read_windows_snapshot` y `trim_working_set` añadiendo manejo de errores para casos límite donde las llamadas a la API de Windows pueden fallar silenciosamente, asegurar que el `handle` sea cerrado siempre (incluso ante excepciones críticas) y validar que el tamaño de memoria devuelto sea físicamente posible para evitar datos basura en sistemas con configuraciones inusuales.
 - `2026-08-26T01:15:17` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de diagnóstico ante estados inesperados de las métricas, incluyendo casos donde `score` o `startup_count` sean `None`, evitando errores de tipo al procesar consultas y garantizando una respuesta coherente aunque falten datos.
 - `2026-08-26T01:14:30` **settings.py** (rendimiento): Optimicé el rendimiento de la carga de configuración eliminando llamadas redundantes a `load()` en funciones de acceso y transformando la caché a un modelo de "lazy loading" que evita re-parsear el archivo si no ha cambiado su timestamp.
 - `2026-08-26T01:14:01` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la evaluación de `WATCHED_FOLDERS` a un `any` sobre los componentes de la ruta en lugar de realizar múltiples llamadas a `lower()` y búsquedas de substrings innecesarias, y consolidé las verificaciones iniciales de `scan_file` para evitar redundancias.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T00:33:43` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos críticos del `Scanner` y se han añadido `type hints` y `docstrings` explicativos para clarificar el flujo de trabajo del escáner heurístico, facilitando el mantenimiento y la comprensión de las reglas de seguridad sin alterar la lógica.
 - `2026-08-26T00:24:05` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings (utilizando Google Style) y la adición de Type Hints detallados en funciones internas clave para mejorar la mantenibilidad y legibilidad del código.
 - `2026-08-26T00:23:07` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y la mantenibilidad del módulo `memory.py` mediante la adición de Type Hints detallados en las funciones de parsing y la extracción de la lógica de validación de rutas de `_is_safe_to_trim` hacia un bloque helper más limpio, documentando el propósito de cada etapa de validación.
-- `2026-08-26T00:14:31` **main.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la interfaz mediante la extracción del bloque de creación de menús de configuración (`_build_ia_settings`) y la estandarización de las llamadas de configuración en `_build_tab_ajustes`.

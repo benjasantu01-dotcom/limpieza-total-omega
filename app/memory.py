@@ -212,7 +212,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(_yield_processes(raw_csv_text), key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Implementa la llamada a la API nativa `GlobalMemoryStatusEx`."""
+    """Implementa la llamada a la API nativa `GlobalMemoryStatusEx` con validación estricta."""
     try:
         kernel32 = getattr(ctypes.windll, "kernel32", None)
         if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx"):
@@ -224,6 +224,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
         
         total = int(stat.ullTotalPhys)
         avail = int(stat.ullAvailPhys)
+        # Validación de rango lógico para evitar valores absurdos en reportes (ej. total 0 o avail > total)
         if total <= 0 or avail > total: 
             return MemorySnapshot(0, 0)
         return MemorySnapshot(total=total, available=avail)
