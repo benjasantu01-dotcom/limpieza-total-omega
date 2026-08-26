@@ -154,32 +154,32 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
     """Calcula salud de archivos basura."""
-    return _clamp(1.0 - (float(junk_mb) * _INV_JUNK), 0.0, 1.0)
+    return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """Calcula salud de seguridad."""
-    penalty = (float(suspicious_count) * 0.05) + (float(warnings) * 0.25)
+    penalty = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula salud de memoria."""
-    return _clamp(float(available_percent) * _INV_RAM, 0.0, 1.0)
+    return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Calcula salud de disco."""
-    return _clamp(float(free_percent) * _INV_DISK, 0.0, 1.0)
+    return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula salud de almacenamiento."""
-    return _clamp(1.0 - (float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
+    return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
     """Calcula salud de inicio del sistema."""
-    return _clamp(1.0 - (float(startup_count) * _INV_STARTUP), 0.0, 1.0)
+    return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
     """Asigna una letra de calificación (A-F) basada en un puntaje de 0 a 100."""
-    s = float(score)
+    s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
     if s >= 65: return "C"
@@ -197,15 +197,22 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Calcula el puntaje global basado en métricas normalizadas y pesos configurados."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
-        return HealthResult(0, "F", {}, ["Error: Datos de métricas inválidos o corruptos."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Tipo de métricas inválido."])
+    
+    # Asegurar que los datos sean coherentes antes de procesar
+    metrics.validate()
+    if not metrics.is_finite():
+        return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios_cache: ScoreMap = {}
     accumulated_points: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS_INT:
-        ratio = _SCORER_MAP[area](metrics)
+        scorer = _SCORER_MAP.get(area)
+        if not scorer: continue
+        ratio = scorer(metrics)
         ratios_cache[area] = ratio
         points = round(ratio * weight)
         metric_breakdown[area] = int(points)

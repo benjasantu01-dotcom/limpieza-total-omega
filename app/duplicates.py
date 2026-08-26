@@ -64,16 +64,15 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if path is None: return None
     try:
         path_obj = Path(path).resolve()
-        if not path_obj.exists() or not path_obj.is_file(): return None
-        if is_protected_path(path_obj): return None
-        if not os.access(path_obj, os.R_OK): return None
+        if not path_obj.is_file() or is_protected_path(path_obj) or not os.access(path_obj, os.R_OK):
+            return None
         
         digest = hashlib.sha256()
         with open(path_obj, "rb") as f:
             while (buffer := f.read(chunk_size)):
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -82,15 +81,14 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if path is None: return None
     try:
         path_obj = Path(path).resolve()
-        if not path_obj.exists() or not path_obj.is_file(): return None
-        if is_protected_path(path_obj): return None
-        if not os.access(path_obj, os.R_OK): return None
+        if not path_obj.is_file() or is_protected_path(path_obj) or not os.access(path_obj, os.R_OK):
+            return None
         
         with open(path_obj, "rb") as f:
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -98,7 +96,7 @@ def _is_valid_candidate(path: Path) -> bool:
     """Valida que la ruta sea un archivo real, accesible y no protegido."""
     if not isinstance(path, Path): return False
     try:
-        return path.exists() and path.is_file() and not is_protected_path(path)
+        return path.is_file() and not is_protected_path(path)
     except (OSError, ValueError):
         return False
 
@@ -112,11 +110,11 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
         if p is None: continue
         try:
             target = Path(p).resolve()
-            if target.exists() and _is_valid_candidate(target):
+            if _is_valid_candidate(target):
                 st = target.stat()
                 if st.st_size > 0:
                     groups[st.st_size].append(target)
-        except (OSError, PermissionError, ValueError):
+        except (OSError, PermissionError):
             continue
     return groups
 
@@ -232,7 +230,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
             if _is_valid_candidate(p_obj):
                 stat_info = p_obj.stat()
                 candidates.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
-        except (OSError, PermissionError, ValueError):
+        except (OSError, PermissionError):
             continue
             
     return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
@@ -256,6 +254,6 @@ def format_group(group: DuplicateGroup) -> List[str]:
                 continue
             label = 'conservar' if keeper is not None and p_obj == keeper else 'duplicado'
             lines.append(f"   [{label}] {path}")
-        except (OSError, ValueError):
+        except (OSError, PermissionError):
             lines.append(f"   [error] {path}")
     return lines
