@@ -957,3 +957,48 @@ FAILED evolve/tests/test_assistant.py::test_a_normal_folder_is_remembered - Asse
 - `2026-08-26T14:10:37` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el pipeline `_process_size_group` para evitar el cálculo redundante de hashes parciales cuando el tamaño del archivo es menor o igual a `PARTIAL_READ_BYTES`, aplicando directamente el hash completo en esos casos para ahorrar una pasada de lectura al disco.
 - `2026-08-26T14:10:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T14:10:37` Corrida terminada. Total usado hoy: 336.
+- `2026-08-26T14:19:05` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-26T14:19:30` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-26T14:20:45` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el sistema de caché y redibujo del dashboard de Salud, reemplazando la lógica de comparación de estados costosa por un chequeo de `last_health_state` más robusto y añadiendo `after_idle` para las actualizaciones visuales, evitando así el procesamiento innecesario de UI en el hilo principal durante ejecuciones rápidas.
+- `2026-08-26T14:21:12` Tests FALLARON:
+```
+_____
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:236: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 4 warnings in 1.27s
+
+```
+- `2026-08-26T14:21:12` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de memoria de procesos mediante el uso de una lista procesada en una sola pasada en lugar de múltiples operaciones de string, reduciendo la carga de CPU y la creación de objetos innecesarios.
+- `2026-08-26T14:21:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-26T14:21:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T14:21:21` Corrida terminada. Total usado hoy: 340.

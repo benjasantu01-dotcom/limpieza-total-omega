@@ -1138,22 +1138,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _update_health_visuals(self, resultado: healthscore.ScoreResult, junk_mb: float, 
                                sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Actualiza los componentes visuales del dashboard de salud."""
-        state_key = (resultado.score, junk_mb, sospechosos, ram_libre, disco_libre)
+        # Evita redibujados innecesarios comprobando el estado previo
+        state_key = (resultado.score, round(junk_mb, 1), sospechosos, round(ram_libre, 1), round(disco_libre, 1))
         if self._last_health_state == state_key:
             return
         self._last_health_state = state_key
 
-        def actualizar() -> None:
-            try:
-                if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists(): return
-                
-                self._draw_gauge(resultado.score, resultado.grade)
-                self._update_cards(junk_mb, sospechosos, ram_libre, disco_libre)
-                self._update_health_bars(resultado)
-            except (tk.TclError, Exception):
-                pass
-
-        self._safe_run_ui_callback(actualizar)
+        self._safe_run_ui_callback(lambda: (
+            self._render_gauge(resultado.score, resultado.grade),
+            self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre),
+            self._update_health_bars(resultado)
+        ))
 
     def _update_cards(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Actualiza las etiquetas de las tarjetas de métricas."""

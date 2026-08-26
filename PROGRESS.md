@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 65 | 9 | 8 | 9 | 77 |
-| 2026-08-26 | 159 | 8 | 21 | 14 | 134 |
+| 2026-08-25 | 63 | 8 | 8 | 9 | 76 |
+| 2026-08-26 | 160 | 9 | 21 | 14 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **42**
-- robustez ante casos límite: **29**
+- rendimiento: **43**
+- robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
 - `quarantine.py`: **21**
-- `settings.py`: **19**
 - `assistant.py`: **19**
 - `browser.py`: **18**
 - `memory.py`: **18**
+- `settings.py`: **18**
 - `healthscore.py`: **18**
 - `scanner.py`: **18**
-- `safety.py`: **14**
 - `branding.py`: **14**
 - `diskreport.py`: **14**
+- `safety.py`: **13**
 - `organizer.py`: **12**
-- `main.py`: **11**
+- `main.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T14:20:45` **main.py** (rendimiento): Optimicé el sistema de caché y redibujo del dashboard de Salud, reemplazando la lógica de comparación de estados costosa por un chequeo de `last_health_state` más robusto y añadiendo `after_idle` para las actualizaciones visuales, evitando así el procesamiento innecesario de UI en el hilo principal durante ejecuciones rápidas.
 - `2026-08-26T14:10:37` **duplicates.py** (rendimiento): Se optimizó el pipeline `_process_size_group` para evitar el cálculo redundante de hashes parciales cuando el tamaño del archivo es menor o igual a `PARTIAL_READ_BYTES`, aplicando directamente el hash completo en esos casos para ahorrar una pasada de lectura al disco.
 - `2026-08-26T14:09:57` **browser.py** (rendimiento): Optimizé la recursión en `_sum_directory_recursive` evitando llamadas innecesarias a `is_protected_path` (que es costoso al requerir resolución de rutas) dentro del loop, aprovechando que el padre ya fue validado al inicio del escaneo y usando una estructura de datos `set` para `NEVER_TOUCH` en lugar de una búsqueda lineal constante.
 - `2026-08-26T14:09:31` **branding.py** (rendimiento): Optimicé el cálculo del logo y los gradientes eliminando recreaciones innecesarias de listas y tuplas dentro de los bucles de renderizado, centralizando la lógica de transformación de coordenadas para evitar aritmética repetitiva en `draw_logo`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T13:40:13` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la adición de docstrings técnicos en los métodos de construcción de la UI, siguiendo las guías de estilo para explicar el propósito y contexto de cada bloque visual, facilitando así el mantenimiento de la arquitectura de pestañas.
 - `2026-08-26T13:39:05` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `compute_score` y `SystemMetrics` utilizando docstrings que explican el propósito de los cálculos y las validaciones, clarificando el flujo de datos para futuros colaboradores.
 - `2026-08-26T13:38:39` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados con los parámetros y retornos (`Args` y `Returns`) en funciones clave, lo que facilita el mantenimiento y la comprensión de las firmas de tipo, cumpliendo con el enfoque de legibilidad y documentación sin alterar el comportamiento.
-- `2026-08-26T13:29:59` **diskreport.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de Type Hints detallados en los parámetros de entrada y tipos de retorno, además de incluir docstrings más precisos que aclaran las suposiciones sobre las rutas y los estados de error de `walk_files` y sus ayudantes.
