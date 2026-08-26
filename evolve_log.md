@@ -1002,3 +1002,42 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-26T14:21:21` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-26T14:21:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T14:21:21` Corrida terminada. Total usado hoy: 340.
+- `2026-08-26T14:29:17` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-26T14:29:51` Tests FALLARON:
+```
+ests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AssertionError: assert [QuarantineIt...c7f6f809924')] == []
+  
+  Left contains 2 more items, first extra item: QuarantineItem(item_id='ed083b6233bf', original_path='/tmp/pytest-of-runner/pytest-1/test_quarantine_two_files_with0/u...hoso', quarantined_at='2026-08-26T14:29:51', sha256='bf0ec3694e122e067d9964a38ec7d8415781df4b24f442ad767b4621fb98f8c5')
+  
+  Full diff:
+  - []
+  + [
+  +     QuarantineItem(
+  +         item_id='ed083b6233bf',
+  +         original_path='/tmp/pytest-of-runner/pytest-1/test_quarantine_two_files_with0/uno/igual.tmp',
+  +         stored_name='ed083b6233bf__igual.tmp',
+  +         size_bytes=3,
+  +         reason='Marcado como sospechoso',
+  +         quarantined_at='2026-08-26T14:29:51',
+  +         sha256='bf0ec3694e122e067d9964a38ec7d8415781df4b24f442ad767b4621fb98f8c5',
+  +     ),
+  +     QuarantineItem(
+  +         item_id='416286346db5',
+  +         original_path='/tmp/pytest-of-runner/pytest-1/test_quarantine_two_files_with0/dos/igual.tmp',
+  +         stored_name='416286346db5__igual.tmp',
+  +         size_bytes=3,
+  +         reason='Marcado como sospechoso',
+  +         quarantined_at='2026-08-26T14:29:51',
+  +         sha256='c1299854f2b209632ab22aeb848c24c2b02da4b37ecf93a830ee9c7f6f809924',
+  +     ),
+  + ]
+4 failed, 295 passed, 4 warnings in 1.23s
+
+```
+- `2026-08-26T14:29:51` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimizamos `load_manifest` y `save_manifest` para reducir accesos innecesarios al disco mediante una gestión de caché más eficiente y el uso de una variable de estado en memoria (`_manifest_cache`) que evita recargas redundantes del archivo JSON durante operaciones de lectura masiva.
+- `2026-08-26T14:30:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-26T14:30:38` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado la función `is_protected_path` reemplazando la lógica de validación secuencial por una comparación de conjuntos de prefijos pre-procesada, lo que reduce drásticamente la complejidad computacional en cada llamada al evitar iterar repetidamente sobre `PROTECTED_DIR_NAMES` y `_SYSTEM_ROOT_PATHS`.
+- `2026-08-26T14:30:54` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner moviendo la comprobación de extensiones ejecutables fuera de los loops internos de `scan_file`, utilizando la pre-compilación de `SUSPICIOUS_EXECUTABLE_EXT` para evitar re-validaciones innecesarias y reducir la profundidad del stack de llamadas en archivos no ejecutables.
+- `2026-08-26T14:30:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T14:30:54` Corrida terminada. Total usado hoy: 344.

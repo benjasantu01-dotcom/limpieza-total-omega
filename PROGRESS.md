@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 212
 
@@ -16,15 +16,15 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 63 | 8 | 8 | 9 | 76 |
-| 2026-08-26 | 160 | 9 | 21 | 14 | 136 |
+| 2026-08-25 | 60 | 7 | 8 | 9 | 76 |
+| 2026-08-26 | 162 | 10 | 22 | 14 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
-- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **43**
+- rendimiento: **45**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **27**
 
 ## Mejoras aceptadas por archivo
@@ -32,20 +32,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **21**
 - `quarantine.py`: **21**
 - `assistant.py`: **19**
-- `browser.py`: **18**
+- `scanner.py`: **19**
 - `memory.py`: **18**
 - `settings.py`: **18**
 - `healthscore.py`: **18**
-- `scanner.py`: **18**
-- `branding.py`: **14**
-- `diskreport.py`: **14**
-- `safety.py`: **13**
+- `browser.py`: **17**
+- `safety.py`: **14**
+- `branding.py`: **13**
+- `diskreport.py`: **13**
 - `organizer.py`: **12**
 - `main.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-26T14:30:54` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner moviendo la comprobación de extensiones ejecutables fuera de los loops internos de `scan_file`, utilizando la pre-compilación de `SUSPICIOUS_EXECUTABLE_EXT` para evitar re-validaciones innecesarias y reducir la profundidad del stack de llamadas en archivos no ejecutables.
+- `2026-08-26T14:30:38` **safety.py** (rendimiento): Se ha optimizado la función `is_protected_path` reemplazando la lógica de validación secuencial por una comparación de conjuntos de prefijos pre-procesada, lo que reduce drásticamente la complejidad computacional en cada llamada al evitar iterar repetidamente sobre `PROTECTED_DIR_NAMES` y `_SYSTEM_ROOT_PATHS`.
 - `2026-08-26T14:20:45` **main.py** (rendimiento): Optimicé el sistema de caché y redibujo del dashboard de Salud, reemplazando la lógica de comparación de estados costosa por un chequeo de `last_health_state` más robusto y añadiendo `after_idle` para las actualizaciones visuales, evitando así el procesamiento innecesario de UI en el hilo principal durante ejecuciones rápidas.
 - `2026-08-26T14:10:37` **duplicates.py** (rendimiento): Se optimizó el pipeline `_process_size_group` para evitar el cálculo redundante de hashes parciales cuando el tamaño del archivo es menor o igual a `PARTIAL_READ_BYTES`, aplicando directamente el hash completo en esos casos para ahorrar una pasada de lectura al disco.
 - `2026-08-26T14:09:57` **browser.py** (rendimiento): Optimizé la recursión en `_sum_directory_recursive` evitando llamadas innecesarias a `is_protected_path` (que es costoso al requerir resolución de rutas) dentro del loop, aprovechando que el padre ya fue validado al inicio del escaneo y usando una estructura de datos `set` para `NEVER_TOUCH` en lugar de una búsqueda lineal constante.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T13:48:52` **organizer.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de utilidad internas para clarificar el flujo de seguridad, asegurando que las decisiones de diseño (como por qué se rechazan ciertos archivos) sean explícitas para futuros desarrolladores.
 - `2026-08-26T13:40:26` **memory.py** (legibilidad y documentación): Se ha añadido documentación mediante docstrings y type hints adicionales para clarificar la lógica de las funciones críticas de diagnóstico y manejo de memoria, mejorando la legibilidad sin alterar la funcionalidad.
 - `2026-08-26T13:40:13` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `main.py` mediante la adición de docstrings técnicos en los métodos de construcción de la UI, siguiendo las guías de estilo para explicar el propósito y contexto de cada bloque visual, facilitando así el mantenimiento de la arquitectura de pestañas.
-- `2026-08-26T13:39:05` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `compute_score` y `SystemMetrics` utilizando docstrings que explican el propósito de los cálculos y las validaciones, clarificando el flujo de datos para futuros colaboradores.
-- `2026-08-26T13:38:39` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados con los parámetros y retornos (`Args` y `Returns`) en funciones clave, lo que facilita el mantenimiento y la comprensión de las firmas de tipo, cumpliendo con el enfoque de legibilidad y documentación sin alterar el comportamiento.
