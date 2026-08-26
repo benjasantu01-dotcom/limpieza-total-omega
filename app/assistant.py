@@ -397,7 +397,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     estado_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     accion_msg = "Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses; en la pestaña Memoria tenés qué consume más." if mem_pct < 15 else "Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
     consejo_final = "No busques un 'liberador de RAM': suben el número de memoria libre pero la PC queda más lenta."
-    startup_ad = f" Sí te conviene mirar los {int(ctx.startup_count)} programas de inicio." if ctx.startup_count > 12 else ""
+    startup_ad = f" Sí te conviene mirar los {ctx.startup_count} programas de inicio." if ctx.startup_count > 12 else ""
     
     texto = f"{estado_msg} {accion_msg} {consejo_final}{startup_ad}"
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
@@ -414,7 +414,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{linea1} {linea2}{alerta}{cierre}"), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
-    """Evalúa hallazgos de seguridad y explica los procedimientos de aislamiento."""
+    """Evalúa hallaggos de seguridad y explica los procedimientos de aislamiento."""
     if ctx.suspicious_count == 0:
         texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación."
     else:
@@ -427,7 +427,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Explica el cálculo y significado del puntaje de salud del sistema."""
-    score_val = ctx.score if ctx.score is not None else "N/A"
+    score_val = str(ctx.score) if ctx.score is not None else "N/A"
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
     problemas = _identify_active_problems(ctx)
     resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente para arreglar."
@@ -437,8 +437,9 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Analiza programas en el inicio y su impacto sugerido."""
-    estado = f"Tenés {int(ctx.startup_count)} programas que arrancan con Windows."
-    valoracion = "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos." if ctx.startup_count > 15 else ("Es una cantidad normal, aunque se puede recortar." if ctx.startup_count > 8 else "Está bien así.")
+    count = ctx.startup_count
+    estado = f"Tenés {count} programas que arrancan con Windows."
+    valoracion = "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos." if count > 15 else ("Es una cantidad normal, aunque se puede recortar." if count > 8 else "Está bien así.")
     cierre = " La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows."
     
     return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)

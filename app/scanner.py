@@ -144,8 +144,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si un archivo ejecutable es 'reciente' basándose en la fecha de modificación."""
-    path_lower = str(path).lower()
-    if any(folder in path_lower for folder in WATCHED_FOLDERS):
+    parts = path.parts
+    if any(p.lower() in WATCHED_FOLDERS for p in parts):
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
@@ -168,19 +168,16 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     """
     findings: ScanResult = []
     
-    try:
-        if (double_ext := check_double_extension(path, entry, now_ts)):
-            findings.append(double_ext)
-        
-        if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-            for check in EXECUTABLE_CHECKS:
-                try:
-                    if (result := check(path, entry, now_ts)):
-                        findings.append(result)
-                except Exception as e:
-                    logger.debug(f"Fallo en regla heurística {check.__name__} para {path}: {e}")
-    except (OSError, PermissionError, FileNotFoundError):
-        pass
+    if (double_ext := check_double_extension(path, entry, now_ts)):
+        findings.append(double_ext)
+    
+    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+        for check in EXECUTABLE_CHECKS:
+            try:
+                if (result := check(path, entry, now_ts)):
+                    findings.append(result)
+            except Exception as e:
+                logger.debug(f"Fallo en regla heurística {check.__name__} para {path}: {e}")
         
     return findings
 

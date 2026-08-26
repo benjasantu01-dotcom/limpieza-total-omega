@@ -304,7 +304,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
     
     cleaned_settings = validate(values)
-    # Regla de seguridad: Si activamos el asistente, requerimos una clave válida.
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
         

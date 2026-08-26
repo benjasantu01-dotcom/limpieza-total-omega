@@ -911,3 +911,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T01:04:56` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché (dict privado y `lru_cache`) en los chequeos de integridad más costosos (como `is_file_in_use` y chequeos de atributos de Windows) para reducir significativamente las llamadas al sistema operativo durante las iteraciones de escaneo masivo, mejorando el rendimiento sin alterar la lógica de seguridad.
 - `2026-08-26T01:04:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-26T01:04:56` Corrida terminada. Total usado hoy: 28.
+- `2026-08-26T01:13:36` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-26T01:14:01` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner moviendo la evaluación de `WATCHED_FOLDERS` a un `any` sobre los componentes de la ruta en lugar de realizar múltiples llamadas a `lower()` y búsquedas de substrings innecesarias, y consolidé las verificaciones iniciales de `scan_file` para evitar redundancias.
+- `2026-08-26T01:14:30` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de la carga de configuración eliminando llamadas redundantes a `load()` en funciones de acceso y transformando la caché a un modelo de "lazy loading" que evita re-parsear el archivo si no ha cambiado su timestamp.
+- `2026-08-26T01:14:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-26T01:15:17` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor de diagnóstico ante estados inesperados de las métricas, incluyendo casos donde `score` o `startup_count` sean `None`, evitando errores de tipo al procesar consultas y garantizando una respuesta coherente aunque falten datos.
+- `2026-08-26T01:15:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-26T01:15:17` Corrida terminada. Total usado hoy: 32.
