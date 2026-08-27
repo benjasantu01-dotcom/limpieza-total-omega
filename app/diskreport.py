@@ -258,13 +258,6 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos mediante `os.scandir`.
-
-    Args:
-        directory: Ruta raíz desde donde comenzar el recorrido.
-        skip_protected: Si es True, omite directorios marcados como protegidos.
-
-    Yields:
-        Tupla conteniendo el objeto Path del archivo y su tamaño en bytes.
     """
     if not directory:
         return
@@ -277,7 +270,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [base_path]
+    stack: List[str] = [str(base_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -288,20 +281,16 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         continue
                     
                     try:
-                        entry_path = Path(entry.path).resolve()
-                        if not str(entry_path).startswith(str(base_path)):
-                            continue
-
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(entry_path)
+                                stack.append(entry.path)
                                 
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
-                            yield entry_path, max(0, f_stat.st_size)
+                            yield Path(entry.path), max(0, f_stat.st_size)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
@@ -383,11 +372,11 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
         for path, size in walk_files(p_base, skip_protected):
             try:
-                parts = path.relative_to(p_base).parts
-                if not parts:
+                relative = path.relative_to(p_base)
+                if not relative.parts:
                     continue
                 
-                top_folder = p_base / parts[0]
+                top_folder = p_base / relative.parts[0]
                 str_path = str(top_folder)
                 sums[str_path] += size
                 counts[str_path] += 1

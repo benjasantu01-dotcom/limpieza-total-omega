@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 21 | 2 | 3 | 2 | 38 |
+| 2026-08-25 | 19 | 2 | 2 | 2 | 37 |
 | 2026-08-26 | 166 | 11 | 22 | 15 | 136 |
-| 2026-08-27 | 37 | 3 | 4 | 0 | 44 |
+| 2026-08-27 | 38 | 3 | 4 | 0 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **46**
-- rendimiento: **39**
-- robustez ante casos límite: **30**
+- rendimiento: **40**
+- robustez ante casos límite: **28**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **20**
 - `assistant.py`: **20**
 - `scanner.py`: **19**
 - `settings.py`: **19**
 - `duplicates.py`: **19**
+- `quarantine.py`: **19**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
 - `browser.py`: **18**
-- `safety.py`: **14**
-- `diskreport.py`: **14**
+- `diskreport.py`: **15**
 - `main.py`: **14**
+- `safety.py`: **13**
 - `branding.py`: **12**
 - `organizer.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T03:47:50` **diskreport.py** (rendimiento): Optimicé `walk_files` y las funciones que dependen de ella para evitar múltiples llamadas innecesarias a `Path.resolve()` y `Path.is_dir()` dentro del bucle, reduciendo significativamente el tiempo de CPU y el acceso al sistema de archivos durante los recorridos recursivos.
 - `2026-08-27T03:37:55` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` y sus manejadores mediante el uso de una búsqueda más eficiente por `set` para los tokens y evitando el procesamiento repetitivo de las métricas.
 - `2026-08-27T03:37:20` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del método `_resolve_and_cache_path` y `_extract_quoted_path` mediante docstrings detallados que explican el "porqué" de las validaciones, facilitando la comprensión del flujo de seguridad para futuros desarrolladores sin alterar la lógica de ejecución.
 - `2026-08-27T03:36:52` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos detallados en funciones clave y la estandarización de type hints, facilitando la auditoría de seguridad y el mantenimiento a largo plazo sin alterar el comportamiento.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T03:06:52` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en las funciones privadas de escaneo, clarificando las responsabilidades de cada etapa del proceso de filtrado recursivo para facilitar futuras auditorías de seguridad.
 - `2026-08-27T03:06:26` **branding.py** (legibilidad y documentación): Se introdujeron type hints en funciones de dibujo del canvas para mejorar la documentación y legibilidad del contrato de interfaz, y se añadieron docstrings explicativos sobre los parámetros geométricos para clarificar la lógica de escalado, facilitando el mantenimiento a futuro.
 - `2026-08-27T02:57:04` **assistant.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones de manipulación de contexto para mejorar la mantenibilidad del motor de análisis, reduciendo la ambigüedad en la firma de métodos como `_validate_and_assign`.
-- `2026-08-27T02:56:04` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `_Validators.path` y `_Validators.str` para prevenir silenciosamente fallos ante entradas maliciosas (nulas, excesivamente largas o con caracteres no imprimibles) y se añadieron chequeos de tipo explícitos para evitar excepciones al invocar validadores con datos inesperados.
