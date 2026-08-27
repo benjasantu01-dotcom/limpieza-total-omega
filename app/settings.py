@@ -141,6 +141,7 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
             return False
+        # Si existe, verificar que sea un archivo o carpeta, si no, es una ruta potencial segura
         if path_obj.exists() and not (path_obj.is_file() or path_obj.is_dir()):
             return False
         return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
@@ -149,7 +150,8 @@ class _Validators:
     def _is_safe_path(path_str: str) -> bool:
         if not path_str or ".." in path_str: return False
         try:
-            resolved = Path(path_str).resolve(strict=False)
+            resolved = Path(path_str).expanduser().resolve(strict=False)
+            if not resolved.is_absolute(): return False
             if is_protected_path(str(resolved)): return False
             return _Validators._run_safety_checks(resolved)
         except (OSError, RuntimeError, PermissionError, AttributeError):
@@ -177,15 +179,9 @@ class _Validators:
     def path(key: ConfigKey, val: Any) -> Optional[str]:
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        if not path_string or len(path_string) > 4096 or "\0" in path_string or ".." in path_string: 
+        if not path_string or len(path_string) > 4096 or "\0" in path_string: 
             return None
-        try:
-            path_obj = Path(path_string).expanduser()
-            resolved = path_obj.resolve(strict=False)
-            if not resolved.is_absolute(): return None
-            return str(resolved) if _Validators._is_safe_path(str(resolved)) else None
-        except (OSError, RuntimeError, ValueError, TypeError, PermissionError, AttributeError):
-            return None
+        return path_string if _Validators._is_safe_path(path_string) else None
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
@@ -226,9 +222,9 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
-        base = Path(custom_base).expanduser().resolve(strict=False)
-        if _Validators._is_safe_path(str(base)):
-            return base / SETTINGS_FILE
+        base_str = str(custom_base)
+        if _Validators._is_safe_path(base_str):
+            return Path(base_str).expanduser().resolve(strict=False) / SETTINGS_FILE
     except (OSError, RuntimeError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE

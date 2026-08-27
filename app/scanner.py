@@ -117,6 +117,9 @@ class Scanner:
 
         if not entry.path.startswith(self.base_root_str):
             return False
+        
+        if self._is_reparse_point(entry):
+            return False
 
         return not is_protected_path(Path(entry.path))
 
@@ -135,7 +138,7 @@ class Scanner:
             if not self._is_safe_entry(entry):
                 return
             if entry.is_dir(follow_symlinks=False):
-                if not self._is_reparse_point(entry) and entry.path not in self.seen:
+                if entry.path not in self.seen:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):

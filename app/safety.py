@@ -215,6 +215,10 @@ def _check_file_integrity(path: Path) -> None:
     if not os.access(path, os.W_OK):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}")
 
+    # Validación adicional de atributos críticos de SO
+    if os.name == 'nt' and _is_system_or_hidden(path):
+         raise UnsafePathError(f"Operación denegada: {ProtectionReason.SYSTEM_HIDDEN.value}")
+
     for rule in _VALIDATORS:
         try:
             if rule.predicate(path, file_stat):
