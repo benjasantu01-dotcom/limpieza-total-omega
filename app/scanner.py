@@ -106,7 +106,9 @@ class Scanner:
         if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH:
             return False
         try:
-            target = Path(entry_path_str).resolve()
+            target = Path(entry_path_str).resolve(strict=False)
+            if not target.is_absolute():
+                return False
             if os.path.commonpath([self.base_root, target]) != str(self.base_root):
                 return False
         except (OSError, RuntimeError):

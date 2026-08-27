@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 55 | 5 | 6 | 8 | 72 |
+| 2026-08-25 | 55 | 5 | 6 | 8 | 68 |
 | 2026-08-26 | 166 | 11 | 22 | 15 | 136 |
-| 2026-08-27 | 2 | 0 | 1 | 0 | 5 |
+| 2026-08-27 | 5 | 0 | 1 | 0 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - rendimiento: **46**
 - manejo de errores y validación de entradas: **45**
-- seguridad defensiva: **38**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **21**
 - `quarantine.py`: **21**
-- `assistant.py`: **20**
 - `duplicates.py`: **20**
+- `scanner.py`: **20**
 - `healthscore.py`: **19**
-- `scanner.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **18**
-- `settings.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **14**
 - `diskreport.py`: **14**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T00:23:56` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_call_gemini` añadiendo una validación explícita para asegurar que la respuesta del modelo no contenga secuencias de escape de control (como el caracter de escape ANSI o caracteres RTL) mediante la aplicación consistente de `_ensure_safe_text` antes y después de cualquier procesamiento de la respuesta remota, previniendo inyecciones de texto malicioso.
+- `2026-08-27T00:23:11` **settings.py** (robustez ante casos límite): Mejoré la robustez ante fallos de E/S en la función `save` al envolver el proceso de escritura en un bloque `try...finally` para asegurar que el archivo temporal sea eliminado si ocurre una excepción durante la persistencia, evitando la acumulación de basura en disco.
+- `2026-08-27T00:22:43` **scanner.py** (robustez ante casos límite): Se ha robustecido el escaneo frente a rutas malformadas o inaccesibles mediante la normalización de la lógica `_is_safe_entry`, añadiendo una validación explícita para asegurar que el `path` procesado sea absoluto antes de compararlo y manejando posibles errores de resolución con `strict=False`.
 - `2026-08-27T00:12:58` **quarantine.py** (robustez ante casos límite): Se mejora la robustez frente a condiciones de carrera y archivos inconsistentes al añadir verificaciones de estado existencial y permisos antes de operaciones destructivas o críticas en el ciclo de vida de la cuarentena.
 - `2026-08-27T00:02:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante datos faltantes o inconsistentes en las métricas mediante un manejo de errores más defensivo al acceder al `scorer_map` y un cálculo de puntos que garantiza integridad incluso si el diccionario de pesos fuera modificado erróneamente.
 - `2026-08-26T14:50:44` **diskreport.py** (robustez ante casos límite): Reforcé la robustez de `walk_files` y `largest_folders` ante la presencia de rutas con caracteres no imprimibles o estados corruptos del sistema de archivos, asegurando que la navegación no se interrumpa ante errores de resolución de rutas o acceso denegado durante el escaneo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T14:10:37` **duplicates.py** (rendimiento): Se optimizó el pipeline `_process_size_group` para evitar el cálculo redundante de hashes parciales cuando el tamaño del archivo es menor o igual a `PARTIAL_READ_BYTES`, aplicando directamente el hash completo en esos casos para ahorrar una pasada de lectura al disco.
 - `2026-08-26T14:09:57` **browser.py** (rendimiento): Optimizé la recursión en `_sum_directory_recursive` evitando llamadas innecesarias a `is_protected_path` (que es costoso al requerir resolución de rutas) dentro del loop, aprovechando que el padre ya fue validado al inicio del escaneo y usando una estructura de datos `set` para `NEVER_TOUCH` en lugar de una búsqueda lineal constante.
 - `2026-08-26T14:09:31` **branding.py** (rendimiento): Optimicé el cálculo del logo y los gradientes eliminando recreaciones innecesarias de listas y tuplas dentro de los bucles de renderizado, centralizando la lógica de transformación de coordenadas para evitar aritmética repetitiva en `draw_logo`.
-- `2026-08-26T14:00:18` **assistant.py** (rendimiento): Optimicé el motor de reglas local cacheando la lista de problemas identificados en `local_answer` para evitar recálculos redundantes al acceder a los manejadores y reduje el trabajo de los bucles en `_identify_active_problems` mediante un retorno temprano.
-- `2026-08-26T13:59:58` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las validaciones en `_resolve_and_cache_path` y `_resolve_path_from_command`, además de tipar explícitamente los retornos de las funciones de parseo para mejorar la claridad del flujo de datos en el análisis de registro.
-- `2026-08-26T13:59:31` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de acceso público y se ha corregido una inconsistencia tipográfica en `_get_default_config` (de "METRICAS" a "metricas") para asegurar la consistencia del esquema `AppSettings`.

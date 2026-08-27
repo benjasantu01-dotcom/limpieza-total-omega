@@ -283,6 +283,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         cleaned_settings["asistente_activado"] = False
     ruta = settings_path(custom_base)
     parent = ruta.parent.absolute()
+    temp_name = None
     try:
         if not _Validators._is_safe_path(str(parent)): return None
         ensure_safe_to_modify(str(ruta))
@@ -298,7 +299,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
+        if temp_name and os.path.exists(temp_name): os.remove(temp_name)
         return None
+    finally:
+        if temp_name and os.path.exists(temp_name): os.remove(temp_name)
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Aplica actualizaciones parciales a la configuración actual y persiste los cambios."""

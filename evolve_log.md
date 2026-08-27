@@ -1146,3 +1146,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T00:13:28` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
 - `2026-08-27T00:13:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T00:13:28` Corrida terminada. Total usado hoy: 8.
+- `2026-08-27T00:22:18` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-08-27T00:22:43` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha robustecido el escaneo frente a rutas malformadas o inaccesibles mediante la normalización de la lógica `_is_safe_entry`, añadiendo una validación explícita para asegurar que el `path` procesado sea absoluto antes de compararlo y manejando posibles errores de resolución con `strict=False`.
+- `2026-08-27T00:23:11` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante fallos de E/S en la función `save` al envolver el proceso de escritura en un bloque `try...finally` para asegurar que el archivo temporal sea eliminado si ocurre una excepción durante la persistencia, evitando la acumulación de basura en disco.
+- `2026-08-27T00:23:36` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-27T00:23:56` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_call_gemini` añadiendo una validación explícita para asegurar que la respuesta del modelo no contenga secuencias de escape de control (como el caracter de escape ANSI o caracteres RTL) mediante la aplicación consistente de `_ensure_safe_text` antes y después de cualquier procesamiento de la respuesta remota, previniendo inyecciones de texto malicioso.
+- `2026-08-27T00:23:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T00:23:56` Corrida terminada. Total usado hoy: 12.
