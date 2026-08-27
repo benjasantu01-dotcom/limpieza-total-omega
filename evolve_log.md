@@ -1533,3 +1533,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T03:48:28` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-08-27T03:48:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T03:48:28` Corrida terminada. Total usado hoy: 92.
+- `2026-08-27T03:56:45` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-27T03:57:53` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._update_cards
+- `2026-08-27T03:58:21` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de procesos de PowerShell por una lectura más eficiente y evitando el uso de `subprocess` cuando es posible, utilizando en su lugar una llamada directa a `ctypes` (psapi.EnumProcesses) para obtener la lista de PIDs, lo que reduce drásticamente el costo de computación y el tiempo de bloqueo en cada iteración del bucle.
+- `2026-08-27T03:58:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-27T03:59:01` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `_load_manifest_internal` y las funciones que dependen de él evitando recrear el diccionario completo en memoria innecesariamente, y simplifiqué la lógica de `purge_all` para reducir el número de llamadas a `save_manifest` a una sola operación por lote.
+- `2026-08-27T03:59:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T03:59:01` Corrida terminada. Total usado hoy: 96.

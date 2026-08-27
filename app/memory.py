@@ -201,10 +201,11 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Obtiene la lista de procesos con mayor consumo de memoria, usando caché temporal."""
     global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
-    if (time.time() - _proc_cache_time) > 30:
-        cmd = ['powershell', '-NoProfile', '-Command', "Get-Process | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"]
+    # Cacheo extendido a 60 segundos para reducir la carga en el bucle principal
+    if (time.time() - _proc_cache_time) > 60:
+        cmd = ['powershell', '-NoProfile', '-Command', "Get-Process | Select-Object Name, Id, WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"]
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0:
                 _proc_cache_data, _proc_cache_time = proc.stdout, time.time()
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): pass

@@ -265,12 +265,7 @@ def _load_manifest_internal(base_str: str) -> Dict[str, QuarantineItem]:
             raw_data = json.load(f)
         if not isinstance(raw_data, list):
             return {}
-        items = {}
-        for entry in raw_data:
-            item = QuarantineItem.from_dict(entry)
-            if item:
-                items[item.item_id] = item
-        return items
+        return {str(entry["item_id"]): item for entry in raw_data if (item := QuarantineItem.from_dict(entry))}
     except (json.JSONDecodeError, OSError, PermissionError):
         return {}
 
@@ -470,27 +465,26 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Vacía toda la cuarentena purgable de manera segura."""
+    """Vacía toda la cuarentena purgable de manera segura en una única operación de escritura."""
     quarantine_root = quarantine_dir(base)
     items_dict = _load_manifest_internal(str(quarantine_root)).copy()
     if not items_dict:
         return 0
-    keys_to_remove = []
+    
     purged_count = 0
-    for item_id, item in items_dict.items():
+    for item_id, item in list(items_dict.items()):
         stored_path = (quarantine_root / item.stored_name).resolve()
         if not stored_path.exists():
-            keys_to_remove.append(item_id)
+            del items_dict[item_id]
             continue
         if _is_item_purgable(stored_path, item, quarantine_root):
             if _safe_unlink(stored_path):
-                keys_to_remove.append(item_id)
+                del items_dict[item_id]
                 purged_count += 1
         else:
-            raise UnsafePathError(f"Purgado abortado: el archivo {item.stored_name} no superó validaciones de seguridad o integridad.")
-    if keys_to_remove:
-        for k in keys_to_remove:
-            items_dict.pop(k, None)
+            raise UnsafePathError(f"Purgado abortado: el archivo {item.stored_name} no superó validaciones.")
+            
+    if purged_count > 0:
         save_manifest(list(items_dict.values()), base)
     return purged_count
 
