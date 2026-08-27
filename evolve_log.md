@@ -706,3 +706,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-27T08:03:18` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` convirtiendo el set de tokens en un conjunto de búsqueda directa para evitar múltiples iteraciones sobre el mismo diccionario, y cacheé la lista de sugerencias en `SUGGESTED_QUESTIONS_LIST` para evitar la creación de nuevas listas en cada consulta.
 - `2026-08-27T08:03:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T08:03:18` Corrida terminada. Total usado hoy: 192.
+- `2026-08-27T08:11:56` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-08-27T08:12:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-27T08:12:53` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé el escaneo recursivo introduciendo un conjunto (`Set`) de rutas ya procesadas para evitar la redundancia al calcular tamaños de carpetas compartidas y mejoré la lógica de `_sum_directory_recursive` para que el `memo` sea efectivo durante todo el ciclo de `detect_profiles`, evitando re-cálculos costosos de sub-carpetas.
+- `2026-08-27T08:13:21` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó el proceso de recolección de métricas en `_collect_summary_data` consolidando el cálculo de archivos grandes, totales y extensiones en una sola pasada sobre `walk_files`, eliminando múltiples iteraciones redundantes sobre el sistema de archivos.
+- `2026-08-27T08:13:37` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-27T08:13:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T08:13:37` Corrida terminada. Total usado hoy: 196.

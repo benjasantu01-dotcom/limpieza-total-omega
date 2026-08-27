@@ -244,12 +244,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
     """Helper interno: verifica si una entrada de directorio debe ser ignorada."""
     try:
-        # Validación básica de caracteres extraños y enlaces simbólicos
         if any(c < ' ' for c in entry.name):
             return True
         if entry.is_symlink():
             return True
-        # Chequeo de seguridad preventivo
         if skip_protected and entry.is_dir(follow_symlinks=False):
             return is_protected_path(Path(entry.path))
     except (PermissionError, OSError):
@@ -309,14 +307,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
     Identifica los N archivos más grandes en un directorio.
-
-    Args:
-        directory: Ruta base de búsqueda.
-        limit: Cantidad máxima de archivos a retornar.
-        skip_protected: Si es True, omite directorios protegidos.
-
-    Returns:
-        Lista de objetos FileEntry ordenados descendentemente por tamaño.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -328,14 +318,6 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
     Agrupa el uso de espacio total por extensión de archivo.
-
-    Args:
-        directory: Ruta base de búsqueda.
-        limit: Cantidad máxima de grupos de extensiones a retornar.
-        skip_protected: Si es True, omite directorios protegidos.
-
-    Returns:
-        Lista de objetos ExtensionUsage ordenados por mayor consumo de espacio.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -359,14 +341,6 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
     Identifica las subcarpetas de primer nivel que ocupan más espacio.
-
-    Args:
-        directory: Ruta base de búsqueda.
-        limit: Cantidad máxima de subcarpetas a retornar.
-        skip_protected: Si es True, omite directorios protegidos.
-
-    Returns:
-        Lista de objetos FolderUsage ordenados por tamaño.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
@@ -401,13 +375,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """
     Calcula el tamaño total en bytes y el conteo de archivos en un directorio.
-
-    Args:
-        directory: Ruta base.
-        skip_protected: Si es True, omite directorios protegidos.
-
-    Returns:
-        Tupla con (total_bytes, total_files).
     """
     total_bytes, file_count = 0, 0
     if not directory:
@@ -420,7 +387,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
-    Recolección interna optimizada de métricas para evitar múltiples lecturas de disco.
+    Recolección interna optimizada de métricas en una sola pasada.
     """
     total_bytes, total_files = 0, 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -446,13 +413,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe textual unificado con los hallazgos del análisis.
-
-    Args:
-        directory: Ruta a analizar.
-        skip_protected: Si es True, impide el análisis de rutas de sistema protegidas.
-
-    Returns:
-        Lista de strings formateados listos para visualización, o mensaje de error.
     """
     if not directory or not isinstance(directory, (str, Path, os.PathLike)):
         return ["Error: Ruta no proporcionada o formato inválido."]
