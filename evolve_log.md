@@ -1540,3 +1540,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T03:59:01` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `_load_manifest_internal` y las funciones que dependen de él evitando recrear el diccionario completo en memoria innecesariamente, y simplifiqué la lógica de `purge_all` para reducir el número de llamadas a `save_manifest` a una sola operación por lote.
 - `2026-08-27T03:59:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T03:59:01` Corrida terminada. Total usado hoy: 96.
+- `2026-08-27T04:06:56` Arrancando corrida. Quedan hoy ~204 peticiones objetivo.
+- `2026-08-27T04:07:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-27T04:08:04` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-27T04:08:27` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo de directorios convirtiendo `WATCHED_FOLDERS` de un `frozenset` de strings a un `frozenset` de nombres base normalizados para evitar iteraciones redundantes y validaciones `path.parts` costosas en cada archivo analizado.
+- `2026-08-27T04:08:40` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _Validators._run_safety_checks
+- `2026-08-27T04:08:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T04:08:40` Corrida terminada. Total usado hoy: 100.

@@ -67,7 +67,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
     Utiliza el timestamp actual (now_ts) para evitar llamadas redundantes al sistema.
     """
-    if any(p.lower() in WATCHED_FOLDERS for p in path.parts):
+    # Optimización: verificamos si algún componente de la ruta está en el set de interés
+    if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
