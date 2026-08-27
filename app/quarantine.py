@@ -114,11 +114,9 @@ class QuarantineItem:
 
     def _validate_integrity(self, stored_path: Path) -> bool:
         try:
-            return (
-                stored_path.is_file() and 
-                not stored_path.is_symlink() and 
-                stored_path.stat().st_size == self.size_bytes
-            )
+            if not stored_path.is_file() or stored_path.is_symlink():
+                return False
+            return stored_path.stat().st_size == self.size_bytes
         except OSError:
             return False
 
@@ -159,7 +157,7 @@ def _is_file_locked(path: Path) -> bool:
 def _safe_unlink(path: Path) -> bool:
     """Elimina un archivo solo si está fuera de rutas protegidas y cumple criterios de seguridad."""
     try:
-        if path.is_file() and not path.is_symlink() and is_safe_to_modify(path):
+        if path.exists() and path.is_file() and not path.is_symlink() and is_safe_to_modify(path):
             path.unlink()
             return True
         return False
@@ -460,6 +458,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Verifica si un ítem puede ser purgado bajo condiciones de seguridad."""
     return (
+        file_path.exists() and
         file_path.is_file() and
         _is_within_quarantine_sandbox(file_path, base_path) and
         item.verify_integrity(file_path) and
