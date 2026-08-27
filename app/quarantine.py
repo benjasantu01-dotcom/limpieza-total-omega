@@ -482,9 +482,12 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             del items_dict[item_id]
             continue
         if _is_item_purgable(stored_path, item, quarantine_root):
-            if _safe_unlink(stored_path):
-                del items_dict[item_id]
-                purged_count += 1
+            if _is_within_quarantine_sandbox(stored_path, quarantine_root):
+                if _safe_unlink(stored_path):
+                    del items_dict[item_id]
+                    purged_count += 1
+            else:
+                raise UnsafePathError(f"Purgado abortado: intento de borrado fuera del sandbox para {item.stored_name}")
         else:
             raise UnsafePathError(f"Purgado abortado: el archivo {item.stored_name} no superó validaciones.")
             

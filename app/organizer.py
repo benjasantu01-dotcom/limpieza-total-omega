@@ -205,11 +205,13 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     Recorrido recursivo utilizando os.scandir para alta performance.
     Ignora junctions y carpetas en SYSTEM_FOLDER_BLOCKLIST para mantener la seguridad.
     """
-    if is_protected_path(current_dir):
-        return
-        
     try:
-        with os.scandir(current_dir) as it:
+        # Validación defensiva extra sobre la ruta resuelta antes de escanear
+        abs_path = current_dir.resolve()
+        if is_protected_path(abs_path):
+            return
+            
+        with os.scandir(abs_path) as it:
             for entry in it:
                 try:
                     if entry.is_dir(follow_symlinks=False):
@@ -221,7 +223,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                             found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, RuntimeError):
         pass
 
 

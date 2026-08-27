@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 8 | 1 | 1 | 1 | 19 |
+| 2026-08-25 | 8 | 1 | 1 | 1 | 15 |
 | 2026-08-26 | 166 | 11 | 22 | 15 | 136 |
-| 2026-08-27 | 57 | 5 | 8 | 1 | 53 |
+| 2026-08-27 | 60 | 5 | 9 | 1 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **46**
-- seguridad defensiva: **45**
 - rendimiento: **43**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **21**
 - `assistant.py`: **20**
-- `quarantine.py`: **20**
 - `duplicates.py`: **20**
 - `browser.py`: **19**
 - `healthscore.py`: **19**
@@ -40,13 +40,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **19**
 - `diskreport.py`: **16**
 - `main.py`: **16**
-- `safety.py`: **13**
+- `safety.py`: **14**
+- `organizer.py`: **12**
 - `branding.py`: **12**
-- `organizer.py`: **11**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T05:19:52` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al asegurar que la detección de nombres de directorios prohibidos no solo verifique el nombre base, sino que analice toda la jerarquía de la ruta contra la lista `PROTECTED_DIR_NAMES`, previniendo bypasses donde una subcarpeta oculta fuera el componente crítico.
+- `2026-08-27T05:19:22` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `purge_all` implementando una validación de "sandbox" más estricta mediante `is_within_quarantine_sandbox` antes de cada `unlink`, asegurando que no se pueda purgar ningún archivo fuera del directorio designado, incluso si el manifiesto fuera manipulado.
+- `2026-08-27T05:18:51` **organizer.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `_process_directory` acceda a rutas que contengan caracteres de control o puntos de reparse maliciosos, reforzando la integridad del bucle de escaneo mediante `Path.resolve()` antes de realizar cualquier operación.
 - `2026-08-27T05:10:20` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` centralizando la validación de rutas para el trimming y asegurando que la resolución de la ruta del proceso no sea susceptible a manipulaciones, además de reforzar la robustez contra posibles cierres de handle durante la validación.
 - `2026-08-27T05:10:08` **main.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de seguridad en `main.py` mediante la implementación de `_is_safe_disk_operation`, un método centralizado que utiliza `safety.is_safe_to_modify` para asegurar que cualquier ruta de destino antes de una operación de archivo (como borrar o mover) sea validada explícitamente, previniendo así errores de lógica donde la excepción de `ensure_safe_to_modify` pudiera interrumpir el flujo del hilo principal de manera no controlada.
 - `2026-08-27T05:09:01` **healthscore.py** (seguridad defensiva): Fortalecí la integridad de los datos de entrada en `compute_score` y `summarize` mediante una validación de tipo más estricta y defensiva, asegurando que el estado del sistema no sea procesado si la estructura de datos fue alterada o es inesperada, manteniendo la robustez del componente de diagnóstico ante posibles fallos de otros módulos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T04:48:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_safe_entry` y `process_entry` ante rutas inexistentes, desconectadas o con nombres inválidos, asegurando que `resolve()` no levante excepciones críticas y que las rutas UNC sean rechazadas explícitamente antes de intentar cualquier operación de sistema de archivos.
 - `2026-08-27T04:39:02` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_atomic_isolate_file` al incluir una verificación de espacio en disco más estricta que contempla errores de lectura del sistema de archivos y evita escrituras parciales, garantizando que el aislamiento falle de forma controlada antes de intentar mover el archivo.
 - `2026-08-27T04:29:31` **main.py** (robustez ante casos límite): Se mejora la robustez del método `on_delete_reviewed` al incluir una validación de seguridad (ensure_safe_to_modify) y un manejo de excepciones local para prevenir fallos durante el borrado de archivos, garantizando que el bucle de ejecución no se detenga ante errores de acceso a disco en la carpeta de revisión.
-- `2026-08-27T04:28:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas extremas o malintencionadas, asegurando que un `suspicious_count` inusualmente alto no provoque un ratio negativo ni un desbordamiento en el puntaje, manteniendo la integridad del cálculo de salud ante cualquier combinación de datos.
-- `2026-08-27T04:28:14` **duplicates.py** (robustez ante casos límite): Se mejoró la robustez de `suggest_keeper` y `format_group` ante archivos que desaparecen entre la detección y el procesamiento, evitando fallos en la aplicación al asegurar que todas las comparaciones de rutas utilicen `resolve()` consistente y se manejen excepciones de acceso de forma defensiva.
-- `2026-08-27T04:27:50` **diskreport.py** (robustez ante casos límite): Se reforzó la resiliencia ante errores de lectura en `walk_files` y `largest_folders` ante archivos bloqueados o denegados, añadiendo un `try-except` específico para `OSError` en la obtención de metadatos (`entry.stat`), asegurando que una falla al consultar un archivo individual no detenga el proceso completo de escaneo ni rompa el reporte.
