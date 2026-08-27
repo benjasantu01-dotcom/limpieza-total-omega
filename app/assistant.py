@@ -253,8 +253,8 @@ class SystemContext:
 
     def ingest(self, source: Any) -> bool:
         """
-        Intenta extraer y validar métricas desde una fuente externa.
-        Retorna True si se pudo poblar al menos un dato válido.
+        Intenta extraer y validar métricas desde una fuente externa (dict u objeto).
+        Retorna True si al menos una métrica válida fue procesada.
         """
         if not isinstance(source, (dict, object)):
             return False
@@ -320,7 +320,10 @@ def _get_source_value(source: Any, key: str) -> Any:
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
-    """Extrae y valida una métrica individual desde una fuente de datos, asignándola al contexto."""
+    """
+    Extrae una métrica individual de 'source' mediante 'key', la valida contra
+    las restricciones de 'spec' y la asigna al 'ctx' si es correcta.
+    """
     val = _get_source_value(source, key)
     
     if val is None or type(val) in _FORBIDDEN_TYPES: return False

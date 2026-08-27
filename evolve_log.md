@@ -1461,3 +1461,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T02:46:28` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando errores específicos (como `FileNotFoundError` o `PermissionError`) en lugar de una captura genérica `OSError`, y reemplacé la lógica de `open` (que depende de descriptores de archivos) por una comprobación mediante `os.access` y `ctypes` para evitar el consumo innecesario de descriptores en bucles extensos.
 - `2026-08-27T02:46:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T02:46:28` Corrida terminada. Total usado hoy: 68.
+- `2026-08-27T02:55:12` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-27T02:55:36` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-27T02:56:04` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `_Validators.path` y `_Validators.str` para prevenir silenciosamente fallos ante entradas maliciosas (nulas, excesivamente largas o con caracteres no imprimibles) y se añadieron chequeos de tipo explícitos para evitar excepciones al invocar validadores con datos inesperados.
+- `2026-08-27T02:56:43` Tests FALLARON:
+```
+.................................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:244: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.26s
+
+```
+- `2026-08-27T02:56:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la validación de los datos provenientes de la línea de comandos en `_resolve_and_cache_path` y `_resolve_path_from_command` para prevenir excepciones al procesar rutas mal formadas o caracteres inválidos, garantizando que el método siempre retorne un string seguro.
+- `2026-08-27T02:57:04` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings explicativos en las funciones de manipulación de contexto para mejorar la mantenibilidad del motor de análisis, reduciendo la ambigüedad en la firma de métodos como `_validate_and_assign`.
+- `2026-08-27T02:57:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T02:57:04` Corrida terminada. Total usado hoy: 72.

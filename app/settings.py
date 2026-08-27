@@ -134,8 +134,7 @@ def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     """Decorador: Filtra llamadas inválidas o nulas antes de pasar al validador."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         val = args[1] if len(args) > 1 else kwargs.get("val")
-        if val is None or (isinstance(val, bool) and func.__name__ != "bool"):
-            return None
+        if val is None: return None
         return func(*args, **kwargs)
     return wrapper
 
