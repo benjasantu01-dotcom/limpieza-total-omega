@@ -162,7 +162,11 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de salud para seguridad (penalización creciente, acotada)."""
+    """
+    Calcula el ratio de salud para seguridad.
+    Aplica una penalización de 5% por hallazgo directo y 25% por advertencia
+    heurística, normalizando el resultado final al rango [0.0, 1.0].
+    """
     penalty = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
@@ -202,7 +206,13 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
-    Motor principal: transforma las métricas crudas en una calificación consolidada.
+    Transforma métricas brutas en un puntaje de 0-100 ponderado.
+    
+    El proceso:
+    1. Valida la integridad numérica del objeto SystemMetrics.
+    2. Aplica funciones de puntuación individuales para cada categoría.
+    3. Multiplica los ratios por los pesos de la constante WEIGHTS.
+    4. Genera recomendaciones contextuales basadas en umbrales de alerta.
     """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incompatible."])

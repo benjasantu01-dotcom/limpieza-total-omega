@@ -18,7 +18,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence
+from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence, Set
 
 from safety import is_protected_path
 
@@ -158,15 +158,16 @@ def _collect_candidates(
     a duplicados. Ignora enlaces simbólicos para evitar bucles.
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
-    visited_device_inodes: set[Tuple[int, int]] = set()
-    processed_dirs: set[Path] = set()
-    processed_files: set[Path] = set()
+    visited_device_inodes: Set[Tuple[int, int]] = set()
+    processed_dirs: Set[Path] = set()
+    processed_files: Set[Path] = set()
 
     def _should_skip(path: Path) -> bool:
         """Verifica restricciones de seguridad para rutas individuales."""
         return skip_protected and is_protected_path(path)
 
-    def _scan(current_dir: Path) -> None:
+    def _scan_recursive(current_dir: Path) -> None:
+        """Lógica interna para recorrer el árbol de directorios de forma segura."""
         try:
             resolved_dir = current_dir.resolve(strict=False)
             if resolved_dir in processed_dirs: return
@@ -182,7 +183,7 @@ def _collect_candidates(
                         dev_inode = (stat.st_dev, stat.st_ino)
                         if dev_inode not in visited_device_inodes:
                             visited_device_inodes.add(dev_inode)
-                            _scan(entry)
+                            _scan_recursive(entry)
                     elif entry.is_file():
                         stat = entry.stat()
                         if stat.st_size < min_size: continue
@@ -195,7 +196,7 @@ def _collect_candidates(
     if directories:
         unique_roots = {r for item in directories if (r := _resolve_and_verify_root(item))}
         for root in unique_roots:
-            _scan(root)
+            _scan_recursive(root)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
 
 

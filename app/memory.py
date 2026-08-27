@@ -169,10 +169,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """
-    Solicita estadísticas de memoria física al kernel de Windows mediante 
-    GlobalMemoryStatusEx. Retorna MemorySnapshot(0,0) si falla la API o el entorno.
-    """
+    """Solicita estadísticas de memoria mediante la API GlobalMemoryStatusEx de Windows."""
     try:
         kernel32 = getattr(ctypes.windll, "kernel32", None)
         if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx"):
@@ -185,7 +182,7 @@ def _read_windows_snapshot() -> MemorySnapshot:
         return MemorySnapshot(0, 0)
 
 def read_snapshot() -> MemorySnapshot:
-    """Obtiene un snapshot de la memoria según el sistema operativo actual."""
+    """Obtiene un snapshot global de la memoria según el sistema operativo actual."""
     if os.name == "nt": 
         return _read_windows_snapshot()
     if os.path.exists("/proc/meminfo") and os.access("/proc/meminfo", os.R_OK):
@@ -200,7 +197,7 @@ _proc_cache_time: float = 0.0
 _proc_cache_data: str = ""
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Obtiene la lista de procesos con mayor consumo de memoria, usando caché temporal."""
+    """Obtiene la lista de procesos con mayor consumo mediante caché temporal de 60s."""
     global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
     if (time.time() - _proc_cache_time) > 60:
@@ -248,7 +245,7 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
-    """Resuelve la ruta completa del archivo ejecutable de un proceso dado su handle."""
+    """Resuelve la ruta completa del archivo ejecutable de un proceso."""
     if not handle or handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
@@ -260,7 +257,7 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
-    """Aplica filtros de seguridad sobre la ruta de un ejecutable para evitar modificaciones indebidas."""
+    """Valida la seguridad de la ruta, bloqueando rutas relativas, UNC o protegidas."""
     if not isinstance(path, str) or not os.path.isabs(path) or path.startswith("\\\\"):
         return False, "Ruta inválida o en red."
     if any(seq in path.encode("utf-8", errors="ignore") for seq in [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]):
@@ -273,7 +270,7 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida que un proceso sea seguro y apto para realizar una operación de trimming."""
+    """Valida integridad del proceso y seguridad de su ubicación antes de operar."""
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or kernel32.GetProcessId(proc_handle) != pid: return False, "PID mismatch."
     exit_code = ctypes.c_ulong()
@@ -284,7 +281,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     return _validate_path_security(path)
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Intenta reducir el working set de un proceso específico, solo si es seguro."""
+    """Intenta reducir el working set de un proceso específico tras validar su seguridad."""
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
