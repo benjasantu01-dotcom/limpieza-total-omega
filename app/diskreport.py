@@ -197,9 +197,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
         
     try:
-        p = Path(os.fspath(mount)).resolve(strict=False)
-        if any(c < ' ' for c in str(p)):
-            return None
+        p = Path(os.fspath(mount)).resolve()
         if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
@@ -246,10 +244,9 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
     """Helper interno: verifica si una entrada de directorio debe ser ignorada."""
     try:
-        # Check for invalid control characters in path
         if any(c < ' ' for c in entry.name):
             return True
-        if entry.is_symlink() or (hasattr(entry, 'is_junction') and entry.is_junction()):
+        if entry.is_symlink():
             return True
         if skip_protected and entry.is_dir(follow_symlinks=False):
             return is_protected_path(Path(entry.path))
@@ -266,7 +263,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        base_path = Path(directory).resolve(strict=False)
+        base_path = Path(directory).resolve()
         if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
             return
     except (OSError, RuntimeError, TypeError):
@@ -284,16 +281,20 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         continue
                     
                     try:
+                        entry_path = Path(entry.path).resolve()
+                        if not str(entry_path).startswith(str(base_path)):
+                            continue
+
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(Path(entry.path))
+                                stack.append(entry_path)
                                 
                         elif entry.is_file(follow_symlinks=False):
                             f_stat = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), max(0, f_stat.st_size)
+                            yield entry_path, max(0, f_stat.st_size)
                     except (PermissionError, FileNotFoundError, OSError):
                         continue
         except (PermissionError, FileNotFoundError, OSError):
@@ -342,7 +343,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        p_base = Path(directory).resolve(strict=False)
+        p_base = Path(directory).resolve()
         if not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
             return []
             
@@ -356,11 +357,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                     continue
                 
                 top_folder = p_base / parts[0]
-                
-                # Double-check path validity
-                if skip_protected and is_protected_path(top_folder):
-                    continue
-                    
                 str_path = str(top_folder)
                 sums[str_path] += size
                 counts[str_path] += 1
@@ -419,7 +415,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada o formato inválido."]
 
     try:
-        p_input = Path(os.fspath(directory)).resolve(strict=False)
+        p_input = Path(os.fspath(directory)).resolve()
         if not p_input.exists():
             return [f"Error: Ruta no existente: {p_input}"]
         if not p_input.is_dir():

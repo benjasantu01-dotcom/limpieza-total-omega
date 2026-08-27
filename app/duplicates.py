@@ -174,6 +174,9 @@ def _collect_candidates(
                     try:
                         if entry.is_symlink(): continue
                         entry_path = Path(entry.path)
+                        # Defensa extra: validar protección en cada entrada antes de procesar
+                        if skip_protected and is_protected_path(entry_path): continue
+                        
                         if entry.is_dir(follow_symlinks=False):
                             if _should_skip_dir(entry_path): continue
                             stat = entry.stat(follow_symlinks=False)
@@ -182,7 +185,6 @@ def _collect_candidates(
                                 visited_device_inodes.add(dev_inode)
                                 _scan(entry.path)
                         elif entry.is_file(follow_symlinks=False):
-                            if skip_protected and is_protected_path(entry_path): continue
                             stat = entry.stat(follow_symlinks=False)
                             if stat.st_size < min_size: continue
                             full_path = os.path.realpath(entry.path)

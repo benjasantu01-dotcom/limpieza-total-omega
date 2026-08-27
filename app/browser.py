@@ -156,13 +156,14 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
     Aplica filtros de seguridad: omite rutas protegidas, enlaces simbólicos,
-    puntos de reparse (junctions) y archivos con atributos de sistema/ocultos.
+    puntos de reparse (junctions), montajes y archivos con atributos de sistema/ocultos.
     """
     if _is_excluded_file(entry.name):
         return True
         
     try:
-        if entry.is_symlink() or is_junction_fn(entry.path):
+        # Prevenir escaneo de puntos de montaje o reparse
+        if entry.is_symlink() or is_junction_fn(entry.path) or os.path.ismount(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):
             return True
@@ -225,13 +226,13 @@ def _sum_directory_recursive(
 def directory_size(path: Union[str, Path, None]) -> int:
     """
     Calcula el tamaño de una carpeta tras validar que sea una ruta segura.
-    Retorna 0 si la ruta está protegida, no es segura o no es un directorio.
+    Retorna 0 si la ruta está protegida, no es segura, es un punto de montaje o no es un directorio.
     """
     if not path:
         return 0
     try:
         p_obj = Path(path).resolve(strict=True)
-        if not p_obj.is_dir() or is_protected_path(p_obj) or not is_safe_to_modify(p_obj):
+        if not p_obj.is_dir() or os.path.ismount(str(p_obj)) or is_protected_path(p_obj) or not is_safe_to_modify(p_obj):
             return 0
         
         is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
@@ -247,7 +248,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     try:
         real_candidate = candidate.resolve(strict=True)
         
-        if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or
+        if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or os.path.ismount(str(real_candidate)) or
             not real_candidate.is_dir() or is_protected_path(real_candidate) or 
             not is_safe_to_modify(real_candidate) or
             not _is_path_inside_base(real_candidate, base_path) or 
