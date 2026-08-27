@@ -162,7 +162,8 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula el ratio de salud para seguridad (penalización creciente)."""
+    """Calcula el ratio de salud para seguridad (penalización creciente, acotada)."""
+    # Se asegura que la penalización no exceda 1.0 mediante _clamp
     penalty = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 

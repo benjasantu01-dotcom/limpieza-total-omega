@@ -1304,8 +1304,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            safety.ensure_safe_to_modify(Path(".").resolve())
             try:
+                # Se asegura que la carpeta de trabajo y la operación sean seguras
+                safety.ensure_safe_to_modify(Path(".").resolve())
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()
                 self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza")
