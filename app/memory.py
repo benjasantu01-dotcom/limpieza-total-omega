@@ -201,7 +201,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
     if (time.time() - _proc_cache_time) > 60:
-        # Optimizamos comando para filtrar PIDs críticos desde PS y evitar procesado extra
         cmd = ['powershell', '-NoProfile', '-Command', 
                "Get-Process | Where-Object {$_.Id -notin 0,4} | Select-Object Name, Id, WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"]
         try:
@@ -288,6 +287,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if os.name != "nt": return False, "Solo disponible en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
+    
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "PID no válido."
     if _is_system_process(target_pid): return False, "Proceso protegido."

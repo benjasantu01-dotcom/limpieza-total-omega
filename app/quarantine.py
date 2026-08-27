@@ -118,7 +118,7 @@ class QuarantineItem:
             if not stored_path.is_file() or stored_path.is_symlink():
                 return False
             return stored_path.stat().st_size == self.size_bytes
-        except OSError:
+        except (OSError, PermissionError):
             return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
@@ -460,13 +460,16 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Verifica si un ítem puede ser purgado bajo condiciones de seguridad."""
-    return (
-        file_path.exists() and
-        file_path.is_file() and
-        _is_within_quarantine_sandbox(file_path, base_path) and
-        item.verify_integrity(file_path) and
-        not _is_file_locked(file_path)
-    )
+    try:
+        return (
+            file_path.exists() and
+            file_path.is_file() and
+            _is_within_quarantine_sandbox(file_path, base_path) and
+            item.verify_integrity(file_path) and
+            not _is_file_locked(file_path)
+        )
+    except (OSError, PermissionError):
+        return False
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
@@ -480,19 +483,18 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     remaining_keys = list(items_dict.keys())
     for item_id in remaining_keys:
         item = items_dict[item_id]
-        stored_path = (quarantine_root / item.stored_name).resolve()
-        if not stored_path.exists():
-            del items_dict[item_id]
-            continue
-        
-        if _is_item_purgable(stored_path, item, quarantine_root):
-            if _safe_unlink(stored_path):
+        try:
+            stored_path = (quarantine_root / item.stored_name).resolve()
+            if not stored_path.exists():
                 del items_dict[item_id]
-                purged_count += 1
-            else:
-                raise UnsafePathError(f"Falla crítica: no se pudo eliminar {item.stored_name}")
-        else:
-            raise UnsafePathError(f"Purgado abortado: el archivo {item.stored_name} no superó validaciones.")
+                continue
+            
+            if _is_item_purgable(stored_path, item, quarantine_root):
+                if _safe_unlink(stored_path):
+                    del items_dict[item_id]
+                    purged_count += 1
+        except (OSError, PermissionError):
+            continue
             
     if purged_count > 0:
         save_manifest(list(items_dict.values()), base)

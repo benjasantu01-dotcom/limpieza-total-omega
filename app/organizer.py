@@ -175,6 +175,10 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
             return False
         if is_protected_path(src) or is_protected_path(dest):
             return False
+        
+        # Verificar permisos de escritura del sistema de archivos
+        if not os.access(src, os.W_OK) or not os.access(dest.parent if dest.is_file() else dest, os.W_OK):
+            return False
             
         if _is_recursive_violation(src, dest):
             return False
