@@ -1304,3 +1304,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T13:50:44` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` al verificar la existencia del directorio padre mediante `is_safe_to_modify` antes de cualquier intento de creación, evitando suposiciones sobre el sistema de archivos y asegurando que las operaciones de escritura solo ocurran en rutas validadas.
 - `2026-08-27T13:50:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T13:50:44` Corrida terminada. Total usado hoy: 328.
+- `2026-08-27T13:59:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-27T13:59:36` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación obligatoria de `is_safe_to_modify` para cada subdirectorio antes de entrar, evitando el acceso a rutas que puedan haber sido protegidas durante la ejecución o que excedan los permisos previstos.
+- `2026-08-27T14:00:07` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-08-27T14:00:32` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-27T14:00:46` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez defensiva del módulo mediante la validación estricta de los pesos configurables en `WEIGHTS`, asegurando que cualquier error de configuración no resulte en un cálculo de puntaje que exceda el rango [0, 100] o que omita áreas críticas, preservando la integridad del diagnóstico.
+- `2026-08-27T14:00:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T14:00:46` Corrida terminada. Total usado hoy: 332.

@@ -179,6 +179,10 @@ def _sum_directory_recursive(
     if depth > MAX_SCAN_DEPTH:
         return 0
 
+    root_path = Path(root_dir)
+    if not is_safe_to_modify(root_path):
+        return 0
+
     root_abs = os.path.normpath(root_dir)
     if root_abs in memo:
         return memo[root_abs]

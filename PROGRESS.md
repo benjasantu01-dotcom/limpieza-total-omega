@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 79 | 6 | 11 | 7 | 73 |
-| 2026-08-27 | 149 | 12 | 21 | 7 | 139 |
+| 2026-08-26 | 79 | 6 | 11 | 7 | 69 |
+| 2026-08-27 | 151 | 12 | 21 | 7 | 141 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,19 +25,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **42**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **38**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
 - `assistant.py`: **19**
+- `browser.py`: **19**
 - `duplicates.py`: **19**
-- `browser.py`: **18**
 - `diskreport.py`: **18**
+- `healthscore.py`: **18**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
 - `settings.py`: **18**
-- `healthscore.py`: **17**
 - `branding.py`: **17**
 - `main.py`: **13**
 - `startup.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T14:00:46` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva del módulo mediante la validación estricta de los pesos configurables en `WEIGHTS`, asegurando que cualquier error de configuración no resulte en un cálculo de puntaje que exceda el rango [0, 100] o que omita áreas críticas, preservando la integridad del diagnóstico.
+- `2026-08-27T13:59:36` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación obligatoria de `is_safe_to_modify` para cada subdirectorio antes de entrar, evitando el acceso a rutas que puedan haber sido protegidas durante la ejecución o que excedan los permisos previstos.
 - `2026-08-27T13:50:44` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` al verificar la existencia del directorio padre mediante `is_safe_to_modify` antes de cualquier intento de creación, evitando suposiciones sobre el sistema de archivos y asegurando que las operaciones de escritura solo ocurran en rutas validadas.
 - `2026-08-27T13:50:28` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` mediante la implementación de una validación de contenido tras la descarga (verificando que la respuesta no contenga inyecciones de rutas) antes de su procesamiento final, asegurando que la respuesta externa no eluda los filtros de seguridad del motor local.
 - `2026-08-27T13:49:24` **settings.py** (robustez ante casos límite): Se añadió una verificación de integridad de `json.load()` para prevenir casos de archivos que, aunque no excedan el límite de tamaño, contengan estructuras JSON mal formadas o tipos de datos inesperados que podrían causar excepciones no controladas durante la validación.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T13:09:02` **settings.py** (rendimiento): Optimicé el sistema de caché convirtiendo `_CACHE` en una estructura más eficiente y eliminando llamadas redundantes a `stat()` mediante el uso de un diccionario de acceso rápido por ruta, además de evitar la recarga innecesaria del archivo si los datos no han cambiado físicamente.
 - `2026-08-27T13:08:34` **scanner.py** (rendimiento): Optimicé el rendimiento de `_is_safe_entry` y `process_entry` evitando el uso repetido de `Path.resolve()` y `Path.parents` (que realizan syscalls costosas) mediante el uso de comparación de strings pre-calculada y validación directa sobre `entry.path`.
 - `2026-08-27T12:58:44` **quarantine.py** (rendimiento): Optimizé la función `total_quarantined_bytes` y `summarize` para que operen directamente sobre la caché del manifiesto (`_load_manifest_internal`) evitando recrear la lista completa de objetos mediante `load_manifest()` (que fuerza una conversión a lista y copia en memoria), mejorando la eficiencia en escenarios donde el manifiesto crece.
-- `2026-08-27T12:49:48` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de caché basada en tiempo y una gestión más eficiente de la lista de procesos, reduciendo la carga sobre el sistema y evitando bloqueos innecesarios del hilo principal.
-- `2026-08-27T12:48:28` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo de `compute_score` eliminando la creación dinámica de diccionarios y listas dentro del proceso, utilizando en su lugar operaciones directas para reducir la presión sobre el recolector de basura y mejorar el rendimiento en iteraciones frecuentes.
