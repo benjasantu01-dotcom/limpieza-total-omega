@@ -531,7 +531,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return valor_label
 
     def _build_health_area_bars(self, parent: ctk.CTk) -> None:
-        """Crea el contenedor de barras de progreso para el desglose detallado."""
+        """
+        Crea el contenedor de barras de progreso para el desglose detallado.
+        Itera sobre HEALTH_AREAS definiendo cada componente visual y su vinculación.
+        """
         area_container = ctk.CTkFrame(parent, fg_color="transparent")
         area_container.grid(row=0, column=1, sticky="ew")
         area_container.grid_columnconfigure(1, weight=1)

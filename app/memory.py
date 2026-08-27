@@ -88,9 +88,10 @@ class MEMORYSTATUSEX(ctypes.Structure):
 
 @dataclass(frozen=True)
 class MemorySnapshot:
-    total: BytesValue
-    available: BytesValue
-    cached: BytesValue = 0
+    """Representación inmutable de la salud de la memoria RAM global."""
+    total: BytesValue  # Capacidad total instalada
+    available: BytesValue  # Memoria libre + en caché fácilmente recuperable
+    cached: BytesValue = 0  # Memoria usada como búfer de archivos
 
     @property
     def used(self) -> BytesValue:
@@ -168,7 +169,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Llama a la API de Windows para obtener estadísticas de memoria física."""
+    """
+    Solicita estadísticas de memoria física al kernel de Windows mediante 
+    GlobalMemoryStatusEx. Retorna MemorySnapshot(0,0) si falla la API o el entorno.
+    """
     try:
         kernel32 = getattr(ctypes.windll, "kernel32", None)
         if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx"):
