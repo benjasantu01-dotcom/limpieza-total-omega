@@ -1082,3 +1082,12 @@ FAILED evolve/tests/test_assistant.py::test_corrupt_file_falls_back_to_defaults 
 - `2026-08-27T11:27:22` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-27T11:27:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T11:27:22` Corrida terminada. Total usado hoy: 272.
+- `2026-08-27T11:36:06` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-27T11:37:07` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-27T11:38:10` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-27T11:39:22` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez en la recopilación de ajustes del usuario mediante un manejo centralizado y seguro de los valores numéricos, eliminando la posible pérdida de datos o bloqueos si el usuario ingresa texto no numérico en los campos de configuración.
+- `2026-08-27T11:40:16` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente el tipo y la existencia de los handles antes de operar, previniendo errores de `ctypes` al intentar interactuar con recursos nulos o inválidos.
+- `2026-08-27T11:40:41` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-27T11:41:05` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` mediante la implementación de una validación explícita de tipos y estructura de datos antes de acceder a los campos, previniendo errores de `KeyError` o `AttributeError` ante manifiestos mal formados, y reforzando la integridad con un manejo de excepciones más específico durante la deserialización.
+- `2026-08-27T11:41:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T11:41:05` Corrida terminada. Total usado hoy: 276.

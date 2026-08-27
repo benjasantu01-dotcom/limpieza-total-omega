@@ -262,11 +262,17 @@ def _load_manifest_internal(base_str: str) -> Dict[str, QuarantineItem]:
         return {}
     try:
         with open(path, "r", encoding="utf-8") as f:
-            return {
-                str(entry["item_id"]): item 
-                for entry in json.load(f) 
-                if isinstance(entry, dict) and (item := QuarantineItem.from_dict(entry))
-            }
+            data = json.load(f)
+            if not isinstance(data, list):
+                return {}
+            
+            items: Dict[str, QuarantineItem] = {}
+            for entry in data:
+                if isinstance(entry, dict):
+                    item = QuarantineItem.from_dict(entry)
+                    if item:
+                        items[item.item_id] = item
+            return items
     except (json.JSONDecodeError, OSError, PermissionError):
         return {}
 
