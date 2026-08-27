@@ -183,7 +183,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         try:
             app_root = Path(__file__).resolve().parent
-            # Asegurar que el entorno de ejecución está en un lugar seguro y no es symlink malintencionado
+            # Bloquear ejecución desde zonas de riesgo o rutas de sistema.
             safety.ensure_safe_to_modify(app_root)
             
             if app_root.is_symlink():

@@ -436,6 +436,10 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         if not is_safe_to_modify(parent) or not is_safe_to_modify(destination):
             raise UnsafePathError("Restauración denegada: destino restringido o protegido.")
         os.replace(str(stored_file), str(destination))
+        # Validación final post-restauración para prevenir redirecciones maliciosas
+        if destination.is_symlink():
+            destination.unlink()
+            raise UnsafePathError("Restauración denegada: el destino es un enlace simbólico.")
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo crítico durante la restauración: {e}")
     del items_dict[item_id]

@@ -271,7 +271,10 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     if any(seq in path.encode("utf-8", errors="ignore") for seq in [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]):
         return False, "Ruta de proceso sospechosa."
     try:
+        # Prevenir seguimiento de junctions o reparse points
+        if os.path.islink(path): return False, "Ruta es un enlace simbólico."
         p = Path(path).resolve()
+        if not p.is_file(): return False, "No es un ejecutable válido."
         for parent in [p] + list(p.parents):
             if is_protected_path(str(parent)): return False, f"Ruta protegida en {parent.name}."
     except Exception: return False, "Error resolviendo ruta."
