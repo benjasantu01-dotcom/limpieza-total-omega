@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 30
+- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 8 | 2 | 1 | 1 | 34 |
+| 2026-08-25 | 8 | 1 | 1 | 1 | 31 |
 | 2026-08-26 | 166 | 11 | 22 | 15 | 136 |
-| 2026-08-27 | 46 | 5 | 7 | 1 | 49 |
+| 2026-08-27 | 47 | 5 | 8 | 1 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,12 +26,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **46**
 - rendimiento: **43**
 - seguridad defensiva: **38**
-- robustez ante casos límite: **31**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `quarantine.py`: **20**
 - `assistant.py`: **19**
-- `quarantine.py`: **19**
 - `duplicates.py`: **19**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T04:39:02` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la función `_atomic_isolate_file` al incluir una verificación de espacio en disco más estricta que contempla errores de lectura del sistema de archivos y evita escrituras parciales, garantizando que el aislamiento falle de forma controlada antes de intentar mover el archivo.
 - `2026-08-27T04:29:31` **main.py** (robustez ante casos límite): Se mejora la robustez del método `on_delete_reviewed` al incluir una validación de seguridad (ensure_safe_to_modify) y un manejo de excepciones local para prevenir fallos durante el borrado de archivos, garantizando que el bucle de ejecución no se detenga ante errores de acceso a disco en la carpeta de revisión.
 - `2026-08-27T04:28:40` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_security` ante entradas extremas o malintencionadas, asegurando que un `suspicious_count` inusualmente alto no provoque un ratio negativo ni un desbordamiento en el puntaje, manteniendo la integridad del cálculo de salud ante cualquier combinación de datos.
 - `2026-08-27T04:28:14` **duplicates.py** (robustez ante casos límite): Se mejoró la robustez de `suggest_keeper` y `format_group` ante archivos que desaparecen entre la detección y el procesamiento, evitando fallos en la aplicación al asegurar que todas las comparaciones de rutas utilicen `resolve()` consistente y se manejen excepciones de acceso de forma defensiva.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T03:36:52` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos detallados en funciones clave y la estandarización de type hints, facilitando la auditoría de seguridad y el mantenimiento a largo plazo sin alterar el comportamiento.
 - `2026-08-27T03:27:36` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y robustez del código mediante la adición de docstrings técnicos explicativos en los métodos clave de `Scanner` y el refinamiento de los type hints para asegurar que las intenciones del diseño (como el manejo de `os.DirEntry`) sean claras para futuros colaboradores.
 - `2026-08-27T03:27:28` **safety.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los predicados de seguridad y el pipeline de validación para mejorar la legibilidad y mantenibilidad del flujo crítico de `ensure_safe_to_modify`.
-- `2026-08-27T03:26:42` **quarantine.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento al extraer la lógica de validación de rutas de `quarantine.py` en funciones con docstrings claros, estandarizando el uso de type hints y mejorando la claridad de las excepciones lanzadas.

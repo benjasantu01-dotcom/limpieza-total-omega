@@ -303,9 +303,13 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     """Copia un archivo al sandbox verificando integridad post-copia y espacio disponible."""
     resolved_source = source.resolve()
     dest_dir = destination.parent.resolve()
-    usage = shutil.disk_usage(dest_dir)
-    if usage.free < (file_size + (1024 * 1024)):
-        raise OSError("Espacio insuficiente en disco para aislamiento seguro.")
+    try:
+        usage = shutil.disk_usage(dest_dir)
+        if usage.free < (file_size + (1024 * 1024)):
+            raise OSError("Espacio insuficiente en disco para aislamiento seguro.")
+    except OSError as e:
+        raise OSError(f"No se pudo determinar el espacio libre en disco: {e}")
+
     temp_path = None
     try:
         with tempfile.NamedTemporaryFile(dir=dest_dir, prefix=".tmp_q_", delete=False) as tf:

@@ -409,3 +409,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-27T04:29:31` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez del método `on_delete_reviewed` al incluir una validación de seguridad (ensure_safe_to_modify) y un manejo de excepciones local para prevenir fallos durante el borrado de archivos, garantizando que el bucle de ejecución no se detenga ante errores de acceso a disco en la carpeta de revisión.
 - `2026-08-27T04:29:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T04:29:31` Corrida terminada. Total usado hoy: 108.
+- `2026-08-27T04:37:33` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-08-27T04:38:05` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-27T04:38:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-27T04:39:02` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la función `_atomic_isolate_file` al incluir una verificación de espacio en disco más estricta que contempla errores de lectura del sistema de archivos y evita escrituras parciales, garantizando que el aislamiento falle de forma controlada antes de intentar mover el archivo.
+- `2026-08-27T04:39:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-27T04:39:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T04:39:06` Corrida terminada. Total usado hoy: 112.
