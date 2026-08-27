@@ -282,6 +282,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     
                     try:
                         if entry.is_dir(follow_symlinks=False):
+                            if skip_protected and is_protected_path(Path(entry.path)):
+                                continue
                             st = entry.stat(follow_symlinks=False)
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
@@ -353,6 +355,9 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
                     continue
                 
                 top_folder = p_base / relative.parts[0]
+                if skip_protected and is_protected_path(top_folder):
+                    continue
+                
                 str_path = str(top_folder)
                 sums[str_path] += size
                 counts[str_path] += 1

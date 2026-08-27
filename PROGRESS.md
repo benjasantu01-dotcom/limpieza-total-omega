@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 206
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 129 | 10 | 16 | 11 | 114 |
-| 2026-08-27 | 107 | 7 | 14 | 4 | 92 |
+| 2026-08-26 | 129 | 10 | 16 | 11 | 110 |
+| 2026-08-27 | 108 | 7 | 14 | 5 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **43**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **40**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,8 +36,8 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **19**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
+- `diskreport.py`: **18**
 - `memory.py`: **18**
-- `diskreport.py`: **17**
 - `branding.py`: **15**
 - `main.py`: **15**
 - `safety.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T09:34:06` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre cada subdirectorio antes de intentar acceder a él, evitando así seguir rutas que podrían haber sido movidas a puntos de reparse o junctions de sistema durante la ejecución del bucle.
 - `2026-08-27T09:25:12` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` aplicando una validación de ruta jerárquica más robusta y asegurando que las operaciones de creación de directorios no dependan de estados de escritura implícitos, alineándose con el enfoque de seguridad defensiva.
 - `2026-08-27T09:24:04` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un chequeo preventivo de `OSError` al llamar a `os.path.realpath`, evitando que la aplicación se bloquee si encuentra rutas con errores de permisos o sistemas de archivos inaccesibles durante la resolución de la ruta real del ejecutable.
 - `2026-08-27T09:15:27` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la carga y validación de archivos, integrando una verificación de permisos más estricta mediante `os.access` antes de intentar leer o escribir, protegiendo contra bloqueos de sistema o archivos inaccesibles.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T08:44:35` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad en `save_logo_svg` para prevenir que `path_obj.parent` sea una ruta inexistente que no pueda ser creada o que resida en una zona protegida, garantizando la integridad del sistema ante intentos de escritura en carpetas bloqueadas.
 - `2026-08-27T08:44:18` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de diagnóstico ante estados inválidos o incompletos, añadiendo una comprobación explícita de `analyzed` en los manejadores de consulta y previniendo posibles errores de `ZeroDivisionError` o `ValueError` si las métricas llegaran con valores numéricos inesperados durante la ejecución.
 - `2026-08-27T08:43:11` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la serialización a `dict` solo cuando es necesario, manteniendo `DEFAULTS` como objeto constante para evitar copias innecesarias y reduciendo la frecuencia de llamadas a `.copy()` y `_get_default_config()` en las operaciones de lectura y validación.
-- `2026-08-27T08:33:50` **scanner.py** (rendimiento): Optimizé la ejecución de `_is_safe_entry` en `Scanner` integrando el filtrado por nombre de archivo y la validación de extensiones en una única pasada lógica, eliminando la creación repetitiva de objetos `Path` innecesarios y la resolución de rutas mediante `resolve()` dentro de un bucle, la cual es una operación costosa de I/O.

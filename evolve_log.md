@@ -818,3 +818,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-08-27T09:25:38` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
 - `2026-08-27T09:25:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T09:25:38` Corrida terminada. Total usado hoy: 224.
+- `2026-08-27T09:33:38` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-08-27T09:34:06` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre cada subdirectorio antes de intentar acceder a él, evitando así seguir rutas que podrían haber sido movidas a puntos de reparse o junctions de sistema durante la ejecución del bucle.
+- `2026-08-27T09:34:35` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-27T09:35:00` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-08-27T09:35:52` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `main.py` añadiendo un filtro explícito en `_worker_thread_logic` que valida que la ruta de destino (si existe) pase `is_safe_to_modify` antes de delegar cualquier ejecución al pool de hilos, asegurando que los workers nunca operen fuera de las zonas permitidas incluso si fallara la lógica de UI.
+- `2026-08-27T09:35:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T09:35:52` Corrida terminada. Total usado hoy: 228.
