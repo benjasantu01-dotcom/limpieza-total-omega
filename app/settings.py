@@ -246,6 +246,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     try:
         if not ruta.exists(): return DEFAULTS.copy()
+        if not os.access(ruta, os.R_OK): return DEFAULTS.copy()
         stat_info = ruta.stat()
         mtime = stat_info.st_mtime
         if (cached := _CACHE.get(ruta)) and cached[0] == mtime:
@@ -272,6 +273,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         if not is_safe_to_modify(str(parent)) or not is_safe_to_modify(str(ruta)):
             return None
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        if not os.access(parent, os.W_OK): return None
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         with tempfile.NamedTemporaryFile("wb", delete=False, dir=parent) as tf:

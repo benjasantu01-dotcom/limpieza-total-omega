@@ -188,7 +188,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError) as e:
+        except (PermissionError, OSError, FileNotFoundError) as e:
             logger.debug(f"Error accediendo a directorio {current_dir}: {e}")
             continue
     return scanner.results

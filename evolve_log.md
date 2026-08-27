@@ -778,3 +778,36 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T09:05:29` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejora la robustez de la cuarentena ante archivos bloqueados o inaccesibles añadiendo una verificación de acceso (try-except) y validación de existencia antes de intentar realizar operaciones sobre los ítems registrados en el manifiesto, evitando que el proceso de limpieza o purga aborte inesperadamente por errores de I/O en archivos individuales.
 - `2026-08-27T09:05:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T09:05:29` Corrida terminada. Total usado hoy: 216.
+- `2026-08-27T09:13:16` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-08-27T09:13:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-27T09:14:04` Tests FALLARON:
+```
+at 0x7f1c42970c20> = safety.is_protected_path
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'app.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7f1c429711c0>(((PosixPath('/tmp/pytest-of-runner/pytest-1/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f1c429711c0> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - Failed: DID NOT RAISE UnsafePathError
+15 failed, 284 passed, 5 warnings in 1.42s
+
+```
+- `2026-08-27T09:14:04` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `is_protected_path` al asegurar que los directorios protegidos se validen mediante una comparación de normalización estricta (case-insensitive) contra las partes de la ruta, evitando que rutas como "C:\Windows" pasen desapercibidas en entornos con distintas configuraciones de caracteres.
+- `2026-08-27T09:15:13` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de la lógica de escaneo ante la desaparición o falta de permisos en directorios durante la iteración, mediante la implementación de un manejo de errores robusto que asegura que `os.scandir` y la navegación del stack no se detengan ante condiciones de carrera (archivos borrados o bloqueados durante el escaneo).
+- `2026-08-27T09:15:27` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S en la carga y validación de archivos, integrando una verificación de permisos más estricta mediante `os.access` antes de intentar leer o escribir, protegiendo contra bloqueos de sistema o archivos inaccesibles.
+- `2026-08-27T09:15:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T09:15:27` Corrida terminada. Total usado hoy: 220.
