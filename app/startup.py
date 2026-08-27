@@ -266,11 +266,11 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                     continue
                 
                 row_items = list(row.items())
-                if len(row_items) < 2:
+                if len(row_items) < 2 or row_items[0][1] is None or row_items[1][1] is None:
                     continue
                 
-                name_raw = str(row_items[0][1] or "")
-                cmd_raw = str(row_items[1][1] or "")
+                name_raw = str(row_items[0][1])
+                cmd_raw = str(row_items[1][1])
                 
                 name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
                 cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
@@ -285,7 +285,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                     continue
 
                 parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
-            except (KeyError, ValueError, TypeError, OSError):
+            except (KeyError, ValueError, TypeError, AttributeError, OSError):
                 continue
     except (csv.Error, OSError, ValueError, TypeError):
         return []

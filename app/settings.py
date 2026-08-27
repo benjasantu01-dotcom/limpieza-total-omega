@@ -34,7 +34,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple
 
-from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
+from safety import is_safe_to_modify, is_protected_path
 
 PathLike: TypeAlias = str | Path
 T = TypeVar("T")
@@ -293,10 +293,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     parent = ruta.parent.absolute()
     temp_name = None
     try:
-        # Validación defensiva: asegurar que el directorio padre sea seguro antes de trabajar
-        ensure_safe_to_modify(str(parent))
+        # Validación defensiva: verificar seguridad antes de operar en el disco
+        if not is_safe_to_modify(str(parent)) or not is_safe_to_modify(str(ruta)):
+            return None
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        ensure_safe_to_modify(str(ruta))
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         with tempfile.NamedTemporaryFile("wb", delete=False, dir=parent) as tf:

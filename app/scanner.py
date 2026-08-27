@@ -68,20 +68,18 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
     Utiliza el timestamp actual (now_ts) para evitar llamadas redundantes al sistema.
     """
-    # Optimización: verificamos si algún componente de la ruta está en el set de interés
     if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
         except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError):
-            pass
+            return None
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable intenta suplantar procesos críticos del sistema fuera de System32."""
     if path.name.lower() in SYSTEM_LOOKALIKES:
-        # No reportar si el archivo es parte de rutas protegidas del sistema
         if is_protected_path(path):
             return None
         if SYSTEM32_LOWER not in str(path).lower():
@@ -107,10 +105,6 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path_str: str) -> bool:
-        """
-        Valida que la ruta sea segura, evitando dispositivos reservados, rutas UNC 
-        y asegurando que el destino resuelto resida dentro del base_root.
-        """
         if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH or entry_path_str.startswith("\\\\"):
             return False
         
@@ -122,7 +116,6 @@ class Scanner:
             target = path_obj.resolve(strict=False)
             if not target.is_absolute():
                 return False
-            # Validar traversal: el path resuelto debe contener al base_root
             if os.path.commonpath([self.base_root, target]) != str(self.base_root):
                 return False
         except (OSError, RuntimeError, ValueError):
@@ -130,21 +123,12 @@ class Scanner:
         return not is_protected_path(path_obj)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """
-        Identifica puntos de reanálisis (Junctions/Symlinks) verificando los atributos 
-        de archivo. Devuelve True si es un reparse point para evitar seguir enlaces 
-        fuera del árbol de directorios original.
-        """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError, TypeError):
             return True 
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """
-        Analiza un elemento del sistema de archivos. Si es un directorio, lo añade 
-        al stack de procesamiento; si es un archivo, dispara las heurísticas.
-        """
         try:
             entry_path = entry.path
             if not entry_path or not self._is_safe_entry(entry_path):
@@ -160,7 +144,6 @@ class Scanner:
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Centraliza la ejecución de todas las reglas heurísticas sobre un archivo."""
         if RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry))
@@ -171,8 +154,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    # Optimización: Solo iterar registro si la extensión es de interés
-    if path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECK_REGISTRY:
             try:
                 if (result := check(path, entry, now_ts)):
