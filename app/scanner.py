@@ -79,6 +79,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable intenta suplantar procesos críticos del sistema fuera de System32."""
     if path.name.lower() in SYSTEM_LOOKALIKES:
+        # No reportar si el archivo es parte de rutas protegidas del sistema
+        if is_protected_path(path):
+            return None
         if SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
@@ -125,7 +128,8 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Procesa una entrada del sistema de archivos, aplicando heurísticas o añadiendo directorios al stack."""
         try:
-            if not entry.exists():
+            # Validar existencia antes de cualquier procesamiento
+            if not entry.is_file(follow_symlinks=False) and not entry.is_dir(follow_symlinks=False):
                 return
             entry_path = entry.path
             if not entry_path or entry_path.startswith("\\\\"):
@@ -137,7 +141,7 @@ class Scanner:
                     if entry_path not in self.seen:
                         self.seen.add(entry_path)
                         stack.append(entry_path)
-            elif entry.is_file(follow_symlinks=False):
+            else:
                 self._run_file_heuristics(Path(entry_path), entry)
         except (OSError, PermissionError, TypeError, FileNotFoundError) as e:
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}: {e}")

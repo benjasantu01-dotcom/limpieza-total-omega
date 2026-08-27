@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 29
+- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 55 | 5 | 6 | 8 | 60 |
+| 2026-08-25 | 55 | 5 | 6 | 8 | 56 |
 | 2026-08-26 | 166 | 11 | 22 | 15 | 136 |
-| 2026-08-27 | 11 | 0 | 1 | 0 | 8 |
+| 2026-08-27 | 12 | 1 | 2 | 0 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - rendimiento: **46**
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
-- seguridad defensiva: **45**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
@@ -33,7 +33,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **21**
 - `duplicates.py`: **21**
 - `quarantine.py`: **21**
-- `scanner.py`: **20**
+- `scanner.py`: **21**
 - `browser.py`: **19**
 - `healthscore.py`: **19**
 - `settings.py`: **19**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T00:54:26` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner implementando una validación estricta de rutas mediante `is_protected_path` en `check_system_lookalike` y limitando el alcance de los chequeos de ejecutables a archivos confirmados como existentes, evitando que el escáner se engañe con entradas fantasma.
 - `2026-08-27T00:45:55` **organizer.py** (seguridad defensiva): Se ha mejorado `_is_safe_for_disk_op` para verificar el estado de los atributos de archivo mediante una máscara de bits más precisa y se añadió una validación explícita para evitar que los archivos de sistema o de solo lectura sean procesados, reforzando la seguridad defensiva sin alterar la funcionalidad.
 - `2026-08-27T00:45:43` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva de `memory.py` implementando una validación explícita de privilegios en `trim_working_set`, asegurando que no se intente interactuar con procesos elevados si la propia aplicación no tiene permisos suficientes, evitando errores silenciosos de la API de Windows.
 - `2026-08-27T00:45:16` **main.py** (seguridad defensiva): Se ha mejorado `_run_heuristic_scan` para evitar el uso del `target` global en `run_async` y pasar la ruta de forma explícita, asegurando que la validación de seguridad ocurra exactamente sobre la ruta de destino elegida (en lugar de una ruta potencialmente desactualizada almacenada en el estado del objeto).
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T14:50:44` **diskreport.py** (robustez ante casos límite): Reforcé la robustez de `walk_files` y `largest_folders` ante la presencia de rutas con caracteres no imprimibles o estados corruptos del sistema de archivos, asegurando que la navegación no se interrumpa ante errores de resolución de rutas o acceso denegado durante el escaneo.
 - `2026-08-26T14:50:17` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_path_inside_base` añadiendo un manejo de excepciones más granular y convirtiendo `real_base` a un objeto `Path` garantizado, asegurando que ante rutas malformadas o errores de resolución durante el escaneo, la función retorne `False` de forma segura en lugar de propagar errores inesperados.
 - `2026-08-26T14:41:09` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `ingest` ante entradas malformadas o tipos de datos inesperados en `source` para evitar que el asistente falle silenciosamente al procesar configuraciones o métricas corruptas.
-- `2026-08-26T14:40:07` **settings.py** (rendimiento): Optimizé la gestión de la caché y los validadores pre-compilando el mapa de validadores y evitando llamadas innecesarias a `_get_default_config()` mediante el uso de `DEFAULTS` existentes, reduciendo la carga de CPU en accesos frecuentes.

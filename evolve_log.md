@@ -1168,3 +1168,38 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T00:45:55` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado `_is_safe_for_disk_op` para verificar el estado de los atributos de archivo mediante una máscara de bits más precisa y se añadió una validación explícita para evitar que los archivos de sistema o de solo lectura sean procesados, reforzando la seguridad defensiva sin alterar la funcionalidad.
 - `2026-08-27T00:45:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T00:45:55` Corrida terminada. Total usado hoy: 20.
+- `2026-08-27T00:53:00` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-27T00:53:33` Tests FALLARON:
+```
+runner/pytest-1/test_quarantine_missing_file_r0/_Cuarentena')
+
+    def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
+        """Realiza chequeos de seguridad antes de mover un archivo al sandbox."""
+        _check_path_syntax_integrity(source_path)
+        _check_windows_file_attributes(str(source_path))
+        resolved_source = source_path.resolve()
+        if not resolved_source.is_file():
+>           raise UnsafePathError("Solo se aceptan archivos regulares.")
+E           safety.UnsafePathError: Solo se aceptan archivos regulares.
+
+app/quarantine.py:238: UnsafePathError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:236: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_missing_file_raises_clearly - safety.UnsafePathError: Solo se aceptan archivos regulares.
+1 failed, 298 passed, 4 warnings in 1.28s
+
+```
+- `2026-08-27T00:53:33` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: He mejorado `quarantine_file` para evitar una condición de carrera crítica verificando nuevamente la existencia y los metadatos del archivo origen justo antes de la operación de copia, asegurando que la ruta no haya sido reemplazada por un enlace simbólico malicioso mientras el programa procesaba la validación inicial.
+- `2026-08-27T00:53:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-27T00:54:17` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-27T00:54:26` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del escáner implementando una validación estricta de rutas mediante `is_protected_path` en `check_system_lookalike` y limitando el alcance de los chequeos de ejecutables a archivos confirmados como existentes, evitando que el escáner se engañe con entradas fantasma.
+- `2026-08-27T00:54:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T00:54:26` Corrida terminada. Total usado hoy: 24.
