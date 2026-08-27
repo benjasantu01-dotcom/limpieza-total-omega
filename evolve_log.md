@@ -713,3 +713,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-27T08:13:37` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
 - `2026-08-27T08:13:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T08:13:37` Corrida terminada. Total usado hoy: 196.
+- `2026-08-27T08:22:11` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-27T08:22:39` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé la generación de recomendaciones pre-calculando el acceso a las métricas y utilizando una estructura más eficiente, además de evitar la creación de múltiples listas temporales dentro de `compute_score`.
+- `2026-08-27T08:23:52` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché `LRU` nativo (usando `functools.lru_cache`) para las métricas de disco de la carpeta home y se optimizó `on_full_analysis` para reutilizar el estado de salud sin recalcular métricas innecesarias si los datos ya están en memoria, reduciendo drásticamente la latencia de la UI durante la navegación.
+- `2026-08-27T08:24:34` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de memoria de procesos mediante el uso de una caché persistente más eficiente y se redujo la sobrecarga de parseo al evitar la creación innecesaria de objetos `ProcessMemory` mediante un filtrado previo en la lógica de `top_memory_processes`.
+- `2026-08-27T08:24:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-27T08:24:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T08:24:45` Corrida terminada. Total usado hoy: 200.

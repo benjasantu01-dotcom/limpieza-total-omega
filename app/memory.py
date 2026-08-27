@@ -201,11 +201,14 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
     if (time.time() - _proc_cache_time) > 60:
-        cmd = ['powershell', '-NoProfile', '-Command', "Get-Process | Select-Object Name, Id, WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"]
+        # Optimizamos comando para filtrar PIDs críticos desde PS y evitar procesado extra
+        cmd = ['powershell', '-NoProfile', '-Command', 
+               "Get-Process | Where-Object {$_.Id -notin 0,4} | Select-Object Name, Id, WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0:
                 _proc_cache_data, _proc_cache_time = proc.stdout, time.time()
+                parse_windows_process_csv.cache_clear()
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): pass
     return parse_windows_process_csv(_proc_cache_data, limit=limit)
 

@@ -207,17 +207,10 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
     Transforma métricas brutas en un puntaje de 0-100 ponderado.
-    
-    El proceso:
-    1. Valida la integridad numérica del objeto SystemMetrics.
-    2. Aplica funciones de puntuación individuales para cada categoría.
-    3. Multiplica los ratios por los pesos de la constante WEIGHTS.
-    4. Genera recomendaciones contextuales basadas en umbrales de alerta.
     """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incompatible."])
     
-    # Validar integridad antes de procesar
     try:
         metrics.validate()
         if not metrics.is_finite():
@@ -229,27 +222,20 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios_cache: ScoreMap = {}
     accumulated_points: float = 0.0
     
-    # Procesamiento ponderado de categorías
     for area, weight in _WEIGHT_ITEMS_INT:
-        scorer = _SCORER_MAP.get(area)
-        if scorer:
-            ratio = scorer(metrics)
-            ratios_cache[area] = ratio
-            points = round(ratio * weight)
-            metric_breakdown[area] = int(points)
-            accumulated_points += points
-        else:
-            metric_breakdown[area] = 0
+        ratio = _SCORER_MAP[area](metrics)
+        ratios_cache[area] = ratio
+        points = round(ratio * weight)
+        metric_breakdown[area] = int(points)
+        accumulated_points += points
     
     final_score = int(_clamp(accumulated_points, 0.0, 100.0))
     
-    # Generación de recomendaciones robusta
     recommendations = []
     for rule in _RECOMMENDATION_RULES:
-        if rule.area in ratios_cache and rule.check(metrics, ratios_cache[rule.area]):
+        if rule.check(metrics, ratios_cache[rule.area]):
             try:
-                msg = rule.message_factory(metrics)
-                if msg: recommendations.append(msg)
+                recommendations.append(rule.message_factory(metrics))
             except Exception:
                 continue
             

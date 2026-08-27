@@ -1093,6 +1093,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Solicita confirmación al usuario para acciones potencialmente irreversibles."""
         return messagebox.askyesno(title, message, icon="warning")
 
+    @lru_cache(maxsize=1)
+    def _get_home_disk_info(self) -> Optional[diskreport.DriveInfo]:
+        """Caché LRU para evitar llamadas repetitivas al sistema de archivos."""
+        return diskreport.drive_usage(Path.home())
+
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Reúne métricas de todos los módulos para calcular el puntaje global de salud."""
         hallazgos = self._get_cached("suspicions") or []
@@ -1101,13 +1106,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         dups = self._get_cached("dups") or []
 
         snapshot = self._get_cached("memory_snapshot", provider=memory_mod.read_snapshot) or memory_mod.Snapshot(0, 0, 0)
-        
-        @lru_cache(maxsize=1)
-        def _get_home_disk_info() -> Optional[diskreport.DriveInfo]:
-            return diskreport.drive_usage(Path.home())
+        disk_info = self._get_home_disk_info()
             
-        disk_info = _get_home_disk_info()
-        
         metrics = healthscore.SystemMetrics(
             junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),
             suspicious_count=len(hallazgos),
