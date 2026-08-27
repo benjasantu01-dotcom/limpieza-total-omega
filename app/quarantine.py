@@ -513,15 +513,19 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Retorna la suma total de bytes de todos los archivos en cuarentena."""
-    return sum(item.size_bytes for item in _load_manifest_internal(str(quarantine_dir(base))).values())
+    manifest = _load_manifest_internal(str(quarantine_dir(base)))
+    return sum(item.size_bytes for item in manifest.values())
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
     """Genera una lista de strings legible para el usuario con el estado de la cuarentena."""
-    items = load_manifest(base)
-    if not items:
+    items_dict = _load_manifest_internal(str(quarantine_dir(base)))
+    if not items_dict:
         return ["La cuarentena está vacía."]
+    
+    items = sorted(items_dict.values(), key=lambda i: i.quarantined_at, reverse=True)
     total_mb = sum(item.size_mb for item in items)
+    
     lines = [f"{len(items)} archivo(s) en cuarentena — {round(total_mb, 2)} MB", ""]
     for item in items:
         lines.extend([
