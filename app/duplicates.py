@@ -74,7 +74,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
             while (buffer := f.read(chunk_size)):
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, FileNotFoundError):
         return None
 
 
@@ -92,7 +92,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError):
+    except (OSError, PermissionError, IOError, FileNotFoundError):
         return None
 
 
@@ -196,7 +196,9 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Pipeline de verificación optimizado: solo calcula hash completo en grupos con colisiones parciales."""
     confirmed_groups: List[DuplicateGroup] = []
+    # Filtrado adicional: el archivo podría haber desaparecido desde _collect_candidates
     valid_paths = [p for p in paths if _is_valid_candidate(p)]
+    if len(valid_paths) < 2: return []
     
     if size <= PARTIAL_READ_BYTES:
         results = _refine_by_hash(valid_paths, hash_file)

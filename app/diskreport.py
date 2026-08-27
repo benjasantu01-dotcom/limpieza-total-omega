@@ -258,9 +258,6 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo de archivos mediante `os.scandir`.
-
-    Complejidad: O(N) donde N es el número total de archivos/carpetas en el árbol.
-    La operación es intensiva en I/O.
     """
     if not directory:
         return
@@ -292,11 +289,15 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 stack.append(entry.path)
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            f_stat = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), max(0, f_stat.st_size)
-                    except (PermissionError, FileNotFoundError, OSError):
+                            # Captura de errores de stat en archivos individuales (bloqueos, permisos)
+                            try:
+                                f_stat = entry.stat(follow_symlinks=False)
+                                yield Path(entry.path), max(0, f_stat.st_size)
+                            except (PermissionError, OSError):
+                                continue
+                    except (PermissionError, OSError):
                         continue
-        except (PermissionError, FileNotFoundError, OSError):
+        except (PermissionError, OSError):
             continue
 
 

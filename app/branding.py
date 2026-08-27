@@ -341,14 +341,16 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         path_obj = Path(destination).resolve()
         
-        # Validar jerarquía de la ruta destino antes de tocar el sistema de archivos
+        # Validaciones de seguridad de ruta (prohibido sistema, permitido modificar)
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         
-        if not path_obj.parent.exists():
-            if not is_safe_to_modify(path_obj.parent):
+        # Validar directorio padre antes de la creación
+        parent = path_obj.parent
+        if not parent.exists():
+            if not is_safe_to_modify(parent):
                 return None
-            path_obj.parent.mkdir(parents=True, exist_ok=True)
+            parent.mkdir(parents=True, exist_ok=True)
             
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
@@ -368,6 +370,7 @@ def logo_ascii() -> str:
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
     """Renderiza las franjas degradadas internas del escudo en un canvas."""
+    if not hasattr(canvas, "create_rectangle"): return
     try:
         franjas_count: int = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
@@ -377,14 +380,14 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
         
         for color_hex, start, end in _get_grouped_segments(colores):
             mid: float = (start + end) / 2
-            progreso: float = mid / (franjas_count - 1)
+            progreso: float = mid / max(1, franjas_count - 1)
             w: float = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             canvas.create_rectangle(
                 center_x - w, base_y + start * factor_y, 
                 center_x + w, base_y + end * factor_y + 1, 
                 fill=color_hex, outline=""
             )
-    except (AttributeError, TypeError, ValueError): pass
+    except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Dibuja el escudo corporativo escalado y centrado en el canvas."""
@@ -417,7 +420,8 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
     """Renderiza una línea horizontal con degradado en el canvas."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
-        colores = gradient_colors(max(1, int(width)), stops)
+        w_int = max(1, int(width))
+        colores = gradient_colors(w_int, stops)
         for color_hex, start, end in _get_grouped_segments(colores):
             canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
