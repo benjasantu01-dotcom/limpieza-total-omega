@@ -45,6 +45,7 @@ ScanResult: TypeAlias = List[Suspicion]
 # Expresiones regulares para detección de ofuscación
 DOUBLE_EXTENSION_RE: Final[re.Pattern] = re.compile(r"\.(pdf|jpg|png|docx|xlsx|txt)\.(exe|scr|bat|cmd|js|vbs)$", re.IGNORECASE)
 RTL_CHAR_RE: Final[re.Pattern] = re.compile(r"[\u200f\u202e\u202d]")
+RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\..*)?$", re.IGNORECASE)
 
 # Conjuntos de constantes para comparación rápida
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
@@ -107,20 +108,26 @@ class Scanner:
 
     def _is_safe_entry(self, entry_path_str: str) -> bool:
         """
-        Valida que la ruta sea segura (sin exceder MAX_PATH, dentro de base_root 
-        y no marcada como protegida por safety.py).
+        Valida que la ruta sea segura, evitando dispositivos reservados, rutas UNC 
+        y asegurando que el destino resuelto resida dentro del base_root.
         """
         if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH or entry_path_str.startswith("\\\\"):
             return False
+        
+        path_obj = Path(entry_path_str)
+        if RESERVED_NAMES_RE.match(path_obj.name):
+            return False
+
         try:
-            target = Path(entry_path_str).resolve(strict=False)
-            if not target.is_absolute() or not target.exists():
+            target = path_obj.resolve(strict=False)
+            if not target.is_absolute():
                 return False
+            # Validar traversal: el path resuelto debe contener al base_root
             if os.path.commonpath([self.base_root, target]) != str(self.base_root):
                 return False
         except (OSError, RuntimeError, ValueError):
             return False
-        return not is_protected_path(Path(entry_path_str))
+        return not is_protected_path(path_obj)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """

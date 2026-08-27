@@ -293,7 +293,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     parent = ruta.parent.absolute()
     temp_name = None
     try:
-        # Validación defensiva de seguridad antes de cualquier escritura
+        # Validación defensiva: asegurar que el directorio padre sea seguro antes de trabajar
         ensure_safe_to_modify(str(parent))
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         ensure_safe_to_modify(str(ruta))

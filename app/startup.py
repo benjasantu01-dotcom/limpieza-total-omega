@@ -122,7 +122,10 @@ class StartupEntry:
         """
         Normaliza, valida y cachea rutas de ejecutables detectados.
         """
-        if not isinstance(path_string, str) or not path_string or any(c in path_string for c in '<>|?*\0'):
+        # Validación defensiva contra inyección de comandos o metacaracteres peligrosos
+        if not isinstance(path_string, str) or not path_string:
+            return ""
+        if any(c in path_string for c in '<>|?*\0&;'):
             return ""
         
         # Validación temprana de longitud y nombres reservados (Windows)
