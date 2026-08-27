@@ -247,7 +247,7 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
-    """Resuelve la ruta completa del archivo ejecutable de un proceso."""
+    """Resuelve la ruta completa del archivo ejecutable de un proceso mediante Win32 API."""
     if not handle or handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
@@ -259,9 +259,10 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
-    """Valida la seguridad de la ruta, bloqueando rutas relativas, UNC o protegidas."""
+    """Valida la seguridad de la ruta mediante chequeos contra inyecciones y rutas protegidas."""
     if not isinstance(path, str) or not os.path.isabs(path) or path.startswith("\\\\"):
         return False, "Ruta inválida o en red."
+    # Detección de caracteres RTL/sospechosos para ofuscación
     if any(seq in path.encode("utf-8", errors="ignore") for seq in [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]):
         return False, "Ruta de proceso sospechosa."
     try:
@@ -272,13 +273,16 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida integridad del proceso y seguridad de su ubicación antes de operar."""
+    """Verifica integridad del proceso, su estado activo y la seguridad de su ubicación."""
     if proc_handle is None or proc_handle == -1: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or kernel32.GetProcessId(proc_handle) != pid: return False, "PID mismatch."
+    
+    # Comprobar si el proceso sigue vivo antes de intentar manipularlo
     exit_code = ctypes.c_ulong()
     if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
         return False, "Proceso inactivo."
+    
     path = _get_process_path(proc_handle)
     if not path: return False, "Ruta inaccesible."
     return _validate_path_security(path)

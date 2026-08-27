@@ -160,14 +160,9 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Valida la viabilidad de una operación de I/O sobre dos rutas.
-    
-    Args:
-        src: Ruta del archivo origen.
-        dest: Ruta del destino o directorio base.
-        
-    Returns:
-        bool: True si la operación cumple con las restricciones de seguridad, permisos y atributos.
+    Valida la viabilidad de una operación de I/O (mover/borrar) verificando 
+    que no se violen políticas de seguridad, permisos de sistema o jerarquías 
+    de archivos críticas.
     """
     try:
         if not src or not dest or not src.exists() or not src.is_file(): return False
@@ -264,8 +259,9 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
-    Verifica si una operación de movimiento es posible: espacio en disco, 
-    permisos y unicidad de nombre en el destino.
+    Verifica si una operación de movimiento es factible validando espacio disponible 
+    en el destino, permisos de acceso y asegurando la unicidad del archivo 
+    mediante generación de rutas alternativas.
     """
     if not isinstance(junk_file.path, Path) or not dest_base: return None
     try:
