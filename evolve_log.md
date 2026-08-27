@@ -416,3 +416,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-27T04:39:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-27T04:39:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T04:39:06` Corrida terminada. Total usado hoy: 112.
+- `2026-08-27T04:47:48` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-27T04:48:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-27T04:48:42` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_safe_entry` y `process_entry` ante rutas inexistentes, desconectadas o con nombres inválidos, asegurando que `resolve()` no levante excepciones críticas y que las rutas UNC sean rechazadas explícitamente antes de intentar cualquier operación de sistema de archivos.
+- `2026-08-27T04:49:11` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante fallos de escritura en disco añadiendo un manejo explícito de `OSError` durante el renombrado atómico (`os.replace`) y asegurando que los directorios padres se creen solo si la ruta es validada como segura, evitando así intentos innecesarios de crear carpetas en ubicaciones protegidas.
+- `2026-08-27T04:49:21` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se mejora la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo explícito de errores para rutas que superan la longitud máxima soportada por el sistema o presentan caracteres inválidos durante la conversión a `Path`, previniendo excepciones que anteriormente podrían interrumpir el escaneo.
+- `2026-08-27T04:49:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T04:49:21` Corrida terminada. Total usado hoy: 116.

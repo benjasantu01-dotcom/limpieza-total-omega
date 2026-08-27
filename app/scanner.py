@@ -110,15 +110,15 @@ class Scanner:
         Valida que la ruta sea segura (sin exceder MAX_PATH, dentro de base_root 
         y no marcada como protegida por safety.py).
         """
-        if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH:
+        if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH or entry_path_str.startswith("\\\\"):
             return False
         try:
             target = Path(entry_path_str).resolve(strict=False)
-            if not target.is_absolute():
+            if not target.is_absolute() or not target.exists():
                 return False
             if os.path.commonpath([self.base_root, target]) != str(self.base_root):
                 return False
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, ValueError):
             return False
         return not is_protected_path(Path(entry_path_str))
 
@@ -139,19 +139,15 @@ class Scanner:
         al stack de procesamiento; si es un archivo, dispara las heurísticas.
         """
         try:
-            if not entry.is_file(follow_symlinks=False) and not entry.is_dir(follow_symlinks=False):
-                return
             entry_path = entry.path
-            if not entry_path or entry_path.startswith("\\\\"):
-                return
-            if not self._is_safe_entry(entry_path):
+            if not entry_path or not self._is_safe_entry(entry_path):
                 return
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
                     if entry_path not in self.seen:
                         self.seen.add(entry_path)
                         stack.append(entry_path)
-            else:
+            elif entry.is_file(follow_symlinks=False):
                 self._run_file_heuristics(Path(entry_path), entry)
         except (OSError, PermissionError, TypeError, FileNotFoundError) as e:
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}: {e}")

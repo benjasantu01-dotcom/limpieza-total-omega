@@ -295,8 +295,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     try:
         # Validación defensiva de seguridad antes de cualquier escritura
         ensure_safe_to_modify(str(parent))
-        ensure_safe_to_modify(str(ruta))
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        ensure_safe_to_modify(str(ruta))
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         with tempfile.NamedTemporaryFile("wb", delete=False, dir=parent) as tf:

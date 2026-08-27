@@ -97,8 +97,8 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae rutas encerradas en comillas dobles, ignorando rutas con caracteres 
-        inválidos en Windows para prevenir la evaluación de comandos malformados.
+        Extracts paths enclosed in double quotes, ignoring paths with invalid 
+        characters in Windows to prevent evaluation of malformed commands.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
@@ -121,22 +121,19 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Normaliza, valida y cachea rutas de ejecutables detectados.
-
-        Seguridad: 
-        1. Verifica la existencia de puntos de reanálisis (reparse points) mediante 
-           lstat para evitar el seguimiento recursivo de junctions fuera del scope.
-        2. Aplica `is_protected_path` para asegurar que el escaneo no cruce las
-           fronteras críticas del sistema operativo.
-        3. Normaliza las rutas mediante os.path.realpath para resolver accesos 
-           indirectos antes de la validación.
         """
         if not isinstance(path_string, str) or not path_string or any(c in path_string for c in '<>|?*\0'):
             return ""
         
-        norm = os.path.normpath(path_string)
-        reserved_names = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
-        stem = Path(norm).stem.upper()
-        if norm.startswith(r"\\") or len(norm) > 4096 or stem in reserved_names:
+        # Validación temprana de longitud y nombres reservados (Windows)
+        try:
+            norm = os.path.normpath(path_string)
+            if len(norm) > 4096 or norm.startswith(r"\\"):
+                return ""
+            stem = Path(norm).stem.upper()
+            if stem in {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}:
+                return ""
+        except (ValueError, TypeError):
             return ""
         
         if path_string in _EXISTS_CACHE:
@@ -172,10 +169,6 @@ class StartupEntry:
     def _resolve_path_from_command(self, command_line: str) -> str:
         """
         Divide la línea de comandos para extraer el ejecutable primario.
-        
-        La lógica ignora comandos con caracteres de control de shell para 
-        evitar que rutas maliciosas (ej. inyección de argumentos) sean 
-        validadas incorrectamente como ejecutables.
         """
         if not command_line or not isinstance(command_line, str):
             return ""
@@ -256,9 +249,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
     Parsea la salida cruda de PowerShell (CSV) y crea objetos StartupEntry.
-    
-    Retorna una lista filtrada de entradas validadas para asegurar que ninguna
-    ruta de sistema sea procesada como ejecutable de inicio.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -287,7 +277,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 if any(c in cmd for c in '<>|?*'):
                     continue
                 
-                # Validación de seguridad: prevenir rutas protegidas desde el origen.
                 cmd_path = Path(cmd)
                 if is_protected_path(cmd_path):
                     continue
