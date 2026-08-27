@@ -207,8 +207,12 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incompatible."])
     
-    metrics.validate()
-    if not metrics.is_finite():
+    # Validar integridad antes de procesar
+    try:
+        metrics.validate()
+        if not metrics.is_finite():
+            raise ValueError("Datos numéricos no finitos")
+    except Exception:
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
@@ -229,12 +233,15 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     final_score = int(_clamp(accumulated_points, 0.0, 100.0))
     
-    # Generación de recomendaciones basadas en umbrales de salud
-    recommendations = [
-        rule.message_factory(metrics) 
-        for rule in _RECOMMENDATION_RULES 
-        if rule.area in ratios_cache and rule.check(metrics, ratios_cache[rule.area])
-    ]
+    # Generación de recomendaciones robusta
+    recommendations = []
+    for rule in _RECOMMENDATION_RULES:
+        if rule.area in ratios_cache and rule.check(metrics, ratios_cache[rule.area]):
+            try:
+                msg = rule.message_factory(metrics)
+                if msg: recommendations.append(msg)
+            except Exception:
+                continue
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

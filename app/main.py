@@ -1520,15 +1520,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not hasattr(self, 'pid_entry') or not self.pid_entry.winfo_exists():
             return
             
-        try:
-            raw = self.pid_entry.get().strip()
-            if not raw or not raw.isdigit():
-                messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
-                return
-            pid = int(raw)
-        except (ValueError, tk.TclError):
+        raw = self.pid_entry.get().strip()
+        if not raw.isdigit():
+            messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
-
+        
+        pid = int(raw)
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return
