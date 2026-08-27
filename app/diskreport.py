@@ -198,7 +198,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
+        # Prevenir reparse points en unidades raíz
+        if p.is_symlink() or not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
         str_mount = str(p)
@@ -246,6 +247,7 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
     try:
         if any(c < ' ' for c in entry.name):
             return True
+        # Se bloquean symlinks y junctions activamente para evitar escapes
         if entry.is_symlink():
             return True
         if skip_protected and entry.is_dir(follow_symlinks=False):

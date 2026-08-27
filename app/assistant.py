@@ -518,10 +518,12 @@ def _call_gemini(
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q = _sanitize_query(question)
-    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(context_text): return None
+    safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
+    
+    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_c): return None
     
     try:
-        prompt_full = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {safe_q}"
+        prompt_full = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_c}\n\nPregunta del usuario: {safe_q}"
         if len(prompt_full) > _MAX_PROMPT_LIMIT: return None
         
         payload = json.dumps({"contents": [{"parts": [{"text": prompt_full}]}]}).encode("utf-8")

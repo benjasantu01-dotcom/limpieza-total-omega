@@ -118,17 +118,14 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
-    Valida si 'real_target' está contenido dentro del árbol de 'real_base'.
-    Previene el escape de directorios mediante resolución de rutas.
+    Valida si 'real_target' está contenido estrictamente dentro del árbol de 'real_base'.
+    Previene el escape de directorios mediante os.path.commonpath.
     """
     try:
-        target_parts = real_target.resolve().parts
-        base_parts = Path(real_base).resolve().parts
-        
-        if len(target_parts) <= len(base_parts):
-            return False
-        return target_parts[:len(base_parts)] == base_parts
-    except (OSError, ValueError, RuntimeError, PermissionError, TypeError):
+        target = str(real_target.resolve())
+        base = str(real_base.resolve())
+        return os.path.commonpath([target, base]) == base
+    except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
 
@@ -156,8 +153,6 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
     Filtro de seguridad para la iteración: determina si una entrada debe ser ignorada.
-    Se utiliza en `_sum_directory_recursive` para evitar procesar enlaces, 
-    rutas protegidas, puntos de unión o archivos marcados como críticos.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -183,13 +178,7 @@ def _sum_directory_recursive(
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int]
 ) -> int:
-    """
-    Calcula el peso total de una estructura de directorios mediante un recorrido DFS.
-    
-    Emplea una memoria caché (memo) para evitar ciclos y redundantemente procesar 
-    subárboles ya calculados. Implementa control de profundidad para garantizar 
-    que no se produzcan desbordamientos de pila.
-    """
+    """Calcula el peso total de una estructura de directorios mediante un recorrido DFS."""
     root_path = os.path.normpath(root_dir)
     
     def _walk(current_dir: str, depth: int) -> int:
@@ -243,10 +232,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """
-    Verificación de seguridad inicial antes de incluir una ruta en el escaneo.
-    Asegura que el candidato esté dentro de 'base_path' y no sea una zona protegida.
-    """
+    """Verificación de seguridad inicial antes de incluir una ruta en el escaneo."""
     if not candidate or not candidate.exists():
         return False
     try:
@@ -267,11 +253,7 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """
-    Escanea el sistema buscando rutas de caché conocidas.
-    Itera sobre las ubicaciones base y los navegadores soportados, validando 
-    la integridad de cada ruta antes de realizar la medición de tamaño.
-    """
+    """Escanea el sistema buscando rutas de caché conocidas."""
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
