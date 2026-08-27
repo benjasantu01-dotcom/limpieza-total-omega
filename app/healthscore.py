@@ -163,7 +163,6 @@ def score_junk(junk_mb: float | int) -> NormalizedRatio:
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """Calcula el ratio de salud para seguridad (penalización creciente, acotada)."""
-    # Se asegura que la penalización no exceda 1.0 mediante _clamp
     penalty = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
@@ -205,8 +204,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
     Motor principal: transforma las métricas crudas en una calificación consolidada.
     """
-    if metrics is None or not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Datos de sistema nulos o inválidos."])
+    if not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Tipo de métricas incompatible."])
     
     metrics.validate()
     if not metrics.is_finite():
@@ -249,7 +248,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
 
 def summarize(result: HealthResult) -> List[str]:
     """Genera una representación visual y legible del estado de salud."""
-    if not isinstance(result, HealthResult): return ["Error: Formato de informe inválido."]
+    if not isinstance(result, HealthResult): 
+        return ["Error: Formato de informe inválido."]
+    
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
         puntos = result.breakdown.get(area, 0)

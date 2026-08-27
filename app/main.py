@@ -809,6 +809,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             font=ctk.CTkFont(size=branding.font_size("body")),
         ).grid(row=row, column=column, sticky="w", padx=(0, 24), pady=6)
 
+    def _is_safe_disk_operation(self, path: Union[str, Path]) -> bool:
+        """Verifica de forma segura que la ruta de destino permita operaciones de escritura."""
+        try:
+            return safety.is_safe_to_modify(Path(path).resolve(strict=True))
+        except (OSError, RuntimeError, PermissionError):
+            return False
+
     def _is_safe_file_access(self, path: Union[str, Path]) -> bool:
         """Verifica que el acceso al archivo sea seguro y legible sin levantar excepciones."""
         try:
@@ -1029,8 +1036,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         seguridad de la ruta antes de ejecutar la lógica del usuario.
         """
         try:
-            if not self._closing and target:
-                safety.ensure_safe_to_modify(Path(target).resolve(strict=True))
+            if target and not self._is_safe_disk_operation(target):
+                raise safety.UnsafePathError(f"Operación no permitida en destino: {target}")
             if not self._closing:
                 self._safe_run(fn, tab)
         except Exception as e:

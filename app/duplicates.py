@@ -140,7 +140,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _resolve_and_verify_root(item: Union[str, Path]) -> Optional[Path]:
     """Valida y resuelve una ruta inicial de escaneo, retornando None si es inválida."""
     try:
-        root = Path(item).resolve(strict=True)
+        root = Path(item).resolve(strict=False)
         if root.is_dir() and not is_protected_path(root):
             return root
     except (OSError, ValueError, RuntimeError):
@@ -159,44 +159,41 @@ def _collect_candidates(
     """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
-    processed_dirs: set[str] = set()
-    processed_files: set[str] = set()
+    processed_dirs: set[Path] = set()
+    processed_files: set[Path] = set()
 
     def _should_skip(path: Path) -> bool:
         """Verifica restricciones de seguridad para rutas individuales."""
         return skip_protected and is_protected_path(path)
 
-    def _scan(current_dir: str) -> None:
+    def _scan(current_dir: Path) -> None:
         try:
-            resolved_path = os.path.realpath(current_dir)
-            if resolved_path in processed_dirs: return
-            processed_dirs.add(resolved_path)
+            resolved_dir = current_dir.resolve(strict=False)
+            if resolved_dir in processed_dirs: return
+            processed_dirs.add(resolved_dir)
             
-            with os.scandir(resolved_path) as it:
-                for entry in it:
-                    try:
-                        if entry.is_symlink(): continue
-                        entry_path = Path(entry.path)
-                        if _should_skip(entry_path): continue
-                        
-                        if entry.is_dir(follow_symlinks=False):
-                            stat = entry.stat(follow_symlinks=False)
-                            dev_inode = (stat.st_dev, stat.st_ino)
-                            if dev_inode not in visited_device_inodes:
-                                visited_device_inodes.add(dev_inode)
-                                _scan(entry.path)
-                        elif entry.is_file(follow_symlinks=False):
-                            stat = entry.stat(follow_symlinks=False)
-                            if stat.st_size < min_size: continue
-                            full_path = os.path.realpath(entry.path)
-                            if full_path in processed_files: continue
-                            processed_files.add(full_path)
-                            temp_groups[int(stat.st_size)].append(Path(full_path))
-                    except (OSError, PermissionError): continue
+            for entry in resolved_dir.iterdir():
+                try:
+                    if entry.is_symlink(): continue
+                    if _should_skip(entry): continue
+                    
+                    if entry.is_dir():
+                        stat = entry.stat()
+                        dev_inode = (stat.st_dev, stat.st_ino)
+                        if dev_inode not in visited_device_inodes:
+                            visited_device_inodes.add(dev_inode)
+                            _scan(entry)
+                    elif entry.is_file():
+                        stat = entry.stat()
+                        if stat.st_size < min_size: continue
+                        if entry in processed_files: continue
+                        processed_files.add(entry)
+                        temp_groups[int(stat.st_size)].append(entry)
+                except (OSError, PermissionError): continue
         except (OSError, PermissionError, RuntimeError): pass
 
     if directories:
-        unique_roots = {os.path.realpath(str(r)) for item in directories if (r := _resolve_and_verify_root(item))}
+        unique_roots = {r for item in directories if (r := _resolve_and_verify_root(item))}
         for root in unique_roots:
             _scan(root)
     return {size: files for size, files in temp_groups.items() if len(files) > 1}
@@ -215,12 +212,14 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Pipeline de verificación de duplicados: evita hash parcial si el archivo es pequeño."""
     confirmed_groups: List[DuplicateGroup] = []
     
+    valid_paths = [p for p in paths if _is_valid_candidate(p)]
+    
     if size <= PARTIAL_READ_BYTES:
-        full_hash_groups = _refine_by_hash(paths, hash_file)
+        full_hash_groups = _refine_by_hash(valid_paths, hash_file)
         for digest, confirmed_paths in full_hash_groups.items():
             confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
     else:
-        partial_results = _refine_by_hash(paths, partial_hash)
+        partial_results = _refine_by_hash(valid_paths, partial_hash)
         for partial_candidates in partial_results.values():
             full_hash_groups = _refine_by_hash(partial_candidates, hash_file)
             for digest, confirmed_paths in full_hash_groups.items():

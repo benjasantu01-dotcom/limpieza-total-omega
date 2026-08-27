@@ -201,7 +201,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Obtiene la lista de procesos con mayor consumo de memoria, usando caché temporal."""
     global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
-    # Cacheo extendido a 60 segundos para reducir la carga en el bucle principal
     if (time.time() - _proc_cache_time) > 60:
         cmd = ['powershell', '-NoProfile', '-Command', "Get-Process | Select-Object Name, Id, WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"]
         try:
@@ -266,6 +265,7 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
         return False, "Ruta de proceso sospechosa."
     try:
         p = Path(path).resolve()
+        # Verificar contra lista protegida antes de cualquier acción
         for parent in [p] + list(p.parents):
             if is_protected_path(str(parent)): return False, f"Ruta protegida en {parent.name}."
     except Exception: return False, "Error resolviendo ruta."
@@ -291,7 +291,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError): return False, "PID no válido."
     if _is_system_process(target_pid): return False, "Proceso protegido."
     
-    # Verificar privilegios mínimos: si no podemos abrir el proceso, abortar antes de intentar el trim
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     try:
         if not proc_handle or proc_handle == -1: return False, "Permisos insuficientes o proceso inaccesible."
