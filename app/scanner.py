@@ -155,16 +155,19 @@ class Scanner:
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Función de entrada para aplicar todo el conjunto de reglas heurísticas a un archivo."""
     findings: ScanResult = []
-    if (double_ext := check_double_extension(path, entry, now_ts)):
-        findings.append(double_ext)
-    
-    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-        for check in EXECUTABLE_CHECK_REGISTRY:
-            try:
-                if (result := check(path, entry, now_ts)):
-                    findings.append(result)
-            except Exception as e:
-                logger.debug(f"Fallo en regla heurística {check.__name__} para {path}: {e}")
+    try:
+        if (double_ext := check_double_extension(path, entry, now_ts)):
+            findings.append(double_ext)
+        
+        if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+            for check in EXECUTABLE_CHECK_REGISTRY:
+                try:
+                    if (result := check(path, entry, now_ts)):
+                        findings.append(result)
+                except Exception as e:
+                    logger.debug(f"Fallo en regla heurística {check.__name__} para {path}: {e}")
+    except (OSError, PermissionError, FileNotFoundError):
+        logger.debug(f"Acceso denegado o archivo inaccesible durante heurísticas: {path}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

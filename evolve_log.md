@@ -1257,3 +1257,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T13:30:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-08-27T13:30:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T13:30:59` Corrida terminada. Total usado hoy: 320.
+- `2026-08-27T13:38:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-27T13:39:45` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-27T13:40:48` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-27T13:41:54` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-27T13:43:06` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-08-27T13:43:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-27T13:44:15` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-27T13:44:25` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante casos límite en la recolección de metadatos de archivos agregando un bloque `try-except` específico dentro de `scan_file` para manejar errores de acceso o lectura (como bloqueos exclusivos por parte del sistema o archivos que desaparecen durante el escaneo), evitando que una sola falla de I/O interrumpa el análisis del resto de las reglas heurísticas.
+- `2026-08-27T13:44:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T13:44:25` Corrida terminada. Total usado hoy: 324.
