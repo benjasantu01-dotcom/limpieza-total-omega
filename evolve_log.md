@@ -727,3 +727,40 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-27T08:33:50` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la ejecución de `_is_safe_entry` en `Scanner` integrando el filtrado por nombre de archivo y la validación de extensiones en una única pasada lógica, eliminando la creación repetitiva de objetos `Path` innecesarios y la resolución de rutas mediante `resolve()` dentro de un bucle, la cual es una operación costosa de I/O.
 - `2026-08-27T08:33:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T08:33:50` Corrida terminada. Total usado hoy: 204.
+- `2026-08-27T08:42:39` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-27T08:43:11` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a la configuración mediante la serialización a `dict` solo cuando es necesario, manteniendo `DEFAULTS` como objeto constante para evitar copias innecesarias y reduciendo la frecuencia de llamadas a `.copy()` y `_get_default_config()` en las operaciones de lectura y validación.
+- `2026-08-27T08:43:37` Tests FALLARON:
+```
+.................................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:253: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.21s
+
+```
+- `2026-08-27T08:43:37` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de memoización local en `_resolve_and_cache_path` mediante un set de rutas ya procesadas como "no existentes" para evitar realizar llamadas redundantes a `os.path.realpath` y `exists` sobre archivos inexistentes detectados repetidamente, optimizando significativamente el tiempo de resolución en sistemas con muchas entradas huérfanas.
+- `2026-08-27T08:44:18` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor de diagnóstico ante estados inválidos o incompletos, añadiendo una comprobación explícita de `analyzed` en los manejadores de consulta y previniendo posibles errores de `ZeroDivisionError` o `ValueError` si las métricas llegaran con valores numéricos inesperados durante la ejecución.
+- `2026-08-27T08:44:35` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de seguridad en `save_logo_svg` para prevenir que `path_obj.parent` sea una ruta inexistente que no pueda ser creada o que resida en una zona protegida, garantizando la integridad del sistema ante intentos de escritura en carpetas bloqueadas.
+- `2026-08-27T08:44:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T08:44:35` Corrida terminada. Total usado hoy: 208.

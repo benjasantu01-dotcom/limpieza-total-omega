@@ -405,6 +405,7 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde consultas sobre memoria RAM usando métricas de estado actual."""
+    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     mem_pct = _safe_float(ctx.memory_available_percent, 50.0)
     total_gb = _safe_float(ctx.memory_total_gb, 0.0)
     
@@ -418,6 +419,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Proporciona diagnóstico de espacio en disco y posibles acciones de recuperación."""
+    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     recuperable = _safe_float(ctx.junk_mb) + _safe_float(ctx.duplicate_mb) + _safe_float(ctx.browser_cache_mb)
     
     linea1 = f"Tenés {ctx.disk_free_percent:.0f}% libre en disco."
@@ -429,6 +431,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Evalúa hallaggos de seguridad y explica los procedimientos de aislamiento."""
+    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     if ctx.suspicious_count == 0:
         texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación."
     else:
@@ -441,6 +444,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Explica el cálculo y significado del puntaje de salud del sistema."""
+    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     score_val = str(ctx.score) if ctx.score is not None else "N/A"
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
     problemas = _identify_active_problems(ctx)
@@ -451,6 +455,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Analiza programas en el inicio y su impacto sugerido."""
+    if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     count = ctx.startup_count
     estado = f"Tenés {count} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos." if count > 15 else ("Es una cantidad normal, aunque se puede recortar." if count > 8 else "Está bien así.")
