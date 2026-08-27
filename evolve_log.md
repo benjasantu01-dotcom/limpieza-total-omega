@@ -1147,3 +1147,40 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-08-27T12:18:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-27T12:18:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T12:18:36` Corrida terminada. Total usado hoy: 292.
+- `2026-08-27T12:27:06` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-08-27T12:27:36` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de `ensure_safe_to_modify` utilizando una estructura de docstring estandarizada (Args/Raises/Returns) y se extrajeron las validaciones de "integridad" y "geografía" en la función principal para clarificar el flujo lógico de seguridad, facilitando su lectura y mantenimiento futuro.
+- `2026-08-27T12:28:00` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `scanner.py` mediante la adición de docstrings precisos en los métodos de `Scanner` y la clarificación de tipos, facilitando el mantenimiento y la comprensión del flujo de escaneo recursivo.
+- `2026-08-27T12:28:42` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._run_safety_checks
+- `2026-08-27T12:28:53` Tests FALLARON:
+```
+.................................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:254: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.28s
+
+```
+- `2026-08-27T12:28:53` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación de los métodos de resolución de rutas en `StartupEntry` utilizando docstrings que explican claramente la lógica de seguridad y el manejo de excepciones, y se añadió tipado explícito en variables críticas para mejorar la legibilidad y mantenimiento.
+- `2026-08-27T12:28:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T12:28:53` Corrida terminada. Total usado hoy: 296.

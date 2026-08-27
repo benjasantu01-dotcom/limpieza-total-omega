@@ -133,8 +133,11 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Analiza una entrada individual del sistema de archivos. Si es directorio y es seguro, 
-        lo apila para escaneo; si es archivo, dispara el motor de heurísticas.
+        Analiza una entrada individual del sistema de archivos. 
+        
+        Si es un directorio, valida su integridad, verifica que no sea un reparse point 
+        y, si no ha sido visitado, lo agrega a la pila ('stack') para continuar el escaneo.
+        Si es un archivo, ejecuta el motor de heurísticas correspondiente.
         """
         try:
             if not self._is_safe_entry(entry):
@@ -150,6 +153,10 @@ class Scanner:
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
+        """
+        Ejecuta las reglas de seguridad sobre un archivo específico. 
+        Verifica primero ofuscaciones de nombre y luego aplica el registro de reglas ejecutables.
+        """
         if RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry))

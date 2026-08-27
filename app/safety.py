@@ -330,13 +330,31 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
-    """Punto de entrada para validar si una ruta puede ser escrita de forma segura."""
+    """
+    Valida si una ruta puede ser escrita de forma segura.
+
+    Args:
+        path: Ruta a evaluar.
+        allow_sensitive: Si es True, permite archivos de configuración sensibles.
+        base_dir: Directorio base opcional que delimita la operación.
+
+    Raises:
+        UnsafePathError: Si la ruta infringe políticas de seguridad o integridad.
+
+    Returns:
+        Path: La ruta normalizada si es segura para modificar.
+    """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
     p = normalize(path)
+    
+    # 1. Validaciones estructurales básicas
     _validate_basic_path_safety(p, str(p))
+    
+    # 2. Validaciones de límites geográficos
     _validate_boundary_conditions(p, base_dir)
     
+    # 3. Integridad del archivo específico
     if p.exists():
         if not p.is_file() and not p.is_dir():
             raise UnsafePathError("Tipo de archivo no soportado.")
