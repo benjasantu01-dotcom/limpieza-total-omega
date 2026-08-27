@@ -105,7 +105,10 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path_str: str) -> bool:
-        """Valida que la ruta sea segura para escaneo y esté dentro del ámbito configurado."""
+        """
+        Valida que la ruta sea segura (sin exceder MAX_PATH, dentro de base_root 
+        y no marcada como protegida por safety.py).
+        """
         if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH:
             return False
         try:
@@ -119,16 +122,22 @@ class Scanner:
         return not is_protected_path(Path(entry_path_str))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si un directorio es un punto de reanálisis (Junction/Symlink) para no seguirlo."""
+        """
+        Identifica puntos de reanálisis (Junctions/Symlinks) verificando los atributos 
+        de archivo. Devuelve True si es un reparse point para evitar seguir enlaces 
+        fuera del árbol de directorios original.
+        """
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError, TypeError):
             return True 
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Procesa una entrada del sistema de archivos, aplicando heurísticas o añadiendo directorios al stack."""
+        """
+        Analiza un elemento del sistema de archivos. Si es un directorio, lo añade 
+        al stack de procesamiento; si es un archivo, dispara las heurísticas.
+        """
         try:
-            # Validar existencia antes de cualquier procesamiento
             if not entry.is_file(follow_symlinks=False) and not entry.is_dir(follow_symlinks=False):
                 return
             entry_path = entry.path
@@ -147,7 +156,7 @@ class Scanner:
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}: {e}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
-        """Ejecuta los chequeos heurísticos sobre un archivo individual."""
+        """Centraliza la ejecución de todas las reglas heurísticas sobre un archivo."""
         if RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry))

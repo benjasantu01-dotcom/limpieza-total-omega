@@ -86,7 +86,12 @@ _PROTECTION_CACHE: dict[str, bool] = {}
 
 
 class _IntegrityCheck(NamedTuple):
-    """Asocia una razón de riesgo con su lógica de detección."""
+    """
+    Define una regla de seguridad para archivos.
+    'reason' indica el tipo de riesgo.
+    'predicate' es una función que recibe la ruta y sus estadísticas, 
+    devolviendo True si el archivo debe considerarse inseguro.
+    """
     reason: ProtectionReason
     predicate: ViolationPredicate
 
@@ -156,14 +161,12 @@ def _is_reparse_point(path: Path) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Verifica si el archivo está en uso por otro proceso."""
+    """Verifica si el archivo está en uso exclusivo por otro proceso."""
     path = Path(path_str)
     if not path.exists():
         return False
-    # Verificación de permisos de escritura básicos
     if not os.access(path, os.W_OK):
         return True
-    # Verificación de acceso exclusivo en Windows
     if os.name == 'nt':
         try:
             handle = ctypes.windll.kernel32.CreateFileW(
@@ -190,7 +193,10 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Ejecuta el pipeline de validaciones sobre un archivo existente."""
+    """
+    Ejecuta el pipeline de validaciones sobre un archivo existente.
+    Lanza UnsafePathError si alguna regla de seguridad es violada.
+    """
     if len(path.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 

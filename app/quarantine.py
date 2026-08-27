@@ -148,7 +148,6 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        # Intenta abrir el archivo; si falla por acceso denegado, consideramos que está bloqueado
         with open(path, "rb") as f:
             return False
     except (PermissionError, IOError):
@@ -201,6 +200,7 @@ def _manifest_path(base_dir: Path) -> Path:
 
 
 def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
+    """Verifica si la ruta dada se encuentra dentro del sandbox asignado."""
     return is_within_directory(path, root)
 
 
@@ -218,7 +218,7 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """Valida que una ruta no contenga caracteres maliciosos o navegación prohibida."""
+    """Valida la integridad sintáctica de una ruta contra caracteres maliciosos o navegación prohibida."""
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
@@ -233,12 +233,12 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Realiza chequeos de seguridad antes de mover un archivo al sandbox."""
+    """Ejecuta todos los chequeos de seguridad necesarios antes de aislar un archivo."""
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     resolved_source = source_path.resolve()
     if not resolved_source.is_file():
-        raise UnsafePathError("Solo se aceptan archivos regulares.")
+        raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")
     if resolved_source.parent == dest_dir.resolve():
         raise UnsafePathError("Operación circular: origen y destino en la misma carpeta.")
     if is_protected_path(resolved_source):
@@ -283,7 +283,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto usando un archivo temporal para asegurar atomicidad."""
+    """Persiste el manifiesto usando un archivo temporal para asegurar atomicidad en la escritura."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     base_path = quarantine_dir(base)
