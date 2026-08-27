@@ -86,11 +86,6 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
 class SystemMetrics:
     """
     Contenedor estructurado de las variables de estado del sistema.
-    
-    Esta clase actúa como contrato de datos entre los módulos de recolección y 
-    el motor de puntuación. Incluye validaciones automáticas mediante 
-    `validate()` para asegurar que valores atípicos o no numéricos no afecten 
-    el cálculo del score global.
     """
     junk_mb: float = 0.0
     suspicious_count: int = 0
@@ -204,11 +199,6 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
     Calcula el puntaje global de salud del sistema.
-    
-    El proceso ocurre en tres pasos:
-    1. Normalización: cada área (memoria, disco, etc.) se transforma a un ratio [0, 1].
-    2. Ponderación: se aplican los pesos definidos en `WEIGHTS` para calcular los puntos.
-    3. Recomendación: se filtran las reglas de `_RECOMMENDATION_RULES` basadas en los ratios.
     """
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas inválido."])
@@ -223,19 +213,21 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     for area, weight in _WEIGHT_ITEMS_INT:
         scorer = _SCORER_MAP.get(area)
-        if not scorer: continue
-        ratio = scorer(metrics)
-        ratios_cache[area] = ratio
-        points = round(ratio * weight)
-        metric_breakdown[area] = int(points)
-        accumulated_points += points
+        if scorer:
+            ratio = scorer(metrics)
+            ratios_cache[area] = ratio
+            points = round(ratio * weight)
+            metric_breakdown[area] = int(points)
+            accumulated_points += points
+        else:
+            metric_breakdown[area] = 0
     
     final_score = int(_clamp(accumulated_points, 0.0, 100.0))
     
     recommendations = [
         rule.message_factory(metrics) 
         for rule in _RECOMMENDATION_RULES 
-        if rule.check(metrics, ratios_cache.get(rule.area, 0.0))
+        if rule.area in ratios_cache and rule.check(metrics, ratios_cache[rule.area])
     ]
             
     if metrics.quarantined_count > 0:

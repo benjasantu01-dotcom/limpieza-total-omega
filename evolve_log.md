@@ -1132,3 +1132,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-26T23:31:13` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-26T23:41:27` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-26T23:51:45` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-27T00:01:54` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-27T00:02:24` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-27T00:02:48` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` ante datos faltantes o inconsistentes en las métricas mediante un manejo de errores más defensivo al acceder al `scorer_map` y un cálculo de puntos que garantiza integridad incluso si el diccionario de pesos fuera modificado erróneamente.
+- `2026-08-27T00:03:53` Gemini no devolvió un bloque de archivo válido para main.py (enfoque: robustez ante casos límite).
+- `2026-08-27T00:04:02` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-27T00:04:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T00:04:02` Corrida terminada. Total usado hoy: 4.

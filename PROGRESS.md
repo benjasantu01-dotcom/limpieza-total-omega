@@ -5,37 +5,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **222** (44.2% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 28
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 56 | 6 | 7 | 8 | 75 |
+| 2026-08-25 | 55 | 6 | 6 | 8 | 75 |
 | 2026-08-26 | 166 | 11 | 22 | 15 | 136 |
+| 2026-08-27 | 1 | 0 | 0 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - rendimiento: **46**
 - manejo de errores y validación de entradas: **45**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **38**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
 - `duplicates.py`: **20**
 - `quarantine.py`: **20**
-- `settings.py`: **19**
+- `healthscore.py`: **19**
 - `scanner.py`: **19**
 - `browser.py`: **18**
-- `healthscore.py`: **18**
+- `settings.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **14**
 - `diskreport.py`: **14**
@@ -46,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T00:02:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante datos faltantes o inconsistentes en las métricas mediante un manejo de errores más defensivo al acceder al `scorer_map` y un cálculo de puntos que garantiza integridad incluso si el diccionario de pesos fuera modificado erróneamente.
 - `2026-08-26T14:50:44` **diskreport.py** (robustez ante casos límite): Reforcé la robustez de `walk_files` y `largest_folders` ante la presencia de rutas con caracteres no imprimibles o estados corruptos del sistema de archivos, asegurando que la navegación no se interrumpa ante errores de resolución de rutas o acceso denegado durante el escaneo.
 - `2026-08-26T14:50:17` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_path_inside_base` añadiendo un manejo de excepciones más granular y convirtiendo `real_base` a un objeto `Path` garantizado, asegurando que ante rutas malformadas o errores de resolución durante el escaneo, la función retorne `False` de forma segura en lugar de propagar errores inesperados.
 - `2026-08-26T14:41:09` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `ingest` ante entradas malformadas o tipos de datos inesperados en `source` para evitar que el asistente falle silenciosamente al procesar configuraciones o métricas corruptas.
@@ -60,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-26T13:59:58` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las validaciones en `_resolve_and_cache_path` y `_resolve_path_from_command`, además de tipar explícitamente los retornos de las funciones de parseo para mejorar la claridad del flujo de datos en el análisis de registro.
 - `2026-08-26T13:59:31` **settings.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en las funciones de acceso público y se ha corregido una inconsistencia tipográfica en `_get_default_config` (de "METRICAS" a "metricas") para asegurar la consistencia del esquema `AppSettings`.
 - `2026-08-26T13:59:02` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `scanner.py` añadiendo docstrings descriptivos a las funciones de escaneo y detallando las responsabilidades de los alias de tipo, facilitando la comprensión del flujo de datos en las heurísticas.
-- `2026-08-26T13:49:55` **safety.py** (legibilidad y documentación): Documenté el propósito de los validadores y las razones de seguridad en `safety.py` mediante una estructura de constantes tipadas (`Final`) y comentarios claros, facilitando la comprensión del flujo de validación para futuros colaboradores sin alterar la lógica.
