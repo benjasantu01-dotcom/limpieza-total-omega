@@ -105,6 +105,10 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry_path_str: str) -> bool:
+        """
+        Valida que una ruta sea segura para procesar: verifica longitud, rutas UNC, 
+        nombres reservados de Windows, confinamiento al directorio base y protección del sistema.
+        """
         if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH or entry_path_str.startswith("\\\\"):
             return False
         
@@ -123,12 +127,17 @@ class Scanner:
         return not is_protected_path(path_obj)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
+        """Determina si la entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles infinitos."""
         try:
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
         except (OSError, AttributeError, TypeError):
             return True 
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
+        """
+        Analiza una entrada individual del sistema de archivos. Si es directorio y es seguro, 
+        lo apila para escaneo; si es archivo, dispara el motor de heurísticas.
+        """
         try:
             entry_path = entry.path
             if not entry_path or not self._is_safe_entry(entry_path):

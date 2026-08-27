@@ -153,6 +153,7 @@ SUGGESTED_QUESTIONS: Final[tuple[str, ...]] = (
 )
 
 SUGGESTED_QUESTIONS_LIST: Final[list[str]] = list(SUGGESTED_QUESTIONS)
+SUGGESTED_QUESTIONS_SHORT: Final[list[str]] = SUGGESTED_QUESTIONS_LIST[:3]
 
 SYSTEM_PROMPT: Final[str] = (
     "Sos el asistente de Limpieza Total Omega, una app de mantenimiento para "
@@ -482,11 +483,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             text="Todavía no corriste ningún análisis. Andá a la pestaña Salud "
                  "y apretá 'Analizar el sistema': es de solo lectura.",
             notice=OFFLINE_NOTICE,
-            suggestions=SUGGESTED_QUESTIONS_LIST[:3],
+            suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
 
-    tokens = set(_TOKEN_REGEX.findall(q_sanitized))
-    for token in tokens:
+    for token in _TOKEN_REGEX.findall(q_sanitized):
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, question)
 
@@ -497,7 +497,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
                   f"{', '.join(problemas)}.")
     else:
         cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
-    return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_LIST[:3])
+    return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: Union[str, Path, None] = None) -> bool:
     """Consulta la configuración de usuario para determinar si la IA en la nube está habilitada."""

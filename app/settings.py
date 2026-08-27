@@ -346,13 +346,13 @@ def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     """Verifica si el asistente está configurado y habilitado correctamente."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
-    return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", ""))
+    return bool(settings.get("asistente_activado", False)) and bool(assistant_api_key(custom_base))
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
     """Genera una representación en texto plano de la configuración actual, ideal para logs."""
     current = load(custom_base)
-    key = assistant_api_key(custom_base)
-    origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if key else "no configurada")
+    api_present = bool(assistant_api_key(custom_base))
+    origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if api_present else "no configurada")
     return [
         "Configuración actual", "", f"  Archivo: {settings_path(custom_base)}", "",
         "  Apariencia", f"    Tema: {current['tema']}", f"    Acento: {current['acento']}",

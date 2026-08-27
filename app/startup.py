@@ -42,7 +42,10 @@ __all__ = [
     "HOW_TO_DISABLE",
 ]
 
-# Claves del registro donde los programas se anotan para arrancar solos.
+# Claves del registro donde los programas se registran para inicio automático:
+# HKCU (Current User): Programas específicos del usuario logueado.
+# HKLM (Local Machine): Programas que arrancan para todos los usuarios.
+# WOW6432Node: Claves para aplicaciones de 32 bits en sistemas de 64 bits.
 REGISTRY_RUN_KEYS: Tuple[str, ...] = (
     r"HKCU:\Software\Microsoft\Windows\CurrentVersion\Run",
     r"HKLM:\Software\Microsoft\Windows\CurrentVersion\Run",
@@ -97,8 +100,9 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extracts paths enclosed in double quotes, ignoring paths with invalid 
-        characters in Windows to prevent evaluation of malformed commands.
+        Extrae rutas encerradas entre comillas dobles. 
+        Valida que no contengan caracteres prohibidos en el sistema de archivos
+        y verifica que la ruta extraída no sea parte de una zona protegida.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
@@ -121,14 +125,14 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Normaliza, valida y cachea rutas de ejecutables detectados.
+        Realiza comprobaciones de seguridad para evitar seguir junctions (reparse points)
+        o acceder a rutas reservadas del sistema operativo Windows.
         """
-        # Validación defensiva contra inyección de comandos o metacaracteres peligrosos
         if not isinstance(path_string, str) or not path_string:
             return ""
         if any(c in path_string for c in '<>|?*\0&;'):
             return ""
         
-        # Validación temprana de longitud y nombres reservados (Windows)
         try:
             norm = os.path.normpath(path_string)
             if len(norm) > 4096 or norm.startswith(r"\\"):
@@ -171,7 +175,8 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, command_line: str) -> str:
         """
-        Divide la línea de comandos para extraer el ejecutable primario.
+        Divide la línea de comandos para extraer el ejecutable primario,
+        manejando rutas con comillas y eliminando argumentos adicionales.
         """
         if not command_line or not isinstance(command_line, str):
             return ""
@@ -251,7 +256,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Parsea la salida cruda de PowerShell (CSV) y crea objetos StartupEntry.
+    Parsea la salida cruda de PowerShell (formato CSV) y crea objetos StartupEntry.
+    Filtra entradas vacías o que parezcan comandos PowerShell maliciosos.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -351,7 +357,10 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un reporte legible del inventario con niveles de impacto."""
+    """
+    Genera un reporte legible del inventario con niveles de impacto, 
+    destinado a la visualización en la interfaz de la aplicación.
+    """
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         
