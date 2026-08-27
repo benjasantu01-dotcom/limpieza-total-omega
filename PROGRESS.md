@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-25 | 55 | 5 | 6 | 8 | 56 |
+| 2026-08-25 | 55 | 5 | 6 | 8 | 52 |
 | 2026-08-26 | 166 | 11 | 22 | 15 | 136 |
-| 2026-08-27 | 12 | 1 | 2 | 0 | 9 |
+| 2026-08-27 | 13 | 2 | 2 | 0 | 11 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
+- seguridad defensiva: **47**
 - rendimiento: **46**
-- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
 - robustez ante casos límite: **34**
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **21**
 - `quarantine.py`: **21**
 - `scanner.py`: **21**
+- `settings.py`: **20**
 - `browser.py`: **19**
 - `healthscore.py`: **19**
-- `settings.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **15**
 - `safety.py`: **14**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T01:03:53` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `settings.py` implementando una validación estricta de la ruta base mediante `ensure_safe_to_modify` antes de cualquier operación de escritura, asegurando que no se pueda manipular el sistema de archivos fuera de las áreas permitidas ni siquiera mediante inyección de rutas en los argumentos de las funciones.
 - `2026-08-27T00:54:26` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner implementando una validación estricta de rutas mediante `is_protected_path` en `check_system_lookalike` y limitando el alcance de los chequeos de ejecutables a archivos confirmados como existentes, evitando que el escáner se engañe con entradas fantasma.
 - `2026-08-27T00:45:55` **organizer.py** (seguridad defensiva): Se ha mejorado `_is_safe_for_disk_op` para verificar el estado de los atributos de archivo mediante una máscara de bits más precisa y se añadió una validación explícita para evitar que los archivos de sistema o de solo lectura sean procesados, reforzando la seguridad defensiva sin alterar la funcionalidad.
 - `2026-08-27T00:45:43` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva de `memory.py` implementando una validación explícita de privilegios en `trim_working_set`, asegurando que no se intente interactuar con procesos elevados si la propia aplicación no tiene permisos suficientes, evitando errores silenciosos de la API de Windows.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T00:02:48` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante datos faltantes o inconsistentes en las métricas mediante un manejo de errores más defensivo al acceder al `scorer_map` y un cálculo de puntos que garantiza integridad incluso si el diccionario de pesos fuera modificado erróneamente.
 - `2026-08-26T14:50:44` **diskreport.py** (robustez ante casos límite): Reforcé la robustez de `walk_files` y `largest_folders` ante la presencia de rutas con caracteres no imprimibles o estados corruptos del sistema de archivos, asegurando que la navegación no se interrumpa ante errores de resolución de rutas o acceso denegado durante el escaneo.
 - `2026-08-26T14:50:17` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_path_inside_base` añadiendo un manejo de excepciones más granular y convirtiendo `real_base` a un objeto `Path` garantizado, asegurando que ante rutas malformadas o errores de resolución durante el escaneo, la función retorne `False` de forma segura en lugar de propagar errores inesperados.
-- `2026-08-26T14:41:09` **assistant.py** (robustez ante casos límite): Se mejoró la robustez de `ingest` ante entradas malformadas o tipos de datos inesperados en `source` para evitar que el asistente falle silenciosamente al procesar configuraciones o métricas corruptas.

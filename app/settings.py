@@ -285,7 +285,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     parent = ruta.parent.absolute()
     temp_name = None
     try:
-        if not _Validators._is_safe_path(str(parent)): return None
+        # Validación defensiva de seguridad antes de cualquier escritura
+        ensure_safe_to_modify(str(parent))
         ensure_safe_to_modify(str(ruta))
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
