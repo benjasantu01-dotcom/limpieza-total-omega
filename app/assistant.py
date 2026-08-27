@@ -324,18 +324,17 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
     Extrae una métrica individual de 'source' mediante 'key', la valida contra
     las restricciones de 'spec' y la asigna al 'ctx' si es correcta.
     """
-    val = _get_source_value(source, key)
-    
-    if val is None or type(val) in _FORBIDDEN_TYPES: return False
-    
-    clean_val = _safe_float(val, -1.0)
-    if clean_val < spec.min_val or clean_val > spec.max_val:
-        return False
-    
     try:
+        val = _get_source_value(source, key)
+        if val is None or type(val) in _FORBIDDEN_TYPES: return False
+        
+        clean_val = _safe_float(val, -1.0)
+        if clean_val < spec.min_val or clean_val > spec.max_val:
+            return False
+        
         setattr(ctx, key, spec.cast_func(clean_val))
         return True
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, AttributeError):
         return False
 
 def build_context(metrics: MetricSource = None, health: ScoreSource = None, **extra: Any) -> SystemContext:

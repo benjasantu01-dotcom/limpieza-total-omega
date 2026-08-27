@@ -179,6 +179,9 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """Calcula el peso total de una estructura de directorios mediante un recorrido DFS."""
+    if not root_dir or not os.path.exists(root_dir):
+        return 0
+        
     root_path = os.path.normpath(root_dir)
     
     def _walk(current_dir: str, depth: int) -> int:

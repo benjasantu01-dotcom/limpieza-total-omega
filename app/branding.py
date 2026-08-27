@@ -242,11 +242,11 @@ def bar(percent: Union[float, int, None], width: int = 24,
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """Transforma color #RRGGBB a valores decimales (R, G, B)."""
+    if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
+        return (0, 0, 0)
     try:
-        if not isinstance(value, str) or len(value) != 7 or value[0] != "#":
-            return (0, 0, 0)
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except (ValueError, IndexError, AttributeError):
+    except ValueError:
         return (0, 0, 0)
 
 @lru_cache(maxsize=64)
@@ -337,7 +337,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         path_obj = Path(destination).resolve()
         parent = path_obj.parent
         
-        # Validación: Asegurar que el directorio padre sea escribible y seguro
+        # Validación estricta: verificar seguridad antes de cualquier operación de FS
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         
@@ -351,7 +351,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError):
+    except (OSError, PermissionError, TypeError, ValueError):
         return None
 
 def logo_ascii() -> str:
