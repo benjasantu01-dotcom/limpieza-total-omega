@@ -263,14 +263,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        base_path = Path(directory).resolve()
-        if not base_path.exists() or not base_path.is_dir() or (skip_protected and is_protected_path(base_path)):
+        p_obj = Path(os.fspath(directory)).resolve()
+        if not p_obj.exists() or not p_obj.is_dir() or (skip_protected and is_protected_path(p_obj)):
             return
     except (OSError, RuntimeError, TypeError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[str] = [str(base_path)]
+    stack: List[str] = [str(p_obj)]
     
     while stack:
         current_dir = stack.pop()
@@ -282,8 +282,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            if skip_protected and is_protected_path(Path(entry.path)):
-                                continue
                             st = entry.stat(follow_symlinks=False)
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
@@ -341,7 +339,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        p_base = Path(directory).resolve()
+        p_base = Path(os.fspath(directory)).resolve()
         if not p_base.exists() or not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
             return []
             

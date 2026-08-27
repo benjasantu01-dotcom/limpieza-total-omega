@@ -1075,3 +1075,10 @@ FAILED evolve/tests/test_assistant.py::test_corrupt_file_falls_back_to_defaults 
 - `2026-08-27T11:20:46` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez y seguridad de `branding.py` mediante la validación de tipos de entrada en `score_color` y la protección ante excepciones en las funciones de dibujo (`draw_logo`, `draw_gradient_bar`, `draw_ring`), evitando fallos en tiempo de ejecución al interactuar con widgets externos.
 - `2026-08-27T11:20:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T11:20:46` Corrida terminada. Total usado hoy: 268.
+- `2026-08-27T11:25:54` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-27T11:26:20` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-27T11:26:47` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` añadiendo validaciones preventivas de tipos y estados, asegurando que las excepciones operativas no interrumpan el flujo de datos y devolviendo mensajes de error consistentes.
+- `2026-08-27T11:27:13` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` mediante la validación explícita de `candidates` y el manejo preventivo de excepciones en las operaciones de `Path.stat()`, evitando fallos silenciosos cuando un archivo desaparece durante la inspección.
+- `2026-08-27T11:27:22` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-27T11:27:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T11:27:22` Corrida terminada. Total usado hoy: 272.

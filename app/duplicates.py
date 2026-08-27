@@ -266,7 +266,10 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         except (OSError, PermissionError, RuntimeError):
             continue
             
-    return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
+    if not candidates:
+        return None
+        
+    return min(candidates, key=lambda x: (x[0], x[1]))[2]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
