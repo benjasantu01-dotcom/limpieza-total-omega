@@ -257,7 +257,10 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador que recorre recursivamente el sistema de archivos mediante `os.scandir`.
+    Generador recursivo de archivos mediante `os.scandir`.
+
+    Complejidad: O(N) donde N es el número total de archivos/carpetas en el árbol.
+    La operación es intensiva en I/O.
     """
     if not directory:
         return
@@ -299,12 +302,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
-    Identifica los N archivos más grandes en un directorio.
+    Identifica los N archivos más grandes en un directorio utilizando un heap.
     """
     if not directory or not isinstance(limit, int) or limit <= 0:
         return []
     
-    items = ((s, p) for p, s in walk_files(directory, skip_protected))
+    items: Generator[Tuple[int, Path], None, None] = ((s, p) for p, s in walk_files(directory, skip_protected))
     return [FileEntry(path=p, size_bytes=s) for s, p in heapq.nlargest(limit, items, key=lambda x: x[0])]
 
 

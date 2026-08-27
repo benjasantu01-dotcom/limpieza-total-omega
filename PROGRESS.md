@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 29
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 98 | 9 | 14 | 10 | 89 |
-| 2026-08-27 | 123 | 8 | 16 | 6 | 131 |
+| 2026-08-26 | 96 | 9 | 13 | 10 | 88 |
+| 2026-08-27 | 125 | 9 | 16 | 7 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- rendimiento: **36**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
-- `quarantine.py`: **19**
 - `settings.py`: **19**
+- `quarantine.py`: **18**
 - `browser.py`: **18**
+- `duplicates.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
-- `duplicates.py`: **17**
+- `diskreport.py`: **17**
 - `branding.py`: **16**
 - `memory.py`: **16**
-- `diskreport.py`: **16**
 - `main.py`: **13**
-- `safety.py`: **12**
+- `safety.py`: **11**
 - `startup.py`: **11**
 - `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T12:07:36` **duplicates.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `duplicates.py` añadiendo type hints faltantes en funciones internas, documentando con mayor precisión el propósito de las funciones auxiliares de escaneo, y refactorizando el pipeline de procesamiento de grupos para que la lógica de selección de hash sea más clara y menos propensa a errores.
+- `2026-08-27T12:07:12` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` incluyendo type hints explícitos para iteradores y añadiendo una sección de "Complejidad" en los docstrings de las funciones recursivas para advertir sobre el impacto en el rendimiento de las operaciones de disco.
 - `2026-08-27T11:59:24` **browser.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la robustez del módulo `browser.py` mediante la refactorización de `_sum_directory_recursive` para simplificar su lógica de control y mediante la adición de Type Hints más precisos y docstrings explicativos que aclaran el flujo de seguridad, facilitando el mantenimiento y cumplimiento de las normas de auditoría.
 - `2026-08-27T11:59:13` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `Docstrings` detallados para los diccionarios de configuración (`PaletteDict`, `FontSizesDict`) y se han especificado los tipos de los parámetros en las funciones de renderizado para mejorar la legibilidad y facilitar el mantenimiento de la interfaz.
 - `2026-08-27T11:57:38` **assistant.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `AssistantConfig` (cuyo nombre ya existía como `TypedDict` pero se usaba para validar dicts crudos) y se refactorizó la lógica de carga en `ask` para utilizar una función de validación dedicada, mejorando la legibilidad y garantizando que la configuración sea siempre tratada como un objeto tipado tras ser cargada.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T11:20:46` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez y seguridad de `branding.py` mediante la validación de tipos de entrada en `score_color` y la protección ante excepciones en las funciones de dibujo (`draw_logo`, `draw_gradient_bar`, `draw_ring`), evitando fallos en tiempo de ejecución al interactuar con widgets externos.
 - `2026-08-27T11:20:28` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` mediante la captura explícita de excepciones durante el acceso a atributos y la validación de tipos, evitando que errores inesperados en los datos de entrada propaguen fallos en el bucle principal.
 - `2026-08-27T09:54:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo validaciones explícitas contra rutas fuera del ámbito del `base_root` y utilizando `Path.resolve()` correctamente para prevenir ataques de *path traversal* (ej. secuencias `..`), cumpliendo estrictamente con el principio de limitar la operación al espacio de trabajo definido.
-- `2026-08-27T09:54:29` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) al validar el estado del archivo antes y después de acceder a sus metadatos, y se mejoró la resiliencia contra enlaces simbólicos al forzar una resolución absoluta en `_validate_boundary_conditions`.
-- `2026-08-27T09:45:29` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `quarantine_file` para evitar ataques de tiempo de ejecución (TOCTOU) al validar el archivo después de que este ya haya sido verificado por el sistema de seguridad, asegurando que el archivo no haya sido reemplazado por un enlace simbólico entre la validación inicial y la operación de aislamiento.
