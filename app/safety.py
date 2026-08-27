@@ -156,16 +156,24 @@ def _is_reparse_point(path: Path) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Verifica si el archivo está bloqueado intentando abrirlo en modo exclusivo."""
+    """Verifica si el archivo está en uso por otro proceso."""
     path = Path(path_str)
     if not path.exists():
         return False
-    try:
-        fd = os.open(path, os.O_RDONLY | os.O_EXCL)
-        os.close(fd)
-        return False
-    except OSError:
+    # Verificación de permisos de escritura básicos
+    if not os.access(path, os.W_OK):
         return True
+    # Verificación de acceso exclusivo en Windows
+    if os.name == 'nt':
+        try:
+            handle = ctypes.windll.kernel32.CreateFileW(
+                str(path), 0x80000000 | 0x40000000, 0, None, 3, 0x00000080, None
+            )
+            if handle == -1: return True
+            ctypes.windll.kernel32.CloseHandle(handle)
+        except (AttributeError, OSError):
+            return True
+    return False
 
 
 # Pipeline de validaciones: cada predicado es una condición necesaria para la seguridad

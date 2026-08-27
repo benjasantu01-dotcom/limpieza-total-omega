@@ -1454,3 +1454,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T02:36:54` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` y `parse_windows_process_csv` añadiendo validaciones de tipo y estructura más estrictas ante entradas malformadas, evitando excepciones no controladas al procesar archivos de sistema o resultados de comandos.
 - `2026-08-27T02:36:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T02:36:54` Corrida terminada. Total usado hoy: 64.
+- `2026-08-27T02:45:01` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-27T02:45:27` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-27T02:45:58` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_locked` para manejar de forma explícita errores de acceso (`PermissionError`) y rutas inexistentes, evitando falsos positivos que interrumpían el flujo en `_validate_isolation_request` y `restore_item`.
+- `2026-08-27T02:46:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-27T02:46:28` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_file_in_use` capturando errores específicos (como `FileNotFoundError` o `PermissionError`) en lugar de una captura genérica `OSError`, y reemplacé la lógica de `open` (que depende de descriptores de archivos) por una comprobación mediante `os.access` y `ctypes` para evitar el consumo innecesario de descriptores en bucles extensos.
+- `2026-08-27T02:46:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T02:46:28` Corrida terminada. Total usado hoy: 68.

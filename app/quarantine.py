@@ -148,10 +148,13 @@ def _is_file_locked(path: Path) -> bool:
     if not isinstance(path, Path) or not path.exists():
         return False
     try:
-        with open(path, "rb") as _:
+        # Intenta abrir el archivo; si falla por acceso denegado, consideramos que está bloqueado
+        with open(path, "rb") as f:
             return False
-    except (IOError, OSError, PermissionError):
+    except (PermissionError, IOError):
         return True
+    except OSError:
+        return False
 
 
 def _safe_unlink(path: Path) -> bool:
