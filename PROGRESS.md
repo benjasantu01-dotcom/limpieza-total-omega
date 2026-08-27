@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 92 | 8 | 13 | 10 | 85 |
-| 2026-08-27 | 130 | 10 | 18 | 7 | 131 |
+| 2026-08-26 | 89 | 8 | 13 | 9 | 85 |
+| 2026-08-27 | 133 | 10 | 18 | 7 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **39**
-- rendimiento: **33**
+- robustez ante casos límite: **36**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **22**
-- `quarantine.py`: **19**
+- `browser.py`: **19**
 - `settings.py`: **18**
-- `browser.py`: **18**
 - `duplicates.py`: **18**
-- `memory.py`: **17**
+- `quarantine.py`: **18**
+- `assistant.py`: **17**
 - `diskreport.py`: **17**
-- `assistant.py`: **16**
+- `branding.py`: **16**
 - `healthscore.py`: **16**
-- `branding.py`: **15**
+- `memory.py`: **16**
 - `main.py`: **13**
 - `safety.py`: **12**
 - `startup.py`: **11**
-- `organizer.py`: **10**
+- `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T12:39:02` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de los directorios mediante la persistencia del diccionario `perf_cache` a través de los escaneos de `detect_profiles`, evitando redundancia de E/S al reutilizar resultados de subdirectorios compartidos entre distintas rutas de caché.
+- `2026-08-27T12:38:37` **branding.py** (rendimiento): Optimicé el cálculo de colores en `gradient_colors` reemplazando la creación y conversión innecesaria de múltiples objetos `blend` por un cálculo aritmético directo sobre componentes RGB, evitando la sobrecarga de llamadas a funciones y reduciendo el uso del caché de `lru_cache`.
+- `2026-08-27T12:38:05` **assistant.py** (rendimiento): Optimicé el rendimiento del motor de búsqueda de intenciones convirtiendo el diccionario `_KEYWORD_MAP` a un conjunto (set) o estructura directa, y evitando la ejecución de múltiples regex mediante el pre-cálculo de tokens únicos, además de cachear el acceso a los handlers para evitar búsquedas repetitivas en cada iteración de los tokens.
 - `2026-08-27T12:28:00` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `scanner.py` mediante la adición de docstrings precisos en los métodos de `Scanner` y la clarificación de tipos, facilitando el mantenimiento y la comprensión del flujo de escaneo recursivo.
 - `2026-08-27T12:27:36` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación de `ensure_safe_to_modify` utilizando una estructura de docstring estandarizada (Args/Raises/Returns) y se extrajeron las validaciones de "integridad" y "geografía" en la función principal para clarificar el flujo lógico de seguridad, facilitando su lectura y mantenimiento futuro.
 - `2026-08-27T12:18:33` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `quarantine.py` documentando los métodos críticos de validación y transformando chequeos de estado en propiedades o métodos auxiliares más claros, cumpliendo con el enfoque de documentación técnica.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T11:57:38` **assistant.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `AssistantConfig` (cuyo nombre ya existía como `TypedDict` pero se usaba para validar dicts crudos) y se refactorizó la lógica de carga en `ask` para utilizar una función de validación dedicada, mejorando la legibilidad y garantizando que la configuración sea siempre tratada como un objeto tipado tras ser cargada.
 - `2026-08-27T11:57:02` **startup.py** (manejo de errores y validación de entradas): Se mejora la robustez de `parse_registry_csv` y `entries_from_folders` mediante una validación más estricta de parámetros y el manejo defensivo de rutas, asegurando que `is_protected_path` se utilice correctamente incluso ante entradas malformadas o inesperadas que podrían causar excepciones al instanciar `Path`.
 - `2026-08-27T11:48:32` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del validador `path` en `_Validators` añadiendo un chequeo explícito de `is_protected_path` sobre la ruta resuelta antes de cualquier operación, asegurando que incluso rutas que superen las validaciones básicas de `pathlib` sigan bajo el control de las reglas de seguridad.
-- `2026-08-27T11:47:53` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas agregando validaciones de tipo y existencia para evitar excepciones inesperadas en `check_system_lookalike` y `check_double_extension`, asegurando que ambas funciones manejen de forma segura parámetros potencialmente inválidos sin abortar el escaneo.
-- `2026-08-27T11:41:05` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la implementación de una validación explícita de tipos y estructura de datos antes de acceder a los campos, previniendo errores de `KeyError` o `AttributeError` ante manifiestos mal formados, y reforzando la integridad con un manejo de excepciones más específico durante la deserialización.
-- `2026-08-27T11:40:16` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente el tipo y la existencia de los handles antes de operar, previniendo errores de `ctypes` al intentar interactuar con recursos nulos o inválidos.

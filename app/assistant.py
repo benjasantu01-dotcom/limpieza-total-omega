@@ -483,9 +483,13 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
 
-    for token in _TOKEN_REGEX.findall(q_sanitized):
-        if token in _KEYWORD_MAP:
-            return _HANDLERS[_KEYWORD_MAP[token]](context, question)
+    # Optimizamos el loop usando un set de tokens únicos procesados una sola vez
+    seen_intents = set()
+    for token in set(_TOKEN_REGEX.findall(q_sanitized)):
+        intent = _KEYWORD_MAP.get(token)
+        if intent and intent not in seen_intents:
+            seen_intents.add(intent)
+            return _HANDLERS[intent](context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"

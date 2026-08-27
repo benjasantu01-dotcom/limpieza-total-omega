@@ -1184,3 +1184,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T12:28:53` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación de los métodos de resolución de rutas en `StartupEntry` utilizando docstrings que explican claramente la lógica de seguridad y el manejo de excepciones, y se añadió tipado explícito en variables críticas para mejorar la legibilidad y mantenimiento.
 - `2026-08-27T12:28:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T12:28:53` Corrida terminada. Total usado hoy: 296.
+- `2026-08-27T12:37:26` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-27T12:38:05` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento del motor de búsqueda de intenciones convirtiendo el diccionario `_KEYWORD_MAP` a un conjunto (set) o estructura directa, y evitando la ejecución de múltiples regex mediante el pre-cálculo de tokens únicos, además de cachear el acceso a los handlers para evitar búsquedas repetitivas en cada iteración de los tokens.
+- `2026-08-27T12:38:37` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de colores en `gradient_colors` reemplazando la creación y conversión innecesaria de múltiples objetos `blend` por un cálculo aritmético directo sobre componentes RGB, evitando la sobrecarga de llamadas a funciones y reduciendo el uso del caché de `lru_cache`.
+- `2026-08-27T12:39:02` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de los directorios mediante la persistencia del diccionario `perf_cache` a través de los escaneos de `detect_profiles`, evitando redundancia de E/S al reutilizar resultados de subdirectorios compartidos entre distintas rutas de caché.
+- `2026-08-27T12:39:14` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-27T12:39:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T12:39:14` Corrida terminada. Total usado hoy: 300.

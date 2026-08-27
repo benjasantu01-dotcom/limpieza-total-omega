@@ -165,31 +165,21 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     return False
 
 
-def _is_within_depth_limit(depth: int, current_path: Optional[str]) -> bool:
-    """Verifica recursión segura contra el límite MAX_SCAN_DEPTH."""
-    return depth <= MAX_SCAN_DEPTH and current_path is not None
-
-
 def _sum_directory_recursive(
     root_dir: str, 
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
-    visited: Set[str],
     depth: int = 0
 ) -> int:
     """
     Calcula recursivamente el peso de una carpeta utilizando `os.scandir` para eficiencia.
-    Mantiene un set `visited` para evitar bucles de enlaces y `memo` para cachear resultados.
+    Mantiene un diccionario `memo` para cachear resultados de subcarpetas y evitar E/S repetitiva.
     """
     if depth > MAX_SCAN_DEPTH:
         return 0
 
     root_abs = os.path.normpath(root_dir)
-    if root_abs in visited:
-        return 0
-    visited.add(root_abs)
-    
     if root_abs in memo:
         return memo[root_abs]
         
@@ -202,7 +192,7 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, visited, depth + 1)
+                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError):
@@ -227,7 +217,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
             return 0
         
         is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
-        return _sum_directory_recursive(str(p_obj), is_junction, _get_kernel32(), {}, set())
+        return _sum_directory_recursive(str(p_obj), is_junction, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -256,7 +246,7 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea rutas de caché conocidas.
-    Usa `bases` como root y `cache_paths` para mapear subcarpetas.
+    Utiliza un cache global `perf_cache` para evitar re-escanear subdirectorios.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -267,8 +257,8 @@ def detect_profiles(
     is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
+    # Cache persistente durante la sesión de detección
     perf_cache: Dict[str, int] = {}
-    visited_paths: Set[str] = set()
     found: List[BrowserCache] = []
     
     for base in raw_bases:
@@ -283,7 +273,7 @@ def detect_profiles(
                     c_path = candidate.resolve()
                     path_str = str(c_path)
                     
-                    size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache, visited_paths)
+                    size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
         except (OSError, PermissionError): 

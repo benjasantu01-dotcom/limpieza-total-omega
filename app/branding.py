@@ -249,39 +249,44 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
     except ValueError:
         return (0, 0, 0)
 
+def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
+    """Transforma valores (R, G, B) a #RRGGBB."""
+    return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, c)) for c in rgb])
+
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """Interpola linealmente colores (rango [0.0, 1.0])."""
     if start == end: return start
-    try:
-        ratio_clamped = max(0.0, min(1.0, float(ratio)))
-        r1, g1, b1 = _hex_to_rgb(start)
-        r2, g2, b2 = _hex_to_rgb(end)
-        return "#{:02x}{:02x}{:02x}".format(
-            int(r1 + (r2 - r1) * ratio_clamped),
-            int(g1 + (g2 - g1) * ratio_clamped),
-            int(b1 + (b2 - b1) * ratio_clamped),
-        )
-    except (ValueError, TypeError):
-        return start
+    r1, g1, b1 = _hex_to_rgb(start)
+    r2, g2, b2 = _hex_to_rgb(end)
+    ratio = max(0.0, min(1.0, float(ratio)))
+    return _rgb_to_hex((
+        int(r1 + (r2 - r1) * ratio),
+        int(g1 + (g2 - g1) * ratio),
+        int(b1 + (b2 - b1) * ratio)
+    ))
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
-    """Genera secuencia de colores para degradados basados en puntos de control."""
-    try:
-        n = max(1, int(steps))
-        if not stops: return (C_GLOW,) * n
-        if len(stops) < 2: return (stops[0],) * n
-        
-        res = [stops[0]] * n
-        tramos = len(stops) - 1
-        for i in range(1, n):
-            pos = (i * tramos) / (n - 1)
-            idx = int(pos)
-            res[i] = blend(stops[idx], stops[idx + 1], pos - idx) if idx < tramos else stops[-1]
-        return tuple(res)
-    except (ValueError, TypeError):
-        return (C_GLOW,) * max(1, int(steps))
+    """Genera secuencia de colores optimizada aritméticamente."""
+    n = max(1, int(steps))
+    if not stops: return (C_GLOW,) * n
+    if len(stops) < 2: return (stops[0],) * n
+    
+    res = [stops[0]] * n
+    rgb_stops = [_hex_to_rgb(s) for s in stops]
+    tramos = len(stops) - 1
+    for i in range(1, n):
+        pos = (i * tramos) / (n - 1)
+        idx = min(int(pos), tramos - 1)
+        r = pos - idx
+        s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
+        res[i] = _rgb_to_hex((
+            int(s1[0] + (s2[0] - s1[0]) * r),
+            int(s1[1] + (s2[1] - s1[1]) * r),
+            int(s1[2] + (s2[2] - s1[2]) * r)
+        ))
+    return tuple(res)
 
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
