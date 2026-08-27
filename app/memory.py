@@ -186,12 +186,14 @@ def _read_windows_snapshot() -> MemorySnapshot:
 
 def read_snapshot() -> MemorySnapshot:
     """Obtiene un snapshot de la memoria según el sistema operativo actual."""
-    if os.name == "nt": return _read_windows_snapshot()
+    if os.name == "nt": 
+        return _read_windows_snapshot()
     if os.path.exists("/proc/meminfo") and os.access("/proc/meminfo", os.R_OK):
         try:
             with open("/proc/meminfo", encoding="utf-8", errors="replace") as f:
                 return parse_linux_meminfo(f.read())
-        except (OSError, PermissionError, IOError): pass
+        except (OSError, PermissionError, IOError): 
+            pass
     return MemorySnapshot(0, 0)
 
 _proc_cache_time: float = 0.0
@@ -265,7 +267,6 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
         return False, "Ruta de proceso sospechosa."
     try:
         p = Path(path).resolve()
-        # Verificar contra lista protegida antes de cualquier acción
         for parent in [p] + list(p.parents):
             if is_protected_path(str(parent)): return False, f"Ruta protegida en {parent.name}."
     except Exception: return False, "Error resolviendo ruta."
@@ -292,12 +293,17 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid): return False, "Proceso protegido."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
+    if not proc_handle or proc_handle == -1: 
+        return False, "Permisos insuficientes o proceso inaccesible."
+    
     try:
-        if not proc_handle or proc_handle == -1: return False, "Permisos insuficientes o proceso inaccesible."
         valid, reason = _is_safe_to_trim(proc_handle, target_pid)
         if not valid: return False, reason or "Validación fallida."
-        if not psapi.EmptyWorkingSet(proc_handle): return False, f"Error del sistema {ctypes.get_last_error()}."
+        if not psapi.EmptyWorkingSet(proc_handle): 
+            return False, f"Error del sistema {ctypes.get_last_error()}."
         return True, f"Working set liberado. {TRIM_WARNING}"
+    except Exception as e:
+        return False, f"Excepción inesperada durante el trim: {str(e)}"
     finally:
         if proc_handle and proc_handle != -1: kernel32.CloseHandle(proc_handle)
 

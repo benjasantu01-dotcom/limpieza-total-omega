@@ -664,3 +664,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-27T07:02:31` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones de tipo explícitas y chequeos de estado de los widgets antes de interactuar con ellos, siguiendo el enfoque de prevenir fallos silenciosos por entradas de usuario inesperadas o widgets ya destruidos.
 - `2026-08-27T07:02:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T07:02:31` Corrida terminada. Total usado hoy: 168.
+- `2026-08-27T07:10:26` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-27T07:10:55` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré el manejo de errores en `read_snapshot` y `trim_working_set` asegurando que el cierre de `proc_handle` sea robusto mediante una gestión explícita de excepciones y verificando que el tipo de datos de `snapshot` sea consistente antes de procesarlo, evitando errores de ejecución ante entradas malformadas.
+- `2026-08-27T07:11:23` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-27T07:11:53` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-27T07:11:58` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-08-27T07:11:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T07:11:58` Corrida terminada. Total usado hoy: 172.

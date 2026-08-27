@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 156 | 10 | 20 | 15 | 135 |
-| 2026-08-27 | 69 | 5 | 9 | 1 | 84 |
+| 2026-08-26 | 154 | 10 | 19 | 15 | 134 |
+| 2026-08-27 | 70 | 5 | 10 | 1 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
 - seguridad defensiva: **51**
-- manejo de errores y validación de entradas: **44**
-- rendimiento: **43**
+- legibilidad y documentación: **51**
+- manejo de errores y validación de entradas: **45**
+- rendimiento: **42**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
-- `assistant.py`: **19**
 - `duplicates.py`: **19**
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **18**
+- `memory.py`: **18**
+- `assistant.py`: **18**
 - `healthscore.py`: **18**
-- `memory.py`: **17**
 - `main.py`: **16**
 - `diskreport.py`: **15**
 - `safety.py`: **13**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T07:10:55` **memory.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `read_snapshot` y `trim_working_set` asegurando que el cierre de `proc_handle` sea robusto mediante una gestión explícita de excepciones y verificando que el tipo de datos de `snapshot` sea consistente antes de procesarlo, evitando errores de ejecución ante entradas malformadas.
 - `2026-08-27T07:02:31` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante validaciones de tipo explícitas y chequeos de estado de los widgets antes de interactuar con ellos, siguiendo el enfoque de prevenir fallos silenciosos por entradas de usuario inesperadas o widgets ya destruidos.
 - `2026-08-27T07:01:39` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` al implementar un manejo defensivo de errores mediante una validación de `metrics` inicial más estricta, evitando la propagación de fallos si las métricas están corruptas, y añadiendo chequeos de nulidad en las factorías de mensajes.
 - `2026-08-27T07:00:49` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y las funciones de consulta integrando validaciones de tipo `is_protected_path` previas y un manejo de errores más específico, evitando que excepciones silenciadas en el recorrido de directorios comprometan la integridad de los resultados.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T05:18:51` **organizer.py** (seguridad defensiva): Se ha añadido una validación explícita para evitar que `_process_directory` acceda a rutas que contengan caracteres de control o puntos de reparse maliciosos, reforzando la integridad del bucle de escaneo mediante `Path.resolve()` antes de realizar cualquier operación.
 - `2026-08-27T05:10:20` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` centralizando la validación de rutas para el trimming y asegurando que la resolución de la ruta del proceso no sea susceptible a manipulaciones, además de reforzar la robustez contra posibles cierres de handle durante la validación.
 - `2026-08-27T05:10:08` **main.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones de seguridad en `main.py` mediante la implementación de `_is_safe_disk_operation`, un método centralizado que utiliza `safety.is_safe_to_modify` para asegurar que cualquier ruta de destino antes de una operación de archivo (como borrar o mover) sea validada explícitamente, previniendo así errores de lógica donde la excepción de `ensure_safe_to_modify` pudiera interrumpir el flujo del hilo principal de manera no controlada.
-- `2026-08-27T05:09:01` **healthscore.py** (seguridad defensiva): Fortalecí la integridad de los datos de entrada en `compute_score` y `summarize` mediante una validación de tipo más estricta y defensiva, asegurando que el estado del sistema no sea procesado si la estructura de datos fue alterada o es inesperada, manteniendo la robustez del componente de diagnóstico ante posibles fallos de otros módulos.
