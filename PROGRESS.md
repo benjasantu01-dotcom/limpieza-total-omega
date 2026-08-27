@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 79 | 6 | 11 | 7 | 61 |
-| 2026-08-27 | 157 | 12 | 22 | 7 | 142 |
+| 2026-08-26 | 79 | 6 | 11 | 7 | 57 |
+| 2026-08-27 | 158 | 12 | 22 | 7 | 145 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **46**
+- seguridad defensiva: **47**
 - rendimiento: **42**
 - robustez ante casos límite: **42**
 
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **18**
 - `branding.py`: **17**
 - `main.py`: **14**
-- `startup.py`: **11**
+- `startup.py`: **12**
 - `safety.py`: **11**
 - `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T14:30:20` **startup.py** (seguridad defensiva): Se ha añadido una validación de seguridad adicional en `_resolve_and_cache_path` para prevenir ataques de trayectoria (path traversal) mediante la verificación explícita de que la ruta resuelta mantenga el prefijo de la ruta base normalizada, evitando así el acceso accidental a directorios fuera del alcance esperado cuando se manipulan cadenas del registro.
 - `2026-08-27T14:21:42` **settings.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_Validators.path` y `_Validators._is_safe_path` al aplicar `resolve(strict=False)` de forma consistente y validar la existencia de la ruta antes de intentar operar con ella, evitando posibles excepciones de acceso en rutas inexistentes o malformadas.
 - `2026-08-27T14:21:24` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` validando explícitamente que la ruta no sea un enlace simbólico o unión (reparse point) mediante `st_file_attributes` antes de procesar, evitando que el escáner sea engañado para salir del `base_root` o entrar en bucles de recursión lógica, manteniendo la integridad del ámbito de escaneo.
 - `2026-08-27T14:21:00` **safety.py** (seguridad defensiva): Se ha añadido un chequeo explícito en `_check_file_integrity` para detectar archivos con atributos de "Sistema" y "Oculto" combinados, previniendo modificaciones accidentales en archivos críticos del SO que no siempre están dentro de las carpetas protegidas listadas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T13:44:25` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de metadatos de archivos agregando un bloque `try-except` específico dentro de `scan_file` para manejar errores de acceso o lectura (como bloqueos exclusivos por parte del sistema o archivos que desaparecen durante el escaneo), evitando que una sola falla de I/O interrumpa el análisis del resto de las reglas heurísticas.
 - `2026-08-27T13:30:46` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `trim_working_set` para validar que el `OpenProcess` devuelva un handle válido antes de cualquier operación, y se mejoró la robustez de `parse_windows_process_csv` para evitar fallos si el comando de PowerShell devuelve líneas mal formadas o vacías.
 - `2026-08-27T13:30:18` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados de configuración y widgets en `_collect_settings` y `on_reset_settings` para evitar `TclError` y comportamientos erráticos cuando el usuario intenta guardar o resetear ajustes antes de que los componentes UI hayan terminado de renderizarse (o si la pestaña no se ha inicializado).
-- `2026-08-27T13:19:48` **duplicates.py** (robustez ante casos límite): Se introdujo una verificación de integridad en `_process_size_group` y `hash_file` para manejar el caso límite donde un archivo es bloqueado o eliminado por otro proceso entre su detección inicial y su lectura (Race Condition), evitando excepciones no capturadas y devolviendo `None` de forma segura.

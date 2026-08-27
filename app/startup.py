@@ -166,6 +166,11 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
 
+            # Verificación defensiva contra path traversal fuera de la base normalizada
+            if not real_path_str.startswith(os.path.splitdrive(abs_path)[0]):
+                _EXISTS_CACHE[path_string] = False
+                return ""
+
             real_path: Path = Path(real_path_str)
             
             if not real_path_str or not real_path.exists() or is_protected_path(real_path):
