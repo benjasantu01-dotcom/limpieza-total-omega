@@ -335,17 +335,18 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).resolve()
+        parent = path_obj.parent
         
-        # Validaciones de seguridad pre-operación
+        # Validación: Asegurar que el directorio padre sea escribible y seguro
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
-            
-        parent = path_obj.parent
-        if not parent.exists() and not is_safe_to_modify(parent):
-            return None
-            
+        
         if not parent.exists():
+            if not is_safe_to_modify(parent):
+                return None
             parent.mkdir(parents=True, exist_ok=True)
+        elif not is_safe_to_modify(parent):
+            return None
             
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
