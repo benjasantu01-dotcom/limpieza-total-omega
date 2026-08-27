@@ -107,22 +107,18 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que una ruta sea segura para procesar usando verificaciones de bajo costo
-        antes de realizar operaciones de I/O pesadas.
+        Valida que una ruta sea segura para procesar evitando llamadas a .resolve() costosas.
         """
-        name = entry.name
-        if not name or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+        if not entry.name or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
-        if RESERVED_NAMES_RE.match(name):
+        if RESERVED_NAMES_RE.match(entry.name):
             return False
 
-        # Verificación estricta de subdirectorio para prevenir traversal
-        entry_path = Path(entry.path).resolve()
-        if self.base_root not in entry_path.parents and entry_path != self.base_root:
+        if not entry.path.startswith(self.base_root_str):
             return False
 
-        return not is_protected_path(entry_path)
+        return not is_protected_path(Path(entry.path))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si la entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles infinitos."""
@@ -134,19 +130,14 @@ class Scanner:
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
         Analiza una entrada individual del sistema de archivos. 
-        
-        Si es un directorio, valida su integridad, verifica que no sea un reparse point 
-        y, si no ha sido visitado, lo agrega a la pila ('stack') para continuar el escaneo.
-        Si es un archivo, ejecuta el motor de heurísticas correspondiente.
         """
         try:
             if not self._is_safe_entry(entry):
                 return
             if entry.is_dir(follow_symlinks=False):
-                if not self._is_reparse_point(entry):
-                    if entry.path not in self.seen:
-                        self.seen.add(entry.path)
-                        stack.append(entry.path)
+                if not self._is_reparse_point(entry) and entry.path not in self.seen:
+                    self.seen.add(entry.path)
+                    stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
                 self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, TypeError, FileNotFoundError) as e:

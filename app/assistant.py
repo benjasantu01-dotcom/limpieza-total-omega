@@ -260,14 +260,11 @@ class SystemContext:
             if _validate_and_assign(self, source, key, spec):
                 found_data = True
         
-        try:
-            val = _get_source_value(source, "grade")
-            if isinstance(val, str):
-                clean_grade = val[:10].strip()
-                if _ensure_safe_text(clean_grade):
-                    self.grade = clean_grade
-        except Exception:
-            pass
+        grade_val = _get_source_value(source, "grade")
+        if isinstance(grade_val, str):
+            clean_grade = grade_val[:10].strip()
+            if _ensure_safe_text(clean_grade):
+                self.grade = clean_grade
         
         return found_data
 

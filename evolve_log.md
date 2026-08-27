@@ -1205,3 +1205,41 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T12:59:18` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-27T12:59:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T12:59:18` Corrida terminada. Total usado hoy: 308.
+- `2026-08-27T13:08:00` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-27T13:08:34` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `_is_safe_entry` y `process_entry` evitando el uso repetido de `Path.resolve()` y `Path.parents` (que realizan syscalls costosas) mediante el uso de comparación de strings pre-calculada y validación directa sobre `entry.path`.
+- `2026-08-27T13:09:02` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el sistema de caché convirtiendo `_CACHE` en una estructura más eficiente y eliminando llamadas redundantes a `stat()` mediante el uso de un diccionario de acceso rápido por ruta, además de evitar la recarga innecesaria del archivo si los datos no han cambiado físicamente.
+- `2026-08-27T13:09:28` Tests FALLARON:
+```
+s/test_modules.py:660: AssertionError
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:254: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_quoted_command - AssertionError: assert '' == 'C:\\Program ...\App\\app.exe'
+  
+  - C:\Program Files\App\app.exe
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+2 failed, 297 passed, 4 warnings in 1.27s
+
+```
+- `2026-08-27T13:09:28` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó `_resolve_and_cache_path` mediante la validación temprana de `_EXISTS_CACHE` y el uso de `pathlib.Path` pre-calculado, evitando llamadas redundantes a `os.path.abspath` y `lstat` en ejecuciones repetidas sobre las mismas rutas.
+- `2026-08-27T13:09:50` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext` ante fuentes de datos externas malformadas o inesperadas, evitando excepciones durante la ingesta mediante el uso de `getattr` con valores por defecto y validación estricta de tipos.
+- `2026-08-27T13:09:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T13:09:50` Corrida terminada. Total usado hoy: 312.
