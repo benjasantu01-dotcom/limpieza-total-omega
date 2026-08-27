@@ -155,14 +155,14 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Aplica filtros de seguridad: omite rutas protegidas, enlaces simbólicos,
-    puntos de reparse (junctions), montajes y archivos con atributos de sistema/ocultos.
+    Filtro de seguridad para la iteración: determina si una entrada debe ser ignorada.
+    Se utiliza en `_sum_directory_recursive` para evitar procesar enlaces, 
+    rutas protegidas, puntos de unión o archivos marcados como críticos.
     """
     if _is_excluded_file(entry.name):
         return True
         
     try:
-        # Prevenir escaneo de puntos de montaje o reparse
         if entry.is_symlink() or is_junction_fn(entry.path) or os.path.ismount(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):
@@ -184,14 +184,15 @@ def _sum_directory_recursive(
     memo: Dict[str, int]
 ) -> int:
     """
-    Calcula recursivamente el peso en bytes de los archivos bajo root_dir.
-    Usa memoización en `memo` (dict) indexado por ruta absoluta para evitar 
-    recalcular subárboles compartidos y detectar ciclos.
+    Calcula el peso total de una estructura de directorios mediante un recorrido DFS.
+    
+    Emplea una memoria caché (memo) para evitar ciclos y redundantemente procesar 
+    subárboles ya calculados. Implementa control de profundidad para garantizar 
+    que no se produzcan desbordamientos de pila.
     """
     root_path = os.path.normpath(root_dir)
     
     def _walk(current_dir: str, depth: int) -> int:
-        """Función interna que recorre el árbol de archivos con control de profundidad."""
         if not _is_within_depth_limit(depth, current_dir):
             return 0
         
@@ -213,7 +214,6 @@ def _sum_directory_recursive(
                             stat = entry.stat(follow_symlinks=False)
                             total += stat.st_size
                     except (OSError, PermissionError, FileNotFoundError):
-                        # Ignorar fallos puntuales en archivos bloqueados durante el conteo
                         continue
         except (PermissionError, OSError, FileNotFoundError):
             return 0
@@ -243,7 +243,10 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Valida la integridad de la ruta: existencia, límites de directorio y exclusiones."""
+    """
+    Verificación de seguridad inicial antes de incluir una ruta en el escaneo.
+    Asegura que el candidato esté dentro de 'base_path' y no sea una zona protegida.
+    """
     if not candidate or not candidate.exists():
         return False
     try:
@@ -266,6 +269,8 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea el sistema buscando rutas de caché conocidas.
+    Itera sobre las ubicaciones base y los navegadores soportados, validando 
+    la integridad de cada ruta antes de realizar la medición de tamaño.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

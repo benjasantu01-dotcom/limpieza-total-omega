@@ -153,14 +153,17 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """Realiza un recorrido recursivo buscando candidatos mayores a min_size."""
+    """
+    Realiza un recorrido recursivo en el sistema de archivos buscando candidatos 
+    a duplicados. Ignora enlaces simbólicos para evitar bucles.
+    """
     temp_groups: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: set[Tuple[int, int]] = set()
     processed_dirs: set[str] = set()
     processed_files: set[str] = set()
 
-    def _should_skip_dir(path: Path) -> bool:
-        """Determina si un directorio debe ser ignorado por el escaneo."""
+    def _should_skip(path: Path) -> bool:
+        """Verifica restricciones de seguridad para rutas individuales."""
         return skip_protected and is_protected_path(path)
 
     def _scan(current_dir: str) -> None:
@@ -174,11 +177,9 @@ def _collect_candidates(
                     try:
                         if entry.is_symlink(): continue
                         entry_path = Path(entry.path)
-                        # Defensa extra: validar protección en cada entrada antes de procesar
-                        if skip_protected and is_protected_path(entry_path): continue
+                        if _should_skip(entry_path): continue
                         
                         if entry.is_dir(follow_symlinks=False):
-                            if _should_skip_dir(entry_path): continue
                             stat = entry.stat(follow_symlinks=False)
                             dev_inode = (stat.st_dev, stat.st_ino)
                             if dev_inode not in visited_device_inodes:
