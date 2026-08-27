@@ -160,8 +160,14 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Validación de pre-operación de I/O.
-    Comprueba integridad, permisos, protecciones lógicas de safety.py y bloqueos de sistema.
+    Valida la viabilidad de una operación de I/O sobre dos rutas.
+    
+    Args:
+        src: Ruta del archivo origen.
+        dest: Ruta del destino o directorio base.
+        
+    Returns:
+        bool: True si la operación cumple con las restricciones de seguridad, permisos y atributos.
     """
     try:
         if not src or not dest or not src.exists() or not src.is_file(): return False
@@ -313,7 +319,15 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos desde la carpeta de revisión.
-    Aplica controles estrictos para no borrar directorios o archivos protegidos.
+    
+    Args:
+        review_dir: Ruta del directorio a purgar.
+        
+    Returns:
+        int: Cantidad de archivos eliminados con éxito.
+        
+    Raises:
+        Este método maneja internamente las excepciones de I/O para asegurar la continuidad del bucle.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0

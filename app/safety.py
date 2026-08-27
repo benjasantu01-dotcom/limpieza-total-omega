@@ -133,7 +133,7 @@ def _has_alternate_data_stream(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Verifica atributos de archivo (sistema/oculto) vía API de Windows."""
+    """Verifica los atributos de 'Sistema' u 'Oculto' mediante llamadas de bajo nivel a la API de Windows."""
     if os.name != 'nt' or not isinstance(path, Path):
         return False
     try:
@@ -146,7 +146,7 @@ def _is_system_or_hidden(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_reparse_point(path: Path) -> bool:
-    """Identifica puntos de reparse (junctions, symlinks) vía atributos de archivo."""
+    """Identifica nodos de reparse (junctions, symlinks) que podrían causar bucles infinitos en escaneos."""
     if os.name != 'nt':
         return path.is_symlink()
     if not isinstance(path, Path):
@@ -161,7 +161,10 @@ def _is_reparse_point(path: Path) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Verifica si el archivo está en uso exclusivo por otro proceso."""
+    """
+    Intenta abrir el archivo con acceso de lectura exclusiva. 
+    Si falla, se asume que otro proceso mantiene un bloqueo (sharing violation).
+    """
     path = Path(path_str)
     if not path.exists():
         return False

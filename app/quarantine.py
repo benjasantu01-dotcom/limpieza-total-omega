@@ -113,6 +113,7 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path) -> bool:
+        """Compara metadatos de archivo físico con el estado registrado."""
         try:
             if not stored_path.is_file() or stored_path.is_symlink():
                 return False
@@ -481,13 +482,14 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         if not stored_path.exists():
             del items_dict[item_id]
             continue
+        
+        # Validar condiciones de seguridad antes de procesar la eliminación
         if _is_item_purgable(stored_path, item, quarantine_root):
-            if _is_within_quarantine_sandbox(stored_path, quarantine_root):
-                if _safe_unlink(stored_path):
-                    del items_dict[item_id]
-                    purged_count += 1
+            if _safe_unlink(stored_path):
+                del items_dict[item_id]
+                purged_count += 1
             else:
-                raise UnsafePathError(f"Purgado abortado: intento de borrado fuera del sandbox para {item.stored_name}")
+                raise UnsafePathError(f"Falla crítica: no se pudo eliminar {item.stored_name}")
         else:
             raise UnsafePathError(f"Purgado abortado: el archivo {item.stored_name} no superó validaciones.")
             
