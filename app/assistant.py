@@ -486,13 +486,12 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_LIST[:3],
         )
 
-    # Identificar problemas una sola vez por consulta
-    problemas = _identify_active_problems(context)
-    
-    for token in _TOKEN_REGEX.findall(q_sanitized):
+    tokens = set(_TOKEN_REGEX.findall(q_sanitized))
+    for token in tokens:
         if token in _KEYWORD_MAP:
             return _HANDLERS[_KEYWORD_MAP[token]](context, question)
 
+    problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "

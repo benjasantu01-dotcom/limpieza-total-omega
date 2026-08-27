@@ -206,7 +206,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Sanitiza strings de configuración."""
+        """Sanitiza strings de configuración validando longitud y caracteres de control."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -244,7 +244,10 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un diccionario externo (JSON) contra el esquema, forzando valores de fábrica ante corrupción."""
+    """
+    Valida un diccionario externo contra el esquema de AppSettings.
+    Cualquier campo ausente o corrupto se reemplaza por el valor de fábrica (DEFAULTS).
+    """
     config = DEFAULTS.copy()
     if not isinstance(raw_values, dict): return config
     for key_str, val in raw_values.items():
@@ -256,7 +259,10 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Lee y deserializa la configuración desde disco; utiliza caché para evitar lecturas redundantes."""
+    """
+    Lee y deserializa la configuración.
+    Usa caché interna basada en mtime para evitar E/S redundante en disco.
+    """
     ruta = settings_path(custom_base)
     try:
         if not ruta.exists(): return DEFAULTS.copy()
@@ -275,7 +281,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Serializa y guarda la configuración de manera atómica, previniendo corrupción ante interrupciones."""
+    """
+    Serializa y guarda la configuración de manera atómica.
+    Utiliza un archivo temporal para prevenir corrupción ante cierres inesperados.
+    """
     if not isinstance(values, dict): return None
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
@@ -305,7 +314,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         if temp_name and os.path.exists(temp_name): os.remove(temp_name)
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Aplica actualizaciones parciales a la configuración actual y persiste los cambios."""
+    """Aplica actualizaciones parciales a la configuración actual y persiste."""
     current = load(custom_base).copy()
     modified = False
     for k, v in changes.items():

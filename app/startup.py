@@ -96,7 +96,10 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae rutas que vienen entrecomilladas en la línea de comando (formato estándar)."""
+        """
+        Extrae rutas encerradas en comillas dobles, ignorando rutas con caracteres 
+        inválidos en Windows para prevenir la evaluación de comandos malformados.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
         end_quote: int = raw_command.find('"', 1)
@@ -117,11 +120,15 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza rutas y verifica existencia en disco. 
-        
-        La verificación detecta FILE_ATTRIBUTE_REPARSE_POINT (0x400) para no 
-        seguir puntos de reanálisis (junctions/symlinks) que podrían causar 
-        bucles infinitos o fugas de escaneo fuera de directorios de usuario.
+        Normaliza, valida y cachea rutas de ejecutables detectados.
+
+        Seguridad: 
+        1. Verifica la existencia de puntos de reanálisis (reparse points) mediante 
+           lstat para evitar el seguimiento recursivo de junctions fuera del scope.
+        2. Aplica `is_protected_path` para asegurar que el escaneo no cruce las
+           fronteras críticas del sistema operativo.
+        3. Normaliza las rutas mediante os.path.realpath para resolver accesos 
+           indirectos antes de la validación.
         """
         if not isinstance(path_string, str) or not path_string or any(c in path_string for c in '<>|?*\0'):
             return ""
