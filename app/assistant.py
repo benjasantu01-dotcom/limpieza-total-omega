@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union, TypedDict, NamedTuple
+from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple
 
 import settings
 from safety import is_protected_path
@@ -66,16 +66,11 @@ __all__ = [
     "explain_area",
 ]
 
-class AssistantConfig(TypedDict):
-    """
-    Esquema estricto de la configuración cargada desde el archivo de ajustes.
-    asistente_api_key: Credencial para conectar a la API.
-    asistente_modelo: Identificador del modelo de lenguaje a utilizar.
-    asistente_enviar_metricas: Flag para permitir envío de métricas a la nube.
-    """
-    asistente_api_key: str
-    asistente_modelo: str
-    asistente_enviar_metricas: bool
+class AssistantConfig(NamedTuple):
+    """Configuración validada del asistente para la interacción con la API."""
+    api_key: str
+    model: str
+    allow_metrics: bool
 
 @dataclass(frozen=True)
 class MetricSpec:
@@ -508,6 +503,16 @@ def available(base: Union[str, Path, None] = None) -> bool:
     except Exception:
         return False
 
+def _parse_config(raw_cfg: Any) -> AssistantConfig:
+    """Extrae y normaliza la configuración del asistente desde un dict crudo."""
+    if not isinstance(raw_cfg, dict):
+        return AssistantConfig("", "gemini-3.1-flash-lite", True)
+    return AssistantConfig(
+        api_key=str(raw_cfg.get("asistente_api_key", "")),
+        model=str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")),
+        allow_metrics=bool(raw_cfg.get("asistente_enviar_metricas", True))
+    )
+
 def _call_gemini(
     question: str, 
     context_text: str, 
@@ -590,17 +595,9 @@ def ask(question: str, context: Optional[SystemContext] = None,
     if not available(base): return respaldo
     
     try:
-        raw_cfg = settings.load(base)
-        if not isinstance(raw_cfg, dict): return respaldo
-        
-        cfg: AssistantConfig = {
-            "asistente_api_key": str(raw_cfg.get("asistente_api_key", "")),
-            "asistente_modelo": str(raw_cfg.get("asistente_modelo", "gemini-3.1-flash-lite")),
-            "asistente_enviar_metricas": bool(raw_cfg.get("asistente_enviar_metricas", True))
-        }
-        
-        texto_contexto = context_as_text(ctx) if cfg["asistente_enviar_metricas"] else "El usuario no autorizó enviar métricas."
-        remoto = _call_gemini(question, texto_contexto, cfg["asistente_api_key"], cfg["asistente_modelo"])
+        cfg = _parse_config(settings.load(base))
+        texto_contexto = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
+        remoto = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
         
         if not remoto:
             respaldo.notice = "No se pudo consultar al asistente en línea, respondí con el motor local."

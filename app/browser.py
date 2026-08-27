@@ -175,13 +175,16 @@ def _sum_directory_recursive(
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
-    visited: Set[str]
+    visited: Set[str],
+    depth: int = 0
 ) -> int:
     """
-    Calcula el peso total de una carpeta.
-    `memo`: caché de diccionario para evitar reprocesar ramas durante el escaneo.
-    `visited`: set de rutas para evitar ciclos y procesamiento redundante.
+    Calcula recursivamente el peso de una carpeta utilizando `os.scandir` para eficiencia.
+    Mantiene un set `visited` para evitar bucles de enlaces y `memo` para cachear resultados.
     """
+    if depth > MAX_SCAN_DEPTH:
+        return 0
+
     root_abs = os.path.normpath(root_dir)
     if root_abs in visited:
         return 0
@@ -199,15 +202,10 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, visited)
+                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, visited, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
-                        # Bloque try-except específico para stat individual
-                        try:
-                            stat = entry.stat(follow_symlinks=False)
-                            total += stat.st_size
-                        except (OSError, PermissionError):
-                            continue
-                except (OSError, PermissionError, FileNotFoundError):
+                        total += entry.stat(follow_symlinks=False).st_size
+                except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError, FileNotFoundError):
         return 0

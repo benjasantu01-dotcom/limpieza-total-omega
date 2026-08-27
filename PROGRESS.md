@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 102 | 9 | 14 | 10 | 89 |
-| 2026-08-27 | 119 | 8 | 16 | 6 | 131 |
+| 2026-08-26 | 98 | 9 | 14 | 10 | 89 |
+| 2026-08-27 | 123 | 8 | 16 | 6 | 131 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
-- manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **52**
+- manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- rendimiento: **40**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **21**
 - `quarantine.py`: **19**
 - `settings.py`: **19**
-- `healthscore.py`: **18**
-- `memory.py`: **17**
-- `browser.py`: **17**
+- `browser.py`: **18**
+- `assistant.py`: **17**
+- `healthscore.py`: **17**
 - `duplicates.py`: **17**
-- `assistant.py`: **16**
+- `branding.py`: **16**
+- `memory.py`: **16**
 - `diskreport.py`: **16**
-- `branding.py`: **15**
-- `main.py`: **14**
+- `main.py`: **13**
 - `safety.py`: **12**
-- `organizer.py`: **10**
-- `startup.py`: **10**
+- `startup.py`: **11**
+- `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T11:59:24` **browser.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la robustez del módulo `browser.py` mediante la refactorización de `_sum_directory_recursive` para simplificar su lógica de control y mediante la adición de Type Hints más precisos y docstrings explicativos que aclaran el flujo de seguridad, facilitando el mantenimiento y cumplimiento de las normas de auditoría.
+- `2026-08-27T11:59:13` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `Docstrings` detallados para los diccionarios de configuración (`PaletteDict`, `FontSizesDict`) y se han especificado los tipos de los parámetros en las funciones de renderizado para mejorar la legibilidad y facilitar el mantenimiento de la interfaz.
+- `2026-08-27T11:57:38` **assistant.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `AssistantConfig` (cuyo nombre ya existía como `TypedDict` pero se usaba para validar dicts crudos) y se refactorizó la lógica de carga en `ask` para utilizar una función de validación dedicada, mejorando la legibilidad y garantizando que la configuración sea siempre tratada como un objeto tipado tras ser cargada.
+- `2026-08-27T11:57:02` **startup.py** (manejo de errores y validación de entradas): Se mejora la robustez de `parse_registry_csv` y `entries_from_folders` mediante una validación más estricta de parámetros y el manejo defensivo de rutas, asegurando que `is_protected_path` se utilice correctamente incluso ante entradas malformadas o inesperadas que podrían causar excepciones al instanciar `Path`.
 - `2026-08-27T11:48:32` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del validador `path` en `_Validators` añadiendo un chequeo explícito de `is_protected_path` sobre la ruta resuelta antes de cualquier operación, asegurando que incluso rutas que superen las validaciones básicas de `pathlib` sigan bajo el control de las reglas de seguridad.
 - `2026-08-27T11:47:53` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas agregando validaciones de tipo y existencia para evitar excepciones inesperadas en `check_system_lookalike` y `check_double_extension`, asegurando que ambas funciones manejen de forma segura parámetros potencialmente inválidos sin abortar el escaneo.
 - `2026-08-27T11:41:05` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `load_manifest` mediante la implementación de una validación explícita de tipos y estructura de datos antes de acceder a los campos, previniendo errores de `KeyError` o `AttributeError` ante manifiestos mal formados, y reforzando la integridad con un manejo de excepciones más específico durante la deserialización.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T09:54:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo validaciones explícitas contra rutas fuera del ámbito del `base_root` y utilizando `Path.resolve()` correctamente para prevenir ataques de *path traversal* (ej. secuencias `..`), cumpliendo estrictamente con el principio de limitar la operación al espacio de trabajo definido.
 - `2026-08-27T09:54:29` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) al validar el estado del archivo antes y después de acceder a sus metadatos, y se mejoró la resiliencia contra enlaces simbólicos al forzar una resolución absoluta en `_validate_boundary_conditions`.
 - `2026-08-27T09:45:29` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `quarantine_file` para evitar ataques de tiempo de ejecución (TOCTOU) al validar el archivo después de que este ya haya sido verificado por el sistema de seguridad, asegurando que el archivo no haya sido reemplazado por un enlace simbólico entre la validación inicial y la operación de aislamiento.
-- `2026-08-27T09:34:06` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre cada subdirectorio antes de intentar acceder a él, evitando así seguir rutas que podrían haber sido movidas a puntos de reparse o junctions de sistema durante la ejecución del bucle.
-- `2026-08-27T09:25:12` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` aplicando una validación de ruta jerárquica más robusta y asegurando que las operaciones de creación de directorios no dependan de estados de escritura implícitos, alineándose con el enfoque de seguridad defensiva.
-- `2026-08-27T09:24:04` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un chequeo preventivo de `OSError` al llamar a `os.path.realpath`, evitando que la aplicación se bloquee si encuentra rutas con errores de permisos o sistemas de archivos inaccesibles durante la resolución de la ruta real del ejecutable.
-- `2026-08-27T09:15:27` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la carga y validación de archivos, integrando una verificación de permisos más estricta mediante `os.access` antes de intentar leer o escribir, protegiendo contra bloqueos de sistema o archivos inaccesibles.

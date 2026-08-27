@@ -241,7 +241,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     scan_folders = folders if folders is not None else startup_folders()
     
     for folder in scan_folders:
-        if is_protected_path(folder):
+        if not isinstance(folder, Path) or is_protected_path(folder):
             continue
         try:
             with os.scandir(folder) as it:
@@ -291,10 +291,10 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 if any(c in cmd for c in '<>|?*'):
                     continue
                 
-                cmd_path = Path(cmd)
-                if is_protected_path(cmd_path):
+                # Validación defensiva antes de instanciar Path
+                if not cmd or any(ord(c) < 32 for c in cmd):
                     continue
-
+                
                 parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
             except (KeyError, ValueError, TypeError, AttributeError, OSError):
                 continue
