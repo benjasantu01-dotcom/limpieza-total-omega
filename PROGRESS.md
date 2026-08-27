@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 129 | 10 | 16 | 11 | 110 |
-| 2026-08-27 | 108 | 7 | 14 | 5 | 94 |
+| 2026-08-26 | 129 | 10 | 16 | 11 | 106 |
+| 2026-08-27 | 109 | 7 | 15 | 5 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,16 +25,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **43**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **41**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `healthscore.py`: **20**
+- `quarantine.py`: **20**
 - `settings.py`: **20**
 - `scanner.py`: **20**
 - `browser.py`: **19**
 - `duplicates.py`: **19**
-- `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T09:45:29` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `quarantine_file` para evitar ataques de tiempo de ejecución (TOCTOU) al validar el archivo después de que este ya haya sido verificado por el sistema de seguridad, asegurando que el archivo no haya sido reemplazado por un enlace simbólico entre la validación inicial y la operación de aislamiento.
 - `2026-08-27T09:34:06` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre cada subdirectorio antes de intentar acceder a él, evitando así seguir rutas que podrían haber sido movidas a puntos de reparse o junctions de sistema durante la ejecución del bucle.
 - `2026-08-27T09:25:12` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` aplicando una validación de ruta jerárquica más robusta y asegurando que las operaciones de creación de directorios no dependan de estados de escritura implícitos, alineándose con el enfoque de seguridad defensiva.
 - `2026-08-27T09:24:04` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un chequeo preventivo de `OSError` al llamar a `os.path.realpath`, evitando que la aplicación se bloquee si encuentra rutas con errores de permisos o sistemas de archivos inaccesibles durante la resolución de la ruta real del ejecutable.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T08:53:18` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_sum_directory_recursive` ante errores de lectura de atributos (`stat`) mediante un bloque `try-except` más granular, previniendo que un único archivo bloqueado (por ejemplo, un descriptor de sistema inaccesible) aborte prematuramente el cálculo de tamaño de todo un directorio.
 - `2026-08-27T08:44:35` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad en `save_logo_svg` para prevenir que `path_obj.parent` sea una ruta inexistente que no pueda ser creada o que resida en una zona protegida, garantizando la integridad del sistema ante intentos de escritura en carpetas bloqueadas.
 - `2026-08-27T08:44:18` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de diagnóstico ante estados inválidos o incompletos, añadiendo una comprobación explícita de `analyzed` en los manejadores de consulta y previniendo posibles errores de `ZeroDivisionError` o `ValueError` si las métricas llegaran con valores numéricos inesperados durante la ejecución.
-- `2026-08-27T08:43:11` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la serialización a `dict` solo cuando es necesario, manteniendo `DEFAULTS` como objeto constante para evitar copias innecesarias y reduciendo la frecuencia de llamadas a `.copy()` y `_get_default_config()` en las operaciones de lectura y validación.

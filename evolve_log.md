@@ -825,3 +825,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-08-27T09:35:52` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `main.py` añadiendo un filtro explícito en `_worker_thread_logic` que valida que la ruta de destino (si existe) pase `is_safe_to_modify` antes de delegar cualquier ejecución al pool de hilos, asegurando que los workers nunca operen fuera de las zonas permitidas incluso si fallara la lógica de UI.
 - `2026-08-27T09:35:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T09:35:52` Corrida terminada. Total usado hoy: 228.
+- `2026-08-27T09:43:48` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-27T09:44:16` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-27T09:44:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-27T09:45:29` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `quarantine_file` para evitar ataques de tiempo de ejecución (TOCTOU) al validar el archivo después de que este ya haya sido verificado por el sistema de seguridad, asegurando que el archivo no haya sido reemplazado por un enlace simbólico entre la validación inicial y la operación de aislamiento.
+- `2026-08-27T09:45:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-27T09:45:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T09:45:33` Corrida terminada. Total usado hoy: 232.

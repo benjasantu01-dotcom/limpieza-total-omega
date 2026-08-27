@@ -348,8 +348,8 @@ def quarantine_file(
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
     
-    if not source_path.exists():
-        raise FileNotFoundError("El archivo origen desapareció antes de procesar el aislamiento.")
+    if not source_path.is_file() or source_path.is_symlink():
+        raise RuntimeError("Integridad comprometida: el origen ya no es un archivo regular.")
         
     try:
         file_size = source_path.stat().st_size
@@ -381,7 +381,7 @@ def quarantine_file(
         save_manifest(list(items_dict.values()), base)
         
         try:
-            if source_path.exists():
+            if source_path.is_file() and not source_path.is_symlink():
                 source_path.unlink()
         except OSError as e:
             raise RuntimeError(f"Aislamiento exitoso, pero no se pudo limpiar el origen: {e}")
