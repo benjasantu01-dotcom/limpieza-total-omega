@@ -203,13 +203,14 @@ def _check_file_integrity(path: Path) -> None:
     if len(path.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
-    if not path.exists():
-        raise UnsafePathError("El archivo ha dejado de existir.")
-
+    # Lstat evita seguir enlaces simbólicos maliciosos durante la inspección
     try:
-        file_stat: os.stat_result = path.stat()
+        file_stat: os.stat_result = path.lstat()
     except (PermissionError, OSError):
         raise UnsafePathError(f"Error de acceso a metadatos: {ProtectionReason.INACCESSIBLE.value}")
+
+    if not path.exists():
+        raise UnsafePathError("El archivo ha dejado de existir.")
 
     if not os.access(path, os.W_OK):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}")
@@ -315,11 +316,14 @@ def _validate_basic_path_safety(path: Path, path_str: str) -> None:
 
 def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None:
     """Verifica si la operación respeta límites geográficos definidos."""
-    if base_dir and not is_within_directory(path, base_dir, allow_equal=True):
+    # Resolución absoluta forzada para evitar escape mediante enlaces simbólicos
+    p_abs = path.resolve()
+    
+    if base_dir and not is_within_directory(p_abs, base_dir, allow_equal=True):
         raise UnsafePathError("Operación fuera del directorio base permitido.")
-    if is_within_directory(path, Path.cwd(), allow_equal=True):
+    if is_within_directory(p_abs, Path.cwd(), allow_equal=True):
         raise UnsafePathError("Operación denegada en el directorio de ejecución.")
-    if is_drive_root(path) or is_protected_path(path):
+    if is_drive_root(p_abs) or is_protected_path(p_abs):
         raise UnsafePathError("Ruta de sistema protegida.")
     if _is_reparse_point(path):
         raise UnsafePathError("Seguridad denegada: nodo de reparse detectado.")

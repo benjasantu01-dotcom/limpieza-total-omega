@@ -101,7 +101,8 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root_str: str = str(base_root.resolve())
+        self.base_root = base_root.resolve()
+        self.base_root_str: str = str(self.base_root)
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -116,11 +117,12 @@ class Scanner:
         if RESERVED_NAMES_RE.match(name):
             return False
 
-        # Evita resolución de ruta completa si es posible
-        if not entry.path.startswith(self.base_root_str):
+        # Verificación estricta de subdirectorio para prevenir traversal
+        entry_path = Path(entry.path).resolve()
+        if self.base_root not in entry_path.parents and entry_path != self.base_root:
             return False
 
-        return not is_protected_path(Path(entry.path))
+        return not is_protected_path(entry_path)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si la entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles infinitos."""
@@ -172,7 +174,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if not directory:
         return []
     try:
-        path_input = Path(directory).expanduser().resolve(strict=False)
+        path_input = Path(directory).resolve()
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):

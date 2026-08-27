@@ -832,3 +832,38 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-08-27T09:45:33` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-27T09:45:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T09:45:33` Corrida terminada. Total usado hoy: 232.
+- `2026-08-27T09:53:59` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-27T09:54:29` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) al validar el estado del archivo antes y después de acceder a sus metadatos, y se mejoró la resiliencia contra enlaces simbólicos al forzar una resolución absoluta en `_validate_boundary_conditions`.
+- `2026-08-27T09:54:53` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo validaciones explícitas contra rutas fuera del ámbito del `base_root` y utilizando `Path.resolve()` correctamente para prevenir ataques de *path traversal* (ej. secuencias `..`), cumpliendo estrictamente con el principio de limitar la operación al espacio de trabajo definido.
+- `2026-08-27T09:55:31` Tests FALLARON:
+```
+if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
+                return DEFAULTS.copy()
+            with open(ruta, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            config = validate(data)
+            _CACHE[ruta] = (mtime, config)
+            return config
+>       except (json.DecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/settings.py:261: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:254: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_corrupt_file_falls_back_to_defaults - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed, 4 warnings in 1.25s
+
+```
+- `2026-08-27T09:55:31` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_safe_to_modify` sobre el directorio padre antes de realizar operaciones de disco, asegurando que la configuración nunca se escriba en rutas protegidas incluso si el usuario intenta inyectar rutas mediante `custom_base`.
+- `2026-08-27T09:55:42` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-08-27T09:55:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T09:55:42` Corrida terminada. Total usado hoy: 236.

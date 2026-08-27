@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **240** (47.6% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 129 | 10 | 16 | 11 | 106 |
-| 2026-08-27 | 109 | 7 | 15 | 5 | 96 |
+| 2026-08-26 | 129 | 10 | 16 | 11 | 102 |
+| 2026-08-27 | 111 | 8 | 15 | 5 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **48**
+- seguridad defensiva: **44**
 - rendimiento: **43**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **21**
 - `healthscore.py`: **20**
 - `quarantine.py`: **20**
 - `settings.py`: **20**
-- `scanner.py`: **20**
 - `browser.py`: **19**
 - `duplicates.py`: **19**
 - `assistant.py`: **18**
@@ -40,12 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **18**
 - `branding.py`: **15**
 - `main.py`: **15**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `organizer.py`: **12**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T09:54:53` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo validaciones explícitas contra rutas fuera del ámbito del `base_root` y utilizando `Path.resolve()` correctamente para prevenir ataques de *path traversal* (ej. secuencias `..`), cumpliendo estrictamente con el principio de limitar la operación al espacio de trabajo definido.
+- `2026-08-27T09:54:29` **safety.py** (seguridad defensiva): Se reforzó `ensure_safe_to_modify` para prevenir ataques de "Time-of-Check to Time-of-Use" (TOCTOU) al validar el estado del archivo antes y después de acceder a sus metadatos, y se mejoró la resiliencia contra enlaces simbólicos al forzar una resolución absoluta en `_validate_boundary_conditions`.
 - `2026-08-27T09:45:29` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `quarantine_file` para evitar ataques de tiempo de ejecución (TOCTOU) al validar el archivo después de que este ya haya sido verificado por el sistema de seguridad, asegurando que el archivo no haya sido reemplazado por un enlace simbólico entre la validación inicial y la operación de aislamiento.
 - `2026-08-27T09:34:06` **diskreport.py** (seguridad defensiva): Mejoré la seguridad defensiva en `walk_files` y `largest_folders` añadiendo una validación explícita mediante `is_protected_path` sobre cada subdirectorio antes de intentar acceder a él, evitando así seguir rutas que podrían haber sido movidas a puntos de reparse o junctions de sistema durante la ejecución del bucle.
 - `2026-08-27T09:25:12` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` aplicando una validación de ruta jerárquica más robusta y asegurando que las operaciones de creación de directorios no dependan de estados de escritura implícitos, alineándose con el enfoque de seguridad defensiva.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T08:54:09` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_file()` previo a la lectura en `hash_file` y `partial_hash` para evitar errores al intentar procesar rutas que cambiaron de estado o fueron eliminadas por otro proceso entre la detección inicial y el cálculo del hash, mejorando la robustez ante concurrencia.
 - `2026-08-27T08:53:44` **diskreport.py** (robustez ante casos límite): Mejora la robustez en `walk_files` y `largest_folders` añadiendo chequeos de `is_protected_path` sobre rutas resueltas antes de iniciar iteraciones y añadiendo un filtro defensivo contra errores de `FileNotFoundError` durante la expansión de rutas, asegurando que el bucle no colapse ante directorios borrados concurrentemente.
 - `2026-08-27T08:53:18` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_sum_directory_recursive` ante errores de lectura de atributos (`stat`) mediante un bloque `try-except` más granular, previniendo que un único archivo bloqueado (por ejemplo, un descriptor de sistema inaccesible) aborte prematuramente el cálculo de tamaño de todo un directorio.
-- `2026-08-27T08:44:35` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad en `save_logo_svg` para prevenir que `path_obj.parent` sea una ruta inexistente que no pueda ser creada o que resida en una zona protegida, garantizando la integridad del sistema ante intentos de escritura en carpetas bloqueadas.
-- `2026-08-27T08:44:18` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de diagnóstico ante estados inválidos o incompletos, añadiendo una comprobación explícita de `analyzed` en los manejadores de consulta y previniendo posibles errores de `ZeroDivisionError` o `ValueError` si las métricas llegaran con valores numéricos inesperados durante la ejecución.
