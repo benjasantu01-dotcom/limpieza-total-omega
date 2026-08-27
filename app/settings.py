@@ -149,7 +149,9 @@ class _Validators:
     def _is_safe_path(path_str: str) -> bool:
         if not path_str or ".." in path_str: return False
         try:
-            return _Validators._run_safety_checks(Path(path_str).resolve(strict=False))
+            resolved = Path(path_str).resolve(strict=False)
+            if is_protected_path(str(resolved)): return False
+            return _Validators._run_safety_checks(resolved)
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
 

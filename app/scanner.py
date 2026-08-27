@@ -59,7 +59,7 @@ MAX_PATH_LENGTH: Final[int] = 260
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si el nombre del archivo contiene una doble extensión maliciosa."""
-    if DOUBLE_EXTENSION_RE.search(path.name):
+    if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
@@ -79,7 +79,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable intenta suplantar procesos críticos del sistema fuera de System32."""
-    if path.name.lower() in SYSTEM_LOOKALIKES:
+    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if is_protected_path(path):
             return None
         if SYSTEM32_LOWER not in str(path).lower():

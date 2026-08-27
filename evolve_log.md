@@ -1091,3 +1091,10 @@ FAILED evolve/tests/test_assistant.py::test_corrupt_file_falls_back_to_defaults 
 - `2026-08-27T11:41:05` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `load_manifest` mediante la implementación de una validación explícita de tipos y estructura de datos antes de acceder a los campos, previniendo errores de `KeyError` o `AttributeError` ante manifiestos mal formados, y reforzando la integridad con un manejo de excepciones más específico durante la deserialización.
 - `2026-08-27T11:41:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T11:41:05` Corrida terminada. Total usado hoy: 276.
+- `2026-08-27T11:46:18` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-27T11:47:03` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 112): unterminated string literal (detected at line 112)
+- `2026-08-27T11:47:29` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-27T11:47:53` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las heurísticas agregando validaciones de tipo y existencia para evitar excepciones inesperadas en `check_system_lookalike` y `check_double_extension`, asegurando que ambas funciones manejen de forma segura parámetros potencialmente inválidos sin abortar el escaneo.
+- `2026-08-27T11:48:32` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez del validador `path` en `_Validators` añadiendo un chequeo explícito de `is_protected_path` sobre la ruta resuelta antes de cualquier operación, asegurando que incluso rutas que superen las validaciones básicas de `pathlib` sigan bajo el control de las reglas de seguridad.
+- `2026-08-27T11:48:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T11:48:32` Corrida terminada. Total usado hoy: 280.
