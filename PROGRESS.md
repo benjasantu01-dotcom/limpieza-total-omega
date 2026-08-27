@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 134 | 10 | 17 | 11 | 124 |
-| 2026-08-27 | 96 | 6 | 13 | 2 | 91 |
+| 2026-08-26 | 132 | 10 | 16 | 11 | 123 |
+| 2026-08-27 | 100 | 6 | 13 | 2 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **44**
 - rendimiento: **43**
-- robustez ante casos límite: **32**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `quarantine.py`: **19**
-- `healthscore.py`: **19**
+- `healthscore.py`: **20**
+- `browser.py`: **19**
+- `duplicates.py`: **19**
 - `assistant.py`: **18**
-- `browser.py`: **18**
-- `duplicates.py`: **18**
+- `quarantine.py`: **18**
+- `diskreport.py`: **17**
 - `memory.py`: **17**
-- `diskreport.py`: **16**
 - `main.py`: **15**
 - `branding.py`: **14**
 - `safety.py`: **13**
-- `organizer.py`: **12**
 - `startup.py`: **11**
+- `organizer.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T08:54:22` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar la división por cero en el cálculo de `_INV_RAM` y `_INV_DISK`, reforzando la robustez ante configuraciones absurdas o corruptas de los umbrales de usuario sin cambiar la lógica funcional.
+- `2026-08-27T08:54:09` **duplicates.py** (robustez ante casos límite): Se ha añadido un chequeo de `is_file()` previo a la lectura en `hash_file` y `partial_hash` para evitar errores al intentar procesar rutas que cambiaron de estado o fueron eliminadas por otro proceso entre la detección inicial y el cálculo del hash, mejorando la robustez ante concurrencia.
+- `2026-08-27T08:53:44` **diskreport.py** (robustez ante casos límite): Mejora la robustez en `walk_files` y `largest_folders` añadiendo chequeos de `is_protected_path` sobre rutas resueltas antes de iniciar iteraciones y añadiendo un filtro defensivo contra errores de `FileNotFoundError` durante la expansión de rutas, asegurando que el bucle no colapse ante directorios borrados concurrentemente.
+- `2026-08-27T08:53:18` **browser.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `_sum_directory_recursive` ante errores de lectura de atributos (`stat`) mediante un bloque `try-except` más granular, previniendo que un único archivo bloqueado (por ejemplo, un descriptor de sistema inaccesible) aborte prematuramente el cálculo de tamaño de todo un directorio.
 - `2026-08-27T08:44:35` **branding.py** (robustez ante casos límite): Se ha añadido un chequeo de seguridad en `save_logo_svg` para prevenir que `path_obj.parent` sea una ruta inexistente que no pueda ser creada o que resida en una zona protegida, garantizando la integridad del sistema ante intentos de escritura en carpetas bloqueadas.
 - `2026-08-27T08:44:18` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de diagnóstico ante estados inválidos o incompletos, añadiendo una comprobación explícita de `analyzed` en los manejadores de consulta y previniendo posibles errores de `ZeroDivisionError` o `ValueError` si las métricas llegaran con valores numéricos inesperados durante la ejecución.
 - `2026-08-27T08:43:11` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la serialización a `dict` solo cuando es necesario, manteniendo `DEFAULTS` como objeto constante para evitar copias innecesarias y reduciendo la frecuencia de llamadas a `.copy()` y `_get_default_config()` en las operaciones de lectura y validación.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T08:13:21` **diskreport.py** (rendimiento): Se optimizó el proceso de recolección de métricas en `_collect_summary_data` consolidando el cálculo de archivos grandes, totales y extensiones en una sola pasada sobre `walk_files`, eliminando múltiples iteraciones redundantes sobre el sistema de archivos.
 - `2026-08-27T08:12:53` **browser.py** (rendimiento): Optimizé el escaneo recursivo introduciendo un conjunto (`Set`) de rutas ya procesadas para evitar la redundancia al calcular tamaños de carpetas compartidas y mejoré la lógica de `_sum_directory_recursive` para que el `memo` sea efectivo durante todo el ciclo de `detect_profiles`, evitando re-cálculos costosos de sub-carpetas.
 - `2026-08-27T08:03:18` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` convirtiendo el set de tokens en un conjunto de búsqueda directa para evitar múltiples iteraciones sobre el mismo diccionario, y cacheé la lista de sugerencias en `SUGGESTED_QUESTIONS_LIST` para evitar la creación de nuevas listas en cada consulta.
-- `2026-08-27T08:02:56` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo documentando la estructura de las claves del registro y detallando la lógica de resolución de rutas en los docstrings, además de tipar explícitamente el tipo de retorno de las funciones de reporte para clarificar su uso en la interfaz.
-- `2026-08-27T08:02:27` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints consistentes en las funciones de acceso, junto con la corrección de una ambigüedad lógica en `describe()` para mejorar la legibilidad del reporte de configuración.
-- `2026-08-27T08:01:58` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructuradas en métodos críticos (`_is_safe_entry`, `_is_reparse_point`, `process_entry`) y la clarificación de tipos, facilitando la comprensión del flujo de seguridad para futuros colaboradores.
-- `2026-08-27T07:52:52` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings estructuradas en las funciones de validación, clarificando la intención técnica de cada chequeo y su relación con el flujo de seguridad, además de unificar criterios en los comentarios para facilitar auditorías futuras.

@@ -201,8 +201,12 @@ def _sum_directory_recursive(
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, visited)
                     elif entry.is_file(follow_symlinks=False):
-                        stat = entry.stat(follow_symlinks=False)
-                        total += stat.st_size
+                        # Bloque try-except específico para stat individual
+                        try:
+                            stat = entry.stat(follow_symlinks=False)
+                            total += stat.st_size
+                        except (OSError, PermissionError):
+                            continue
                 except (OSError, PermissionError, FileNotFoundError):
                     continue
     except (PermissionError, OSError, FileNotFoundError):

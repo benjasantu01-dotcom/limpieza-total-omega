@@ -258,13 +258,6 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos mediante `os.scandir`.
-
-    Args:
-        directory: Directorio base de inicio.
-        skip_protected: Si es True, utiliza `is_protected_path` para evitar rutas del sistema.
-
-    Yields:
-        Tuplas conteniendo el objeto Path absoluto y el tamaño en bytes del archivo.
     """
     if not directory:
         return
@@ -347,7 +340,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     
     try:
         p_base = Path(directory).resolve()
-        if not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
+        if not p_base.exists() or not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
             return []
             
         sums: Dict[str, int] = defaultdict(int)

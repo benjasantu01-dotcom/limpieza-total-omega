@@ -55,8 +55,8 @@ _LIMIT_DISK_PERCENT: Final[float] = 25.0
 _INV_JUNK: Final[float] = 1.0 / max(1e-9, _LIMIT_JUNK_MB)
 _INV_DUP: Final[float] = 1.0 / max(1e-9, _LIMIT_DUPLICATE_MB)
 _INV_STARTUP: Final[float] = 1.0 / max(1, _LIMIT_STARTUP_COUNT)
-_INV_RAM: Final[float] = 1.0 / max(0.1, float(_LIMIT_RAM_PERCENT))
-_INV_DISK: Final[float] = 1.0 / max(0.1, float(_LIMIT_DISK_PERCENT))
+_INV_RAM: Final[float] = 1.0 / max(1e-9, float(_LIMIT_RAM_PERCENT))
+_INV_DISK: Final[float] = 1.0 / max(1e-9, float(_LIMIT_DISK_PERCENT))
 
 # Umbrales para disparar alertas de usuario (Rango 0.0 a 1.0)
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
