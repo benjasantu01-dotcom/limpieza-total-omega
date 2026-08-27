@@ -1250,3 +1250,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T13:19:48` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una verificación de integridad en `_process_size_group` y `hash_file` para manejar el caso límite donde un archivo es bloqueado o eliminado por otro proceso entre su detección inicial y su lectura (Race Condition), evitando excepciones no capturadas y devolviendo `None` de forma segura.
 - `2026-08-27T13:19:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T13:19:48` Corrida terminada. Total usado hoy: 316.
+- `2026-08-27T13:28:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-27T13:29:06` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-27T13:30:18` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de estados de configuración y widgets en `_collect_settings` y `on_reset_settings` para evitar `TclError` y comportamientos erráticos cuando el usuario intenta guardar o resetear ajustes antes de que los componentes UI hayan terminado de renderizarse (o si la pestaña no se ha inicializado).
+- `2026-08-27T13:30:46` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `trim_working_set` para validar que el `OpenProcess` devuelva un handle válido antes de cualquier operación, y se mejoró la robustez de `parse_windows_process_csv` para evitar fallos si el comando de PowerShell devuelve líneas mal formadas o vacías.
+- `2026-08-27T13:30:59` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-27T13:30:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T13:30:59` Corrida terminada. Total usado hoy: 320.

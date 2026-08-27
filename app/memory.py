@@ -153,10 +153,12 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Convierte el CSV de procesos de PowerShell en objetos ProcessMemory."""
-    if not isinstance(raw_csv_text, str) or not raw_csv_text:
+    if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     processes: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
+        line = line.strip()
+        if not line: continue
         parts = [p.strip().strip("'\"") for p in line.split(",")]
         if len(parts) >= 3:
             try:

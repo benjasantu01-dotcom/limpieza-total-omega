@@ -1773,7 +1773,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 clave_api = "".join(c for c in clave_raw if c.isprintable())
                 if clave_api:
                     valores["asistente_clave_api"] = clave_api
-        except Exception as e:
+        except (tk.TclError, Exception) as e:
             logging.error("Error al recopilar ajustes de la UI: %s", e)
         return valores
 
@@ -1785,7 +1785,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 "Activar asistente en línea",
                 assistant.PRIVACY_NOTICE + "\n\n¿Lo activamos?",
             ):
-                self.setting_vars["asistente_activado"].set(False)
+                if hasattr(self, 'setting_vars') and "asistente_activado" in self.setting_vars:
+                    self.setting_vars["asistente_activado"].set(False)
                 return
 
         def task() -> None:
@@ -1817,12 +1818,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             self.settings = settings_mod.reset()
+            # Actualizar variables de UI si existen los widgets
             for clave, variable in self.setting_vars.items():
                 try:
                     if clave in settings_mod.DEFAULTS:
                         variable.set(settings_mod.DEFAULTS[clave])
-                except Exception:
+                except (tk.TclError, Exception):
                     continue
+            
+            # Resetear entradas de texto si existen
+            if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
+                self.min_dup_entry.delete(0, "end")
+                self.min_dup_entry.insert(0, str(settings_mod.DEFAULTS.get("duplicados_tamano_minimo_kb", 64)))
+            
+            if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
+                self.top_files_entry.delete(0, "end")
+                self.top_files_entry.insert(0, str(settings_mod.DEFAULTS.get("top_archivos", 15)))
+
             self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""]
                            + settings_mod.describe(), "Ajustes")
 
