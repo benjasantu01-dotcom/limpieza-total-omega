@@ -259,7 +259,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             return DEFAULTS.copy()
             
         with open(ruta, "r", encoding="utf-8") as f:
-            config = validate(json.load(f))
+            data = json.load(f)
+            if not isinstance(data, dict): return DEFAULTS.copy()
+            config = validate(data)
         
         _CACHE[ruta] = (mtime, config)
         return config.copy()

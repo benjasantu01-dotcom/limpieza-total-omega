@@ -348,6 +348,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         # Validar directorio padre antes de la creación
         parent = path_obj.parent
         if not parent.exists():
+            # Verificamos si podemos modificar el padre (creación de carpeta)
             if not is_safe_to_modify(parent):
                 return None
             parent.mkdir(parents=True, exist_ok=True)

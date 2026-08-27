@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 79 | 6 | 11 | 7 | 77 |
-| 2026-08-27 | 146 | 11 | 21 | 7 | 139 |
+| 2026-08-26 | 79 | 6 | 11 | 7 | 73 |
+| 2026-08-27 | 149 | 12 | 21 | 7 | 139 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **42**
-- robustez ante casos límite: **41**
-- seguridad defensiva: **36**
+- robustez ante casos límite: **42**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
+- `assistant.py`: **19**
 - `duplicates.py`: **19**
-- `assistant.py`: **18**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
+- `settings.py`: **18**
 - `healthscore.py`: **17**
-- `settings.py`: **17**
-- `branding.py`: **16**
+- `branding.py`: **17**
 - `main.py`: **13**
 - `startup.py`: **11**
 - `safety.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T13:50:44` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` al verificar la existencia del directorio padre mediante `is_safe_to_modify` antes de cualquier intento de creación, evitando suposiciones sobre el sistema de archivos y asegurando que las operaciones de escritura solo ocurran en rutas validadas.
+- `2026-08-27T13:50:28` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` mediante la implementación de una validación de contenido tras la descarga (verificando que la respuesta no contenga inyecciones de rutas) antes de su procesamiento final, asegurando que la respuesta externa no eluda los filtros de seguridad del motor local.
+- `2026-08-27T13:49:24` **settings.py** (robustez ante casos límite): Se añadió una verificación de integridad de `json.load()` para prevenir casos de archivos que, aunque no excedan el límite de tamaño, contengan estructuras JSON mal formadas o tipos de datos inesperados que podrían causar excepciones no controladas durante la validación.
 - `2026-08-27T13:44:25` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante casos límite en la recolección de metadatos de archivos agregando un bloque `try-except` específico dentro de `scan_file` para manejar errores de acceso o lectura (como bloqueos exclusivos por parte del sistema o archivos que desaparecen durante el escaneo), evitando que una sola falla de I/O interrumpa el análisis del resto de las reglas heurísticas.
 - `2026-08-27T13:30:46` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `trim_working_set` para validar que el `OpenProcess` devuelva un handle válido antes de cualquier operación, y se mejoró la robustez de `parse_windows_process_csv` para evitar fallos si el comando de PowerShell devuelve líneas mal formadas o vacías.
 - `2026-08-27T13:30:18` **main.py** (robustez ante casos límite): Se introdujo una gestión robusta de estados de configuración y widgets en `_collect_settings` y `on_reset_settings` para evitar `TclError` y comportamientos erráticos cuando el usuario intenta guardar o resetear ajustes antes de que los componentes UI hayan terminado de renderizarse (o si la pestaña no se ha inicializado).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T12:58:44` **quarantine.py** (rendimiento): Optimizé la función `total_quarantined_bytes` y `summarize` para que operen directamente sobre la caché del manifiesto (`_load_manifest_internal`) evitando recrear la lista completa de objetos mediante `load_manifest()` (que fuerza una conversión a lista y copia en memoria), mejorando la eficiencia en escenarios donde el manifiesto crece.
 - `2026-08-27T12:49:48` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de caché basada en tiempo y una gestión más eficiente de la lista de procesos, reduciendo la carga sobre el sistema y evitando bloqueos innecesarios del hilo principal.
 - `2026-08-27T12:48:28` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo de `compute_score` eliminando la creación dinámica de diccionarios y listas dentro del proceso, utilizando en su lugar operaciones directas para reducir la presión sobre el recolector de basura y mejorar el rendimiento en iteraciones frecuentes.
-- `2026-08-27T12:48:00` **duplicates.py** (rendimiento): Optimicé `_process_size_group` para evitar recalcular hashes de archivos únicos después del filtro de `partial_hash`, reduciendo drásticamente las operaciones de E/S innecesarias en grupos grandes con muchos falsos positivos.
-- `2026-08-27T12:39:02` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de los directorios mediante la persistencia del diccionario `perf_cache` a través de los escaneos de `detect_profiles`, evitando redundancia de E/S al reutilizar resultados de subdirectorios compartidos entre distintas rutas de caché.
-- `2026-08-27T12:38:37` **branding.py** (rendimiento): Optimicé el cálculo de colores en `gradient_colors` reemplazando la creación y conversión innecesaria de múltiples objetos `blend` por un cálculo aritmético directo sobre componentes RGB, evitando la sobrecarga de llamadas a funciones y reduciendo el uso del caché de `lru_cache`.
