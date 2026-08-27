@@ -194,7 +194,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Pipeline de verificación: usa hash parcial como filtro previo si el archivo es grande."""
+    """Pipeline de verificación optimizado: solo calcula hash completo en grupos con colisiones parciales."""
     confirmed_groups: List[DuplicateGroup] = []
     valid_paths = [p for p in paths if _is_valid_candidate(p)]
     
@@ -204,7 +204,8 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
         partial_results = _refine_by_hash(valid_paths, partial_hash)
         results = {}
         for candidates in partial_results.values():
-            results.update(_refine_by_hash(candidates, hash_file))
+            if len(candidates) > 1:
+                results.update(_refine_by_hash(candidates, hash_file))
             
     for digest, confirmed_paths in results.items():
         confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))

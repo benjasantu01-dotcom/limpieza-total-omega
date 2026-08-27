@@ -1191,3 +1191,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T12:39:14` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-08-27T12:39:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T12:39:14` Corrida terminada. Total usado hoy: 300.
+- `2026-08-27T12:47:34` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-27T12:48:00` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_process_size_group` para evitar recalcular hashes de archivos únicos después del filtro de `partial_hash`, reduciendo drásticamente las operaciones de E/S innecesarias en grupos grandes con muchos falsos positivos.
+- `2026-08-27T12:48:28` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de cálculo de `compute_score` eliminando la creación dinámica de diccionarios y listas dentro del proceso, utilizando en su lugar operaciones directas para reducir la presión sobre el recolector de basura y mejorar el rendimiento en iteraciones frecuentes.
+- `2026-08-27T12:49:35` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._update_cards
+- `2026-08-27T12:49:48` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de caché basada en tiempo y una gestión más eficiente de la lista de procesos, reduciendo la carga sobre el sistema y evitando bloqueos innecesarios del hilo principal.
+- `2026-08-27T12:49:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T12:49:48` Corrida terminada. Total usado hoy: 304.

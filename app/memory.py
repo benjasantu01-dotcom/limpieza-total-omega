@@ -151,7 +151,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     available = vals["MemAvailable"] if vals["MemAvailable"] > 0 else vals["MemFree"]
     return MemorySnapshot(total=total, available=min(available, total), cached=max(0, vals["Cached"]))
 
-@lru_cache(maxsize=1)
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """Convierte el CSV de procesos de PowerShell en objetos ProcessMemory."""
     if not isinstance(raw_csv_text, str) or not raw_csv_text:
@@ -166,7 +165,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
                     processes.append(ProcessMemory(name=name, pid=pid_val, working_set=ws_val))
             except (ValueError, TypeError):
                 continue
-    return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
+    processes.sort(key=lambda p: p.working_set, reverse=True)
+    return processes[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Solicita estadísticas de memoria mediante la API GlobalMemoryStatusEx de Windows."""
@@ -200,15 +200,18 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Obtiene la lista de procesos con mayor consumo mediante caché temporal de 60s."""
     global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
-    if (time.time() - _proc_cache_time) > 60:
+    
+    current_time = time.time()
+    if (current_time - _proc_cache_time) > 60:
         cmd = ['powershell', '-NoProfile', '-Command', 
                "Get-Process | Where-Object {$_.Id -notin 0,4} | Select-Object Name, Id, WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0:
-                _proc_cache_data, _proc_cache_time = proc.stdout, time.time()
-                parse_windows_process_csv.cache_clear()
-        except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): pass
+                _proc_cache_data, _proc_cache_time = proc.stdout, current_time
+        except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
+            pass
+            
     return parse_windows_process_csv(_proc_cache_data, limit=limit)
 
 @lru_cache(maxsize=2)

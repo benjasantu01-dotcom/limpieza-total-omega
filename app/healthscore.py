@@ -219,25 +219,18 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
-    ratios_cache: ScoreMap = {}
+    ratios: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
     
     for area, weight in _WEIGHT_ITEMS_INT:
         ratio = _SCORER_MAP[area](metrics)
-        ratios_cache[area] = ratio
-        points = round(ratio * weight)
-        metric_breakdown[area] = int(points)
-        accumulated_points += points
+        ratios[area] = ratio
+        pts = round(ratio * weight)
+        metric_breakdown[area] = int(pts)
+        accumulated_points += pts
     
     final_score = int(_clamp(accumulated_points, 0.0, 100.0))
-    
-    recommendations = []
-    for rule in _RECOMMENDATION_RULES:
-        if rule.check(metrics, ratios_cache[rule.area]):
-            try:
-                recommendations.append(rule.message_factory(metrics))
-            except Exception:
-                continue
+    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios[rule.area])]
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

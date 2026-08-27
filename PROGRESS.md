@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 89 | 8 | 13 | 9 | 85 |
-| 2026-08-27 | 133 | 10 | 18 | 7 | 132 |
+| 2026-08-26 | 87 | 8 | 12 | 9 | 84 |
+| 2026-08-27 | 136 | 10 | 19 | 7 | 132 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **47**
 - seguridad defensiva: **44**
-- robustez ante casos límite: **36**
-- rendimiento: **36**
+- rendimiento: **39**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **22**
 - `browser.py`: **19**
-- `settings.py`: **18**
-- `duplicates.py`: **18**
+- `duplicates.py`: **19**
 - `quarantine.py`: **18**
+- `settings.py`: **17**
 - `assistant.py`: **17**
 - `diskreport.py`: **17**
+- `healthscore.py`: **17**
+- `memory.py`: **17**
 - `branding.py`: **16**
-- `healthscore.py`: **16**
-- `memory.py`: **16**
 - `main.py`: **13**
-- `safety.py`: **12**
+- `safety.py`: **11**
 - `startup.py`: **11**
 - `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T12:49:48` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica de caché basada en tiempo y una gestión más eficiente de la lista de procesos, reduciendo la carga sobre el sistema y evitando bloqueos innecesarios del hilo principal.
+- `2026-08-27T12:48:28` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo de `compute_score` eliminando la creación dinámica de diccionarios y listas dentro del proceso, utilizando en su lugar operaciones directas para reducir la presión sobre el recolector de basura y mejorar el rendimiento en iteraciones frecuentes.
+- `2026-08-27T12:48:00` **duplicates.py** (rendimiento): Optimicé `_process_size_group` para evitar recalcular hashes de archivos únicos después del filtro de `partial_hash`, reduciendo drásticamente las operaciones de E/S innecesarias en grupos grandes con muchos falsos positivos.
 - `2026-08-27T12:39:02` **browser.py** (rendimiento): Optimicé el cálculo del tamaño de los directorios mediante la persistencia del diccionario `perf_cache` a través de los escaneos de `detect_profiles`, evitando redundancia de E/S al reutilizar resultados de subdirectorios compartidos entre distintas rutas de caché.
 - `2026-08-27T12:38:37` **branding.py** (rendimiento): Optimicé el cálculo de colores en `gradient_colors` reemplazando la creación y conversión innecesaria de múltiples objetos `blend` por un cálculo aritmético directo sobre componentes RGB, evitando la sobrecarga de llamadas a funciones y reduciendo el uso del caché de `lru_cache`.
 - `2026-08-27T12:38:05` **assistant.py** (rendimiento): Optimicé el rendimiento del motor de búsqueda de intenciones convirtiendo el diccionario `_KEYWORD_MAP` a un conjunto (set) o estructura directa, y evitando la ejecución de múltiples regex mediante el pre-cálculo de tokens únicos, además de cachear el acceso a los handlers para evitar búsquedas repetitivas en cada iteración de los tokens.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T12:07:12` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` incluyendo type hints explícitos para iteradores y añadiendo una sección de "Complejidad" en los docstrings de las funciones recursivas para advertir sobre el impacto en el rendimiento de las operaciones de disco.
 - `2026-08-27T11:59:24` **browser.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la robustez del módulo `browser.py` mediante la refactorización de `_sum_directory_recursive` para simplificar su lógica de control y mediante la adición de Type Hints más precisos y docstrings explicativos que aclaran el flujo de seguridad, facilitando el mantenimiento y cumplimiento de las normas de auditoría.
 - `2026-08-27T11:59:13` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando `Docstrings` detallados para los diccionarios de configuración (`PaletteDict`, `FontSizesDict`) y se han especificado los tipos de los parámetros en las funciones de renderizado para mejorar la legibilidad y facilitar el mantenimiento de la interfaz.
-- `2026-08-27T11:57:38` **assistant.py** (legibilidad y documentación): Se introdujo un `NamedTuple` llamado `AssistantConfig` (cuyo nombre ya existía como `TypedDict` pero se usaba para validar dicts crudos) y se refactorizó la lógica de carga en `ask` para utilizar una función de validación dedicada, mejorando la legibilidad y garantizando que la configuración sea siempre tratada como un objeto tipado tras ser cargada.
-- `2026-08-27T11:57:02` **startup.py** (manejo de errores y validación de entradas): Se mejora la robustez de `parse_registry_csv` y `entries_from_folders` mediante una validación más estricta de parámetros y el manejo defensivo de rutas, asegurando que `is_protected_path` se utilice correctamente incluso ante entradas malformadas o inesperadas que podrían causar excepciones al instanciar `Path`.
-- `2026-08-27T11:48:32` **settings.py** (manejo de errores y validación de entradas): Se reforzó la robustez del validador `path` en `_Validators` añadiendo un chequeo explícito de `is_protected_path` sobre la ruta resuelta antes de cualquier operación, asegurando que incluso rutas que superen las validaciones básicas de `pathlib` sigan bajo el control de las reglas de seguridad.
