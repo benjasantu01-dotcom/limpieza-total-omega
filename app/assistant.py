@@ -262,11 +262,8 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            try:
-                if _validate_and_assign(self, source, key, spec):
-                    found_data = True
-            except Exception:
-                continue
+            if _validate_and_assign(self, source, key, spec):
+                found_data = True
         
         try:
             val = _get_source_value(source, "grade")

@@ -1056,3 +1056,22 @@ FAILED evolve/tests/test_assistant.py::test_corrupt_file_falls_back_to_defaults 
 - `2026-08-27T11:09:36` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-27T11:09:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T11:09:36` Corrida terminada. Total usado hoy: 264.
+- `2026-08-27T11:15:44` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-27T11:15:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-27T11:15:46` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-27T11:16:06` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-27T11:16:06` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-27T11:16:37` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-27T11:16:37` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-27T11:16:52` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-27T11:16:52` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-08-27T11:17:12` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-27T11:17:12` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-08-27T11:17:42` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-08-27T11:17:42` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-08-27T11:18:43` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-27T11:19:46` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-27T11:20:28` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` mediante la captura explícita de excepciones durante el acceso a atributos y la validación de tipos, evitando que errores inesperados en los datos de entrada propaguen fallos en el bucle principal.
+- `2026-08-27T11:20:46` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez y seguridad de `branding.py` mediante la validación de tipos de entrada en `score_color` y la protección ante excepciones en las funciones de dibujo (`draw_logo`, `draw_gradient_bar`, `draw_ring`), evitando fallos en tiempo de ejecución al interactuar con widgets externos.
+- `2026-08-27T11:20:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T11:20:46` Corrida terminada. Total usado hoy: 268.
