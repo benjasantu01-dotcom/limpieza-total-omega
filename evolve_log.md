@@ -1160,3 +1160,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T00:34:04` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` agregando una validación explícita mediante `is_protected_path` al procesar cada entrada del sistema de archivos, asegurando que incluso rutas obtenidas de iteradores del sistema operativo sean filtradas antes de cualquier operación.
 - `2026-08-27T00:34:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T00:34:04` Corrida terminada. Total usado hoy: 16.
+- `2026-08-27T00:42:41` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-08-27T00:43:06` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-08-27T00:44:06` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-27T00:45:16` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado `_run_heuristic_scan` para evitar el uso del `target` global en `run_async` y pasar la ruta de forma explícita, asegurando que la validación de seguridad ocurra exactamente sobre la ruta de destino elegida (en lugar de una ruta potencialmente desactualizada almacenada en el estado del objeto).
+- `2026-08-27T00:45:43` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `memory.py` implementando una validación explícita de privilegios en `trim_working_set`, asegurando que no se intente interactuar con procesos elevados si la propia aplicación no tiene permisos suficientes, evitando errores silenciosos de la API de Windows.
+- `2026-08-27T00:45:55` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado `_is_safe_for_disk_op` para verificar el estado de los atributos de archivo mediante una máscara de bits más precisa y se añadió una validación explícita para evitar que los archivos de sistema o de solo lectura sean procesados, reforzando la seguridad defensiva sin alterar la funcionalidad.
+- `2026-08-27T00:45:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T00:45:55` Corrida terminada. Total usado hoy: 20.

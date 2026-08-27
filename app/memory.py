@@ -284,9 +284,11 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "PID no válido."
     if _is_system_process(target_pid): return False, "Proceso protegido."
+    
+    # Verificar privilegios mínimos: si no podemos abrir el proceso, abortar antes de intentar el trim
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     try:
-        if not proc_handle or proc_handle == -1: return False, "Acceso denegado."
+        if not proc_handle or proc_handle == -1: return False, "Permisos insuficientes o proceso inaccesible."
         valid, reason = _is_safe_to_trim(proc_handle, target_pid)
         if not valid: return False, reason or "Validación fallida."
         if not psapi.EmptyWorkingSet(proc_handle): return False, f"Error del sistema {ctypes.get_last_error()}."

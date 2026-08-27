@@ -179,8 +179,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         stat = src.stat()
         if stat.st_size == 0: return False
         
-        # Bloquea archivos con atributos de sistema (0x4) o solo lectura (0x2)
-        if os.name == "nt" and (stat.st_file_attributes & 0x46): 
+        # Bloquea archivos con atributos de sistema (0x4), ocultos (0x2) o solo lectura (0x1)
+        if os.name == "nt" and (stat.st_file_attributes & 0x7): 
             return False
         
         return not _is_file_locked(src)
@@ -334,9 +334,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not resolved_item.is_relative_to(dest):
                 continue
             
-            # Chequeo preventivo de atributos Windows (Read-only/System)
+            # Chequeo preventivo de atributos Windows (Read-only/System/Hidden)
             stat = item.stat()
-            if os.name == "nt" and (stat.st_file_attributes & 0x46):
+            if os.name == "nt" and (stat.st_file_attributes & 0x7):
                 continue
 
             # Verificación doble de seguridad y bloqueo antes de unlink

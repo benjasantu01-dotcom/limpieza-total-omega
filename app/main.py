@@ -1041,7 +1041,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         if self._closing: return
         
-        target_path = target or self.scan_target
+        target_path = target
         self._set_busy(True)
         tab = self._current_tab()
         
@@ -1240,7 +1240,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Encontrados {len(junk)} candidatos ({total_mb} MB).", "Limpieza")
             self._safe_run_ui_callback(self.refresh_list)
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=self.scan_target)
 
     def refresh_list(self) -> None:
         """Refresca el listado visual de basura según el filtro de orden."""
@@ -1285,7 +1285,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
             self._invalidate_cache("junk")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=".")
 
     def on_delete_reviewed(self) -> None:
         """Borra permanentemente los archivos revisados."""
@@ -1305,7 +1305,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 self.log(f"Error en borrado: {e}", "Limpieza")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=".")
 
     def _run_heuristic_scan(self, folder: str) -> None:
         """Ejecuta el escaneo de seguridad en una ruta específica."""
@@ -1384,7 +1384,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Listo: {aislados} aislado(s).", "Seguridad")
             self._invalidate_cache("suspicions")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=".")
 
     def on_defender_scan(self) -> None:
         """Invoca el escaneo rápido de Windows Defender."""
@@ -1434,7 +1434,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 self.log(f"Error al restaurar: {e}", "Cuarentena")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=".")
 
     def on_purge_quarantine(self) -> None:
         """Borra todos los elementos de la cuarentena."""
@@ -1454,7 +1454,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             borrados = quarantine.purge_all()
             self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=".")
 
     def on_memory_report(self) -> None:
         """Reporta el estado general de la memoria RAM."""
@@ -1531,7 +1531,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception as e:
                 self.log(f"Error al intentar liberar proceso: {e}", "Memoria")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=".")
 
     def on_drives_report(self) -> None:
         """Reporta el uso de espacio en todas las unidades locales."""
@@ -1644,7 +1644,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Aisladas {movidos} copia(s). Revisá la pestaña Cuarentena.", "Duplicados")
             self._invalidate_cache("dups")
 
-        self.run_async(task, check_safety=True)
+        self.run_async(task, check_safety=True, target=".")
 
     def on_browser_report(self) -> None:
         """Analiza cachés de navegadores web."""
