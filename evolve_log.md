@@ -678,3 +678,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-27T07:22:13` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita de `None` y tipos antes de procesar cada fila, además de capturar excepciones específicas durante la iteración del `DictReader` para evitar que un dato malformado en el registro detenga el escaneo completo de entradas válidas.
 - `2026-08-27T07:22:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T07:22:13` Corrida terminada. Total usado hoy: 176.
+- `2026-08-27T07:30:53` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-08-27T07:31:25` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Answer.is_online, AreaExplanation
+- `2026-08-27T07:31:56` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se añadió documentación exhaustiva en formato de docstrings (Google Style) a las constantes y funciones de `branding.py` para clarificar la lógica de diseño, las unidades de medida y las restricciones operativas de cada componente visual.
+- `2026-08-27T07:32:22` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings estructurados que aclaran las dependencias de los parámetros y las restricciones de seguridad en las funciones de recorrido de disco, facilitando el mantenimiento y la auditoría.
+- `2026-08-27T07:32:34` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación de `walk_files` y `summarize` para aclarar sus contratos de seguridad y manejo de errores, y añadí type hints explícitos en las funciones críticas para mejorar la legibilidad del código.
+- `2026-08-27T07:32:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T07:32:34` Corrida terminada. Total usado hoy: 180.

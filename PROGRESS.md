@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 152 | 10 | 19 | 14 | 133 |
-| 2026-08-27 | 73 | 5 | 10 | 1 | 87 |
+| 2026-08-26 | 149 | 10 | 19 | 14 | 132 |
+| 2026-08-27 | 76 | 5 | 11 | 1 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **54**
 - seguridad defensiva: **51**
-- legibilidad y documentación: **51**
 - manejo de errores y validación de entradas: **48**
-- rendimiento: **40**
+- rendimiento: **37**
 - robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `quarantine.py`: **19**
-- `memory.py`: **18**
 - `assistant.py`: **18**
+- `quarantine.py`: **18**
+- `browser.py`: **18**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `browser.py`: **17**
-- `main.py`: **16**
-- `diskreport.py`: **15**
+- `memory.py`: **17**
+- `diskreport.py`: **16**
+- `main.py`: **15**
 - `safety.py`: **13**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `organizer.py`: **11**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T07:32:34` **diskreport.py** (legibilidad y documentación): Mejoré la documentación de `walk_files` y `summarize` para aclarar sus contratos de seguridad y manejo de errores, y añadí type hints explícitos en las funciones críticas para mejorar la legibilidad del código.
+- `2026-08-27T07:32:22` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings estructurados que aclaran las dependencias de los parámetros y las restricciones de seguridad en las funciones de recorrido de disco, facilitando el mantenimiento y la auditoría.
+- `2026-08-27T07:31:56` **branding.py** (legibilidad y documentación): Se añadió documentación exhaustiva en formato de docstrings (Google Style) a las constantes y funciones de `branding.py` para clarificar la lógica de diseño, las unidades de medida y las restricciones operativas de cada componente visual.
 - `2026-08-27T07:22:13` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita de `None` y tipos antes de procesar cada fila, además de capturar excepciones específicas durante la iteración del `DictReader` para evitar que un dato malformado en el registro detenga el escaneo completo de entradas válidas.
 - `2026-08-27T07:22:02` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la validación de archivos al sustituir el uso de `ensure_safe_to_modify` dentro de `save()` (que lanzaba excepciones no capturadas adecuadamente) por un patrón de validación defensiva que previene el acceso al disco si la ruta no pasa los chequeos de `is_safe_to_modify`, garantizando que la aplicación no aborte ante condiciones inesperadas del sistema de archivos.
 - `2026-08-27T07:21:33` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las heurísticas en `scan_file` y `check_recent_executable_in_downloads` mediante un manejo de errores más específico y defensivo, previniendo que excepciones imprevistas en los metadatos de archivos (como errores de lectura de atributos o timestamps) interrumpan el proceso de escaneo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T06:51:49` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ingest` en `SystemContext` encapsulando la asignación de métricas en un bloque `try-except` más fino para evitar que errores inesperados en tipos de datos de entrada corten el procesamiento de las métricas restantes, garantizando que el asistente siempre tenga la mayor cantidad posible de información válida.
 - `2026-08-27T05:29:53` **startup.py** (seguridad defensiva): Se ha añadido una validación de seguridad proactiva en `_resolve_and_cache_path` para detectar y rechazar rutas que contengan caracteres que faciliten la ejecución de comandos arbitrarios (como `;`, `&`, `|`), mejorando la integridad defensiva al procesar datos externos del Registro.
 - `2026-08-27T05:29:27` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la persistencia de datos agregando una verificación de integridad mediante `ensure_safe_to_modify` sobre el directorio padre antes de intentar cualquier operación de escritura, asegurando que la aplicación no intente crear ni modificar configuraciones en rutas del sistema incluso si el archivo de configuración es inexistente.
-- `2026-08-27T05:28:58` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` añadiendo una validación explícita para evitar rutas UNC y nombres de dispositivos reservados (como `CON`, `PRN`, `AUX`), además de asegurar que la resolución de la ruta no permita el escape del directorio raíz mediante la validación estricta de `commonpath` tras resolver el destino, mitigando riesgos de traversal.
-- `2026-08-27T05:19:52` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` al asegurar que la detección de nombres de directorios prohibidos no solo verifique el nombre base, sino que analice toda la jerarquía de la ruta contra la lista `PROTECTED_DIR_NAMES`, previniendo bypasses donde una subcarpeta oculta fuera el componente crítico.
-- `2026-08-27T05:19:22` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad en `purge_all` implementando una validación de "sandbox" más estricta mediante `is_within_quarantine_sandbox` antes de cada `unlink`, asegurando que no se pueda purgar ningún archivo fuera del directorio designado, incluso si el manifiesto fuera manipulado.

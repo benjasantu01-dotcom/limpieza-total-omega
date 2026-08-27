@@ -260,6 +260,13 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador que recorre recursivamente el sistema de archivos mediante `os.scandir`.
+
+    Args:
+        directory: Directorio base de inicio.
+        skip_protected: Si es True, utiliza `is_protected_path` para evitar rutas del sistema.
+
+    Yields:
+        Tuplas conteniendo el objeto Path absoluto y el tamaño en bytes del archivo.
     """
     if not directory:
         return
@@ -439,6 +446,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
     """
     Genera un informe textual unificado con los hallazgos del análisis.
+
+    Args:
+        directory: Ruta a analizar.
+        skip_protected: Si es True, impide el análisis de rutas de sistema protegidas.
+
+    Returns:
+        Lista de strings formateados listos para visualización, o mensaje de error.
     """
     if not directory or not isinstance(directory, (str, Path, os.PathLike)):
         return ["Error: Ruta no proporcionada o formato inválido."]

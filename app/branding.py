@@ -365,7 +365,7 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas del escudo."""
+    """Renderiza las franjas degradadas internas del escudo en un canvas."""
     try:
         franjas_count: int = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
@@ -385,13 +385,14 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
     except Exception: pass
 
 def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo corporativo escalado y centrado en el canvas.
-    
+    """
+    Dibuja el escudo corporativo escalado y centrado en el canvas.
+
     Args:
         canvas: Widget de tkinter.Canvas donde renderizar.
-        size: Dimensión total en píxeles del escudo.
-        canvas_x: Offset horizontal en coordenadas del canvas.
-        canvas_y: Offset vertical en coordenadas del canvas.
+        size: Dimensión total en píxeles del escudo (escala 128px base).
+        canvas_x: Offset horizontal en coordenadas del canvas (px).
+        canvas_y: Offset vertical en coordenadas del canvas (px).
     """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
@@ -419,12 +420,16 @@ def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: 
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con degradado de color.
-    
+    """
+    Renderiza una línea horizontal con degradado en el canvas.
+
     Args:
         canvas: Widget de destino.
-        width: Longitud horizontal total del degradado.
-        height: Grosor de la línea resultante.
+        width: Longitud horizontal del degradado en píxeles.
+        height: Grosor de la línea en píxeles.
+        canvas_x: Posición inicial X (px).
+        canvas_y: Posición inicial Y (px).
+        stops: Colores para la interpolación del degradado.
     """
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
@@ -437,13 +442,16 @@ def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular de progreso (donut) sobre el canvas.
-    
+    """
+    Dibuja un indicador circular (donut) de progreso en el canvas.
+
     Args:
-        canvas: Widget de dibujo.
-        percent: Valor 0-100 para completar el anillo.
-        size: Diámetro exterior total del anillo en píxeles.
-        thickness: Grosor de la banda circular.
+        canvas: Widget de destino.
+        percent: Porcentaje de llenado (0.0 a 100.0).
+        size: Diámetro exterior en píxeles.
+        thickness: Ancho del trazo en píxeles.
+        track: Color de fondo (track) del anillo.
+        fill: Color de progreso (fill).
     """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
