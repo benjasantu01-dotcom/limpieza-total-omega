@@ -1447,3 +1447,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T02:26:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-27T02:26:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T02:26:31` Corrida terminada. Total usado hoy: 60.
+- `2026-08-27T02:34:48` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-27T02:35:14` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` implementando validaciones de tipo explícitas y manejando casos de error en `p_obj.stat()` para evitar que el proceso falle ante metadatos corruptos o accesos denegados.
+- `2026-08-27T02:35:39` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `compute_score` incorporando validaciones tempranas de parámetros nulos o ausentes, asegurando que el proceso de cálculo no falle ante un objeto `SystemMetrics` mal inicializado.
+- `2026-08-27T02:36:43` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la inicialización de estado en `_init_state` capturando errores de forma más granular al cargar los ajustes, y añadí una validación explícita para evitar que `self.settings` quede en un estado inconsistente si el archivo de configuración está corrupto o mal formado.
+- `2026-08-27T02:36:54` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_linux_meminfo` y `parse_windows_process_csv` añadiendo validaciones de tipo y estructura más estrictas ante entradas malformadas, evitando excepciones no controladas al procesar archivos de sistema o resultados de comandos.
+- `2026-08-27T02:36:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T02:36:54` Corrida terminada. Total usado hoy: 64.

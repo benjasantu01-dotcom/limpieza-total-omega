@@ -219,7 +219,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             raw = settings_mod.load()
-            self.settings = raw if isinstance(raw, dict) else settings_mod.reset()
+            if isinstance(raw, dict):
+                self.settings = raw
+            else:
+                logging.warning("Configuración inválida (no es dict), reseteando.")
+                self.settings = settings_mod.reset()
         except Exception as e:
             logging.error("Fallo al cargar ajustes, reseteando: %s", e)
             self.settings = settings_mod.reset()

@@ -200,8 +200,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     """
     Calcula el puntaje global de salud del sistema.
     """
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Tipo de métricas inválido."])
+    if metrics is None or not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema nulos o inválidos."])
     
     metrics.validate()
     if not metrics.is_finite():

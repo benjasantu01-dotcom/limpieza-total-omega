@@ -139,14 +139,12 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     vals: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
-        try:
-            key, rest = line.split(":", 1)
-            k = key.strip()
-            if k in vals:
-                parts = rest.strip().split()
-                if parts and parts[0].isdigit():
-                    vals[k] = int(parts[0]) * 1024
-        except (ValueError, AttributeError): continue
+        key, rest = line.split(":", 1)
+        k = key.strip()
+        if k in vals:
+            parts = rest.strip().split()
+            if parts and parts[0].isdigit():
+                vals[k] = int(parts[0]) * 1024
     total = vals["MemTotal"]
     if total <= 0: return MemorySnapshot(0, 0)
     available = vals["MemAvailable"] if vals["MemAvailable"] > 0 else vals["MemFree"]
@@ -160,10 +158,13 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     processes: List[ProcessMemory] = []
     for line in raw_csv_text.splitlines():
         parts = [p.strip().strip("'\"") for p in line.split(",")]
-        if len(parts) >= 3 and parts[1].isdigit() and parts[2].isdigit():
-            ws_val, pid_val = int(parts[2]), int(parts[1])
-            if ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
-                processes.append(ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val))
+        if len(parts) >= 3:
+            try:
+                name, pid_val, ws_val = parts[0], int(parts[1]), int(parts[2])
+                if ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
+                    processes.append(ProcessMemory(name=name, pid=pid_val, working_set=ws_val))
+            except (ValueError, TypeError):
+                continue
     return sorted(processes, key=lambda p: p.working_set, reverse=True)[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
