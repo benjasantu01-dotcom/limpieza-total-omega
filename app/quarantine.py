@@ -254,19 +254,19 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if _is_file_locked(resolved_source):
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
 
-@lru_cache(maxsize=4)
+@lru_cache(maxsize=2)
 def _load_manifest_internal(base_str: str) -> Dict[str, QuarantineItem]:
-    """Carga y parsea el manifiesto desde el disco; utiliza caché LRU para rendimiento."""
-    base_path = Path(base_str)
-    path = _manifest_path(base_path)
+    """Carga y parsea el manifiesto; utiliza caché LRU para minimizar I/O repetitivo."""
+    path = _manifest_path(Path(base_str))
     if not path.exists():
         return {}
     try:
         with open(path, "r", encoding="utf-8") as f:
-            raw_data = json.load(f)
-        if not isinstance(raw_data, list):
-            return {}
-        return {str(entry["item_id"]): item for entry in raw_data if (item := QuarantineItem.from_dict(entry))}
+            return {
+                str(entry["item_id"]): item 
+                for entry in json.load(f) 
+                if isinstance(entry, dict) and (item := QuarantineItem.from_dict(entry))
+            }
     except (json.JSONDecodeError, OSError, PermissionError):
         return {}
 
@@ -364,7 +364,7 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
-        items_dict = _load_manifest_internal(str(dest_dir)).copy()
+        items_dict = _load_manifest_internal(str(dest_dir))
         if item_id in items_dict:
             raise RuntimeError(f"ID duplicado generado: {item_id}")
             
@@ -402,7 +402,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido o vacío.")
     base_path = quarantine_dir(base)
-    items_dict = _load_manifest_internal(str(base_path)).copy()
+    items_dict = _load_manifest_internal(str(base_path))
     quarantine_item = items_dict.get(item_id)
     if not quarantine_item:
         raise KeyError(f"No se encontró el ítem: {item_id}")
@@ -438,7 +438,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
     if not isinstance(item_id, str) or not item_id.strip():
         return False
     base_path = quarantine_dir(base)
-    items_dict = _load_manifest_internal(str(base_path)).copy()
+    items_dict = _load_manifest_internal(str(base_path))
     quarantine_item = items_dict.get(item_id)
     if not quarantine_item:
         return False
@@ -472,18 +472,19 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Vacía toda la cuarentena purgable de manera segura en una única operación de escritura."""
     quarantine_root = quarantine_dir(base)
-    items_dict = _load_manifest_internal(str(quarantine_root)).copy()
+    items_dict = _load_manifest_internal(str(quarantine_root))
     if not items_dict:
         return 0
     
     purged_count = 0
-    for item_id, item in list(items_dict.items()):
+    remaining_keys = list(items_dict.keys())
+    for item_id in remaining_keys:
+        item = items_dict[item_id]
         stored_path = (quarantine_root / item.stored_name).resolve()
         if not stored_path.exists():
             del items_dict[item_id]
             continue
         
-        # Validar condiciones de seguridad antes de procesar la eliminación
         if _is_item_purgable(stored_path, item, quarantine_root):
             if _safe_unlink(stored_path):
                 del items_dict[item_id]

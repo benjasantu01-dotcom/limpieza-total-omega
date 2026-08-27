@@ -720,3 +720,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-27T08:24:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-27T08:24:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T08:24:45` Corrida terminada. Total usado hoy: 200.
+- `2026-08-27T08:32:24` Arrancando corrida. Quedan hoy ~100 peticiones objetivo.
+- `2026-08-27T08:32:57` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto eliminando la reconstrucción de instancias `QuarantineItem` innecesarias y el uso de `copy()` en el diccionario durante operaciones frecuentes, reduciendo la presión sobre el recolector de basura y mejorando la latencia en operaciones de reporte y lista.
+- `2026-08-27T08:33:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-08-27T08:33:42` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-27T08:33:50` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la ejecución de `_is_safe_entry` en `Scanner` integrando el filtrado por nombre de archivo y la validación de extensiones en una única pasada lógica, eliminando la creación repetitiva de objetos `Path` innecesarios y la resolución de rutas mediante `resolve()` dentro de un bucle, la cual es una operación costosa de I/O.
+- `2026-08-27T08:33:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T08:33:50` Corrida terminada. Total usado hoy: 204.

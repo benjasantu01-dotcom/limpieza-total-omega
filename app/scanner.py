@@ -101,30 +101,26 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root: Path = base_root.resolve()
+        self.base_root_str: str = str(base_root.resolve())
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_safe_entry(self, entry_path_str: str) -> bool:
+    def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que una ruta sea segura para procesar: verifica longitud, rutas UNC, 
-        nombres reservados de Windows, confinamiento al directorio base y protección del sistema.
+        Valida que una ruta sea segura para procesar usando verificaciones de bajo costo
+        antes de realizar operaciones de I/O pesadas.
         """
-        if not entry_path_str or len(entry_path_str) > MAX_PATH_LENGTH or entry_path_str.startswith("\\\\"):
+        name = entry.name
+        if not name or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
-        path_obj = Path(entry_path_str)
-        if RESERVED_NAMES_RE.match(path_obj.name):
+        if RESERVED_NAMES_RE.match(name):
             return False
 
-        try:
-            target = path_obj.resolve(strict=False)
-            if not target.is_absolute():
-                return False
-            if os.path.commonpath([self.base_root, target]) != str(self.base_root):
-                return False
-        except (OSError, RuntimeError, ValueError):
+        # Evita resolución de ruta completa si es posible
+        if not entry.path.startswith(self.base_root_str):
             return False
-        return not is_protected_path(path_obj)
+
+        return not is_protected_path(Path(entry.path))
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si la entrada es un punto de reanálisis (Junction o Symlink) para evitar bucles infinitos."""
@@ -139,16 +135,15 @@ class Scanner:
         lo apila para escaneo; si es archivo, dispara el motor de heurísticas.
         """
         try:
-            entry_path = entry.path
-            if not entry_path or not self._is_safe_entry(entry_path):
+            if not self._is_safe_entry(entry):
                 return
             if entry.is_dir(follow_symlinks=False):
                 if not self._is_reparse_point(entry):
-                    if entry_path not in self.seen:
-                        self.seen.add(entry_path)
-                        stack.append(entry_path)
+                    if entry.path not in self.seen:
+                        self.seen.add(entry.path)
+                        stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                self._run_file_heuristics(Path(entry_path), entry)
+                self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, TypeError, FileNotFoundError) as e:
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}: {e}")
 
