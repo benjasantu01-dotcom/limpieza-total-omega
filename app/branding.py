@@ -335,18 +335,15 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).resolve()
-        parent = path_obj.parent
         
-        # Validación estricta: verificar seguridad antes de cualquier operación de FS
+        # Validar jerarquía de la ruta destino antes de tocar el sistema de archivos
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         
-        if not parent.exists():
-            if not is_safe_to_modify(parent):
+        if not path_obj.parent.exists():
+            if not is_safe_to_modify(path_obj.parent):
                 return None
-            parent.mkdir(parents=True, exist_ok=True)
-        elif is_protected_path(parent) or not is_safe_to_modify(parent):
-            return None
+            path_obj.parent.mkdir(parents=True, exist_ok=True)
             
         ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")

@@ -811,3 +811,10 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-08-27T09:15:27` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores de E/S en la carga y validación de archivos, integrando una verificación de permisos más estricta mediante `os.access` antes de intentar leer o escribir, protegiendo contra bloqueos de sistema o archivos inaccesibles.
 - `2026-08-27T09:15:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T09:15:27` Corrida terminada. Total usado hoy: 220.
+- `2026-08-27T09:23:28` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-08-27T09:24:04` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un chequeo preventivo de `OSError` al llamar a `os.path.realpath`, evitando que la aplicación se bloquee si encuentra rutas con errores de permisos o sistemas de archivos inaccesibles durante la resolución de la ruta real del ejecutable.
+- `2026-08-27T09:24:40` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Reforcé la seguridad de `_call_gemini` y `context_as_text` agregando una validación explícita mediante `is_protected_path` sobre el texto procesado antes de que cualquier dato (incluso contenido del asistente) pueda retornar al flujo principal, asegurando que el motor de IA no pueda accidentalmente "alucinar" o devolver rutas sensibles.
+- `2026-08-27T09:25:12` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó `save_logo_svg` aplicando una validación de ruta jerárquica más robusta y asegurando que las operaciones de creación de directorios no dependan de estados de escritura implícitos, alineándose con el enfoque de seguridad defensiva.
+- `2026-08-27T09:25:38` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-27T09:25:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T09:25:38` Corrida terminada. Total usado hoy: 224.

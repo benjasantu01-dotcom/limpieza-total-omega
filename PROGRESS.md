@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 209
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 129 | 10 | 16 | 11 | 118 |
-| 2026-08-27 | 105 | 7 | 14 | 3 | 91 |
+| 2026-08-26 | 129 | 10 | 16 | 11 | 114 |
+| 2026-08-27 | 107 | 7 | 14 | 4 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **63**
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **43**
-- robustez ante casos límite: **41**
-- seguridad defensiva: **39**
+- robustez ante casos límite: **42**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
@@ -38,14 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **18**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
+- `branding.py`: **15**
 - `main.py`: **15**
-- `branding.py`: **14**
 - `safety.py`: **13**
 - `organizer.py`: **12**
-- `startup.py`: **10**
+- `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-27T09:25:12` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` aplicando una validación de ruta jerárquica más robusta y asegurando que las operaciones de creación de directorios no dependan de estados de escritura implícitos, alineándose con el enfoque de seguridad defensiva.
+- `2026-08-27T09:24:04` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un chequeo preventivo de `OSError` al llamar a `os.path.realpath`, evitando que la aplicación se bloquee si encuentra rutas con errores de permisos o sistemas de archivos inaccesibles durante la resolución de la ruta real del ejecutable.
 - `2026-08-27T09:15:27` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante errores de E/S en la carga y validación de archivos, integrando una verificación de permisos más estricta mediante `os.access` antes de intentar leer o escribir, protegiendo contra bloqueos de sistema o archivos inaccesibles.
 - `2026-08-27T09:15:13` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la lógica de escaneo ante la desaparición o falta de permisos en directorios durante la iteración, mediante la implementación de un manejo de errores robusto que asegura que `os.scandir` y la navegación del stack no se detengan ante condiciones de carrera (archivos borrados o bloqueados durante el escaneo).
 - `2026-08-27T09:05:29` **quarantine.py** (robustez ante casos límite): Mejora la robustez de la cuarentena ante archivos bloqueados o inaccesibles añadiendo una verificación de acceso (try-except) y validación de existencia antes de intentar realizar operaciones sobre los ítems registrados en el manifiesto, evitando que el proceso de limpieza o purga aborte inesperadamente por errores de I/O en archivos individuales.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T08:44:18` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor de diagnóstico ante estados inválidos o incompletos, añadiendo una comprobación explícita de `analyzed` en los manejadores de consulta y previniendo posibles errores de `ZeroDivisionError` o `ValueError` si las métricas llegaran con valores numéricos inesperados durante la ejecución.
 - `2026-08-27T08:43:11` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la serialización a `dict` solo cuando es necesario, manteniendo `DEFAULTS` como objeto constante para evitar copias innecesarias y reduciendo la frecuencia de llamadas a `.copy()` y `_get_default_config()` en las operaciones de lectura y validación.
 - `2026-08-27T08:33:50` **scanner.py** (rendimiento): Optimizé la ejecución de `_is_safe_entry` en `Scanner` integrando el filtrado por nombre de archivo y la validación de extensiones en una única pasada lógica, eliminando la creación repetitiva de objetos `Path` innecesarios y la resolución de rutas mediante `resolve()` dentro de un bucle, la cual es una operación costosa de I/O.
-- `2026-08-27T08:32:57` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la reconstrucción de instancias `QuarantineItem` innecesarias y el uso de `copy()` en el diccionario durante operaciones frecuentes, reduciendo la presión sobre el recolector de basura y mejorando la latencia en operaciones de reporte y lista.
-- `2026-08-27T08:24:34` **memory.py** (rendimiento): Se optimizó el proceso de recolección de memoria de procesos mediante el uso de una caché persistente más eficiente y se redujo la sobrecarga de parseo al evitar la creación innecesaria de objetos `ProcessMemory` mediante un filtrado previo en la lógica de `top_memory_processes`.
