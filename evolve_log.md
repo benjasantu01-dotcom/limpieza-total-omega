@@ -1440,3 +1440,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-27T02:18:38` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-27T02:18:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-27T02:18:38` Corrida terminada. Total usado hoy: 56.
+- `2026-08-27T02:24:40` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-27T02:25:16` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `ingest` y `_validate_and_assign` mediante la captura explícita de excepciones al interactuar con fuentes de datos externas, evitando que valores inesperados (o mal formados) aborten la carga de contexto.
+- `2026-08-27T02:25:48` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente sus entradas (tipo y valor) para evitar excepciones en tiempo de ejecución, asegurando que ante datos inesperados el código retorne un estado seguro o no ejecute nada en lugar de fallar silenciosamente.
+- `2026-08-27T02:26:20` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé `_sum_directory_recursive` para manejar fallos de permisos y acceso a nivel de archivo individual dentro del bucle de `os.scandir`, asegurando que una excepción al leer una entrada específica no detenga el conteo total ni comprometa la integridad del objeto de memoria.
+- `2026-08-27T02:26:31` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-27T02:26:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-27T02:26:31` Corrida terminada. Total usado hoy: 60.

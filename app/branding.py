@@ -331,7 +331,7 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el archivo SVG tras validar que la ruta destino sea segura."""
-    if destination is None:
+    if not destination:
         return None
     try:
         path_obj = Path(destination).resolve()
@@ -432,7 +432,7 @@ def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
         
         color_fondo = track if isinstance(track, str) else C_SURFACE_ALT
         color_avance = fill if isinstance(fill, str) else score_color(valor)
-        borde: float = grosor / 2
+        borde: float = grosor / 2.0
         
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)

@@ -213,6 +213,7 @@ def _sum_directory_recursive(
                             stat = entry.stat(follow_symlinks=False)
                             total += stat.st_size
                     except (OSError, PermissionError, FileNotFoundError):
+                        # Ignorar fallos puntuales en archivos bloqueados durante el conteo
                         continue
         except (PermissionError, OSError, FileNotFoundError):
             return 0
