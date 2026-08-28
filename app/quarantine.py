@@ -368,8 +368,12 @@ def quarantine_file(
     if not source_stat.st_mode & 0o100000: # S_ISREG
         raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")
     
-    ensure_safe_to_modify(source_path, allow_sensitive=True)
     dest_dir = quarantine_dir(base)
+    # Validar que no estemos intentando aislar algo que ya vive en el sandbox
+    if is_within_directory(source_path, dest_dir):
+        raise UnsafePathError("Origen inválido: no se puede aislar un archivo que ya reside en cuarentena.")
+
+    ensure_safe_to_modify(source_path, allow_sensitive=True)
     _validate_isolation_request(source_path, dest_dir)
     
     file_size = source_stat.st_size

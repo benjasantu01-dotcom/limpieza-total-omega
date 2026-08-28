@@ -1392,3 +1392,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T10:05:04` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas y manejo de errores más específico, asegurando que las operaciones de disco ocurran solo tras verificar la integridad de las rutas mediante `is_safe_to_modify` y evitando excepciones no capturadas.
 - `2026-08-28T10:05:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T10:05:04` Corrida terminada. Total usado hoy: 240.
+- `2026-08-28T10:12:57` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-28T10:13:31` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré el robustecimiento de `quarantine_file` añadiendo una validación explícita para asegurar que la ruta de origen no sea el directorio de cuarentena mismo o uno de sus subdirectorios, previniendo así errores de lógica en la recursión de archivos durante el aislamiento.
+- `2026-08-28T10:13:49` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-28T10:14:47` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-28T10:14:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-28T10:14:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T10:14:55` Corrida terminada. Total usado hoy: 244.
