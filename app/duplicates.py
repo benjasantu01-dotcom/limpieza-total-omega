@@ -155,10 +155,14 @@ def _collect_candidates(
                 
                 try:
                     if entry.is_symlink(): continue
+                    # Verificar reparse points en Windows
                     if os.name == 'nt':
                         if entry.stat().st_file_attributes & 0x400: continue
-                        
+                    
                     if entry.is_dir():
+                        resolved_entry = entry.resolve()
+                        if is_protected_path(resolved_entry): continue
+                            
                         stat = entry.stat()
                         dev_inode = (stat.st_dev, stat.st_ino)
                         if dev_inode not in visited_device_inodes:

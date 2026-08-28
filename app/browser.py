@@ -191,14 +191,6 @@ def _sum_directory_recursive(
     Utiliza 'memo' (diccionario de ruta a tamaño) para cachear resultados de 
     subdirectorios y optimizar el rendimiento. Se impone un límite de profundidad 
     ('MAX_SCAN_DEPTH') para prevenir recursiones infinitas en estructuras cíclicas.
-    
-    Args:
-        root_dir: Ruta absoluta del directorio a sumar.
-        is_junction_fn: Función para identificar puntos de reparse (Junctions).
-        kernel32: Instancia de WinDLL para consultas de atributos a nivel SO.
-        memo: Caché de resultados previos para evitar redundancias de cálculo.
-        base_check_path: Ruta raíz permitida para validar límites de seguridad.
-        depth: Nivel actual de profundidad de la recursión.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -221,6 +213,7 @@ def _sum_directory_recursive(
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
                 
+                # Seguridad adicional: solo procesar archivos o directorios no enlazados
                 if entry.is_dir(follow_symlinks=False):
                     total += _sum_directory_recursive(
                         entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
