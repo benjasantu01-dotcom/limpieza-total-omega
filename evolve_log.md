@@ -627,3 +627,4 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-28T15:18:32` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-28T15:28:40` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-28T15:39:01` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-28T15:49:08` Presupuesto diario agotado (350 usados). Corte hasta mañana.
