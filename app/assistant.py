@@ -106,7 +106,7 @@ class ProblemCriterion(NamedTuple):
             is_triggered = (self.operator == "<" and f_val < self.threshold) or \
                            (self.operator == ">" and f_val > self.threshold)
             
-            return self.message_format.format(val)[:_MAX_MSG_CHUNK] if is_triggered else None
+            return self.message_format.format(f_val)[:_MAX_MSG_CHUNK] if is_triggered else None
         except (AttributeError, ValueError, TypeError):
             return None
 
@@ -221,7 +221,7 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
 _FORBIDDEN_TYPES: Final[set[type]] = {list, dict, set, tuple, bool}
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
-    """Conversión segura a float. Retorna default si el valor no es numérico o es infinito."""
+    """Conversión segura a float. Retorna default si el valor no es numérico, es infinito o NaN."""
     if val is None or type(val) in _FORBIDDEN_TYPES:
         return default
     try:

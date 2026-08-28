@@ -238,14 +238,15 @@ def validate(raw_values: Any) -> AppSettings:
         if key and key in _VALIDATOR_MAP:
             validated = _VALIDATOR_MAP[key](key, val)
             if validated is not None:
-                config[key.value] = validated # type: ignore
+                config[key.value] = validated
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga y cachea la configuración desde disco, retornando valores seguros por defecto en caso de error."""
     ruta = settings_path(custom_base)
+    if not ruta.exists(): return DEFAULTS.copy()
+    
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
         stat_info = ruta.stat()
         mtime = stat_info.st_mtime
         
@@ -308,7 +309,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
         if key_enum and key_enum in _VALIDATOR_MAP:
             val = _VALIDATOR_MAP[key_enum](key_enum, v)
             if val is not None and val != current.get(k):
-                current[k] = val # type: ignore
+                current[k] = val
                 modified = True
     if modified: save(current, custom_base)
     return current
