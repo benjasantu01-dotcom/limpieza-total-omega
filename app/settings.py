@@ -126,6 +126,11 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, _NumericRange]] = {
     ConfigKey.TOP_PROCESOS: _NumericRange(1, 500),
 }
 
+_ENUM_VALS: Final[dict[ConfigKey, frozenset[str]]] = {
+    ConfigKey.TEMA: VALID_THEMES,
+    ConfigKey.ACENTO: VALID_ACCENTS
+}
+
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
     """Decorador: Filtra llamadas inválidas o nulas antes de pasar al validador."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
@@ -185,9 +190,7 @@ class _Validators:
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
         val = text.lower()
-        if key == ConfigKey.TEMA: return val if val in VALID_THEMES else None
-        if key == ConfigKey.ACENTO: return val if val in VALID_ACCENTS else None
-        if key == ConfigKey.ASISTENTE_CLAVE_API: return text.strip() if len(text) <= 512 else None
+        if key in _ENUM_VALS: return val if val in _ENUM_VALS[key] else None
         return text if len(text) <= 512 else None
 
     @staticmethod

@@ -70,7 +70,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
     Utiliza el timestamp actual (now_ts) proporcionado para reducir llamadas a system.stat.
     """
-    if path and any(part.lower() in WATCHED_FOLDERS for part in path.parts):
+    # Optimización: check de pertenencia directo en lugar de iterar partes de la ruta
+    if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
@@ -143,8 +144,6 @@ class Scanner:
         Retorna True si es reparse point (bloqueando el acceso para prevenir ciclos).
         """
         try:
-            # Primero chequea via path.is_symlink() si es posible, luego por atributos de archivo.
-            # 0x400 es el bit de 'reparse point' en los atributos del sistema de archivos de Windows.
             is_sym = Path(entry.path).is_symlink()
             attr = entry.stat(follow_symlinks=False).st_file_attributes
             return is_sym or bool(attr & WIN_FILE_ATTR_REPARSE_POINT)

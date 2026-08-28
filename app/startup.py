@@ -255,17 +255,20 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
         try:
             with os.scandir(folder) as it:
                 for entry in it:
+                    # Filtrado preliminar por extensión sin instanciar Path completo
+                    name, ext = os.path.splitext(entry.name)
+                    if ext.lower() not in EXECUTABLE_EXTS:
+                        continue
+                    
+                    # Verificación de seguridad y tipo de archivo
                     p_entry = Path(entry.path)
-                    # Validación de seguridad: omitir enlaces simbólicos y rutas protegidas
                     if entry.is_file(follow_symlinks=False) and not p_entry.is_symlink():
                         if not is_protected_path(p_entry):
-                            name, ext = os.path.splitext(entry.name)
-                            if ext.lower() in EXECUTABLE_EXTS:
-                                found_entries.append(StartupEntry(
-                                    name=name,
-                                    command=entry.path,
-                                    source="carpeta"
-                                ))
+                            found_entries.append(StartupEntry(
+                                name=name,
+                                command=entry.path,
+                                source="carpeta"
+                            ))
         except (OSError, PermissionError):
             continue
     return found_entries
