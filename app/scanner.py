@@ -109,10 +109,12 @@ class Scanner:
         """
         Valida que una ruta sea segura para procesar evitando llamadas a .resolve() costosas.
         """
-        if not entry.name or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+        if not entry or not entry.path:
+            return False
+        if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
-        if RESERVED_NAMES_RE.match(entry.name):
+        if entry.name and RESERVED_NAMES_RE.match(entry.name):
             return False
 
         if not entry.path.startswith(self.base_root_str):
@@ -158,6 +160,8 @@ class Scanner:
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
     """Función de entrada para aplicar todo el conjunto de reglas heurísticas a un archivo."""
     findings: ScanResult = []
+    if not path:
+        return findings
     try:
         if (double_ext := check_double_extension(path, entry, now_ts)):
             findings.append(double_ext)
@@ -193,7 +197,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    scanner.process_entry(entry, stack)
+                    if entry:
+                        scanner.process_entry(entry, stack)
         except (PermissionError, OSError, FileNotFoundError) as e:
             logger.debug(f"Error accediendo a directorio {current_dir}: {e}")
             continue

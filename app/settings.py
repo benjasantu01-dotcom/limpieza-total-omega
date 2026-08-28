@@ -275,7 +275,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     try:
         if not is_safe_to_modify(str(parent)) or not is_safe_to_modify(str(ruta)):
             return None
-        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        try:
+            parent.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            return None
         if not os.access(parent, os.W_OK): return None
         encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None

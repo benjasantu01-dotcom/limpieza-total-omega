@@ -482,3 +482,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T01:14:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-08-28T01:14:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T01:14:04` Corrida terminada. Total usado hoy: 32.
+- `2026-08-28T01:22:45` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-28T01:23:15` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-28T01:23:39` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scan_directory` y `_is_safe_entry` mediante la validación proactiva de tipos y estados, asegurando que valores `None` o rutas mal formadas no interrumpan el flujo de escaneo, cumpliendo con las reglas de seguridad de no propagar errores inesperados.
+- `2026-08-28T01:24:09` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` capturando explícitamente `OSError` durante la creación del directorio y validando la existencia de la ruta de destino antes de intentar el reemplazo atómico, asegurando que fallos en el sistema de archivos no dejen el estado de la app en inconsistencia.
+- `2026-08-28T01:24:23` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre los comandos obtenidos del registro antes de instanciar `StartupEntry`, evitando así procesar rutas potencialmente peligrosas o del sistema.
+- `2026-08-28T01:24:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T01:24:23` Corrida terminada. Total usado hoy: 36.
