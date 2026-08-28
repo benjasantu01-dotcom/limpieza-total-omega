@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 145 | 10 | 20 | 7 | 142 |
-| 2026-08-28 | 84 | 6 | 13 | 6 | 71 |
+| 2026-08-27 | 145 | 10 | 20 | 7 | 138 |
+| 2026-08-28 | 86 | 6 | 14 | 6 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **44**
-- robustez ante casos límite: **41**
+- robustez ante casos límite: **43**
 - seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **22**
+- `scanner.py`: **23**
 - `assistant.py`: **20**
 - `memory.py`: **20**
+- `quarantine.py`: **20**
 - `branding.py`: **19**
-- `quarantine.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `duplicates.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T07:41:25` **scanner.py** (robustez ante casos límite): Se añadió una verificación de estado de archivo (`entry.is_symlink()`) en el bloque de heurísticas de `Scanner.process_entry` para prevenir errores de acceso a enlaces simbólicos rotos o recursivos que escapan a la lógica de `_is_reparse_point`, mejorando la robustez ante archivos inexistentes.
+- `2026-08-28T07:40:32` **quarantine.py** (robustez ante casos límite): Se ha añadido una validación de longitud de nombre de archivo antes de la copia atómica para prevenir errores `OSError` (Nombre de archivo demasiado largo) en Windows, asegurando que el sandbox no falle ante rutas profundas.
 - `2026-08-28T07:31:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `read_snapshot` y `top_memory_processes` añadiendo validaciones explícitas contra posibles estados corruptos (archivos vacíos o errores de lectura imprevistos) que podrían causar fallos en cascada en las funciones de parsing, garantizando una salida segura ante entornos degradados.
 - `2026-08-28T07:31:17` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante el cierre inesperado de la ventana y el manejo de recursos, añadiendo una comprobación exhaustiva de `winfo_exists()` antes de cualquier interacción con widgets de `customtkinter` o `tkinter` en los callbacks de los hilos de trabajo, previniendo excepciones `TclError` que ocurrían durante el proceso de apagado de la app.
 - `2026-08-28T07:21:11` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_scan_recursive` frente a rutas con caracteres especiales o estados inconsistentes al añadir un manejo de excepciones específico para `OSError` durante el acceso a atributos de archivo (`stat`) y al iterar, evitando que una entrada dañada detenga el escaneo completo.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T06:49:46` **healthscore.py** (rendimiento): Se optimizó el rendimiento de `compute_score` evitando el acceso repetitivo a las constantes del módulo y pre-calculando el desglose de métricas para evitar llamadas a funciones lambda innecesarias dentro del bucle de procesamiento.
 - `2026-08-28T06:49:20` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `entry.stat()` mediante un uso más eficiente de `entry.is_file()` y `entry.is_dir()` (que en sistemas modernos ya contienen información de stat), reduciendo drásticamente las llamadas a disco durante el escaneo recursivo.
 - `2026-08-28T06:40:22` **browser.py** (rendimiento): Se optimizó el escaneo de directorios introduciendo un caché global de `memoization` en `_sum_directory_recursive` para evitar recalcular el peso de subcarpetas compartidas o visitadas previamente, mejorando drásticamente el rendimiento en estructuras de archivos profundas.
-- `2026-08-28T06:39:56` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `gradient_colors` eliminando la creación y el procesamiento de una lista intermedia de `deltas`, utilizando una lógica de interpolación directa que aprovecha mejor las propiedades de la caché LRU y reduce la carga computacional en cada llamado.
-- `2026-08-28T06:39:22` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` evitando la regeneración innecesaria de objetos y aprovechando que las métricas ya están en `SystemContext`, además de consolidar la lógica de búsqueda de intenciones mediante la conversión previa del mapa de keywords a un formato más eficiente si fuera necesario (aunque la implementación actual ya es reactiva al iterar sobre tokens).

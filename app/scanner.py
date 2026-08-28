@@ -163,6 +163,9 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
+                # Validación adicional: evitar archivos que no existen o enlaces simbólicos rotos
+                if entry.is_symlink():
+                    return
                 ext = os.path.splitext(entry.name)[1].lower()
                 if ext in SUSPICIOUS_EXECUTABLE_EXT or ext == ".pdf":
                     self._run_file_heuristics(Path(entry.path), entry)

@@ -1082,3 +1082,10 @@ assert not True
 - `2026-08-28T07:31:56` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `organizer.py` ante errores de acceso a disco durante el escaneo y manipulación, reemplazando chequeos estáticos por manejo de excepciones robusto y asegurando que las rutas de sistema operen bajo `pathlib` de forma consistente para evitar colisiones entre `Path` y `str`.
 - `2026-08-28T07:31:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T07:31:56` Corrida terminada. Total usado hoy: 180.
+- `2026-08-28T07:39:58` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-08-28T07:40:32` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido una validación de longitud de nombre de archivo antes de la copia atómica para prevenir errores `OSError` (Nombre de archivo demasiado largo) en Windows, asegurando que el sandbox no falle ante rutas profundas.
+- `2026-08-28T07:40:50` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-28T07:41:16` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-28T07:41:25` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se añadió una verificación de estado de archivo (`entry.is_symlink()`) en el bloque de heurísticas de `Scanner.process_entry` para prevenir errores de acceso a enlaces simbólicos rotos o recursivos que escapan a la lógica de `_is_reparse_point`, mejorando la robustez ante archivos inexistentes.
+- `2026-08-28T07:41:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T07:41:25` Corrida terminada. Total usado hoy: 184.

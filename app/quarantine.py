@@ -318,6 +318,11 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
     """Copia archivo al sandbox garantizando integridad con hash post-copia."""
     resolved_source = source.resolve()
     dest_dir = destination.parent.resolve()
+    
+    # Pre-check: longitud de ruta de destino (evitar MAX_PATH en Windows)
+    if len(str(destination)) >= 250:
+        raise OSError("Ruta de destino demasiado larga para aislamiento seguro.")
+
     try:
         usage = shutil.disk_usage(dest_dir)
         if usage.free < (file_size + (1024 * 1024)):
