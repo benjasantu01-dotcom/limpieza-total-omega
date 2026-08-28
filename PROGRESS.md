@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 32 | 3 | 3 | 3 | 33 |
+| 2026-08-26 | 32 | 3 | 3 | 3 | 29 |
 | 2026-08-27 | 158 | 12 | 22 | 7 | 151 |
-| 2026-08-28 | 40 | 0 | 6 | 3 | 31 |
+| 2026-08-28 | 43 | 0 | 6 | 3 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,18 +26,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **43**
 - rendimiento: **42**
-- seguridad defensiva: **38**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `settings.py`: **21**
+- `browser.py`: **20**
 - `quarantine.py`: **20**
-- `browser.py`: **19**
 - `memory.py`: **19**
+- `branding.py`: **18**
 - `duplicates.py`: **17**
-- `branding.py`: **17**
 - `diskreport.py`: **17**
 - `healthscore.py`: **16**
 - `main.py`: **13**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T03:26:48` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de cada entrada de directorio, asegurando que no se sigan enlaces simbólicos, puntos de reparse (junctions) ni rutas que escapen del ámbito del directorio base, previniendo así posibles ataques de "path traversal" o seguimientos de enlaces fuera del control de la app.
+- `2026-08-28T03:26:37` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita mediante `is_protected_path` antes de intentar cualquier operación de resolución de ruta, asegurando que no se pueda manipular ni siquiera mediante rutas relativas maliciosas el árbol de directorios del sistema.
+- `2026-08-28T03:26:06` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` al validar explícitamente el tipo y la longitud de la respuesta antes de cualquier proceso de decodificación o concatenación, mitigando posibles riesgos de inyección o desbordamiento en el parsing de JSON.
 - `2026-08-28T03:18:38` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante escenarios de falta de permisos o errores de E/S durante la carga inicial mediante la implementación de un manejo de errores más específico y un chequeo preventivo de `access` antes de intentar leer el archivo, además de proteger `load()` contra archivos que contengan JSONs con tipos de datos inesperados dentro del diccionario (ej. valores `null` o listas en lugar de los tipos esperados).
 - `2026-08-28T03:17:47` **scanner.py** (robustez ante casos límite): Se reforzó la robustez de `_is_reparse_point` ante excepciones de tipo `AttributeError` o accesos denegados mediante una implementación más defensiva, asegurando que cualquier error al consultar atributos de archivo trate la ruta como un punto de reanálisis para prevenir el seguimiento de bucles o enlaces riesgosos.
 - `2026-08-28T03:08:08` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante errores durante el movimiento de archivos al agregar una verificación de persistencia post-copia (`shutil.copy2` seguida de `stat()`) que detecta posibles fallos en el sistema de archivos o bloqueos de escritura antes de realizar el `unlink()` del origen.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T02:35:27` **safety.py** (rendimiento): Se implementó un mecanismo de caché local dentro de `_check_file_integrity` mediante un diccionario de expiración temporal basado en tiempo (`time.monotonic`), optimizando el rendimiento de las validaciones repetitivas en escaneos masivos de disco sin comprometer la seguridad.
 - `2026-08-28T02:34:39` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto mediante la pre-validación de existencia del archivo en disco antes de invocar la lógica de deserialización, evitando lecturas de I/O innecesarias en operaciones frecuentes como `total_quarantined_bytes` o `summarize`.
 - `2026-08-28T02:25:51` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lectura más eficiente, evitando el *fork* del proceso cada 60 segundos y reduciendo el consumo de CPU innecesario.
-- `2026-08-28T02:25:24` **main.py** (rendimiento): Optimicé el método `_flush_logs` para evitar redundancias y mejorar el rendimiento de la interfaz gráfica consolidando los logs por pestaña en un solo paso antes de interactuar con los widgets, reduciendo drásticamente las llamadas a `winfo_exists()` y los bloqueos de hilos en escenarios de logueo intensivo.
-- `2026-08-28T02:24:18` **healthscore.py** (rendimiento): Optimizé la generación del resumen textual en `summarize` reemplazando la concatenación repetida de strings dentro de bucles por una lista eficiente y pre-calculando el renderizado de la barra de progreso para evitar llamadas redundantes a `max` y cálculos de cadenas dentro de la iteración.
-- `2026-08-28T02:15:18` **duplicates.py** (rendimiento): Optimicé el proceso de escaneo eliminando la resolución innecesaria (`resolve()`) dentro de los bucles críticos y mejorando el uso de `stat()` para descartar archivos únicos por tamaño antes de realizar cualquier operación de acceso a disco.

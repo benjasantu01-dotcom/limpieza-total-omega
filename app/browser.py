@@ -177,24 +177,30 @@ def _sum_directory_recursive(
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
+    base_check_path: Optional[Path] = None,
     depth: int = 0
 ) -> int:
     """
     Calcula recursivamente el peso en bytes de una carpeta.
     Usa `os.scandir` para eficiencia de E/S y un diccionario `memo` para cachear
-    resultados de sub-árboles, previniendo recálculos innecesarios.
+    resultados de sub-árboles. Valida que las rutas hijas se mantengan dentro
+    del ámbito del escaneo original.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str):
         return 0
 
-    root_abs = os.path.normpath(root_dir)
+    root_path = Path(root_dir).resolve()
+    if not is_safe_to_modify(root_path):
+        return 0
+    
+    # Seguridad adicional: verificar contención si se provee base
+    if base_check_path and not _is_path_inside_base(root_path, base_check_path):
+        return 0
+
+    root_abs = str(root_path)
     if root_abs in memo:
         return memo[root_abs]
 
-    root_path = Path(root_abs)
-    if not is_safe_to_modify(root_path):
-        return 0
-        
     total: int = 0
     try:
         with os.scandir(root_dir) as it:
@@ -207,7 +213,9 @@ def _sum_directory_recursive(
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
+                        total += _sum_directory_recursive(
+                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
+                        )
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError):
@@ -232,7 +240,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
             return 0
         
         is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
-        return _sum_directory_recursive(str(p_obj), is_junction, _get_kernel32(), {})
+        return _sum_directory_recursive(str(p_obj), is_junction, _get_kernel32(), {}, p_obj)
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -291,7 +299,7 @@ def detect_profiles(
                     c_path = candidate.resolve()
                     path_str = str(c_path)
                     
-                    size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache)
+                    size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache, c_path)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
         except (OSError, PermissionError): 

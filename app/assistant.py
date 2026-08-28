@@ -556,11 +556,11 @@ def _call_gemini(
             if "application/json" not in content_type: return None
 
             length_header = res.getheader("Content-Length")
-            if length_header and int(length_header) > _MAX_RESPONSE_BYTES: return None
+            total_len = int(length_header) if length_header else 0
+            if total_len > _MAX_RESPONSE_BYTES or total_len <= 0: return None
             
-            # Leer en chunks y validar límite total
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
-            if len(raw_res) > _MAX_RESPONSE_BYTES: return None
+            if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
             try:
                 data = json.loads(raw_res.decode("utf-8"))
@@ -582,10 +582,8 @@ def _call_gemini(
             
             raw_text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
             
-            # Sanitización crítica de salida externa
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             
-            # Validación de integridad: el modelo no debe emitir rutas protegidas
             if not _ensure_safe_text(limpia_final): return None
             
             final_text = _validate_response_length(limpia_final)
