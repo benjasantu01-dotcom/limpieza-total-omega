@@ -115,8 +115,8 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
-    Valida si 'real_target' está contenido estrictamente dentro de 'real_base'.
-    Previene ataques de directory traversal.
+    Valida si 'real_target' está contenido estrictamente dentro de 'real_base'
+    usando resolución de rutas para prevenir ataques de directory traversal.
     """
     try:
         target = str(real_target.resolve())
@@ -141,7 +141,6 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Validar existencia antes de consultar atributos
         if not os.path.exists(entry_path):
             return False
         attrs: int = kernel32.GetFileAttributesW(entry_path)
@@ -154,8 +153,9 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Filtro de seguridad central: determina si una entrada debe omitirse.
-    Usa `is_junction_fn` para evitar seguir puntos de reparse (Junctions).
+    Determina si una entrada de sistema debe omitirse durante el escaneo recursivo.
+    Aplica reglas de seguridad: exclusión de nombres sensibles, detección de
+    puntos de reparse (Junctions), enlaces simbólicos y atributos de sistema.
     """
     if not hasattr(entry, 'name') or not hasattr(entry, 'path'):
         return True
@@ -180,8 +180,9 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el peso de una carpeta utilizando `os.scandir` para eficiencia.
-    Mantiene un diccionario `memo` para cachear resultados de subcarpetas y evitar E/S repetitiva.
+    Calcula recursivamente el peso en bytes de una carpeta.
+    Usa `os.scandir` para eficiencia de E/S y un diccionario `memo` para cachear
+    resultados de sub-árboles, previniendo recálculos innecesarios.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str):
         return 0
@@ -234,7 +235,10 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """Valida la integridad de una ruta de caché antes de iniciar escaneo recursivo."""
+    """
+    Valida la integridad y seguridad de una ruta de caché antes de iniciar 
+    el escaneo recursivo, verificando que no sea un punto de reparse o zona protegida.
+    """
     if not candidate or not candidate.exists():
         return False
     try:
@@ -256,8 +260,9 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea rutas de caché conocidas.
-    Utiliza un cache global `perf_cache` para evitar re-escanear subdirectorios.
+    Escanea rutas de caché de navegadores conocidos.
+    Usa `perf_cache` durante la sesión para evitar el re-escaneo de rutas anidadas.
+    Retorna una lista de objetos `BrowserCache` ordenados por tamaño descendente.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -268,7 +273,6 @@ def detect_profiles(
     is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
-    # Cache persistente durante la sesión de detección
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     

@@ -67,14 +67,20 @@ __all__ = [
 ]
 
 class AssistantConfig(NamedTuple):
-    """Configuración validada del asistente para la interacción con la API."""
+    """
+    Representa la configuración de conexión externa recuperada de ajustes.
+    Incluye la clave de API, el modelo de Gemini y el permiso de telemetría.
+    """
     api_key: str
     model: str
     allow_metrics: bool
 
 @dataclass(frozen=True)
 class MetricSpec:
-    """Define los límites y el tipo de conversión para una métrica del sistema."""
+    """
+    Define un contrato para validar métricas numéricas, incluyendo una función
+    de casteo y los límites permitidos para evitar valores fuera de rango o maliciosos.
+    """
     cast_func: Callable[[Any], Any]
     min_val: float
     max_val: float
@@ -282,15 +288,19 @@ class Answer:
         return self.source == "gemini"
 
 def _is_safe_text_structure(text: str) -> bool:
-    """Valida la ausencia de rutas o comandos en un string."""
+    """
+    Verifica que el texto no contenga estructuras sospechosas como rutas de sistema,
+    caracteres de control o intentos de inyección de directorio/comando.
+    """
     if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text):
         return False
     return True
 
 def _ensure_safe_text(text: Any) -> bool:
     """
-    Validación de seguridad crítica para strings de entrada/salida.
-    Verifica ausencia de caracteres de control, rutas prohibidas y límites de tamaño.
+    Validador de seguridad de capa superior: asegura que cualquier cadena procesada
+    sea texto plano, cumpla límites de tamaño, carezca de caracteres de control
+    y pase los filtros de estructura segura.
     """
     if not isinstance(text, str) or not text:
         return False

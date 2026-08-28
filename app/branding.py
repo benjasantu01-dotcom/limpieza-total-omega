@@ -362,7 +362,10 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas del escudo en un canvas."""
+    """
+    Renderiza las franjas degradadas internas del escudo en un canvas dado.
+    Requiere un objeto canvas con el método 'create_rectangle'.
+    """
     if not hasattr(canvas, "create_rectangle"): return
     try:
         franjas_count: int = max(6, int(28 * scale))
@@ -383,7 +386,10 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo corporativo escalado y centrado en el canvas."""
+    """
+    Dibuja el escudo corporativo escalado y centrado en un canvas.
+    Aplica efectos de profundidad y degradado al lienzo.
+    """
     if canvas is None or not hasattr(canvas, "create_polygon"): return
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128.0))
@@ -410,7 +416,7 @@ def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: 
 def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con degradado en el canvas."""
+    """Renderiza una línea horizontal con degradado, dividida en segmentos por color."""
     if canvas is None or not hasattr(canvas, "create_line"): return
     try:
         w_int = max(1, int(width))
@@ -423,7 +429,16 @@ def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular (donut) de progreso en el canvas."""
+    """
+    Dibuja un indicador circular (donut) de progreso.
+    
+    Args:
+        canvas: Objeto con método 'create_arc' (ej: tk.Canvas).
+        percent: Valor 0-100.
+        thickness: Grosor en píxeles.
+        track: Color de fondo (opcional).
+        fill: Color de progreso (opcional, por defecto dinámico según score_color).
+    """
     if canvas is None or not hasattr(canvas, "create_arc"): return
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
