@@ -271,14 +271,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         return
 
     try:
-        p_obj = Path(os.fspath(directory)).resolve()
-        if not p_obj.exists() or not p_obj.is_dir() or (skip_protected and is_protected_path(p_obj)):
+        root_path = Path(os.fspath(directory)).resolve()
+        if not root_path.exists() or not root_path.is_dir() or (skip_protected and is_protected_path(root_path)):
             return
     except (OSError, RuntimeError, TypeError, PermissionError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[str] = [str(p_obj)]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -289,20 +289,24 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         continue
                     
                     try:
+                        entry_path = Path(entry.path).resolve()
+                        if not entry_path.is_relative_to(root_path):
+                            continue
+                            
                         if entry.is_dir(follow_symlinks=False):
                             st = entry.stat(follow_symlinks=False)
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(entry.path)
+                                stack.append(entry_path)
                                 
                         elif entry.is_file(follow_symlinks=False):
                             try:
                                 f_stat = entry.stat(follow_symlinks=False)
-                                yield Path(entry.path), max(0, f_stat.st_size)
+                                yield entry_path, max(0, f_stat.st_size)
                             except (PermissionError, OSError):
                                 continue
-                    except (PermissionError, OSError):
+                    except (PermissionError, OSError, ValueError):
                         continue
         except (PermissionError, OSError):
             continue

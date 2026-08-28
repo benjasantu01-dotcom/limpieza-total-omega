@@ -195,13 +195,16 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incompatible."])
     
+    # Validación defensiva profunda: verificar que la instancia no haya sido mutada malintencionadamente
+    if not hasattr(metrics, "__dataclass_fields__"):
+        return HealthResult(0, "F", {}, ["Error: Estructura de métricas inválida."])
+    
     try:
         metrics.validate()
         if not metrics.is_finite():
             raise ValueError("Datos numéricos no finitos")
-        # Validación defensiva de integridad del mapa de cálculo
         if not all(area in _SCORER_MAP for area in WEIGHTS):
-            raise KeyError("Inconsistencia: faltan funciones de cálculo para categorías definidas.")
+            raise KeyError("Inconsistencia: faltan funciones de cálculo.")
     except Exception:
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
     

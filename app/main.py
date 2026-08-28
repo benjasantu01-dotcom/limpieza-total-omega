@@ -1031,7 +1031,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         seguridad de la ruta antes de ejecutar la lógica del usuario.
         """
         try:
-            if target and not self._is_safe_disk_operation(target):
+            if target and not self._is_safe_path(target):
                 raise safety.UnsafePathError(f"Operación no permitida en destino: {target}")
             if not self._closing:
                 self._safe_run(fn, tab)
