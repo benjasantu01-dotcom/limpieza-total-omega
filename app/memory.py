@@ -202,8 +202,8 @@ def read_snapshot() -> MemorySnapshot:
     if os.path.exists(proc_path) and os.access(proc_path, os.R_OK):
         try:
             with open(proc_path, "r", encoding="utf-8") as f:
-                content = f.read(16384) # Leer solo lo necesario
-                if content:
+                content = f.read(16384)
+                if content and content.strip():
                     return parse_linux_meminfo(content)
         except (OSError, PermissionError, IOError):
             return MemorySnapshot(0, 0)
@@ -226,7 +226,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         ]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
-            if proc.returncode == 0:
+            if proc.returncode == 0 and proc.stdout:
                 _proc_cache_data, _proc_cache_time = proc.stdout, current_time
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
             pass

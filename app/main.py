@@ -161,7 +161,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._executor = None
         try:
             self.destroy()
-        except tk.TclError:
+        except (tk.TclError, RuntimeError):
             pass
 
     def _safe_run_ui_callback(self, callback: Callable[[], None]) -> None:
@@ -246,7 +246,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             try:
                 if btn.winfo_exists():
                     btn.configure(state="normal" if active else "disabled")
-            except tk.TclError:
+            except (tk.TclError, RuntimeError):
                 pass
 
     def _debounce_action(self, key: str, delay: int, callback: Callable[[], Any]) -> None:
@@ -262,7 +262,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if not self._closing:
             try:
                 self._debounces[key] = self.after(delay, callback)
-            except tk.TclError:
+            except (tk.TclError, RuntimeError):
                 pass
 
     def _create_styled_label(self, parent: ctk.CTk, text: str, style: str, **kwargs: Any) -> ctk.CTkLabel:
@@ -394,7 +394,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 try:
                     if tab_frame.winfo_exists():
                         self._create_styled_label(tab_frame, f"Error cargando módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
-                except tk.TclError:
+                except (tk.TclError, RuntimeError):
                     pass
 
     def _build_tabs_container(self) -> None:
@@ -429,7 +429,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     try:
                         if tab_frame.winfo_exists():
                             self._tab_factory(original_name)
-                    except tk.TclError:
+                    except (tk.TclError, RuntimeError):
                         pass
                 break
 
@@ -942,7 +942,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             try:
                 if box.winfo_exists():
                     box.delete("1.0", "end")
-            except tk.TclError:
+            except (tk.TclError, RuntimeError):
                 pass
 
     def set_status(self, text: str) -> None:
@@ -950,7 +950,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             if not self._closing and hasattr(self, 'status') and self.status.winfo_exists():
                 self.status.configure(text=text)
-        except tk.TclError:
+        except (tk.TclError, RuntimeError):
             pass
 
     def log_lines(self, lines: List[str], tab: str) -> None:
@@ -962,7 +962,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if box.winfo_exists():
                     box.insert("1.0", "\n".join(lines))
                     box.see("1.0")
-            except tk.TclError:
+            except (tk.TclError, RuntimeError):
                 pass
         self.report_data[tab.lower()] = list(lines)
 
@@ -982,7 +982,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                         if self.activity.winfo_exists():
                             self.activity.pack(side="right")
                             self.activity.start()
-                    except tk.TclError:
+                    except (tk.TclError, RuntimeError):
                         pass
             else:
                 self._tasks_running = max(0, self._tasks_running - 1)
@@ -992,7 +992,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                         if self.activity.winfo_exists():
                             self.activity.stop()
                             self.activity.pack_forget()
-                    except tk.TclError:
+                    except (tk.TclError, RuntimeError):
                         pass
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
@@ -1063,7 +1063,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             etiqueta = self.tabview.get()
             if not isinstance(etiqueta, str): return "Limpieza"
-        except (Exception, tk.TclError):
+        except (Exception, tk.TclError, RuntimeError):
             return "Limpieza"
         for nombre in TABS:
             if nombre in etiqueta:
@@ -1188,7 +1188,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             try:
                 if label.winfo_exists():
                     label.configure(text=valores[clave], text_color=colores[clave])
-            except tk.TclError:
+            except (tk.TclError, RuntimeError):
                 pass
 
     def _update_health_bars(self, resultado: healthscore.ScoreResult) -> None:
@@ -1203,7 +1203,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                     barra.configure(progress_color=c)
                     barra.set(proporcion)
                     label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
-            except tk.TclError:
+            except (tk.TclError, RuntimeError):
                 pass
 
     def on_target_choice_changed(self, choice: str) -> None:
@@ -1263,7 +1263,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if box.winfo_exists():
                     box.delete("1.0", "end")
                     box.insert("1.0", "\n".join(lines))
-            except tk.TclError:
+            except (tk.TclError, RuntimeError):
                 pass
 
     def on_stage(self) -> None:
@@ -1768,7 +1768,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 clave_api = "".join(c for c in clave_raw if c.isprintable())
                 if clave_api:
                     valores["asistente_clave_api"] = clave_api
-        except (tk.TclError, Exception) as e:
+        except (tk.TclError, RuntimeError, Exception) as e:
             logging.error("Error al recopilar ajustes de la UI: %s", e)
         return valores
 
@@ -1818,7 +1818,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 try:
                     if clave in settings_mod.DEFAULTS:
                         variable.set(settings_mod.DEFAULTS[clave])
-                except (tk.TclError, Exception):
+                except (tk.TclError, RuntimeError, Exception):
                     continue
             
             # Resetear entradas de texto si existen y el widget es accesible
@@ -1830,7 +1830,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
                     self.top_files_entry.delete(0, "end")
                     self.top_files_entry.insert(0, str(settings_mod.DEFAULTS.get("top_archivos", 15)))
-            except (tk.TclError, Exception):
+            except (tk.TclError, RuntimeError, Exception):
                 pass
 
             self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""]

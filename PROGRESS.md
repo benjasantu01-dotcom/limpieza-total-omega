@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 147 | 11 | 20 | 7 | 143 |
-| 2026-08-28 | 82 | 5 | 13 | 6 | 70 |
+| 2026-08-27 | 145 | 10 | 20 | 7 | 142 |
+| 2026-08-28 | 84 | 6 | 13 | 6 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **44**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
+- `scanner.py`: **22**
 - `assistant.py`: **20**
+- `memory.py`: **20**
 - `branding.py`: **19**
-- `memory.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **18**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `main.py`: **12**
+- `settings.py`: **17**
+- `main.py`: **13**
 - `startup.py`: **12**
 - `safety.py`: **11**
 - `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T07:31:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `read_snapshot` y `top_memory_processes` añadiendo validaciones explícitas contra posibles estados corruptos (archivos vacíos o errores de lectura imprevistos) que podrían causar fallos en cascada en las funciones de parsing, garantizando una salida segura ante entornos degradados.
+- `2026-08-28T07:31:17` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante el cierre inesperado de la ventana y el manejo de recursos, añadiendo una comprobación exhaustiva de `winfo_exists()` antes de cualquier interacción con widgets de `customtkinter` o `tkinter` en los callbacks de los hilos de trabajo, previniendo excepciones `TclError` que ocurrían durante el proceso de apagado de la app.
 - `2026-08-28T07:21:11` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_scan_recursive` frente a rutas con caracteres especiales o estados inconsistentes al añadir un manejo de excepciones específico para `OSError` durante el acceso a atributos de archivo (`stat`) y al iterar, evitando que una entrada dañada detenga el escaneo completo.
 - `2026-08-28T07:21:00` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante condiciones de carrera y denegación de acceso, implementando una gestión de excepciones más granular para evitar que el escaneo se interrumpa prematuramente al encontrar archivos bloqueados o en uso.
 - `2026-08-28T07:13:14` **assistant.py** (robustez ante casos límite): Se mejora la robustez de `SystemContext.ingest` y `_validate_and_assign` mediante la implementación de una validación explícita de tipos numéricos antes del casteo, evitando fallos ante valores `NaN`, `inf`, o tipos de datos contenedores (listas/dict) que puedan ser inyectados accidentalmente, protegiendo al asistente de procesar datos inválidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T06:40:22` **browser.py** (rendimiento): Se optimizó el escaneo de directorios introduciendo un caché global de `memoization` en `_sum_directory_recursive` para evitar recalcular el peso de subcarpetas compartidas o visitadas previamente, mejorando drásticamente el rendimiento en estructuras de archivos profundas.
 - `2026-08-28T06:39:56` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `gradient_colors` eliminando la creación y el procesamiento de una lista intermedia de `deltas`, utilizando una lógica de interpolación directa que aprovecha mejor las propiedades de la caché LRU y reduce la carga computacional en cada llamado.
 - `2026-08-28T06:39:22` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` evitando la regeneración innecesaria de objetos y aprovechando que las métricas ya están en `SystemContext`, además de consolidar la lógica de búsqueda de intenciones mediante la conversión previa del mapa de keywords a un formato más eficiente si fuera necesario (aunque la implementación actual ya es reactiva al iterar sobre tokens).
-- `2026-08-28T06:29:30` **scanner.py** (legibilidad y documentación): Mejora la legibilidad y la seguridad del mantenimiento técnico mediante la formalización de las capacidades de `_is_reparse_point`, documentando el código de error específico `0x400` y utilizando `Path.is_symlink()` para mayor claridad, garantizando que el escáner no siga enlaces inesperados.
-- `2026-08-28T06:28:59` **safety.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones críticas de validación y los predicados del pipeline de integridad mediante docstrings detallados, mejorando la mantenibilidad para futuros colaboradores sin alterar la lógica de ejecución.
