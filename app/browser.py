@@ -161,7 +161,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     if not hasattr(entry, 'name') or not hasattr(entry, 'path'):
         return True
     
-    # Validar entrada vacía antes de procesar
     name = entry.name
     if not name:
         return True
@@ -170,7 +169,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
         
     try:
-        # Usamos is_symlink/is_junction antes de acceder al path si es posible
         if entry.is_symlink() or is_junction_fn(entry.path) or os.path.ismount(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):
@@ -190,9 +188,7 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el peso en bytes de una carpeta.
-    Usa `os.scandir` para eficiencia de E/S y un diccionario `memo` para cachear
-    resultados de sub-árboles. Valida que las rutas hijas se mantengan dentro
-    del ámbito del escaneo original.
+    Utiliza iteración sobre `os.scandir` para mantener la eficiencia de E/S.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -204,7 +200,6 @@ def _sum_directory_recursive(
     except (OSError, RuntimeError):
         return 0
     
-    # Seguridad adicional: verificar contención si se provee base
     if base_check_path and not _is_path_inside_base(root_path, base_check_path):
         return 0
 
@@ -215,23 +210,17 @@ def _sum_directory_recursive(
     total: int = 0
     try:
         with os.scandir(root_dir) as it:
-            while True:
-                try:
-                    entry = next(it, None)
-                    if entry is None:
-                        break
-                    if _should_skip_entry(entry, kernel32, is_junction_fn):
-                        continue
-                    
-                    if entry.is_dir(follow_symlinks=False):
-                        total += _sum_directory_recursive(
-                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
-                        )
-                    elif entry.is_file(follow_symlinks=False):
-                        total += entry.stat(follow_symlinks=False).st_size
-                except (OSError, PermissionError):
+            for entry in it:
+                if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
-    except (PermissionError, OSError, FileNotFoundError):
+                
+                if entry.is_dir(follow_symlinks=False):
+                    total += _sum_directory_recursive(
+                        entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
+                    )
+                elif entry.is_file(follow_symlinks=False):
+                    total += entry.stat(follow_symlinks=False).st_size
+    except (PermissionError, OSError):
         return 0
     
     memo[root_abs] = total
@@ -264,7 +253,6 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     if not candidate:
         return False
     try:
-        # Verificamos si existe antes de resolver para evitar excepciones en rutas no encontradas
         if not candidate.exists():
             return False
             

@@ -25,7 +25,11 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]  # (Color, Etiqueta)
 RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 
 class PaletteDict(TypedDict):
-    """Mapeo de roles de color aplicados a la interfaz de usuario."""
+    """
+    Define los roles funcionales de color. 
+    'surface' refiere a fondos de contenedores; 'accent' a elementos de acción; 
+    'text' a tipografía, con variantes 'muted' y 'dim' para jerarquía visual.
+    """
     background: HexColor
     surface: HexColor
     surface_alt: HexColor
@@ -49,7 +53,7 @@ class PaletteDict(TypedDict):
     glow: HexColor
 
 class FontSizesDict(TypedDict):
-    """Definición de tamaños en puntos para cada categoría jerárquica de texto."""
+    """Escala tipográfica jerárquica basada en puntos (pt)."""
     display: int
     title: int
     subtitle: int

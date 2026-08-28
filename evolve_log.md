@@ -910,3 +910,40 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-08-28T05:49:01` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-28T05:49:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T05:49:01` Corrida terminada. Total usado hoy: 140.
+- `2026-08-28T05:57:50` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-08-28T05:58:19` Tests FALLARON:
+```
+.................................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:271: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.23s
+
+```
+- `2026-08-28T05:58:19` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._resolve_and_cache_path` y `entries_from_folders` añadiendo chequeos de nulidad (None) y validaciones de tipo explícitas adicionales para evitar excepciones inesperadas al procesar rutas mal formadas del sistema.
+- `2026-08-28T05:58:53` 🛑 Propuesta bloqueada por la guardia en assistant.py (enfoque: legibilidad y documentación): el archivo se encogió al 48% del original (posible pérdida de código)
+- `2026-08-28T05:59:27` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings detallados en los tipos complejos (`PaletteDict`, `FontSizesDict`) y funciones clave, clarificando el propósito y las expectativas de los parámetros para facilitar el mantenimiento del sistema de diseño.
+- `2026-08-28T05:59:37` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `browser.py` mediante la refactorización de `_sum_directory_recursive` hacia un diseño más explícito, eliminando el uso de un bucle `while True` innecesario por un iterador de `os.scandir` más idiomático y documentando la lógica de recursión mediante type hints más precisos.
+- `2026-08-28T05:59:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T05:59:37` Corrida terminada. Total usado hoy: 144.
