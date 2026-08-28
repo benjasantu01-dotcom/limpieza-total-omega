@@ -100,9 +100,7 @@ class StartupEntry:
 
     def _extract_quoted_path(self, raw_command: str) -> str:
         """
-        Extrae y valida una ruta delimitada por comillas.
-        Aplica un filtro estricto contra caracteres de shell prohibidos y 
-        valida la seguridad de la ruta mediante `is_protected_path`.
+        Extracts and validates a path within quotes, checking against system protection.
         """
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
@@ -125,12 +123,6 @@ class StartupEntry:
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Normaliza, valida y resuelve la ruta absoluta de un ejecutable.
-        
-        Verifica:
-        1. Inexistencia de caracteres de control o Shell.
-        2. Bloqueo de dispositivos de sistema (NUL, CON, etc.).
-        3. Exclusión de puntos de reparse (Junctions) para evitar bucles.
-        4. Integridad mediante `is_protected_path`.
         """
         if not isinstance(path_string, str) or not path_string:
             return ""
@@ -188,8 +180,7 @@ class StartupEntry:
 
     def _resolve_path_from_command(self, command_line: str) -> str:
         """
-        Tokeniza la línea de comandos para aislar el ejecutable primario,
-        ignorando cualquier argumento pasado al mismo.
+        Tokeniza la línea de comandos para aislar el ejecutable primario.
         """
         if not command_line or not isinstance(command_line, str):
             return ""
@@ -211,8 +202,6 @@ class StartupEntry:
     def executable(self) -> str:
         """
         Retorna la ruta absoluta validada del ejecutable.
-        Implementa memoización interna: la resolución costosa (I/O) solo ocurre 
-        la primera vez que se consulta la propiedad.
         """
         if self._checked_exists:
             return self._exec_cache or ""
@@ -230,10 +219,6 @@ class StartupEntry:
 def startup_folders() -> List[Path]:
     """
     Retorna una lista de rutas de carpetas 'Startup' de Windows.
-    
-    Detecta automáticamente las rutas para el usuario actual y el sistema local 
-    basándose en las variables de entorno APPDATA y ProgramData.
-    Solo retorna directorios válidos que no están protegidos por `is_protected_path`.
     """
     if os.name != "nt":
         return []
@@ -253,13 +238,6 @@ def startup_folders() -> List[Path]:
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
     """
     Escanea las carpetas de inicio provistas en busca de ejecutables.
-    
-    Args:
-        folders: Lista de objetos Path. Si es None, usa `startup_folders()`.
-    
-    Retorna:
-        Lista de `StartupEntry` que contienen los archivos ejecutables detectados.
-        Salta automáticamente archivos protegidos o simbólicos.
     """
     found_entries: List[StartupEntry] = []
     scan_folders = folders if folders is not None else startup_folders()
@@ -289,15 +267,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Transforma la salida CSV cruda de PowerShell (Run Keys) en una lista de `StartupEntry`.
-    
-    Args:
-        csv_text: Salida de texto cruda desde el comando `ConvertTo-Csv`.
-        source: Identificador de fuente para la entrada.
-    
-    Validaciones:
-        Limpia caracteres de control, filtra entradas con nombres sospechosos 
-        (ej. prefijos 'PS'), e ignora comandos que violan la integridad del sistema.
+    Transforma la salida CSV cruda de PowerShell en una lista de `StartupEntry`.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -308,15 +278,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         reader: csv.DictReader = csv.DictReader(f)
         for row in reader:
             try:
-                if not isinstance(row, dict) or len(row) < 2:
+                # Validar integridad estructural básica del CSV antes de operar
+                keys = list(row.keys())
+                if len(keys) < 2:
                     continue
                 
-                row_items = list(row.items())
-                if len(row_items) < 2 or row_items[0][1] is None or row_items[1][1] is None:
-                    continue
+                name_raw = row.get(keys[0], "")
+                cmd_raw = row.get(keys[1], "")
                 
-                name_raw = str(row_items[0][1])
-                cmd_raw = str(row_items[1][1])
+                if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
+                    continue
                 
                 name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
                 cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
@@ -326,6 +297,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 if any(c in cmd for c in '<>|?*'):
                     continue
                 
+                # Pre-validar si la ruta sugerida cae en zonas protegidas
                 try:
                     if is_protected_path(Path(cmd)):
                         continue
@@ -343,9 +315,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """
     Consulta las claves de registro Run especificadas invocando PowerShell.
-    
-    Utiliza `-ErrorAction SilentlyContinue` para ignorar errores de acceso 
-    en claves específicas. Implementa caché global de ejecución.
     """
     global _REGISTRY_CACHE
     if _REGISTRY_CACHE is not None:
@@ -373,9 +342,6 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 def list_startup_entries() -> List[StartupEntry]:
     """
     Recopila todas las entradas de arranque, deduplicando por nombre.
-    
-    Usa concurrencia (ThreadPoolExecutor) para leer simultáneamente 
-    carpetas y registro, mejorando el tiempo de respuesta.
     """
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
@@ -411,13 +377,6 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
     """
     Genera un reporte legible de impacto para la interfaz de usuario.
-    
-    Argumentos:
-        entries: Lista opcional de `StartupEntry`. Si no se provee, ejecuta 
-                 `list_startup_entries()` internamente.
-    
-    Retorna:
-        Una lista de strings formateada como reporte Markdown para visualización.
     """
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)

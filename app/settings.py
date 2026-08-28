@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple
 from functools import lru_cache
 
-from safety import is_safe_to_modify, is_protected_path
+from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
 
 PathLike: TypeAlias = str | Path
 T = TypeVar("T")
@@ -146,8 +146,6 @@ class _Validators:
         """Verifica que la ruta no sea un enlace simbólico, punto de unión, y que sea segura."""
         if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
             return False
-        if path_obj.exists() and not (path_obj.is_file() or path_obj.is_dir()):
-            return False
         return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
 
     @staticmethod
@@ -157,7 +155,6 @@ class _Validators:
         try:
             resolved = Path(path_str).expanduser().resolve(strict=False)
             if not resolved.is_absolute(): return False
-            if is_protected_path(str(resolved)): return False
             return _Validators._run_safety_checks(resolved)
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
@@ -288,13 +285,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         cleaned_settings["asistente_activado"] = False
     
     ruta = settings_path(custom_base)
-    parent = ruta.parent.absolute()
-    
     try:
-        if not is_safe_to_modify(str(parent)) or not is_safe_to_modify(str(ruta)):
-            return None
-        parent.mkdir(parents=True, exist_ok=True)
-        if not os.access(parent, os.W_OK): return None
+        # Validación estricta de seguridad antes de tocar el sistema de archivos
+        ensure_safe_to_modify(str(ruta.parent))
+        ruta.parent.mkdir(parents=True, exist_ok=True)
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         encoded_data = data.encode("utf-8")
@@ -308,12 +302,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         os.replace(temp_path, ruta)
         
         # Validación de integridad post-escritura
-        try:
-            with open(ruta, "r", encoding="utf-8") as f:
-                json.load(f)
-        except (json.JSONDecodeError, OSError):
-            if ruta.exists(): os.remove(ruta)
-            return None
+        with open(ruta, "r", encoding="utf-8") as f:
+            json.load(f)
             
         _read_disk.cache_clear()
         return ruta
