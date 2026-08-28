@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import tempfile
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple
@@ -250,7 +249,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     if not ruta.exists(): return DEFAULTS.copy()
     
     try:
-        # Verificación de salud: intentar acceder al archivo antes de leer
         if not os.access(ruta, os.R_OK): return DEFAULTS.copy()
         
         stat_info = ruta.stat()
@@ -274,37 +272,36 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste la configuración en disco mediante un archivo temporal y reemplazo atómico."""
+    """Persiste la configuración en disco mediante reemplazo atómico de archivo."""
     if not isinstance(values, dict): return None
     cleaned_settings = validate(values)
     if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
         cleaned_settings["asistente_activado"] = False
+    
     ruta = settings_path(custom_base)
     parent = ruta.parent.absolute()
-    temp_name = None
+    
     try:
         if not is_safe_to_modify(str(parent)) or not is_safe_to_modify(str(ruta)):
             return None
-        try:
-            parent.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            return None
+        parent.mkdir(parents=True, exist_ok=True)
         if not os.access(parent, os.W_OK): return None
-        encoded_data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+        
+        data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
+        encoded_data = data.encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
-        with tempfile.NamedTemporaryFile("wb", delete=False, dir=parent) as tf:
-            temp_name = tf.name
-            tf.write(encoded_data)
-            tf.flush()
-            os.fsync(tf.fileno())
-        os.replace(temp_name, ruta)
+        
+        temp_path = ruta.with_suffix(".tmp")
+        with open(temp_path, "wb") as f:
+            f.write(encoded_data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_path, ruta)
+        
         _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
-        if temp_name and os.path.exists(temp_name): os.remove(temp_name)
         return None
-    finally:
-        if temp_name and os.path.exists(temp_name): os.remove(temp_name)
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Aplica cambios parciales a la configuración actual, validándolos uno a uno."""

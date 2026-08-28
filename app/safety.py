@@ -303,12 +303,12 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica si child es un subdirectorio o archivo contenido en parent."""
+    """Verifica si child es un subdirectorio o archivo contenido en parent usando commonpath."""
     if child is None or parent is None: return False
     try:
-        c, p = normalize(child), normalize(parent)
-        if allow_equal and c == p: return True
-        return p in c.parents
+        c, p = str(normalize(child)), str(normalize(parent))
+        if not allow_equal and c == p: return False
+        return os.path.commonpath([c, p]) == p
     except (ValueError, TypeError, OSError, RuntimeError): return False
 
 
@@ -337,13 +337,11 @@ def _validate_basic_path_safety(path: Path, path_str: str) -> None:
 
 def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None:
     """Verifica si la operación respeta límites geográficos definidos."""
-    p_abs = path.resolve()
-    
-    if base_dir and not is_within_directory(p_abs, base_dir, allow_equal=True):
+    if base_dir and not is_within_directory(path, base_dir, allow_equal=True):
         raise UnsafePathError("Operación fuera del directorio base permitido.")
-    if is_within_directory(p_abs, Path.cwd(), allow_equal=True):
+    if is_within_directory(path, Path.cwd(), allow_equal=True):
         raise UnsafePathError("Operación denegada en el directorio de ejecución.")
-    if is_drive_root(p_abs) or is_protected_path(p_abs):
+    if is_drive_root(path) or is_protected_path(path):
         raise UnsafePathError("Ruta de sistema protegida.")
     if _is_reparse_point(path):
         raise UnsafePathError("Seguridad denegada: nodo de reparse detectado.")

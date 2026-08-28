@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **240** (47.6% de aceptación)
+- Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 198
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 145 | 10 | 20 | 7 | 126 |
-| 2026-08-28 | 95 | 7 | 14 | 8 | 72 |
+| 2026-08-27 | 145 | 10 | 20 | 7 | 122 |
+| 2026-08-28 | 98 | 7 | 15 | 8 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **51**
+- seguridad defensiva: **48**
 - robustez ante casos límite: **45**
-- seguridad defensiva: **45**
 - rendimiento: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
+- `scanner.py`: **24**
 - `assistant.py`: **21**
 - `memory.py`: **21**
 - `branding.py`: **20**
 - `quarantine.py`: **20**
+- `settings.py`: **19**
 - `diskreport.py`: **19**
 - `browser.py`: **18**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `settings.py`: **18**
 - `main.py`: **13**
 - `startup.py`: **13**
-- `safety.py`: **11**
+- `safety.py`: **12**
 - `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T08:22:13` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `tempfile.NamedTemporaryFile` (que puede ser vulnerable a condiciones de carrera o creación de archivos con permisos excesivamente permisivos en ciertos sistemas) y reemplazándolo por una escritura directa con `os.replace` previo chequeo de existencia, garantizando que solo se toque el disco si las rutas son validadas y el directorio es seguro.
+- `2026-08-28T08:22:00` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` añadiendo una validación explícita para asegurar que el `path_obj` (la ruta resuelta) mantenga la integridad respecto a `base_root` antes de continuar, evitando posibles riesgos de escape de directorio mediante enlaces o manipulaciones de ruta.
+- `2026-08-28T08:21:35` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación de prefijo más estricta mediante `os.path.commonpath`, lo cual evita errores de coincidencia parcial al verificar límites geográficos y asegura que la ruta final esté efectivamente contenida dentro del directorio permitido.
 - `2026-08-28T08:12:34` **organizer.py** (seguridad defensiva): Se ha reforzado la integridad del sistema impidiendo que archivos con atributos críticos (sistema, ocultos, solo lectura) sean procesados, movidos o eliminados mediante una validación más estricta en `_passes_system_checks`, y se añadió una validación explícita para evitar que `stage_for_review` opere fuera de las unidades permitidas mediante el chequeo de `anchor`.
 - `2026-08-28T08:12:09` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` al evitar la construcción de una ruta a partir de datos potencialmente maliciosos, integrando `is_protected_path` directamente sobre la ruta resuelta sin procesar el nombre del archivo de forma aislada, previniendo así posibles ataques de "path traversal" o manipulación de la estructura de directorios en el chequeo de seguridad.
 - `2026-08-28T08:02:09` **healthscore.py** (seguridad defensiva): Se añadió una validación defensiva en la creación de `SystemMetrics` para asegurar que los valores numéricos no solo sean finitos sino coherentes con el dominio (ej: porcentajes que no exceden 100 y contadores positivos), previniendo la propagación de datos corruptos desde otros módulos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T07:41:25` **scanner.py** (robustez ante casos límite): Se añadió una verificación de estado de archivo (`entry.is_symlink()`) en el bloque de heurísticas de `Scanner.process_entry` para prevenir errores de acceso a enlaces simbólicos rotos o recursivos que escapan a la lógica de `_is_reparse_point`, mejorando la robustez ante archivos inexistentes.
 - `2026-08-28T07:40:32` **quarantine.py** (robustez ante casos límite): Se ha añadido una validación de longitud de nombre de archivo antes de la copia atómica para prevenir errores `OSError` (Nombre de archivo demasiado largo) en Windows, asegurando que el sandbox no falle ante rutas profundas.
 - `2026-08-28T07:31:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `read_snapshot` y `top_memory_processes` añadiendo validaciones explícitas contra posibles estados corruptos (archivos vacíos o errores de lectura imprevistos) que podrían causar fallos en cascada en las funciones de parsing, garantizando una salida segura ante entornos degradados.
-- `2026-08-28T07:31:17` **main.py** (robustez ante casos límite): Mejoré la robustez de la aplicación ante el cierre inesperado de la ventana y el manejo de recursos, añadiendo una comprobación exhaustiva de `winfo_exists()` antes de cualquier interacción con widgets de `customtkinter` o `tkinter` en los callbacks de los hilos de trabajo, previniendo excepciones `TclError` que ocurrían durante el proceso de apagado de la app.
-- `2026-08-28T07:21:11` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez de `_scan_recursive` frente a rutas con caracteres especiales o estados inconsistentes al añadir un manejo de excepciones específico para `OSError` durante el acceso a atributos de archivo (`stat`) y al iterar, evitando que una entrada dañada detenga el escaneo completo.
-- `2026-08-28T07:21:00` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante condiciones de carrera y denegación de acceso, implementando una gestión de excepciones más granular para evitar que el escaneo se interrumpa prematuramente al encontrar archivos bloqueados o en uso.

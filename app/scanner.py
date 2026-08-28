@@ -129,6 +129,7 @@ class Scanner:
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
+            # Validación de seguridad defensiva: debe seguir bajo el árbol raíz
             path_obj.relative_to(self.base_root)
             
             if self._is_reparse_point(entry):
