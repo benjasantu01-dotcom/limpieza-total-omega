@@ -1399,3 +1399,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T10:14:55` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-28T10:14:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T10:14:55` Corrida terminada. Total usado hoy: 244.
+- `2026-08-28T10:23:09` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-08-28T10:23:39` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `validate()` añadiendo chequeos de integridad lógica: ahora `save()` valida explícitamente la presencia de la API Key en el entorno antes de confirmar una activación, y `validate()` asegura que las claves de configuración no solo sean del tipo correcto, sino que las rutas (como `ultima_carpeta`) se validen mediante `_Validators._is_safe_path` antes de ser inyectadas en el objeto de configuración.
+- `2026-08-28T10:24:04` Tests FALLARON:
+```
+.................................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:276: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.25s
+
+```
+- `2026-08-28T10:24:04` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `StartupEntry._resolve_and_cache_path` implementando una validación de `PermissionError` más granular y envolviendo la lógica en un bloque `try-except` más preciso para evitar que fallos inesperados en el sistema de archivos detengan el escaneo de otras entradas.
+- `2026-08-28T10:24:40` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `SystemContext.ingest` y `_validate_and_assign` mediante la extracción de la lógica de validación de tipos a un método de clase, eliminando la duplicación y el uso redundante de `type()` que dificultaba la lectura del flujo de datos.
+- `2026-08-28T10:24:57` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: legibilidad y documentación).
+- `2026-08-28T10:24:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T10:24:57` Corrida terminada. Total usado hoy: 248.

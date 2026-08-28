@@ -275,7 +275,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Persiste la configuración en disco mediante reemplazo atómico de archivo."""
     if not isinstance(values, dict): return None
     cleaned_settings = validate(values)
-    if cleaned_settings["asistente_activado"] and not (cleaned_settings["asistente_clave_api"] or os.environ.get(API_KEY_ENV_VAR)):
+    
+    # Seguridad: si el asistente se activa, debe haber una clave, o falla la activación.
+    has_api_key = bool(cleaned_settings.get("asistente_clave_api")) or bool(os.environ.get(API_KEY_ENV_VAR))
+    if cleaned_settings.get("asistente_activado") and not has_api_key:
         cleaned_settings["asistente_activado"] = False
     
     ruta = settings_path(custom_base)

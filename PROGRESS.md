@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 34
+- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 120 | 9 | 18 | 7 | 106 |
-| 2026-08-28 | 107 | 8 | 16 | 8 | 105 |
+| 2026-08-27 | 119 | 9 | 17 | 7 | 104 |
+| 2026-08-28 | 109 | 9 | 16 | 8 | 106 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **50**
+- manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
 - robustez ante casos límite: **45**
-- rendimiento: **42**
-- legibilidad y documentación: **42**
+- legibilidad y documentación: **43**
+- rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
-- `memory.py`: **20**
+- `assistant.py`: **20**
 - `quarantine.py`: **19**
 - `branding.py`: **19**
-- `assistant.py`: **19**
+- `memory.py`: **19**
 - `diskreport.py`: **18**
+- `settings.py`: **18**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
-- `settings.py`: **17**
 - `browser.py`: **16**
 - `main.py`: **12**
 - `startup.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T10:24:40` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `SystemContext.ingest` y `_validate_and_assign` mediante la extracción de la lógica de validación de tipos a un método de clase, eliminando la duplicación y el uso redundante de `type()` que dificultaba la lectura del flujo de datos.
+- `2026-08-28T10:23:39` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` añadiendo chequeos de integridad lógica: ahora `save()` valida explícitamente la presencia de la API Key en el entorno antes de confirmar una activación, y `validate()` asegura que las claves de configuración no solo sean del tipo correcto, sino que las rutas (como `ultima_carpeta`) se validen mediante `_Validators._is_safe_path` antes de ser inyectadas en el objeto de configuración.
 - `2026-08-28T10:13:31` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento de `quarantine_file` añadiendo una validación explícita para asegurar que la ruta de origen no sea el directorio de cuarentena mismo o uno de sus subdirectorios, previniendo así errores de lógica en la recursión de archivos durante el aislamiento.
 - `2026-08-28T10:05:04` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas y manejo de errores más específico, asegurando que las operaciones de disco ocurran solo tras verificar la integridad de las rutas mediante `is_safe_to_modify` y evitando excepciones no capturadas.
 - `2026-08-28T10:04:53` **memory.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `trim_working_set` y sus ayudantes para asegurar que las excepciones inesperadas sean capturadas, evitando que fallos de API o de tipos cierren la aplicación inesperadamente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T08:22:00` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` añadiendo una validación explícita para asegurar que el `path_obj` (la ruta resuelta) mantenga la integridad respecto a `base_root` antes de continuar, evitando posibles riesgos de escape de directorio mediante enlaces o manipulaciones de ruta.
 - `2026-08-28T08:21:35` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación de prefijo más estricta mediante `os.path.commonpath`, lo cual evita errores de coincidencia parcial al verificar límites geográficos y asegura que la ruta final esté efectivamente contenida dentro del directorio permitido.
 - `2026-08-28T08:12:34` **organizer.py** (seguridad defensiva): Se ha reforzado la integridad del sistema impidiendo que archivos con atributos críticos (sistema, ocultos, solo lectura) sean procesados, movidos o eliminados mediante una validación más estricta en `_passes_system_checks`, y se añadió una validación explícita para evitar que `stage_for_review` opere fuera de las unidades permitidas mediante el chequeo de `anchor`.
-- `2026-08-28T08:12:09` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` al evitar la construcción de una ruta a partir de datos potencialmente maliciosos, integrando `is_protected_path` directamente sobre la ruta resuelta sin procesar el nombre del archivo de forma aislada, previniendo así posibles ataques de "path traversal" o manipulación de la estructura de directorios en el chequeo de seguridad.
-- `2026-08-28T08:02:09` **healthscore.py** (seguridad defensiva): Se añadió una validación defensiva en la creación de `SystemMetrics` para asegurar que los valores numéricos no solo sean finitos sino coherentes con el dominio (ej: porcentajes que no exceden 100 y contadores positivos), previniendo la propagación de datos corruptos desde otros módulos.

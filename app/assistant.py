@@ -85,6 +85,10 @@ class MetricSpec:
     min_val: float
     max_val: float
 
+    def is_valid_type(self, val: Any) -> bool:
+        """Verifica que el valor sea numérico y no una colección o booleano."""
+        return isinstance(val, (int, float)) and not isinstance(val, bool)
+
 class ProblemCriterion(NamedTuple):
     """Define una regla de salud lógica para la evaluación de métricas."""
     metric_key: str
@@ -218,11 +222,9 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
     "score": MetricSpec(int, 0, 100),
 }
 
-_FORBIDDEN_TYPES: Final[set[type]] = {list, dict, set, tuple, bool}
-
 def _safe_float(val: Any, default: float = 0.0) -> float:
     """Conversión segura a float. Retorna default si el valor no es numérico, es infinito o NaN."""
-    if val is None or type(val) in _FORBIDDEN_TYPES:
+    if not isinstance(val, (int, float)) or isinstance(val, bool):
         return default
     try:
         f = float(val)
@@ -325,8 +327,7 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
     las restricciones de 'spec' y la asigna al 'ctx' si es correcta.
     """
     val = _get_source_value(source, key)
-    # Valida explícitamente tipos no deseados antes de cualquier procesamiento
-    if val is None or type(val) in _FORBIDDEN_TYPES or isinstance(val, str):
+    if not spec.is_valid_type(val):
         return False
     
     try:
