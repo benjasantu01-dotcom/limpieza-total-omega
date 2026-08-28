@@ -584,3 +584,68 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T03:37:22` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad del método `_worker_thread_logic` agregando una validación previa a la ejecución de cualquier tarea asíncrona, asegurando que la ruta no sea un enlace simbólico (reparse point) mediante `is_safe_to_modify` antes de delegar la operación al pool de hilos, evitando así vulnerabilidades por acceso fuera de los límites permitidos.
 - `2026-08-28T03:37:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T03:37:22` Corrida terminada. Total usado hoy: 88.
+- `2026-08-28T03:45:25` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-28T03:45:53` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `memory.py` al reemplazar la validación manual de caracteres RTL (que era incompleta) por una lógica que utiliza `Path.resolve()` contra el sistema de archivos antes de cualquier operación, asegurando que el proceso objetivo no esté operando fuera de los directorios permitidos y evitando potencialmente ataques de tipo *path traversal* o *spoofing* de procesos.
+- `2026-08-28T03:46:19` Tests FALLARON:
+```
+_for_review(found, review_dir=str(revision))
+    
+>       assert not archivo.exists(), "el archivo debe salir de su lugar original"
+E       AssertionError: el archivo debe salir de su lugar original
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+
+evolve/tests/test_basic.py:144: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:270: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_stage_for_review_moves_files_without_deleting_them - AssertionError: el archivo debe salir de su lugar original
+assert not True
+ +  where True = exists()
+ +    where exists = PosixPath('/tmp/pytest-of-runner/pytest-2/test_stage_for_review_moves_fi0/origen/mover.tmp').exists
+1 failed, 298 passed, 4 warnings in 1.23s
+
+```
+- `2026-08-28T03:46:19` ❌ Mejora descartada en organizer.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de integridad en `stage_for_review` para prevenir la escritura en unidades de red o rutas fuera de la jerarquía de usuario, asegurando que la carpeta de destino (`review_dir`) resida siempre bajo el árbol de archivos seguro del usuario y no en volúmenes desconectados o rutas UNC.
+- `2026-08-28T03:46:50` Tests FALLARON:
+```
+ined_at=datetime.now().isoformat(timespec="seconds"),
+                sha256=file_hash,
+            )
+            items_dict[item_id] = quarantine_item
+            save_manifest(list(items_dict.values()), base)
+    
+            # Validar nuevamente antes de borrar el origen
+            if is_safe_to_modify(source_path):
+                source_path.unlink()
+            else:
+>               raise UnsafePathError("El origen ya no es seguro para ser eliminado.")
+E               safety.UnsafePathError: El origen ya no es seguro para ser eliminado.
+
+app/quarantine.py:399: UnsafePathError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:270: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: El origen ya no es seguro para ser eliminado.
+1 failed, 298 passed, 4 warnings in 1.25s
+
+```
+- `2026-08-28T03:46:50` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `quarantine_file` y `restore_item` al consolidar la validación de integridad del archivo y el chequeo de bloqueos antes de cualquier operación de movimiento, utilizando `is_safe_to_modify` para asegurar que el sistema de archivos no haya sido alterado fuera de la app mientras el ítem estaba en tránsito o esperando en cuarentena.
+- `2026-08-28T03:46:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-28T03:46:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T03:46:54` Corrida terminada. Total usado hoy: 92.

@@ -277,17 +277,15 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
-    """Valida la seguridad de la ruta mediante chequeos contra inyecciones y rutas protegidas."""
+    """Valida la seguridad de la ruta mediante chequeos canónicos y recursión protegida."""
     if not isinstance(path, str) or not os.path.isabs(path) or path.startswith("\\\\"):
-        return False, "Ruta inválida o en red."
-    if any(seq in path.encode("utf-8", errors="ignore") for seq in [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]):
-        return False, "Ruta de proceso sospechosa."
+        return False, "Ruta inválida."
     try:
-        if os.path.islink(path): return False, "Ruta es un enlace simbólico."
-        p = Path(path).resolve()
-        if not p.is_file(): return False, "No es un ejecutable válido."
+        p = Path(path).resolve(strict=True)
+        if not p.is_file(): return False, "No es un ejecutable."
+        if os.path.islink(path): return False, "Simlink detectado."
         for parent in [p] + list(p.parents):
-            if is_protected_path(str(parent)): return False, f"Ruta protegida en {parent.name}."
+            if is_protected_path(str(parent)): return False, f"Protegido en {parent.name}."
     except Exception: return False, "Error resolviendo ruta."
     return True, None
 
