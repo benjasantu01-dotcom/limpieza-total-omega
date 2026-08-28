@@ -176,8 +176,6 @@ def _is_file_in_use(path_str: str) -> bool:
     path = Path(path_str)
     if not path.exists():
         return False
-    if not os.access(path, os.W_OK):
-        return True
     if os.name == 'nt':
         try:
             handle = ctypes.windll.kernel32.CreateFileW(
@@ -185,9 +183,10 @@ def _is_file_in_use(path_str: str) -> bool:
             )
             if handle == -1: return True
             ctypes.windll.kernel32.CloseHandle(handle)
+            return False
         except (AttributeError, OSError):
             return True
-    return False
+    return not os.access(path, os.W_OK)
 
 
 def _is_sensitive_extension(path: Path) -> bool:
@@ -232,12 +231,6 @@ def _check_file_integrity(path: Path) -> None:
 
     if not path.exists():
         raise UnsafePathError("El archivo ha dejado de existir.")
-
-    if not os.access(path, os.W_OK):
-        raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}")
-
-    if os.name == 'nt' and _is_system_or_hidden(path):
-         raise UnsafePathError(f"Operación denegada: {ProtectionReason.SYSTEM_HIDDEN.value}")
 
     for rule in _VALIDATORS:
         try:

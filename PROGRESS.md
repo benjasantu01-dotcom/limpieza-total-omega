@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 96 | 7 | 13 | 6 | 98 |
-| 2026-08-28 | 133 | 9 | 19 | 9 | 114 |
+| 2026-08-27 | 95 | 7 | 13 | 6 | 95 |
+| 2026-08-28 | 135 | 9 | 20 | 9 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **47**
-- robustez ante casos límite: **42**
-- seguridad defensiva: **36**
+- robustez ante casos límite: **44**
+- seguridad defensiva: **35**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,16 +36,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **19**
 - `settings.py`: **18**
 - `duplicates.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `browser.py`: **16**
 - `healthscore.py`: **16**
-- `startup.py`: **12**
 - `main.py`: **12**
-- `safety.py`: **10**
+- `startup.py`: **11**
+- `safety.py`: **11**
 - `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T12:06:40` **safety.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de permiso en `_is_file_in_use` y se reforzó `_check_file_integrity` para manejar situaciones donde el sistema operativo bloquea la lectura de atributos (ej. procesos en uso exclusivo o errores de I/O) evitando que la aplicación aborte ante archivos inaccesibles.
+- `2026-08-28T12:06:00` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_atomic_isolate_file` añadiendo una verificación explícita de `OSError` al intentar realizar `os.replace` y garantizando que, ante cualquier fallo de E/S durante la operación atómica, se realice una limpieza exhaustiva del archivo temporal, evitando dejar "huérfanos" en el directorio de cuarentena que podrían corromper futuras ejecuciones.
 - `2026-08-28T11:57:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus ayudantes ante casos límite, implementando una clausura segura (`finally`) más rigurosa para el manejo de recursos y una validación de rutas que evita errores ante ejecutables que terminan súbitamente o rutas con caracteres no estándar, asegurando que la app no falle ante procesos efímeros o protegidos.
 - `2026-08-28T11:57:31` **main.py** (robustez ante casos límite): Se introdujo una validación robusta y defensiva en `on_trim_process` y `on_restore_quarantine` para manejar escenarios de archivos o procesos desaparecidos entre la selección en la UI y la ejecución asíncrona, previniendo errores de sistema al intentar acceder a rutas o PIDs que ya no existen.
 - `2026-08-28T11:55:53` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante rutas con permisos denegados o archivos inexistentes durante la iteración, y se añadió una validación defensiva en `_process_size_group` para evitar procesar grupos donde los archivos hayan desaparecido (race condition) entre la recolección y el hashing.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T11:14:56` **duplicates.py** (rendimiento): Optimizé el pipeline de hashing eliminando lecturas redundantes en `hash_file` al evitar re-abrir el archivo si el tamaño ya es conocido, y mejoré la eficiencia de `_process_size_group` al cachear `stat` para evitar llamadas repetidas al sistema de archivos durante la comparación de duplicados.
 - `2026-08-28T11:14:32` **diskreport.py** (rendimiento): Se optimizó la función `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso de `os.path.join` y `os.fspath`, lo cual reduce drásticamente la presión sobre el recolector de basura y mejora la velocidad en recorridos de discos grandes al evitar la instanciación repetitiva de clases.
 - `2026-08-28T11:05:31` **branding.py** (rendimiento): Se optimizó el acceso a constantes de color eliminando múltiples llamadas a `PALETTE.get()` y `MappingProxyType` dentro de las funciones de dibujo, mediante el uso de referencias directas a las constantes pre-resueltas, reduciendo el overhead en cada ejecución de las rutinas de renderizado.
-- `2026-08-28T11:04:59` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la creación dinámica de sets y la búsqueda secuencial en `_KEYWORD_MAP` por una lógica de pre-filtrado basada en una sola pasada, reduciendo la carga de CPU en sistemas con muchas peticiones.
-- `2026-08-28T11:04:23` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo `startup.py` mediante la adición de docstrings estructuradas en las funciones públicas, detallando los argumentos, comportamientos esperados y casos de borde para facilitar el mantenimiento y la comprensión de las heurísticas aplicadas.

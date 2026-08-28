@@ -362,6 +362,10 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         if not file_hash:
             raise OSError("Falla de integridad: no se pudo verificar el hash en destino.")
         return file_hash
+    except OSError as e:
+        if temp_file_path and temp_file_path.exists():
+            _safe_unlink(temp_file_path)
+        raise RuntimeError(f"Error de sistema durante aislamiento: {e}")
     except Exception:
         if temp_file_path and temp_file_path.exists():
             _safe_unlink(temp_file_path)
