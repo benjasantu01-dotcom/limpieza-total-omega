@@ -1464,3 +1464,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T11:05:40` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-08-28T11:05:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T11:05:40` Corrida terminada. Total usado hoy: 264.
+- `2026-08-28T11:14:02` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-28T11:14:32` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Se optimizó la función `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso de `os.path.join` y `os.fspath`, lo cual reduce drásticamente la presión sobre el recolector de basura y mejora la velocidad en recorridos de discos grandes al evitar la instanciación repetitiva de clases.
+- `2026-08-28T11:14:56` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el pipeline de hashing eliminando lecturas redundantes en `hash_file` al evitar re-abrir el archivo si el tamaño ya es conocido, y mejoré la eficiencia de `_process_size_group` al cachear `stat` para evitar llamadas repetidas al sistema de archivos durante la comparación de duplicados.
+- `2026-08-28T11:15:20` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-28T11:16:12` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el rendimiento de la interfaz implementando un filtrado inteligente en `on_scan_junk` y `on_stage` utilizando generadores y list comprehensions que evitan procesar múltiples veces la misma estructura de datos, además de añadir validaciones tempranas en los métodos de callback para reducir la carga de trabajo en el hilo principal y evitar ciclos de actualización innecesarios cuando los datos no han variado.
+- `2026-08-28T11:16:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T11:16:12` Corrida terminada. Total usado hoy: 268.

@@ -1240,7 +1240,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Limpieza")
             self.log(f"Buscando basura en: {destino}...", "Limpieza")
             
-            # Usamos un generador interno para filtrar antes de materializar la lista
+            # Usamos generador para filtrar candidatos inválidos antes de persistir
             raw_scan = scan_for_junk([self.scan_target] if self.scan_target else None)
             junk = [item for item in raw_scan if item.size_bytes > 0]
             
@@ -1275,6 +1275,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
         
+        # Filtrado selectivo sin duplicar listas masivas en memoria innecesariamente
         aptos = [jf for jf in junk if self._is_safe_path(jf.path)]
         
         if not aptos:

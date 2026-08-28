@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 208
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 112 | 7 | 15 | 6 | 100 |
-| 2026-08-28 | 121 | 9 | 17 | 9 | 108 |
+| 2026-08-27 | 110 | 7 | 14 | 6 | 99 |
+| 2026-08-28 | 124 | 9 | 17 | 9 | 109 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- rendimiento: **41**
-- robustez ante casos límite: **40**
+- rendimiento: **44**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
+- `scanner.py`: **22**
 - `assistant.py`: **21**
 - `memory.py`: **20**
-- `quarantine.py`: **19**
 - `settings.py`: **19**
+- `diskreport.py`: **19**
 - `branding.py`: **19**
-- `diskreport.py`: **18**
+- `duplicates.py`: **18**
+- `quarantine.py`: **18**
 - `browser.py`: **17**
-- `duplicates.py`: **17**
 - `healthscore.py`: **17**
 - `startup.py`: **13**
-- `main.py`: **11**
+- `main.py`: **12**
 - `safety.py`: **11**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T11:16:12` **main.py** (rendimiento): Optimicé el rendimiento de la interfaz implementando un filtrado inteligente en `on_scan_junk` y `on_stage` utilizando generadores y list comprehensions que evitan procesar múltiples veces la misma estructura de datos, además de añadir validaciones tempranas en los métodos de callback para reducir la carga de trabajo en el hilo principal y evitar ciclos de actualización innecesarios cuando los datos no han variado.
+- `2026-08-28T11:14:56` **duplicates.py** (rendimiento): Optimizé el pipeline de hashing eliminando lecturas redundantes en `hash_file` al evitar re-abrir el archivo si el tamaño ya es conocido, y mejoré la eficiencia de `_process_size_group` al cachear `stat` para evitar llamadas repetidas al sistema de archivos durante la comparación de duplicados.
+- `2026-08-28T11:14:32` **diskreport.py** (rendimiento): Se optimizó la función `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso de `os.path.join` y `os.fspath`, lo cual reduce drásticamente la presión sobre el recolector de basura y mejora la velocidad en recorridos de discos grandes al evitar la instanciación repetitiva de clases.
 - `2026-08-28T11:05:31` **branding.py** (rendimiento): Se optimizó el acceso a constantes de color eliminando múltiples llamadas a `PALETTE.get()` y `MappingProxyType` dentro de las funciones de dibujo, mediante el uso de referencias directas a las constantes pre-resueltas, reduciendo el overhead en cada ejecución de las rutinas de renderizado.
 - `2026-08-28T11:04:59` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la creación dinámica de sets y la búsqueda secuencial en `_KEYWORD_MAP` por una lógica de pre-filtrado basada en una sola pasada, reduciendo la carga de CPU en sistemas con muchas peticiones.
 - `2026-08-28T11:04:23` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo `startup.py` mediante la adición de docstrings estructuradas en las funciones públicas, detallando los argumentos, comportamientos esperados y casos de borde para facilitar el mantenimiento y la comprensión de las heurísticas aplicadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T10:34:44` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de trabajo en `duplicates.py` mediante type hints explícitos, docstrings enriquecidos y la separación semántica de la lógica de filtrado, asegurando que el propósito de cada paso del pipeline de duplicados sea evidente para un colaborador.
 - `2026-08-28T10:34:18` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la normalización de los docstrings (asegurando el uso de "Returns:" en lugar de variantes inconsistentes) y añadí tipado explícito más robusto para clarificar el manejo de las rutas, mejorando la legibilidad para futuros desarrolladores sin alterar la lógica de ejecución.
 - `2026-08-28T10:33:48` **browser.py** (legibilidad y documentación): Mejoré la documentación de `_sum_directory_recursive` mediante la adición de Type Hints detallados y un docstring explicativo que aclara el papel del parámetro `memo` (evitar el re-escaneo de rutas mediante un caché de estados), facilitando el mantenimiento y la comprensión del algoritmo recursivo.
-- `2026-08-28T10:24:40` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `SystemContext.ingest` y `_validate_and_assign` mediante la extracción de la lógica de validación de tipos a un método de clase, eliminando la duplicación y el uso redundante de `type()` que dificultaba la lectura del flujo de datos.
-- `2026-08-28T10:23:39` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` añadiendo chequeos de integridad lógica: ahora `save()` valida explícitamente la presencia de la API Key en el entorno antes de confirmar una activación, y `validate()` asegura que las claves de configuración no solo sean del tipo correcto, sino que las rutas (como `ultima_carpeta`) se validen mediante `_Validators._is_safe_path` antes de ser inyectadas en el objeto de configuración.
-- `2026-08-28T10:13:31` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento de `quarantine_file` añadiendo una validación explícita para asegurar que la ruta de origen no sea el directorio de cuarentena mismo o uno de sus subdirectorios, previniendo así errores de lógica en la recursión de archivos durante el aislamiento.

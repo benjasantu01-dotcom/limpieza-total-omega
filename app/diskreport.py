@@ -265,18 +265,19 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Returns:
         Generador de tuplas (ruta_absoluta, tamaño_en_bytes).
     """
-    if not isinstance(directory, (str, Path, os.PathLike)) or not directory:
+    root_path_str = os.fspath(directory)
+    if not root_path_str:
         return
 
     try:
-        root_path = Path(os.fspath(directory)).resolve()
+        root_path = Path(root_path_str).resolve()
         if not root_path.exists() or not root_path.is_dir() or (skip_protected and is_protected_path(root_path)):
             return
     except (OSError, RuntimeError, TypeError, PermissionError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [str(root_path)]
     
     while stack:
         current_dir = stack.pop()
@@ -292,11 +293,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(Path(entry.path))
+                                stack.append(entry.path)
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            f_stat = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), max(0, f_stat.st_size)
+                            yield Path(entry.path), max(0, entry.stat(follow_symlinks=False).st_size)
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):

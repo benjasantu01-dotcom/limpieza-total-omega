@@ -154,7 +154,6 @@ def _collect_candidates(
                 if _should_skip(entry): continue
                 
                 try:
-                    # Evitar enlaces simbólicos y junctions (NTFS) para prevenir ciclos
                     if entry.is_symlink(): continue
                     if os.name == 'nt':
                         if entry.stat().st_file_attributes & 0x400: continue
@@ -203,8 +202,8 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     confirmed_groups: List[DuplicateGroup] = []
     if len(paths) < 2: return []
     
-    # Si el archivo es menor al bloque parcial, el hash completo es equivalente al parcial
-    results = _refine_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(paths)
+    # Si el archivo es menor o igual al bloque parcial, el hash parcial es el final
+    results = _refine_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(paths)
             
     for digest, confirmed_paths in results.items():
         confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
