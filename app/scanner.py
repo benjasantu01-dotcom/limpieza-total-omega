@@ -137,8 +137,9 @@ class Scanner:
         Retorna True si es reparse point (bloqueando el acceso para prevenir ciclos).
         """
         try:
+            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
-        except (OSError, AttributeError, TypeError):
+        except (OSError, AttributeError, TypeError, PermissionError):
             return True 
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:

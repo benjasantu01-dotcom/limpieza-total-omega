@@ -560,3 +560,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T03:08:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores durante el movimiento de archivos al agregar una verificación de persistencia post-copia (`shutil.copy2` seguida de `stat()`) que detecta posibles fallos en el sistema de archivos o bloqueos de escritura antes de realizar el `unlink()` del origen.
 - `2026-08-28T03:08:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T03:08:08` Corrida terminada. Total usado hoy: 76.
+- `2026-08-28T03:14:52` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-08-28T03:15:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-28T03:16:22` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-28T03:16:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-28T03:17:23` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-28T03:17:47` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_reparse_point` ante excepciones de tipo `AttributeError` o accesos denegados mediante una implementación más defensiva, asegurando que cualquier error al consultar atributos de archivo trate la ruta como un punto de reanálisis para prevenir el seguimiento de bucles o enlaces riesgosos.
+- `2026-08-28T03:17:51` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-28T03:18:38` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `settings.py` ante escenarios de falta de permisos o errores de E/S durante la carga inicial mediante la implementación de un manejo de errores más específico y un chequeo preventivo de `access` antes de intentar leer el archivo, además de proteger `load()` contra archivos que contengan JSONs con tipos de datos inesperados dentro del diccionario (ej. valores `null` o listas en lugar de los tipos esperados).
+- `2026-08-28T03:18:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T03:18:38` Corrida terminada. Total usado hoy: 80.

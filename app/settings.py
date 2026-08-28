@@ -247,6 +247,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     if not ruta.exists(): return DEFAULTS.copy()
     
     try:
+        if not os.access(ruta, os.R_OK): return DEFAULTS.copy()
         stat_info = ruta.stat()
         mtime = stat_info.st_mtime
         
