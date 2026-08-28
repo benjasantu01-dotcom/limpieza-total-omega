@@ -68,9 +68,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
-    Utiliza el timestamp actual (now_ts) proporcionado para reducir llamadas a system.stat.
+    Utiliza el timestamp actual (now_ts) para evitar llamadas a disco redundantes por cada regla.
     """
-    # Optimización: check de pertenencia directo en lugar de iterar partes de la ruta
     if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
@@ -101,9 +100,9 @@ class Scanner:
     
     Attributes:
         results: Lista acumulativa de hallazgos (Suspicion).
-        seen: Conjunto de rutas ya procesadas para evitar redundancia o ciclos.
-        base_root: Ruta absoluta de inicio del escaneo.
-        now_ts: Timestamp base para cálculos de antigüedad relativos a este escaneo.
+        seen: Conjunto de rutas ya procesadas para prevenir recursión infinita en ciclos.
+        base_root: Ruta absoluta de inicio definida para limitar el alcance del escaneo.
+        now_ts: Timestamp capturado al inicio para consistencia temporal.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -114,8 +113,9 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida si la entrada es apta para análisis recursivo, aplicando filtros de
-        seguridad, longitud de ruta y protección del sistema.
+        Valida si una entrada es apta para el análisis.
+        Rechaza explícitamente: rutas UNC (peligrosas por latencia/bloqueo),
+        nombres reservados de Windows y cualquier ruta fuera del árbol base_root.
         """
         if not entry or not entry.path:
             return False
@@ -123,13 +123,14 @@ class Scanner:
         try:
             path_obj = Path(entry.path).resolve()
             
+            # Bloqueo de rutas UNC: evitan el escaneo de red que puede colgar la UI
             if len(str(path_obj)) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
                 return False
             
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
-            # Validación de seguridad defensiva: debe seguir bajo el árbol raíz
+            # Garantizar que el escaneo no escape del directorio raíz configurado
             path_obj.relative_to(self.base_root)
             
             if self._is_reparse_point(entry):
@@ -141,8 +142,9 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta si una entrada es un punto de reanálisis (junction o symlink).
-        Retorna True si es reparse point (bloqueando el acceso para prevenir ciclos).
+        Detecta si una entrada es un punto de reanálisis (junction/symlink).
+        Se bloquea la entrada para evitar seguir enlaces simbólicos fuera de control 
+        que causarían duplicación de escaneo o bucles infinitos.
         """
         try:
             is_sym = Path(entry.path).is_symlink()
@@ -153,8 +155,8 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Procesa una entrada: si es directorio lo agrega a la pila de exploración;
-        si es archivo, ejecuta las heurísticas de seguridad correspondientes.
+        Gestiona la lógica de recursión: los directorios seguros se apilan para
+        exploración posterior, los archivos se envían a las heurísticas.
         """
         try:
             if not self._is_safe_entry(entry):
@@ -164,7 +166,6 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                # Validación adicional: evitar archivos que no existen o enlaces simbólicos rotos
                 if entry.is_symlink():
                     return
                 ext = os.path.splitext(entry.name)[1].lower()
@@ -175,8 +176,7 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """
-        Aplica reglas de ofuscación de nombres y delega el análisis de ejecutables
-        al registro de reglas (EXECUTABLE_CHECK_REGISTRY).
+        Coordina las pruebas de ofuscación de nombres y las reglas registradas.
         """
         if path.name and RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
@@ -205,8 +205,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Punto de entrada principal para escaneo recursivo de directorios.
-    Implementa el recorrido mediante pila (Stack) evitando recursión profunda del sistema.
+    Punto de entrada principal para escaneo recursivo. Implementa una estructura
+    de pila (LIFO) para evitar la profundidad de recursión del sistema.
     """
     if not directory:
         return []
@@ -236,7 +236,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 def run_windows_defender_quick_scan() -> str:
     """
     Invoca la API de PowerShell para verificar el estado de Defender y ejecutar 
-    un escaneo rápido (QuickScan). Solo disponible en entornos Windows.
+    un escaneo rápido (QuickScan). Requiere entorno Windows y permisos adecuados.
     """
     try:
         status = subprocess.run(

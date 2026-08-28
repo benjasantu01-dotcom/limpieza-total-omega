@@ -143,6 +143,7 @@ class _Validators:
     
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
+        """Verifica que la ruta no sea un enlace simbólico, punto de unión, y que sea segura."""
         if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
             return False
         if path_obj.exists() and not (path_obj.is_file() or path_obj.is_dir()):
@@ -151,6 +152,7 @@ class _Validators:
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
+        """Resuelve y valida rutas asegurando que sean absolutas y no apunten a zonas protegidas."""
         if not path_str or ".." in path_str: return False
         try:
             resolved = Path(path_str).expanduser().resolve(strict=False)
@@ -162,6 +164,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
+        """Valida valores booleanos incluyendo representaciones en cadena."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -172,6 +175,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
+        """Valida enteros dentro de los límites definidos en _NUMERIC_LIMITS."""
         try:
             parsed_value: int = int(val)
             limit = _NUMERIC_LIMITS.get(key, _NumericRange(0, 10**9))
@@ -180,6 +184,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
+        """Valida cadenas representando rutas de archivos."""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or len(path_string) > 4096 or "\0" in path_string: 
@@ -188,6 +193,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
+        """Valida que una cadena pertenezca al conjunto de valores permitidos (Enum)."""
         val = text.lower()
         if key in _ENUM_VALS: return val if val in _ENUM_VALS[key] else None
         return text if len(text) <= 512 else None
@@ -195,6 +201,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
+        """Valida cadenas de texto generales y sanitiza caracteres nulos."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None

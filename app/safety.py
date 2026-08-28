@@ -190,6 +190,11 @@ def _is_file_in_use(path_str: str) -> bool:
     return False
 
 
+def _is_sensitive_extension(path: Path) -> bool:
+    """Valida si la extensión del archivo está marcada como sensible."""
+    return path.suffix.lower() in SENSITIVE_EXTENSIONS
+
+
 # Pipeline de validaciones: cada predicado es una condición necesaria para la seguridad
 _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.REPARSE_POINT, lambda p, _: _is_reparse_point(p)),
@@ -317,7 +322,7 @@ def is_sensitive_file(path: PathLike) -> bool:
     """Retorna True si la extensión está en la lista negra."""
     if not path: return True
     try:
-        return Path(str(path)).suffix.lower() in SENSITIVE_EXTENSIONS
+        return _is_sensitive_extension(Path(str(path)))
     except (TypeError, ValueError, OSError): return True 
 
 
@@ -380,7 +385,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         elif is_protected_path(parent):
             raise UnsafePathError("Escritura bloqueada: directorio padre protegido.")
     
-    if not allow_sensitive and is_sensitive_file(p):
+    if not allow_sensitive and _is_sensitive_extension(p):
         raise UnsafePathError("Extensión de archivo sensible.")
             
     return p
@@ -425,5 +430,5 @@ def describe_protection(path: PathLike) -> str:
         if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema."
         if _has_alternate_data_stream(p): return f"'{p}' contiene ADS."
         if p.is_file() and p.stat().st_size == 0: return f"'{p}' es un archivo vacío."
-    if is_sensitive_file(p): return f"'{p.name}' extensión sensible."
+    if _is_sensitive_extension(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."
