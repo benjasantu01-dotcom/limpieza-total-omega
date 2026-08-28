@@ -68,12 +68,12 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
     Utiliza el timestamp actual (now_ts) proporcionado para reducir llamadas a system.stat.
     """
-    if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
+    if path and any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         try:
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-        except (OSError, PermissionError, AttributeError, ValueError, FileNotFoundError):
+        except (OSError, AttributeError, ValueError):
             return None
     return None
 
@@ -117,24 +117,23 @@ class Scanner:
         if not entry or not entry.path:
             return False
         
-        path_obj = Path(entry.path).resolve()
-        
-        if len(str(path_obj)) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
-            return False
-        
-        if entry.name and RESERVED_NAMES_RE.match(entry.name):
-            return False
-
-        # Prevenir Path Traversal: asegurar que la ruta resuelta esté dentro de la base
         try:
-            path_obj.relative_to(self.base_root)
-        except ValueError:
-            return False
-        
-        if self._is_reparse_point(entry):
-            return False
+            path_obj = Path(entry.path).resolve()
+            
+            if len(str(path_obj)) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+                return False
+            
+            if entry.name and RESERVED_NAMES_RE.match(entry.name):
+                return False
 
-        return not is_protected_path(path_obj)
+            path_obj.relative_to(self.base_root)
+            
+            if self._is_reparse_point(entry):
+                return False
+
+            return not is_protected_path(path_obj)
+        except (ValueError, RuntimeError):
+            return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
@@ -142,9 +141,8 @@ class Scanner:
         Retorna True si es reparse point (bloqueando el acceso para prevenir ciclos).
         """
         try:
-            # 0x400 es FILE_ATTRIBUTE_REPARSE_POINT
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
-        except (OSError, AttributeError, TypeError, PermissionError):
+        except (OSError, AttributeError, TypeError):
             return True 
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
@@ -160,19 +158,18 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                # Optimization: Run heuristics only on files with relevant extensions
                 ext = os.path.splitext(entry.name)[1].lower()
                 if ext in SUSPICIOUS_EXECUTABLE_EXT or ext == ".pdf":
                     self._run_file_heuristics(Path(entry.path), entry)
-        except (OSError, PermissionError, TypeError, FileNotFoundError) as e:
-            logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}: {e}")
+        except (OSError, PermissionError, TypeError):
+            logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
         """
         Aplica reglas de ofuscación de nombres y delega el análisis de ejecutables
         al registro de reglas (EXECUTABLE_CHECK_REGISTRY).
         """
-        if RTL_CHAR_RE.search(path.name):
+        if path.name and RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry))
 
@@ -184,19 +181,17 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     findings: ScanResult = []
     if not path:
         return findings
-    try:
-        if (double_ext := check_double_extension(path, entry, now_ts)):
-            findings.append(double_ext)
         
-        if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
-            for check in EXECUTABLE_CHECK_REGISTRY:
-                try:
-                    if (result := check(path, entry, now_ts)):
-                        findings.append(result)
-                except Exception as e:
-                    logger.debug(f"Fallo en regla heurística {check.__name__} para {path}: {e}")
-    except (OSError, PermissionError, FileNotFoundError):
-        logger.debug(f"Acceso denegado o archivo inaccesible durante heurísticas: {path}")
+    if (double_ext := check_double_extension(path, entry, now_ts)):
+        findings.append(double_ext)
+    
+    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+        for check in EXECUTABLE_CHECK_REGISTRY:
+            try:
+                if (result := check(path, entry, now_ts)):
+                    findings.append(result)
+            except Exception as e:
+                logger.debug(f"Fallo no crítico en regla {check.__name__} para {path}: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
@@ -224,8 +219,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 for entry in it:
                     if entry:
                         scanner.process_entry(entry, stack)
-        except (PermissionError, OSError, FileNotFoundError) as e:
-            logger.debug(f"Error accediendo a directorio {current_dir}: {e}")
+        except (PermissionError, OSError):
+            logger.debug(f"Error accediendo a directorio {current_dir}")
             continue
     return scanner.results
 
@@ -249,7 +244,7 @@ def run_windows_defender_quick_scan() -> str:
         return result.stdout or result.stderr
     except subprocess.CalledProcessError as e:
         return f"Error ejecutando Windows Defender: {e.stderr}"
-    except FileNotFoundError:
+    except (FileNotFoundError, OSError):
         return "PowerShell no disponible. Este módulo requiere Windows."
     except subprocess.TimeoutExpired:
         return "El escaneo de Windows Defender excedió el tiempo límite."

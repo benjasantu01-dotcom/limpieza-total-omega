@@ -903,3 +903,10 @@ FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionE
 - `2026-08-28T05:39:43` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las operaciones de E/S en `quarantine_file` y `restore_item` mediante el uso de bloques `try-finally` para asegurar que las referencias a archivos temporales o estados intermedios no queden huérfanos ante excepciones imprevistas, fortaleciendo la integridad del sandbox.
 - `2026-08-28T05:39:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T05:39:43` Corrida terminada. Total usado hoy: 136.
+- `2026-08-28T05:47:34` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-28T05:47:55` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-28T05:48:25` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `is_running_as_admin` y `_has_invalid_chars` mediante el manejo explícito de errores y validación de tipos, asegurando que las funciones no fallen ante entradas inesperadas o entornos restringidos, alineándose con el enfoque de manejo de errores y validación.
+- `2026-08-28T05:48:50` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las heurísticas de archivos capturando excepciones específicas en los chequeos individuales y validando los atributos de `path` antes de procesarlos, asegurando que un fallo en una regla no interrumpa el análisis completo del archivo.
+- `2026-08-28T05:49:01` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-28T05:49:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T05:49:01` Corrida terminada. Total usado hoy: 140.

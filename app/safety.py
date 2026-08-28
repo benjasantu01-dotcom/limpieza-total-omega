@@ -109,8 +109,8 @@ def is_running_as_admin() -> bool:
     """Verifica si el proceso actual tiene privilegios elevados (Administrador)."""
     if os.name != 'nt':
         try:
-            return os.getuid() == 0
-        except AttributeError:
+            return os.geteuid() == 0
+        except (AttributeError, OSError):
             return False
     try:
         return bool(ctypes.windll.shell32.IsUserAnAdmin())
@@ -118,10 +118,11 @@ def is_running_as_admin() -> bool:
         return False
 
 
-def _has_invalid_chars(path_str: str) -> bool:
+def _has_invalid_chars(path_str: str | None) -> bool:
     """Valida que la ruta no contenga caracteres de control o marcas RTL."""
-    if not isinstance(path_str, str) or not path_str: return True
-    return bool("\0" in path_str or re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str))
+    if not isinstance(path_str, str) or not path_str: 
+        return True
+    return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str))
 
 
 def _is_reserved_device_name(name: str) -> bool:
