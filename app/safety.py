@@ -229,9 +229,6 @@ def _check_file_integrity(path: Path) -> None:
     except (PermissionError, OSError):
         raise UnsafePathError(f"Error de acceso a metadatos: {ProtectionReason.INACCESSIBLE.value}")
 
-    if not path.exists():
-        raise UnsafePathError("El archivo ha dejado de existir.")
-
     for rule in _VALIDATORS:
         try:
             if rule.predicate(path, file_stat):
@@ -367,7 +364,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_boundary_conditions(p, base_dir)
     
     if p.exists():
-        if not p.is_file() and not p.is_dir():
+        if not (p.is_file() or p.is_dir()):
             raise UnsafePathError("Tipo de archivo no soportado.")
         _check_file_integrity(p)
     else:

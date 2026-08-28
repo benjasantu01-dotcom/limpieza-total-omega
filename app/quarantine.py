@@ -381,6 +381,10 @@ def quarantine_file(
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
+    source_str = str(source)
+    if "\0" in source_str:
+        raise UnsafePathError("Ruta de origen inválida: contiene caracteres nulos.")
+    
     try:
         source_path = Path(source).expanduser().resolve()
         source_stat = source_path.stat()

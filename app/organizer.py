@@ -174,7 +174,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     y de permisos, asegurando que no se comprometa la integridad del sistema.
     """
     try:
-        if not src or not dest or not src.exists() or not src.is_file(): return False
+        if not isinstance(src, Path) or not isinstance(dest, Path): return False
+        if not src.is_absolute() or not dest.is_absolute(): return False
+        if not src.exists() or not src.is_file(): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
         if is_protected_path(src) or is_protected_path(dest): return False
         if _is_recursive_violation(src, dest): return False
@@ -295,7 +297,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         return None
 
     for junk_file in files:
-        if not isinstance(junk_file, JunkFile) or not hasattr(junk_file, 'path') or not junk_file.path: 
+        if not isinstance(junk_file, JunkFile) or not getattr(junk_file, 'path', None): 
             continue
         try:
             target = _can_move_file(junk_file, dest_base)
