@@ -1478,3 +1478,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T11:25:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-08-28T11:25:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T11:25:41` Corrida terminada. Total usado hoy: 272.
+- `2026-08-28T11:34:22` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-28T11:34:50` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-08-28T11:35:17` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la detección de extensiones sospechosas evitando llamadas repetidas a `path.suffix` y `str.lower()` mediante el uso de una variable local `ext` precalculada, reduciendo la carga de CPU durante el recorrido intensivo de archivos.
+- `2026-08-28T11:35:24` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-28T11:35:57` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-28T11:36:33` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento del módulo implementando `lru_cache` en la función `load` y eliminando la redundancia de `DEFAULTS.copy()` en llamadas repetitivas, evitando lecturas de disco innecesarias mediante la validación del estado del archivo.
+- `2026-08-28T11:37:09` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-28T11:37:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T11:37:09` Corrida terminada. Total usado hoy: 276.

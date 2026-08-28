@@ -168,21 +168,22 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 if entry.is_symlink():
                     return
+                # Optimización: procesar extensión una sola vez
                 ext = os.path.splitext(entry.name)[1].lower()
                 if ext in SUSPICIOUS_EXECUTABLE_EXT or ext == ".pdf":
-                    self._run_file_heuristics(Path(entry.path), entry)
+                    self._run_file_heuristics(Path(entry.path), entry, ext)
         except (OSError, PermissionError, TypeError):
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}")
 
-    def _run_file_heuristics(self, path: Path, entry: os.DirEntry) -> None:
+    def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """
         Coordina las pruebas de ofuscación de nombres y las reglas registradas.
         """
         if path.name and RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
-        self.results.extend(scan_file(path, self.now_ts, entry=entry))
+        self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
-def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) -> ScanResult:
+def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """
     Ejecuta todas las reglas heurísticas registradas sobre un archivo.
     Retorna una lista con todos los objetos 'Suspicion' encontrados.
@@ -194,7 +195,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None) ->
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
-    if path.suffix and path.suffix.lower() in SUSPICIOUS_EXECUTABLE_EXT:
+    file_ext = ext or path.suffix.lower()
+    if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
         for check in EXECUTABLE_CHECK_REGISTRY:
             try:
                 if (result := check(path, entry, now_ts)):

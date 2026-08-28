@@ -32,6 +32,7 @@ import os
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple
+from functools import lru_cache
 
 from safety import is_safe_to_modify, is_protected_path
 
@@ -97,7 +98,6 @@ API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
 
-_CACHE: dict[Path, tuple[float, AppSettings]] = {}
 _STR_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
 DEFAULTS: Final[AppSettings] = {
@@ -250,31 +250,31 @@ def validate(raw_values: Any) -> AppSettings:
                 config[key.value] = validated
     return config
 
-def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga y cachea la configuración desde disco, retornando valores seguros por defecto en caso de error."""
-    ruta = settings_path(custom_base)
-    if not ruta.exists(): return DEFAULTS.copy()
+@lru_cache(maxsize=4)
+def _read_disk(ruta: Path) -> tuple[float, AppSettings]:
+    """Carga interna que detecta cambios por timestamp para el cache."""
+    if not ruta.exists() or not os.access(ruta, os.R_OK):
+        return (0.0, DEFAULTS.copy())
     
+    stat_info = ruta.stat()
+    if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
+        return (stat_info.st_mtime, DEFAULTS.copy())
+            
+    with open(ruta, "r", encoding="utf-8") as f:
+        data = json.load(f)
+        if not isinstance(data, dict): return (stat_info.st_mtime, DEFAULTS.copy())
+        return (stat_info.st_mtime, validate(data))
+
+def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Carga la configuración desde disco, retornando valores seguros por defecto en caso de error."""
+    ruta = settings_path(custom_base)
     try:
-        if not os.access(ruta, os.R_OK): return DEFAULTS.copy()
-        
-        stat_info = ruta.stat()
-        mtime = stat_info.st_mtime
-        
-        cached = _CACHE.get(ruta)
-        if cached and cached[0] == mtime:
-            return cached[1].copy()
-            
-        if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
-            return DEFAULTS.copy()
-            
-        with open(ruta, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            if not isinstance(data, dict): return DEFAULTS.copy()
-            config = validate(data)
-        
-        _CACHE[ruta] = (mtime, config)
-        return config.copy()
+        mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
+        cached_mtime, config = _read_disk(ruta)
+        if cached_mtime == mtime:
+            return config.copy()
+        _read_disk.cache_clear()
+        return _read_disk(ruta)[1].copy()
     except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):
         return DEFAULTS.copy()
 
@@ -283,7 +283,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     cleaned_settings = validate(values)
     
-    # Seguridad: si el asistente se activa, debe haber una clave, o falla la activación.
     has_api_key = bool(cleaned_settings.get("asistente_clave_api")) or bool(os.environ.get(API_KEY_ENV_VAR))
     if cleaned_settings.get("asistente_activado") and not has_api_key:
         cleaned_settings["asistente_activado"] = False
@@ -307,8 +306,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_path, ruta)
-        
-        _CACHE[ruta] = (ruta.stat().st_mtime, cleaned_settings)
+        _read_disk.cache_clear()
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
         return None

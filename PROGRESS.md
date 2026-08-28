@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 107 | 7 | 14 | 6 | 98 |
-| 2026-08-28 | 125 | 9 | 18 | 9 | 111 |
+| 2026-08-27 | 103 | 7 | 14 | 6 | 98 |
+| 2026-08-28 | 127 | 9 | 19 | 9 | 112 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **51**
-- seguridad defensiva: **47**
-- rendimiento: **45**
+- rendimiento: **47**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **22**
+- `scanner.py`: **23**
 - `memory.py`: **21**
 - `assistant.py`: **20**
-- `diskreport.py`: **19**
+- `settings.py`: **19**
 - `branding.py`: **19**
-- `duplicates.py`: **18**
 - `quarantine.py`: **18**
-- `settings.py`: **18**
-- `browser.py`: **17**
-- `healthscore.py`: **17**
+- `diskreport.py`: **18**
+- `duplicates.py`: **17**
+- `browser.py`: **16**
+- `healthscore.py`: **16**
 - `main.py`: **12**
 - `startup.py`: **12**
 - `safety.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T11:36:33` **settings.py** (rendimiento): Optimicé el rendimiento del módulo implementando `lru_cache` en la función `load` y eliminando la redundancia de `DEFAULTS.copy()` en llamadas repetitivas, evitando lecturas de disco innecesarias mediante la validación del estado del archivo.
+- `2026-08-28T11:35:17` **scanner.py** (rendimiento): Optimizé la detección de extensiones sospechosas evitando llamadas repetidas a `path.suffix` y `str.lower()` mediante el uso de una variable local `ext` precalculada, reduciendo la carga de CPU durante el recorrido intensivo de archivos.
 - `2026-08-28T11:24:42` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución constante de PowerShell por una lógica de caché basada en tiempo con `lru_cache` para el parsing y una validación de `subprocess` más eficiente, evitando llamadas innecesarias al sistema cada vez que se refresca la interfaz.
 - `2026-08-28T11:16:12` **main.py** (rendimiento): Optimicé el rendimiento de la interfaz implementando un filtrado inteligente en `on_scan_junk` y `on_stage` utilizando generadores y list comprehensions que evitan procesar múltiples veces la misma estructura de datos, además de añadir validaciones tempranas en los métodos de callback para reducir la carga de trabajo en el hilo principal y evitar ciclos de actualización innecesarios cuando los datos no han variado.
 - `2026-08-28T11:14:56` **duplicates.py** (rendimiento): Optimizé el pipeline de hashing eliminando lecturas redundantes en `hash_file` al evitar re-abrir el archivo si el tamaño ya es conocido, y mejoré la eficiencia de `_process_size_group` al cachear `stat` para evitar llamadas repetidas al sistema de archivos durante la comparación de duplicados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T10:45:53` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `quarantine.py` mediante la adición de docstrings técnicos detallados en funciones clave y la estandarización del manejo de rutas con `Path` para reducir errores de conversión, manteniendo la integridad operativa sin cambios funcionales.
 - `2026-08-28T10:45:10` **memory.py** (legibilidad y documentación): Mejoré la documentación de los tipos de datos en `MEMORYSTATUSEX` y `ProcessMemory` mediante *type hints* explícitos y comentarios aclaratorios para asegurar la correcta interpretación de las estructuras nativas y los datos procesados, facilitando el mantenimiento y evitando errores en la manipulación de punteros de `ctypes`.
 - `2026-08-28T10:34:54` **healthscore.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones de cálculo de métricas y a las constantes de umbral, explicando la lógica detrás de los factores de normalización.
-- `2026-08-28T10:34:44` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de trabajo en `duplicates.py` mediante type hints explícitos, docstrings enriquecidos y la separación semántica de la lógica de filtrado, asegurando que el propósito de cada paso del pipeline de duplicados sea evidente para un colaborador.
-- `2026-08-28T10:34:18` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la normalización de los docstrings (asegurando el uso de "Returns:" en lugar de variantes inconsistentes) y añadí tipado explícito más robusto para clarificar el manejo de las rutas, mejorando la legibilidad para futuros desarrolladores sin alterar la lógica de ejecución.
