@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 31
+- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 61 | 5 | 9 | 6 | 49 |
+| 2026-08-26 | 59 | 4 | 8 | 6 | 49 |
 | 2026-08-27 | 158 | 12 | 22 | 7 | 151 |
-| 2026-08-28 | 3 | 0 | 0 | 0 | 21 |
+| 2026-08-28 | 6 | 0 | 0 | 0 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **50**
 - seguridad defensiva: **47**
 - rendimiento: **42**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
+- `scanner.py`: **22**
 - `settings.py`: **19**
 - `assistant.py`: **19**
+- `duplicates.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **18**
 - `branding.py`: **17**
-- `duplicates.py`: **17**
+- `diskreport.py`: **17**
 - `memory.py`: **17**
-- `diskreport.py`: **16**
 - `healthscore.py`: **16**
-- `main.py`: **13**
-- `safety.py`: **11**
+- `main.py`: **14**
 - `startup.py`: **11**
+- `safety.py`: **10**
 - `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T01:04:38` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_settings` y los métodos de guardado/restauración de ajustes para manejar de forma segura la falta de widgets en pestañas no inicializadas (carga perezosa), evitando excepciones de tipo `AttributeError` o `TclError` y asegurando una validación consistente de los campos.
+- `2026-08-28T01:03:19` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` implementando una validación explícita mediante `is_protected_path` y `is_file` antes de operar sobre las rutas, evitando excepciones innecesarias y asegurando que las rutas inaccesibles o protegidas no sean consideradas candidatos válidos para conservar.
+- `2026-08-28T01:02:53` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `walk_files` y `drive_usage` validando que las rutas de entrada sean absolutas y manejando explícitamente posibles errores en la resolución de `Path`, evitando que excepciones inesperadas detengan el escaneo completo.
 - `2026-08-28T00:54:32` **browser.py** (manejo de errores y validación de entradas): Se fortaleció la robustez de `_is_system_hidden` y `_should_skip_entry` mejorando el manejo de errores ante tipos de entrada inesperados y validando la integridad de los parámetros antes de interactuar con la API de Windows, evitando excepciones no capturadas durante el escaneo.
 - `2026-08-28T00:54:22` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y las funciones de dibujo del canvas agregando validaciones preventivas, sanitización de entradas numéricas y el uso correcto de `is_safe_to_modify` para evitar excepciones no controladas durante la manipulación de recursos gráficos.
 - `2026-08-28T00:53:51` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ProblemCriterion.format_if_triggered` y `_validate_and_assign` mediante la captura explícita de excepciones y validación de tipos, evitando fallos silenciosos durante la ingesta de métricas potencialmente malformadas o inesperadas.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-27T14:10:34` **main.py** (seguridad defensiva): Mejoré `_validate_environment` para incluir una verificación de integridad mediante `ensure_safe_to_modify` sobre el directorio de trabajo, asegurando que la aplicación no pueda iniciarse desde ubicaciones comprometidas o rutas de sistema, mitigando riesgos de ejecución en entornos no controlados.
 - `2026-08-27T14:00:46` **healthscore.py** (seguridad defensiva): Se reforzó la robustez defensiva del módulo mediante la validación estricta de los pesos configurables en `WEIGHTS`, asegurando que cualquier error de configuración no resulte en un cálculo de puntaje que exceda el rango [0, 100] o que omita áreas críticas, preservando la integridad del diagnóstico.
 - `2026-08-27T13:59:36` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación obligatoria de `is_safe_to_modify` para cada subdirectorio antes de entrar, evitando el acceso a rutas que puedan haber sido protegidas durante la ejecución o que excedan los permisos previstos.
-- `2026-08-27T13:50:44` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` al verificar la existencia del directorio padre mediante `is_safe_to_modify` antes de cualquier intento de creación, evitando suposiciones sobre el sistema de archivos y asegurando que las operaciones de escritura solo ocurran en rutas validadas.
-- `2026-08-27T13:50:28` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` mediante la implementación de una validación de contenido tras la descarga (verificando que la respuesta no contenga inyecciones de rutas) antes de su procesamiento final, asegurando que la respuesta externa no eluda los filtros de seguridad del motor local.
-- `2026-08-27T13:49:24` **settings.py** (robustez ante casos límite): Se añadió una verificación de integridad de `json.load()` para prevenir casos de archivos que, aunque no excedan el límite de tamaño, contengan estructuras JSON mal formadas o tipos de datos inesperados que podrían causar excepciones no controladas durante la validación.

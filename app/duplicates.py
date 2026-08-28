@@ -100,7 +100,7 @@ def _is_valid_candidate(path: Path) -> bool:
     """Valida que la ruta sea un archivo real, accesible y no protegido."""
     if not isinstance(path, Path): return False
     try:
-        return path.is_file() and not is_protected_path(path)
+        return path.is_file() and not is_protected_path(path) and os.access(path, os.R_OK)
     except (OSError, ValueError):
         return False
 
@@ -196,7 +196,6 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Pipeline de verificación optimizado: solo calcula hash completo en grupos con colisiones parciales."""
     confirmed_groups: List[DuplicateGroup] = []
-    # Filtrado adicional: el archivo podría haber desaparecido desde _collect_candidates
     valid_paths = [p for p in paths if _is_valid_candidate(p)]
     if len(valid_paths) < 2: return []
     
@@ -240,13 +239,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        try:
-            p_obj = Path(p).resolve()
-            if _is_valid_candidate(p_obj):
-                stat_info = p_obj.stat()
-                candidates.append((float(stat_info.st_mtime), len(str(p_obj)), p_obj))
-        except (OSError, PermissionError, RuntimeError):
-            continue
+        if _is_valid_candidate(p):
+            try:
+                stat_info = p.stat()
+                candidates.append((float(stat_info.st_mtime), len(str(p)), p))
+            except (OSError, PermissionError):
+                continue
             
     if not candidates:
         return None
@@ -265,13 +263,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     
     for path in group.paths:
-        try:
-            p_obj = Path(path).resolve()
-            if not _is_valid_candidate(p_obj):
-                lines.append(f"   [inaccesible] {path}")
-                continue
-            label = 'conservar' if keeper is not None and p_obj == keeper else 'duplicado'
-            lines.append(f"   [{label}] {path}")
-        except (OSError, PermissionError, RuntimeError):
-            lines.append(f"   [error] {path}")
+        if not _is_valid_candidate(path):
+            lines.append(f"   [inaccesible] {path}")
+            continue
+        label = 'conservar' if keeper is not None and path == keeper else 'duplicado'
+        lines.append(f"   [{label}] {path}")
     return lines

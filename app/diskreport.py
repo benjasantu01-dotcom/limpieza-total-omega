@@ -198,7 +198,8 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        if p.is_symlink() or not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
+        # Verificar existencia y acceso mínimo antes de procesar
+        if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
         str_mount = str(p)
@@ -266,7 +267,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         p_obj = Path(os.fspath(directory)).resolve()
         if not p_obj.exists() or not p_obj.is_dir() or (skip_protected and is_protected_path(p_obj)):
             return
-    except (OSError, RuntimeError, TypeError):
+    except (OSError, RuntimeError, TypeError, PermissionError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
@@ -289,7 +290,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                                 stack.append(entry.path)
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            # Captura de errores de stat en archivos individuales (bloqueos, permisos)
                             try:
                                 f_stat = entry.stat(follow_symlinks=False)
                                 yield Path(entry.path), max(0, f_stat.st_size)

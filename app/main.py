@@ -1756,8 +1756,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except Exception:
                 continue
         
+        # Validaciones de widgets de texto verificando su existencia
         try:
-            # Validaciones seguras verificando la existencia del widget
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
                     self.min_dup_entry.get(), 64
@@ -1826,14 +1826,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 except (tk.TclError, Exception):
                     continue
             
-            # Resetear entradas de texto si existen
-            if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
-                self.min_dup_entry.delete(0, "end")
-                self.min_dup_entry.insert(0, str(settings_mod.DEFAULTS.get("duplicados_tamano_minimo_kb", 64)))
-            
-            if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
-                self.top_files_entry.delete(0, "end")
-                self.top_files_entry.insert(0, str(settings_mod.DEFAULTS.get("top_archivos", 15)))
+            # Resetear entradas de texto si existen y el widget es accesible
+            try:
+                if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
+                    self.min_dup_entry.delete(0, "end")
+                    self.min_dup_entry.insert(0, str(settings_mod.DEFAULTS.get("duplicados_tamano_minimo_kb", 64)))
+                
+                if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
+                    self.top_files_entry.delete(0, "end")
+                    self.top_files_entry.insert(0, str(settings_mod.DEFAULTS.get("top_archivos", 15)))
+            except (tk.TclError, Exception):
+                pass
 
             self.log_lines(["Ajustes restaurados a los valores de fábrica.", ""]
                            + settings_mod.describe(), "Ajustes")
