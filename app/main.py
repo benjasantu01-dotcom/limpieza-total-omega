@@ -925,7 +925,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._log_queue = []
         
         # Agrupar mensajes para reducir las llamadas a widget methods
-        logs_por_tab = {}
+        logs_por_tab: Dict[str, List[str]] = {}
         for tab, msg in pendientes:
             logs_por_tab.setdefault(tab, []).append(msg)
             

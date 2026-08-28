@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
+- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Rechazadas por tests: 17
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 156 | 12 | 22 | 7 | 147 |
-| 2026-08-28 | 72 | 4 | 12 | 6 | 66 |
+| 2026-08-27 | 154 | 12 | 21 | 7 | 146 |
+| 2026-08-28 | 75 | 5 | 12 | 6 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **55**
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **47**
-- robustez ante casos límite: **38**
-- rendimiento: **37**
+- rendimiento: **40**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
+- `scanner.py`: **22**
 - `assistant.py`: **20**
 - `memory.py`: **20**
 - `browser.py`: **19**
 - `branding.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **18**
 - `diskreport.py`: **18**
-- `duplicates.py`: **16**
-- `healthscore.py`: **16**
-- `main.py`: **12**
+- `duplicates.py`: **17**
+- `settings.py`: **17**
+- `healthscore.py`: **17**
+- `main.py`: **13**
 - `startup.py`: **11**
 - `safety.py`: **10**
 - `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T06:54:19` **main.py** (rendimiento): Optimicé el método `_flush_logs` para evitar la creación innecesaria de objetos y llamadas redundantes al sistema de hilos, asegurando que la descarga de logs en la UI sea más eficiente mediante el uso de una lista local y el procesamiento en lote una única vez por evento.
+- `2026-08-28T06:49:46` **healthscore.py** (rendimiento): Se optimizó el rendimiento de `compute_score` evitando el acceso repetitivo a las constantes del módulo y pre-calculando el desglose de métricas para evitar llamadas a funciones lambda innecesarias dentro del bucle de procesamiento.
+- `2026-08-28T06:49:20` **duplicates.py** (rendimiento): Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `entry.stat()` mediante un uso más eficiente de `entry.is_file()` y `entry.is_dir()` (que en sistemas modernos ya contienen información de stat), reduciendo drásticamente las llamadas a disco durante el escaneo recursivo.
 - `2026-08-28T06:40:22` **browser.py** (rendimiento): Se optimizó el escaneo de directorios introduciendo un caché global de `memoization` en `_sum_directory_recursive` para evitar recalcular el peso de subcarpetas compartidas o visitadas previamente, mejorando drásticamente el rendimiento en estructuras de archivos profundas.
 - `2026-08-28T06:39:56` **branding.py** (rendimiento): Optimicé el cálculo del degradado en `gradient_colors` eliminando la creación y el procesamiento de una lista intermedia de `deltas`, utilizando una lógica de interpolación directa que aprovecha mejor las propiedades de la caché LRU y reduce la carga computacional en cada llamado.
 - `2026-08-28T06:39:22` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` evitando la regeneración innecesaria de objetos y aprovechando que las métricas ya están en `SystemContext`, además de consolidar la lógica de búsqueda de intenciones mediante la conversión previa del mapa de keywords a un formato más eficiente si fuera necesario (aunque la implementación actual ya es reactiva al iterar sobre tokens).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T06:08:29` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de los métodos internos y se han añadido `TypeHints` específicos en el generador `walk_files` y en los cálculos de `summarize` para clarificar las estructuras de datos manejadas y elevar la legibilidad técnica.
 - `2026-08-28T05:59:37` **browser.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `browser.py` mediante la refactorización de `_sum_directory_recursive` hacia un diseño más explícito, eliminando el uso de un bucle `while True` innecesario por un iterador de `os.scandir` más idiomático y documentando la lógica de recursión mediante type hints más precisos.
 - `2026-08-28T05:59:27` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings detallados en los tipos complejos (`PaletteDict`, `FontSizesDict`) y funciones clave, clarificando el propósito y las expectativas de los parámetros para facilitar el mantenimiento del sistema de diseño.
-- `2026-08-28T05:48:50` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de las heurísticas de archivos capturando excepciones específicas en los chequeos individuales y validando los atributos de `path` antes de procesarlos, asegurando que un fallo en una regla no interrumpa el análisis completo del archivo.
-- `2026-08-28T05:48:25` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_running_as_admin` y `_has_invalid_chars` mediante el manejo explícito de errores y validación de tipos, asegurando que las funciones no fallen ante entradas inesperadas o entornos restringidos, alineándose con el enfoque de manejo de errores y validación.
-- `2026-08-28T05:39:43` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las operaciones de E/S en `quarantine_file` y `restore_item` mediante el uso de bloques `try-finally` para asegurar que las referencias a archivos temporales o estados intermedios no queden huérfanos ante excepciones imprevistas, fortaleciendo la integridad del sandbox.

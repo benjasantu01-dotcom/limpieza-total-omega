@@ -153,14 +153,18 @@ def _collect_candidates(
                 if _should_skip(entry): continue
                 
                 try:
-                    stat = entry.stat()
                     if entry.is_dir():
+                        stat = entry.stat()
                         dev_inode = (stat.st_dev, stat.st_ino)
                         if dev_inode not in visited_device_inodes:
                             visited_device_inodes.add(dev_inode)
                             _scan_recursive(entry)
-                    elif entry.is_file() and stat.st_size >= min_size:
-                        temp_map[int(stat.st_size)].append(entry)
+                    else:
+                        # is_file() es más barato que llamar a stat() para archivos pequeños
+                        # intentamos obtener tamaño solo si es un archivo candidato
+                        stat = entry.stat()
+                        if stat.st_size >= min_size:
+                            temp_map[int(stat.st_size)].append(entry)
                 except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 

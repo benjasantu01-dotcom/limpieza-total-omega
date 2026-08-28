@@ -177,15 +177,14 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
-# Mapeo de categorías a sus respectivas funciones de puntuación para desacoplar compute_score
-_SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
-    "seguridad":  lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
-    "disco":      lambda m: score_disk(m.disk_free_percent),
-    "memoria":    lambda m: score_memory(m.memory_available_percent),
-    "basura":     lambda m: score_junk(m.junk_mb),
-    "duplicados": lambda m: score_duplicates(m.duplicate_mb),
-    "arranque":   lambda m: score_startup(m.startup_count)
-}
+_SCORERS: Final = (
+    ("seguridad", lambda m: score_security(m.suspicious_count, m.suspicious_warnings)),
+    ("disco", lambda m: score_disk(m.disk_free_percent)),
+    ("memoria", lambda m: score_memory(m.memory_available_percent)),
+    ("basura", lambda m: score_junk(m.junk_mb)),
+    ("duplicados", lambda m: score_duplicates(m.duplicate_mb)),
+    ("arranque", lambda m: score_startup(m.startup_count))
+)
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Procesa métricas brutas y genera un puntaje de salud normalizado 0-100."""
@@ -203,8 +202,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
     
-    for area, weight in _WEIGHT_ITEMS_INT:
-        ratio = _SCORER_MAP[area](metrics)
+    for area, scorer in _SCORERS:
+        weight = WEIGHTS[area]
+        ratio = scorer(metrics)
         ratios[area] = ratio
         pts = round(ratio * weight)
         metric_breakdown[area] = int(pts)

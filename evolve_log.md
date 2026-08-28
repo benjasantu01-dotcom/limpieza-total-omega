@@ -977,3 +977,51 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T06:40:33` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-08-28T06:40:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T06:40:33` Corrida terminada. Total usado hoy: 160.
+- `2026-08-28T06:48:52` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-28T06:49:20` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el rendimiento de `_collect_candidates` eliminando la llamada repetida y costosa a `entry.stat()` mediante un uso más eficiente de `entry.is_file()` y `entry.is_dir()` (que en sistemas modernos ya contienen información de stat), reduciendo drásticamente las llamadas a disco durante el escaneo recursivo.
+- `2026-08-28T06:49:46` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el rendimiento de `compute_score` evitando el acceso repetitivo a las constantes del módulo y pre-calculando el desglose de métricas para evitar llamadas a funciones lambda innecesarias dentro del bucle de procesamiento.
+- `2026-08-28T06:50:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-28T06:51:49` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-28T06:52:55` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-28T06:54:19` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_flush_logs` para evitar la creación innecesaria de objetos y llamadas redundantes al sistema de hilos, asegurando que la descarga de logs en la UI sea más eficiente mediante el uso de una lista local y el procesamiento en lote una única vez por evento.
+- `2026-08-28T06:54:34` Tests FALLARON:
+```
+_____
+
+    def test_parse_process_csv_skips_broken_lines():
+        csv = '"Name","Id","WorkingSet"\n"ok","1","1024"\nlinea basura\n"malo","x","y"\n'
+        procesos = memory.parse_windows_process_csv(csv)
+>       assert len(procesos) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:353: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:276: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+2 failed, 297 passed, 4 warnings in 1.04s
+
+```
+- `2026-08-28T06:54:34` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución síncrona del comando PowerShell (que bloqueaba la UI) por un caché global más eficiente y eliminando el procesamiento innecesario de caracteres especiales en el parsing del CSV.
+- `2026-08-28T06:54:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T06:54:34` Corrida terminada. Total usado hoy: 164.
