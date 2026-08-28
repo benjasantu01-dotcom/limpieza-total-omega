@@ -193,12 +193,11 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         Objeto DriveUsage con las métricas solicitadas, o None si la ruta
         es inválida, está protegida o el acceso es denegado.
     """
-    if not mount or not isinstance(mount, (str, os.PathLike)):
+    if not isinstance(mount, (str, os.PathLike)):
         return None
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        # Verificar existencia y acceso mínimo antes de procesar
         if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
@@ -267,7 +266,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Yields:
         Tuplas conteniendo la ruta absoluta del archivo (Path) y su tamaño en bytes (int).
     """
-    if not directory:
+    if not directory or not isinstance(directory, (str, Path, os.PathLike)):
         return
 
     try:
@@ -290,22 +289,16 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            try:
-                                st = entry.stat(follow_symlinks=False)
-                                inode_key = (st.st_dev, st.st_ino)
-                                if inode_key not in visited_inodes:
-                                    visited_inodes.add(inode_key)
-                                    stack.append(Path(entry.path))
-                            except (PermissionError, OSError):
-                                continue
+                            st = entry.stat(follow_symlinks=False)
+                            inode_key = (st.st_dev, st.st_ino)
+                            if inode_key not in visited_inodes:
+                                visited_inodes.add(inode_key)
+                                stack.append(Path(entry.path))
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            try:
-                                f_stat = entry.stat(follow_symlinks=False)
-                                yield Path(entry.path), max(0, f_stat.st_size)
-                            except (PermissionError, OSError):
-                                continue
-                    except (PermissionError, OSError, ValueError):
+                            f_stat = entry.stat(follow_symlinks=False)
+                            yield Path(entry.path), max(0, f_stat.st_size)
+                    except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
             continue
@@ -434,7 +427,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     total_files: int = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
-    # Heap de tuplas (size, path) para trackear los N archivos más grandes encontrados
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
@@ -445,7 +437,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        # Mantener los 8 archivos más pesados en memoria
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:

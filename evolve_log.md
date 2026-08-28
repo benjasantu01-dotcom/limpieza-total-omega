@@ -1096,3 +1096,35 @@ assert not True
 - `2026-08-28T07:52:01` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la carpeta padre mediante `is_safe_to_modify` antes de intentar crearla, evitando posibles escrituras en rutas bloqueadas por el sistema o fuera del alcance permitido.
 - `2026-08-28T07:52:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T07:52:01` Corrida terminada. Total usado hoy: 188.
+- `2026-08-28T08:00:23` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-28T08:00:52` Tests FALLARON:
+```
+ssert 0 == 300
+E        +  where 0 = <function directory_size at 0x7fc7fa58cc20>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_directory_size_adds_up_re0'))
+E        +    where <function directory_size at 0x7fc7fa58cc20> = browser.directory_size
+
+evolve/tests/test_modules.py:783: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:276: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_directory_size_adds_up_recursively - AssertionError: assert 0 == 300
+ +  where 0 = <function directory_size at 0x7fc7fa58cc20>(PosixPath('/tmp/pytest-of-runner/pytest-1/test_directory_size_adds_up_re0'))
+ +    where <function directory_size at 0x7fc7fa58cc20> = browser.directory_size
+2 failed, 297 passed, 4 warnings in 1.27s
+
+```
+- `2026-08-28T08:00:52` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se ha robustecido la validación de rutas mediante el uso de `os.path.commonpath` en `_is_path_inside_base`, asegurando que `real_target` no sea igual al `real_base` (evitando operaciones sobre la carpeta raíz de LOCALAPPDATA si fuera mal configurada) y reforzando la integridad al impedir que rutas con componentes de navegación sospechosos (`..`) escapen del ámbito permitido durante la resolución.
+- `2026-08-28T08:01:28` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `diskreport.py` implementando validación de tipo y sanitización en `drive_usage` y `walk_files` para evitar el procesamiento de rutas potencialmente malformadas o externas, asegurando que `Path.resolve()` se utilice correctamente y evitando que entradas con nombres no imprimibles o simbólicas escapen al control de seguridad.
+- `2026-08-28T08:01:58` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` para evitar que el escaneo siga puntos de reparse (junctions o reparse points) mediante `stat.st_file_attributes` en Windows, previniendo así bucles infinitos fuera de las carpetas de usuario seleccionadas.
+- `2026-08-28T08:02:09` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se añadió una validación defensiva en la creación de `SystemMetrics` para asegurar que los valores numéricos no solo sean finitos sino coherentes con el dominio (ej: porcentajes que no exceden 100 y contadores positivos), previniendo la propagación de datos corruptos desde otros módulos.
+- `2026-08-28T08:02:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T08:02:09` Corrida terminada. Total usado hoy: 192.

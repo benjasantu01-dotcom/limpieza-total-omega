@@ -146,13 +146,17 @@ def _collect_candidates(
         return skip_protected and is_protected_path(path)
 
     def _scan_recursive(current_dir: Path) -> None:
-        """Realiza un recorrido DFS evitando ciclos mediante inodos y respetando bloqueos."""
+        """Realiza un recorrido DFS evitando ciclos y puntos de reparse (junctions)."""
         try:
             for entry in current_dir.iterdir():
                 if _should_skip(entry): continue
                 
                 try:
+                    # En Windows, los puntos de reparse (junctions) pueden causar bucles infinitos
                     if entry.is_symlink(): continue
+                    if os.name == 'nt':
+                        if entry.stat().st_file_attributes & 0x400: continue
+                        
                     if entry.is_dir():
                         stat = entry.stat()
                         dev_inode = (stat.st_dev, stat.st_ino)
