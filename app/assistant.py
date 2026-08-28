@@ -544,7 +544,12 @@ def _call_gemini(
         prompt_full = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_c}\n\nPregunta del usuario: {safe_q}"
         if len(prompt_full) > _MAX_PROMPT_LIMIT: return None
         
-        payload = json.dumps({"contents": [{"parts": [{"text": prompt_full}]}]}).encode("utf-8")
+        # Estructura de datos validada antes de codificar
+        data_packet = {"contents": [{"parts": [{"text": prompt_full}]}]}
+        payload = json.dumps(data_packet).encode("utf-8")
+        
+        if len(payload) > _MAX_PROMPT_LIMIT * 2: return None
+        
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
             data=payload, 

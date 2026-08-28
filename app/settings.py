@@ -250,7 +250,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     if not ruta.exists(): return DEFAULTS.copy()
     
     try:
+        # Verificación de salud: intentar acceder al archivo antes de leer
         if not os.access(ruta, os.R_OK): return DEFAULTS.copy()
+        
         stat_info = ruta.stat()
         mtime = stat_info.st_mtime
         

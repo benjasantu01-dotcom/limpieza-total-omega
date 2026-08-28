@@ -166,7 +166,7 @@ class StartupEntry:
             
             try:
                 real_path_str: str = os.path.realpath(abs_path)
-            except OSError:
+            except (OSError, PermissionError):
                 _EXISTS_CACHE[path_string] = False
                 return ""
 
@@ -182,7 +182,7 @@ class StartupEntry:
                 
             _EXISTS_CACHE[real_path_str] = True
             return real_path_str
-        except (OSError, ValueError, RuntimeError, TypeError):
+        except (OSError, ValueError, RuntimeError, TypeError, PermissionError):
             _EXISTS_CACHE[path_string] = False
             return path_string
 
