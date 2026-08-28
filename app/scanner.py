@@ -147,7 +147,7 @@ class Scanner:
         que causarían duplicación de escaneo o bucles infinitos.
         """
         try:
-            is_sym = Path(entry.path).is_symlink()
+            is_sym = entry.is_symlink()
             attr = entry.stat(follow_symlinks=False).st_file_attributes
             return is_sym or bool(attr & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError):
@@ -166,9 +166,9 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                if entry.is_symlink():
+                # Validar existencia física real antes de procesar
+                if not os.path.exists(entry.path):
                     return
-                # Optimización: procesar extensión una sola vez
                 ext = os.path.splitext(entry.name)[1].lower()
                 if ext in SUSPICIOUS_EXECUTABLE_EXT or ext == ".pdf":
                     self._run_file_heuristics(Path(entry.path), entry, ext)
@@ -189,7 +189,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     Retorna una lista con todos los objetos 'Suspicion' encontrados.
     """
     findings: ScanResult = []
-    if not path:
+    if not isinstance(path, Path) or not path.exists():
         return findings
         
     if (double_ext := check_double_extension(path, entry, now_ts)):

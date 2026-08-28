@@ -257,10 +257,13 @@ def _read_disk(ruta: Path) -> tuple[float, AppSettings]:
     if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
         return (stat_info.st_mtime, DEFAULTS.copy())
             
-    with open(ruta, "r", encoding="utf-8") as f:
-        data = json.load(f)
-        if not isinstance(data, dict): return (stat_info.st_mtime, DEFAULTS.copy())
-        return (stat_info.st_mtime, validate(data))
+    try:
+        with open(ruta, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            if not isinstance(data, dict): return (stat_info.st_mtime, DEFAULTS.copy())
+            return (stat_info.st_mtime, validate(data))
+    except (json.JSONDecodeError, UnicodeDecodeError, PermissionError):
+        return (stat_info.st_mtime, DEFAULTS.copy())
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga la configuración desde disco, retornando valores seguros por defecto en caso de error."""
@@ -272,7 +275,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             return config.copy()
         _read_disk.cache_clear()
         return _read_disk(ruta)[1].copy()
-    except (json.JSONDecodeError, UnicodeDecodeError, OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError):
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
@@ -307,7 +310,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             
         _read_disk.cache_clear()
         return ruta
-    except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
+    except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError, json.JSONDecodeError):
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
