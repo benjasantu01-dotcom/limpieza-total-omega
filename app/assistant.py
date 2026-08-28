@@ -492,11 +492,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     # Optimizamos el loop usando un set de tokens únicos procesados una sola vez
-    seen_intents = set()
     for token in set(_TOKEN_REGEX.findall(q_sanitized)):
         intent = _KEYWORD_MAP.get(token)
-        if intent and intent not in seen_intents:
-            seen_intents.add(intent)
+        if intent:
             return _HANDLERS[intent](context, question)
 
     problemas = _identify_active_problems(context)

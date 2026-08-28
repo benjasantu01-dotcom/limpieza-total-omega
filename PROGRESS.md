@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 223
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 44 | 4 | 6 | 5 | 47 |
+| 2026-08-26 | 42 | 4 | 5 | 5 | 46 |
 | 2026-08-27 | 158 | 12 | 22 | 7 | 151 |
-| 2026-08-28 | 19 | 0 | 4 | 0 | 25 |
+| 2026-08-28 | 23 | 0 | 4 | 0 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
+- legibilidad y documentación: **60**
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **47**
-- robustez ante casos límite: **39**
-- rendimiento: **31**
+- robustez ante casos límite: **37**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **22**
+- `scanner.py`: **23**
+- `settings.py`: **20**
+- `assistant.py`: **20**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
-- `assistant.py`: **19**
-- `duplicates.py`: **18**
 - `browser.py`: **18**
 - `memory.py`: **18**
+- `duplicates.py`: **17**
 - `diskreport.py`: **17**
-- `healthscore.py`: **16**
 - `branding.py`: **16**
+- `healthscore.py`: **15**
 - `main.py`: **13**
-- `startup.py`: **10**
+- `startup.py`: **11**
 - `safety.py`: **9**
 - `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T02:05:35` **assistant.py** (rendimiento): Optimizé la búsqueda de intenciones en `local_answer` utilizando un conjunto (`set`) de tokens únicos para evitar iteraciones repetidas sobre palabras irrelevantes y reducir la complejidad del procesamiento de consultas naturales.
+- `2026-08-28T02:05:13` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante una actualización detallada de los docstrings de los métodos de la clase `StartupEntry` para aclarar el flujo de resolución de rutas (resolución vs. validación) y los criterios de seguridad aplicados en la normalización de comandos.
+- `2026-08-28T02:04:46` **settings.py** (legibilidad y documentación): Se introdujeron docstrings explicativos en los métodos públicos y se refinó la estructura de `_Validators` mediante un método de validación centralizado para clarificar el flujo de trabajo de seguridad.
+- `2026-08-28T02:04:19` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las clases y funciones principales, clarificando el propósito, las condiciones de entrada y los efectos secundarios de los métodos para mejorar la mantenibilidad y legibilidad del código.
 - `2026-08-28T01:54:16` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones críticas y se han renombrado variables en `_atomic_isolate_file` para clarificar la lógica de manejo de archivos temporales y prevenir riesgos de duplicación.
 - `2026-08-28T01:45:18` **memory.py** (legibilidad y documentación): Documenté con docstrings claros y type hints las funciones internas críticas y las estructuras de datos, mejorando la mantenibilidad del módulo de diagnóstico de memoria.
 - `2026-08-28T01:43:58` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a todas las funciones de cálculo (`score_*`) y se ha consolidado la lógica de normalización de métricas, haciendo explícito que cada una de ellas se mapea a una escala de salud estándar.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T01:24:23` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre los comandos obtenidos del registro antes de instanciar `StartupEntry`, evitando así procesar rutas potencialmente peligrosas o del sistema.
 - `2026-08-28T01:24:09` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente `OSError` durante la creación del directorio y validando la existencia de la ruta de destino antes de intentar el reemplazo atómico, asegurando que fallos en el sistema de archivos no dejen el estado de la app en inconsistencia.
 - `2026-08-28T01:23:39` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` y `_is_safe_entry` mediante la validación proactiva de tipos y estados, asegurando que valores `None` o rutas mal formadas no interrumpan el flujo de escaneo, cumpliendo con las reglas de seguridad de no propagar errores inesperados.
-- `2026-08-28T01:14:01` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` encapsulando la validación de la existencia y el estado del archivo en una operación atómica y controlada, reemplazando chequeos fragmentados que podían sufrir de condiciones de carrera (TOCTOU).
-- `2026-08-28T01:13:03` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus funciones auxiliares implementando chequeos explícitos para evitar excepciones `OSError` o `AttributeError` al interactuar con las APIs de Windows, asegurando que el manejo de recursos sea seguro ante fallos inesperados del sistema.
-- `2026-08-28T01:04:38` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_collect_settings` y los métodos de guardado/restauración de ajustes para manejar de forma segura la falta de widgets en pestañas no inicializadas (carga perezosa), evitando excepciones de tipo `AttributeError` o `TclError` y asegurando una validación consistente de los campos.
-- `2026-08-28T01:03:19` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` implementando una validación explícita mediante `is_protected_path` y `is_file` antes de operar sobre las rutas, evitando excepciones innecesarias y asegurando que las rutas inaccesibles o protegidas no sean consideradas candidatos válidos para conservar.
