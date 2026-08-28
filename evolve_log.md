@@ -475,3 +475,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T01:04:38` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_collect_settings` y los métodos de guardado/restauración de ajustes para manejar de forma segura la falta de widgets en pestañas no inicializadas (carga perezosa), evitando excepciones de tipo `AttributeError` o `TclError` y asegurando una validación consistente de los campos.
 - `2026-08-28T01:04:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T01:04:38` Corrida terminada. Total usado hoy: 28.
+- `2026-08-28T01:12:34` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-28T01:13:03` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus funciones auxiliares implementando chequeos explícitos para evitar excepciones `OSError` o `AttributeError` al interactuar con las APIs de Windows, asegurando que el manejo de recursos sea seguro ante fallos inesperados del sistema.
+- `2026-08-28T01:13:29` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-28T01:14:01` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` encapsulando la validación de la existencia y el estado del archivo en una operación atómica y controlada, reemplazando chequeos fragmentados que podían sufrir de condiciones de carrera (TOCTOU).
+- `2026-08-28T01:14:04` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-08-28T01:14:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T01:14:04` Corrida terminada. Total usado hoy: 32.

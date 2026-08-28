@@ -347,27 +347,24 @@ def quarantine_file(
     """Ejecuta el aislamiento de un archivo y lo registra en el manifiesto."""
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
+    
     try:
         source_path = Path(source).expanduser().resolve()
-    except Exception as e:
-        raise ValueError(f"Ruta de origen malformada: {e}")
-    if not source_path.is_file():
-        raise FileNotFoundError(f"El archivo origen no existe o es inválido: {source_path}")
+        source_stat = source_path.stat()
+    except (OSError, AttributeError) as e:
+        raise FileNotFoundError(f"Archivo origen inaccesible: {e}")
+
+    if not source_stat.st_mode & 0o100000: # S_ISREG
+        raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")
     
     ensure_safe_to_modify(source_path, allow_sensitive=True)
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
     
-    if not source_path.is_file() or source_path.is_symlink():
-        raise RuntimeError("Integridad comprometida: el origen ya no es un archivo regular.")
-        
-    try:
-        file_size = source_path.stat().st_size
-    except OSError as e:
-        raise OSError(f"No se pudo determinar el tamaño del archivo origen: {e}")
-        
+    file_size = source_stat.st_size
     item_id = uuid.uuid4().hex[:12]
     destination = dest_dir / _generate_safe_stored_name(source_path, item_id)
+    
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en el sandbox: {destination.name}")
         
@@ -375,9 +372,6 @@ def quarantine_file(
     
     try:
         items_dict = _load_manifest_internal(str(dest_dir))
-        if item_id in items_dict:
-            raise RuntimeError(f"ID duplicado generado: {item_id}")
-            
         quarantine_item = QuarantineItem(
             item_id=item_id,
             original_path=str(source_path),
@@ -391,10 +385,9 @@ def quarantine_file(
         save_manifest(list(items_dict.values()), base)
         
         try:
-            if source_path.is_file() and not source_path.is_symlink():
-                source_path.unlink()
+            source_path.unlink()
         except OSError as e:
-            raise RuntimeError(f"Aislamiento exitoso, pero no se pudo limpiar el origen: {e}")
+            raise RuntimeError(f"Aislamiento exitoso, pero el origen no pudo eliminarse: {e}")
         return quarantine_item
     except Exception:
         if destination.exists():

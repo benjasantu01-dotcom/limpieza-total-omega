@@ -267,11 +267,9 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     """Valida la seguridad de la ruta mediante chequeos contra inyecciones y rutas protegidas."""
     if not isinstance(path, str) or not os.path.isabs(path) or path.startswith("\\\\"):
         return False, "Ruta inválida o en red."
-    # Detección de caracteres RTL/sospechosos para ofuscación
     if any(seq in path.encode("utf-8", errors="ignore") for seq in [b"\xe2\x80\xae", b"\xe2\x80\xad", b"\xe2\x80\xab", b"\xe2\x80\xaa"]):
         return False, "Ruta de proceso sospechosa."
     try:
-        # Prevenir seguimiento de junctions o reparse points
         if os.path.islink(path): return False, "Ruta es un enlace simbólico."
         p = Path(path).resolve()
         if not p.is_file(): return False, "No es un ejecutable válido."
@@ -284,9 +282,9 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     """Verifica integridad del proceso, su estado activo y la seguridad de su ubicación."""
     if proc_handle is None or proc_handle == -1: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
-    if not kernel32 or kernel32.GetProcessId(proc_handle) != pid: return False, "PID mismatch."
+    if not kernel32 or not hasattr(kernel32, "GetProcessId"): return False, "API no disponible."
+    if kernel32.GetProcessId(proc_handle) != pid: return False, "PID mismatch."
     
-    # Comprobar si el proceso sigue vivo antes de intentar manipularlo
     exit_code = ctypes.c_ulong()
     if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
         return False, "Proceso inactivo."
@@ -315,8 +313,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not psapi.EmptyWorkingSet(proc_handle): 
             return False, f"Error del sistema {ctypes.get_last_error()}."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except Exception as e:
-        return False, f"Excepción inesperada durante el trim: {str(e)}"
+    except (OSError, ctypes.ArgumentError, Exception) as e:
+        return False, f"Error durante el trim: {type(e).__name__}"
     finally:
         if proc_handle and proc_handle != -1: kernel32.CloseHandle(proc_handle)
 
