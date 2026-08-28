@@ -503,3 +503,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T01:45:18` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y type hints las funciones internas críticas y las estructuras de datos, mejorando la mantenibilidad del módulo de diagnóstico de memoria.
 - `2026-08-28T01:45:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T01:45:18` Corrida terminada. Total usado hoy: 44.
+- `2026-08-28T01:53:19` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-08-28T01:53:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: legibilidad y documentación).
+- `2026-08-28T01:54:16` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones críticas y se han renombrado variables en `_atomic_isolate_file` para clarificar la lógica de manejo de archivos temporales y prevenir riesgos de duplicación.
+- `2026-08-28T01:54:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-28T01:54:47` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-08-28T01:54:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T01:54:47` Corrida terminada. Total usado hoy: 48.
