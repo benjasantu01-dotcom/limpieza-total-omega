@@ -1428,24 +1428,25 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             safety.ensure_safe_to_modify(Path(".").resolve())
+            # Verificación defensiva: el estado de la cuarentena podría haber cambiado
             if not quarantine.item_exists(raw_id):
-                self.log(f"Error: El ID '{raw_id}' no existe.", "Cuarentena")
+                self._safe_run_ui_callback(lambda: self.log(f"Error: El ID '{raw_id}' no existe.", "Cuarentena"))
                 return
             
             item = quarantine.get_item(raw_id)
             if not item or not hasattr(item, 'original_path'):
-                self.log("Error: Manifiesto corrupto.", "Cuarentena")
+                self._safe_run_ui_callback(lambda: self.log("Error: Manifiesto corrupto.", "Cuarentena"))
                 return
             
             if not self._is_safe_path(item.original_path):
-                self.log("Error: La ruta original del archivo no es segura para restauración.", "Cuarentena")
+                self._safe_run_ui_callback(lambda: self.log("Error: La ruta original del archivo no es segura para restauración.", "Cuarentena"))
                 return
             
             try:
                 destino = quarantine.restore_item(raw_id)
-                self.log(f"Restaurado en: {destino}", "Cuarentena")
+                self._safe_run_ui_callback(lambda: self.log(f"Restaurado en: {destino}", "Cuarentena"))
             except Exception as e:
-                self.log(f"Error al restaurar: {e}", "Cuarentena")
+                self._safe_run_ui_callback(lambda: self.log(f"Error al restaurar: {e}", "Cuarentena"))
 
         self.run_async(task, check_safety=True, target=".")
 
@@ -1532,14 +1533,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Verificación defensiva: validar existencia en el momento exacto de la ejecución
             if not memory_mod.process_exists(pid):
-                self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria")
+                self._safe_run_ui_callback(lambda: self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria"))
                 return
             try:
                 ok, mensaje = memory_mod.trim_working_set(pid)
-                self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria")
+                self._safe_run_ui_callback(lambda: self.log(("OK: " if ok else "Sin efecto: ") + mensaje, "Memoria"))
             except Exception as e:
-                self.log(f"Error al intentar liberar proceso: {e}", "Memoria")
+                self._safe_run_ui_callback(lambda: self.log(f"Error al intentar liberar proceso: {e}", "Memoria"))
 
         self.run_async(task, check_safety=True, target=".")
 

@@ -282,14 +282,13 @@ def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     """Valida la seguridad de la ruta mediante chequeos canónicos."""
     if not isinstance(path, str) or not os.path.isabs(path) or path.startswith("\\\\"):
-        return False, "Ruta inválida."
+        return False, "Ruta inválida o no soportada."
     try:
         p = Path(path).resolve(strict=True)
-        if not p.is_file(): return False, "No es un ejecutable."
+        if not p.is_file(): return False, "No es un ejecutable válido."
         if p.is_symlink(): return False, "Simlink detectado."
-        # Se verifica la ruta resuelta directamente sin reconstruirla desde partes
         if is_protected_path(str(p)): return False, "Ruta protegida."
-    except Exception: return False, "Error resolviendo ruta."
+    except Exception: return False, "Error resolviendo ruta del proceso."
     return True, None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
@@ -299,17 +298,18 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     if not kernel32 or not hasattr(kernel32, "GetProcessId"): return False, "API no disponible."
     
     try:
+        # Verificación doble de seguridad del PID
         if kernel32.GetProcessId(proc_handle) != pid: return False, "PID mismatch."
         
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return False, "Proceso inactivo."
+            return False, "Proceso no activo."
         
         path = _get_process_path(proc_handle)
         if not path: return False, "Ruta inaccesible."
         return _validate_path_security(path)
     except (OSError, ctypes.ArgumentError):
-        return False, "Error verificando integridad."
+        return False, "Error interno verificando integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Intenta reducir el working set de un proceso específico tras validar su seguridad."""
@@ -319,22 +319,23 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try: target_pid = int(pid)
     except (ValueError, TypeError): return False, "PID no válido."
-    if _is_system_process(target_pid): return False, "Proceso protegido."
+    if _is_system_process(target_pid): return False, "Proceso protegido por sistema."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle or proc_handle == -1: 
-        return False, "Permisos insuficientes o proceso inaccesible."
+        return False, "No se pudo abrir el proceso (permisos insuficientes)."
     
     try:
         valid, reason = _is_safe_to_trim(proc_handle, target_pid)
-        if not valid: return False, reason or "Validación fallida."
+        if not valid: return False, reason or "Validación de seguridad fallida."
         if not psapi.EmptyWorkingSet(proc_handle): 
             return False, f"Error del sistema {ctypes.get_last_error()}."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (OSError, ctypes.ArgumentError, Exception) as e:
-        return False, f"Error durante el trim: {type(e).__name__}"
+        return False, f"Error inesperado: {type(e).__name__}"
     finally:
-        if proc_handle and proc_handle != -1: kernel32.CloseHandle(proc_handle)
+        if proc_handle and proc_handle != -1: 
+            kernel32.CloseHandle(proc_handle)
 
 if __name__ == "__main__":
     snap = read_snapshot()

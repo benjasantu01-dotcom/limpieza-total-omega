@@ -100,7 +100,7 @@ def _is_valid_candidate(path: Path) -> bool:
     """Verifica si un objeto Path es un archivo legible y no protegido por el sistema."""
     if not isinstance(path, Path): return False
     try:
-        return path.is_file() and not is_protected_path(path) and os.access(path, os.R_OK)
+        return path.exists() and path.is_file() and not is_protected_path(path) and os.access(path, os.R_OK)
     except (OSError, ValueError):
         return False
 
@@ -183,7 +183,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
     """Aplica una función de hash para subdividir grupos de archivos existentes."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path and (digest := hash_func(path)):
+        if path and _is_valid_candidate(path) and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -199,12 +199,14 @@ def _resolve_by_hashes(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Pipeline de validación: decide si aplicar hash completo directamente."""
-    confirmed_groups: List[DuplicateGroup] = []
-    if len(paths) < 2: return []
+    # Filtro previo contra race conditions: asegurar que todos existan aún
+    valid_paths = [p for p in paths if _is_valid_candidate(p)]
+    if len(valid_paths) < 2: return []
     
     # Si el archivo es menor o igual al bloque parcial, el hash parcial es el final
-    results = _refine_by_hash(paths, partial_hash) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(paths)
+    results = _refine_by_hash(valid_paths, partial_hash) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(valid_paths)
             
+    confirmed_groups: List[DuplicateGroup] = []
     for digest, confirmed_paths in results.items():
         confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
     return confirmed_groups
