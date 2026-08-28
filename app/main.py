@@ -915,7 +915,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self.after(50, self._flush_logs)
 
     def _flush_logs(self) -> None:
-        """Vuelca la cola de mensajes acumulados en la interfaz visual."""
+        """Vuelca la cola de mensajes acumulados en la interfaz visual consolidando por pestaña."""
         self._log_scheduled = False
         if self._closing: return
         
@@ -924,21 +924,16 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pendientes = self._log_queue
             self._log_queue = []
         
+        # Agrupar mensajes para reducir las llamadas a widget methods
         logs_por_tab = {}
         for tab, msg in pendientes:
-            if tab not in logs_por_tab:
-                logs_por_tab[tab] = []
-            logs_por_tab[tab].append(msg)
+            logs_por_tab.setdefault(tab, []).append(msg)
             
         for tab, msgs in logs_por_tab.items():
             box = self._box(tab)
-            if box:
-                try:
-                    if box.winfo_exists():
-                        box.insert("end", "\n".join(msgs) + "\n")
-                        box.see("end")
-                except tk.TclError:
-                    pass
+            if box and box.winfo_exists():
+                box.insert("end", "\n".join(msgs) + "\n")
+                box.see("end")
 
     def clear(self, tab: str = "Limpieza") -> None:
         """Limpia todo el texto del log de la pestaña especificada."""

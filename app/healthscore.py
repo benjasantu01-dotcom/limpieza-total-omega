@@ -234,7 +234,10 @@ def summarize(result: HealthResult) -> List[str]:
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
         puntos = result.breakdown.get(area, 0)
-        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{'#' * puntos}{'.' * (max(0, maximo - puntos))}]")
-    lines.extend(["", "Recomendaciones:"])
-    lines.extend([f"  - {r}" for r in result.recommendations] if result.recommendations else ["  - Ninguna."])
+        bar = ('#' * puntos) + ('.' * (maximo - puntos))
+        lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
+    
+    lines.append("")
+    lines.append("Recomendaciones:")
+    lines.extend(f"  - {r}" for r in result.recommendations) if result.recommendations else lines.append("  - Ninguna.")
     return lines
