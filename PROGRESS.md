@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 222
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 42 | 4 | 5 | 5 | 46 |
+| 2026-08-26 | 42 | 4 | 4 | 4 | 44 |
 | 2026-08-27 | 158 | 12 | 22 | 7 | 151 |
-| 2026-08-28 | 23 | 0 | 4 | 0 | 25 |
+| 2026-08-28 | 26 | 0 | 4 | 1 | 25 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,19 +26,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - seguridad defensiva: **47**
 - manejo de errores y validación de entradas: **47**
 - robustez ante casos límite: **37**
-- rendimiento: **32**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
 - `settings.py`: **20**
 - `assistant.py`: **20**
+- `browser.py`: **19**
 - `quarantine.py`: **19**
-- `browser.py`: **18**
+- `duplicates.py`: **18**
 - `memory.py`: **18**
-- `duplicates.py`: **17**
+- `branding.py`: **17**
 - `diskreport.py`: **17**
-- `branding.py`: **16**
 - `healthscore.py`: **15**
 - `main.py`: **13**
 - `startup.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T02:15:18` **duplicates.py** (rendimiento): Optimicé el proceso de escaneo eliminando la resolución innecesaria (`resolve()`) dentro de los bucles críticos y mejorando el uso de `stat()` para descartar archivos únicos por tamaño antes de realizar cualquier operación de acceso a disco.
+- `2026-08-28T02:14:41` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la validación de `perf_cache` al inicio de `directory_size` y la propagación eficiente de este diccionario a través de las funciones de detección, evitando la redundancia de cálculos en estructuras de directorios compartidas.
+- `2026-08-28T02:14:16` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando el cálculo aritmético dentro del loop mediante la pre-generación de segmentos, reduciendo la complejidad de las operaciones de renderizado en tiempo de ejecución.
 - `2026-08-28T02:05:35` **assistant.py** (rendimiento): Optimizé la búsqueda de intenciones en `local_answer` utilizando un conjunto (`set`) de tokens únicos para evitar iteraciones repetidas sobre palabras irrelevantes y reducir la complejidad del procesamiento de consultas naturales.
 - `2026-08-28T02:05:13` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante una actualización detallada de los docstrings de los métodos de la clase `StartupEntry` para aclarar el flujo de resolución de rutas (resolución vs. validación) y los criterios de seguridad aplicados en la normalización de comandos.
 - `2026-08-28T02:04:46` **settings.py** (legibilidad y documentación): Se introdujeron docstrings explicativos en los métodos públicos y se refinó la estructura de `_Validators` mediante un método de validación centralizado para clarificar el flujo de trabajo de seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T01:34:40` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código mediante la formalización de tipos y la adición de docstrings técnicos específicos para las funciones internas, facilitando la auditoría de seguridad del escaneo recursivo.
 - `2026-08-28T01:34:09` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que detallan los parámetros, el comportamiento ante errores y las dependencias (como la interacción con `canvas`) para mejorar la mantenibilidad y claridad del código fuente.
 - `2026-08-28T01:33:37` **assistant.py** (legibilidad y documentación): Documenté el propósito de `AssistantConfig` y `MetricSpec`, y clarifiqué la lógica de `_ensure_safe_text` y `_is_safe_text_structure` mediante docstrings detallados, facilitando el mantenimiento y el cumplimiento de las reglas de seguridad.
-- `2026-08-28T01:24:23` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita mediante `is_protected_path` sobre los comandos obtenidos del registro antes de instanciar `StartupEntry`, evitando así procesar rutas potencialmente peligrosas o del sistema.
-- `2026-08-28T01:24:09` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente `OSError` durante la creación del directorio y validando la existencia de la ruta de destino antes de intentar el reemplazo atómico, asegurando que fallos en el sistema de archivos no dejen el estado de la app en inconsistencia.
-- `2026-08-28T01:23:39` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scan_directory` y `_is_safe_entry` mediante la validación proactiva de tipos y estados, asegurando que valores `None` o rutas mal formadas no interrumpan el flujo de escaneo, cumpliendo con las reglas de seguridad de no propagar errores inesperados.

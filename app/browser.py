@@ -187,13 +187,13 @@ def _sum_directory_recursive(
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str):
         return 0
 
-    root_path = Path(root_dir)
-    if not is_safe_to_modify(root_path):
-        return 0
-
     root_abs = os.path.normpath(root_dir)
     if root_abs in memo:
         return memo[root_abs]
+
+    root_path = Path(root_abs)
+    if not is_safe_to_modify(root_path):
+        return 0
         
     total: int = 0
     try:
@@ -229,6 +229,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
             return 0
         
         is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
+        # Usar un caché local para esta llamada individual
         return _sum_directory_recursive(str(p_obj), is_junction, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0

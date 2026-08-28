@@ -517,3 +517,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T02:05:35` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé la búsqueda de intenciones en `local_answer` utilizando un conjunto (`set`) de tokens únicos para evitar iteraciones repetidas sobre palabras irrelevantes y reducir la complejidad del procesamiento de consultas naturales.
 - `2026-08-28T02:05:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T02:05:35` Corrida terminada. Total usado hoy: 52.
+- `2026-08-28T02:13:42` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-28T02:14:16` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el rendimiento de `gradient_colors` eliminando el cálculo aritmético dentro del loop mediante la pre-generación de segmentos, reduciendo la complejidad de las operaciones de renderizado en tiempo de ejecución.
+- `2026-08-28T02:14:41` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante la validación de `perf_cache` al inicio de `directory_size` y la propagación eficiente de este diccionario a través de las funciones de detección, evitando la redundancia de cálculos en estructuras de directorios compartidas.
+- `2026-08-28T02:15:09` ➖ Sin cambios en diskreport.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento de `summarize` y las funciones de análisis al unificar la recolección de datos en `_collect_summary_data`, evitando múltiples recorridos innecesarios del árbol de directorios que ocurrían cuando el usuario solicitaba el reporte completo.
+- `2026-08-28T02:15:18` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el proceso de escaneo eliminando la resolución innecesaria (`resolve()`) dentro de los bucles críticos y mejorando el uso de `stat()` para descartar archivos únicos por tamaño antes de realizar cualquier operación de acceso a disco.
+- `2026-08-28T02:15:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T02:15:18` Corrida terminada. Total usado hoy: 56.

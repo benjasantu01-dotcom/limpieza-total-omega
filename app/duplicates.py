@@ -65,7 +65,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     if path is None: return None
     try:
-        path_obj = Path(path).resolve()
+        path_obj = Path(path)
         if not path_obj.is_file() or is_protected_path(path_obj) or not os.access(path_obj, os.R_OK):
             return None
         
@@ -84,7 +84,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     if path is None: return None
     try:
-        path_obj = Path(path).resolve()
+        path_obj = Path(path)
         if not path_obj.is_file() or is_protected_path(path_obj) or not os.access(path_obj, os.R_OK):
             return None
         
@@ -113,11 +113,10 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     for p in paths:
         if p is None: continue
         try:
-            target = Path(p).resolve()
-            if _is_valid_candidate(target):
-                st = target.stat()
+            if _is_valid_candidate(p):
+                st = p.stat()
                 if st.st_size > 0:
-                    groups[st.st_size].append(target)
+                    groups[st.st_size].append(p)
         except (OSError, PermissionError):
             continue
     return groups
@@ -141,47 +140,36 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Recorre recursivamente los directorios buscando candidatos a duplicados.
-    Evita procesar el mismo inodo dos veces para prevenir ciclos.
     """
-    temp_groups: Dict[int, List[Path]] = defaultdict(list)
+    temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: Set[Tuple[int, int]] = set()
-    processed_dirs: Set[Path] = set()
-    processed_files: Set[Path] = set()
 
     def _should_skip(path: Path) -> bool:
         return skip_protected and is_protected_path(path)
 
     def _scan_recursive(current_dir: Path) -> None:
         try:
-            resolved_dir = current_dir.resolve(strict=False)
-            if resolved_dir in processed_dirs: return
-            processed_dirs.add(resolved_dir)
-            
-            for entry in resolved_dir.iterdir():
+            for entry in current_dir.iterdir():
+                if entry.is_symlink(): continue
+                if _should_skip(entry): continue
+                
                 try:
-                    if entry.is_symlink(): continue
-                    if _should_skip(entry): continue
-                    
+                    stat = entry.stat()
                     if entry.is_dir():
-                        stat = entry.stat()
                         dev_inode = (stat.st_dev, stat.st_ino)
                         if dev_inode not in visited_device_inodes:
                             visited_device_inodes.add(dev_inode)
                             _scan_recursive(entry)
-                    elif entry.is_file():
-                        stat = entry.stat()
-                        if stat.st_size < min_size: continue
-                        if entry in processed_files: continue
-                        processed_files.add(entry)
-                        temp_groups[int(stat.st_size)].append(entry)
+                    elif entry.is_file() and stat.st_size >= min_size:
+                        temp_map[int(stat.st_size)].append(entry)
                 except (OSError, PermissionError): continue
-        except (OSError, PermissionError, RuntimeError): pass
+        except (OSError, PermissionError): pass
 
     if directories:
-        unique_roots = {r for item in directories if (r := _resolve_and_verify_root(item))}
-        for root in unique_roots:
+        for root in {r for item in directories if (r := _resolve_and_verify_root(item))}:
             _scan_recursive(root)
-    return {size: files for size, files in temp_groups.items() if len(files) > 1}
+            
+    return {size: files for size, files in temp_map.items() if len(files) > 1}
 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
@@ -198,18 +186,16 @@ def _resolve_by_hashes(candidates: List[Path]) -> Dict[str, List[Path]]:
     partial_results = _refine_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     for subset in partial_results.values():
-        if len(subset) > 1:
-            final_groups.update(_refine_by_hash(subset, hash_file))
+        final_groups.update(_refine_by_hash(subset, hash_file))
     return final_groups
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Pipeline de verificación: usa hash completo directamente si el archivo es pequeño, sino filtra."""
     confirmed_groups: List[DuplicateGroup] = []
-    valid_paths = [p for p in paths if _is_valid_candidate(p)]
-    if len(valid_paths) < 2: return []
+    if len(paths) < 2: return []
     
-    results = _refine_by_hash(valid_paths, hash_file) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(valid_paths)
+    results = _refine_by_hash(paths, hash_file) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(paths)
             
     for digest, confirmed_paths in results.items():
         confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
