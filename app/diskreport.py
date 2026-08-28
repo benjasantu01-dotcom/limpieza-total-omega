@@ -84,7 +84,7 @@ class FileEntry:
 
     @property
     def size_mb(self) -> float:
-        """float: Retorna el peso del archivo convertido a MB."""
+        """Retorna el peso del archivo convertido a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -104,7 +104,7 @@ class ExtensionUsage:
 
     @property
     def size_mb(self) -> float:
-        """float: Retorna el peso total del grupo de archivos convertido a MB."""
+        """Retorna el peso total del grupo de archivos convertido a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -124,7 +124,7 @@ class FolderUsage:
 
     @property
     def size_mb(self) -> float:
-        """float: Retorna el peso total del directorio convertido a MB."""
+        """Retorna el peso total del directorio convertido a MB."""
         return _bytes_to_mb(self.size_bytes)
 
 
@@ -146,14 +146,14 @@ class DriveUsage:
 
     @property
     def used_percent(self) -> float:
-        """float: Calcula el porcentaje de ocupación de la unidad (0.0 a 100.0)."""
+        """Calcula el porcentaje de ocupación de la unidad (0.0 a 100.0)."""
         if self.total <= 0:
             return 0.0
         return round(self.used / self.total * 100, 1)
 
     @property
     def is_almost_full(self) -> bool:
-        """bool: Retorna True si el espacio libre es menor al 10% de la capacidad total."""
+        """Indica si el espacio libre es menor al 10% de la capacidad total."""
         return self.total > 0 and (self.free / self.total) < 0.10
 
 
@@ -190,8 +190,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         mount: Ruta o letra de unidad a consultar.
 
     Returns:
-        Objeto DriveUsage con las métricas solicitadas, o None si la ruta
-        es inválida, está protegida o el acceso es denegado.
+        Objeto DriveUsage con las métricas, o None si la ruta es inválida/protegida.
     """
     if not isinstance(mount, (str, os.PathLike)):
         return None
@@ -216,10 +215,10 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     Obtiene el uso de almacenamiento de una lista de unidades o detecta las locales.
 
     Args:
-        mounts: Iterable opcional de rutas a analizar. Si es None, detecta las unidades locales.
+        mounts: Iterable opcional de rutas a analizar. Si es None, detecta unidades locales.
 
     Returns:
-        Lista de objetos DriveUsage con la información recopilada del sistema.
+        Lista de objetos DriveUsage con la información del sistema.
     """
     if mounts is None:
         if os.name == "nt":
@@ -242,7 +241,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
-    """Helper interno: verifica si una entrada de directorio debe ser ignorada por sistema o permisos."""
+    """Helper interno: verifica si una entrada de directorio debe ser ignorada."""
     try:
         if any(c < ' ' for c in entry.name):
             return True
@@ -263,8 +262,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         directory: Ruta raíz desde donde iniciar la búsqueda.
         skip_protected: Si es True, evita entrar en rutas catalogadas como protegidas.
 
-    Yields:
-        Tuplas conteniendo la ruta absoluta del archivo (Path) y su tamaño en bytes (int).
+    Returns:
+        Generador de tuplas (ruta_absoluta, tamaño_en_bytes).
     """
     if not isinstance(directory, (str, Path, os.PathLike)) or not directory:
         return
@@ -421,7 +420,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
-    Recolección interna de métricas (tamaños, conteos, top files) en una sola pasada eficiente.
+    Recolección interna de métricas (tamaños, conteos, top files) en una pasada.
     """
     total_bytes: int = 0
     total_files: int = 0

@@ -186,8 +186,19 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el peso en bytes de una carpeta.
-    Utiliza un diccionario 'memo' para evitar re-escaneo de rutas ya calculadas.
+    Calcula el peso en bytes de un directorio mediante un recorrido recursivo.
+
+    Utiliza 'memo' (diccionario de ruta a tamaño) para cachear resultados de 
+    subdirectorios y optimizar el rendimiento. Se impone un límite de profundidad 
+    ('MAX_SCAN_DEPTH') para prevenir recursiones infinitas en estructuras cíclicas.
+    
+    Args:
+        root_dir: Ruta absoluta del directorio a sumar.
+        is_junction_fn: Función para identificar puntos de reparse (Junctions).
+        kernel32: Instancia de WinDLL para consultas de atributos a nivel SO.
+        memo: Caché de resultados previos para evitar redundancias de cálculo.
+        base_check_path: Ruta raíz permitida para validar límites de seguridad.
+        depth: Nivel actual de profundidad de la recursión.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0

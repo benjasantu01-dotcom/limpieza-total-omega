@@ -44,19 +44,21 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos
+# Umbrales críticos que definen el punto de saturación o riesgo
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
+# Factores de normalización inversa: convierten unidades físicas a un ratio [0, 1]
 _INV_JUNK: Final[float] = 1.0 / max(1e-9, _LIMIT_JUNK_MB)
 _INV_DUP: Final[float] = 1.0 / max(1e-9, _LIMIT_DUPLICATE_MB)
 _INV_STARTUP: Final[float] = 1.0 / max(1, _LIMIT_STARTUP_COUNT)
 _INV_RAM: Final[float] = 1.0 / max(1e-9, float(_LIMIT_RAM_PERCENT))
 _INV_DISK: Final[float] = 1.0 / max(1e-9, float(_LIMIT_DISK_PERCENT))
 
+# Niveles de severidad para generar sugerencias automáticas
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -145,28 +147,28 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud de limpieza: 1.0 (óptimo) hasta 0.0 (basura >= límite)."""
+    """Calcula la salud de limpieza basándose en MB acumulados; 1.0 implica 0 MB."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula la salud de seguridad: penaliza hallazgos (5%) y advertencias (25%)."""
+    """Calcula la salud de seguridad penalizando cada hallazgo detectado."""
     penalty = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud de memoria: normaliza el % disponible contra el umbral configurado."""
+    """Calcula la salud de memoria escalando el porcentaje disponible al umbral."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud de disco: normaliza el % libre contra el umbral de advertencia."""
+    """Calcula la salud de disco como ratio de espacio libre respecto al umbral."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud de duplicados: penaliza el exceso de peso redundante en disco."""
+    """Calcula la salud de duplicados penalizando el peso redundante detectado."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula la salud de arranque: reduce score proporcionalmente al número de apps al inicio."""
+    """Calcula la salud de arranque penalizando la sobrecarga de apps al inicio."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
