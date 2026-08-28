@@ -169,7 +169,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         line = line.strip()
         if not line: continue
         parts = [p.strip().strip("'\"") for p in line.split(",")]
-        if len(parts) >= 3:
+        # Validar estructura mínima de 3 campos y que no haya vacíos
+        if len(parts) >= 3 and all(parts[:3]):
             try:
                 name, pid_val, ws_val = parts[0], int(parts[1]), int(parts[2])
                 if ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
@@ -196,14 +197,17 @@ def read_snapshot() -> MemorySnapshot:
     """Obtiene un snapshot global de la memoria según el sistema operativo actual."""
     if os.name == "nt": 
         return _read_windows_snapshot()
-    if os.path.exists("/proc/meminfo") and os.access("/proc/meminfo", os.R_OK):
+    
+    proc_path = "/proc/meminfo"
+    if os.path.exists(proc_path) and os.access(proc_path, os.R_OK):
         try:
-            with open("/proc/meminfo", encoding="utf-8", errors="replace") as f:
-                content = f.read()
+            with open(proc_path, "r", encoding="utf-8") as f:
+                content = f.read(16384) # Leer solo lo necesario
                 if content:
                     return parse_linux_meminfo(content)
-        except (OSError, PermissionError, IOError): 
-            pass
+        except (OSError, PermissionError, IOError):
+            return MemorySnapshot(0, 0)
+            
     return MemorySnapshot(0, 0)
 
 _proc_cache_time: float = 0.0

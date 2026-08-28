@@ -424,24 +424,28 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise RuntimeError("Integridad comprometida: el hash no coincide con el registro.")
     if _is_file_locked(stored_file):
         raise IOError("El archivo en cuarentena está en uso y no puede restaurarse.")
+    
     destination = Path(quarantine_item.original_path).absolute()
     _check_path_syntax_integrity(destination)
     if is_protected_path(destination):
         raise UnsafePathError("Restauración denegada: destino protegido por sistema.")
     if destination.exists():
         raise FileExistsError(f"Error: el destino {destination} ya existe en el sistema.")
+    
+    parent = destination.parent
+    if not parent.exists():
+        parent.mkdir(parents=True, exist_ok=True)
+    if not is_safe_to_modify(parent) or not is_safe_to_modify(destination):
+        raise UnsafePathError("Restauración denegada: destino restringido o protegido.")
+        
     try:
-        parent = destination.parent
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
-        if not is_safe_to_modify(parent) or not is_safe_to_modify(destination):
-            raise UnsafePathError("Restauración denegada: destino restringido o protegido.")
         os.replace(str(stored_file), str(destination))
         if destination.is_symlink():
             destination.unlink()
             raise UnsafePathError("Restauración denegada: el destino es un enlace simbólico.")
     except (OSError, PermissionError) as e:
         raise RuntimeError(f"Fallo crítico durante la restauración: {e}")
+        
     del items_dict[item_id]
     save_manifest(list(items_dict.values()), base)
     return destination

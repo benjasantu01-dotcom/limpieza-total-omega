@@ -307,7 +307,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             continue
         try:
             target = _can_move_file(junk_file, dest_base)
-            if target:
+            if target and is_safe_to_modify(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)
                 shutil.move(str(junk_file.path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError) as e:
