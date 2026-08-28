@@ -555,40 +555,28 @@ def _call_gemini(
             content_type = res.getheader("Content-Type", "")
             if "application/json" not in content_type: return None
 
+            # Validar tamaño antes de leer
             length_header = res.getheader("Content-Length")
-            total_len = int(length_header) if length_header else 0
+            total_len = int(length_header) if length_header and length_header.isdigit() else 0
             if total_len > _MAX_RESPONSE_BYTES or total_len <= 0: return None
             
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
-            if not isinstance(raw_res, bytes) or len(raw_res) > _MAX_RESPONSE_BYTES: return None
+            if len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
-            try:
-                data = json.loads(raw_res.decode("utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                return None
-            
+            data = json.loads(raw_res.decode("utf-8"))
             if not isinstance(data, dict): return None
-            candidates = data.get("candidates")
-            if not isinstance(candidates, list) or not candidates: return None
             
-            first_candidate = candidates[0]
-            if not isinstance(first_candidate, dict): return None
-            
-            content = first_candidate.get("content")
-            if not isinstance(content, dict): return None
-            
-            parts = content.get("parts")
+            # Navegación segura por el JSON
+            parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
             if not isinstance(parts, list): return None
             
             raw_text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
             
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
-            
-            if not _ensure_safe_text(limpia_final): return None
-            
             final_text = _validate_response_length(limpia_final)
+            
             return final_text if _ensure_safe_text(final_text) else None
-    except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError):
+    except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
