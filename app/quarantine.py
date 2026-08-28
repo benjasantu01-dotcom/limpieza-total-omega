@@ -331,8 +331,11 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
         with tempfile.NamedTemporaryFile(dir=dest_dir, prefix=".tmp_q_", delete=False) as tf:
             temp_file_path = Path(tf.name)
         shutil.copy2(resolved_source, temp_file_path)
-        if temp_file_path.stat().st_size != file_size:
-            raise OSError("Corrupción durante copia: mismatch de tamaño.")
+        
+        # Validación de integridad post-escritura antes de confirmar
+        if not temp_file_path.exists() or temp_file_path.stat().st_size != file_size:
+            raise OSError("Falla de integridad: archivo copiado no coincide en tamaño.")
+            
         os.replace(temp_file_path, destination)
         file_hash = _get_sha256(destination)
         if not file_hash:

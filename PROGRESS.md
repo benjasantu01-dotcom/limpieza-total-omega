@@ -9,33 +9,33 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 219
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 34 | 3 | 3 | 3 | 39 |
+| 2026-08-26 | 32 | 3 | 3 | 3 | 37 |
 | 2026-08-27 | 158 | 12 | 22 | 7 | 151 |
-| 2026-08-28 | 36 | 0 | 5 | 2 | 29 |
+| 2026-08-28 | 38 | 0 | 5 | 3 | 30 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **47**
 - rendimiento: **42**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **41**
+- seguridad defensiva: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
-- `settings.py`: **21**
+- `scanner.py`: **22**
 - `assistant.py`: **21**
+- `quarantine.py`: **20**
+- `settings.py`: **20**
 - `browser.py`: **19**
-- `quarantine.py`: **19**
-- `memory.py`: **18**
+- `memory.py`: **19**
 - `duplicates.py`: **17**
 - `branding.py`: **17**
 - `diskreport.py`: **17**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T03:08:08` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez ante errores durante el movimiento de archivos al agregar una verificación de persistencia post-copia (`shutil.copy2` seguida de `stat()`) que detecta posibles fallos en el sistema de archivos o bloqueos de escritura antes de realizar el `unlink()` del origen.
+- `2026-08-28T03:07:23` **memory.py** (robustez ante casos límite): Mejoré la robustez de `read_snapshot` ante fallos de lectura de `/proc/meminfo` (como bloqueos de lectura o archivos incompletos/vacíos) mediante un manejo de excepciones más granular y un control de integridad básico en la cadena de texto, evitando retornos nulos ante condiciones de carrera en Linux.
 - `2026-08-28T02:55:53` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante datos externos no confiables añadiendo una verificación explícita en `compute_score` que garantiza que todos los pesos de `WEIGHTS` tengan su función de cálculo correspondiente en `_SCORER_MAP`, evitando un `KeyError` catastrófico en caso de mantenimiento incompleto.
 - `2026-08-28T02:54:53` **browser.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos y acceso a archivos en `_sum_directory_recursive` para manejar excepciones durante el escaneo de directorios con accesos denegados o bloqueados, evitando que la recursión falle prematuramente al encontrar un subdirectorio inaccesible.
 - `2026-08-28T02:45:48` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores inesperados en el contexto (como `inf` o `NaN` en métricas de punto flotante) y se garantizó la integridad del objeto `SystemContext` ante entradas mal formadas, evitando comportamientos indefinidos en los cálculos del asistente.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T02:15:18` **duplicates.py** (rendimiento): Optimicé el proceso de escaneo eliminando la resolución innecesaria (`resolve()`) dentro de los bucles críticos y mejorando el uso de `stat()` para descartar archivos únicos por tamaño antes de realizar cualquier operación de acceso a disco.
 - `2026-08-28T02:14:41` **browser.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante la validación de `perf_cache` al inicio de `directory_size` y la propagación eficiente de este diccionario a través de las funciones de detección, evitando la redundancia de cálculos en estructuras de directorios compartidas.
 - `2026-08-28T02:14:16` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando el cálculo aritmético dentro del loop mediante la pre-generación de segmentos, reduciendo la complejidad de las operaciones de renderizado en tiempo de ejecución.
-- `2026-08-28T02:05:35` **assistant.py** (rendimiento): Optimizé la búsqueda de intenciones en `local_answer` utilizando un conjunto (`set`) de tokens únicos para evitar iteraciones repetidas sobre palabras irrelevantes y reducir la complejidad del procesamiento de consultas naturales.
-- `2026-08-28T02:05:13` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante una actualización detallada de los docstrings de los métodos de la clase `StartupEntry` para aclarar el flujo de resolución de rutas (resolución vs. validación) y los criterios de seguridad aplicados en la normalización de comandos.

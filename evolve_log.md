@@ -552,3 +552,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T02:55:53` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez ante datos externos no confiables añadiendo una verificación explícita en `compute_score` que garantiza que todos los pesos de `WEIGHTS` tengan su función de cálculo correspondiente en `_SCORER_MAP`, evitando un `KeyError` catastrófico en caso de mantenimiento incompleto.
 - `2026-08-28T02:55:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T02:55:53` Corrida terminada. Total usado hoy: 72.
+- `2026-08-28T03:04:37` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-08-28T03:05:39` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-28T03:06:49` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `_worker_thread_logic` y el manejo de hilos para prevenir condiciones de carrera y fallos al intentar actualizar la UI durante el cierre de la aplicación, implementando una verificación explícita de existencia de la ventana antes de cualquier acción post-tarea.
+- `2026-08-28T03:07:23` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `read_snapshot` ante fallos de lectura de `/proc/meminfo` (como bloqueos de lectura o archivos incompletos/vacíos) mediante un manejo de excepciones más granular y un control de integridad básico en la cadena de texto, evitando retornos nulos ante condiciones de carrera en Linux.
+- `2026-08-28T03:07:48` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-28T03:08:08` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante errores durante el movimiento de archivos al agregar una verificación de persistencia post-copia (`shutil.copy2` seguida de `stat()`) que detecta posibles fallos en el sistema de archivos o bloqueos de escritura antes de realizar el `unlink()` del origen.
+- `2026-08-28T03:08:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T03:08:08` Corrida terminada. Total usado hoy: 76.

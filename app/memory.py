@@ -145,6 +145,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return MemorySnapshot(0, 0)
     vals: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
+    found_keys = 0
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
         key, rest = line.split(":", 1)
@@ -153,8 +154,9 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
             parts = rest.strip().split()
             if parts and parts[0].isdigit():
                 vals[k] = int(parts[0]) * 1024
+                found_keys += 1
     total = vals["MemTotal"]
-    if total <= 0: return MemorySnapshot(0, 0)
+    if total <= 0 or found_keys == 0: return MemorySnapshot(0, 0)
     available = vals["MemAvailable"] if vals["MemAvailable"] > 0 else vals["MemFree"]
     return MemorySnapshot(total=total, available=min(available, total), cached=max(0, vals["Cached"]))
 
@@ -197,7 +199,9 @@ def read_snapshot() -> MemorySnapshot:
     if os.path.exists("/proc/meminfo") and os.access("/proc/meminfo", os.R_OK):
         try:
             with open("/proc/meminfo", encoding="utf-8", errors="replace") as f:
-                return parse_linux_meminfo(f.read())
+                content = f.read()
+                if content:
+                    return parse_linux_meminfo(content)
         except (OSError, PermissionError, IOError): 
             pass
     return MemorySnapshot(0, 0)
