@@ -496,3 +496,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T01:34:53` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style) en las funciones `walk_files`, `largest_files`, `usage_by_extension`, `largest_folders`, `total_size` y `summarize`, facilitando la comprensión de los parámetros y comportamientos ante errores para futuros colaboradores.
 - `2026-08-28T01:34:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T01:34:53` Corrida terminada. Total usado hoy: 40.
+- `2026-08-28T01:43:07` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-28T01:43:34` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad del flujo de procesamiento en `_process_size_group` extrayendo la lógica de resolución de duplicados a un nuevo método privado `_resolve_by_hashes`, reduciendo la carga cognitiva y aclarando la distinción entre el uso de hashes parciales y completos.
+- `2026-08-28T01:43:58` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna agregando docstrings descriptivos a todas las funciones de cálculo (`score_*`) y se ha consolidado la lógica de normalización de métricas, haciendo explícito que cada una de ellas se mapea a una escala de salud estándar.
+- `2026-08-28T01:45:06` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._add_setting_switch
+- `2026-08-28T01:45:18` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y type hints las funciones internas críticas y las estructuras de datos, mejorando la mantenibilidad del módulo de diagnóstico de memoria.
+- `2026-08-28T01:45:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T01:45:18` Corrida terminada. Total usado hoy: 44.

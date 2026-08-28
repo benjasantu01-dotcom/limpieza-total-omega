@@ -74,6 +74,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
+    """Estructura de datos para la API Win32 GlobalMemoryStatusEx."""
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -95,20 +96,24 @@ class MemorySnapshot:
 
     @property
     def used(self) -> BytesValue:
+        """Calcula memoria utilizada restando la disponible de la total."""
         return max(0, self.total - self.available)
 
     @property
     def used_percent(self) -> float:
+        """Retorna el porcentaje de ocupación actual."""
         if self.total <= 0: return 0.0
         return round((self.used / self.total) * 100, 1)
 
     @property
     def available_percent(self) -> float:
+        """Retorna el porcentaje de disponibilidad actual."""
         if self.total <= 0: return 0.0
         return round((self.available / self.total) * 100, 1)
 
 @dataclass
 class ProcessMemory:
+    """Metadatos de consumo de memoria de un proceso individual."""
     name: str
     pid: int
     working_set: BytesValue
@@ -116,6 +121,7 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
+        """Convierte bytes de working set a MB para visualización."""
         return round(self.working_set / BYTES_IN_MB, 1)
 
 def format_bytes(num: Optional[int | float]) -> str:
@@ -128,6 +134,7 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=1)
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
+    """Prepara y cachea una instancia de la estructura Win32."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
@@ -248,7 +255,7 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si el PID corresponde a un proceso crítico del sistema."""
+    """Verifica si el PID corresponde a un proceso crítico del sistema o la propia app."""
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:

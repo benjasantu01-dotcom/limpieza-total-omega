@@ -148,25 +148,32 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula la salud de limpieza basado en el volumen de basura acumulado."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Calcula la salud de seguridad penalizando hallazgos y advertencias."""
     penalty = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Calcula la salud de memoria basándose en el porcentaje disponible."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Calcula la salud de disco según el espacio libre restante."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula la salud de duplicados comparando peso frente a umbral."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
+    """Calcula la salud del arranque penalizando el exceso de tareas iniciales."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
+    """Asigna una letra de calificación según el puntaje obtenido."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -184,6 +191,7 @@ _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] 
 }
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
+    """Procesa métricas brutas y genera un puntaje de salud normalizado 0-100."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incompatible."])
     
@@ -219,6 +227,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     )
 
 def summarize(result: HealthResult) -> List[str]:
+    """Genera una representación textual formateada para el reporte de salud."""
     if not isinstance(result, HealthResult): 
         return ["Error: Formato de informe inválido."]
     

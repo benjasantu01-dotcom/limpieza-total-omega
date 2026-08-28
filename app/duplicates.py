@@ -193,20 +193,23 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
+def _resolve_by_hashes(candidates: List[Path]) -> Dict[str, List[Path]]:
+    """Aplica refinamiento iterativo de hashes para confirmar duplicados reales."""
+    partial_results = _refine_by_hash(candidates, partial_hash)
+    final_groups: Dict[str, List[Path]] = {}
+    for subset in partial_results.values():
+        if len(subset) > 1:
+            final_groups.update(_refine_by_hash(subset, hash_file))
+    return final_groups
+
+
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Pipeline de verificación optimizado: solo calcula hash completo en grupos con colisiones parciales."""
+    """Pipeline de verificación: usa hash completo directamente si el archivo es pequeño, sino filtra."""
     confirmed_groups: List[DuplicateGroup] = []
     valid_paths = [p for p in paths if _is_valid_candidate(p)]
     if len(valid_paths) < 2: return []
     
-    if size <= PARTIAL_READ_BYTES:
-        results = _refine_by_hash(valid_paths, hash_file)
-    else:
-        partial_results = _refine_by_hash(valid_paths, partial_hash)
-        results = {}
-        for candidates in partial_results.values():
-            if len(candidates) > 1:
-                results.update(_refine_by_hash(candidates, hash_file))
+    results = _refine_by_hash(valid_paths, hash_file) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(valid_paths)
             
     for digest, confirmed_paths in results.items():
         confirmed_groups.append(DuplicateGroup(digest, size, sorted(confirmed_paths)))
