@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 208
+- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 118 | 9 | 16 | 7 | 102 |
-| 2026-08-28 | 113 | 9 | 16 | 8 | 106 |
+| 2026-08-27 | 117 | 7 | 15 | 7 | 102 |
+| 2026-08-28 | 115 | 9 | 16 | 9 | 107 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
+- legibilidad y documentación: **49**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **47**
 - robustez ante casos límite: **45**
-- rendimiento: **40**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
+- `scanner.py`: **22**
 - `assistant.py`: **20**
+- `memory.py`: **20**
 - `branding.py`: **19**
 - `diskreport.py`: **19**
-- `memory.py`: **19**
+- `quarantine.py`: **19**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
-- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `browser.py`: **17**
 - `main.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T10:45:53` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del módulo `quarantine.py` mediante la adición de docstrings técnicos detallados en funciones clave y la estandarización del manejo de rutas con `Path` para reducir errores de conversión, manteniendo la integridad operativa sin cambios funcionales.
+- `2026-08-28T10:45:10` **memory.py** (legibilidad y documentación): Mejoré la documentación de los tipos de datos en `MEMORYSTATUSEX` y `ProcessMemory` mediante *type hints* explícitos y comentarios aclaratorios para asegurar la correcta interpretación de las estructuras nativas y los datos procesados, facilitando el mantenimiento y evitando errores en la manipulación de punteros de `ctypes`.
 - `2026-08-28T10:34:54` **healthscore.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones de cálculo de métricas y a las constantes de umbral, explicando la lógica detrás de los factores de normalización.
 - `2026-08-28T10:34:44` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de trabajo en `duplicates.py` mediante type hints explícitos, docstrings enriquecidos y la separación semántica de la lógica de filtrado, asegurando que el propósito de cada paso del pipeline de duplicados sea evidente para un colaborador.
 - `2026-08-28T10:34:18` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` mediante la normalización de los docstrings (asegurando el uso de "Returns:" en lugar de variantes inconsistentes) y añadí tipado explícito más robusto para clarificar el manejo de las rutas, mejorando la legibilidad para futuros desarrolladores sin alterar la lógica de ejecución.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T10:03:14` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que las métricas recibidas estén validadas preventivamente y añadiendo un manejo de excepciones específico para evitar la propagación de fallos en el cálculo del puntaje.
 - `2026-08-28T09:55:08` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, integrando una validación de tipo `Path` más estricta antes de abrir los descriptores y asegurando que los recursos se liberen correctamente incluso ante fallos de lectura, además de prevenir errores de desreferenciación en `hash_file` con un chequeo adicional.
 - `2026-08-28T09:54:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros con `isinstance` y capturando excepciones de sistema de forma más granular para evitar errores en tiempo de ejecución al interactuar con rutas inaccesibles o mal formadas.
-- `2026-08-28T09:53:30` **branding.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y segura mediante `is_protected_path` en la función `save_logo_svg` para prevenir el uso de rutas no autorizadas, reemplazando la lógica de validación parcial por un chequeo explícito, y se añadieron guardas de tipo y capturas de excepciones específicas en funciones críticas de renderizado para evitar fallos de interfaz ante datos inesperados.
-- `2026-08-28T09:46:02` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez del método `ingest` en `SystemContext` y `_validate_and_assign` mediante validaciones de tipo más estrictas y manejo explícito de errores, asegurando que los datos inyectados no contaminen el estado interno con valores malformados o tipos inesperados.

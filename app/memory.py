@@ -74,17 +74,17 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura de datos para la API Win32 GlobalMemoryStatusEx."""
+    """Estructura Win32 para GlobalMemoryStatusEx; usa c_ulonglong para valores de 64 bits."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),
-        ("dwMemoryLoad", ctypes.c_ulong),
-        ("ullTotalPhys", ctypes.c_ulonglong),
-        ("ullAvailPhys", ctypes.c_ulonglong),
-        ("ullTotalPageFile", ctypes.c_ulonglong),
-        ("ullAvailPageFile", ctypes.c_ulonglong),
-        ("ullTotalVirtual", ctypes.c_ulonglong),
-        ("ullAvailVirtual", ctypes.c_ulonglong),
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong),
+        ("dwLength", ctypes.c_ulong),              # Tamaño de la estructura en bytes
+        ("dwMemoryLoad", ctypes.c_ulong),          # Porcentaje de memoria en uso
+        ("ullTotalPhys", ctypes.c_ulonglong),      # RAM física total
+        ("ullAvailPhys", ctypes.c_ulonglong),      # RAM física disponible
+        ("ullTotalPageFile", ctypes.c_ulonglong),  # Tamaño total del archivo de paginación
+        ("ullAvailPageFile", ctypes.c_ulonglong),  # Espacio libre en archivo de paginación
+        ("ullTotalVirtual", ctypes.c_ulonglong),   # Tamaño del espacio virtual total
+        ("ullAvailVirtual", ctypes.c_ulonglong),   # Espacio virtual disponible
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Reservado
     ]
 
 @dataclass(frozen=True)
@@ -114,14 +114,14 @@ class MemorySnapshot:
 @dataclass
 class ProcessMemory:
     """Metadatos de consumo de memoria de un proceso individual."""
-    name: str
-    pid: int
-    working_set: BytesValue
+    name: str              # Nombre ejecutable
+    pid: int               # Identificador único del proceso
+    working_set: BytesValue # RAM física residente (bytes)
     extra: Dict[str, str] = field(default_factory=dict)
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Convierte bytes de working set a MB para visualización."""
+        """Retorna el tamaño del working set en MB con un decimal de precisión."""
         return round(self.working_set / BYTES_IN_MB, 1)
 
 def format_bytes(num: Optional[int | float]) -> str:
@@ -134,7 +134,7 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=1)
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Prepara y cachea una instancia de la estructura Win32."""
+    """Prepara y cachea una instancia de la estructura Win32 inicializada."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
