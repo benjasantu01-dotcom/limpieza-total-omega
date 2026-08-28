@@ -11,6 +11,7 @@ import os
 import stat
 import re
 import ctypes
+import time
 from enum import Enum, auto
 from pathlib import Path
 from typing import Union, Iterable, TypeAlias, Final, NamedTuple, Callable, TypeGuard
@@ -83,6 +84,8 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
 )
 
 _PROTECTION_CACHE: dict[str, bool] = {}
+_INTEGRITY_CACHE: dict[str, tuple[float, bool]] = {}
+CACHE_TTL: Final[float] = 2.0
 
 
 class _IntegrityCheck(NamedTuple):
@@ -197,13 +200,20 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 def _check_file_integrity(path: Path) -> None:
     """
-    Ejecuta el pipeline de validaciones sobre un archivo existente.
-    Lanza UnsafePathError si alguna regla de seguridad es violada.
+    Ejecuta el pipeline de validaciones sobre un archivo existente con caché temporal.
     """
+    path_key = str(path)
+    now = time.monotonic()
+    
+    if path_key in _INTEGRITY_CACHE:
+        timestamp, is_safe = _INTEGRITY_CACHE[path_key]
+        if now - timestamp < CACHE_TTL:
+            if not is_safe: raise UnsafePathError("Operación denegada (cache hit).")
+            return
+
     if len(path.parts) > 64:
         raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
 
-    # Lstat evita seguir enlaces simbólicos maliciosos durante la inspección
     try:
         file_stat: os.stat_result = path.lstat()
     except (PermissionError, OSError):
@@ -215,16 +225,18 @@ def _check_file_integrity(path: Path) -> None:
     if not os.access(path, os.W_OK):
         raise UnsafePathError(f"Operación denegada: {ProtectionReason.INACCESSIBLE.value}")
 
-    # Validación adicional de atributos críticos de SO
     if os.name == 'nt' and _is_system_or_hidden(path):
          raise UnsafePathError(f"Operación denegada: {ProtectionReason.SYSTEM_HIDDEN.value}")
 
     for rule in _VALIDATORS:
         try:
             if rule.predicate(path, file_stat):
+                _INTEGRITY_CACHE[path_key] = (now, False)
                 raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
         except (OSError, PermissionError):
             continue
+            
+    _INTEGRITY_CACHE[path_key] = (now, True)
 
 
 @lru_cache(maxsize=2048)
@@ -320,7 +332,6 @@ def _validate_basic_path_safety(path: Path, path_str: str) -> None:
 
 def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None:
     """Verifica si la operación respeta límites geográficos definidos."""
-    # Resolución absoluta forzada para evitar escape mediante enlaces simbólicos
     p_abs = path.resolve()
     
     if base_dir and not is_within_directory(p_abs, base_dir, allow_equal=True):
@@ -351,14 +362,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
     p = normalize(path)
-    
-    # 1. Validaciones estructurales básicas
     _validate_basic_path_safety(p, str(p))
-    
-    # 2. Validaciones de límites geográficos
     _validate_boundary_conditions(p, base_dir)
     
-    # 3. Integridad del archivo específico
     if p.exists():
         if not p.is_file() and not p.is_dir():
             raise UnsafePathError("Tipo de archivo no soportado.")

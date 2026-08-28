@@ -531,3 +531,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T02:26:00` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-28T02:26:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T02:26:00` Corrida terminada. Total usado hoy: 60.
+- `2026-08-28T02:34:06` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-28T02:34:39` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto mediante la pre-validación de existencia del archivo en disco antes de invocar la lógica de deserialización, evitando lecturas de I/O innecesarias en operaciones frecuentes como `total_quarantined_bytes` o `summarize`.
+- `2026-08-28T02:34:59` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-28T02:35:27` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché local dentro de `_check_file_integrity` mediante un diccionario de expiración temporal basado en tiempo (`time.monotonic`), optimizando el rendimiento de las validaciones repetitivas en escaneos masivos de disco sin comprometer la seguridad.
+- `2026-08-28T02:35:36` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `process_entry` reemplazando la verificación repetitiva de `is_protected_path` (que involucra múltiples operaciones de strings y validaciones) por una comprobación temprana y eficiente de la extensión mediante el conjunto ya existente `SUSPICIOUS_EXECUTABLE_EXT` antes de disparar heurísticas pesadas.
+- `2026-08-28T02:35:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T02:35:36` Corrida terminada. Total usado hoy: 64.

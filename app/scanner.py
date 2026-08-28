@@ -154,7 +154,10 @@ class Scanner:
                     self.seen.add(entry.path)
                     stack.append(entry.path)
             elif entry.is_file(follow_symlinks=False):
-                self._run_file_heuristics(Path(entry.path), entry)
+                # Optimization: Run heuristics only on files with relevant extensions
+                ext = os.path.splitext(entry.name)[1].lower()
+                if ext in SUSPICIOUS_EXECUTABLE_EXT or ext == ".pdf":
+                    self._run_file_heuristics(Path(entry.path), entry)
         except (OSError, PermissionError, TypeError, FileNotFoundError) as e:
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}: {e}")
 

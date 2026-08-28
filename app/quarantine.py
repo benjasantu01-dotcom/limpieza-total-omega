@@ -285,6 +285,11 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     base_path = quarantine_dir(base)
     if force_reload:
         _load_manifest_internal.cache_clear()
+    
+    # Optimización: Check de existencia rápido antes de procesar caché o disco
+    if not _manifest_path(base_path).exists():
+        return []
+        
     return list(_load_manifest_internal(str(base_path)).values())
 
 
@@ -509,17 +514,17 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el peso total ocupado por los archivos en cuarentena."""
-    manifest = _load_manifest_internal(str(quarantine_dir(base)))
-    return sum(item.size_bytes for item in manifest.values())
+    manifest = load_manifest(base)
+    return sum(item.size_bytes for item in manifest)
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
     """Genera un reporte legible de los ítems en cuarentena para la interfaz de usuario."""
-    items_dict = _load_manifest_internal(str(quarantine_dir(base)))
-    if not items_dict:
+    items = load_manifest(base)
+    if not items:
         return ["La cuarentena está vacía."]
     
-    items = sorted(items_dict.values(), key=lambda i: i.quarantined_at, reverse=True)
+    items = sorted(items, key=lambda i: i.quarantined_at, reverse=True)
     total_mb = sum(item.size_mb for item in items)
     
     lines = [f"{len(items)} archivo(s) en cuarentena — {round(total_mb, 2)} MB", ""]
