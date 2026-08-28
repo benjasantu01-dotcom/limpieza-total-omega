@@ -141,7 +141,6 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        # Validación extra: asegurarse que el path sea absoluto si es posible
         if not os.path.isabs(entry_path):
             return False
         attrs: int = kernel32.GetFileAttributesW(entry_path)
@@ -188,27 +187,24 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el peso en bytes de una carpeta.
-    Utiliza iteración sobre `os.scandir` para mantener la eficiencia de E/S.
+    Utiliza un diccionario 'memo' para evitar re-escaneo de rutas ya calculadas.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
 
-    try:
-        root_path = Path(root_dir).resolve()
-        if not root_path.exists() or not is_safe_to_modify(root_path):
-            return 0
-    except (OSError, RuntimeError):
-        return 0
-    
-    if base_check_path and not _is_path_inside_base(root_path, base_check_path):
-        return 0
-
+    root_path = Path(root_dir).resolve()
     root_abs = str(root_path)
+
     if root_abs in memo:
         return memo[root_abs]
 
-    total: int = 0
     try:
+        if not root_path.exists() or not is_safe_to_modify(root_path):
+            return 0
+        if base_check_path and not _is_path_inside_base(root_path, base_check_path):
+            return 0
+
+        total: int = 0
         with os.scandir(root_dir) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):

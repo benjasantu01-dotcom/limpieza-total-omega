@@ -281,11 +281,6 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     rgb_stops = [_hex_to_rgb(s) for s in stops]
     tramos = len(stops) - 1
     
-    # Pre-calculo de deltas por tramo para evitar operaciones dentro del loop
-    deltas = [( (rgb_stops[i+1][0] - rgb_stops[i][0]) / (n/tramos),
-                (rgb_stops[i+1][1] - rgb_stops[i][1]) / (n/tramos),
-                (rgb_stops[i+1][2] - rgb_stops[i][2]) / (n/tramos) ) for i in range(tramos)]
-
     for i in range(1, n):
         pos = (i * tramos) / (n - 1)
         idx = min(int(pos), tramos - 1)

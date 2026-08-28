@@ -392,8 +392,7 @@ def explain_area(area: Any) -> str:
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa el contexto actual contra los criterios de salud de forma eficiente."""
-    if not isinstance(ctx, SystemContext) or not ctx.analyzed:
-        return []
+    if not ctx.analyzed: return []
     
     problemas = []
     for crit in _CRITERIOS_SALUD:
@@ -491,7 +490,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
 
-    # Optimizamos el loop usando un set de tokens únicos procesados una sola vez
     for token in set(_TOKEN_REGEX.findall(q_sanitized)):
         intent = _KEYWORD_MAP.get(token)
         if intent:
@@ -555,7 +553,6 @@ def _call_gemini(
             content_type = res.getheader("Content-Type", "")
             if "application/json" not in content_type: return None
 
-            # Validar tamaño antes de leer
             length_header = res.getheader("Content-Length")
             total_len = int(length_header) if length_header and length_header.isdigit() else 0
             if total_len > _MAX_RESPONSE_BYTES or total_len <= 0: return None
@@ -566,7 +563,6 @@ def _call_gemini(
             data = json.loads(raw_res.decode("utf-8"))
             if not isinstance(data, dict): return None
             
-            # Navegación segura por el JSON
             parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
             if not isinstance(parts, list): return None
             
