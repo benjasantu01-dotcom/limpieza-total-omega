@@ -1531,3 +1531,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T12:37:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-28T12:37:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T12:37:49` Corrida terminada. Total usado hoy: 300.
+- `2026-08-28T12:45:45` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-28T12:46:19` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado `quarantine_file` para evitar una condición de carrera ("TOCTOU") verificando la integridad del archivo y su estado de bloqueo justo antes de la operación de `unlink` en la fuente, garantizando que el archivo eliminado es efectivamente el que se copió al sandbox.
+- `2026-08-28T12:46:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-28T12:47:05` Tests FALLARON:
+```
+ssertionError: assert True is False
+E            +  where True = <function is_safe_to_modify at 0x7f63dc371760>(12345)
+E            +    where <function is_safe_to_modify at 0x7f63dc371760> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+
+evolve/tests/test_integrity.py:217: AssertionError
+=============================== warnings summary ===============================
+app/safety.py:274
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:274: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raises - AssertionError: assert True is False
+ +  where True = <function is_safe_to_modify at 0x7f63dc371760>(12345)
+ +    where <function is_safe_to_modify at 0x7f63dc371760> = <module 'safety' from '/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py'>.is_safe_to_modify
+1 failed, 298 passed, 5 warnings in 1.22s
+
+```
+- `2026-08-28T12:47:05` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_validate_boundary_conditions` eliminando el uso de `pathlib.Path.cwd()` (que es inestable bajo ciertos contextos de ejecución en Windows) en favor de una validación basada en el *drive* de la ruta normalizada, previniendo errores de alcance en operaciones de archivos fuera de la unidad actual.
+- `2026-08-28T12:47:13` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-28T12:47:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T12:47:13` Corrida terminada. Total usado hoy: 304.

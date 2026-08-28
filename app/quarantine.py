@@ -420,10 +420,15 @@ def quarantine_file(
         items_dict[item_id] = quarantine_item
         save_manifest(list(items_dict.values()), base)
         
-        try:
-            source_path.unlink()
-        except OSError as e:
-            raise RuntimeError(f"Aislamiento exitoso, pero el origen no pudo eliminarse: {e}")
+        # Verificación post-aislamiento para evitar TOCTOU antes de eliminar origen
+        if destination.exists() and _get_sha256(destination) == file_hash and not _is_file_locked(source_path):
+            try:
+                source_path.unlink()
+            except OSError as e:
+                raise RuntimeError(f"Aislamiento exitoso, pero el origen no pudo eliminarse: {e}")
+        else:
+            raise RuntimeError("La integridad post-aislamiento falló; el origen no fue eliminado por seguridad.")
+            
         return quarantine_item
     except Exception:
         if destination.exists():
