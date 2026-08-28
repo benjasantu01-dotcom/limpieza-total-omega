@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 95 | 7 | 13 | 6 | 95 |
-| 2026-08-28 | 135 | 9 | 20 | 9 | 115 |
+| 2026-08-27 | 95 | 7 | 13 | 6 | 91 |
+| 2026-08-28 | 137 | 9 | 20 | 9 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **51**
 - rendimiento: **47**
-- robustez ante casos límite: **44**
-- seguridad defensiva: **35**
+- robustez ante casos límite: **45**
+- seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **22**
 - `scanner.py`: **22**
-- `assistant.py`: **21**
 - `memory.py`: **21**
 - `branding.py`: **20**
 - `diskreport.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **19**
 - `duplicates.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T12:16:57` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` al validar el tamaño y formato del payload antes de su transmisión y al asegurar que la respuesta recibida se someta estrictamente a los filtros de seguridad `_ensure_safe_text` antes de ser considerada válida, evitando procesar respuestas potencialmente inyectadas o malformadas.
+- `2026-08-28T12:16:06` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una verificación de integridad post-escritura: ahora, tras realizar el `os.replace`, se revalida el archivo recién escrito para asegurar que no se haya corrompido durante la operación de I/O, abortando y restaurando el estado previo si el archivo resultante no es legible o válido.
 - `2026-08-28T12:06:40` **safety.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de permiso en `_is_file_in_use` y se reforzó `_check_file_integrity` para manejar situaciones donde el sistema operativo bloquea la lectura de atributos (ej. procesos en uso exclusivo o errores de I/O) evitando que la aplicación aborte ante archivos inaccesibles.
 - `2026-08-28T12:06:00` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_atomic_isolate_file` añadiendo una verificación explícita de `OSError` al intentar realizar `os.replace` y garantizando que, ante cualquier fallo de E/S durante la operación atómica, se realice una limpieza exhaustiva del archivo temporal, evitando dejar "huérfanos" en el directorio de cuarentena que podrían corromper futuras ejecuciones.
 - `2026-08-28T11:57:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus ayudantes ante casos límite, implementando una clausura segura (`finally`) más rigurosa para el manejo de recursos y una validación de rutas que evita errores ante ejecutables que terminan súbitamente o rutas con caracteres no estándar, asegurando que la app no falle ante procesos efímeros o protegidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T11:24:42` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución constante de PowerShell por una lógica de caché basada en tiempo con `lru_cache` para el parsing y una validación de `subprocess` más eficiente, evitando llamadas innecesarias al sistema cada vez que se refresca la interfaz.
 - `2026-08-28T11:16:12` **main.py** (rendimiento): Optimicé el rendimiento de la interfaz implementando un filtrado inteligente en `on_scan_junk` y `on_stage` utilizando generadores y list comprehensions que evitan procesar múltiples veces la misma estructura de datos, además de añadir validaciones tempranas en los métodos de callback para reducir la carga de trabajo en el hilo principal y evitar ciclos de actualización innecesarios cuando los datos no han variado.
 - `2026-08-28T11:14:56` **duplicates.py** (rendimiento): Optimizé el pipeline de hashing eliminando lecturas redundantes en `hash_file` al evitar re-abrir el archivo si el tamaño ya es conocido, y mejoré la eficiencia de `_process_size_group` al cachear `stat` para evitar llamadas repetidas al sistema de archivos durante la comparación de duplicados.
-- `2026-08-28T11:14:32` **diskreport.py** (rendimiento): Se optimizó la función `walk_files` evitando la creación innecesaria de objetos `Path` mediante el uso de `os.path.join` y `os.fspath`, lo cual reduce drásticamente la presión sobre el recolector de basura y mejora la velocidad en recorridos de discos grandes al evitar la instanciación repetitiva de clases.
-- `2026-08-28T11:05:31` **branding.py** (rendimiento): Se optimizó el acceso a constantes de color eliminando múltiples llamadas a `PALETTE.get()` y `MappingProxyType` dentro de las funciones de dibujo, mediante el uso de referencias directas a las constantes pre-resueltas, reduciendo el overhead en cada ejecución de las rutinas de renderizado.

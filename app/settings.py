@@ -279,7 +279,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste la configuración en disco mediante reemplazo atómico de archivo."""
+    """Persiste la configuración en disco mediante reemplazo atómico y validación de integridad."""
     if not isinstance(values, dict): return None
     cleaned_settings = validate(values)
     
@@ -306,6 +306,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             f.flush()
             os.fsync(f.fileno())
         os.replace(temp_path, ruta)
+        
+        # Validación de integridad post-escritura
+        try:
+            with open(ruta, "r", encoding="utf-8") as f:
+                json.load(f)
+        except (json.JSONDecodeError, OSError):
+            if ruta.exists(): os.remove(ruta)
+            return None
+            
         _read_disk.cache_clear()
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):

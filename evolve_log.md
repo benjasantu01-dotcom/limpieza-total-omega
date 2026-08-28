@@ -1510,3 +1510,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T12:06:40` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra errores de permiso en `_is_file_in_use` y se reforzó `_check_file_integrity` para manejar situaciones donde el sistema operativo bloquea la lectura de atributos (ej. procesos en uso exclusivo o errores de I/O) evitando que la aplicación aborte ante archivos inaccesibles.
 - `2026-08-28T12:06:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T12:06:40` Corrida terminada. Total usado hoy: 288.
+- `2026-08-28T12:15:11` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-28T12:15:37` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-08-28T12:16:06` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` implementando una verificación de integridad post-escritura: ahora, tras realizar el `os.replace`, se revalida el archivo recién escrito para asegurar que no se haya corrompido durante la operación de I/O, abortando y restaurando el estado previo si el archivo resultante no es legible o válido.
+- `2026-08-28T12:16:34` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-28T12:16:57` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_call_gemini` al validar el tamaño y formato del payload antes de su transmisión y al asegurar que la respuesta recibida se someta estrictamente a los filtros de seguridad `_ensure_safe_text` antes de ser considerada válida, evitando procesar respuestas potencialmente inyectadas o malformadas.
+- `2026-08-28T12:16:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T12:16:57` Corrida terminada. Total usado hoy: 292.
