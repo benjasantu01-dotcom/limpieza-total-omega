@@ -158,37 +158,34 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 
+def _passes_system_checks(src: Path, dest: Path) -> bool:
+    """Valida que los archivos no posean atributos de sistema críticos en Windows."""
+    if os.name != "nt": return True
+    stat = src.stat()
+    # Bloquea archivos con atributos de sistema (0x4), ocultos (0x2) o solo lectura (0x1)
+    return not (stat.st_file_attributes & 0x7)
+
+
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Valida la viabilidad de una operación de I/O (mover/borrar) verificando 
-    que no se violen políticas de seguridad, permisos de sistema o jerarquías 
-    de archivos críticas.
+    Valida la viabilidad de una operación de I/O mediante chequeos jerárquicos
+    y de permisos, asegurando que no se comprometa la integridad del sistema.
     """
     try:
         if not src or not dest or not src.exists() or not src.is_file(): return False
-        if not is_safe_to_modify(src) or not is_safe_to_modify(dest):
-            return False
-        if is_protected_path(src) or is_protected_path(dest):
-            return False
         
-        # Verificar permisos de escritura del sistema de archivos
+        # Validar fronteras de seguridad y jerarquía
+        if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
+        if is_protected_path(src) or is_protected_path(dest): return False
+        if _is_recursive_violation(src, dest): return False
+        
+        # Verificar permisos de escritura y compatibilidad de unidad
         if not os.access(src, os.W_OK) or not os.access(dest.parent if dest.is_file() else dest, os.W_OK):
             return False
-            
-        if _is_recursive_violation(src, dest):
-            return False
-            
         if not src.anchor or not dest.anchor or src.anchor != dest.anchor:
             return False
-        
-        stat = src.stat()
-        if stat.st_size == 0: return False
-        
-        # Bloquea archivos con atributos de sistema (0x4), ocultos (0x2) o solo lectura (0x1)
-        if os.name == "nt" and (stat.st_file_attributes & 0x7): 
-            return False
-        
-        return not _is_file_locked(src)
+            
+        return src.stat().st_size > 0 and _passes_system_checks(src, dest) and not _is_file_locked(src)
     except (OSError, RuntimeError, AttributeError):
         return False
 
@@ -211,7 +208,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     Ignora junctions y carpetas en SYSTEM_FOLDER_BLOCKLIST para mantener la seguridad.
     """
     try:
-        # Validación defensiva extra sobre la ruta resuelta antes de escanear
         abs_path = current_dir.resolve()
         if is_protected_path(abs_path):
             return
@@ -269,7 +265,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if not src_path.exists() or not src_path.is_file() or not dest_base.is_dir(): 
             return None
         
-        # Validar que no se intente cruzar fronteras de unidad (mecanismo de shutil.move)
         if not src_path.anchor or not dest_base.anchor or src_path.anchor != dest_base.anchor:
             return None
 
@@ -296,7 +291,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        # Validación de seguridad reforzada: debe existir, ser directorio y ser seguro
         if not dest_base.is_dir() or not is_safe_to_modify(dest_base) or is_protected_path(dest_base): 
             return None
     except (OSError, PermissionError, RuntimeError):
@@ -325,9 +319,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
         
     Returns:
         int: Cantidad de archivos eliminados con éxito.
-        
-    Raises:
-        Este método maneja internamente las excepciones de I/O para asegurar la continuidad del bucle.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
@@ -342,7 +333,6 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            # Requisito de seguridad: solo operar sobre archivos, no symlinks/directories
             if not item.is_file() or item.is_symlink():
                 continue
             
@@ -350,12 +340,9 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not resolved_item.is_relative_to(dest):
                 continue
             
-            # Chequeo preventivo de atributos Windows (Read-only/System/Hidden)
-            stat = item.stat()
-            if os.name == "nt" and (stat.st_file_attributes & 0x7):
+            if not _passes_system_checks(item, dest):
                 continue
 
-            # Verificación doble de seguridad y bloqueo antes de unlink
             if is_safe_to_modify(item) and not is_protected_path(item) and not _is_file_locked(item):
                 ensure_safe_to_modify(item)
                 item.unlink()
