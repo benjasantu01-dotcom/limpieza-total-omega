@@ -1487,3 +1487,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T11:37:09` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-08-28T11:37:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T11:37:09` Corrida terminada. Total usado hoy: 276.
+- `2026-08-28T11:44:37` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-28T11:45:18` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_call_gemini` ante respuestas malformadas o inesperadas de la API, asegurando que cualquier entrada parcial de JSON o estructura de lista no esperada no provoque una excepción que corte la ejecución del asistente, devolviendo siempre una respuesta segura.
+- `2026-08-28T11:45:54` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se mejora la robustez de `save_logo_svg` y las funciones de dibujo del canvas agregando validaciones de tipo explícitas y manejo de casos donde los argumentos de entrada pueden ser nulos o malformados, evitando posibles excepciones de tiempo de ejecución en la UI.
+- `2026-08-28T11:45:54` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-28T11:46:22` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-28T11:46:34` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se introdujo una verificación explícita para evitar que `walk_files` y las funciones derivadas intenten procesar rutas cuya resolución resulte en un `PermissionError` o errores de sistema persistentes al iterar, reforzando la robustez ante casos de límites en permisos de acceso o estructuras profundas inaccesibles.
+- `2026-08-28T11:46:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T11:46:34` Corrida terminada. Total usado hoy: 280.

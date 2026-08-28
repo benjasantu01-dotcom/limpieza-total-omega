@@ -347,7 +347,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         
     try:
         path_obj = Path(destination).resolve()
-        # Validación estricta usando las reglas de seguridad importadas
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         
@@ -445,13 +444,6 @@ def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
               fill: Optional[HexColor] = None) -> None:
     """
     Dibuja un indicador circular (donut) de progreso.
-    
-    Args:
-        canvas: Objeto con método 'create_arc' (ej: tk.Canvas).
-        percent: Valor 0-100.
-        thickness: Grosor en píxeles.
-        track: Color de fondo (opcional).
-        fill: Color de progreso (opcional, por defecto dinámico según score_color).
     """
     if canvas is None or not hasattr(canvas, "create_arc") or not isinstance(size, int): 
         return

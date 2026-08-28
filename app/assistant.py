@@ -545,7 +545,6 @@ def _call_gemini(
         prompt_full = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_c}\n\nPregunta del usuario: {safe_q}"
         if len(prompt_full) > _MAX_PROMPT_LIMIT: return None
         
-        # Estructura de datos validada antes de codificar
         data_packet = {"contents": [{"parts": [{"text": prompt_full}]}]}
         payload = json.dumps(data_packet).encode("utf-8")
         
@@ -560,21 +559,17 @@ def _call_gemini(
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
             
-            content_type = res.getheader("Content-Type", "")
-            if "application/json" not in content_type: return None
-
-            length_header = res.getheader("Content-Length")
-            total_len = int(length_header) if length_header and length_header.isdigit() else 0
-            if total_len > _MAX_RESPONSE_BYTES or total_len <= 0: return None
-            
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
             data = json.loads(raw_res.decode("utf-8"))
             if not isinstance(data, dict): return None
             
-            parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [])
-            if not isinstance(parts, list): return None
+            candidates = data.get("candidates")
+            if not isinstance(candidates, list) or not candidates: return None
+            
+            parts = candidates[0].get("content", {}).get("parts")
+            if not isinstance(parts, list) or not parts: return None
             
             raw_text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
             

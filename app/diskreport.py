@@ -265,15 +265,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Returns:
         Generador de tuplas (ruta_absoluta, tamaño_en_bytes).
     """
-    root_path_str = os.fspath(directory)
-    if not root_path_str:
-        return
-
     try:
-        root_path = Path(root_path_str).resolve()
-        if not root_path.exists() or not root_path.is_dir() or (skip_protected and is_protected_path(root_path)):
+        root_path = Path(os.fspath(directory)).resolve(strict=True)
+        if skip_protected and is_protected_path(root_path):
             return
-    except (OSError, RuntimeError, TypeError, PermissionError):
+    except (OSError, RuntimeError, PermissionError):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
@@ -369,8 +365,8 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     try:
-        p_base = Path(os.fspath(directory)).resolve()
-        if not p_base.exists() or not p_base.is_dir() or (skip_protected and is_protected_path(p_base)):
+        p_base = Path(os.fspath(directory)).resolve(strict=True)
+        if skip_protected and is_protected_path(p_base):
             return []
             
         sums: Dict[str, int] = defaultdict(int)
@@ -459,9 +455,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         return ["Error: Ruta no proporcionada o formato inválido."]
 
     try:
-        p_input = Path(os.fspath(directory)).resolve()
-        if not p_input.exists():
-            return [f"Error: Ruta no existente: {p_input}"]
+        p_input = Path(os.fspath(directory)).resolve(strict=True)
         if not p_input.is_dir():
             return [f"Error: Ruta no es un directorio: {p_input}"]
         
