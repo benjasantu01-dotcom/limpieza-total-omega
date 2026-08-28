@@ -591,3 +591,14 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-28T14:11:24` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-28T14:11:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T14:11:24` Corrida terminada. Total usado hoy: 336.
+- `2026-08-28T14:17:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-28T14:18:31` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-28T14:19:19` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez en `_call_gemini` al añadir validación explícita de `candidates` y `content` para evitar `AttributeError` o `KeyError` ante respuestas de API malformadas, además de asegurar que `_parse_config` maneje de forma segura configuraciones parciales.
+- `2026-08-28T14:20:19` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-28T14:21:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-28T14:21:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-28T14:22:07` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-28T14:22:40` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `directory_size` y `_is_valid_cache_path` mediante la validación explícita de `Path` antes de operar, previniendo excepciones innecesarias ante entradas vacías, nulas o rutas malformadas.
+- `2026-08-28T14:22:53` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de análisis (`largest_files`, `usage_by_extension`, `largest_folders`) añadiendo validación explícita de `Path` mediante `resolve(strict=True)` dentro de un bloque `try-except` para asegurar que las rutas sean accesibles antes de intentar procesarlas, evitando que errores de sistema en la inicialización pasen desapercibidos o generen resultados vacíos silenciosos.
+- `2026-08-28T14:22:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T14:22:53` Corrida terminada. Total usado hoy: 340.

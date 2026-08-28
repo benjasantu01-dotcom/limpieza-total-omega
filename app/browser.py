@@ -235,12 +235,16 @@ def directory_size(path: Union[str, Path, None]) -> int:
     if not path:
         return 0
     try:
-        p_obj = Path(path).resolve(strict=True)
-        if not p_obj.is_dir() or os.path.ismount(str(p_obj)) or is_protected_path(p_obj) or not is_safe_to_modify(p_obj):
+        p_obj = Path(path)
+        if not p_obj.exists():
+            return 0
+        
+        p_res = p_obj.resolve(strict=True)
+        if not p_res.is_dir() or os.path.ismount(str(p_res)) or is_protected_path(p_res) or not is_safe_to_modify(p_res):
             return 0
         
         is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
-        return _sum_directory_recursive(str(p_obj), is_junction, _get_kernel32(), {}, p_obj)
+        return _sum_directory_recursive(str(p_res), is_junction, _get_kernel32(), {}, p_res)
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -250,7 +254,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     Valida la integridad y seguridad de una ruta de caché antes de iniciar 
     el escaneo recursivo, verificando que no sea un punto de reparse o zona protegida.
     """
-    if not candidate:
+    if not candidate or not isinstance(candidate, Path):
         return False
     try:
         if not candidate.exists():

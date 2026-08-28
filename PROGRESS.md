@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 215
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 80 | 7 | 11 | 6 | 64 |
-| 2026-08-28 | 145 | 10 | 21 | 9 | 151 |
+| 2026-08-27 | 77 | 7 | 11 | 5 | 64 |
+| 2026-08-28 | 148 | 10 | 21 | 9 | 152 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **48**
 - rendimiento: **47**
+- legibilidad y documentación: **45**
 - robustez ante casos límite: **45**
 - seguridad defensiva: **44**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **22**
 - `scanner.py`: **21**
-- `assistant.py`: **21**
-- `memory.py`: **20**
-- `quarantine.py`: **19**
 - `settings.py`: **19**
+- `memory.py`: **19**
 - `branding.py`: **19**
+- `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `duplicates.py`: **18**
-- `diskreport.py`: **17**
-- `browser.py`: **15**
+- `browser.py`: **16**
 - `healthscore.py`: **15**
 - `main.py`: **12**
 - `safety.py`: **11**
 - `startup.py`: **11**
-- `organizer.py`: **7**
+- `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T14:22:53` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de análisis (`largest_files`, `usage_by_extension`, `largest_folders`) añadiendo validación explícita de `Path` mediante `resolve(strict=True)` dentro de un bloque `try-except` para asegurar que las rutas sean accesibles antes de intentar procesarlas, evitando que errores de sistema en la inicialización pasen desapercibidos o generen resultados vacíos silenciosos.
+- `2026-08-28T14:22:40` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_is_valid_cache_path` mediante la validación explícita de `Path` antes de operar, previniendo excepciones innecesarias ante entradas vacías, nulas o rutas malformadas.
+- `2026-08-28T14:19:19` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez en `_call_gemini` al añadir validación explícita de `candidates` y `content` para evitar `AttributeError` o `KeyError` ante respuestas de API malformadas, además de asegurar que `_parse_config` maneje de forma segura configuraciones parciales.
 - `2026-08-28T12:56:58` **startup.py** (seguridad defensiva): Se endurece la seguridad defensiva en la obtención de rutas desde el registro, incorporando una validación estricta de la estructura del CSV antes de procesarlo para evitar la inyección de comandos o datos malformados, y asegurando que cada `Path` sea filtrado por `is_protected_path` antes de cualquier operación de resolución.
 - `2026-08-28T12:56:27` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la escritura atómica en `save()` aplicando `ensure_safe_to_modify` directamente sobre la ruta final antes de cualquier operación de I/O, garantizando que el sistema de archivos no sea manipulado en zonas protegidas, y se simplificó la lógica de validación para evitar excepciones innecesarias en `_run_safety_checks`.
 - `2026-08-28T12:46:19` **quarantine.py** (seguridad defensiva): Se ha mejorado `quarantine_file` para evitar una condición de carrera ("TOCTOU") verificando la integridad del archivo y su estado de bloqueo justo antes de la operación de `unlink` en la fuente, garantizando que el archivo eliminado es efectivamente el que se copió al sandbox.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T12:16:06` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una verificación de integridad post-escritura: ahora, tras realizar el `os.replace`, se revalida el archivo recién escrito para asegurar que no se haya corrompido durante la operación de I/O, abortando y restaurando el estado previo si el archivo resultante no es legible o válido.
 - `2026-08-28T12:06:40` **safety.py** (robustez ante casos límite): Se introdujo una validación robusta contra errores de permiso en `_is_file_in_use` y se reforzó `_check_file_integrity` para manejar situaciones donde el sistema operativo bloquea la lectura de atributos (ej. procesos en uso exclusivo o errores de I/O) evitando que la aplicación aborte ante archivos inaccesibles.
 - `2026-08-28T12:06:00` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `_atomic_isolate_file` añadiendo una verificación explícita de `OSError` al intentar realizar `os.replace` y garantizando que, ante cualquier fallo de E/S durante la operación atómica, se realice una limpieza exhaustiva del archivo temporal, evitando dejar "huérfanos" en el directorio de cuarentena que podrían corromper futuras ejecuciones.
-- `2026-08-28T11:57:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` y sus ayudantes ante casos límite, implementando una clausura segura (`finally`) más rigurosa para el manejo de recursos y una validación de rutas que evita errores ante ejecutables que terminan súbitamente o rutas con caracteres no estándar, asegurando que la app no falle ante procesos efímeros o protegidos.
-- `2026-08-28T11:57:31` **main.py** (robustez ante casos límite): Se introdujo una validación robusta y defensiva en `on_trim_process` y `on_restore_quarantine` para manejar escenarios de archivos o procesos desaparecidos entre la selección en la UI y la ejecución asíncrona, previniendo errores de sistema al intentar acceder a rutas o PIDs que ya no existen.
-- `2026-08-28T11:55:53` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante rutas con permisos denegados o archivos inexistentes durante la iteración, y se añadió una validación defensiva en `_process_size_group` para evitar procesar grupos donde los archivos hayan desaparecido (race condition) entre la recolección y el hashing.

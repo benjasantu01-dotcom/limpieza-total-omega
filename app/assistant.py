@@ -566,9 +566,12 @@ def _call_gemini(
             if not isinstance(data, dict): return None
             
             candidates = data.get("candidates")
-            if not isinstance(candidates, list) or not candidates: return None
+            if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): return None
             
-            parts = candidates[0].get("content", {}).get("parts")
+            content = candidates[0].get("content")
+            if not isinstance(content, dict): return None
+            
+            parts = content.get("parts")
             if not isinstance(parts, list) or not parts: return None
             
             raw_text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
