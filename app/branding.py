@@ -347,23 +347,19 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         
     try:
         path_obj = Path(destination).resolve()
-    except (TypeError, ValueError, RuntimeError):
-        return None
-
-    try:
+        # Validación estricta usando las reglas de seguridad importadas
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
         
         parent = path_obj.parent
         if not parent.exists():
-            # Validar que el padre también pueda ser modificado antes de crearlo
             if is_protected_path(parent) or not is_safe_to_modify(parent):
                 return None
             parent.mkdir(parents=True, exist_ok=True)
             
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
         return None
 
 def logo_ascii() -> str:
@@ -381,7 +377,8 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
     Renderiza las franjas degradadas internas del escudo en un canvas dado.
     Requiere un objeto canvas con el método 'create_rectangle'.
     """
-    if not hasattr(canvas, "create_rectangle"): return
+    if not hasattr(canvas, "create_rectangle") or not isinstance(scale, (int, float)): 
+        return
     try:
         franjas_count: int = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
@@ -405,7 +402,8 @@ def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: 
     Dibuja el escudo corporativo escalado y centrado en un canvas.
     Aplica efectos de profundidad y degradado al lienzo.
     """
-    if canvas is None or not hasattr(canvas, "create_polygon"): return
+    if canvas is None or not hasattr(canvas, "create_polygon") or not isinstance(size, (int, float)): 
+        return
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128.0))
         coords = _get_shield_coords(scale)
@@ -432,7 +430,8 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """Renderiza una línea horizontal con degradado, dividida en segmentos por color."""
-    if canvas is None or not hasattr(canvas, "create_line"): return
+    if canvas is None or not hasattr(canvas, "create_line") or not isinstance(width, int): 
+        return
     try:
         w_int = max(1, int(width))
         colores = gradient_colors(w_int, stops)
@@ -454,7 +453,8 @@ def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
         track: Color de fondo (opcional).
         fill: Color de progreso (opcional, por defecto dinámico según score_color).
     """
-    if canvas is None or not hasattr(canvas, "create_arc"): return
+    if canvas is None or not hasattr(canvas, "create_arc") or not isinstance(size, int): 
+        return
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
         diametro: int = max(20, int(size))

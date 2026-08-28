@@ -66,14 +66,14 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     if path is None: return None
     try:
         path_obj = Path(path)
-        if is_protected_path(path_obj): return None
+        if not path_obj.is_file() or is_protected_path(path_obj): return None
         
         digest = hashlib.sha256()
         with open(path_obj, "rb") as f:
             while (buffer := f.read(chunk_size)):
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError, IsADirectoryError):
+    except (OSError, PermissionError, IOError, IsADirectoryError, ValueError):
         return None
 
 
@@ -84,13 +84,13 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     if path is None: return None
     try:
         path_obj = Path(path)
-        if is_protected_path(path_obj): return None
+        if not path_obj.is_file() or is_protected_path(path_obj): return None
         
         with open(path_obj, "rb") as f:
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError, IsADirectoryError):
+    except (OSError, PermissionError, IOError, IsADirectoryError, ValueError):
         return None
 
 

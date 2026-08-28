@@ -266,7 +266,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Yields:
         Tuplas conteniendo la ruta absoluta del archivo (Path) y su tamaño en bytes (int).
     """
-    if not directory or not isinstance(directory, (str, Path, os.PathLike)):
+    if not isinstance(directory, (str, Path, os.PathLike)) or not directory:
         return
 
     try:
@@ -316,7 +316,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     Returns:
         Lista de objetos FileEntry ordenados descendentemente por tamaño.
     """
-    if not directory or not isinstance(limit, int) or limit <= 0:
+    if not isinstance(directory, (str, Path, os.PathLike)) or not isinstance(limit, int) or limit <= 0:
         return []
     
     items: Generator[Tuple[int, Path], None, None] = ((s, p) for p, s in walk_files(directory, skip_protected))
@@ -335,7 +335,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     Returns:
         Lista de objetos ExtensionUsage, ordenados por consumo total de espacio.
     """
-    if not directory or not isinstance(limit, int) or limit <= 0:
+    if not isinstance(directory, (str, Path, os.PathLike)) or not isinstance(limit, int) or limit <= 0:
         return []
         
     size_map: Dict[str, int] = defaultdict(int)
@@ -366,7 +366,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     Returns:
         Lista de objetos FolderUsage ordenados por tamaño acumulado.
     """
-    if not directory or not isinstance(limit, int) or limit <= 0:
+    if not isinstance(directory, (str, Path, os.PathLike)) or not isinstance(limit, int) or limit <= 0:
         return []
     
     try:
@@ -410,9 +410,9 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Returns:
         Tupla con (bytes totales, cantidad de archivos).
     """
-    total_bytes, file_count = 0, 0
-    if not directory:
+    if not isinstance(directory, (str, Path, os.PathLike)) or not directory:
         return 0, 0
+    total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
         total_bytes += size
         file_count += 1
@@ -456,7 +456,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     Returns:
         Lista de strings formateados listos para visualización.
     """
-    if not directory or not isinstance(directory, (str, Path, os.PathLike)):
+    if not isinstance(directory, (str, Path, os.PathLike)) or not directory:
         return ["Error: Ruta no proporcionada o formato inválido."]
 
     try:
