@@ -1033,6 +1033,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         seguridad de la ruta antes de ejecutar la lógica del usuario.
         """
         try:
+            # Validar integridad del directorio de trabajo antes de realizar tareas
+            safety.ensure_safe_to_modify(Path(".").resolve())
             if target and not self._is_safe_path(target):
                 raise safety.UnsafePathError(f"Operación no permitida en destino: {target}")
             if not self._closing:
@@ -1291,7 +1293,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             # Validación de seguridad explícita sobre el entorno de trabajo actual
-            safety.ensure_safe_to_modify(Path(".").resolve(strict=True))
             self.set_status("Moviendo a revisión...")
             dest = stage_for_review(aptos)
             self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
@@ -1311,7 +1312,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         def task() -> None:
             try:
                 # Se asegura que la carpeta de trabajo y la operación sean seguras
-                safety.ensure_safe_to_modify(Path(".").resolve())
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()
                 self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza")
@@ -1386,7 +1386,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            safety.ensure_safe_to_modify(Path(".").resolve())
             self.set_status("Aislando archivos...")
             aislados = 0
             for item_s in suspicions:
@@ -1427,7 +1426,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            safety.ensure_safe_to_modify(Path(".").resolve())
             # Verificación defensiva: el estado de la cuarentena podría haber cambiado
             if not quarantine.item_exists(raw_id):
                 self._safe_run_ui_callback(lambda: self.log(f"Error: El ID '{raw_id}' no existe.", "Cuarentena"))
@@ -1464,7 +1462,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            safety.ensure_safe_to_modify(Path(".").resolve())
             borrados = quarantine.purge_all()
             self.log(f"Borrados {borrados} archivo(s) de la cuarentena.", "Cuarentena")
 
@@ -1646,7 +1643,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            safety.ensure_safe_to_modify(Path(".").resolve())
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
             for ruta in aptos:

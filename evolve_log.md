@@ -1524,3 +1524,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T12:27:01` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una comprobación explícita de `is_protected_path` sobre el resultado de `resolve()` para evitar que la recursión siga puntos de reparse o rutas maliciosas incluso cuando no son symlinks detectables, garantizando que el escaneo solo acceda a directorios autorizados.
 - `2026-08-28T12:27:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T12:27:01` Corrida terminada. Total usado hoy: 296.
+- `2026-08-28T12:35:35` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-28T12:36:02` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la integridad de los datos de entrada en `compute_score` agregando una validación estricta de que el objeto `SystemMetrics` no haya sido manipulado externamente, evitando comportamientos inesperados ante posibles inyecciones de datos.
+- `2026-08-28T12:37:14` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad en el manejo de rutas en `on_trim_process` añadiendo una verificación previa mediante `memory_mod.process_exists` y delegando la ejecución a través de `run_async` con `check_safety=True`, además de centralizar la validación de `safety.ensure_safe_to_modify(Path(".").resolve())` dentro del `worker_thread_logic` para evitar que tareas de fondo intenten operar en contextos inseguros.
+- `2026-08-28T12:37:40` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-08-28T12:37:49` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-28T12:37:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T12:37:49` Corrida terminada. Total usado hoy: 300.

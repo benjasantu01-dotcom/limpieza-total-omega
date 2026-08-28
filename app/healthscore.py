@@ -191,8 +191,8 @@ _SCORERS: Final = (
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Procesa métricas brutas y genera un puntaje de salud normalizado 0-100."""
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Tipo de métricas incompatible."])
+    if not isinstance(metrics, SystemMetrics) or type(metrics) is not SystemMetrics:
+        return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
     try:
         metrics.validate()
