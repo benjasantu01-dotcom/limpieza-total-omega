@@ -277,7 +277,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, TypeError, PermissionError):
         return
 
-    # Evitar recursión infinita en sistemas con links mediante tracking de inodos
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[Path] = [root_path]
     
@@ -291,15 +290,21 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            st = entry.stat(follow_symlinks=False)
-                            inode_key = (st.st_dev, st.st_ino)
-                            if inode_key not in visited_inodes:
-                                visited_inodes.add(inode_key)
-                                stack.append(Path(entry.path))
+                            try:
+                                st = entry.stat(follow_symlinks=False)
+                                inode_key = (st.st_dev, st.st_ino)
+                                if inode_key not in visited_inodes:
+                                    visited_inodes.add(inode_key)
+                                    stack.append(Path(entry.path))
+                            except (PermissionError, OSError):
+                                continue
                                 
                         elif entry.is_file(follow_symlinks=False):
-                            f_stat = entry.stat(follow_symlinks=False)
-                            yield Path(entry.path), max(0, f_stat.st_size)
+                            try:
+                                f_stat = entry.stat(follow_symlinks=False)
+                                yield Path(entry.path), max(0, f_stat.st_size)
+                            except (PermissionError, OSError):
+                                continue
                     except (PermissionError, OSError, ValueError):
                         continue
         except (PermissionError, OSError):

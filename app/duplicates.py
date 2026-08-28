@@ -149,10 +149,10 @@ def _collect_candidates(
         """Realiza un recorrido DFS evitando ciclos mediante inodos y respetando bloqueos."""
         try:
             for entry in current_dir.iterdir():
-                if entry.is_symlink(): continue
                 if _should_skip(entry): continue
                 
                 try:
+                    if entry.is_symlink(): continue
                     if entry.is_dir():
                         stat = entry.stat()
                         dev_inode = (stat.st_dev, stat.st_ino)
@@ -160,8 +160,6 @@ def _collect_candidates(
                             visited_device_inodes.add(dev_inode)
                             _scan_recursive(entry)
                     else:
-                        # is_file() es más barato que llamar a stat() para archivos pequeños
-                        # intentamos obtener tamaño solo si es un archivo candidato
                         stat = entry.stat()
                         if stat.st_size >= min_size:
                             temp_map[int(stat.st_size)].append(entry)

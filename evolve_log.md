@@ -1040,3 +1040,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-28T07:13:14` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se mejora la robustez de `SystemContext.ingest` y `_validate_and_assign` mediante la implementación de una validación explícita de tipos numéricos antes del casteo, evitando fallos ante valores `NaN`, `inf`, o tipos de datos contenedores (listas/dict) que puedan ser inyectados accidentalmente, protegiendo al asistente de procesar datos inválidos.
 - `2026-08-28T07:13:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T07:13:14` Corrida terminada. Total usado hoy: 172.
+- `2026-08-28T07:19:31` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-28T07:20:04` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-28T07:20:32` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-28T07:21:00` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` y `drive_usage` ante condiciones de carrera y denegación de acceso, implementando una gestión de excepciones más granular para evitar que el escaneo se interrumpa prematuramente al encontrar archivos bloqueados o en uso.
+- `2026-08-28T07:21:11` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_scan_recursive` frente a rutas con caracteres especiales o estados inconsistentes al añadir un manejo de excepciones específico para `OSError` durante el acceso a atributos de archivo (`stat`) y al iterar, evitando que una entrada dañada detenga el escaneo completo.
+- `2026-08-28T07:21:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T07:21:11` Corrida terminada. Total usado hoy: 176.
