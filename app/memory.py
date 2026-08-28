@@ -218,16 +218,15 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
     
-    current_time = time.time()
-    if (current_time - _proc_cache_time) > 60:
+    if (time.time() - _proc_cache_time) > 60:
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
             "Get-Process | Where-Object {$_.Id -notin 0,4} | Select-Object Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
         ]
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0 and proc.stdout:
-                _proc_cache_data, _proc_cache_time = proc.stdout, current_time
+                _proc_cache_data, _proc_cache_time = proc.stdout, time.time()
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
             pass
             

@@ -1471,3 +1471,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T11:16:12` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el rendimiento de la interfaz implementando un filtrado inteligente en `on_scan_junk` y `on_stage` utilizando generadores y list comprehensions que evitan procesar múltiples veces la misma estructura de datos, además de añadir validaciones tempranas en los métodos de callback para reducir la carga de trabajo en el hilo principal y evitar ciclos de actualización innecesarios cuando los datos no han variado.
 - `2026-08-28T11:16:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T11:16:12` Corrida terminada. Total usado hoy: 268.
+- `2026-08-28T11:24:13` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-28T11:24:42` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución constante de PowerShell por una lógica de caché basada en tiempo con `lru_cache` para el parsing y una validación de `subprocess` más eficiente, evitando llamadas innecesarias al sistema cada vez que se refresca la interfaz.
+- `2026-08-28T11:25:06` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-28T11:25:36` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: rendimiento).
+- `2026-08-28T11:25:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-28T11:25:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T11:25:41` Corrida terminada. Total usado hoy: 272.
