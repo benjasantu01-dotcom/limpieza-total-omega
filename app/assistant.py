@@ -495,7 +495,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
 
-    for token in set(_TOKEN_REGEX.findall(q_sanitized)):
+    for token in _TOKEN_REGEX.findall(q_sanitized):
         intent = _KEYWORD_MAP.get(token)
         if intent:
             return _HANDLERS[intent](context, question)

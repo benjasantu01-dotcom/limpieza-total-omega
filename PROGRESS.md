@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 114 | 7 | 15 | 6 | 102 |
-| 2026-08-28 | 118 | 9 | 17 | 9 | 107 |
+| 2026-08-27 | 112 | 7 | 15 | 6 | 100 |
+| 2026-08-28 | 121 | 9 | 17 | 9 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **42**
-- rendimiento: **39**
+- rendimiento: **41**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
-- `assistant.py`: **20**
+- `assistant.py`: **21**
 - `memory.py`: **20**
 - `quarantine.py`: **19**
 - `settings.py`: **19**
-- `healthscore.py`: **18**
+- `branding.py`: **19**
 - `diskreport.py`: **18**
-- `branding.py`: **18**
 - `browser.py`: **17**
 - `duplicates.py`: **17**
-- `main.py`: **12**
-- `startup.py`: **12**
+- `healthscore.py`: **17**
+- `startup.py`: **13**
+- `main.py`: **11**
 - `safety.py`: **11**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T11:05:31` **branding.py** (rendimiento): Se optimizó el acceso a constantes de color eliminando múltiples llamadas a `PALETTE.get()` y `MappingProxyType` dentro de las funciones de dibujo, mediante el uso de referencias directas a las constantes pre-resueltas, reduciendo el overhead en cada ejecución de las rutinas de renderizado.
+- `2026-08-28T11:04:59` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la creación dinámica de sets y la búsqueda secuencial en `_KEYWORD_MAP` por una lógica de pre-filtrado basada en una sola pasada, reduciendo la carga de CPU en sistemas con muchas peticiones.
+- `2026-08-28T11:04:23` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo `startup.py` mediante la adición de docstrings estructuradas en las funciones públicas, detallando los argumentos, comportamientos esperados y casos de borde para facilitar el mantenimiento y la comprensión de las heurísticas aplicadas.
 - `2026-08-28T10:55:08` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en la firma de las funciones de validación y la clarificación mediante docstrings de los criterios de seguridad aplicados en la sanitización de rutas, facilitando el mantenimiento y la auditoría del código.
 - `2026-08-28T10:54:55` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings que explican el "porqué" de las decisiones de filtrado (como la exclusión de rutas UNC y puntos de reanálisis) y añadí anotaciones de tipo para clarificar la estructura de los datos que fluyen por el escáner.
 - `2026-08-28T10:54:31` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` centralizando la lógica de validación de extensiones sensibles mediante una función privada `_is_sensitive_extension` y documentando el propósito de cada regla de seguridad para facilitar futuras auditorías.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T10:24:40` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `SystemContext.ingest` y `_validate_and_assign` mediante la extracción de la lógica de validación de tipos a un método de clase, eliminando la duplicación y el uso redundante de `type()` que dificultaba la lectura del flujo de datos.
 - `2026-08-28T10:23:39` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` añadiendo chequeos de integridad lógica: ahora `save()` valida explícitamente la presencia de la API Key en el entorno antes de confirmar una activación, y `validate()` asegura que las claves de configuración no solo sean del tipo correcto, sino que las rutas (como `ultima_carpeta`) se validen mediante `_Validators._is_safe_path` antes de ser inyectadas en el objeto de configuración.
 - `2026-08-28T10:13:31` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el robustecimiento de `quarantine_file` añadiendo una validación explícita para asegurar que la ruta de origen no sea el directorio de cuarentena mismo o uno de sus subdirectorios, previniendo así errores de lógica en la recursión de archivos durante el aislamiento.
-- `2026-08-28T10:05:04` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas y manejo de errores más específico, asegurando que las operaciones de disco ocurran solo tras verificar la integridad de las rutas mediante `is_safe_to_modify` y evitando excepciones no capturadas.
-- `2026-08-28T10:04:53` **memory.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `trim_working_set` y sus ayudantes para asegurar que las excepciones inesperadas sean capturadas, evitando que fallos de API o de tipos cierren la aplicación inesperadamente.
-- `2026-08-28T10:04:25` **main.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_environment` para incluir una verificación de existencia mediante `exists()` y un chequeo explícito de si la ruta es un directorio, evitando lanzar excepciones innecesarias cuando las rutas no existen durante la inicialización, además de añadir un manejo robusto al recuperar el valor de `min_dup_entry` y `top_files_entry` usando `_validate_numeric_setting` para prevenir errores de tipo durante la recolección de ajustes.

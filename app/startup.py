@@ -228,7 +228,13 @@ class StartupEntry:
 
 
 def startup_folders() -> List[Path]:
-    """Retorna las rutas del sistema donde Windows gestiona accesos directos de inicio."""
+    """
+    Retorna una lista de rutas de carpetas 'Startup' de Windows.
+    
+    Detecta automáticamente las rutas para el usuario actual y el sistema local 
+    basándose en las variables de entorno APPDATA y ProgramData.
+    Solo retorna directorios válidos que no están protegidos por `is_protected_path`.
+    """
     if os.name != "nt":
         return []
     candidates: List[Path] = []
@@ -245,7 +251,16 @@ def startup_folders() -> List[Path]:
 
 
 def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[StartupEntry]:
-    """Escanea las carpetas de inicio en busca de ejecutables o accesos directos."""
+    """
+    Escanea las carpetas de inicio provistas en busca de ejecutables.
+    
+    Args:
+        folders: Lista de objetos Path. Si es None, usa `startup_folders()`.
+    
+    Retorna:
+        Lista de `StartupEntry` que contienen los archivos ejecutables detectados.
+        Salta automáticamente archivos protegidos o simbólicos.
+    """
     found_entries: List[StartupEntry] = []
     scan_folders = folders if folders is not None else startup_folders()
     
@@ -255,12 +270,10 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    # Filtrado preliminar por extensión sin instanciar Path completo
                     name, ext = os.path.splitext(entry.name)
                     if ext.lower() not in EXECUTABLE_EXTS:
                         continue
                     
-                    # Verificación de seguridad y tipo de archivo
                     p_entry = Path(entry.path)
                     if entry.is_file(follow_symlinks=False) and not p_entry.is_symlink():
                         if not is_protected_path(p_entry):
@@ -276,8 +289,15 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
-    Parsea la salida CSV de PowerShell en objetos StartupEntry.
-    Realiza una validación de seguridad inicial antes de instanciar cada entrada.
+    Transforma la salida CSV cruda de PowerShell (Run Keys) en una lista de `StartupEntry`.
+    
+    Args:
+        csv_text: Salida de texto cruda desde el comando `ConvertTo-Csv`.
+        source: Identificador de fuente para la entrada.
+    
+    Validaciones:
+        Limpia caracteres de control, filtra entradas con nombres sospechosos 
+        (ej. prefijos 'PS'), e ignora comandos que violan la integridad del sistema.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -306,7 +326,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 if any(c in cmd for c in '<>|?*'):
                     continue
                 
-                # Validación defensiva contra rutas protegidas antes de la instanciación
                 try:
                     if is_protected_path(Path(cmd)):
                         continue
@@ -322,7 +341,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
 
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
-    """Consulta el registro Run vía PowerShell asíncrona."""
+    """
+    Consulta las claves de registro Run especificadas invocando PowerShell.
+    
+    Utiliza `-ErrorAction SilentlyContinue` para ignorar errores de acceso 
+    en claves específicas. Implementa caché global de ejecución.
+    """
     global _REGISTRY_CACHE
     if _REGISTRY_CACHE is not None:
         return _REGISTRY_CACHE
@@ -347,7 +371,12 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
 
 
 def list_startup_entries() -> List[StartupEntry]:
-    """Recopila todas las entradas, deduplicando por nombre para presentar una lista limpia."""
+    """
+    Recopila todas las entradas de arranque, deduplicando por nombre.
+    
+    Usa concurrencia (ThreadPoolExecutor) para leer simultáneamente 
+    carpetas y registro, mejorando el tiempo de respuesta.
+    """
     global _FULL_SCAN_CACHE
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
@@ -380,7 +409,16 @@ def estimate_impact(entries: Sequence[StartupEntry]) -> str:
 
 
 def summarize(entries: Optional[Sequence[StartupEntry]] = None) -> List[str]:
-    """Genera un reporte legible de impacto para la interfaz de usuario."""
+    """
+    Genera un reporte legible de impacto para la interfaz de usuario.
+    
+    Argumentos:
+        entries: Lista opcional de `StartupEntry`. Si no se provee, ejecuta 
+                 `list_startup_entries()` internamente.
+    
+    Retorna:
+        Una lista de strings formateada como reporte Markdown para visualización.
+    """
     entries_list: Sequence[StartupEntry] = entries if entries is not None else list_startup_entries()
     total_count: int = len(entries_list)
         

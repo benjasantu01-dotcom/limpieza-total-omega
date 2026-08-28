@@ -119,18 +119,18 @@ FONT_SIZES: Final[FontSizesDict] = {
 }
 
 SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType({
-    "ok": ("#22e39a", "Correcto"),
-    "info": ("#38bdf8", "Informativo"),
-    "warning": ("#ffb020", "Advertencia"),
-    "danger": ("#ff4757", "Peligro"),
+    "ok": (C_SUCCESS, "Correcto"),
+    "info": (C_INFO, "Informativo"),
+    "warning": (C_WARNING, "Advertencia"),
+    "danger": (C_DANGER, "Peligro"),
 })
 
 GRADE_COLORS: Final[Mapping[str, HexColor]] = MappingProxyType({
-    "A": "#22e39a",
-    "B": "#38bdf8",
-    "C": "#ffb020",
+    "A": C_SUCCESS,
+    "B": C_INFO,
+    "C": C_WARNING,
     "D": "#ff7b39",
-    "F": "#ff4757",
+    "F": C_DANGER,
 })
 
 ICONS: Final[Mapping[str, str]] = MappingProxyType({
