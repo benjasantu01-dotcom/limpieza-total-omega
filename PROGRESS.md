@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 132 | 9 | 19 | 7 | 109 |
-| 2026-08-28 | 98 | 8 | 15 | 8 | 99 |
+| 2026-08-27 | 128 | 9 | 19 | 7 | 109 |
+| 2026-08-28 | 99 | 8 | 15 | 8 | 102 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **48**
 - robustez ante casos límite: **45**
 - rendimiento: **44**
-- manejo de errores y validación de entradas: **41**
+- manejo de errores y validación de entradas: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **24**
 - `memory.py`: **20**
-- `diskreport.py`: **19**
+- `assistant.py`: **20**
 - `quarantine.py`: **19**
-- `assistant.py`: **19**
 - `settings.py`: **18**
+- `diskreport.py`: **18**
 - `branding.py`: **18**
-- `duplicates.py`: **17**
-- `healthscore.py`: **17**
+- `duplicates.py`: **16**
+- `healthscore.py`: **16**
 - `browser.py`: **16**
 - `startup.py`: **13**
-- `main.py`: **12**
 - `safety.py`: **11**
+- `main.py`: **11**
 - `organizer.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T09:46:02` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez del método `ingest` en `SystemContext` y `_validate_and_assign` mediante validaciones de tipo más estrictas y manejo explícito de errores, asegurando que los datos inyectados no contaminen el estado interno con valores malformados o tipos inesperados.
 - `2026-08-28T08:22:13` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save` eliminando el uso de `tempfile.NamedTemporaryFile` (que puede ser vulnerable a condiciones de carrera o creación de archivos con permisos excesivamente permisivos en ciertos sistemas) y reemplazándolo por una escritura directa con `os.replace` previo chequeo de existencia, garantizando que solo se toque el disco si las rutas son validadas y el directorio es seguro.
 - `2026-08-28T08:22:00` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` añadiendo una validación explícita para asegurar que el `path_obj` (la ruta resuelta) mantenga la integridad respecto a `base_root` antes de continuar, evitando posibles riesgos de escape de directorio mediante enlaces o manipulaciones de ruta.
 - `2026-08-28T08:21:35` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando una validación de prefijo más estricta mediante `os.path.commonpath`, lo cual evita errores de coincidencia parcial al verificar límites geográficos y asegura que la ruta final esté efectivamente contenida dentro del directorio permitido.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T07:50:43` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` al implementar una verificación de salud atómica en `load()` que detecta archivos de configuración bloqueados o en uso parcial mediante `os.access(ruta, os.R_OK)`, evitando excepciones críticas y retornando proactivamente los valores de fábrica en entornos con alta concurrencia de I/O.
 - `2026-08-28T07:41:25` **scanner.py** (robustez ante casos límite): Se añadió una verificación de estado de archivo (`entry.is_symlink()`) en el bloque de heurísticas de `Scanner.process_entry` para prevenir errores de acceso a enlaces simbólicos rotos o recursivos que escapan a la lógica de `_is_reparse_point`, mejorando la robustez ante archivos inexistentes.
 - `2026-08-28T07:40:32` **quarantine.py** (robustez ante casos límite): Se ha añadido una validación de longitud de nombre de archivo antes de la copia atómica para prevenir errores `OSError` (Nombre de archivo demasiado largo) en Windows, asegurando que el sandbox no falle ante rutas profundas.
-- `2026-08-28T07:31:45` **memory.py** (robustez ante casos límite): Mejoré la robustez de `read_snapshot` y `top_memory_processes` añadiendo validaciones explícitas contra posibles estados corruptos (archivos vacíos o errores de lectura imprevistos) que podrían causar fallos en cascada en las funciones de parsing, garantizando una salida segura ante entornos degradados.

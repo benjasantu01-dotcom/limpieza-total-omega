@@ -258,7 +258,7 @@ class SystemContext:
         Intenta extraer y validar métricas desde una fuente externa (dict u objeto).
         Retorna True si al menos una métrica válida fue procesada.
         """
-        if not isinstance(source, (dict, object)):
+        if source is None or not isinstance(source, (dict, object)):
             return False
             
         found_data = False
