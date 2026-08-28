@@ -169,8 +169,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         line = line.strip()
         if not line: continue
         parts = [p.strip().strip("'\"") for p in line.split(",")]
-        # Validar estructura mínima de 3 campos y que no haya vacíos
-        if len(parts) >= 3 and all(parts[:3]):
+        # Validación estricta: requerimos nombre, PID y WorkingSet
+        if len(parts) >= 3 and parts[0] and parts[1].isdigit() and parts[2].isdigit():
             try:
                 name, pid_val, ws_val = parts[0], int(parts[1]), int(parts[2])
                 if ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:

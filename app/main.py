@@ -815,7 +815,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Verifica de forma segura que la ruta de destino permita operaciones de escritura."""
         try:
             return safety.is_safe_to_modify(Path(path).resolve(strict=True))
-        except (OSError, RuntimeError, PermissionError):
+        except (OSError, RuntimeError, PermissionError, ValueError):
             return False
 
     def _is_safe_file_access(self, path: Union[str, Path]) -> bool:
@@ -823,7 +823,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             p = Path(path).resolve(strict=True)
             return p.exists() and safety.is_safe_to_modify(p)
-        except (OSError, RuntimeError, PermissionError):
+        except (OSError, RuntimeError, PermissionError, ValueError):
             return False
 
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
@@ -833,7 +833,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if p.is_symlink():
                 return False
             return safety.is_safe_to_modify(p)
-        except (OSError, RuntimeError, PermissionError):
+        except (OSError, RuntimeError, PermissionError, ValueError):
             return False
 
     def _verify_disk_path(self, path: str) -> bool:
@@ -842,7 +842,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             p = Path(path).resolve(strict=True)
             safety.ensure_safe_to_modify(p)
             return True
-        except (safety.UnsafePathError, OSError, PermissionError):
+        except (safety.UnsafePathError, OSError, PermissionError, ValueError):
             return False
 
     def _is_safe_target_dir(self, path: Union[str, Path]) -> bool:
@@ -850,7 +850,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             p = Path(path).resolve(strict=True)
             return p.is_dir() and safety.is_safe_to_modify(p)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, ValueError):
             return False
 
     def _is_valid_dir(self, path: Optional[Union[str, Path]]) -> bool:
@@ -860,7 +860,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             p = Path(path).resolve(strict=True)
             return p.is_dir() and os.access(p, os.R_OK)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, ValueError):
             return False
 
     def _get_cached_data(self, key: str) -> Any:
@@ -1084,7 +1084,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             p = Path(folder).resolve(strict=True)
             safety.ensure_safe_to_modify(p)
             return str(p)
-        except (safety.UnsafePathError, OSError, PermissionError, FileNotFoundError):
+        except (safety.UnsafePathError, OSError, PermissionError, FileNotFoundError, ValueError):
             messagebox.showwarning("Ruta no segura", "Operación no permitida en esta ruta.")
             return None
 
@@ -1095,7 +1095,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @lru_cache(maxsize=1)
     def _get_home_disk_info(self) -> Optional[diskreport.DriveInfo]:
         """Caché LRU para evitar llamadas repetitivas al sistema de archivos."""
-        return diskreport.drive_usage(Path.home())
+        try:
+            return diskreport.drive_usage(Path.home())
+        except Exception:
+            return None
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Reúne métricas de todos los módulos para calcular el puntaje global de salud."""

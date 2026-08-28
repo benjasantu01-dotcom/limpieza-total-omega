@@ -602,3 +602,10 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-28T14:22:53` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones de análisis (`largest_files`, `usage_by_extension`, `largest_folders`) añadiendo validación explícita de `Path` mediante `resolve(strict=True)` dentro de un bloque `try-except` para asegurar que las rutas sean accesibles antes de intentar procesarlas, evitando que errores de sistema en la inicialización pasen desapercibidos o generen resultados vacíos silenciosos.
 - `2026-08-28T14:22:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T14:22:53` Corrida terminada. Total usado hoy: 340.
+- `2026-08-28T14:27:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-28T14:28:07` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-28T14:28:34` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-28T14:29:46` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las operaciones que interactúan con el sistema de archivos capturando explícitamente `OSError` y `ValueError` al obtener rutas, evitando que fallos de bajo nivel (como caracteres inválidos en el path o dispositivos desconectados) rompan el bucle principal de la aplicación.
+- `2026-08-28T14:30:00` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores al intentar convertir tipos en listas vacías o mal formadas, asegurando que solo se procesen líneas con el formato CSV esperado de 3 columnas numéricas.
+- `2026-08-28T14:30:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T14:30:00` Corrida terminada. Total usado hoy: 344.
