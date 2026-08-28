@@ -8,45 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 36 | 3 | 4 | 3 | 40 |
+| 2026-08-26 | 34 | 3 | 3 | 3 | 39 |
 | 2026-08-27 | 158 | 12 | 22 | 7 | 151 |
-| 2026-08-28 | 34 | 0 | 5 | 2 | 27 |
+| 2026-08-28 | 36 | 0 | 5 | 2 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **42**
 - rendimiento: **42**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **23**
 - `settings.py`: **21**
 - `assistant.py`: **21**
-- `quarantine.py`: **20**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `quarantine.py`: **19**
 - `memory.py`: **18**
 - `duplicates.py`: **17**
 - `branding.py`: **17**
 - `diskreport.py`: **17**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
 - `main.py`: **13**
 - `startup.py`: **11**
 - `safety.py`: **10**
-- `organizer.py`: **7**
+- `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T02:55:53` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante datos externos no confiables añadiendo una verificación explícita en `compute_score` que garantiza que todos los pesos de `WEIGHTS` tengan su función de cálculo correspondiente en `_SCORER_MAP`, evitando un `KeyError` catastrófico en caso de mantenimiento incompleto.
+- `2026-08-28T02:54:53` **browser.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos y acceso a archivos en `_sum_directory_recursive` para manejar excepciones durante el escaneo de directorios con accesos denegados o bloqueados, evitando que la recursión falle prematuramente al encontrar un subdirectorio inaccesible.
 - `2026-08-28T02:45:48` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores inesperados en el contexto (como `inf` o `NaN` en métricas de punto flotante) y se garantizó la integridad del objeto `SystemContext` ante entradas mal formadas, evitando comportamientos indefinidos en los cálculos del asistente.
 - `2026-08-28T02:44:46` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la llamada `ruta.stat()` innecesaria cuando el archivo no existe y reduciendo las conversiones de tipo redundantes dentro del bucle de validación en `validate()`.
 - `2026-08-28T02:35:36` **scanner.py** (rendimiento): Optimicé el rendimiento de `process_entry` reemplazando la verificación repetitiva de `is_protected_path` (que involucra múltiples operaciones de strings y validaciones) por una comprobación temprana y eficiente de la extensión mediante el conjunto ya existente `SUSPICIOUS_EXECUTABLE_EXT` antes de disparar heurísticas pesadas.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T02:14:16` **branding.py** (rendimiento): Optimicé el rendimiento de `gradient_colors` eliminando el cálculo aritmético dentro del loop mediante la pre-generación de segmentos, reduciendo la complejidad de las operaciones de renderizado en tiempo de ejecución.
 - `2026-08-28T02:05:35` **assistant.py** (rendimiento): Optimizé la búsqueda de intenciones en `local_answer` utilizando un conjunto (`set`) de tokens únicos para evitar iteraciones repetidas sobre palabras irrelevantes y reducir la complejidad del procesamiento de consultas naturales.
 - `2026-08-28T02:05:13` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `startup.py` mediante una actualización detallada de los docstrings de los métodos de la clase `StartupEntry` para aclarar el flujo de resolución de rutas (resolución vs. validación) y los criterios de seguridad aplicados en la normalización de comandos.
-- `2026-08-28T02:04:46` **settings.py** (legibilidad y documentación): Se introdujeron docstrings explicativos en los métodos públicos y se refinó la estructura de `_Validators` mediante un método de validación centralizado para clarificar el flujo de trabajo de seguridad.
-- `2026-08-28T02:04:19` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación de las clases y funciones principales, clarificando el propósito, las condiciones de entrada y los efectos secundarios de los métodos para mejorar la mantenibilidad y legibilidad del código.

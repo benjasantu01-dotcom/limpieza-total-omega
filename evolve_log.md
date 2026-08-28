@@ -545,3 +545,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T02:46:05` ➖ Sin cambios en branding.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `save_logo_svg` al manejar explícitamente posibles fallos durante la creación del directorio padre y la escritura del archivo, asegurando que la operación sea atómica respecto a la seguridad y evitando excepciones no controladas.
 - `2026-08-28T02:46:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T02:46:05` Corrida terminada. Total usado hoy: 68.
+- `2026-08-28T02:54:26` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-28T02:54:53` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de permisos y acceso a archivos en `_sum_directory_recursive` para manejar excepciones durante el escaneo de directorios con accesos denegados o bloqueados, evitando que la recursión falle prematuramente al encontrar un subdirectorio inaccesible.
+- `2026-08-28T02:55:20` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-28T02:55:43` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-28T02:55:53` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejora la robustez ante datos externos no confiables añadiendo una verificación explícita en `compute_score` que garantiza que todos los pesos de `WEIGHTS` tengan su función de cálculo correspondiente en `_SCORER_MAP`, evitando un `KeyError` catastrófico en caso de mantenimiento incompleto.
+- `2026-08-28T02:55:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T02:55:53` Corrida terminada. Total usado hoy: 72.

@@ -198,11 +198,14 @@ def _sum_directory_recursive(
     total: int = 0
     try:
         with os.scandir(root_dir) as it:
-            for entry in it:
-                if _should_skip_entry(entry, kernel32, is_junction_fn):
-                    continue
-                
+            while True:
                 try:
+                    entry = next(it, None)
+                    if entry is None:
+                        break
+                    if _should_skip_entry(entry, kernel32, is_junction_fn):
+                        continue
+                    
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(entry.path, is_junction_fn, kernel32, memo, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
@@ -229,7 +232,6 @@ def directory_size(path: Union[str, Path, None]) -> int:
             return 0
         
         is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
-        # Usar un caché local para esta llamada individual
         return _sum_directory_recursive(str(p_obj), is_junction, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0

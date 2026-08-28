@@ -199,6 +199,9 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         metrics.validate()
         if not metrics.is_finite():
             raise ValueError("Datos numéricos no finitos")
+        # Validación defensiva de integridad del mapa de cálculo
+        if not all(area in _SCORER_MAP for area in WEIGHTS):
+            raise KeyError("Inconsistencia: faltan funciones de cálculo para categorías definidas.")
     except Exception:
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
     
