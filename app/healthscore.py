@@ -144,32 +144,32 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud de limpieza basado en el volumen de basura acumulado."""
+    """Calcula la salud de limpieza: 1.0 (óptimo) hasta 0.0 (basura >= límite)."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula la salud de seguridad penalizando hallazgos y advertencias."""
+    """Calcula la salud de seguridad: penaliza hallazgos (5%) y advertencias (25%)."""
     penalty = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud de memoria basándose en el porcentaje disponible."""
+    """Calcula la salud de memoria: normaliza el % disponible contra el umbral configurado."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud de disco según el espacio libre restante."""
+    """Calcula la salud de disco: normaliza el % libre contra el umbral de advertencia."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud de duplicados comparando peso frente a umbral."""
+    """Calcula la salud de duplicados: penaliza el exceso de peso redundante en disco."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula la salud del arranque penalizando el exceso de tareas iniciales."""
+    """Calcula la salud de arranque: reduce score proporcionalmente al número de apps al inicio."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Asigna una letra de calificación según el puntaje obtenido."""
+    """Asigna una calificación A-F basada en el puntaje numérico (0-100)."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -177,13 +177,14 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
+# Mapeo de categorías a sus respectivas funciones de puntuación para desacoplar compute_score
 _SCORER_MAP: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
-    "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
-    "disco": lambda m: score_disk(m.disk_free_percent),
-    "memoria": lambda m: score_memory(m.memory_available_percent),
-    "basura": lambda m: score_junk(m.junk_mb),
+    "seguridad":  lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
+    "disco":      lambda m: score_disk(m.disk_free_percent),
+    "memoria":    lambda m: score_memory(m.memory_available_percent),
+    "basura":     lambda m: score_junk(m.junk_mb),
     "duplicados": lambda m: score_duplicates(m.duplicate_mb),
-    "arranque": lambda m: score_startup(m.startup_count)
+    "arranque":   lambda m: score_startup(m.startup_count)
 }
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:

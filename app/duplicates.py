@@ -146,6 +146,7 @@ def _collect_candidates(
         return skip_protected and is_protected_path(path)
 
     def _scan_recursive(current_dir: Path) -> None:
+        """Realiza un recorrido DFS evitando ciclos mediante inodos y respetando bloqueos."""
         try:
             for entry in current_dir.iterdir():
                 if entry.is_symlink(): continue
@@ -171,7 +172,10 @@ def _collect_candidates(
 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa archivos por colisiones de contenido usando la función de hash provista."""
+    """
+    Agrupa archivos por colisiones de contenido usando la función de hash provista.
+    Retorna solo grupos con múltiples entradas.
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if path and (digest := hash_func(path)):
@@ -180,7 +184,10 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
 
 
 def _resolve_by_hashes(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Aplica refinamiento iterativo de hashes para confirmar duplicados reales."""
+    """
+    Aplica refinamiento iterativo de hashes: primero parcial (rápido) 
+    y luego completo (preciso) para confirmar duplicados reales.
+    """
     partial_results = _refine_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     for subset in partial_results.values():

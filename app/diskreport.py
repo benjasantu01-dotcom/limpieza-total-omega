@@ -243,7 +243,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
-    """Helper interno: verifica si una entrada de directorio debe ser ignorada."""
+    """Helper interno: verifica si una entrada de directorio debe ser ignorada por sistema o permisos."""
     try:
         if any(c < ' ' for c in entry.name):
             return True
@@ -258,14 +258,14 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo de archivos mediante `os.scandir`.
+    Generador recursivo que recorre el sistema de archivos buscando archivos y sus tamaños.
 
     Args:
         directory: Ruta raíz desde donde iniciar la búsqueda.
-        skip_protected: Si es True, evita entrar en carpetas protegidas.
+        skip_protected: Si es True, evita entrar en rutas catalogadas como protegidas.
 
     Yields:
-        Tuplas conteniendo la ruta completa del archivo y su tamaño en bytes.
+        Tuplas conteniendo la ruta absoluta del archivo (Path) y su tamaño en bytes (int).
     """
     if not directory:
         return
@@ -277,6 +277,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     except (OSError, RuntimeError, TypeError, PermissionError):
         return
 
+    # Evitar recursión infinita en sistemas con links mediante tracking de inodos
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[Path] = [root_path]
     
@@ -422,11 +423,13 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
-    Recolección interna optimizada de métricas en una sola pasada.
+    Recolección interna de métricas (tamaños, conteos, top files) en una sola pasada eficiente.
     """
-    total_bytes, total_files = 0, 0
+    total_bytes: int = 0
+    total_files: int = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
+    # Heap de tuplas (size, path) para trackear los N archivos más grandes encontrados
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
@@ -437,6 +440,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += size
         ext_counts[ext] += 1
         
+        # Mantener los 8 archivos más pesados en memoria
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))
         elif size > top_files_heap[0][0]:
@@ -469,7 +473,7 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         if skip_protected and is_protected_path(p_input):
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             
-        data = _collect_summary_data(p_input, skip_protected)
+        data: SummaryData = _collect_summary_data(p_input, skip_protected)
     except (OSError, PermissionError, RuntimeError, TypeError, ValueError) as e:
         return [f"Error al analizar el directorio: {str(e)}"]
 
