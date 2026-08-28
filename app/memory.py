@@ -298,15 +298,19 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     if proc_handle is None or proc_handle == -1: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "GetProcessId"): return False, "API no disponible."
-    if kernel32.GetProcessId(proc_handle) != pid: return False, "PID mismatch."
     
-    exit_code = ctypes.c_ulong()
-    if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-        return False, "Proceso inactivo."
-    
-    path = _get_process_path(proc_handle)
-    if not path: return False, "Ruta inaccesible."
-    return _validate_path_security(path)
+    try:
+        if kernel32.GetProcessId(proc_handle) != pid: return False, "PID mismatch."
+        
+        exit_code = ctypes.c_ulong()
+        if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
+            return False, "Proceso inactivo."
+        
+        path = _get_process_path(proc_handle)
+        if not path: return False, "Ruta inaccesible."
+        return _validate_path_security(path)
+    except (OSError, ctypes.ArgumentError):
+        return False, "Error verificando integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Intenta reducir el working set de un proceso específico tras validar su seguridad."""

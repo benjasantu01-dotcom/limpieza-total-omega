@@ -163,8 +163,6 @@ def _passes_system_checks(src: Path) -> bool:
     if os.name != "nt": return True
     try:
         stat = src.stat()
-        # Bloquea archivos con atributos de sistema (0x4), ocultos (0x2) o solo lectura (0x1)
-        # Se evalúa estrictamente contra cualquier combinación de bits críticos
         return not (stat.st_file_attributes & 0x7)
     except OSError:
         return False
@@ -177,13 +175,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     try:
         if not src or not dest or not src.exists() or not src.is_file(): return False
-        
-        # Validar fronteras de seguridad y jerarquía
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
         if is_protected_path(src) or is_protected_path(dest): return False
         if _is_recursive_violation(src, dest): return False
-        
-        # Verificar permisos de escritura y compatibilidad de unidad
         if not os.access(src, os.W_OK) or not os.access(dest.parent if dest.is_file() else dest, os.W_OK):
             return False
         if not src.anchor or not dest.anchor or src.anchor != dest.anchor:
@@ -269,7 +263,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if not src_path.exists() or not src_path.is_file() or not dest_base.is_dir(): 
             return None
         
-        # Validar que no se crucen unidades de disco (seguridad de integridad)
         if not src_path.anchor or not dest_base.anchor or src_path.anchor != dest_base.anchor:
             return None
 
@@ -318,12 +311,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
     """
     Elimina permanentemente archivos desde la carpeta de revisión.
-    
-    Args:
-        review_dir: Ruta del directorio a purgar.
-        
-    Returns:
-        int: Cantidad de archivos eliminados con éxito.
     """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0

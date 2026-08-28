@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 126 | 9 | 18 | 7 | 108 |
-| 2026-08-28 | 102 | 8 | 15 | 8 | 103 |
+| 2026-08-27 | 122 | 9 | 18 | 7 | 108 |
+| 2026-08-28 | 106 | 8 | 15 | 8 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
-- legibilidad y documentación: **46**
 - robustez ante casos límite: **45**
-- manejo de errores y validación de entradas: **45**
 - rendimiento: **44**
+- legibilidad y documentación: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **24**
+- `scanner.py`: **23**
 - `assistant.py`: **20**
+- `memory.py`: **20**
 - `diskreport.py`: **19**
-- `memory.py`: **19**
 - `branding.py`: **19**
-- `settings.py`: **18**
 - `quarantine.py`: **18**
 - `duplicates.py`: **17**
-- `healthscore.py`: **16**
+- `healthscore.py`: **17**
+- `settings.py`: **17**
 - `browser.py`: **16**
-- `startup.py`: **13**
-- `safety.py`: **11**
-- `main.py`: **11**
-- `organizer.py`: **7**
+- `main.py`: **12**
+- `startup.py`: **12**
+- `safety.py`: **10**
+- `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T10:05:04` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` implementando validaciones defensivas y manejo de errores más específico, asegurando que las operaciones de disco ocurran solo tras verificar la integridad de las rutas mediante `is_safe_to_modify` y evitando excepciones no capturadas.
+- `2026-08-28T10:04:53` **memory.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `trim_working_set` y sus ayudantes para asegurar que las excepciones inesperadas sean capturadas, evitando que fallos de API o de tipos cierren la aplicación inesperadamente.
+- `2026-08-28T10:04:25` **main.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_environment` para incluir una verificación de existencia mediante `exists()` y un chequeo explícito de si la ruta es un directorio, evitando lanzar excepciones innecesarias cuando las rutas no existen durante la inicialización, además de añadir un manejo robusto al recuperar el valor de `min_dup_entry` y `top_files_entry` usando `_validate_numeric_setting` para prevenir errores de tipo durante la recolección de ajustes.
+- `2026-08-28T10:03:14` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` asegurando que las métricas recibidas estén validadas preventivamente y añadiendo un manejo de excepciones específico para evitar la propagación de fallos en el cálculo del puntaje.
 - `2026-08-28T09:55:08` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores inesperados durante la lectura de archivos, integrando una validación de tipo `Path` más estricta antes de abrir los descriptores y asegurando que los recursos se liberen correctamente incluso ante fallos de lectura, además de prevenir errores de desreferenciación en `hash_file` con un chequeo adicional.
 - `2026-08-28T09:54:58` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de entrada validando explícitamente los parámetros con `isinstance` y capturando excepciones de sistema de forma más granular para evitar errores en tiempo de ejecución al interactuar con rutas inaccesibles o mal formadas.
 - `2026-08-28T09:53:30` **branding.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y segura mediante `is_protected_path` en la función `save_logo_svg` para prevenir el uso de rutas no autorizadas, reemplazando la lógica de validación parcial por un chequeo explícito, y se añadieron guardas de tipo y capturas de excepciones específicas en funciones críticas de renderizado para evitar fallos de interfaz ante datos inesperados.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T08:12:09` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad en `trim_working_set` al evitar la construcción de una ruta a partir de datos potencialmente maliciosos, integrando `is_protected_path` directamente sobre la ruta resuelta sin procesar el nombre del archivo de forma aislada, previniendo así posibles ataques de "path traversal" o manipulación de la estructura de directorios en el chequeo de seguridad.
 - `2026-08-28T08:02:09` **healthscore.py** (seguridad defensiva): Se añadió una validación defensiva en la creación de `SystemMetrics` para asegurar que los valores numéricos no solo sean finitos sino coherentes con el dominio (ej: porcentajes que no exceden 100 y contadores positivos), previniendo la propagación de datos corruptos desde otros módulos.
 - `2026-08-28T08:01:58` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para evitar que el escaneo siga puntos de reparse (junctions o reparse points) mediante `stat.st_file_attributes` en Windows, previniendo así bucles infinitos fuera de las carpetas de usuario seleccionadas.
-- `2026-08-28T08:01:28` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `diskreport.py` implementando validación de tipo y sanitización en `drive_usage` y `walk_files` para evitar el procesamiento de rutas potencialmente malformadas o externas, asegurando que `Path.resolve()` se utilice correctamente y evitando que entradas con nombres no imprimibles o simbólicas escapen al control de seguridad.
-- `2026-08-28T07:52:01` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia de la carpeta padre mediante `is_safe_to_modify` antes de intentar crearla, evitando posibles escrituras en rutas bloqueadas por el sistema o fuera del alcance permitido.
-- `2026-08-28T07:51:45` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` añadiendo una validación explícita del tamaño del payload antes del envío y limitando estrictamente el uso de `json.dumps` a los datos ya saneados, previniendo inyecciones de encabezados o malformaciones en la solicitud HTTP.
-- `2026-08-28T07:51:10` **startup.py** (robustez ante casos límite): Se ha mejorado la robustez de `StartupEntry._resolve_and_cache_path` añadiendo un manejo explícito para `PermissionError` y `OSError` durante la normalización y resolución de rutas, evitando que la app falle ante archivos bloqueados o sin privilegios de acceso (un caso límite común en carpetas de sistema).

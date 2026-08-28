@@ -196,8 +196,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         metrics.validate()
         if not metrics.is_finite():
             raise ValueError("Datos numéricos no finitos detectados")
-    except Exception:
-        return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
+    except (ValueError, TypeError, AttributeError) as e:
+        return HealthResult(0, "F", {}, [f"Error: Datos corruptos ({type(e).__name__})."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios: Dict[MetricKey, float] = {}
@@ -205,14 +205,18 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     
     for area, scorer in _SCORERS:
         weight = WEIGHTS[area]
-        ratio = scorer(metrics)
-        ratios[area] = ratio
-        pts = round(ratio * weight)
-        metric_breakdown[area] = int(pts)
-        accumulated_points += pts
+        try:
+            ratio = scorer(metrics)
+            ratios[area] = ratio
+            pts = round(ratio * weight)
+            metric_breakdown[area] = int(pts)
+            accumulated_points += pts
+        except Exception:
+            metric_breakdown[area] = 0
+            ratios[area] = 0.0
     
     final_score = int(_clamp(accumulated_points, 0.0, 100.0))
-    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios[rule.area])]
+    recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios.get(rule.area, 0.0))]
             
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")

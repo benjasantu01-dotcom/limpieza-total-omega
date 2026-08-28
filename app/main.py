@@ -189,10 +189,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             if app_root.is_symlink():
                 raise RuntimeError("La aplicación no puede ejecutarse desde un enlace simbólico.")
             
-            # Verificar permisos básicos en el perfil de usuario
-            home = Path.home().resolve(strict=True)
-            if not os.access(home, os.R_OK | os.W_OK):
-                raise PermissionError(f"Sin permisos de escritura en: {home}")
+            # Verificar permisos básicos en el perfil de usuario si es accesible
+            home = Path.home()
+            if home.exists() and home.is_dir():
+                home_resolved = home.resolve(strict=True)
+                if not os.access(home_resolved, os.R_OK | os.W_OK):
+                    raise PermissionError(f"Sin permisos de escritura en: {home_resolved}")
         except Exception as e:
             raise RuntimeError(f"Entorno no válido para operación segura: {e}")
 
