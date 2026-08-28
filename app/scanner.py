@@ -107,7 +107,6 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root = base_root.resolve()
-        self.base_root_str: str = str(self.base_root)
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -117,19 +116,25 @@ class Scanner:
         """
         if not entry or not entry.path:
             return False
-        if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+        
+        path_obj = Path(entry.path).resolve()
+        
+        if len(str(path_obj)) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
         if entry.name and RESERVED_NAMES_RE.match(entry.name):
             return False
 
-        if not entry.path.startswith(self.base_root_str):
+        # Prevenir Path Traversal: asegurar que la ruta resuelta esté dentro de la base
+        try:
+            path_obj.relative_to(self.base_root)
+        except ValueError:
             return False
         
         if self._is_reparse_point(entry):
             return False
 
-        return not is_protected_path(Path(entry.path))
+        return not is_protected_path(path_obj)
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """

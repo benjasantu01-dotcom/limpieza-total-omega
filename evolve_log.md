@@ -649,3 +649,37 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-28T03:46:54` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-28T03:46:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T03:46:54` Corrida terminada. Total usado hoy: 92.
+- `2026-08-28T03:55:34` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-28T03:56:03` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-28T03:56:26` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha endurecido el método `_is_safe_entry` en `Scanner` para prevenir el "path traversal" accidental mediante el uso de `pathlib` para asegurar la contención lógica dentro de la raíz base, evitando que nombres de archivo manipulados o rutas relativas salgan del ámbito esperado.
+- `2026-08-28T03:56:53` Tests FALLARON:
+```
+gs.save(settings.DEFAULTS, destino) is not None
+>       assert (destino / settings.SETTINGS_FILE).is_file()
+E       AssertionError: assert False
+E        +  where False = is_file()
+E        +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+E        +      where 'config.json' = settings.SETTINGS_FILE
+
+evolve/tests/test_assistant.py:61: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:270: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_save_creates_the_folder - AssertionError: assert False
+ +  where False = is_file()
+ +    where is_file = (PosixPath('/tmp/pytest-of-runner/pytest-2/test_save_creates_the_folder0/sub/carpeta') / 'config.json').is_file
+ +      where 'config.json' = settings.SETTINGS_FILE
+1 failed, 298 passed, 4 warnings in 0.95s
+
+```
+- `2026-08-28T03:56:53` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_Validators._run_safety_checks` para rechazar explícitamente archivos que no sean accesibles o que tengan permisos restringidos antes de validar la ruta, evitando errores de estado de carrera al interactuar con el sistema de archivos.
+- `2026-08-28T03:57:04` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se ha implementado un filtrado estricto en el escaneo de carpetas de inicio para evitar el seguimiento de enlaces simbólicos y puntos de reparse, mitigando el riesgo de bucles infinitos o escape de sandbox, alineándose con el enfoque de seguridad defensiva al validar `is_protected_path` sobre el resultado de `entry.path` antes de procesarlo.
+- `2026-08-28T03:57:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T03:57:04` Corrida terminada. Total usado hoy: 96.

@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
-- Rechazadas por tests: 17
+- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-26 | 32 | 3 | 3 | 3 | 21 |
+| 2026-08-26 | 32 | 3 | 3 | 3 | 17 |
 | 2026-08-27 | 158 | 12 | 22 | 7 | 151 |
-| 2026-08-28 | 47 | 2 | 7 | 3 | 33 |
+| 2026-08-28 | 49 | 3 | 7 | 3 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **60**
 - manejo de errores y validación de entradas: **47**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - robustez ante casos límite: **43**
 - rendimiento: **42**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **23**
+- `scanner.py`: **24**
 - `assistant.py`: **22**
 - `settings.py`: **21**
 - `browser.py`: **20**
@@ -41,12 +41,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
 - `main.py`: **14**
-- `startup.py`: **11**
+- `startup.py`: **12**
 - `safety.py`: **10**
 - `organizer.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-28T03:57:04` **startup.py** (seguridad defensiva): Se ha implementado un filtrado estricto en el escaneo de carpetas de inicio para evitar el seguimiento de enlaces simbólicos y puntos de reparse, mitigando el riesgo de bucles infinitos o escape de sandbox, alineándose con el enfoque de seguridad defensiva al validar `is_protected_path` sobre el resultado de `entry.path` antes de procesarlo.
+- `2026-08-28T03:56:26` **scanner.py** (seguridad defensiva): Se ha endurecido el método `_is_safe_entry` en `Scanner` para prevenir el "path traversal" accidental mediante el uso de `pathlib` para asegurar la contención lógica dentro de la raíz base, evitando que nombres de archivo manipulados o rutas relativas salgan del ámbito esperado.
 - `2026-08-28T03:45:53` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `memory.py` al reemplazar la validación manual de caracteres RTL (que era incompleta) por una lógica que utiliza `Path.resolve()` contra el sistema de archivos antes de cualquier operación, asegurando que el proceso objetivo no esté operando fuera de los directorios permitidos y evitando potencialmente ataques de tipo *path traversal* o *spoofing* de procesos.
 - `2026-08-28T03:37:22` **main.py** (seguridad defensiva): Se ha mejorado la seguridad del método `_worker_thread_logic` agregando una validación previa a la ejecución de cualquier tarea asíncrona, asegurando que la ruta no sea un enlace simbólico (reparse point) mediante `is_safe_to_modify` antes de delegar la operación al pool de hilos, evitando así vulnerabilidades por acceso fuera de los límites permitidos.
 - `2026-08-28T03:36:29` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva del módulo añadiendo una validación estricta de las entradas en `compute_score` mediante un chequeo de tipos y estructura, asegurando que los datos procesados sean consistentes y no conduzcan a errores de cálculo inesperados en un contexto de demo técnica.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T03:07:23` **memory.py** (robustez ante casos límite): Mejoré la robustez de `read_snapshot` ante fallos de lectura de `/proc/meminfo` (como bloqueos de lectura o archivos incompletos/vacíos) mediante un manejo de excepciones más granular y un control de integridad básico en la cadena de texto, evitando retornos nulos ante condiciones de carrera en Linux.
 - `2026-08-28T02:55:53` **healthscore.py** (robustez ante casos límite): Mejora la robustez ante datos externos no confiables añadiendo una verificación explícita en `compute_score` que garantiza que todos los pesos de `WEIGHTS` tengan su función de cálculo correspondiente en `_SCORER_MAP`, evitando un `KeyError` catastrófico en caso de mantenimiento incompleto.
 - `2026-08-28T02:54:53` **browser.py** (robustez ante casos límite): Se introdujo una gestión robusta de permisos y acceso a archivos en `_sum_directory_recursive` para manejar excepciones durante el escaneo de directorios con accesos denegados o bloqueados, evitando que la recursión falle prematuramente al encontrar un subdirectorio inaccesible.
-- `2026-08-28T02:45:48` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores inesperados en el contexto (como `inf` o `NaN` en métricas de punto flotante) y se garantizó la integridad del objeto `SystemContext` ante entradas mal formadas, evitando comportamientos indefinidos en los cálculos del asistente.
-- `2026-08-28T02:44:46` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando la llamada `ruta.stat()` innecesaria cuando el archivo no existe y reduciendo las conversiones de tipo redundantes dentro del bucle de validación en `validate()`.
