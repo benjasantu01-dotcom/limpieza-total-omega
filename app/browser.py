@@ -128,6 +128,8 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
 
 def _is_excluded_file(name: str) -> bool:
     """Valida si un nombre de archivo está en la lista de bloqueo permanente."""
+    if not isinstance(name, str):
+        return True
     return name.lower() in NEVER_TOUCH
 
 
@@ -139,6 +141,9 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
+        # Validar existencia antes de consultar atributos
+        if not os.path.exists(entry_path):
+            return False
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 
@@ -152,6 +157,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     Filtro de seguridad central: determina si una entrada debe omitirse.
     Usa `is_junction_fn` para evitar seguir puntos de reparse (Junctions).
     """
+    if not hasattr(entry, 'name') or not hasattr(entry, 'path'):
+        return True
     if _is_excluded_file(entry.name):
         return True
         
@@ -176,7 +183,7 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso de una carpeta utilizando `os.scandir` para eficiencia.
     Mantiene un diccionario `memo` para cachear resultados de subcarpetas y evitar E/S repetitiva.
     """
-    if depth > MAX_SCAN_DEPTH:
+    if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str):
         return 0
 
     root_path = Path(root_dir)

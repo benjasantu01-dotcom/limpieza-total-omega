@@ -92,17 +92,17 @@ class ProblemCriterion(NamedTuple):
         Retorna la cadena formateada si se cumple la condición, o None.
         """
         try:
-            val = getattr(ctx, self.metric_key, -1.0)
-        except AttributeError:
+            val = getattr(ctx, self.metric_key)
+            f_val = _safe_float(val, -1.0)
+            if f_val < 0:
+                return None
+            
+            is_triggered = (self.operator == "<" and f_val < self.threshold) or \
+                           (self.operator == ">" and f_val > self.threshold)
+            
+            return self.message_format.format(val)[:_MAX_MSG_CHUNK] if is_triggered else None
+        except (AttributeError, ValueError, TypeError):
             return None
-        f_val = _safe_float(val, -1.0)
-        if f_val < 0:
-            return None
-        
-        is_triggered = (self.operator == "<" and f_val < self.threshold) or \
-                       (self.operator == ">" and f_val > self.threshold)
-        
-        return self.message_format.format(val)[:_MAX_MSG_CHUNK] if is_triggered else None
 
 class AreaExplanation(NamedTuple):
     """Documentación pedagógica de las áreas de la aplicación."""
@@ -316,7 +316,8 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
     """
     try:
         val = _get_source_value(source, key)
-        if val is None or type(val) in _FORBIDDEN_TYPES: return False
+        if val is None or type(val) in _FORBIDDEN_TYPES: 
+            return False
         
         clean_val = _safe_float(val, -1.0)
         if clean_val < spec.min_val or clean_val > spec.max_val:

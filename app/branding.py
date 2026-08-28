@@ -246,7 +246,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
         return (0, 0, 0)
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
-    except ValueError:
+    except (ValueError, IndexError):
         return (0, 0, 0)
 
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
@@ -336,24 +336,16 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el archivo SVG tras validar que la ruta destino sea segura."""
-    if not destination:
-        return None
+    if not destination: return None
     try:
         path_obj = Path(destination).resolve()
+        if not is_safe_to_modify(path_obj): return None
         
-        # Validaciones de seguridad de ruta (prohibido sistema, permitido modificar)
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
-            return None
-        
-        # Validar directorio padre antes de la creación
         parent = path_obj.parent
         if not parent.exists():
-            # Verificamos si podemos modificar el padre (creación de carpeta)
-            if not is_safe_to_modify(parent):
-                return None
+            if not is_safe_to_modify(parent): return None
             parent.mkdir(parents=True, exist_ok=True)
             
-        ensure_safe_to_modify(path_obj)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
     except (OSError, PermissionError, TypeError, ValueError):
