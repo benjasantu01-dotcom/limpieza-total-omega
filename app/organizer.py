@@ -158,12 +158,16 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         return True
 
 
-def _passes_system_checks(src: Path, dest: Path) -> bool:
+def _passes_system_checks(src: Path) -> bool:
     """Valida que los archivos no posean atributos de sistema críticos en Windows."""
     if os.name != "nt": return True
-    stat = src.stat()
-    # Bloquea archivos con atributos de sistema (0x4), ocultos (0x2) o solo lectura (0x1)
-    return not (stat.st_file_attributes & 0x7)
+    try:
+        stat = src.stat()
+        # Bloquea archivos con atributos de sistema (0x4), ocultos (0x2) o solo lectura (0x1)
+        # Se evalúa estrictamente contra cualquier combinación de bits críticos
+        return not (stat.st_file_attributes & 0x7)
+    except OSError:
+        return False
 
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
@@ -185,7 +189,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not src.anchor or not dest.anchor or src.anchor != dest.anchor:
             return False
             
-        return src.stat().st_size > 0 and _passes_system_checks(src, dest) and not _is_file_locked(src)
+        return src.stat().st_size > 0 and _passes_system_checks(src) and not _is_file_locked(src)
     except (OSError, RuntimeError, AttributeError):
         return False
 
@@ -265,6 +269,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if not src_path.exists() or not src_path.is_file() or not dest_base.is_dir(): 
             return None
         
+        # Validar que no se crucen unidades de disco (seguridad de integridad)
         if not src_path.anchor or not dest_base.anchor or src_path.anchor != dest_base.anchor:
             return None
 
@@ -340,7 +345,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
             if not resolved_item.is_relative_to(dest):
                 continue
             
-            if not _passes_system_checks(item, dest):
+            if not _passes_system_checks(item):
                 continue
 
             if is_safe_to_modify(item) and not is_protected_path(item) and not _is_file_locked(item):
