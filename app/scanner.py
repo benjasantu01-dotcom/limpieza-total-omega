@@ -56,6 +56,8 @@ WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "deskto
 SYSTEM32_LOWER: Final[str] = "system32"
 RECENT_FILE_THRESHOLD_HOURS: Final[int] = 24
 MAX_PATH_LENGTH: Final[int] = 260
+# Constante de Windows para FILE_ATTRIBUTE_REPARSE_POINT (0x400)
+WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si el nombre del archivo contiene una doble extensión maliciosa."""
@@ -141,7 +143,11 @@ class Scanner:
         Retorna True si es reparse point (bloqueando el acceso para prevenir ciclos).
         """
         try:
-            return bool(entry.stat(follow_symlinks=False).st_file_attributes & 0x400)
+            # Primero chequea via path.is_symlink() si es posible, luego por atributos de archivo.
+            # 0x400 es el bit de 'reparse point' en los atributos del sistema de archivos de Windows.
+            is_sym = Path(entry.path).is_symlink()
+            attr = entry.stat(follow_symlinks=False).st_file_attributes
+            return is_sym or bool(attr & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError):
             return True 
 

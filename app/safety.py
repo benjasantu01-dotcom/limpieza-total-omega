@@ -92,8 +92,8 @@ class _IntegrityCheck(NamedTuple):
     """
     Define una regla de seguridad para archivos.
     'reason' indica el tipo de riesgo.
-    'predicate' es una función que recibe la ruta y sus estadísticas, 
-    devolviendo True si el archivo debe considerarse inseguro.
+    'predicate' es una función que evalúa el estado del archivo; retorna True 
+    si el archivo debe considerarse inseguro (bloqueado).
     """
     reason: ProtectionReason
     predicate: ViolationPredicate
@@ -131,13 +131,17 @@ def _is_reserved_device_name(name: str) -> bool:
 
 
 def _has_alternate_data_stream(path: Path) -> bool:
-    """Detecta flujos de datos alternativos (ADS) usando la sintaxis de ':'."""
+    """
+    Detecta flujos de datos alternativos (ADS). 
+    En Windows, un ADS se denota por la presencia de un carácter ':' adicional 
+    al del drive letter (ej. `archivo.txt:stream`).
+    """
     return ":" in path.name and len(path.name.split(":")) > 2
 
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Verifica los atributos de 'Sistema' u 'Oculto' mediante llamadas de bajo nivel a la API de Windows."""
+    """Verifica atributos 'Sistema' u 'Oculto' mediante WinAPI (GetFileAttributesW)."""
     if os.name != 'nt' or not isinstance(path, Path):
         return False
     try:
@@ -150,7 +154,7 @@ def _is_system_or_hidden(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_reparse_point(path: Path) -> bool:
-    """Identifica nodos de reparse (junctions, symlinks) que podrían causar bucles infinitos en escaneos."""
+    """Identifica nodos de reparse (junctions, symlinks). Vital para evitar recursión infinita."""
     if os.name != 'nt':
         return path.is_symlink()
     if not isinstance(path, Path):
@@ -166,8 +170,8 @@ def _is_reparse_point(path: Path) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
     """
-    Intenta abrir el archivo con acceso de lectura exclusiva. 
-    Si falla, se asume que otro proceso mantiene un bloqueo (sharing violation).
+    Intenta obtener un handle de lectura exclusiva sobre el archivo.
+    Si falla el CreateFileW, inferimos que el archivo está bloqueado por otro proceso.
     """
     path = Path(path_str)
     if not path.exists():
@@ -202,6 +206,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity(path: Path) -> None:
     """
     Ejecuta el pipeline de validaciones sobre un archivo existente con caché temporal.
+    Lanza UnsafePathError si alguna regla de integridad es violada.
     """
     path_key = str(path)
     now = time.monotonic()

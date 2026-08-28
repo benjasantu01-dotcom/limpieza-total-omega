@@ -961,3 +961,12 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-28T06:20:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-08-28T06:20:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-28T06:20:01` Corrida terminada. Total usado hoy: 152.
+- `2026-08-28T06:28:25` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-08-28T06:28:59` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Documenté el propósito técnico de las funciones críticas de validación y los predicados del pipeline de integridad mediante docstrings detallados, mejorando la mantenibilidad para futuros colaboradores sin alterar la lógica de ejecución.
+- `2026-08-28T06:29:30` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejora la legibilidad y la seguridad del mantenimiento técnico mediante la formalización de las capacidades de `_is_reparse_point`, documentando el código de error específico `0x400` y utilizando `Path.is_symlink()` para mayor claridad, garantizando que el escáner no siga enlaces inesperados.
+- `2026-08-28T06:30:25` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str, _Validators.bool, _Validators.int, _Validators.path, _Validators.str
+- `2026-08-28T06:30:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-28T06:31:34` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-28T06:32:01` ➖ Sin cambios en startup.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la documentación mediante la adición de Type Hints explícitos en los atributos de la clase `StartupEntry` y la estandarización de docstrings siguiendo las convenciones del proyecto, facilitando la comprensión de la lógica de resolución "lazy".
+- `2026-08-28T06:32:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-28T06:32:01` Corrida terminada. Total usado hoy: 156.
