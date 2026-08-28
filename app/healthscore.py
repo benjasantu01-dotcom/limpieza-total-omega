@@ -101,10 +101,6 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        if not self.is_finite():
-            for field_name in self.__dataclass_fields__:
-                setattr(self, field_name, 0.0 if field_name != 'memory_available_percent' else 100.0)
-        
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -195,16 +191,10 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Tipo de métricas incompatible."])
     
-    # Validación defensiva profunda: verificar que la instancia no haya sido mutada malintencionadamente
-    if not hasattr(metrics, "__dataclass_fields__"):
-        return HealthResult(0, "F", {}, ["Error: Estructura de métricas inválida."])
-    
     try:
         metrics.validate()
         if not metrics.is_finite():
-            raise ValueError("Datos numéricos no finitos")
-        if not all(area in _SCORER_MAP for area in WEIGHTS):
-            raise KeyError("Inconsistencia: faltan funciones de cálculo.")
+            raise ValueError("Datos numéricos no finitos detectados")
     except Exception:
         return HealthResult(0, "F", {}, ["Error: Datos de métricas corruptos."])
     

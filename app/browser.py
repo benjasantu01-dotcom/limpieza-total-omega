@@ -141,7 +141,8 @@ def _is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> boo
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
-        if not os.path.exists(entry_path):
+        # Validación extra: asegurarse que el path sea absoluto si es posible
+        if not os.path.isabs(entry_path):
             return False
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
@@ -159,10 +160,17 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     """
     if not hasattr(entry, 'name') or not hasattr(entry, 'path'):
         return True
-    if _is_excluded_file(entry.name):
+    
+    # Validar entrada vacía antes de procesar
+    name = entry.name
+    if not name:
+        return True
+
+    if _is_excluded_file(name):
         return True
         
     try:
+        # Usamos is_symlink/is_junction antes de acceder al path si es posible
         if entry.is_symlink() or is_junction_fn(entry.path) or os.path.ismount(entry.path):
             return True
         if _is_system_hidden(entry.path, kernel32):
@@ -186,11 +194,14 @@ def _sum_directory_recursive(
     resultados de sub-árboles. Valida que las rutas hijas se mantengan dentro
     del ámbito del escaneo original.
     """
-    if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str):
+    if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
 
-    root_path = Path(root_dir).resolve()
-    if not is_safe_to_modify(root_path):
+    try:
+        root_path = Path(root_dir).resolve()
+        if not root_path.exists() or not is_safe_to_modify(root_path):
+            return 0
+    except (OSError, RuntimeError):
         return 0
     
     # Seguridad adicional: verificar contención si se provee base
@@ -250,9 +261,13 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     Valida la integridad y seguridad de una ruta de caché antes de iniciar 
     el escaneo recursivo, verificando que no sea un punto de reparse o zona protegida.
     """
-    if not candidate or not candidate.exists():
+    if not candidate:
         return False
     try:
+        # Verificamos si existe antes de resolver para evitar excepciones en rutas no encontradas
+        if not candidate.exists():
+            return False
+            
         real_candidate = candidate.resolve(strict=True)
         
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or os.path.ismount(str(real_candidate)) or
