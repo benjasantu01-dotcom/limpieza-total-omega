@@ -244,7 +244,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
     """
-    Crea una representación visual tipo barra de texto para porcentajes.
+    Genera una representación visual tipo barra de texto para porcentajes.
     
     Args:
         percent: Valor numérico (0.0-100.0).
@@ -410,10 +410,10 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     Dibuja el escudo corporativo escalado en un canvas.
     
     Args:
-        canvas: Protocolo de dibujo.
-        size: Altura total en píxeles.
-        canvas_x: Offset X.
-        canvas_y: Offset Y.
+        canvas: Protocolo de dibujo tipo Canvas.
+        size: Altura total del logo en píxeles.
+        canvas_x: Desplazamiento horizontal inicial (X).
+        canvas_y: Desplazamiento vertical inicial (Y).
     """
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128.0))
@@ -440,7 +440,17 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con degradado en un canvas."""
+    """
+    Renderiza una línea horizontal con degradado en un canvas.
+    
+    Args:
+        canvas: Protocolo de dibujo tipo Canvas.
+        width: Longitud de la línea en píxeles.
+        height: Grosor vertical de la línea.
+        canvas_x: Coordenada X de origen.
+        canvas_y: Coordenada Y de origen.
+        stops: Tupla de colores HEX para el degradado.
+    """
     try:
         w_int = max(1, int(width))
         colores = gradient_colors(w_int, stops)
@@ -456,9 +466,14 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
     Dibuja un indicador circular (donut) de progreso.
     
     Args:
-        percent: Porcentaje actual (0.0-100.0).
-        size: Diámetro exterior en px.
-        thickness: Grosor del trazo en px.
+        canvas: Protocolo de dibujo tipo Canvas.
+        percent: Porcentaje de avance (0.0 a 100.0).
+        size: Diámetro exterior en píxeles.
+        canvas_x: Posición X del centro.
+        canvas_y: Posición Y del centro.
+        thickness: Grosor del trazo circular.
+        track: Color de fondo del track (opcional).
+        fill: Color de progreso (opcional).
     """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))

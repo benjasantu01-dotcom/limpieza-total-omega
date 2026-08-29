@@ -823,3 +823,29 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T13:25:45` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar entradas malformadas y evitando el acceso mediante índices potencialmente fuera de rango, asegurando que el parser no falle ante entradas de registro inesperadas o corruptas.
 - `2026-08-29T13:25:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T13:25:45` Corrida terminada. Total usado hoy: 316.
+- `2026-08-29T13:33:03` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-29T13:33:43` Tests FALLARON:
+```
+===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:273: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - AssertionError: assert 'buen estado' in 'tu estado de salud es 98/100. no hay nada urgente para arreglar.'
+ +  where 'tu estado de salud es 98/100. no hay nada urgente para arreglar.' = <built-in method lower of str object at 0x7f75ab3ea6b0>()
+ +    where <built-in method lower of str object at 0x7f75ab3ea6b0> = 'Tu estado de salud es 98/100. No hay nada urgente para arreglar.'.lower
+ +      where 'Tu estado de salud es 98/100. No hay nada urgente para arreglar.' = Answer(text='Tu estado de salud es 98/100. No hay nada urgente para arreglar.', source='local', notice='Respondido por...lo más urgente que debería arreglar?', '¿Por qué mi PC está lenta?', '¿Es seguro borrar lo que encontró la limpieza?']).text
+1 failed, 298 passed, 4 warnings in 0.97s
+
+```
+- `2026-08-29T13:33:43` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se extrajo la lógica de evaluación de criterios de salud a un método dentro de `ProblemCriterion` y se mejoró la legibilidad de `local_answer` mediante la encapsulación del flujo de resolución de problemas, eliminando la duplicación de código en la generación de la respuesta por defecto.
+- `2026-08-29T13:34:20` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejora la documentación técnica mediante la inclusión de type hints precisos en los parámetros de funciones de dibujo y la estandarización de las descripciones en los docstrings para facilitar el mantenimiento del sistema gráfico.
+- `2026-08-29T13:34:48` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica interna de `browser.py` mediante docstrings detallados en las funciones de escaneo recursivo y manejo de la API de Windows, aclarando el propósito y el flujo de los mecanismos de seguridad (validación de rutas y evitación de recursión infinita/junctions).
+- `2026-08-29T13:35:02` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (específicamente en `walk_files` y `largest_files`) y se mejoró la documentación en `walk_files` para clarificar la lógica de exclusión, alineando el código con los estándares de legibilidad y mantenimiento exigidos.
+- `2026-08-29T13:35:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T13:35:02` Corrida terminada. Total usado hoy: 320.

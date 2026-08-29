@@ -157,8 +157,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Determina mediante heurística si una entrada de sistema debe omitirse.
-    Bloquea accesos a junctions, symlinks y archivos marcados como sistema.
+    Filtra entradas del sistema (ocultas, junctions, symlinks) que no deben
+    ser recorridas para evitar loops infinitos o modificación de archivos críticos.
     """
     if entry is None or not hasattr(entry, 'name') or not hasattr(entry, 'path'):
         return True
@@ -196,7 +196,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño en bytes de un directorio mediante escaneo profundo.
+    Calcula el tamaño en bytes de un directorio mediante escaneo profundo,
+    aplicando memoización para optimizar y evitando ciclos mediante límite de profundidad.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -263,7 +264,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Valida la integridad de una ruta candidata a ser caché.
+    Valida la integridad de una ruta candidata a ser caché, asegurando que
+    pertenezca al árbol permitido y no sea un elemento protegido.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False

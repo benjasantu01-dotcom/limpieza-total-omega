@@ -273,11 +273,9 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
         True si la entrada debe ser omitida, False en caso contrario.
     """
     try:
-        # Usamos lstat para verificar el tipo sin seguir enlaces
         st = entry.stat(follow_symlinks=False)
         if not entry.name or any(c < ' ' for c in entry.name):
             return True
-        # Ignorar symlinks y reparse points para seguridad
         if entry.is_symlink() or (os.name == 'nt' and (st.st_file_attributes & 0x400)):
             return True
         if skip_protected and entry.is_dir(follow_symlinks=False):
@@ -291,12 +289,16 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Generador recursivo que recorre el sistema de archivos buscando archivos.
     
+    Implementa una lógica de DFS iterativo para evitar desbordamiento de pila y utiliza
+    `os.scandir` para mejorar la performance. Saltea automáticamente puntos de reparse
+    (junctions) y rutas de sistema si `skip_protected` es True.
+    
     Args:
         directory: Directorio raíz para comenzar la búsqueda.
-        skip_protected: Si es True, ignora directorios protegidos por `safety.py`.
+        skip_protected: Si es True, usa `safety.is_protected_path` para filtrar directorios.
         
     Yields:
-        Tuplas conteniendo el Path del archivo y su tamaño en bytes.
+        Tuplas (Path, int) donde el entero representa el tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if not root_path or (skip_protected and is_protected_path(root_path)):
@@ -326,12 +328,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
-            # Fallo al abrir el directorio, se ignora silenciosamente para mantener la continuidad
             continue
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """Identifica los N archivos más grandes en un directorio."""
+    """Identifica los N archivos más grandes en un directorio usando una cola de prioridad."""
     root_path = _validate_root(directory)
     if not root_path or not isinstance(limit, int) or limit <= 0:
         return []
