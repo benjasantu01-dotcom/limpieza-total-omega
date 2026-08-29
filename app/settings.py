@@ -32,7 +32,7 @@ import os
 import shutil
 from enum import Enum
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple
+from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
 from functools import lru_cache
 
 from safety import is_safe_to_modify, is_protected_path, ensure_safe_to_modify
@@ -83,6 +83,10 @@ class _NumericRange(NamedTuple):
     """Límites definidos para validar entradas numéricas y evitar desbordamientos."""
     min: int
     max: int
+
+def _is_dict(val: Any) -> TypeGuard[dict[Any, Any]]:
+    """Helper para verificar que un objeto sea un diccionario utilizable."""
+    return isinstance(val, dict)
 
 __all__ = [
     "DEFAULTS", "SETTINGS_DIR", "SETTINGS_FILE", "API_KEY_ENV_VAR",
@@ -244,7 +248,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 def validate(raw_values: Any) -> AppSettings:
     """Valida un dict contra AppSettings; usa DEFAULTS en caso de error o dato faltante."""
     config = DEFAULTS.copy()
-    if not isinstance(raw_values, dict): return config
+    if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
         key = _STR_TO_ENUM.get(key_str)
         if key and key in _VALIDATOR_MAP:
@@ -267,7 +271,7 @@ def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
     try:
         with open(ruta, "r", encoding="utf-8") as f:
             data: Any = json.load(f)
-            if not isinstance(data, dict): return DEFAULTS.copy()
+            if not _is_dict(data): return DEFAULTS.copy()
             return validate(data)
     except (json.JSONDecodeError, UnicodeDecodeError, PermissionError):
         return DEFAULTS.copy()
@@ -283,7 +287,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     """Persiste la configuración en disco mediante reemplazo atómico y validación previa."""
-    if not isinstance(values, dict): return None
+    if not _is_dict(values): return None
     cleaned_settings = validate(values)
     
     api_key_from_env = os.environ.get(API_KEY_ENV_VAR)

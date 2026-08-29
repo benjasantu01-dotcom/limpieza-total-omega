@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 75 | 5 | 9 | 3 | 84 |
-| 2026-08-29 | 152 | 7 | 21 | 14 | 134 |
+| 2026-08-28 | 72 | 5 | 9 | 3 | 83 |
+| 2026-08-29 | 155 | 7 | 21 | 14 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **41**
-- rendimiento: **35**
+- robustez ante casos límite: **38**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
+- `settings.py`: **23**
 - `memory.py`: **21**
-- `diskreport.py`: **19**
+- `scanner.py`: **20**
 - `quarantine.py`: **19**
-- `scanner.py`: **19**
-- `duplicates.py`: **18**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
+- `diskreport.py`: **18**
+- `duplicates.py`: **17**
 - `branding.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **15**
-- `main.py`: **13**
+- `main.py`: **12**
 - `organizer.py`: **11**
 - `startup.py`: **10**
 - `safety.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T14:05:14` **assistant.py** (rendimiento): Optimicé `_identify_active_problems` para evitar la creación de una lista completa en memoria usando un `islice` sobre el generador existente, mejorando el rendimiento y reduciendo el consumo de recursos al consultar el estado.
+- `2026-08-29T14:04:30` **settings.py** (legibilidad y documentación): Se introdujo un `TypeGuard` personalizado para mejorar la legibilidad y seguridad del flujo de validación de tipos, reemplazando las comprobaciones manuales en el módulo.
+- `2026-08-29T14:04:01` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando Type Hints precisos en funciones críticas, consolidando los docstrings para explicar la intención de las heurísticas y aplicando la técnica de extracción de lógica de validación para separar la navegación del árbol de las decisiones de seguridad, facilitando la legibilidad para auditorías futuras.
 - `2026-08-29T13:55:09` **safety.py** (legibilidad y documentación): Se introdujo una enumeración `ValidationContext` y se reestructuró `ensure_safe_to_modify` para separar la validación de integridad (chequeo de estado del archivo) de la validación estructural (políticas de ruta), mejorando la legibilidad del flujo de control y facilitando el mantenimiento de las reglas de seguridad.
 - `2026-08-29T13:54:35` **quarantine.py** (legibilidad y documentación): He mejorado la documentación de `quarantine_file` y `_atomic_isolate_file` añadiendo type hints más precisos y docstrings explicativos que detallan el flujo de seguridad, haciendo más transparente el proceso crítico de aislamiento atómico.
 - `2026-08-29T13:54:02` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y type hints consistentes en funciones críticas, clarificando la intención y los contratos de seguridad (`is_safe_to_move` y `_is_safe_for_disk_op`) para facilitar futuras auditorías.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T13:25:45` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar entradas malformadas y evitando el acceso mediante índices potencialmente fuera de rango, asegurando que el parser no falle ante entradas de registro inesperadas o corruptas.
 - `2026-08-29T13:25:32` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_Validators` implementando validaciones preventivas contra rutas inexistentes, estados de archivos corruptos y desbordamientos en la escritura, asegurando que la configuración nunca quede en un estado inválido o bloquee la app por excepciones no capturadas.
 - `2026-08-29T13:23:58` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_entry` y `process_entry` ante rutas con caracteres inválidos o entradas nulas, garantizando que el escáner no aborte ante condiciones inesperadas del sistema de archivos y validando la integridad del objeto `entry` antes de su uso.
-- `2026-08-29T13:14:15` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la función `purge_all` mediante la implementación de un manejo de errores más específico y un chequeo preventivo de la integridad del manifiesto, evitando que el bucle se detenga ante fallos de I/O en archivos individuales y asegurando que las entradas corruptas o faltantes se limpien correctamente de la persistencia.
-- `2026-08-29T13:13:10` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar que columnas mal formadas o vacías causen excepciones, asegurando que los datos de entrada sean procesados de forma segura sin romper el flujo de la aplicación.
-- `2026-08-29T13:06:24` **main.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las entradas de configuración numérica en `_collect_settings` y `_validate_numeric_setting`, asegurando que cualquier entrada de usuario malformada o vacía sea detectada y corregida antes de intentar guardar el archivo de ajustes, evitando posibles corrupciones de configuración.

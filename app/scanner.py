@@ -69,11 +69,10 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
-    Utiliza el timestamp actual (now_ts) para evitar llamadas a disco redundantes por cada regla.
+    La heurística prioriza la eficiencia usando el timestamp de inicio global (now_ts).
     """
     if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         try:
-            # Validar existencia antes de consultar metadatos
             if entry and not entry.is_file():
                 return None
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
@@ -84,7 +83,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Verifica si un ejecutable intenta suplantar procesos críticos fuera de System32."""
+    """
+    Verifica si un ejecutable utiliza nombres de procesos críticos del sistema (ej. svchost.exe)
+    cuando se encuentra ubicado fuera de directorios de sistema protegidos.
+    """
     if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if is_protected_path(path):
             return None
@@ -102,8 +104,8 @@ class Scanner:
     """
     Controlador de estado para el escaneo del sistema de archivos.
     
-    Implementa el recorrido recursivo mediante una pila (LIFO) y mantiene
-    un registro de rutas visitadas para evitar ciclos.
+    Mantiene el estado de 'base_root' y 'seen' para asegurar que el recorrido 
+    sea determinista y no se produzcan bucles infinitos en el FS.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -114,13 +116,13 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida si una entrada de directorio es segura y debe ser procesada.
+        Valida si una entrada de directorio es segura, cumple con las restricciones de 
+        longitud de ruta, no es un punto de reparse y no está en la lista de bloqueo.
         """
         if not entry or not entry.path:
             return False
         
         try:
-            # Validaciones preventivas de seguridad y estructura
             if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
                 return False
             
@@ -147,7 +149,6 @@ class Scanner:
             attr = entry.stat(follow_symlinks=False).st_file_attributes
             return is_sym or bool(attr & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError):
-            # Ante fallo de acceso, marcar como True (seguridad conservadora: no entrar)
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
@@ -157,7 +158,10 @@ class Scanner:
             stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Analiza una entrada: si es directorio, lo encola; si es archivo, aplica heurísticas."""
+        """
+        Gestiona la lógica de bifurcación: si es directorio lo encola, 
+        si es archivo ejecutable/candidato, delega a las reglas heurísticas.
+        """
         if not entry or not entry.path:
             return
         try:
@@ -175,13 +179,13 @@ class Scanner:
             logger.debug(f"Acceso denegado o entrada inválida {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta los detectores heurísticos sobre un archivo específico."""
+        """Ejecuta detectores sobre un archivo específico y agrega al registro central de resultados."""
         if path.name and RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Ejecuta todas las reglas heurísticas registradas sobre un archivo."""
+    """Ejecuta todas las reglas heurísticas registradas sobre un archivo individual."""
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -198,7 +202,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Punto de entrada para el escaneo recursivo de un directorio."""
+    """Punto de entrada principal para el escaneo recursivo de un directorio."""
     if directory is None:
         return []
     try:
