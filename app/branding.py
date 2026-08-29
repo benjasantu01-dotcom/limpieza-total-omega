@@ -12,10 +12,19 @@ GLOSARIO VISUAL:
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict
+from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict, Protocol
 from types import MappingProxyType
 from functools import lru_cache
 from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
+
+class CanvasElement(Protocol):
+    """Protocolo que define los métodos mínimos requeridos por el sistema de dibujo."""
+    def create_rectangle(self, *args: float, **kwargs: Any) -> int: ...
+    def create_polygon(self, *args: float, **kwargs: Any) -> int: ...
+    def create_oval(self, *args: float, **kwargs: Any) -> int: ...
+    def create_line(self, *args: float, **kwargs: Any) -> int: ...
+    def create_text(self, *args: float, **kwargs: Any) -> int: ...
+    def create_arc(self, *args: float, **kwargs: Any) -> int: ...
 
 # Type Aliases semánticos para el sistema de diseño
 HexColor: TypeAlias = str  # Formato: "#RRGGBB"
@@ -372,13 +381,11 @@ def logo_ascii() -> str:
       Limpieza Total Omega
 """
 
-def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: float) -> None:
+def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """
-    Renderiza las franjas degradadas internas del escudo en un canvas dado.
-    Requiere un objeto canvas con el método 'create_rectangle'.
+    Renderiza las franjas degradadas internas del escudo.
+    Requiere un canvas que soporte 'create_rectangle'.
     """
-    if not hasattr(canvas, "create_rectangle") or not isinstance(scale, (int, float)): 
-        return
     try:
         franjas_count: int = max(6, int(28 * scale))
         colores = gradient_colors(franjas_count)
@@ -397,13 +404,11 @@ def _draw_shield_stripes(canvas: Any, canvas_x: float, canvas_y: float, scale: f
             )
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
-def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
+def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Dibuja el escudo corporativo escalado y centrado en un canvas.
     Aplica efectos de profundidad y degradado al lienzo.
     """
-    if canvas is None or not hasattr(canvas, "create_polygon") or not isinstance(size, (int, float)): 
-        return
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128.0))
         coords = _get_shield_coords(scale)
@@ -426,12 +431,10 @@ def draw_logo(canvas: Any, size: float = 56.0, canvas_x: float = 0.0, canvas_y: 
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError):
         pass
 
-def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
+def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con degradado, dividida en segmentos por color."""
-    if canvas is None or not hasattr(canvas, "create_line") or not isinstance(width, int): 
-        return
+    """Renderiza una línea horizontal con degradado dividida en segmentos por color."""
     try:
         w_int = max(1, int(width))
         colores = gradient_colors(w_int, stops)
@@ -439,15 +442,11 @@ def draw_gradient_bar(canvas: Any, width: int, height: int = 3,
             canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
 
-def draw_ring(canvas: Any, percent: Union[float, int, None], size: int = 150,
+def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """
-    Dibuja un indicador circular (donut) de progreso.
-    """
-    if canvas is None or not hasattr(canvas, "create_arc") or not isinstance(size, int): 
-        return
+    """Dibuja un indicador circular (donut) de progreso."""
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
         diametro: int = max(20, int(size))

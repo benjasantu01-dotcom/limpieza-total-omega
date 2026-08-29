@@ -676,3 +676,30 @@ FAILED evolve/tests/test_integrity.py::test_is_safe_returns_bool_and_never_raise
 - `2026-08-28T23:38:15` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-28T23:48:26` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-28T23:58:41` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-29T00:08:50` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-29T00:09:17` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-29T00:09:51` Tests FALLARON:
+```
+: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - ValueError: Unknown format code 'd' for object of type 'float'
+8 failed, 291 passed, 4 warnings in 1.44s
+
+```
+- `2026-08-29T00:09:51` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `ProblemCriterion` y `SystemContext.ingest`, reemplazando el uso de `getattr/setattr` genéricos por una estructura más explícita, facilitando el seguimiento de errores y validación de tipos.
+- `2026-08-29T00:10:23` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la robustez del módulo `branding.py` mediante la adición de Type Hints en parámetros complejos (como los objetos `canvas` de `customtkinter`) y la clarificación de los docstrings en funciones gráficas críticas, especificando sus requisitos de dependencia (duck-typing para métodos de dibujo).
+- `2026-08-29T00:10:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T00:10:27` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-29T00:10:43` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones clave y tipado más preciso, clarificando el propósito de las funciones internas que manejan la interacción con el sistema de archivos (`kernel32`, `scandir`, validaciones), lo cual facilita el mantenimiento y la auditoría de seguridad.
+- `2026-08-29T00:10:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T00:10:43` Corrida terminada. Total usado hoy: 4.
