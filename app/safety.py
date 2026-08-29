@@ -83,7 +83,6 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
 )
 
-_PROTECTION_CACHE: dict[str, bool] = {}
 _INTEGRITY_CACHE: dict[str, tuple[float, bool]] = {}
 CACHE_TTL: Final[float] = 2.0
 
@@ -275,26 +274,22 @@ def is_drive_root(path: PathLike) -> bool:
     except (ValueError, TypeError, OSError): return True
 
 
+@lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:
     """Valida contra la lista de directorios prohibidos del sistema."""
     if not path: return True
-    path_key = str(path)
-    if path_key in _PROTECTION_CACHE: return _PROTECTION_CACHE[path_key]
 
     try:
         p = normalize(path)
         normalized_str = os.path.normcase(str(p))
         
-        is_protected = (
+        return (
             any(normalized_str.startswith(root) for root in _SYSTEM_ROOT_PATHS) or
             any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts) or
             p == Path(p.anchor)
         )
     except (ValueError, TypeError, OSError, RuntimeError): 
-        is_protected = True
-    
-    _PROTECTION_CACHE[path_key] = is_protected
-    return is_protected
+        return True
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:

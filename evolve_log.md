@@ -740,3 +740,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-29T01:01:47` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se implementó un mecanismo de caché más eficiente para los snapshots de memoria global en `read_snapshot`, evitando llamadas innecesarias a la API de Windows o lecturas de archivo frecuentes mediante un TTL de 5 segundos, mejorando el rendimiento sin afectar la precisión necesaria.
 - `2026-08-29T01:01:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T01:01:47` Corrida terminada. Total usado hoy: 24.
+- `2026-08-29T01:09:48` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-08-29T01:10:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-29T01:10:46` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto eliminando la doble iteración y conversión a lista en las funciones de acceso, y mejoré el cálculo del total de bytes para que sea una operación $O(1)$ sobre el objeto ya cargado en memoria, evitando recalculaciones redundantes sobre el disco.
+- `2026-08-29T01:11:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 104): unterminated string literal (detected at line 104)
+- `2026-08-29T01:11:16` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T01:11:32` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché local dentro de `is_protected_path` utilizando un `dict` con un `lru_cache` implícito mediante `functools.lru_cache` para evitar la costosa reevaluación de `os.path.normcase` y el chequeo de `any()` sobre las estructuras de datos de protección en cada llamada repetida, mejorando el rendimiento en recorridos de directorios masivos.
+- `2026-08-29T01:11:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T01:11:32` Corrida terminada. Total usado hoy: 28.
