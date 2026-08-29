@@ -1237,3 +1237,25 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T06:48:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-08-29T06:48:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T06:48:02` Corrida terminada. Total usado hoy: 160.
+- `2026-08-29T06:55:52` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-29T06:56:33` Tests FALLARON:
+```
+===================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: Nombre de archivo en manifiesto no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: Nombre de archivo en manifiesto no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: Nombre de archivo en manifiesto no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: Nombre de archivo en manifiesto no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: Nombre de archivo en manifiesto no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: Nombre de archivo en manifiesto no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: Nombre de archivo en manifiesto no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: Nombre de archivo en manifiesto no cumple políticas de seguridad.
+8 failed, 291 passed, 4 warnings in 1.25s
+
+```
+- `2026-08-29T06:56:33` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré `quarantine.py` implementando una validación estricta de nombres de archivo mediante una "lista blanca" (regex) antes de su persistencia en el sandbox, mitigando riesgos de inyección de rutas o caracteres especiales no controlados que podrían evadir el filtrado previo.
+- `2026-08-29T06:56:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T06:57:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-29T06:58:09` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-29T06:58:20` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` validando que la resolución de la ruta (`path_obj`) coincida con el sistema de archivos real antes de cualquier operación, mitigando riesgos de ataques de desbordamiento o manipulación de rutas externas al `base_root` mediante técnicas de navegación.
+- `2026-08-29T06:58:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T06:58:20` Corrida terminada. Total usado hoy: 164.

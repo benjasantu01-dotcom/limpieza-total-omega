@@ -125,7 +125,7 @@ class Scanner:
             return False
         
         try:
-            path_obj = Path(entry.path).resolve()
+            path_obj = Path(entry.path).resolve(strict=True)
             
             if len(str(path_obj)) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
                 return False
@@ -133,10 +133,8 @@ class Scanner:
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
-            # Verificación estricta de subdirectorio
-            try:
-                path_obj.relative_to(self.base_root)
-            except ValueError:
+            # Verificación estricta de subdirectorio asegurando consistencia de resolución
+            if self.base_root not in path_obj.parents and path_obj != self.base_root:
                 return False
             
             if self._is_reparse_point(entry):
