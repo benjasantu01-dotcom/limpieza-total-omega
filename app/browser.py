@@ -202,21 +202,22 @@ def _sum_directory_recursive(
         return 0
 
     root_path = Path(root_dir).resolve()
+    
+    # Verificación de seguridad de contención estricta
+    if not _is_safe_to_traverse(root_path, base_check_path):
+        return 0
+        
     root_abs = str(root_path)
-
     if root_abs in memo:
         return memo[root_abs]
 
-    # Bloqueo defensivo contra reparse points
-    if root_path.is_symlink() or is_junction_fn(root_dir) or os.path.ismount(root_dir):
-        return 0
-
-    if not _is_safe_to_traverse(root_path, base_check_path):
+    # Bloqueo defensivo contra reparse points y enlaces simbólicos
+    if root_path.is_symlink() or is_junction_fn(root_abs) or os.path.ismount(root_abs):
         return 0
 
     total: int = 0
     try:
-        with os.scandir(root_dir) as it:
+        with os.scandir(root_abs) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue
@@ -229,7 +230,6 @@ def _sum_directory_recursive(
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
                 except OSError as e:
-                    # Ignorar errores de acceso (5) o archivos bloqueados (32)
                     if e.winerror in (5, 32):
                         continue
                     raise

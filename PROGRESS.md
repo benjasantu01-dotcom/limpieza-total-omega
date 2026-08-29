@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 213
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 106 | 7 | 15 | 6 | 114 |
-| 2026-08-29 | 124 | 6 | 18 | 9 | 99 |
+| 2026-08-28 | 106 | 7 | 15 | 6 | 110 |
+| 2026-08-29 | 127 | 6 | 18 | 10 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,19 +25,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **52**
 - rendimiento: **45**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **39**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `settings.py`: **21**
 - `scanner.py`: **20**
+- `diskreport.py`: **19**
 - `duplicates.py`: **19**
 - `memory.py`: **19**
-- `diskreport.py`: **18**
+- `branding.py`: **18**
+- `browser.py`: **18**
 - `quarantine.py`: **18**
-- `branding.py`: **17**
-- `browser.py`: **17**
 - `healthscore.py`: **16**
 - `main.py`: **12**
 - `organizer.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T11:02:20` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` evitando que el escáner siga enlaces simbólicos o puntos de reparse que podrían apuntar fuera del árbol objetivo, utilizando `os.lstat` para verificar la naturaleza del nodo antes de procesarlo.
+- `2026-08-29T11:02:03` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación estricta de rutas absolutas antes de iterar y un control preventivo contra el seguimiento de enlaces simbólicos o puntos de reparse en cada nivel de la recursión, garantizando que el escaneo no escape accidentalmente de la jerarquía de `LOCALAPPDATA` incluso ante entradas maliciosas.
+- `2026-08-29T11:01:35` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita mediante `ensure_safe_to_modify` para cumplir con el protocolo de escritura, asegurando que la ruta destino no esté protegida antes de intentar crear directorios o escribir en el disco.
 - `2026-08-29T10:51:34` **settings.py** (robustez ante casos límite): Se ha añadido una validación robusta para prevenir la escritura en dispositivos de solo lectura (como unidades ópticas o sistemas de archivos bloqueados) y para manejar el caso límite donde `os.fsync` falla en sistemas de archivos que no soportan la operación, garantizando la integridad sin bloquear la ejecución.
 - `2026-08-29T10:51:05` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` incorporando un manejo defensivo contra `FileNotFoundError` (común al escanear procesos dinámicos o archivos temporales que desaparecen entre el `os.scandir` y el `stat`) y se corrigió la lógica de retorno para asegurar que, ante cualquier falla de acceso a atributos, el método asuma conservadoramente que la ruta es un punto de reparse para evitar la recursión infinita o errores de acceso.
 - `2026-08-29T10:41:30` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de "espacio disponible" más robusta en `quarantine_file` y una protección contra condiciones de carrera en el manifiesto al asegurar que la lectura y escritura se realicen sobre el estado más reciente después de posibles cambios en el filesystem.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T10:10:40` **scanner.py** (rendimiento): Optimizamos `Scanner.process_entry` reemplazando la creación de objetos `Path` pesados por operaciones directas sobre `entry.name` y `entry.path`, evitando llamadas innecesarias al sistema de archivos al pre-filtrar por extensiones antes de instanciar rutas o resolverlas.
 - `2026-08-29T10:01:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de `lru_cache` con un `maxsize` ajustado y la validación de existencia del archivo antes de intentar el parsing JSON, evitando operaciones de I/O redundantes y bloqueantes en llamadas frecuentes.
 - `2026-08-29T10:00:53` **memory.py** (rendimiento): Se optimizó `top_memory_processes` reemplazando la lectura innecesaria de 20 procesos para filtrar solo 10, y se mejoró el rendimiento de `parse_windows_process_csv` utilizando una estructura de datos `list.append` eficiente con pre-filtrado de errores para evitar ciclos o lógica redundante.
-- `2026-08-29T09:50:44` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje pre-calculando los resultados de las funciones de puntuación en un diccionario local, evitando múltiples recorridos y llamadas redundantes durante la generación de recomendaciones.
-- `2026-08-29T09:50:32` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos `_collect_candidates` evitando llamadas redundantes a `stat()` y `is_file()` mediante el uso de `os.scandir` (vía `path.iterdir()` en Python 3.5+) y almacenando el `st_size` junto a la ruta para evitar un `stat()` adicional al agrupar, reduciendo drásticamente las operaciones de E/S.
-- `2026-08-29T09:49:38` **browser.py** (rendimiento): Implementé la persistencia del diccionario `memo` en `detect_profiles` para evitar el re-cálculo de tamaños de subcarpetas comunes (como las compartidas bajo "User Data") durante el escaneo de múltiples navegadores, optimizando significativamente el tiempo de ejecución en sistemas con muchos perfiles.

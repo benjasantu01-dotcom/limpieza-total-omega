@@ -273,9 +273,12 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
         True si la entrada debe ser omitida, False en caso contrario.
     """
     try:
+        # Usamos lstat para verificar el tipo sin seguir enlaces
+        st = entry.stat(follow_symlinks=False)
         if not entry.name or any(c < ' ' for c in entry.name):
             return True
-        if entry.is_symlink():
+        # Ignorar symlinks y reparse points para seguridad
+        if entry.is_symlink() or (os.name == 'nt' and (st.st_file_attributes & 0x400)):
             return True
         if skip_protected and entry.is_dir(follow_symlinks=False):
             return is_protected_path(Path(entry.path))
@@ -313,10 +316,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     try:
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
-                            target_path = Path(entry.path).resolve()
-                            if root_path not in target_path.parents and target_path != root_path:
-                                continue
-                            
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
