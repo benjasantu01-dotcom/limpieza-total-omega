@@ -159,7 +159,7 @@ def _collect_candidates(
                 
                 try:
                     if entry.is_symlink(): continue
-                    # Evitar seguir puntos de reparse (Junctions) en Windows para no duplicar datos
+                    # Evitar seguir puntos de reparse (Junctions) en Windows
                     if os.name == 'nt' and (entry.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
                         continue
                     

@@ -6,27 +6,27 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 47 | 4 | 7 | 2 | 46 |
+| 2026-08-27 | 47 | 4 | 7 | 2 | 42 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 32 | 1 | 5 | 1 | 9 |
+| 2026-08-29 | 35 | 1 | 5 | 1 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **51**
 - rendimiento: **49**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,11 +34,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `scanner.py`: **21**
 - `branding.py`: **20**
-- `duplicates.py`: **19**
+- `duplicates.py`: **20**
 - `quarantine.py`: **19**
 - `settings.py`: **19**
-- `diskreport.py`: **17**
-- `browser.py`: **16**
+- `diskreport.py`: **18**
+- `browser.py`: **17**
 - `healthscore.py`: **15**
 - `main.py`: **14**
 - `startup.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T02:12:15` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` agregando una validación explícita con `is_protected_path` al iterar sobre directorios, asegurando que las rutas resultantes de `resolve()` también sean filtradas antes de ser incluidas en el escaneo, evitando así accesos a zonas sensibles incluso si el sistema de archivos presenta estructuras complejas.
+- `2026-08-29T02:11:51` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que las rutas en `summarize` no sean enlaces simbólicos o puntos de reparse antes de analizarlas, evitando así el escape del directorio raíz objetivo y posibles ciclos infinitos o lectura de rutas fuera del alcance permitido.
+- `2026-08-29T02:11:24` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la validación estricta de que cada subdirectorio visitado durante la recursión sea una ruta segura (`is_safe_to_modify`), evitando el seguimiento de enlaces simbólicos o junctions que apunten fuera de los límites permitidos, mitigando así el riesgo de escape de contexto.
 - `2026-08-29T02:02:53` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita para evitar rutas relativas o maliciosas mediante `.resolve()`, asegurando que el directorio padre no solo sea verificable por `is_safe_to_modify`, sino que exista y sea un directorio real antes de intentar cualquier operación.
 - `2026-08-29T02:02:34` **assistant.py** (seguridad defensiva): Mejoré la seguridad en `_call_gemini` añadiendo una capa de validación que bloquea cualquier respuesta de la API que contenga indicios de rutas o caracteres sospechosos, reforzando el principio de "input/output validado" antes de mostrar contenido externo en la UI.
 - `2026-08-29T02:01:58` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita para prevenir el procesamiento de filas de encabezado corruptas o mal formadas, y se protegió la lógica de tokenización de comandos contra excepciones de indexación, asegurando que ante valores inesperados (como strings vacíos o caracteres de control) la función retorne una cadena vacía en lugar de propagar un error.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T01:40:53` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `math.isfinite` en las funciones de puntuación individuales para garantizar que valores `NaN` o `Inf` (que pueden surgir en métricas externas) no corrompan los cálculos ni rompan el bucle de normalización, asegurando un sistema robusto ante entradas de datos no numéricos o fuera de rango.
 - `2026-08-29T01:23:18` **assistant.py** (robustez ante casos límite): Se introdujo una validación robusta contra `OverflowError` y `ValueError` en las funciones `_fmt_metric` y `_fmt_metric_sanitized` para manejar casos límite donde valores numéricos extremos o mal formados puedan causar excepciones al intentar formatearlos con `.f` o exceder la capacidad de representación de cadena.
 - `2026-08-29T01:21:58` **settings.py** (rendimiento): Optimizé el rendimiento de `load()` evitando el doble acceso a disco mediante el uso del `mtime` del archivo como clave única en el cache `@lru_cache`, eliminando así la ejecución redundante de `_read_disk` durante la verificación de estado.
-- `2026-08-29T01:20:33` **scanner.py** (rendimiento): Optimicé el bucle de escaneo evitando llamadas innecesarias a `path.exists()` y `path.suffix` mediante la reutilización de los datos ya capturados por `os.scandir`, reduciendo drásticamente las syscalls redundantes durante el recorrido del disco.
-- `2026-08-29T01:11:32` **safety.py** (rendimiento): Se implementó un mecanismo de caché local dentro de `is_protected_path` utilizando un `dict` con un `lru_cache` implícito mediante `functools.lru_cache` para evitar la costosa reevaluación de `os.path.normcase` y el chequeo de `any()` sobre las estructuras de datos de protección en cada llamada repetida, mejorando el rendimiento en recorridos de directorios masivos.
-- `2026-08-29T01:10:46` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la doble iteración y conversión a lista en las funciones de acceso, y mejoré el cálculo del total de bytes para que sea una operación $O(1)$ sobre el objeto ya cargado en memoria, evitando recalculaciones redundantes sobre el disco.

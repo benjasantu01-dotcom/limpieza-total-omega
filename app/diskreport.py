@@ -438,6 +438,9 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
         if not p_input.is_dir():
             return [f"Error: Ruta no es un directorio: {p_input}"]
         
+        if p_input.is_symlink() or p_input.is_block_device() or p_input.is_char_device():
+            return [f"Error: Ruta no válida para análisis: {p_input}"]
+        
         if skip_protected and is_protected_path(p_input):
             return [f"Error: Ruta protegida no permitida: {p_input}"]
             

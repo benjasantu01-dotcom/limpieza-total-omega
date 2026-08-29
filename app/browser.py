@@ -199,6 +199,7 @@ def _sum_directory_recursive(
         return memo[root_abs]
 
     try:
+        # Validación defensiva de seguridad en cada nodo de la recursión
         if not root_path.exists() or not is_safe_to_modify(root_path):
             return 0
         if base_check_path and not _is_path_inside_base(root_path, base_check_path):
