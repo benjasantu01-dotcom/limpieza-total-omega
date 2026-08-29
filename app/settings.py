@@ -248,33 +248,30 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 @lru_cache(maxsize=4)
-def _read_disk(ruta: Path) -> tuple[float, AppSettings]:
-    """Carga interna que detecta cambios por timestamp para el cache."""
+def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
+    """Carga interna que cachea contenido basado en ruta y timestamp."""
+    ruta = Path(ruta_str)
     if not ruta.exists() or not os.access(ruta, os.R_OK):
-        return (0.0, DEFAULTS.copy())
+        return DEFAULTS.copy()
     
     stat_info = ruta.stat()
     if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
-        return (stat_info.st_mtime, DEFAULTS.copy())
+        return DEFAULTS.copy()
             
     try:
         with open(ruta, "r", encoding="utf-8") as f:
             data = json.load(f)
-            if not isinstance(data, dict): return (stat_info.st_mtime, DEFAULTS.copy())
-            return (stat_info.st_mtime, validate(data))
+            if not isinstance(data, dict): return DEFAULTS.copy()
+            return validate(data)
     except (json.JSONDecodeError, UnicodeDecodeError, PermissionError):
-        return (stat_info.st_mtime, DEFAULTS.copy())
+        return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga la configuración desde disco, retornando valores seguros por defecto en caso de error."""
     ruta = settings_path(custom_base)
     try:
         mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
-        cached_mtime, config = _read_disk(ruta)
-        if cached_mtime == mtime:
-            return config.copy()
-        _read_disk.cache_clear()
-        return _read_disk(ruta)[1].copy()
+        return _read_disk(str(ruta), mtime).copy()
     except (OSError, PermissionError, RuntimeError):
         return DEFAULTS.copy()
 

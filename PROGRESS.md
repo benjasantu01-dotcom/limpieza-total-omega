@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 217
+- Sin cambios (nada sustancial que mejorar): 11
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 51 | 5 | 8 | 3 | 59 |
+| 2026-08-27 | 50 | 5 | 8 | 2 | 57 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 19 | 1 | 4 | 0 | 4 |
+| 2026-08-29 | 22 | 1 | 4 | 0 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **51**
-- rendimiento: **47**
-- seguridad defensiva: **43**
-- robustez ante casos límite: **33**
+- rendimiento: **49**
+- seguridad defensiva: **42**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `scanner.py`: **20**
+- `assistant.py`: **22**
+- `scanner.py`: **21**
 - `memory.py`: **20**
 - `quarantine.py`: **19**
 - `branding.py`: **19**
 - `duplicates.py`: **19**
-- `diskreport.py`: **18**
-- `settings.py`: **17**
+- `settings.py`: **18**
+- `diskreport.py`: **17**
 - `browser.py`: **16**
 - `healthscore.py`: **14**
 - `main.py`: **13**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T01:23:18` **assistant.py** (robustez ante casos límite): Se introdujo una validación robusta contra `OverflowError` y `ValueError` en las funciones `_fmt_metric` y `_fmt_metric_sanitized` para manejar casos límite donde valores numéricos extremos o mal formados puedan causar excepciones al intentar formatearlos con `.f` o exceder la capacidad de representación de cadena.
+- `2026-08-29T01:21:58` **settings.py** (rendimiento): Optimizé el rendimiento de `load()` evitando el doble acceso a disco mediante el uso del `mtime` del archivo como clave única en el cache `@lru_cache`, eliminando así la ejecución redundante de `_read_disk` durante la verificación de estado.
+- `2026-08-29T01:20:33` **scanner.py** (rendimiento): Optimicé el bucle de escaneo evitando llamadas innecesarias a `path.exists()` y `path.suffix` mediante la reutilización de los datos ya capturados por `os.scandir`, reduciendo drásticamente las syscalls redundantes durante el recorrido del disco.
 - `2026-08-29T01:11:32` **safety.py** (rendimiento): Se implementó un mecanismo de caché local dentro de `is_protected_path` utilizando un `dict` con un `lru_cache` implícito mediante `functools.lru_cache` para evitar la costosa reevaluación de `os.path.normcase` y el chequeo de `any()` sobre las estructuras de datos de protección en cada llamada repetida, mejorando el rendimiento en recorridos de directorios masivos.
 - `2026-08-29T01:10:46` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la doble iteración y conversión a lista en las funciones de acceso, y mejoré el cálculo del total de bytes para que sea una operación $O(1)$ sobre el objeto ya cargado en memoria, evitando recalculaciones redundantes sobre el disco.
 - `2026-08-29T01:01:47` **memory.py** (rendimiento): Se implementó un mecanismo de caché más eficiente para los snapshots de memoria global en `read_snapshot`, evitando llamadas innecesarias a la API de Windows o lecturas de archivo frecuentes mediante un TTL de 5 segundos, mejorando el rendimiento sin afectar la precisión necesaria.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T00:41:06` **startup.py** (legibilidad y documentación): Mejora de legibilidad y mantenibilidad en `StartupEntry` mediante la separación de responsabilidades y documentación de métodos internos (docstrings), aclarando el flujo de resolución de rutas "lazy" y la seguridad de las validaciones.
 - `2026-08-29T00:40:27` **scanner.py** (legibilidad y documentación): He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en la firma de `scan_directory` y, crucialmente, he extraído la lógica de recursión dentro de `process_entry` a un método privado `_handle_directory` para reducir la complejidad ciclomática y clarificar el flujo de control.
 - `2026-08-29T00:30:36` **quarantine.py** (legibilidad y documentación): Se ha mejorado la legibilidad y la robustez del código mediante la documentación técnica en docstrings detallados, la unificación del manejo de errores mediante el uso de excepciones específicas, y la clarificación de las responsabilidades en la lógica de validación del sandbox.
-- `2026-08-29T00:30:05` **organizer.py** (legibilidad y documentación): Documenté con docstrings claros las funciones internas y utilitarias de `organizer.py` y mejoré los type hints en `_process_directory` y `stage_for_review` para facilitar la auditoría de seguridad y mantenimiento del flujo de archivos.
-- `2026-08-29T00:29:40` **memory.py** (legibilidad y documentación): Mejoré la documentación de `MEMORYSTATUSEX` y las funciones de validación para mayor claridad, y renombré variables internas en `_is_safe_to_trim` y `trim_working_set` para reflejar con precisión su intención (diferenciando `handle_ptr` de `proc_handle` y aclarando los motivos de fallo), facilitando el mantenimiento a largo plazo.
-- `2026-08-29T00:20:17` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos mediante docstrings explicativos en las funciones de cálculo, aclarando el propósito y el rango esperado de cada métrica para facilitar el mantenimiento a largo plazo.

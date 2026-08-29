@@ -121,16 +121,15 @@ class Scanner:
             return False
         
         try:
+            # Uso de resolve() limitado al inicio para verificar límites del escaneo
             path_obj = Path(entry.path).resolve()
             
-            # Bloqueo de rutas UNC: evitan el escaneo de red que puede colgar la UI
             if len(str(path_obj)) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
                 return False
             
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
-            # Garantizar que el escaneo no escape del directorio raíz configurado
             path_obj.relative_to(self.base_root)
             
             if self._is_reparse_point(entry):
@@ -143,8 +142,6 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
         Detecta si una entrada es un punto de reanálisis (junction/symlink).
-        Se bloquea la entrada para evitar seguir enlaces simbólicos fuera de control 
-        que causarían duplicación de escaneo o bucles infinitos.
         """
         try:
             is_sym = entry.is_symlink()
@@ -161,8 +158,7 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Gestiona la lógica de recursión: los directorios seguros se apilan para
-        exploración posterior, los archivos se envían a las heurísticas.
+        Gestiona la lógica de recursión y filtrado inicial de archivos.
         """
         try:
             if not self._is_safe_entry(entry):
@@ -170,12 +166,11 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                # Validar existencia física real antes de procesar
-                if not os.path.exists(entry.path):
-                    return
-                ext = os.path.splitext(entry.name)[1].lower()
-                if ext in SUSPICIOUS_EXECUTABLE_EXT or ext == ".pdf":
-                    self._run_file_heuristics(Path(entry.path), entry, ext)
+                name = entry.name
+                _, ext = os.path.splitext(name)
+                ext_low = ext.lower()
+                if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low == ".pdf":
+                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError):
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}")
 
@@ -190,12 +185,9 @@ class Scanner:
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """
     Ejecuta todas las reglas heurísticas registradas sobre un archivo.
-    Retorna una lista con todos los objetos 'Suspicion' encontrados.
     """
     findings: ScanResult = []
-    if not isinstance(path, Path) or not path.exists():
-        return findings
-        
+    
     if (double_ext := check_double_extension(path, entry, now_ts)):
         findings.append(double_ext)
     
@@ -242,7 +234,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
 def run_windows_defender_quick_scan() -> str:
     """
     Invoca la API de PowerShell para verificar el estado de Defender y ejecutar 
-    un escaneo rápido (QuickScan). Requiere entorno Windows y permisos adecuados.
+    un escaneo rápido (QuickScan).
     """
     try:
         status = subprocess.run(

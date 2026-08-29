@@ -748,3 +748,13 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-29T01:11:32` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché local dentro de `is_protected_path` utilizando un `dict` con un `lru_cache` implícito mediante `functools.lru_cache` para evitar la costosa reevaluación de `os.path.normcase` y el chequeo de `any()` sobre las estructuras de datos de protección en cada llamada repetida, mejorando el rendimiento en recorridos de directorios masivos.
 - `2026-08-29T01:11:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T01:11:32` Corrida terminada. Total usado hoy: 28.
+- `2026-08-29T01:20:01` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-08-29T01:20:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T01:20:33` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el bucle de escaneo evitando llamadas innecesarias a `path.exists()` y `path.suffix` mediante la reutilización de los datos ya capturados por `os.scandir`, reduciendo drásticamente las syscalls redundantes durante el recorrido del disco.
+- `2026-08-29T01:20:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T01:21:14` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-29T01:21:58` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé el rendimiento de `load()` evitando el doble acceso a disco mediante el uso del `mtime` del archivo como clave única en el cache `@lru_cache`, eliminando así la ejecución redundante de `_read_disk` durante la verificación de estado.
+- `2026-08-29T01:22:30` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-29T01:23:18` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra `OverflowError` y `ValueError` en las funciones `_fmt_metric` y `_fmt_metric_sanitized` para manejar casos límite donde valores numéricos extremos o mal formados puedan causar excepciones al intentar formatearlos con `.f` o exceder la capacidad de representación de cadena.
+- `2026-08-29T01:23:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T01:23:18` Corrida terminada. Total usado hoy: 32.

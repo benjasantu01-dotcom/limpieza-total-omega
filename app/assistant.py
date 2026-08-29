@@ -386,7 +386,12 @@ def context_as_text(context: SystemContext) -> str:
 def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
     """Formateador base de bajo nivel para convertir valores numéricos a strings."""
     f = _safe_float(val, -1.0)
-    return "N/A" if f < 0 else f"{f:.{decimal}f}{unit}"
+    if f < 0:
+        return "N/A"
+    try:
+        return f"{f:.{decimal}f}{unit}"
+    except (ValueError, OverflowError):
+        return "N/A"
 
 def explain_area(area: Any) -> str:
     """Devuelve explicaciones pedagógicas de los módulos."""
