@@ -192,10 +192,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             # Verificar permisos básicos en el perfil de usuario si es accesible
             home = Path.home()
             if home.exists() and home.is_dir():
-                home_resolved = home.resolve(strict=True)
-                if not os.access(home_resolved, os.R_OK | os.W_OK):
-                    raise PermissionError(f"Sin permisos de escritura en: {home_resolved}")
+                try:
+                    home_resolved = home.resolve(strict=True)
+                    if not os.access(home_resolved, os.R_OK | os.W_OK):
+                        raise PermissionError(f"Sin permisos de escritura en: {home_resolved}")
+                except (OSError, RuntimeError) as e:
+                    raise RuntimeError(f"Error accediendo a la ruta de perfil: {e}")
         except Exception as e:
+            if isinstance(e, (safety.UnsafePathError, PermissionError, RuntimeError)):
+                raise
             raise RuntimeError(f"Entorno no válido para operación segura: {e}")
 
     def _init_window_properties(self) -> None:
