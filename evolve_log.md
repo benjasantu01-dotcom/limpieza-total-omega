@@ -1194,3 +1194,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T05:46:13` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de memoización selectiva en `_resolve_and_cache_path` para evitar redundancias en el acceso al disco (I/O) cuando múltiples entradas de registro apuntan al mismo ejecutable, optimizando drásticamente el tiempo de ejecución en sistemas con muchos programas instalados.
 - `2026-08-29T05:46:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T05:46:13` Corrida terminada. Total usado hoy: 136.
+- `2026-08-29T05:54:54` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-08-29T05:56:01` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de los `handle_` (como `handle_ram` y `handle_disk`) ante valores de configuración ausentes o inesperados (NaN/Inf) usando `_safe_float` preventivamente, evitando que un error en una sola métrica bloquee toda la respuesta del asistente.
+- `2026-08-29T05:57:01` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-29T05:57:35` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-29T05:58:02` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o sin permisos mediante un manejo de excepciones explícito en `entry.stat()`, evitando que un solo archivo inaccesible interrumpa el cálculo de toda una rama.
+- `2026-08-29T05:58:21` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la resiliencia de `walk_files` y las funciones de reporte frente a archivos con nombres inusuales o bloqueados, añadiendo un manejo de excepciones más granular en el loop principal y asegurando que `os.scandir` no falle ante entradas con errores de acceso inesperados.
+- `2026-08-29T05:58:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T05:58:21` Corrida terminada. Total usado hoy: 140.

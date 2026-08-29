@@ -254,10 +254,13 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
     """Helper interno: verifica si una entrada de directorio debe ser ignorada."""
     try:
+        # Verifica nombres con caracteres de control
         if any(c < ' ' for c in entry.name):
             return True
+        # Ignora enlaces simbólicos para evitar bucles o accesos a otras unidades
         if entry.is_symlink():
             return True
+        # Verifica seguridad antes de seguir
         if skip_protected and entry.is_dir(follow_symlinks=False):
             return is_protected_path(Path(entry.path))
     except (PermissionError, OSError):
@@ -268,16 +271,7 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre el sistema de archivos buscando archivos y sus tamaños.
-    Implementa una pila (stack) para evitar la recursión profunda del intérprete y 
-    utiliza un conjunto de inodos (`visited_inodes`) para detectar y evitar bucles 
-    infinitos causados por puntos de reparse o hard links.
-
-    Args:
-        directory: Ruta raíz desde donde iniciar la búsqueda.
-        skip_protected: Si es True, evita entrar en rutas catalogadas como protegidas.
-
-    Returns:
-        Generador que yield tuplas de (ruta_absoluta, tamaño_en_bytes).
+    Implementa una pila (stack) para evitar la recursión profunda y protege el recorrido.
     """
     root_path = _validate_root(directory)
     if not root_path or (skip_protected and is_protected_path(root_path)):
@@ -311,9 +305,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
-    """
-    Identifica los N archivos más grandes en un directorio mediante un recorrido recursivo.
-    """
+    """Identifica los N archivos más grandes en un directorio."""
     root_path = _validate_root(directory)
     if not root_path or not isinstance(limit, int) or limit <= 0:
         return []
@@ -323,9 +315,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
-    """
-    Agrupa el uso de espacio total por extensión de archivo tras un análisis recursivo.
-    """
+    """Agrupa el uso de espacio total por extensión de archivo."""
     root_path = _validate_root(directory)
     if not root_path or not isinstance(limit, int) or limit <= 0:
         return []
@@ -347,9 +337,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
-    """
-    Identifica las subcarpetas de primer nivel que ocupan más espacio mediante recorrido recursivo.
-    """
+    """Identifica las subcarpetas más pesadas."""
     if not isinstance(limit, int) or limit <= 0:
         return []
     
@@ -381,12 +369,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
-    """
-    Calcula el tamaño total en bytes y el conteo de archivos en un directorio.
-    
-    Returns:
-        Tupla (total_bytes: int, file_count: int).
-    """
+    """Calcula el tamaño total y el conteo de archivos."""
     total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
         total_bytes += size
@@ -395,9 +378,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
-    """
-    Recolección interna de métricas (tamaños, conteos, top files) en una pasada única.
-    """
+    """Recolección interna de métricas en una pasada única."""
     total_bytes: int = 0
     total_files: int = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
@@ -421,16 +402,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
-    """
-    Genera un informe textual unificado con los hallazgos del análisis.
-
-    Args:
-        directory: Directorio base del informe.
-        skip_protected: Si es True, no analiza rutas protegidas.
-
-    Returns:
-        Lista de strings formateados listos para visualización.
-    """
+    """Genera un informe textual unificado."""
     p_input = _validate_root(directory)
     if not p_input:
         return ["Error: Ruta no proporcionada, inexistente o formato inválido."]
