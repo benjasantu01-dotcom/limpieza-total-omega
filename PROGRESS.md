@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 4 | 0 | 1 | 0 | 9 |
+| 2026-08-27 | 1 | 0 | 0 | 0 | 9 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 70 | 4 | 11 | 6 | 49 |
+| 2026-08-29 | 71 | 4 | 11 | 7 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **51**
 - rendimiento: **47**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
 - `assistant.py`: **21**
-- `settings.py`: **20**
+- `scanner.py`: **20**
 - `memory.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
 - `duplicates.py`: **18**
 - `quarantine.py`: **18**
 - `branding.py`: **17**
 - `browser.py`: **17**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
 - `main.py`: **13**
-- `safety.py`: **11**
 - `startup.py`: **11**
+- `safety.py`: **10**
 - `organizer.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T06:05:53` **healthscore.py** (robustez ante casos límite): Se añadió una validación explícita para asegurar que la suma de `_WEIGHT_ITEMS_INT` coincida con la lógica de pesos, protegiendo contra errores de configuración, y se implementó una verificación de sanidad para `weights` en `compute_score` para evitar `KeyError` ante una configuración incompleta.
 - `2026-08-29T05:58:21` **diskreport.py** (robustez ante casos límite): Se mejora la resiliencia de `walk_files` y las funciones de reporte frente a archivos con nombres inusuales o bloqueados, añadiendo un manejo de excepciones más granular en el loop principal y asegurando que `os.scandir` no falle ante entradas con errores de acceso inesperados.
 - `2026-08-29T05:58:02` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o sin permisos mediante un manejo de excepciones explícito en `entry.stat()`, evitando que un solo archivo inaccesible interrumpa el cálculo de toda una rama.
 - `2026-08-29T05:46:01` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la eliminación de múltiples lecturas innecesarias en `assistant_enabled` y `save`, reutilizando el diccionario cargado en memoria para evitar llamadas repetitivas a `load()` y `stat()` sobre el disco.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T04:55:59` **quarantine.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de las funciones críticas de validación y utilidades de bajo nivel para elevar la legibilidad técnica y clarificar las garantías de seguridad del módulo.
 - `2026-08-29T04:55:43` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de docstrings detallados en las funciones de validación de bajo nivel para explicar el PORQUÉ de las restricciones de seguridad (como los bloqueos, la recursión y las verificaciones de sistema), facilitando el mantenimiento y la comprensión de las salvaguardas críticas.
 - `2026-08-29T04:55:16` **memory.py** (legibilidad y documentación): Mejoré la documentación y legibilidad de `memory.py` mediante type hints explícitos, docstrings detallados en las funciones de manipulación de memoria y la extracción de una lógica de validación de procesos en `_get_process_path` para separar la obtención de la ruta del resto de la lógica de seguridad.
-- `2026-08-29T04:44:57` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `compute_score` mediante un docstring detallado que clarifica su naturaleza como función pura y su contrato de entrada/salida, y añadí type hints explícitos en los retornos y parámetros para garantizar la seguridad de tipos, cumpliendo con el enfoque de legibilidad.

@@ -73,7 +73,7 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-# Validación defensiva de la suma de pesos para evitar desbordes en el puntaje
+# Validación defensiva de la configuración
 if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
@@ -191,17 +191,6 @@ _SCORERS: Final = (
 )
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """
-    Toma un objeto SystemMetrics, lo valida y calcula el puntaje global del sistema
-    combinando métricas individuales ponderadas según los pesos configurados en WEIGHTS.
-    
-    Args:
-        metrics: Objeto con los datos recolectados por otros módulos.
-        
-    Returns:
-        Un objeto HealthResult conteniendo el score final (0-100), la nota (A-F),
-        el desglose punto a punto y sugerencias basadas en umbrales de riesgo.
-    """
     if not isinstance(metrics, SystemMetrics) or type(metrics) is not SystemMetrics:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
@@ -217,7 +206,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     accumulated_points: float = 0.0
     
     for area, scorer in _SCORERS:
-        weight = WEIGHTS[area]
+        weight = WEIGHTS.get(area, 0)
         try:
             ratio = scorer(metrics)
             if not math.isfinite(ratio):
@@ -244,7 +233,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     )
 
 def summarize(result: HealthResult) -> List[str]:
-    """Genera una representación textual formateada para el reporte de salud."""
     if not isinstance(result, HealthResult): 
         return ["Error: Formato de informe inválido."]
     

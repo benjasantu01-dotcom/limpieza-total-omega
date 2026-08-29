@@ -1202,3 +1202,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T05:58:21` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la resiliencia de `walk_files` y las funciones de reporte frente a archivos con nombres inusuales o bloqueados, añadiendo un manejo de excepciones más granular en el loop principal y asegurando que `os.scandir` no falle ante entradas con errores de acceso inesperados.
 - `2026-08-29T05:58:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T05:58:21` Corrida terminada. Total usado hoy: 140.
+- `2026-08-29T06:05:03` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-08-29T06:05:28` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-29T06:05:53` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se añadió una validación explícita para asegurar que la suma de `_WEIGHT_ITEMS_INT` coincida con la lógica de pesos, protegiendo contra errores de configuración, y se implementó una verificación de sanidad para `weights` en `compute_score` para evitar `KeyError` ante una configuración incompleta.
+- `2026-08-29T06:06:57` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una gestión de estados y recursos más robusta durante el cierre de la aplicación para prevenir condiciones de carrera (race conditions) entre el pool de hilos de ejecución y la destrucción de los componentes de la interfaz de usuario (widgets Tkinter), evitando errores comunes al intentar manipular widgets inexistentes durante el shutdown.
+- `2026-08-29T06:07:08` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-29T06:07:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T06:07:08` Corrida terminada. Total usado hoy: 144.
