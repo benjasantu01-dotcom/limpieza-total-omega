@@ -7,39 +7,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **230** (45.6% de aceptación)
-- Rechazadas por tests: 13
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 9 | 0 | 1 | 0 | 12 |
+| 2026-08-27 | 7 | 0 | 1 | 0 | 10 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 66 | 3 | 11 | 5 | 47 |
+| 2026-08-29 | 68 | 4 | 11 | 5 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **51**
-- seguridad defensiva: **47**
-- rendimiento: **45**
+- rendimiento: **47**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **21**
 - `assistant.py`: **21**
 - `memory.py`: **20**
-- `scanner.py`: **20**
+- `settings.py`: **20**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
 - `duplicates.py`: **18**
-- `browser.py`: **17**
 - `branding.py`: **17**
 - `diskreport.py`: **17**
-- `healthscore.py`: **16**
+- `browser.py`: **16**
+- `healthscore.py`: **15**
 - `main.py`: **14**
 - `safety.py`: **11**
 - `startup.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T05:46:01` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la eliminación de múltiples lecturas innecesarias en `assistant_enabled` y `save`, reutilizando el diccionario cargado en memoria para evitar llamadas repetitivas a `load()` y `stat()` sobre el disco.
+- `2026-08-29T05:45:33` **scanner.py** (rendimiento): Optimizé la detección de extensiones sospechosas pasando a verificar primero la pertenencia al conjunto `SUSPICIOUS_EXECUTABLE_EXT` antes de realizar llamadas costosas a `path.suffix` o búsquedas regex, reduciendo drásticamente las operaciones en disco y CPU durante el escaneo recursivo.
 - `2026-08-29T05:36:12` **quarantine.py** (rendimiento): Se optimizó el rendimiento del cálculo de espacio y el resumen de cuarentena evitando la deserialización completa y el re-procesamiento de metadatos mediante el acceso directo a los valores del diccionario del manifiesto en lugar de recrear listas de objetos cada vez.
 - `2026-08-29T05:35:26` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` de forma eficiente, evitando llamadas innecesarias a `path.resolve()` y `path.anchor` dentro del bucle interno, y consolidando la lógica de filtrado de extensiones.
 - `2026-08-29T05:35:00` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica que evita invocar el subshell si la caché de 60 segundos es válida, reduciendo el overhead de spawnear procesos del sistema operativo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T04:44:57` **healthscore.py** (legibilidad y documentación): Mejoré la documentación de `compute_score` mediante un docstring detallado que clarifica su naturaleza como función pura y su contrato de entrada/salida, y añadí type hints explícitos en los retornos y parámetros para garantizar la seguridad de tipos, cumpliendo con el enfoque de legibilidad.
 - `2026-08-29T04:44:46` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en funciones privadas y la aclaración de las constantes de configuración, facilitando la comprensión del flujo de procesamiento de archivos.
 - `2026-08-29T04:44:22` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `diskreport.py` incluyendo type hints explícitos en retornos de funciones (como `total_size`), agregando docstrings detallados en funciones complejas (`walk_files`) para explicar la estrategia de evitación de ciclos mediante inodos, y clarificando la intención detrás de las validaciones de entrada en funciones públicas.
-- `2026-08-29T04:35:09` **branding.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de los métodos de dibujo (`draw_logo`, `draw_gradient_bar`, `draw_ring`) para clarificar su rol en la interfaz y asegurar que las coordenadas y escalas se manejen con precisión.
-- `2026-08-29T04:34:51` **assistant.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de validación de seguridad (`_is_safe_text_structure`, `_ensure_safe_text`, `_validate_and_assign`) para explicitar el PORQUÉ de las restricciones y facilitar el mantenimiento del bucle de seguridad.

@@ -287,7 +287,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     if not isinstance(values, dict): return None
     cleaned_settings = validate(values)
     
-    has_api_key = bool(cleaned_settings.get("asistente_clave_api")) or bool(os.environ.get(API_KEY_ENV_VAR))
+    api_key_from_env = os.environ.get(API_KEY_ENV_VAR)
+    has_api_key = bool(cleaned_settings.get("asistente_clave_api")) or bool(api_key_from_env)
     if cleaned_settings.get("asistente_activado") and not has_api_key:
         cleaned_settings["asistente_activado"] = False
     
@@ -313,9 +314,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             except (OSError, AttributeError):
                 pass
         os.replace(temp_path, ruta)
-        
-        with open(ruta, "r", encoding="utf-8") as f:
-            json.load(f)
             
         _read_disk.cache_clear()
         return ruta
@@ -354,13 +352,16 @@ def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     """Valida si el asistente puede ejecutarse: requiere clave (env o archivo) y estado activo."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
-    return bool(settings.get("asistente_activado", False)) and bool(assistant_api_key(custom_base))
+    return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
     """Genera una representación textual de la configuración para fines de reporte."""
     current = load(custom_base)
-    api_present = bool(assistant_api_key(custom_base))
-    origin = f"variable de entorno {API_KEY_ENV_VAR}" if os.environ.get(API_KEY_ENV_VAR) else ("archivo de configuración" if api_present else "no configurada")
+    api_key_env = os.environ.get(API_KEY_ENV_VAR)
+    api_key_file = current.get("asistente_clave_api", "").strip()
+    api_present = bool(api_key_env) or bool(api_key_file)
+    
+    origin = f"variable de entorno {API_KEY_ENV_VAR}" if api_key_env else ("archivo de configuración" if api_key_file else "no configurada")
     return [
         "Configuración actual", "", f"  Archivo: {settings_path(custom_base)}", "",
         "  Apariencia", f"    Tema: {current['tema']}", f"    Acento: {current['acento']}",

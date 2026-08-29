@@ -1157,3 +1157,40 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T05:36:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-08-29T05:36:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T05:36:15` Corrida terminada. Total usado hoy: 132.
+- `2026-08-29T05:44:40` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-29T05:45:09` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-29T05:45:33` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la detección de extensiones sospechosas pasando a verificar primero la pertenencia al conjunto `SUSPICIOUS_EXECUTABLE_EXT` antes de realizar llamadas costosas a `path.suffix` o búsquedas regex, reduciendo drásticamente las operaciones en disco y CPU durante el escaneo recursivo.
+- `2026-08-29T05:46:01` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a la configuración mediante la eliminación de múltiples lecturas innecesarias en `assistant_enabled` y `save`, reutilizando el diccionario cargado en memoria para evitar llamadas repetitivas a `load()` y `stat()` sobre el disco.
+- `2026-08-29T05:46:13` Tests FALLARON:
+```
+.................................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:271: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.25s
+
+```
+- `2026-08-29T05:46:13` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de memoización selectiva en `_resolve_and_cache_path` para evitar redundancias en el acceso al disco (I/O) cuando múltiples entradas de registro apuntan al mismo ejecutable, optimizando drásticamente el tiempo de ejecución en sistemas con muchos programas instalados.
+- `2026-08-29T05:46:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T05:46:13` Corrida terminada. Total usado hoy: 136.

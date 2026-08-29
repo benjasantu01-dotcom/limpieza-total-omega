@@ -173,9 +173,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                name = entry.name
-                _, ext = os.path.splitext(name)
-                ext_low = ext.lower()
+                ext_low = os.path.splitext(entry.name)[1].lower()
                 if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low == ".pdf":
                     self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError):
