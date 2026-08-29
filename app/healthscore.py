@@ -147,32 +147,33 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud de limpieza. Ratio inverso al uso de MB: 1.0 es 0MB, 0.0 es >= _LIMIT_JUNK_MB."""
-    return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
+    val = _to_float(junk_mb)
+    return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0) if math.isfinite(val) else 0.0
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula salud de seguridad. Penalización lineal: cada hallazgo resta 5%, cada advertencia resta 25%."""
-    penalty = (_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)
+    s = _to_float(suspicious_count)
+    w = _to_float(warnings)
+    if not (math.isfinite(s) and math.isfinite(w)): return 0.0
+    penalty = (s * 0.05) + (w * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de memoria. Escala la disponibilidad respecto al umbral crítico."""
-    return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
+    val = _to_float(available_percent)
+    return _clamp(val * _INV_RAM, 0.0, 1.0) if math.isfinite(val) else 0.0
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula salud de disco. Ratio de espacio libre relativo al umbral definido."""
-    return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
+    val = _to_float(free_percent)
+    return _clamp(val * _INV_DISK, 0.0, 1.0) if math.isfinite(val) else 0.0
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de duplicados. Penaliza el exceso de redundancia detectada en MB."""
-    return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
+    val = _to_float(duplicate_mb)
+    return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0) if math.isfinite(val) else 0.0
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula salud de arranque. Penaliza linealmente el número de apps configuradas para iniciar."""
-    return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
+    val = _to_float(startup_count)
+    return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0) if math.isfinite(val) else 0.0
 
 def grade_for_score(score: float | int) -> str:
-    """Asigna una calificación A-F basada en el puntaje numérico (0-100)."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"

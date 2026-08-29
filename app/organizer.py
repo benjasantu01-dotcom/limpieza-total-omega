@@ -170,10 +170,12 @@ def _passes_system_checks(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Valida la integridad y seguridad de una operación de movimiento.
-    Verifica permisos, existencia, recursión y estados de bloqueo.
+    Verifica permisos, existencia, recursión, estados de bloqueo y longitud de ruta.
     """
     try:
         if not isinstance(src, Path) or not isinstance(dest, Path): return False
+        # Prevenir rutas extremadamente largas en Windows
+        if len(str(src)) > 240 or len(str(dest)) > 240: return False
         if not src.is_absolute() or not dest.is_absolute(): return False
         if not src.exists() or not src.is_file(): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
@@ -204,7 +206,6 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """
     Realiza un barrido recursivo del sistema de archivos buscando basura.
-    Utiliza os.scandir para optimizar el acceso a metadatos.
     """
     try:
         abs_path = current_dir.resolve()
@@ -219,7 +220,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                             _process_directory(Path(entry.path), found)
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
-                        if stats.st_size > 0:
+                        # Verificar que el volumen tenga espacio antes de considerar el archivo
+                        if stats.st_size > 0 and shutil.disk_usage(abs_path.anchor).free > stats.st_size:
                             found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue
@@ -281,7 +283,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Ejecuta el traslado seguro de los archivos detectados hacia el directorio de revisión.
-    Valida cada archivo individualmente antes de mover.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None

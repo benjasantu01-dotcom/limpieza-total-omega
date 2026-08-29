@@ -769,3 +769,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-29T01:31:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-08-29T01:31:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T01:31:59` Corrida terminada. Total usado hoy: 36.
+- `2026-08-29T01:40:23` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-08-29T01:40:53` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita de `math.isfinite` en las funciones de puntuación individuales para garantizar que valores `NaN` o `Inf` (que pueden surgir en métricas externas) no corrompan los cálculos ni rompan el bucle de normalización, asegurando un sistema robusto ante entradas de datos no numéricos o fuera de rango.
+- `2026-08-29T01:42:04` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se reforzó la robustez del manejo de subprocesos y la interfaz al implementar una validación de seguridad adicional en `_worker_thread_logic` y mejorar la gestión de estados en `_set_busy`, asegurando que no se intente interactuar con widgets destruidos tras el cierre inesperado de un hilo o de la aplicación.
+- `2026-08-29T01:42:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T01:42:45` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `read_snapshot` ante errores de lectura de archivos y desbordamientos de buffer, garantizando que el sistema siempre devuelva un estado coherente incluso si `/proc/meminfo` entrega contenido malformado, vacío o inesperadamente grande.
+- `2026-08-29T01:42:56` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una validación de espacio en disco en `_process_directory` y se reforzó `_is_safe_for_disk_op` para prevenir fallos por rutas con caracteres inválidos o longitudes excesivas antes de procesar archivos, mejorando la resiliencia ante casos límite del sistema de archivos.
+- `2026-08-29T01:42:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T01:42:56` Corrida terminada. Total usado hoy: 40.

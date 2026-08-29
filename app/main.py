@@ -973,29 +973,25 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         Gestiona el indicador de actividad y el estado de la UI durante 
         tareas asíncronas, desactivando botones para evitar condiciones de carrera.
         """
-        if self._closing or not hasattr(self, 'activity'): return
+        if self._closing: return
         
         with self._task_lock:
             if busy:
                 self._tasks_running += 1
                 if self._tasks_running == 1:
                     self._toggle_ui_availability(False)
-                    try:
-                        if self.activity.winfo_exists():
-                            self.activity.pack(side="right")
-                            self.activity.start()
-                    except (tk.TclError, RuntimeError):
-                        pass
+                    self._safe_run_ui_callback(lambda: (
+                        self.activity.pack(side="right") if self.activity.winfo_exists() else None,
+                        self.activity.start() if self.activity.winfo_exists() else None
+                    ))
             else:
                 self._tasks_running = max(0, self._tasks_running - 1)
                 if self._tasks_running == 0:
                     self._toggle_ui_availability(True)
-                    try:
-                        if self.activity.winfo_exists():
-                            self.activity.stop()
-                            self.activity.pack_forget()
-                    except (tk.TclError, RuntimeError):
-                        pass
+                    self._safe_run_ui_callback(lambda: (
+                        self.activity.stop() if self.activity.winfo_exists() else None,
+                        self.activity.pack_forget() if self.activity.winfo_exists() else None
+                    ))
 
     def _validate_and_log_error(self, e: Exception, tab: str) -> None:
         """
@@ -1037,6 +1033,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             safety.ensure_safe_to_modify(Path(".").resolve())
             if target and not self._is_safe_path(target):
                 raise safety.UnsafePathError(f"Operación no permitida en destino: {target}")
+            
             if not self._closing:
                 self._safe_run(fn, tab)
         except Exception as e:
@@ -1044,7 +1041,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._validate_and_log_error(e, tab)
         finally:
             if not self._closing:
-                # Retorno al hilo principal para actualizar la UI visualmente
                 self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
 
     def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:
