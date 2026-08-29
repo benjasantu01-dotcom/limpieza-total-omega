@@ -91,7 +91,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
         return None
     try:
         return ctypes.windll.kernel32
-    except (AttributeError, OSError, ValueError):
+    except (AttributeError, OSError, ValueError, RuntimeError):
         return None
 
 
@@ -156,7 +156,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     Determina mediante heurística si una entrada de sistema debe omitirse.
     Bloquea accesos a junctions, symlinks y archivos marcados como sistema.
     """
-    if not hasattr(entry, 'name') or not hasattr(entry, 'path'):
+    if entry is None or not hasattr(entry, 'name') or not hasattr(entry, 'path'):
         return True
     
     name = entry.name
@@ -192,13 +192,13 @@ def _sum_directory_recursive(
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
 
-    root_path = Path(root_dir).resolve()
-    root_abs = str(root_path)
-
-    if root_abs in memo:
-        return memo[root_abs]
-
     try:
+        root_path = Path(root_dir).resolve()
+        root_abs = str(root_path)
+
+        if root_abs in memo:
+            return memo[root_abs]
+
         # Validación defensiva de seguridad en cada nodo de la recursión
         if not root_path.exists() or not is_safe_to_modify(root_path):
             return 0
@@ -216,8 +216,11 @@ def _sum_directory_recursive(
                         entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                     )
                 elif entry.is_file(follow_symlinks=False):
-                    total += entry.stat(follow_symlinks=False).st_size
-    except (PermissionError, OSError):
+                    try:
+                        total += entry.stat(follow_symlinks=False).st_size
+                    except (OSError, PermissionError):
+                        continue
+    except (PermissionError, OSError, ValueError):
         return 0
     
     memo[root_abs] = total
@@ -229,7 +232,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
     Calcula el peso total de una carpeta tras validar seguridad con `is_safe_to_modify`.
     Si la ruta está protegida o es inaccesible, retorna 0.
     """
-    if not path:
+    if path is None:
         return 0
     try:
         p_obj = Path(path)
@@ -251,7 +254,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     Valida la integridad de una ruta candidata a ser caché, asegurando que 
     no sea una zona protegida y que resida dentro del perfil del usuario.
     """
-    if not candidate or not isinstance(candidate, Path):
+    if candidate is None or not isinstance(candidate, Path):
         return False
     try:
         if not candidate.exists():
@@ -266,7 +269,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
             _is_excluded_file(real_candidate.name)):
             return False
         return True
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, PermissionError, RuntimeError, ValueError):
         return False
 
 
@@ -292,7 +295,7 @@ def detect_profiles(
     found: List[BrowserCache] = []
     
     for base in raw_bases:
-        if not base or not base.exists(): continue
+        if base is None or not base.exists(): continue
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():

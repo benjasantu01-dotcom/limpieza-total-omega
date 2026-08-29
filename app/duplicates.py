@@ -114,7 +114,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None: return groups
     
     for p in paths:
-        if p is None: continue
+        if not isinstance(p, Path): continue
         try:
             if _is_valid_candidate(p):
                 st = p.stat()
@@ -191,7 +191,7 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
     """Aplica una función de hash para subdividir grupos de archivos existentes."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if path and _is_valid_candidate(path) and (digest := hash_func(path)):
+        if isinstance(path, Path) and _is_valid_candidate(path) and (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -207,7 +207,7 @@ def _resolve_by_hashes(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Pipeline de validación: decide si aplicar hash completo directamente."""
-    valid_paths = [p for p in paths if _is_valid_candidate(p)]
+    valid_paths = [p for p in paths if isinstance(p, Path) and _is_valid_candidate(p)]
     if len(valid_paths) < 2: return []
     
     # Si el archivo es menor o igual al bloque parcial, el hash parcial es suficiente para confirmar identidad
@@ -246,12 +246,13 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if _is_valid_candidate(p):
-            try:
+        if not isinstance(p, Path): continue
+        try:
+            if _is_valid_candidate(p):
                 stat_info = p.stat()
                 candidates.append((float(stat_info.st_mtime), len(str(p)), p))
-            except (OSError, PermissionError):
-                continue
+        except (OSError, PermissionError):
+            continue
             
     if not candidates:
         return None
@@ -270,7 +271,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     
     for path in group.paths:
-        if not _is_valid_candidate(path):
+        if not isinstance(path, Path) or not _is_valid_candidate(path):
             lines.append(f"   [inaccesible] {path}")
             continue
         label = 'conservar' if keeper is not None and path == keeper else 'duplicado'

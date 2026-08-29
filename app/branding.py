@@ -350,19 +350,19 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el archivo SVG tras validar que la ruta destino sea segura y absoluta."""
-    if not destination: 
+    if destination is None:
         return None
         
     try:
         path_obj = Path(destination).resolve()
         
-        # Validación de seguridad defensiva
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+        # Validación de seguridad: ensure_safe_to_modify requiere que la ruta sea segura.
+        # Filtramos primero con is_safe_to_modify para evitar excepciones de flujo
+        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return None
         
         parent = path_obj.parent
-        # Verificar que el padre no sea protegido y exista efectivamente como directorio
-        if is_protected_path(parent) or not is_safe_to_modify(parent):
+        if not is_safe_to_modify(parent) or is_protected_path(parent):
             return None
             
         if not parent.exists():
@@ -388,19 +388,19 @@ def logo_ascii() -> str:
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """
     Renderiza las franjas degradadas internas del escudo.
-    Requiere un canvas que soporte 'create_rectangle'.
     """
     try:
-        franjas_count: int = max(6, int(28 * scale))
+        scale_f = float(scale)
+        franjas_count: int = max(6, int(28 * scale_f))
         colores = gradient_colors(franjas_count)
-        base_y = canvas_y + 18 * scale
-        factor_y = 92 * scale / franjas_count
-        center_x = canvas_x + 64 * scale
+        base_y = canvas_y + 18 * scale_f
+        factor_y = 92 * scale_f / franjas_count
+        center_x = canvas_x + 64 * scale_f
         
         for color_hex, start, end in _get_grouped_segments(colores):
             mid: float = (start + end) / 2
-            progreso: float = mid / max(1, franjas_count - 1)
-            w: float = 36 * scale * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
+            progreso: float = mid / max(1.0, float(franjas_count - 1))
+            w: float = 36 * scale_f * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             canvas.create_rectangle(
                 center_x - w, base_y + start * factor_y, 
                 center_x + w, base_y + end * factor_y + 1, 
@@ -411,7 +411,6 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Dibuja el escudo corporativo escalado y centrado en un canvas.
-    Aplica efectos de profundidad y degradado al lienzo.
     """
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128.0))

@@ -70,6 +70,17 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
     return round(val / (1024 * 1024), 2)
 
 
+def _validate_root(directory: Union[str, os.PathLike]) -> Optional[Path]:
+    """Valida la entrada de directorio base para operaciones de escaneo."""
+    try:
+        p = Path(os.fspath(directory)).resolve(strict=True)
+        if p.is_dir():
+            return p
+    except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
+        pass
+    return None
+
+
 @dataclass
 class FileEntry:
     """
@@ -265,11 +276,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Returns:
         Generador que yield tuplas de (ruta_absoluta, tamaño_en_bytes).
     """
-    try:
-        root_path = Path(os.fspath(directory)).resolve(strict=True)
-        if skip_protected and is_protected_path(root_path):
-            return
-    except (OSError, RuntimeError, PermissionError):
+    root_path = _validate_root(directory)
+    if not root_path or (skip_protected and is_protected_path(root_path)):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()
@@ -303,15 +311,11 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     """
     Identifica los N archivos más grandes en un directorio mediante un recorrido recursivo.
     """
-    try:
-        Path(os.fspath(directory)).resolve(strict=True)
-    except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
+    root_path = _validate_root(directory)
+    if not root_path or not isinstance(limit, int) or limit <= 0:
         return []
     
-    if not isinstance(limit, int) or limit <= 0:
-        return []
-    
-    items: Generator[Tuple[int, Path], None, None] = ((s, p) for p, s in walk_files(directory, skip_protected))
+    items: Generator[Tuple[int, Path], None, None] = ((s, p) for p, s in walk_files(root_path, skip_protected))
     return [FileEntry(path=p, size_bytes=s) for s, p in heapq.nlargest(limit, items, key=lambda x: x[0])]
 
 
@@ -319,18 +323,14 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     """
     Agrupa el uso de espacio total por extensión de archivo tras un análisis recursivo.
     """
-    try:
-        Path(os.fspath(directory)).resolve(strict=True)
-    except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
-        return []
-
-    if not isinstance(limit, int) or limit <= 0:
+    root_path = _validate_root(directory)
+    if not root_path or not isinstance(limit, int) or limit <= 0:
         return []
         
     size_map: Dict[str, int] = defaultdict(int)
     count_map: Dict[str, int] = defaultdict(int)
     
-    for path, size in walk_files(directory, skip_protected):
+    for path, size in walk_files(root_path, skip_protected):
         ext = path.suffix.lower() or "(sin extensión)"
         size_map[ext] += size
         count_map[ext] += 1
@@ -350,42 +350,37 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     if not isinstance(limit, int) or limit <= 0:
         return []
     
-    try:
-        p_base = Path(os.fspath(directory)).resolve(strict=True)
-        if skip_protected and is_protected_path(p_base):
-            return []
-            
-        sums: Dict[str, int] = defaultdict(int)
-        counts: Dict[str, int] = defaultdict(int)
-
-        for path, size in walk_files(p_base, skip_protected):
-            try:
-                relative = path.relative_to(p_base)
-                if not relative.parts:
-                    continue
-                
-                top_folder = p_base / relative.parts[0]
-                if skip_protected and is_protected_path(top_folder):
-                    continue
-                
-                str_path = str(top_folder)
-                sums[str_path] += size
-                counts[str_path] += 1
-            except (ValueError, IndexError, AttributeError, OSError):
-                continue
-
-        results: List[FolderUsage] = [FolderUsage(Path(p), sums[p], counts[p]) for p in sums]
-        return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
-    except (OSError, RuntimeError, TypeError, ValueError):
+    p_base = _validate_root(directory)
+    if not p_base or (skip_protected and is_protected_path(p_base)):
         return []
+            
+    sums: Dict[str, int] = defaultdict(int)
+    counts: Dict[str, int] = defaultdict(int)
+
+    for path, size in walk_files(p_base, skip_protected):
+        try:
+            relative = path.relative_to(p_base)
+            if not relative.parts:
+                continue
+            
+            top_folder = p_base / relative.parts[0]
+            if skip_protected and is_protected_path(top_folder):
+                continue
+            
+            str_path = str(top_folder)
+            sums[str_path] += size
+            counts[str_path] += 1
+        except (ValueError, IndexError, AttributeError, OSError):
+            continue
+
+    results: List[FolderUsage] = [FolderUsage(Path(p), sums[p], counts[p]) for p in sums]
+    return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
 
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """
     Calcula el tamaño total en bytes y el conteo de archivos en un directorio mediante recorrido recursivo.
     """
-    if not isinstance(directory, (str, Path, os.PathLike)) or not directory:
-        return 0, 0
     total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
         total_bytes += size
@@ -430,20 +425,14 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     Returns:
         Lista de strings formateados listos para visualización.
     """
-    if not isinstance(directory, (str, Path, os.PathLike)) or not directory:
-        return ["Error: Ruta no proporcionada o formato inválido."]
-
-    try:
-        p_input = Path(os.fspath(directory)).resolve(strict=True)
-        if not p_input.is_dir():
-            return [f"Error: Ruta no es un directorio: {p_input}"]
+    p_input = _validate_root(directory)
+    if not p_input:
+        return ["Error: Ruta no proporcionada, inexistente o formato inválido."]
         
-        if p_input.is_symlink() or p_input.is_block_device() or p_input.is_char_device():
-            return [f"Error: Ruta no válida para análisis: {p_input}"]
-        
-        if skip_protected and is_protected_path(p_input):
-            return [f"Error: Ruta protegida no permitida: {p_input}"]
+    if skip_protected and is_protected_path(p_input):
+        return [f"Error: Ruta protegida no permitida: {p_input}"]
             
+    try:
         data: SummaryData = _collect_summary_data(p_input, skip_protected)
     except (OSError, PermissionError, RuntimeError, TypeError, ValueError) as e:
         return [f"Error al analizar el directorio: {str(e)}"]
