@@ -286,7 +286,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     if not stops: return (C_GLOW,) * n
     if len(stops) < 2: return (stops[0],) * n
     
-    res = [stops[0]] * n
+    res: List[HexColor] = [stops[0]] * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
     tramos = len(stops) - 1
     
@@ -294,8 +294,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
         pos = (i * tramos) / (n - 1)
         idx = min(int(pos), tramos - 1)
         r_delta = pos - idx
-        s1 = rgb_stops[idx]
-        s2 = rgb_stops[idx + 1]
+        s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
         res[i] = _rgb_to_hex((
             int(s1[0] + (s2[0] - s1[0]) * r_delta),
             int(s1[1] + (s2[1] - s1[1]) * r_delta),

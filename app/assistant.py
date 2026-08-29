@@ -157,8 +157,7 @@ SUGGESTED_QUESTIONS: Final[tuple[str, ...]] = (
     "¿Conviene desactivar programas de inicio?",
 )
 
-SUGGESTED_QUESTIONS_LIST: Final[list[str]] = list(SUGGESTED_QUESTIONS)
-SUGGESTED_QUESTIONS_SHORT: Final[list[str]] = SUGGESTED_QUESTIONS_LIST[:3]
+SUGGESTED_QUESTIONS_SHORT: Final[list[str]] = list(SUGGESTED_QUESTIONS[:3])
 
 SYSTEM_PROMPT: Final[str] = (
     "Sos el asistente de Limpieza Total Omega, una app de mantenimiento para "
@@ -398,14 +397,8 @@ def explain_area(area: Any) -> str:
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa el contexto actual contra los criterios de salud de forma eficiente."""
     if not ctx.analyzed: return []
-    
-    problemas = []
-    for crit in _CRITERIOS_SALUD:
-        msg = crit.format_if_triggered(ctx)
-        if msg:
-            problemas.append(msg)
-            if len(problemas) >= 3: break
-    return problemas
+    problemas = [crit.format_if_triggered(ctx) for crit in _CRITERIOS_SALUD]
+    return [p for p in problemas if p][:3]
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde consultas sobre memoria RAM usando métricas de estado actual."""
@@ -496,9 +489,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     for token in _TOKEN_REGEX.findall(q_sanitized):
-        intent = _KEYWORD_MAP.get(token)
-        if intent:
-            return _HANDLERS[intent](context, question)
+        handler_key = _KEYWORD_MAP.get(token)
+        if handler_key:
+            return _HANDLERS[handler_key](context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
