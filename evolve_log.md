@@ -921,3 +921,40 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-29T14:35:42` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `_is_safe_entry` eliminando la llamada redundante `path_obj.exists()` (que requiere acceso a disco) y reemplazándola por una validación de caché local, además de evitar la resolución completa de ruta innecesaria.
 - `2026-08-29T14:35:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T14:35:42` Corrida terminada. Total usado hoy: 344.
+- `2026-08-29T14:44:25` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-29T14:44:55` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un cacheo más eficiente en `_read_disk` utilizando `os.stat().st_mtime` para evitar la redundancia de lectura y parseo JSON en disco cuando el archivo no ha sido modificado, optimizando el rendimiento de las llamadas recurrentes a `get` y `load`.
+- `2026-08-29T14:45:22` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-29T14:45:56` ➖ Sin cambios en assistant.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` ante valores `NaN`, `Inf` o tipos inesperados que podrían colapsar el asistente, garantizando que el estado del sistema siempre sea un objeto válido y seguro incluso con datos de entrada corruptos.
+- `2026-08-29T14:46:13` Tests FALLARON:
+```
+obj = Path(destination).resolve()
+            # Validación de seguridad: ensure_safe_to_modify bloquea rutas de sistema
+            ensure_safe_to_modify(path_obj)
+    
+            parent = path_obj.parent
+            if not parent.exists():
+                parent.mkdir(parents=True, exist_ok=True)
+    
+            # Verificar que podemos escribir en el directorio antes de intentar
+>           if not (parent.exists() and os.access(parent, os.W_OK)):
+                                        ^^
+E           NameError: name 'os' is not defined. Did you forget to import 'os'
+
+app/branding.py:374: NameError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:274: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - NameError: name 'os' is not defined. Did you forget to import 'os'
+1 failed, 298 passed, 4 warnings in 1.25s
+
+```
+- `2026-08-29T14:46:13` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como directorios de solo lectura o falta de permisos) añadiendo una verificación previa de escritura y manejando explícitamente posibles fallos de E/S en la creación de directorios, manteniendo la integridad del bucle mediante `ensure_safe_to_modify`.
+- `2026-08-29T14:46:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T14:46:13` Corrida terminada. Total usado hoy: 348.

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 64 | 3 | 8 | 3 | 82 |
-| 2026-08-29 | 160 | 8 | 22 | 17 | 137 |
+| 2026-08-28 | 61 | 3 | 8 | 2 | 82 |
+| 2026-08-29 | 161 | 9 | 22 | 18 | 138 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **46**
-- rendimiento: **41**
+- seguridad defensiva: **43**
+- rendimiento: **42**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
-- `memory.py`: **21**
+- `settings.py`: **23**
 - `scanner.py`: **20**
+- `memory.py`: **20**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `duplicates.py`: **17**
-- `healthscore.py`: **16**
 - `branding.py`: **16**
+- `duplicates.py`: **16**
 - `browser.py`: **16**
+- `healthscore.py`: **15**
 - `main.py`: **12**
 - `organizer.py`: **11**
 - `safety.py`: **10**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T14:44:55` **settings.py** (rendimiento): Se implementó un cacheo más eficiente en `_read_disk` utilizando `os.stat().st_mtime` para evitar la redundancia de lectura y parseo JSON en disco cuando el archivo no ha sido modificado, optimizando el rendimiento de las llamadas recurrentes a `get` y `load`.
 - `2026-08-29T14:35:42` **scanner.py** (rendimiento): Optimicé el rendimiento de `_is_safe_entry` eliminando la llamada redundante `path_obj.exists()` (que requiere acceso a disco) y reemplazándola por una validación de caché local, además de evitar la resolución completa de ruta innecesaria.
 - `2026-08-29T14:26:17` **memory.py** (rendimiento): Optimicé `parse_windows_process_csv` reemplazando la creación de listas intermedias y el doble procesamiento de `split()` por un generador eficiente con una única pasada, reduciendo el consumo de memoria y tiempo de CPU durante el análisis de procesos.
 - `2026-08-29T14:24:38` **healthscore.py** (rendimiento): Optimizé `compute_score` eliminando la creación innecesaria de diccionarios intermedios y procesando los datos de forma iterativa, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia del cálculo en cada iteración.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T13:45:36` **memory.py** (legibilidad y documentación): Mejoré la documentación de las funciones de bajo nivel en `memory.py` mediante type hints explícitos, docstrings detallados que explican el "porqué" de las validaciones de seguridad, y la estandarización de los retornos de error para facilitar la trazabilidad del estado del sistema.
 - `2026-08-29T13:44:06` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo de puntaje (`score_*`) y la clase principal, especificando el contrato de entrada y el objetivo de normalización para clarificar el flujo de datos.
 - `2026-08-29T13:43:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de Type Hints en los retornos de funciones privadas y se han clarificado los docstrings en las funciones `_refine_by_hash` y `_process_size_group` para explicar la lógica de particionamiento y la optimización de lectura parcial.
-- `2026-08-29T13:35:02` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en `walk_files` y `largest_files`) y se mejoró la documentación en `walk_files` para clarificar la lógica de exclusión, alineando el código con los estándares de legibilidad y mantenimiento exigidos.
