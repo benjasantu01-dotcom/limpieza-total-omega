@@ -67,11 +67,10 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Calcula el hash SHA256 completo del archivo para confirmación de identidad.
     Utiliza lectura en bloques para optimizar el consumo de memoria.
     """
-    if path is None: return None
+    path_obj = Path(path) if path is not None else None
+    if path_obj is None or not _is_valid_candidate(path_obj):
+        return None
     try:
-        path_obj = Path(path)
-        if not _is_valid_candidate(path_obj): return None
-        
         digest = hashlib.sha256()
         with open(path_obj, "rb") as f:
             while True:
@@ -80,7 +79,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -89,16 +88,15 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     Calcula el hash SHA256 de los primeros N bytes como huella dactilar rápida.
     Permite descartar candidatos que difieren en el inicio del archivo.
     """
-    if path is None: return None
+    path_obj = Path(path) if path is not None else None
+    if path_obj is None or not _is_valid_candidate(path_obj):
+        return None
     try:
-        path_obj = Path(path)
-        if not _is_valid_candidate(path_obj): return None
-        
         with open(path_obj, "rb") as f:
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 

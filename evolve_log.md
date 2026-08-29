@@ -799,3 +799,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T12:54:53` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-29T12:54:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T12:54:53` Corrida terminada. Total usado hoy: 304.
+- `2026-08-29T13:02:33` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-29T13:03:36` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `summarize` capturando fallos en `os.scandir` y la resolución de rutas mediante un manejo de errores más específico, asegurando que el bucle de escaneo no se detenga inesperadamente ante rutas inaccesibles o permisos denegados.
+- `2026-08-29T13:04:00` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `hash_file` y `partial_hash` al centralizar la validación de archivos, evitando lecturas innecesarias en caso de fallos de acceso o permisos, y asegurando un manejo de excepciones más limpio mediante una validación previa estricta.
+- `2026-08-29T13:04:25` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y la validación de `SystemMetrics` centralizando la conversión de tipos en el método `validate` para evitar errores de ejecución silenciosos ante datos de entrada inesperados, asegurando que el estado del objeto sea consistente antes de realizar cálculos.
+- `2026-08-29T13:05:25` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-29T13:06:24` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las entradas de configuración numérica en `_collect_settings` y `_validate_numeric_setting`, asegurando que cualquier entrada de usuario malformada o vacía sea detectada y corregida antes de intentar guardar el archivo de ajustes, evitando posibles corrupciones de configuración.
+- `2026-08-29T13:06:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T13:06:24` Corrida terminada. Total usado hoy: 308.

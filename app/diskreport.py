@@ -326,6 +326,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     except (PermissionError, OSError):
                         continue
         except (PermissionError, OSError):
+            # Fallo al abrir el directorio, se ignora silenciosamente para mantener la continuidad
             continue
 
 
@@ -438,8 +439,8 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
             
     try:
         data: SummaryData = _collect_summary_data(p_input, skip_protected)
-    except (OSError, PermissionError, RuntimeError, TypeError, ValueError) as e:
-        return [f"Error al analizar el directorio: {str(e)}"]
+    except Exception:
+        return ["Error inesperado durante la recolección de datos de disco."]
 
     lines = [
         f"Carpeta analizada: {p_input}", 

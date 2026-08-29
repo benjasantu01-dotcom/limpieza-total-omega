@@ -1761,9 +1761,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
         """Valida que la entrada de configuración sea un entero positivo, retornando el default si falla."""
         try:
-            if value is None or not str(value).strip():
+            if value is None:
                 return default
-            val = int(str(value).strip())
+            raw = str(value).strip()
+            if not raw:
+                return default
+            val = int(raw)
             return val if val > 0 else default
         except (ValueError, TypeError):
             return default
