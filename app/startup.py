@@ -122,14 +122,15 @@ class StartupEntry:
         """Realiza la resolución profunda de la ruta: normaliza, verifica existencia y reparse points."""
         if not isinstance(path_string, str) or not path_string:
             return ""
-        # Filtrado preventivo de caracteres ilegales en rutas Windows
-        if any(c in path_string for c in '<>|?*\0&;'):
+        # Filtrado preventivo de caracteres ilegales y rutas UNC inseguras
+        if any(c in path_string for c in '<>|?*\0&;') or path_string.startswith(r"\\"):
             return ""
         
         try:
             # Normalización inicial para evitar ataques de salto de directorio
             norm = os.path.normpath(path_string)
-            if len(norm) > 4096 or norm.startswith(r"\\"):
+            # Limite de longitud Windows MAX_PATH (260) para prevenir desbordamientos en APIs de sistema
+            if len(norm) > 260:
                 return ""
             # Bloqueo de nombres de dispositivos reservados en Windows
             stem = Path(norm).stem.upper()

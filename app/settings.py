@@ -161,7 +161,6 @@ class _Validators:
             p = Path(path_str).expanduser()
             resolved = p.resolve(strict=False)
             if not resolved.is_absolute(): return False
-            if ".." in str(p): return False
             return _Validators._run_safety_checks(resolved)
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
