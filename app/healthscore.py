@@ -51,12 +51,12 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización inversa: convierten unidades físicas a un ratio [0, 1]
+# Factores de normalización segura (evitando división por cero)
 _INV_JUNK: Final[float] = 1.0 / max(1e-9, _LIMIT_JUNK_MB)
 _INV_DUP: Final[float] = 1.0 / max(1e-9, _LIMIT_DUPLICATE_MB)
-_INV_STARTUP: Final[float] = 1.0 / max(1, _LIMIT_STARTUP_COUNT)
-_INV_RAM: Final[float] = 1.0 / max(1e-9, float(_LIMIT_RAM_PERCENT))
-_INV_DISK: Final[float] = 1.0 / max(1e-9, float(_LIMIT_DISK_PERCENT))
+_INV_STARTUP: Final[float] = 1.0 / max(1, float(_LIMIT_STARTUP_COUNT))
+_INV_RAM: Final[float] = 1.0 / max(1e-9, _LIMIT_RAM_PERCENT)
+_INV_DISK: Final[float] = 1.0 / max(1e-9, _LIMIT_DISK_PERCENT)
 
 # Niveles de severidad para generar sugerencias automáticas
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
@@ -127,10 +127,11 @@ class HealthResult:
     def is_healthy(self) -> bool:
         return 80 <= self.score <= 100
 
-def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
     try:
         val = float(value)
-        return max(low, min(high, val)) if math.isfinite(val) else low
+        if not math.isfinite(val): return low
+        return max(low, min(high, val))
     except (TypeError, ValueError):
         return low
 
@@ -148,30 +149,29 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
     val = _to_float(junk_mb)
-    return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0) if math.isfinite(val) else 0.0
+    return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
-    if not (math.isfinite(s) and math.isfinite(w)): return 0.0
     penalty = (s * 0.05) + (w * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     val = _to_float(available_percent)
-    return _clamp(val * _INV_RAM, 0.0, 1.0) if math.isfinite(val) else 0.0
+    return _clamp(val * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     val = _to_float(free_percent)
-    return _clamp(val * _INV_DISK, 0.0, 1.0) if math.isfinite(val) else 0.0
+    return _clamp(val * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     val = _to_float(duplicate_mb)
-    return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0) if math.isfinite(val) else 0.0
+    return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
     val = _to_float(startup_count)
-    return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0) if math.isfinite(val) else 0.0
+    return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
     s = _to_float(score)
@@ -191,33 +191,27 @@ _SCORERS: Final = (
 )
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics) or type(metrics) is not SystemMetrics:
+    if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
     try:
         metrics.validate()
         if not metrics.is_finite():
-            raise ValueError("Datos numéricos no finitos detectados")
-    except (ValueError, TypeError, AttributeError) as e:
-        return HealthResult(0, "F", {}, [f"Error: Datos corruptos ({type(e).__name__})."])
+            raise ValueError("Datos no finitos")
+    except Exception:
+        return HealthResult(0, "F", {}, ["Error: Datos corruptos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
     
     for area, scorer in _SCORERS:
-        weight = WEIGHTS.get(area, 0)
-        try:
-            ratio = scorer(metrics)
-            if not math.isfinite(ratio):
-                ratio = 0.0
-            ratios[area] = ratio
-            pts = round(ratio * weight)
-            metric_breakdown[area] = int(pts)
-            accumulated_points += pts
-        except Exception:
-            metric_breakdown[area] = 0
-            ratios[area] = 0.0
+        weight = float(WEIGHTS.get(area, 0))
+        ratio = _clamp(scorer(metrics), 0.0, 1.0)
+        ratios[area] = ratio
+        pts = round(ratio * weight)
+        metric_breakdown[area] = int(pts)
+        accumulated_points += pts
     
     final_score = int(_clamp(accumulated_points, 0.0, 100.0))
     recommendations = [rule.message_factory(metrics) for rule in _RECOMMENDATION_RULES if rule.check(metrics, ratios.get(rule.area, 0.0))]

@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 215
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 136 | 10 | 20 | 9 | 129 |
-| 2026-08-29 | 89 | 5 | 13 | 7 | 86 |
+| 2026-08-28 | 134 | 10 | 18 | 9 | 129 |
+| 2026-08-29 | 92 | 5 | 14 | 7 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **49**
 - seguridad defensiva: **48**
 - rendimiento: **47**
-- manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **41**
 - robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `scanner.py`: **20**
-- `settings.py`: **20**
-- `memory.py`: **18**
+- `memory.py`: **19**
+- `scanner.py`: **19**
+- `settings.py`: **19**
+- `duplicates.py`: **18**
 - `diskreport.py`: **18**
 - `branding.py`: **17**
 - `browser.py`: **17**
-- `duplicates.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
 - `main.py`: **13**
 - `startup.py`: **11**
 - `safety.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T08:39:47` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes eliminando el uso de `ctypes.get_last_error()` (que es inestable en Python multihilo) por un manejo de excepciones explícito en las llamadas a la API de Windows, asegurando que cualquier fallo en la liberación de memoria sea reportado con el código de error del sistema capturado en el bloque `except`.
+- `2026-08-29T08:38:38` **healthscore.py** (manejo de errores y validación de entradas): Se reforzó la validación de `SystemMetrics` y `compute_score` asegurando que las constantes de normalización sean seguras frente a divisiones por cero y errores de precisión, y mejorando el manejo de datos de entrada en `_clamp` para evitar excepciones no capturadas.
+- `2026-08-29T08:38:11` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `hash_file` y `partial_hash` ante errores de lectura de archivos mediante el uso de un manejo de excepciones explícito que garantiza el cierre de los descriptores de archivo incluso si ocurren errores inesperados durante el procesamiento.
 - `2026-08-29T08:29:18` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` validando explícitamente el tipo de las entradas de `os.scandir` y `Path.parts` para evitar excepciones en rutas mal formadas o inaccesibles, asegurando que el bucle de procesamiento sea resiliente a errores de sistema de archivos sin interrumpir el análisis.
 - `2026-08-29T08:29:06` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` y `detect_profiles` añadiendo validaciones de entrada (`isinstance`, chequeos de vacío) y manejo explícito de errores para evitar que una configuración inválida o un entorno inesperado causen fallos silenciosos o excepciones no capturadas durante el escaneo.
 - `2026-08-29T08:28:41` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` y `_hex_to_rgb` mediante la validación proactiva de tipos y el manejo explícito de errores de conversión, asegurando que ante entradas inesperadas la app no falle y mantenga su integridad visual sin romper la lógica.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T06:37:17` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo recursivo protegiendo el acceso a atributos de archivo mediante la adición de `os.name == 'nt'` en el chequeo de atributos y un manejo de excepciones más granular, asegurando que fallos en archivos individuales no detengan el proceso ni accedan a rutas inválidas.
 - `2026-08-29T06:37:06` **diskreport.py** (seguridad defensiva): Se ha robustecido el escaneo en `walk_files` y `largest_folders` añadiendo una comprobación adicional de seguridad para asegurar que las rutas hijas nunca escapen del directorio raíz original, previniendo el acceso accidental a rutas fuera del contexto de usuario mediante técnicas de resolución de rutas normalizadas.
 - `2026-08-29T06:36:37` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación estricta de puntos de reparse (junctions/symlinks) en cada nivel del recorrido para evitar ataques de redirección de rutas y asegurar que el escaneo solo acceda a directorios legítimos dentro del perfil de usuario.
-- `2026-08-29T06:36:10` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` para el manejo de excepciones de I/O en lugar de silenciamiento genérico, garantizando que el acceso al sistema de archivos sea explícito y controlado mediante el protocolo de seguridad del proyecto.
-- `2026-08-29T06:27:00` **assistant.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `_call_gemini` mediante `is_protected_path` al procesar la respuesta remota, asegurando que cualquier contenido generado por la API que pueda interpretarse como una ruta de sistema sensible sea bloqueado antes de llegar al usuario, reforzando la defensa contra posibles inyecciones de datos en el prompt de respuesta.
-- `2026-08-29T06:26:40` **startup.py** (robustez ante casos límite): Se ha mejorado `_resolve_and_cache_path` para incluir un manejo defensivo ante rutas con caracteres inválidos o excesivamente largas que podrían provocar excepciones no capturadas durante la resolución, garantizando que el proceso de inventariado sea más resiliente ante configuraciones de registro degradadas o maliciosas.

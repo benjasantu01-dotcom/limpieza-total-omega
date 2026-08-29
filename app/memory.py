@@ -332,10 +332,12 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
         if not is_safe: return False, error_reason or "Validación de seguridad fallida."
         if not psapi.EmptyWorkingSet(proc_handle): 
-            return False, f"El sistema denegó la operación (Error {ctypes.get_last_error()})."
+            raise OSError("El sistema denegó la operación.")
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (OSError, ctypes.ArgumentError, Exception) as e:
-        return False, f"Error inesperado al intentar limpiar memoria: {type(e).__name__}"
+    except (OSError, ctypes.ArgumentError) as e:
+        return False, f"Error del sistema: {e}"
+    except Exception as e:
+        return False, f"Error inesperado: {type(e).__name__}"
     finally:
         if proc_handle and proc_handle != -1: 
             kernel32.CloseHandle(proc_handle)
