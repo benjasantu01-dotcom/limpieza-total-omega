@@ -167,10 +167,12 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         line = line.strip()
         if not line: continue
         parts = [p.strip().strip("'\"") for p in line.split(",")]
-        if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
-            pid_val, ws_val = int(parts[1]), int(parts[2])
-            if ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
-                processes.append(ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val))
+        if len(parts) == 3:
+            try:
+                pid_val, ws_val = int(parts[1]), int(parts[2])
+                if pid_val > 0 and ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
+                    processes.append(ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val))
+            except (ValueError, TypeError): continue
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 

@@ -551,3 +551,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T10:32:04` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se reforzó la robustez del bucle principal (`_on_closing`) y la gestión de tareas asíncronas para prevenir condiciones de carrera durante el cierre de la aplicación, garantizando que el `ThreadPoolExecutor` no intente manipular widgets destruidos y que el estado de la UI sea consistente en situaciones de salida abrupta.
 - `2026-08-29T10:32:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T10:32:04` Corrida terminada. Total usado hoy: 248.
+- `2026-08-29T10:40:00` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-08-29T10:40:30` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `parse_windows_process_csv` ante entradas malformadas o PIDs inexistentes (valores negativos/cero) que podrían causar errores inesperados al procesar la salida de PowerShell.
+- `2026-08-29T10:40:55` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-29T10:41:30` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de "espacio disponible" más robusta en `quarantine_file` y una protección contra condiciones de carrera en el manifiesto al asegurar que la lectura y escritura se realicen sobre el estado más reciente después de posibles cambios en el filesystem.
+- `2026-08-29T10:41:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-08-29T10:41:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T10:41:34` Corrida terminada. Total usado hoy: 252.

@@ -345,7 +345,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
 
     try:
         usage = shutil.disk_usage(dest_dir)
-        if usage.free < (original_size + (1024 * 1024)):
+        # Margen de seguridad extra del 5% o 5MB lo que sea mayor, ademas del tamaño
+        margin = max(int(original_size * 0.05), 5 * 1024 * 1024)
+        if usage.free < (original_size + margin):
             raise OSError("Espacio insuficiente en disco para aislamiento seguro.")
     except OSError as e:
         raise OSError(f"No se pudo determinar el espacio libre: {e}")
@@ -415,6 +417,7 @@ def quarantine_file(
     file_hash = _atomic_isolate_file(source_path, destination, file_size)
     
     try:
+        # Refrescar manifiesto justo antes de escribir para evitar colisiones por concurrencia
         items_dict = _load_manifest_internal(str(dest_dir))
         quarantine_item = QuarantineItem(
             item_id=item_id,
@@ -460,6 +463,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido o vacío.")
     base_path = quarantine_dir(base)
+    # Refresh de manifiesto para asegurar estado actual
     items_dict = _load_manifest_internal(str(base_path))
     quarantine_item = items_dict.get(item_id)
     if not quarantine_item:

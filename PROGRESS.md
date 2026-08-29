@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 32
+- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 107 | 8 | 15 | 6 | 120 |
-| 2026-08-29 | 120 | 6 | 17 | 9 | 96 |
+| 2026-08-28 | 106 | 7 | 15 | 6 | 118 |
+| 2026-08-29 | 122 | 6 | 18 | 9 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **52**
 - rendimiento: **45**
-- seguridad defensiva: **40**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
 - `settings.py`: **20**
 - `duplicates.py`: **19**
+- `memory.py`: **19**
 - `scanner.py`: **19**
 - `diskreport.py`: **18**
-- `memory.py`: **18**
+- `quarantine.py`: **18**
 - `branding.py`: **17**
 - `browser.py`: **17**
-- `quarantine.py`: **17**
 - `healthscore.py`: **16**
 - `main.py`: **12**
-- `startup.py`: **11**
 - `organizer.py`: **11**
 - `safety.py`: **11**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T10:41:30` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de "espacio disponible" más robusta en `quarantine_file` y una protección contra condiciones de carrera en el manifiesto al asegurar que la lectura y escritura se realicen sobre el estado más reciente después de posibles cambios en el filesystem.
+- `2026-08-29T10:40:30` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `parse_windows_process_csv` ante entradas malformadas o PIDs inexistentes (valores negativos/cero) que podrían causar errores inesperados al procesar la salida de PowerShell.
 - `2026-08-29T10:32:04` **main.py** (robustez ante casos límite): Se reforzó la robustez del bucle principal (`_on_closing`) y la gestión de tareas asíncronas para prevenir condiciones de carrera durante el cierre de la aplicación, garantizando que el `ThreadPoolExecutor` no intente manipular widgets destruidos y que el estado de la UI sea consistente en situaciones de salida abrupta.
 - `2026-08-29T10:31:06` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `compute_score` ante posibles cambios en la estructura de `_SCORERS` o errores de acceso en `ratios`, evitando fallos de ejecución si una clave no está presente y garantizando que las métricas sean siempre tratadas como finitas antes de procesar el cálculo.
 - `2026-08-29T10:21:57` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o en uso (casos límite comunes al acceder a caché de navegadores abiertos) mediante la captura explícita de `OSError` con códigos de error específicos de Windows (32: en uso, 5: acceso denegado).
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T09:49:38` **browser.py** (rendimiento): Implementé la persistencia del diccionario `memo` en `detect_profiles` para evitar el re-cálculo de tamaños de subcarpetas comunes (como las compartidas bajo "User Data") durante el escaneo de múltiples navegadores, optimizando significativamente el tiempo de ejecución en sistemas con muchos perfiles.
 - `2026-08-29T09:40:51` **branding.py** (rendimiento): Se ha optimizado la generación de degradados en `gradient_colors` eliminando la recreación innecesaria de listas de colores en cada iteración y utilizando una lógica de interpolación directa basada en los segmentos, mejorando el rendimiento en UI dinámicas.
 - `2026-08-29T09:40:33` **assistant.py** (rendimiento): Se optimizó el proceso de identificación de problemas activos mediante el uso de un generador (`_iter_active_problems`) y una evaluación perezosa, evitando la creación de listas intermedias innecesarias y mejorando la eficiencia en el acceso a atributos del contexto.
-- `2026-08-29T09:39:53` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y la mantenibilidad del archivo `startup.py` añadiendo tipos más precisos (especialmente en `_resolve_path_from_command` y `parse_registry_csv`), documentando los parámetros de las funciones críticas con docstrings extendidos que explican el contrato de los datos, y estandarizando la nomenclatura de las variables internas para eliminar ambigüedades técnicas.
-- `2026-08-29T09:39:24` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` documentando los límites de los validadores y aclarando el propósito de `_read_disk` con type hints más precisos.
