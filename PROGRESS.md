@@ -7,36 +7,36 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **227** (45.0% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 29
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 72 | 5 | 9 | 3 | 83 |
-| 2026-08-29 | 155 | 7 | 21 | 14 | 135 |
+| 2026-08-28 | 70 | 4 | 8 | 3 | 83 |
+| 2026-08-29 | 157 | 7 | 21 | 16 | 135 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **38**
-- rendimiento: **36**
+- rendimiento: **38**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
-- `memory.py`: **21**
 - `scanner.py`: **20**
-- `quarantine.py`: **19**
+- `memory.py`: **20**
 - `assistant.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
+- `quarantine.py`: **18**
+- `branding.py`: **17**
 - `duplicates.py`: **17**
-- `branding.py`: **16**
 - `browser.py`: **16**
 - `healthscore.py`: **15**
 - `main.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T14:15:16` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para que no realice una llamada redundante a `entry.stat()` al procesar archivos, reutilizando el `st` obtenido durante la validación inicial, reduciendo así la cantidad de llamadas al sistema (syscalls) críticas para el rendimiento en escaneos profundos de disco.
+- `2026-08-29T14:14:25` **branding.py** (rendimiento): Se ha optimizado la generación de colores degradados reemplazando la creación de una lista mutable interna en `gradient_colors` por una construcción directa mediante un generador y tuple, y se simplificó el cálculo de `r_delta` y `pos` para reducir operaciones aritméticas redundantes en el bucle principal.
 - `2026-08-29T14:05:14` **assistant.py** (rendimiento): Optimicé `_identify_active_problems` para evitar la creación de una lista completa en memoria usando un `islice` sobre el generador existente, mejorando el rendimiento y reduciendo el consumo de recursos al consultar el estado.
 - `2026-08-29T14:04:30` **settings.py** (legibilidad y documentación): Se introdujo un `TypeGuard` personalizado para mejorar la legibilidad y seguridad del flujo de validación de tipos, reemplazando las comprobaciones manuales en el módulo.
 - `2026-08-29T14:04:01` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando Type Hints precisos en funciones críticas, consolidando los docstrings para explicar la intención de las heurísticas y aplicando la técnica de extracción de lógica de validación para separar la navegación del árbol de las decisiones de seguridad, facilitando la legibilidad para auditorías futuras.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T13:34:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `browser.py` mediante docstrings detallados en las funciones de escaneo recursivo y manejo de la API de Windows, aclarando el propósito y el flujo de los mecanismos de seguridad (validación de rutas y evitación de recursión infinita/junctions).
 - `2026-08-29T13:34:20` **branding.py** (legibilidad y documentación): Mejora la documentación técnica mediante la inclusión de type hints precisos en los parámetros de funciones de dibujo y la estandarización de las descripciones en los docstrings para facilitar el mantenimiento del sistema gráfico.
 - `2026-08-29T13:25:45` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar entradas malformadas y evitando el acceso mediante índices potencialmente fuera de rango, asegurando que el parser no falle ante entradas de registro inesperadas o corruptas.
-- `2026-08-29T13:25:32` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `_Validators` implementando validaciones preventivas contra rutas inexistentes, estados de archivos corruptos y desbordamientos en la escritura, asegurando que la configuración nunca quede en un estado inválido o bloquee la app por excepciones no capturadas.
-- `2026-08-29T13:23:58` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_entry` y `process_entry` ante rutas con caracteres inválidos o entradas nulas, garantizando que el escáner no aborte ante condiciones inesperadas del sistema de archivos y validando la integridad del objeto `entry` antes de su uso.

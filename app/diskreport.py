@@ -261,30 +261,6 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     return results
 
 
-def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
-    """
-    Valida si una entrada de directorio debe ser ignorada por el escáner.
-    
-    Args:
-        entry: Objeto DirEntry a evaluar.
-        skip_protected: Flag para omitir rutas marcadas como protegidas.
-        
-    Returns:
-        True si la entrada debe ser omitida, False en caso contrario.
-    """
-    try:
-        st = entry.stat(follow_symlinks=False)
-        if not entry.name or any(c < ' ' for c in entry.name):
-            return True
-        if entry.is_symlink() or (os.name == 'nt' and (st.st_file_attributes & 0x400)):
-            return True
-        if skip_protected and entry.is_dir(follow_symlinks=False):
-            return is_protected_path(Path(entry.path))
-    except (PermissionError, OSError):
-        return True
-    return False
-
-
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre el sistema de archivos buscando archivos.
@@ -312,21 +288,26 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         try:
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
-                    if _is_invalid_entry(entry, skip_protected):
-                        continue
-                    
                     try:
                         st = entry.stat(follow_symlinks=False)
-                        if entry.is_dir(follow_symlinks=False):
-                            inode_key = (st.st_dev, st.st_ino)
-                            if inode_key not in visited_inodes:
-                                visited_inodes.add(inode_key)
-                                stack.append(entry.path)
-                                
-                        elif entry.is_file(follow_symlinks=False):
-                            yield Path(entry.path), max(0, st.st_size)
                     except (PermissionError, OSError):
                         continue
+
+                    if not entry.name or any(c < ' ' for c in entry.name):
+                        continue
+                    if entry.is_symlink() or (os.name == 'nt' and (st.st_file_attributes & 0x400)):
+                        continue
+                    
+                    if entry.is_dir(follow_symlinks=False):
+                        if skip_protected and is_protected_path(Path(entry.path)):
+                            continue
+                        inode_key = (st.st_dev, st.st_ino)
+                        if inode_key not in visited_inodes:
+                            visited_inodes.add(inode_key)
+                            stack.append(entry.path)
+                                
+                    elif entry.is_file(follow_symlinks=False):
+                        yield Path(entry.path), max(0, st.st_size)
         except (PermissionError, OSError):
             continue
 
