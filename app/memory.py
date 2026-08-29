@@ -294,7 +294,8 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     try:
         p = Path(path).resolve(strict=True)
         if not p.is_file(): return False, "No es un ejecutable válido."
-        if p.is_symlink(): return False, "Simlink detectado."
+        # Detección defensiva de reparse points y enlaces simbólicos
+        if p.is_symlink(): return False, "Enlace simbólico detectado."
         if is_protected_path(str(p)): return False, "Ruta protegida."
     except Exception: return False, "Error resolviendo ruta del proceso."
     return True, None

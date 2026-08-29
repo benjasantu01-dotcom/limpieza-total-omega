@@ -623,6 +623,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_seguridad(self) -> None:
         """Construye las herramientas de escaneo heurístico y monitoreo de seguridad."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Seguridad"]
         row = self._button_row(tab)
         self._action(row, "Escaneo heurístico", self.on_heuristic_scan, column=0)
@@ -636,6 +637,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_cuarentena(self) -> None:
         """Crea la interfaz para listar y restaurar archivos aislados."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Cuarentena"]
         row = self._button_row(tab)
         self._action(row, "Ver cuarentena", self.on_list_quarantine, column=0)
@@ -653,6 +655,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_memoria(self) -> None:
         """Construye el panel de diagnóstico de RAM y gestión de procesos."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Memoria"]
         row = self._button_row(tab)
         self._action(row, "Diagnóstico de RAM", self.on_memory_report, column=0)
@@ -680,6 +683,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_duplicados(self) -> None:
         """Crea las herramientas de búsqueda y gestión de archivos duplicados."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Duplicados"]
         row = self._button_row(tab)
         self._action(row, "Buscar duplicados", self.on_find_duplicates, column=0)
@@ -689,6 +693,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_navegadores(self) -> None:
         """Construye el reporte de cachés de navegadores web."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Navegadores"]
         row = self._button_row(tab)
         self._action(row, "Detectar caché", self.on_browser_report, column=0)
@@ -696,6 +701,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_inicio(self) -> None:
         """Crea la vista para inspección de programas y tareas de inicio."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Inicio"]
         row = self._button_row(tab)
         self._action(row, "Ver programas de inicio", self.on_startup_report, column=0)
@@ -703,6 +709,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_informe(self) -> None:
         """Configura los controles para exportación y generación de informes."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Informe"]
         row = self._button_row(tab)
         self._action(row, "Armar informe", self.on_build_report, column=0)
@@ -714,6 +721,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_asistente(self) -> None:
         """Construye el componente de chat interactivo con el asistente IA."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Asistente"]
         row = self._button_row(tab)
         self._action(row, "Preguntar", self.on_ask_assistant, column=0)
@@ -745,6 +753,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _build_tab_ajustes(self) -> None:
         """Construye el formulario de configuración global de la aplicación."""
+        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Ajustes"]
         row = self._button_row(tab)
         self._action(row, "Guardar ajustes", self.on_save_settings, column=0)
