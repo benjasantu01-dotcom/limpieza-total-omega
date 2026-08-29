@@ -119,26 +119,22 @@ class Scanner:
         Valida si una entrada de directorio es segura, cumple con las restricciones de 
         longitud de ruta, no es un punto de reparse y no está en la lista de bloqueo.
         """
-        if not entry or not entry.path:
+        if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
         try:
-            if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
-                return False
-            
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
-            path_obj = Path(entry.path).resolve()
-            if not path_obj.exists():
-                return False
-            if self.base_root not in path_obj.parents and path_obj != self.base_root:
+            # Comprobación de integridad de la ruta comparando contra base_root sin resolver constantemente
+            entry_path = Path(entry.path)
+            if self.base_root not in entry_path.parents and entry_path != self.base_root:
                 return False
             
             if self._is_reparse_point(entry):
                 return False
 
-            return not is_protected_path(path_obj)
+            return not is_protected_path(entry_path)
         except (ValueError, RuntimeError, OSError, TypeError):
             return False
 

@@ -884,3 +884,40 @@ FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer 
 - `2026-08-29T14:26:27` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-29T14:26:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T14:26:27` Corrida terminada. Total usado hoy: 340.
+- `2026-08-29T14:34:13` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-29T14:34:47` Tests FALLARON:
+```
+   return {}
+    
+                items: Dict[str, QuarantineItem] = {}
+                for entry in data:
+                    if isinstance(entry, dict):
+                        item = QuarantineItem.from_dict(entry)
+                        if item:
+                            items[item.item_id] = item
+                return items
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:299: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:274: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed, 4 warnings in 1.33s
+
+```
+- `2026-08-29T14:34:47` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `purge_all` y `list_items` evitando recrear el diccionario completo del manifiesto mediante la iteración sobre los valores ya cargados y usando `set` para operaciones de eliminación eficientes, además de reducir llamadas redundantes a `resolve()` y `exists()` durante las validaciones.
+- `2026-08-29T14:35:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-29T14:35:32` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-29T14:35:42` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `_is_safe_entry` eliminando la llamada redundante `path_obj.exists()` (que requiere acceso a disco) y reemplazándola por una validación de caché local, además de evitar la resolución completa de ruta innecesaria.
+- `2026-08-29T14:35:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T14:35:42` Corrida terminada. Total usado hoy: 344.

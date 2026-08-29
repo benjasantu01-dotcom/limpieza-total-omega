@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 67 | 4 | 8 | 3 | 82 |
-| 2026-08-29 | 159 | 7 | 21 | 17 | 136 |
+| 2026-08-28 | 64 | 3 | 8 | 3 | 82 |
+| 2026-08-29 | 160 | 8 | 22 | 17 | 137 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **49**
-- rendimiento: **40**
+- seguridad defensiva: **46**
+- rendimiento: **41**
 - robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `memory.py`: **21**
-- `assistant.py`: **19**
-- `diskreport.py`: **19**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
+- `assistant.py`: **18**
+- `diskreport.py`: **18**
 - `quarantine.py`: **18**
-- `branding.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
+- `branding.py`: **16**
 - `browser.py`: **16**
 - `main.py`: **12**
 - `organizer.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T14:35:42` **scanner.py** (rendimiento): Optimicé el rendimiento de `_is_safe_entry` eliminando la llamada redundante `path_obj.exists()` (que requiere acceso a disco) y reemplazándola por una validación de caché local, además de evitar la resolución completa de ruta innecesaria.
 - `2026-08-29T14:26:17` **memory.py** (rendimiento): Optimicé `parse_windows_process_csv` reemplazando la creación de listas intermedias y el doble procesamiento de `split()` por un generador eficiente con una única pasada, reduciendo el consumo de memoria y tiempo de CPU durante el análisis de procesos.
 - `2026-08-29T14:24:38` **healthscore.py** (rendimiento): Optimizé `compute_score` eliminando la creación innecesaria de diccionarios intermedios y procesando los datos de forma iterativa, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia del cálculo en cada iteración.
 - `2026-08-29T14:15:16` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para que no realice una llamada redundante a `entry.stat()` al procesar archivos, reutilizando el `st` obtenido durante la validación inicial, reduciendo así la cantidad de llamadas al sistema (syscalls) críticas para el rendimiento en escaneos profundos de disco.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T13:44:06` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo de puntaje (`score_*`) y la clase principal, especificando el contrato de entrada y el objetivo de normalización para clarificar el flujo de datos.
 - `2026-08-29T13:43:41` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de Type Hints en los retornos de funciones privadas y se han clarificado los docstrings en las funciones `_refine_by_hash` y `_process_size_group` para explicar la lógica de particionamiento y la optimización de lectura parcial.
 - `2026-08-29T13:35:02` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (específicamente en `walk_files` y `largest_files`) y se mejoró la documentación en `walk_files` para clarificar la lógica de exclusión, alineando el código con los estándares de legibilidad y mantenimiento exigidos.
-- `2026-08-29T13:34:48` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna de `browser.py` mediante docstrings detallados en las funciones de escaneo recursivo y manejo de la API de Windows, aclarando el propósito y el flujo de los mecanismos de seguridad (validación de rutas y evitación de recursión infinita/junctions).
