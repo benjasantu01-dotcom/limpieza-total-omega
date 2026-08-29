@@ -219,6 +219,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     metric_breakdown: Dict[MetricKey, int] = {}
     ratios: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
+    recommendations: List[str] = []
     
     for area, scorer in _SCORERS:
         ratio = _clamp(scorer(metrics), 0.0, 1.0)
@@ -227,14 +228,14 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         pts = round(ratio * weight)
         metric_breakdown[area] = int(pts)
         accumulated_points += pts
+        
+        # Checkear recomendaciones en el mismo loop
+        for rule in _RECOMMENDATION_RULES:
+            if rule.area == area and rule.check(metrics, ratio):
+                recommendations.append(rule.message_factory(metrics))
     
     final_score = int(_clamp(accumulated_points, 0.0, 100.0))
-    recommendations = [
-        rule.message_factory(metrics) 
-        for rule in _RECOMMENDATION_RULES 
-        if rule.area in ratios and rule.check(metrics, ratios[rule.area])
-    ]
-            
+    
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     

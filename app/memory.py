@@ -165,19 +165,21 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
-    processes: List[ProcessMemory] = []
-    for line in raw_csv_text.splitlines():
-        line = line.strip()
-        if not line: continue
-        parts = [p.strip().strip("'\"") for p in line.split(",")]
-        # Validación estricta de estructura: esperamos exactamente 3 campos
-        if len(parts) == 3 and all(parts):
-            try:
-                pid_val, ws_val = int(parts[1]), int(parts[2])
-                if pid_val > 0 and ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
-                    processes.append(ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val))
-            except (ValueError, TypeError): continue
-    processes.sort(key=lambda p: p.working_set, reverse=True)
+    
+    def process_generator():
+        for line in raw_csv_text.splitlines():
+            line = line.strip()
+            if not line: continue
+            # Split directo limitado a 2 comas (Nombre, PID, WS)
+            parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
+            if len(parts) == 3:
+                try:
+                    pid_val, ws_val = int(parts[1]), int(parts[2])
+                    if pid_val > 0 and ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
+                        yield ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val)
+                except (ValueError, TypeError): continue
+
+    processes = sorted(process_generator(), key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:

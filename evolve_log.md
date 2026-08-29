@@ -877,3 +877,10 @@ FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer 
 - `2026-08-29T14:15:23` ➖ Sin cambios en duplicates.py (enfoque: rendimiento). Motivo: Optimizé `_collect_candidates` para evitar múltiples llamadas innecesarias a `stat()` y `is_protected_path()` mediante la consolidación de la lógica en una sola iteración, reduciendo significativamente la sobrecarga de I/O durante el escaneo del sistema de archivos.
 - `2026-08-29T14:15:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T14:15:23` Corrida terminada. Total usado hoy: 336.
+- `2026-08-29T14:24:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-29T14:24:38` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé `compute_score` eliminando la creación innecesaria de diccionarios intermedios y procesando los datos de forma iterativa, reduciendo la presión sobre el recolector de basura y mejorando la eficiencia del cálculo en cada iteración.
+- `2026-08-29T14:25:49` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un filtrado de caché en `_apply_card_updates` para evitar reconfigurar widgets de la interfaz gráfica innecesariamente cuando los valores de salud no han cambiado, reduciendo el overhead en el hilo principal durante actualizaciones frecuentes.
+- `2026-08-29T14:26:17` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé `parse_windows_process_csv` reemplazando la creación de listas intermedias y el doble procesamiento de `split()` por un generador eficiente con una única pasada, reduciendo el consumo de memoria y tiempo de CPU durante el análisis de procesos.
+- `2026-08-29T14:26:27` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-29T14:26:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T14:26:27` Corrida terminada. Total usado hoy: 340.
