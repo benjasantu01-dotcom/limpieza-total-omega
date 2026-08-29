@@ -550,24 +550,28 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     purged_count = 0
-    remaining_keys = list(items_dict.keys())
-    for item_id in remaining_keys:
+    # Iteramos sobre una copia para modificar el diccionario original de forma segura
+    for item_id in list(items_dict.keys()):
         item = items_dict[item_id]
         try:
             stored_path = (quarantine_root / item.stored_name).resolve()
+            
+            # Si el archivo ya no existe, limpiamos su entrada del manifiesto
             if not stored_path.exists():
                 del items_dict[item_id]
                 continue
             
+            # Solo intentamos borrar si el archivo supera todas las validaciones
             if _is_item_purgable(stored_path, item, quarantine_root):
                 if _safe_unlink(stored_path):
                     del items_dict[item_id]
                     purged_count += 1
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, UnsafePathError):
+            # Ante errores de acceso en un archivo, saltamos al siguiente
             continue
             
-    if purged_count > 0:
-        save_manifest(list(items_dict.values()), base)
+    # Persistimos el estado final tras el intento de limpieza
+    save_manifest(list(items_dict.values()), base)
     return purged_count
 
 

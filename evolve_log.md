@@ -807,3 +807,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T13:06:24` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las entradas de configuración numérica en `_collect_settings` y `_validate_numeric_setting`, asegurando que cualquier entrada de usuario malformada o vacía sea detectada y corregida antes de intentar guardar el archivo de ajustes, evitando posibles corrupciones de configuración.
 - `2026-08-29T13:06:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T13:06:24` Corrida terminada. Total usado hoy: 308.
+- `2026-08-29T13:12:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-29T13:13:10` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar que columnas mal formadas o vacías causen excepciones, asegurando que los datos de entrada sean procesados de forma segura sin romper el flujo de la aplicación.
+- `2026-08-29T13:13:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-29T13:13:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T13:14:15` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la función `purge_all` mediante la implementación de un manejo de errores más específico y un chequeo preventivo de la integridad del manifiesto, evitando que el bucle se detenga ante fallos de I/O en archivos individuales y asegurando que las entradas corruptas o faltantes se limpien correctamente de la persistencia.
+- `2026-08-29T13:14:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-29T13:14:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T13:14:19` Corrida terminada. Total usado hoy: 312.

@@ -167,7 +167,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         line = line.strip()
         if not line: continue
         parts = [p.strip().strip("'\"") for p in line.split(",")]
-        if len(parts) == 3:
+        # Validación estricta de estructura: esperamos exactamente 3 campos
+        if len(parts) == 3 and all(parts):
             try:
                 pid_val, ws_val = int(parts[1]), int(parts[2])
                 if pid_val > 0 and ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
