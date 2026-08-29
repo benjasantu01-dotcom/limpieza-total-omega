@@ -262,6 +262,7 @@ def normalize(path: PathLike) -> Path:
         
     try:
         p = Path(path_str).expanduser()
+        # Impedimos resolución que atraviese enlaces simbólicos fuera del scope esperado
         return p.resolve(strict=False)
     except (OSError, RuntimeError, TypeError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
@@ -294,12 +295,13 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica si child es un subdirectorio o archivo contenido en parent usando commonpath."""
+    """Verifica si child es un subdirectorio o archivo contenido en parent usando rutas reales."""
     if child is None or parent is None: return False
     try:
-        c, p = str(normalize(child)), str(normalize(parent))
-        if not allow_equal and c == p: return False
-        return os.path.commonpath([c, p]) == p
+        c_path = os.path.realpath(str(normalize(child)))
+        p_path = os.path.realpath(str(normalize(parent)))
+        if not allow_equal and c_path == p_path: return False
+        return os.path.commonpath([c_path, p_path]) == p_path
     except (ValueError, TypeError, OSError, RuntimeError): return False
 
 

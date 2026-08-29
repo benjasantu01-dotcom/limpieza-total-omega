@@ -1209,3 +1209,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T06:07:08` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-08-29T06:07:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T06:07:08` Corrida terminada. Total usado hoy: 144.
+- `2026-08-29T06:15:12` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-08-29T06:15:38` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-29T06:16:10` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_safe_unlink` y `purge_item` al añadir una verificación explícita de `is_safe_to_modify` antes de cualquier operación de borrado físico, asegurando que no se eliminen archivos si el entorno de seguridad o la integridad de la ruta han cambiado.
+- `2026-08-29T06:16:29` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-29T06:16:41` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta para prevenir el seguimiento de puntos de reparse (junctions/symlinks) en las funciones de recorrido, garantizando que el `path.resolve()` no escape de la jerarquía de archivos mediante el uso de `os.path.realpath` y comparaciones estrictas contra el padre, protegiendo contra posibles desbordamientos de seguridad.
+- `2026-08-29T06:16:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T06:16:41` Corrida terminada. Total usado hoy: 148.

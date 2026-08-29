@@ -176,9 +176,10 @@ def _safe_unlink(path: Path) -> bool:
     resida fuera de los directorios protegidos definidos en safety.py.
     """
     try:
-        if path.exists() and path.is_file() and not path.is_symlink() and is_safe_to_modify(path):
-            path.unlink()
-            return True
+        if path.exists() and path.is_file() and not path.is_symlink():
+            if is_safe_to_modify(path):
+                path.unlink()
+                return True
         return False
     except (OSError, PermissionError):
         return False
@@ -549,7 +550,8 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
             file_path.is_file() and
             _is_within_quarantine_sandbox(file_path, base_path) and
             item.verify_integrity(file_path) and
-            not _is_file_locked(file_path)
+            not _is_file_locked(file_path) and
+            is_safe_to_modify(file_path)
         )
     except (OSError, PermissionError):
         return False
