@@ -127,6 +127,8 @@ class Scanner:
                 return False
 
             path_obj = Path(entry.path).resolve()
+            if not path_obj.exists():
+                return False
             if self.base_root not in path_obj.parents and path_obj != self.base_root:
                 return False
             

@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 106 | 7 | 15 | 6 | 102 |
-| 2026-08-29 | 132 | 6 | 19 | 12 | 99 |
+| 2026-08-28 | 106 | 7 | 15 | 6 | 98 |
+| 2026-08-29 | 134 | 6 | 19 | 12 | 101 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **52**
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 - rendimiento: **45**
 - robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **22**
 - `assistant.py`: **21**
-- `settings.py`: **21**
+- `scanner.py`: **21**
 - `memory.py`: **20**
-- `scanner.py`: **20**
 - `diskreport.py`: **19**
 - `duplicates.py`: **19**
 - `quarantine.py`: **19**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T11:31:48` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save()` aplicando `ensure_safe_to_modify` sobre el archivo de configuración existente (si existe) antes de intentar cualquier operación de escritura, garantizando que no se sobreescriba un archivo protegido, enlace simbólico o ruta crítica.
+- `2026-08-29T11:31:18` **scanner.py** (seguridad defensiva): Se reforzó `_is_safe_entry` añadiendo una validación explícita mediante `path_obj.exists()` para asegurar que la entrada sea real antes de resolverla, evitando excepciones en la manipulación de objetos `Path` sobre archivos que pudieron desaparecer durante el escaneo.
 - `2026-08-29T11:22:15` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` al añadir una verificación explícita de `is_absolute()` antes de comparar rutas, previniendo que rutas relativas maliciosas coincidan accidentalmente con el directorio base debido a comportamientos inconsistentes de `os.path.commonpath`.
 - `2026-08-29T11:21:42` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` implementando una validación de propiedad y permisos antes de la copia, asegurando que solo el usuario actual tenga acceso al archivo temporal y evitando así condiciones de carrera donde un proceso malicioso podría reemplazar el archivo temporal antes de que `os.replace` lo convierta en el archivo definitivo en el sandbox.
 - `2026-08-29T11:21:09` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita que impide operaciones sobre archivos con el atributo "Reparse Point" (0x400), complementando el filtrado de `os.scandir` y previniendo que manipulaciones externas intenten forzar el acceso a puntos de unión o montajes inesperados.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T10:41:30` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de "espacio disponible" más robusta en `quarantine_file` y una protección contra condiciones de carrera en el manifiesto al asegurar que la lectura y escritura se realicen sobre el estado más reciente después de posibles cambios en el filesystem.
 - `2026-08-29T10:40:30` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `parse_windows_process_csv` ante entradas malformadas o PIDs inexistentes (valores negativos/cero) que podrían causar errores inesperados al procesar la salida de PowerShell.
 - `2026-08-29T10:32:04` **main.py** (robustez ante casos límite): Se reforzó la robustez del bucle principal (`_on_closing`) y la gestión de tareas asíncronas para prevenir condiciones de carrera durante el cierre de la aplicación, garantizando que el `ThreadPoolExecutor` no intente manipular widgets destruidos y que el estado de la UI sea consistente en situaciones de salida abrupta.
-- `2026-08-29T10:31:06` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `compute_score` ante posibles cambios en la estructura de `_SCORERS` o errores de acceso en `ratios`, evitando fallos de ejecución si una clave no está presente y garantizando que las métricas sean siempre tratadas como finitas antes de procesar el cálculo.
-- `2026-08-29T10:21:57` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o en uso (casos límite comunes al acceder a caché de navegadores abiertos) mediante la captura explícita de `OSError` con códigos de error específicos de Windows (32: en uso, 5: acceso denegado).
