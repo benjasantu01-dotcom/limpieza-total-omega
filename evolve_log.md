@@ -507,3 +507,40 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-29T10:10:54` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `_read_disk()` sustituyendo el cálculo repetitivo del `mtime` del archivo en cada llamada por un mecanismo de validación condicional que minimiza las consultas al sistema de archivos mediante `lru_cache`, evitando lecturas redundantes de disco.
 - `2026-08-29T10:10:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T10:10:54` Corrida terminada. Total usado hoy: 240.
+- `2026-08-29T10:19:39` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-08-29T10:20:16` Tests FALLARON:
+```
+.................................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:273: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.15s
+
+```
+- `2026-08-29T10:20:16` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el rendimiento del escaneo mediante la implementación de una caché de rutas verificadas y la eliminación de llamadas redundantes a `os.path.abspath` y `Path.exists()` dentro del bucle de resolución, centralizando la lógica en una única verificación eficiente.
+- `2026-08-29T10:20:52` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del motor local al añadir validación de tipos y rangos en las funciones de manejo de métricas, evitando errores de ejecución ante entradas inesperadas (`NaN`, `inf`, o tipos erróneos) que podrían surgir tras análisis fallidos o corruptos.
+- `2026-08-29T10:21:32` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-29T10:21:57` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o en uso (casos límite comunes al acceder a caché de navegadores abiertos) mediante la captura explícita de `OSError` con códigos de error específicos de Windows (32: en uso, 5: acceso denegado).
+- `2026-08-29T10:21:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T10:21:57` Corrida terminada. Total usado hoy: 244.

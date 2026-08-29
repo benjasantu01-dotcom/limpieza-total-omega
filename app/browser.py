@@ -228,8 +228,11 @@ def _sum_directory_recursive(
                         )
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
-                except (OSError, PermissionError):
-                    continue
+                except OSError as e:
+                    # Ignorar errores de acceso (5) o archivos bloqueados (32)
+                    if e.winerror in (5, 32):
+                        continue
+                    raise
     except (PermissionError, OSError):
         return 0
     

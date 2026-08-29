@@ -332,14 +332,11 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
     if not spec.is_valid_type(val):
         return False
     
+    clean_val = _safe_float(val, -1.0)
+    if clean_val < spec.min_val or clean_val > spec.max_val:
+        return False
+    
     try:
-        clean_val = float(val)
-        if not math.isfinite(clean_val):
-            return False
-            
-        if clean_val < spec.min_val or clean_val > spec.max_val:
-            return False
-        
         setattr(ctx, key, spec.cast_func(clean_val))
         return True
     except (ValueError, TypeError, AttributeError):
