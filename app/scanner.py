@@ -114,14 +114,13 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Valida si una entrada es apta para el análisis.
-        Rechaza explícitamente: rutas UNC (peligrosas por latencia/bloqueo),
-        nombres reservados de Windows y cualquier ruta fuera del árbol base_root.
+        Rechaza explícitamente: rutas UNC, nombres reservados, rutas fuera del árbol base_root
+        y puntos de reanálisis.
         """
         if not entry or not entry.path:
             return False
         
         try:
-            # Uso de resolve() limitado al inicio para verificar límites del escaneo
             path_obj = Path(entry.path).resolve()
             
             if len(str(path_obj)) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
@@ -130,10 +129,11 @@ class Scanner:
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
-            if path_obj.resolve() != path_obj:
+            # Verificación estricta de subdirectorio
+            try:
+                path_obj.relative_to(self.base_root)
+            except ValueError:
                 return False
-
-            path_obj.relative_to(self.base_root)
             
             if self._is_reparse_point(entry):
                 return False

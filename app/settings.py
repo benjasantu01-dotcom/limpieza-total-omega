@@ -153,8 +153,11 @@ class _Validators:
         """Resuelve y valida rutas asegurando que sean absolutas y no apunten a zonas protegidas."""
         if not path_str or ".." in path_str: return False
         try:
-            resolved = Path(path_str).expanduser().resolve(strict=False)
+            p = Path(path_str).expanduser()
+            resolved = p.resolve(strict=False)
             if not resolved.is_absolute(): return False
+            # Validar contra p explícitamente para evitar escapes antes de resolver
+            if ".." in str(p): return False
             return _Validators._run_safety_checks(resolved)
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False

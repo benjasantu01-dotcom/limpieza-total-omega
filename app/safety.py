@@ -169,16 +169,17 @@ def _is_reparse_point(path: Path) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
     """
-    Intenta obtener un handle de lectura exclusiva sobre el archivo.
-    Si falla el CreateFileW, inferimos que el archivo está bloqueado por otro proceso.
+    Verifica si el archivo está en uso exclusivo usando acceso de escritura.
+    Permite lectura compartida (FILE_SHARE_READ), fallando solo si es imposible escribir.
     """
     path = Path(path_str)
     if not path.exists():
         return False
     if os.name == 'nt':
         try:
+            # GENERIC_WRITE (0x40000000), OPEN_EXISTING (3), FILE_SHARE_READ (0x00000001)
             handle = ctypes.windll.kernel32.CreateFileW(
-                str(path), 0x80000000 | 0x40000000, 0, None, 3, 0x00000080, None
+                str(path), 0x40000000, 0x00000001, None, 3, 0x00000080, None
             )
             if handle == -1: return True
             ctypes.windll.kernel32.CloseHandle(handle)

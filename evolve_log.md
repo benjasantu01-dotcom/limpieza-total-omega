@@ -836,3 +836,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-29T02:23:26` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad en `quarantine_file` añadiendo una validación explícita mediante `is_safe_to_modify` antes de proceder con el movimiento, asegurando que el archivo de origen no haya cambiado sus permisos o estado de protección justo antes de la operación de aislamiento.
 - `2026-08-29T02:23:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T02:23:26` Corrida terminada. Total usado hoy: 56.
+- `2026-08-29T02:31:16` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-29T02:31:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-29T02:31:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T02:32:07` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_file_in_use` implementando una técnica de exclusividad más precisa (`FILE_SHARE_READ` en lugar de `0`), evitando falsos positivos que bloqueaban archivos que el usuario simplemente está leyendo en otras aplicaciones.
+- `2026-08-29T02:32:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T02:32:39` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` validando que la ruta analizada sea una subruta real de `base_root` mediante `is_relative_to`, previniendo errores de lógica en el escalado de privilegios o acceso fuera del ámbito permitido por `Path.relative_to`.
+- `2026-08-29T02:32:51` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_safe_path` mediante la verificación de la existencia de la ruta resuelta antes de realizar validaciones de seguridad, evitando errores de resolución en rutas inexistentes o inaccesibles, y reforzando la integridad al impedir que rutas relativas maliciosas que intentan salir del directorio base mediante ".." sean aceptadas inadvertidamente.
+- `2026-08-29T02:32:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T02:32:51` Corrida terminada. Total usado hoy: 60.
