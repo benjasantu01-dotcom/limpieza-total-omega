@@ -182,7 +182,14 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Tokeniza una línea de comandos completa para intentar resolver el ejecutable principal."""
+        """
+        Tokeniza una línea de comandos completa para extraer y resolver el ejecutable.
+        
+        Args:
+            command_line: Línea de comandos cruda extraída del registro o acceso directo.
+        Returns:
+            Ruta absoluta normalizada si es un ejecutable válido, de lo contrario cadena vacía.
+        """
         if not command_line or not isinstance(command_line, str):
             return ""
         if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
@@ -261,7 +268,15 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte la salida CSV de PowerShell en objetos StartupEntry validados."""
+    """
+    Convierte el CSV generado por PowerShell en una lista de objetos StartupEntry.
+    
+    Args:
+        csv_text: Salida cruda de 'ConvertTo-Csv' capturada de PowerShell.
+        source: Identificador del origen para el reporte de usuario.
+    Returns:
+        Lista de entradas validadas y sanitizadas para su ejecución segura.
+    """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -275,7 +290,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             
         for row in reader:
             try:
-                # Usar los dos primeros campos detectados en el CSV
+                # Usar los dos primeros campos detectados en el CSV del registro
                 name_raw = row.get(fieldnames[0], "")
                 cmd_raw = row.get(fieldnames[1], "")
                 
@@ -285,7 +300,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
                 cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
                 
-                # Ignorar campos PS o entradas vacías
+                # Ignorar campos PS (PowerShell metadata) o entradas vacías
                 if not name or not cmd or name.upper().startswith("PS"):
                     continue
                 if any(c in cmd for c in '<>|?*'):

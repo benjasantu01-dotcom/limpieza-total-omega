@@ -276,14 +276,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """
-    Interpola linealmente entre dos colores.
-    
-    Args:
-        start: Color inicial en formato #RRGGBB.
-        end: Color final en formato #RRGGBB.
-        ratio: Factor de mezcla (0.0 a 1.0).
-    """
+    """Interpola linealmente entre dos colores."""
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -301,12 +294,12 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     if not stops: return (C_GLOW,) * n
     if len(stops) < 2: return (stops[0],) * n
     
-    res: List[HexColor] = [stops[0]] * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
     tramos = len(stops) - 1
+    res = [None] * n
     
-    for i in range(1, n):
-        pos = (i * tramos) / (n - 1)
+    for i in range(n):
+        pos = (i * tramos) / (n - 1) if n > 1 else 0
         idx = min(int(pos), tramos - 1)
         r_delta = pos - idx
         s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
@@ -315,7 +308,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
             int(s1[1] + (s2[1] - s1[1]) * r_delta),
             int(s1[2] + (s2[2] - s1[2]) * r_delta)
         ))
-    return tuple(res)
+    return tuple(res)  # type: ignore
 
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:

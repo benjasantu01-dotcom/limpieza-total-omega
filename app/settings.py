@@ -132,7 +132,7 @@ _ENUM_VALS: Final[dict[ConfigKey, frozenset[str]]] = {
 }
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
-    """Decorador: Filtra llamadas inválidas o nulas antes de pasar al validador."""
+    """Decorador: Filtra llamadas donde el argumento de valor es None."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         val = args[1] if len(args) > 1 else kwargs.get("val")
         if val is None: return None
@@ -178,7 +178,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Castea a int y acota el valor dentro de los límites definidos en _NUMERIC_LIMITS."""
+        """Castea a int dentro del rango [min, max] definido en _NUMERIC_LIMITS."""
         try:
             parsed_value: int = int(val)
             limit = _NUMERIC_LIMITS.get(key, _NumericRange(0, 10**9))
@@ -187,7 +187,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida rutas de archivos: verifica formato, longitud y seguridad mediante _is_safe_path."""
+        """Valida rutas: verifica formato, longitud y seguridad mediante _is_safe_path."""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or len(path_string) > 4096 or "\0" in path_string: 
@@ -196,7 +196,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Verifica que una cadena se encuentre en el conjunto permitido para su clave (Enum)."""
+        """Verifica que el string esté dentro del conjunto permitido para la clave."""
         val = text.lower()
         if key in _ENUM_VALS: return val if val in _ENUM_VALS[key] else None
         return text if len(text) <= 512 else None
@@ -204,7 +204,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida strings generales, filtrando caracteres de control y validando contra Enums cuando aplica."""
+        """Valida strings generales, filtrando caracteres de control y validando contra Enums."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None
@@ -242,7 +242,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida y normaliza un diccionario crudo contra el esquema AppSettings (Default de fábrica ante fallos)."""
+    """Valida un dict contra AppSettings; usa DEFAULTS en caso de error o dato faltante."""
     config = DEFAULTS.copy()
     if not isinstance(raw_values, dict): return config
     for key_str, val in raw_values.items():
@@ -255,7 +255,7 @@ def validate(raw_values: Any) -> AppSettings:
 
 @lru_cache(maxsize=4)
 def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
-    """Carga interna que cachea contenido basado en ruta y timestamp para optimizar rendimiento."""
+    """Carga interna: valida el archivo en disco, retornando DEFAULTS ante cualquier error."""
     ruta = Path(ruta_str)
     if not ruta.exists() or not os.access(ruta, os.R_OK):
         return DEFAULTS.copy()
@@ -266,7 +266,7 @@ def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
             
     try:
         with open(ruta, "r", encoding="utf-8") as f:
-            data = json.load(f)
+            data: Any = json.load(f)
             if not isinstance(data, dict): return DEFAULTS.copy()
             return validate(data)
     except (json.JSONDecodeError, UnicodeDecodeError, PermissionError):
@@ -313,10 +313,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             with open(temp_path, "wb") as f:
                 f.write(encoded_data)
                 f.flush()
-                try:
-                    os.fsync(f.fileno())
-                except (OSError, AttributeError):
-                    pass
+                try: os.fsync(f.fileno())
+                except (OSError, AttributeError): pass
             os.replace(temp_path, ruta)
         finally:
             if temp_path.exists():
@@ -357,7 +355,7 @@ def assistant_api_key(custom_base: PathLike | None = None) -> str:
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Valida si el asistente puede ejecutarse: requiere clave (env o archivo) y estado activo."""
+    """Valida si el asistente puede ejecutarse: requiere clave y estado activo."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", "").strip())

@@ -415,7 +415,8 @@ def _iter_active_problems(ctx: SystemContext) -> Iterator[str]:
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa el contexto actual contra los criterios de salud de forma eficiente."""
     if not ctx.analyzed: return []
-    return list(_iter_active_problems(ctx))[:3]
+    # Usamos la evaluación perezosa del generador para obtener solo los primeros 3
+    return [match for match, _ in zip(_iter_active_problems(ctx), range(3))]
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde consultas sobre memoria RAM usando métricas de estado actual."""
