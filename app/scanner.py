@@ -34,9 +34,10 @@ class Suspicion:
     severity: str
 
 # Alias para funciones que evalúan un archivo.
-# Una 'SuspicionCheck' debe ser una función pura que reciba la ruta, 
-# una entrada de directorio opcional para optimización y un timestamp base.
-# Retorna un objeto Suspicion si se detecta riesgo, o None en caso contrario.
+# Una 'SuspicionCheck' es una función de inspección pura:
+# - path: La ruta del archivo a inspeccionar.
+# - entry: Opcional, instancia de os.DirEntry si ya fue obtenida (evita llamadas a disco).
+# - now_ts: Timestamp capturado al inicio para auditorías temporales coherentes.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
 # Alias para representar una colección de hallazgos durante un proceso de escaneo.
