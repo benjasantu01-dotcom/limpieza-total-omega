@@ -335,7 +335,12 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """
-    Copia atómica con validación post-escritura (tamaño y hash) contra la corrupción.
+    Realiza una copia atómica al sandbox con validaciones de integridad.
+    
+    1. Verifica espacio en disco.
+    2. Crea archivo temporal en destino.
+    3. Copia datos y verifica tamaño.
+    4. Reemplaza temporal por destino final y calcula hash SHA-256.
     """
     resolved_source = source.resolve()
     dest_dir = destination.parent.resolve()
@@ -353,7 +358,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
 
     temp_file_path = None
     try:
-        # Crea archivo temp restrictivo solo para el usuario actual (0o600)
         fd, temp_path = tempfile.mkstemp(dir=dest_dir, prefix=".tmp_q_")
         temp_file_path = Path(temp_path)
         os.close(fd)
@@ -384,7 +388,11 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """
-    Ejecuta el ciclo de aislamiento: validación, copia, actualización de manifiesto y borrado original.
+    Ejecuta el flujo completo de aislamiento: 
+    1. Valida permisos y estado del archivo origen.
+    2. Realiza copia atómica al sandbox.
+    3. Registra el nuevo ítem en el manifiesto.
+    4. Borra el archivo original solo si la integridad del sandbox es verificada.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -550,27 +558,22 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     purged_count = 0
-    # Iteramos sobre una copia para modificar el diccionario original de forma segura
     for item_id in list(items_dict.keys()):
         item = items_dict[item_id]
         try:
             stored_path = (quarantine_root / item.stored_name).resolve()
             
-            # Si el archivo ya no existe, limpiamos su entrada del manifiesto
             if not stored_path.exists():
                 del items_dict[item_id]
                 continue
             
-            # Solo intentamos borrar si el archivo supera todas las validaciones
             if _is_item_purgable(stored_path, item, quarantine_root):
                 if _safe_unlink(stored_path):
                     del items_dict[item_id]
                     purged_count += 1
         except (OSError, PermissionError, UnsafePathError):
-            # Ante errores de acceso en un archivo, saltamos al siguiente
             continue
             
-    # Persistimos el estado final tras el intento de limpieza
     save_manifest(list(items_dict.values()), base)
     return purged_count
 

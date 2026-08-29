@@ -203,7 +203,14 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """Valida el objeto JunkFile contra condiciones de seguridad antes de procesar movimiento."""
+    """
+    Valida que un objeto JunkFile sea movible bajo estrictas reglas de seguridad.
+    
+    Verificaciones:
+    1. Existencia y consistencia de tipos.
+    2. Integridad de la ruta destino.
+    3. Validación de permisos y bloqueos mediante _is_safe_for_disk_op.
+    """
     if not isinstance(junk_file, JunkFile) or not junk_file.path: return False
     try:
         current_path: Path = junk_file.path
@@ -264,7 +271,10 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Valida condiciones de seguridad y espacio previas al movimiento de un archivo."""
+    """
+    Valida condiciones de seguridad y espacio previas al movimiento de un archivo.
+    Retorna la ruta destino absoluta y única si la operación es segura.
+    """
     if not isinstance(junk_file.path, Path) or not dest_base: return None
     try:
         src_path = junk_file.path.resolve()

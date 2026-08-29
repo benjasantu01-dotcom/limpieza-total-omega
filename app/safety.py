@@ -56,6 +56,12 @@ class ProtectionReason(Enum):
     MOUNT_POINT = "punto de montaje detectado"
 
 
+class ValidationContext(Enum):
+    """Define si la validación es puramente estructural o requiere acceso a disco."""
+    STRUCTURAL = auto()
+    INTEGRITY = auto()
+
+
 # Directorios críticos del sistema que nunca deben ser modificados
 PROTECTED_DIR_NAMES: Final[frozenset[str]] = frozenset({
     "windows", "winnt", "system32", "syswow64", "system", "boot",
@@ -221,9 +227,6 @@ def _check_file_integrity(path: Path) -> None:
             if not is_safe: raise UnsafePathError("Operación denegada (cache hit).")
             return
 
-    if len(path.parts) > 64:
-        raise UnsafePathError(f"Profundidad de ruta inusual: {ProtectionReason.EXCESSIVE_DEPTH.value}")
-
     try:
         file_stat: os.stat_result = path.lstat()
     except (PermissionError, OSError) as e:
@@ -235,7 +238,6 @@ def _check_file_integrity(path: Path) -> None:
                 _INTEGRITY_CACHE[path_key] = (now, False)
                 raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
         except (OSError, PermissionError):
-            # Si el predicado falla, asumimos precaución e ignoramos la validación específica
             continue
             
     _INTEGRITY_CACHE[path_key] = (now, True)
@@ -263,7 +265,6 @@ def normalize(path: PathLike) -> Path:
         
     try:
         p = Path(path_str).expanduser()
-        # Impedimos resolución que atraviese enlaces simbólicos fuera del scope esperado
         return p.resolve(strict=False)
     except (OSError, RuntimeError, TypeError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
@@ -316,16 +317,14 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 
-def _validate_basic_path_safety(path: Path, path_str: str) -> None:
-    """Verifica condiciones de seguridad estructurales elementales."""
+def _validate_structural_safety(path: Path, path_str: str) -> None:
+    """Valida la integridad de la estructura de la ruta (independiente del estado del disco)."""
     if _has_invalid_chars(path_str) or _is_reserved_device_name(path.name):
         raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
     if ".." in path.parts:
         raise UnsafePathError("Intento de path traversal detectado.")
     if path_str.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas de red (UNC) no permitidas.")
-    if path.anchor and not os.path.exists(path.anchor):
-        raise UnsafePathError("Unidad o punto de montaje no disponible.")
     if len(str(path)) >= 260:
         raise UnsafePathError("La ruta resultante excede la longitud máxima permitida.")
 
@@ -344,25 +343,17 @@ def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
-    Valida si una ruta puede ser escrita de forma segura.
-
-    Args:
-        path: Ruta a evaluar.
-        allow_sensitive: Si es True, permite archivos de configuración sensibles.
-        base_dir: Directorio base opcional que delimita la operación.
-
-    Raises:
-        UnsafePathError: Si la ruta infringe políticas de seguridad o integridad.
-
-    Returns:
-        Path: La ruta normalizada si es segura para modificar.
+    Valida si una ruta puede ser escrita de forma segura combinando validación estructural y de integridad.
     """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
     p = normalize(path)
-    _validate_basic_path_safety(p, str(p))
+    
+    # 1. Validación estructural (Contexto: ESTRUCTURAL)
+    _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
+    # 2. Validación de estado en disco (Contexto: INTEGRIDAD)
     if p.exists():
         if not (p.is_file() or p.is_dir()):
             raise UnsafePathError("Tipo de archivo no soportado.")
