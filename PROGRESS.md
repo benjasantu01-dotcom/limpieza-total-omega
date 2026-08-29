@@ -16,9 +16,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 47 | 4 | 7 | 2 | 34 |
+| 2026-08-27 | 47 | 4 | 7 | 2 | 30 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 40 | 2 | 7 | 1 | 10 |
+| 2026-08-29 | 40 | 2 | 7 | 1 | 14 |
 
 ## Mejoras aceptadas por enfoque
 
