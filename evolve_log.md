@@ -717,3 +717,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-29T00:30:40` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-29T00:30:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T00:30:40` Corrida terminada. Total usado hoy: 12.
+- `2026-08-29T00:39:19` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-08-29T00:39:32` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T00:40:02` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: legibilidad y documentación).
+- `2026-08-29T00:40:27` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). He mejorado la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en la firma de `scan_directory` y, crucialmente, he extraído la lógica de recursión dentro de `process_entry` a un método privado `_handle_directory` para reducir la complejidad ciclomática y clarificar el flujo de control.
+- `2026-08-29T00:40:55` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _NumericRange
+- `2026-08-29T00:41:06` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora de legibilidad y mantenibilidad en `StartupEntry` mediante la separación de responsabilidades y documentación de métodos internos (docstrings), aclarando el flujo de resolución de rutas "lazy" y la seguridad de las validaciones.
+- `2026-08-29T00:41:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T00:41:06` Corrida terminada. Total usado hoy: 16.

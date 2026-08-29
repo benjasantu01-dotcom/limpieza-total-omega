@@ -153,6 +153,12 @@ class Scanner:
         except (OSError, AttributeError, TypeError):
             return True 
 
+    def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
+        """Extrae la lógica de apilado de directorios para modularizar la navegación."""
+        if entry.path not in self.seen:
+            self.seen.add(entry.path)
+            stack.append(entry.path)
+
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
         Gestiona la lógica de recursión: los directorios seguros se apilan para
@@ -162,9 +168,7 @@ class Scanner:
             if not self._is_safe_entry(entry):
                 return
             if entry.is_dir(follow_symlinks=False):
-                if entry.path not in self.seen:
-                    self.seen.add(entry.path)
-                    stack.append(entry.path)
+                self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
                 # Validar existencia física real antes de procesar
                 if not os.path.exists(entry.path):
@@ -213,7 +217,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if not directory:
         return []
     try:
-        path_input = Path(directory).resolve()
+        path_input: Path = Path(directory).resolve()
         if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):
