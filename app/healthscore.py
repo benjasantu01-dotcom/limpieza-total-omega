@@ -128,6 +128,7 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
+    """Asegura que un valor numérico esté dentro de un rango [low, high]. Retorna 'low' ante error."""
     try:
         val = float(value)
         if not math.isfinite(val): return low
@@ -136,44 +137,53 @@ def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
         return low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Convierte entrada a float, retornando default si el valor no es numérico o es NaN/Inf."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def _to_int(value: Any, default: int = 0) -> int:
+    """Convierte entrada a entero, retornando default si el valor no es convertible."""
     try:
         val = float(value)
         return int(val) if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Puntúa la cantidad de archivos basura: a más MB, menor puntaje."""
     val = _to_float(junk_mb)
     return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Puntúa el riesgo de seguridad basado en amenazas encontradas y advertencias."""
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
     penalty = (s * 0.05) + (w * 0.25)
     return _clamp(1.0 - penalty, 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Puntúa la disponibilidad de RAM: a mayor porcentaje libre, mejor puntaje."""
     val = _to_float(available_percent)
     return _clamp(val * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Puntúa el espacio en disco: a mayor porcentaje libre, mejor puntaje."""
     val = _to_float(free_percent)
     return _clamp(val * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Puntúa la redundancia de archivos: a más MB duplicados, menor puntaje."""
     val = _to_float(duplicate_mb)
     return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
+    """Puntúa el inventario de arranque: a mayor número de apps, menor puntaje."""
     val = _to_float(startup_count)
     return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
+    """Convierte un puntaje numérico en una letra de calificación (A-F)."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"

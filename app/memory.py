@@ -44,6 +44,7 @@ MegabytesValue: TypeAlias = float
 BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 
+# Máscaras de acceso para operaciones de proceso seguro en Win32
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -278,8 +279,10 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     if not proc_handle or proc_handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
-    size, buf = ctypes.c_ulong(4096), ctypes.create_unicode_buffer(4096)
+    size = ctypes.c_ulong(4096)
+    buf = ctypes.create_unicode_buffer(4096)
     try:
+        # QueryFullProcessImageNameW requiere handle con acceso PROCESS_QUERY_LIMITED_INFORMATION
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError): pass
@@ -324,6 +327,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError): return False, "PID proporcionado no es un número válido."
     if _is_system_process(target_pid): return False, "El proceso está protegido por el sistema."
     
+    # OpenProcess usando máscara restrictiva para garantizar seguridad
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle or proc_handle == -1: 
         return False, "No se pudo abrir el proceso (posible falta de privilegios)."
@@ -331,6 +335,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
         if not is_safe: return False, error_reason or "Validación de seguridad fallida."
+        # EmptyWorkingSet es la única llamada permitida de ajuste de memoria
         if not psapi.EmptyWorkingSet(proc_handle): 
             raise OSError("El sistema denegó la operación.")
         return True, f"Working set liberado. {TRIM_WARNING}"
