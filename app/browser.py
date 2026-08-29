@@ -178,6 +178,15 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     return False
 
 
+def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
+    """Verifica si el acceso a la ruta es seguro según las reglas del proyecto."""
+    if not path_obj.exists() or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+        return False
+    if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
+        return False
+    return True
+
+
 def _sum_directory_recursive(
     root_dir: str, 
     is_junction_fn: JunctionChecker, 
@@ -187,9 +196,18 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el tamaño en bytes de un directorio.
-    Utiliza memoización para evitar recorridos redundantes y impone un MAX_SCAN_DEPTH
-    para prevenir problemas de recursión infinita en enlaces cíclicos.
+    Calcula el tamaño en bytes de un directorio mediante escaneo profundo.
+    
+    Args:
+        root_dir: Ruta absoluta a escanear.
+        is_junction_fn: Callback para detectar puntos de reparse de Windows.
+        kernel32: Instancia de WinDLL para chequeos de atributos.
+        memo: Caché de resultados previos para optimización.
+        base_check_path: Ruta raíz permitida para validar traversal.
+        depth: Profundidad actual de recursión para evitar ciclos.
+
+    Returns:
+        Tamaño total en bytes. Retorna 0 si la ruta es insegura o inaccesible.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -205,9 +223,7 @@ def _sum_directory_recursive(
         if root_abs in memo:
             return memo[root_abs]
 
-        if not root_path.exists() or not is_safe_to_modify(root_path) or is_protected_path(root_path):
-            return 0
-        if base_check_path and not _is_path_inside_base(root_path, base_check_path):
+        if not _is_safe_to_traverse(root_path, base_check_path):
             return 0
 
         total: int = 0

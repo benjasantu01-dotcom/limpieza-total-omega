@@ -71,7 +71,15 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
 
 
 def _validate_root(directory: Union[str, os.PathLike]) -> Optional[Path]:
-    """Valida la entrada de directorio base para operaciones de escaneo."""
+    """
+    Valida la entrada de directorio base para operaciones de escaneo.
+    
+    Args:
+        directory: Ruta a validar como punto de inicio.
+        
+    Returns:
+        Objeto Path resuelto si es un directorio válido, None en otro caso.
+    """
     try:
         if directory is None:
             return None
@@ -254,15 +262,21 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 
 def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
-    """Helper interno: verifica si una entrada de directorio debe ser ignorada."""
+    """
+    Valida si una entrada de directorio debe ser ignorada por el escáner.
+    
+    Args:
+        entry: Objeto DirEntry a evaluar.
+        skip_protected: Flag para omitir rutas marcadas como protegidas.
+        
+    Returns:
+        True si la entrada debe ser omitida, False en caso contrario.
+    """
     try:
-        # Verifica nombres con caracteres de control
         if not entry.name or any(c < ' ' for c in entry.name):
             return True
-        # Ignora enlaces simbólicos para evitar bucles o accesos a otras unidades
         if entry.is_symlink():
             return True
-        # Verifica seguridad antes de seguir
         if skip_protected and entry.is_dir(follow_symlinks=False):
             return is_protected_path(Path(entry.path))
     except (PermissionError, OSError):
@@ -272,8 +286,14 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Generador recursivo que recorre el sistema de archivos buscando archivos y sus tamaños.
-    Implementa una pila (stack) para evitar la recursión profunda y protege el recorrido.
+    Generador recursivo que recorre el sistema de archivos buscando archivos.
+    
+    Args:
+        directory: Directorio raíz para comenzar la búsqueda.
+        skip_protected: Si es True, ignora directorios protegidos por `safety.py`.
+        
+    Yields:
+        Tuplas conteniendo el Path del archivo y su tamaño en bytes.
     """
     root_path = _validate_root(directory)
     if not root_path or (skip_protected and is_protected_path(root_path)):
@@ -293,7 +313,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     try:
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
-                            # Seguridad: Validar que no se escape del raíz
                             target_path = Path(entry.path).resolve()
                             if root_path not in target_path.parents and target_path != root_path:
                                 continue
@@ -357,7 +376,6 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
     for path, size in walk_files(p_base, skip_protected):
         try:
-            # Seguridad adicional: verificar que la ruta pertenece efectivamente al árbol de p_base
             relative = path.relative_to(p_base)
             parts = relative.parts
             if not parts:
