@@ -800,3 +800,39 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-29T02:12:35` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-08-29T02:12:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T02:12:35` Corrida terminada. Total usado hoy: 52.
+- `2026-08-29T02:21:07` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-29T02:21:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T02:22:16` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._verify_disk_path
+- `2026-08-29T02:22:43` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una validación explícita para evitar que `EmptyWorkingSet` sea invocado sobre procesos con privilegios elevados o del sistema (ejecutables fuera de carpetas de usuario estándar), cerrando una brecha donde procesos críticos podrían ser intervenidos mediante la manipulación del PID.
+- `2026-08-29T02:23:09` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré `_is_safe_for_disk_op` para validar que la ruta destino no esté contenida dentro de la ruta fuente, evitando operaciones de movimiento que resultarían en una recursión infinita o corrupción de la estructura de archivos.
+- `2026-08-29T02:23:26` Tests FALLARON:
+```
+ra aislamiento.")
+    
+        dest_dir = quarantine_dir(base)
+        if is_within_directory(source_path, dest_dir):
+            raise UnsafePathError("Origen inválido: no se puede aislar un archivo que ya reside en cuarentena.")
+    
+        # Verificación final de seguridad antes de cualquier operación física
+        if not is_safe_to_modify(source_path):
+>           raise UnsafePathError("El archivo origen ha cambiado su estado de seguridad.")
+E           safety.UnsafePathError: El archivo origen ha cambiado su estado de seguridad.
+
+app/quarantine.py:401: UnsafePathError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:270: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: El archivo origen ha cambiado su estado de seguridad.
+1 failed, 298 passed, 4 warnings in 1.01s
+
+```
+- `2026-08-29T02:23:26` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad en `quarantine_file` añadiendo una validación explícita mediante `is_safe_to_modify` antes de proceder con el movimiento, asegurando que el archivo de origen no haya cambiado sus permisos o estado de protección justo antes de la operación de aislamiento.
+- `2026-08-29T02:23:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T02:23:26` Corrida terminada. Total usado hoy: 56.

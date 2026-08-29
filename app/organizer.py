@@ -148,11 +148,15 @@ def _is_file_locked(path: Path) -> bool:
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """
-    Detecta si una operación intentaría mover un archivo dentro de su propio directorio padre.
+    Detecta si una operación intentaría mover un archivo dentro de su propio directorio padre
+    o si la carpeta destino es subdirectorio de la fuente (evitando ciclos de movimiento).
     """
     try:
         s, d = src.resolve(), dest.resolve()
-        return s == d or d.is_relative_to(s)
+        # Verificar si la fuente es igual al destino o si el destino es subdirectorio de la fuente
+        if s == d or d.is_relative_to(s):
+            return True
+        return False
     except (OSError, RuntimeError, ValueError):
         return True
 

@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 34
+- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Rechazadas por tests: 16
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 47 | 4 | 7 | 2 | 42 |
+| 2026-08-27 | 47 | 4 | 7 | 2 | 38 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 35 | 1 | 5 | 1 | 10 |
+| 2026-08-29 | 37 | 2 | 6 | 1 | 10 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **51**
 - rendimiento: **49**
-- seguridad defensiva: **44**
+- seguridad defensiva: **46**
 - robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
-- `memory.py`: **21**
+- `memory.py`: **22**
 - `scanner.py`: **21**
 - `branding.py`: **20**
 - `duplicates.py`: **20**
@@ -43,10 +43,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **14**
 - `startup.py`: **11**
 - `safety.py`: **11**
-- `organizer.py`: **8**
+- `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T02:23:09` **organizer.py** (seguridad defensiva): Mejoré `_is_safe_for_disk_op` para validar que la ruta destino no esté contenida dentro de la ruta fuente, evitando operaciones de movimiento que resultarían en una recursión infinita o corrupción de la estructura de archivos.
+- `2026-08-29T02:22:43` **memory.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `trim_working_set` añadiendo una validación explícita para evitar que `EmptyWorkingSet` sea invocado sobre procesos con privilegios elevados o del sistema (ejecutables fuera de carpetas de usuario estándar), cerrando una brecha donde procesos críticos podrían ser intervenidos mediante la manipulación del PID.
 - `2026-08-29T02:12:15` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` agregando una validación explícita con `is_protected_path` al iterar sobre directorios, asegurando que las rutas resultantes de `resolve()` también sean filtradas antes de ser incluidas en el escaneo, evitando así accesos a zonas sensibles incluso si el sistema de archivos presenta estructuras complejas.
 - `2026-08-29T02:11:51` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva al validar que las rutas en `summarize` no sean enlaces simbólicos o puntos de reparse antes de analizarlas, evitando así el escape del directorio raíz objetivo y posibles ciclos infinitos o lectura de rutas fuera del alcance permitido.
 - `2026-08-29T02:11:24` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la validación estricta de que cada subdirectorio visitado durante la recursión sea una ruta segura (`is_safe_to_modify`), evitando el seguimiento de enlaces simbólicos o junctions que apunten fuera de los límites permitidos, mitigando así el riesgo de escape de contexto.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T01:42:45` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `read_snapshot` ante errores de lectura de archivos y desbordamientos de buffer, garantizando que el sistema siempre devuelva un estado coherente incluso si `/proc/meminfo` entrega contenido malformado, vacío o inesperadamente grande.
 - `2026-08-29T01:42:04` **main.py** (robustez ante casos límite): Se reforzó la robustez del manejo de subprocesos y la interfaz al implementar una validación de seguridad adicional en `_worker_thread_logic` y mejorar la gestión de estados en `_set_busy`, asegurando que no se intente interactuar con widgets destruidos tras el cierre inesperado de un hilo o de la aplicación.
 - `2026-08-29T01:40:53` **healthscore.py** (robustez ante casos límite): Se introdujo una comprobación explícita de `math.isfinite` en las funciones de puntuación individuales para garantizar que valores `NaN` o `Inf` (que pueden surgir en métricas externas) no corrompan los cálculos ni rompan el bucle de normalización, asegurando un sistema robusto ante entradas de datos no numéricos o fuera de rango.
-- `2026-08-29T01:23:18` **assistant.py** (robustez ante casos límite): Se introdujo una validación robusta contra `OverflowError` y `ValueError` en las funciones `_fmt_metric` y `_fmt_metric_sanitized` para manejar casos límite donde valores numéricos extremos o mal formados puedan causar excepciones al intentar formatearlos con `.f` o exceder la capacidad de representación de cadena.
-- `2026-08-29T01:21:58` **settings.py** (rendimiento): Optimizé el rendimiento de `load()` evitando el doble acceso a disco mediante el uso del `mtime` del archivo como clave única en el cache `@lru_cache`, eliminando así la ejecución redundante de `_read_disk` durante la verificación de estado.

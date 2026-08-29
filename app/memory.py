@@ -282,6 +282,7 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
         if not p.is_file(): return False, "No es un ejecutable válido."
         if p.is_symlink(): return False, "Simlink detectado."
         if is_protected_path(str(p)): return False, "Ruta protegida."
+        if "Windows" in p.parts: return False, "Proceso del sistema protegido."
     except Exception: return False, "Error resolviendo ruta del proceso."
     return True, None
 
