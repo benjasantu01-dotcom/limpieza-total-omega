@@ -408,62 +408,76 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde consultas sobre memoria RAM usando métricas de estado actual."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    mem_pct = _safe_float(ctx.memory_available_percent, 50.0)
-    total_gb = _safe_float(ctx.memory_total_gb, 0.0)
-    
-    estado_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
-    accion_msg = "Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses; en la pestaña Memoria tenés qué consume más." if mem_pct < 15 else "Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
-    consejo_final = "No busques un 'liberador de RAM': suben el número de memoria libre pero la PC queda más lenta."
-    startup_ad = f" Sí te conviene mirar los {ctx.startup_count} programas de inicio." if ctx.startup_count > 12 else ""
-    
-    texto = f"{estado_msg} {accion_msg} {consejo_final}{startup_ad}"
-    return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
+    try:
+        mem_pct = _safe_float(ctx.memory_available_percent, 50.0)
+        total_gb = _safe_float(ctx.memory_total_gb, 0.0)
+        
+        estado_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
+        accion_msg = "Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses; en la pestaña Memoria tenés qué consume más." if mem_pct < 15 else "Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
+        consejo_final = "No busques un 'liberador de RAM': suben el número de memoria libre pero la PC queda más lenta."
+        startup_ad = f" Sí te conviene mirar los {ctx.startup_count} programas de inicio." if ctx.startup_count > 12 else ""
+        
+        return Answer(_validate_response_length(f"{estado_msg} {accion_msg} {consejo_final}{startup_ad}"), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
+    except Exception:
+        return Answer("Hubo un error al procesar el estado de tu memoria.")
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Proporciona diagnóstico de espacio en disco y posibles acciones de recuperación."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    recuperable = _safe_float(ctx.junk_mb) + _safe_float(ctx.duplicate_mb) + _safe_float(ctx.browser_cache_mb)
-    
-    linea1 = f"Tenés {ctx.disk_free_percent:.0f}% libre en disco."
-    linea2 = f"Podés recuperar cerca de {recuperable:.0f} MB: {ctx.junk_mb:.0f} MB de basura, {ctx.duplicate_mb:.0f} MB de duplicados{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb > 0 else ''}."
-    alerta = " Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería." if ctx.disk_free_percent < 10 else ""
-    cierre = " Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra."
-    
-    return Answer(_validate_response_length(f"{linea1} {linea2}{alerta}{cierre}"), notice=OFFLINE_NOTICE)
+    try:
+        recuperable = _safe_float(ctx.junk_mb) + _safe_float(ctx.duplicate_mb) + _safe_float(ctx.browser_cache_mb)
+        
+        linea1 = f"Tenés {ctx.disk_free_percent:.0f}% libre en disco."
+        linea2 = f"Podés recuperar cerca de {recuperable:.0f} MB: {ctx.junk_mb:.0f} MB de basura, {ctx.duplicate_mb:.0f} MB de duplicados{f' y {ctx.browser_cache_mb:.0f} MB de caché' if ctx.browser_cache_mb > 0 else ''}."
+        alerta = " Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería." if ctx.disk_free_percent < 10 else ""
+        cierre = " Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra."
+        
+        return Answer(_validate_response_length(f"{linea1} {linea2}{alerta}{cierre}"), notice=OFFLINE_NOTICE)
+    except Exception:
+        return Answer("Hubo un error al procesar el estado de tu disco.")
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Evalúa hallaggos de seguridad y explica los procedimientos de aislamiento."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    if ctx.suspicious_count == 0:
-        texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación."
-    else:
-        info = f"Hay {ctx.suspicious_count} archivo(s) marcados, {ctx.suspicious_warnings} con advertencia."
-        sugerencia = "Son señales, no una condena: puede ser un instalador legítimo. Si no reconocés alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena."
-        cierre = " La app nunca borra sola; la limpieza mueve todo a revisión, y el borrado real pide confirmación."
-        texto = f"{info} {sugerencia}{cierre}"
-    
-    return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
+    try:
+        if ctx.suspicious_count == 0:
+            texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola. La limpieza mueve todo a una carpeta de revisión, y el borrado real es un botón aparte que pide confirmación."
+        else:
+            info = f"Hay {ctx.suspicious_count} archivo(s) marcados, {ctx.suspicious_warnings} con advertencia."
+            sugerencia = "Son señales, no una condena: puede ser un instalador legítimo. Si no reconocés alguno, usá 'Aislar hallazgos' para mandarlo a cuarentena."
+            cierre = " La app nunca borra sola; la limpieza mueve todo a revisión, y el borrado real pide confirmación."
+            texto = f"{info} {sugerencia}{cierre}"
+        
+        return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
+    except Exception:
+        return Answer("Hubo un error al procesar los hallazgos de seguridad.")
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Explica el cálculo y significado del puntaje de salud del sistema."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    score_val = str(ctx.score) if ctx.score is not None else "N/A"
-    score_display = f"Tu puntaje es {score_val}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
-    problemas = _identify_active_problems(ctx)
-    resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente para arreglar."
-    explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio, con la seguridad pesando más."
-    
-    return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
+    try:
+        score_val = str(ctx.score) if ctx.score is not None else "N/A"
+        score_display = f"Tu puntaje es {score_val}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
+        problemas = _identify_active_problems(ctx)
+        resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente para arreglar."
+        explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio, con la seguridad pesando más."
+        
+        return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
+    except Exception:
+        return Answer("Hubo un error al leer tu puntaje de salud.")
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Analiza programas en el inicio y su impacto sugerido."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    count = ctx.startup_count
-    estado = f"Tenés {count} programas que arrancan con Windows."
-    valoracion = "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos." if count > 15 else ("Es una cantidad normal, aunque se puede recortar." if count > 8 else "Está bien así.")
-    cierre = " La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows."
-    
-    return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
+    try:
+        count = ctx.startup_count
+        estado = f"Tenés {count} programas que arrancan con Windows."
+        valoracion = "Son bastantes, y cada uno suma tiempo de encendido. Vale la pena revisarlos." if count > 15 else ("Es una cantidad normal, aunque se puede recortar." if count > 8 else "Está bien así.")
+        cierre = " La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows."
+        
+        return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
+    except Exception:
+        return Answer("Hubo un error al analizar tus programas de inicio.")
 
 _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram,
