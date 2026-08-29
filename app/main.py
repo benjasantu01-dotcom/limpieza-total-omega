@@ -1296,10 +1296,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Validación de seguridad explícita sobre el entorno de trabajo actual
+            # Validación de seguridad explícita sobre cada item en el momento de mover
+            movidos = []
+            for jf in aptos:
+                if self._is_safe_path(jf.path):
+                    movidos.append(jf)
+            
+            if not movidos:
+                self.log("Error: Los archivos ya no son seguros para mover.", "Limpieza")
+                return
+
             self.set_status("Moviendo a revisión...")
-            dest = stage_for_review(aptos)
-            self.log(f"Movidos {len(aptos)} archivos a: {dest}", "Limpieza")
+            dest = stage_for_review(movidos)
+            self.log(f"Movidos {len(movidos)} archivos a: {dest}", "Limpieza")
             self._invalidate_cache("junk")
 
         self.run_async(task, check_safety=True, target=".")
@@ -1650,6 +1659,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
             for ruta in aptos:
+                # Re-validar seguridad individual antes de mover
                 if self._is_safe_path(ruta):
                     quarantine.quarantine_file(ruta, reason="Copia duplicada")
                     movidos += 1

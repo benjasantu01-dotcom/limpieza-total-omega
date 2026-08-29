@@ -1230,3 +1230,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T06:37:17` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se ha mejorado la robustez del escaneo recursivo protegiendo el acceso a atributos de archivo mediante la adición de `os.name == 'nt'` en el chequeo de atributos y un manejo de excepciones más granular, asegurando que fallos en archivos individuales no detengan el proceso ni accedan a rutas inválidas.
 - `2026-08-29T06:37:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T06:37:17` Corrida terminada. Total usado hoy: 156.
+- `2026-08-29T06:45:43` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-29T06:46:11` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-08-29T06:47:25` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `on_stage` y `on_quarantine_duplicates` añadiendo una re-validación de seguridad (`_is_safe_path`) sobre cada archivo individual dentro del bucle de procesamiento, asegurando que, aunque la lista de candidatos sea validada previamente, cada operación de movimiento sea estrictamente verificada por `safety.py` en el momento de la ejecución.
+- `2026-08-29T06:47:53` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se ha mejorado `_validate_path_security` para aplicar un filtrado robusto contra rutas de sistema, reemplazando la verificación simplista de `if "Windows" in p.parts` (que fallaba en rutas de usuario) por un chequeo estricto utilizando `is_protected_path` sobre la ruta resuelta, reforzando la seguridad defensiva sin cambiar la funcionalidad.
+- `2026-08-29T06:48:02` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-08-29T06:48:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T06:48:02` Corrida terminada. Total usado hoy: 160.
