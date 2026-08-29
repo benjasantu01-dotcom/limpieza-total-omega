@@ -100,13 +100,10 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 
 class Scanner:
     """
-    Gestiona el estado del escaneo y la navegación recursiva del sistema de archivos.
+    Controlador de estado para el escaneo del sistema de archivos.
     
-    Attributes:
-        results: Lista acumulativa de hallazgos (Suspicion).
-        seen: Conjunto de rutas ya procesadas para prevenir recursión infinita en ciclos.
-        base_root: Ruta absoluta de inicio definida para limitar el alcance del escaneo.
-        now_ts: Timestamp capturado al inicio para consistencia temporal.
+    Implementa el recorrido recursivo mediante una pila (LIFO) y mantiene
+    un registro de rutas visitadas para evitar ciclos.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -117,9 +114,10 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida si una entrada es apta para el análisis.
-        Rechaza explícitamente: rutas UNC, nombres reservados, rutas fuera del árbol base_root
-        y puntos de reanálisis.
+        Valida si una entrada de directorio es segura y debe ser procesada.
+        
+        Verifica: longitud de ruta, nombres reservados, confinamiento al árbol 
+        de base_root, ausencia de reparse points y restricciones de safety.py.
         """
         if not entry or not entry.path:
             return False
@@ -133,7 +131,7 @@ class Scanner:
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
-            # Verificación estricta de subdirectorio asegurando consistencia de resolución
+            # Verificación de confinamiento de ruta
             if self.base_root not in path_obj.parents and path_obj != self.base_root:
                 return False
             
@@ -145,9 +143,7 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """
-        Detecta si una entrada es un punto de reanálisis (junction/symlink).
-        """
+        """Determina si un objeto es un junction o symlink mediante atributos de archivo."""
         try:
             is_sym = entry.is_symlink()
             attr = entry.stat(follow_symlinks=False).st_file_attributes
@@ -156,14 +152,14 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Extrae la lógica de apilado de directorios para modularizar la navegación."""
+        """Agrega un directorio a la pila de procesamiento si aún no fue visitado."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Gestiona la lógica de recursión y filtrado inicial de archivos.
+        Analiza una entrada: si es directorio, lo encola; si es archivo, aplica heurísticas.
         """
         try:
             if not self._is_safe_entry(entry):
@@ -178,9 +174,7 @@ class Scanner:
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """
-        Coordina las pruebas de ofuscación de nombres y las reglas registradas.
-        """
+        """Ejecuta los detectores heurísticos sobre un archivo específico."""
         if path.name and RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
@@ -206,8 +200,8 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Punto de entrada principal para escaneo recursivo. Implementa una estructura
-    de pila (LIFO) para evitar la profundidad de recursión del sistema.
+    Punto de entrada para el escaneo recursivo de un directorio.
+    Utiliza un objeto Scanner para mantener el estado del recorrido.
     """
     if directory is None:
         return []
