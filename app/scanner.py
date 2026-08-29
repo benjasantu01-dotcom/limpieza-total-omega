@@ -141,7 +141,7 @@ class Scanner:
                 return False
 
             return not is_protected_path(path_obj)
-        except (ValueError, RuntimeError, OSError):
+        except (ValueError, RuntimeError, OSError, TypeError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
@@ -157,7 +157,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Extrae la lógica de apilado de directorios para modularizar la navegación."""
-        if entry.path not in self.seen:
+        if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
@@ -209,11 +209,11 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     Punto de entrada principal para escaneo recursivo. Implementa una estructura
     de pila (LIFO) para evitar la profundidad de recursión del sistema.
     """
-    if not directory:
+    if directory is None:
         return []
     try:
-        path_input: Path = Path(directory).resolve()
-        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
+        path_input: Path = Path(directory).resolve(strict=True)
+        if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):
         return []

@@ -364,7 +364,10 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
 def context_as_text(context: SystemContext) -> str:
-    """Serializa el estado del sistema en un formato de texto plano y seguro."""
+    """
+    Serializa el estado del sistema en un formato de texto plano y seguro para el consumo
+    del motor remoto, garantizando que solo se exporten métricas agregadas.
+    """
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
@@ -397,13 +400,13 @@ def _fmt_metric(val: Any, unit: str = "", decimal: int = 0) -> str:
         return "N/A"
 
 def explain_area(area: Any) -> str:
-    """Devuelve explicaciones pedagógicas de los módulos."""
+    """Devuelve explicaciones pedagógicas de los módulos basada en un mapa predefinido."""
     if not isinstance(area, str):
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 def _iter_active_problems(ctx: SystemContext) -> Iterator[str]:
-    """Genera las descripciones de problemas activos de forma eficiente."""
+    """Genera las descripciones de problemas activos de forma eficiente mediante iteración."""
     for crit in _CRITERIOS_SALUD:
         match = crit.format_if_triggered(ctx)
         if match:
@@ -497,13 +500,13 @@ _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
 }
 
 def _sanitize_query(question: str) -> str:
-    """Elimina caracteres de control y acorta el texto de entrada."""
+    """Elimina caracteres de control y acorta el texto de entrada del usuario."""
     if not isinstance(question, str): return ""
     clean = _CONTROL_CHARS_REGEX.sub('', question)
     return clean.strip()[:100].lower()
 
 def local_answer(question: str, context: SystemContext) -> Answer:
-    """Motor de lógica local: responde consultas heurísticas."""
+    """Motor de lógica local: responde consultas heurísticas sin salir del equipo."""
     q_sanitized = _sanitize_query(question)
     if not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
@@ -541,7 +544,7 @@ def available(base: Union[str, Path, None] = None) -> bool:
         return False
 
 def _parse_config(raw_cfg: Any) -> AssistantConfig:
-    """Extrae y normaliza la configuración del asistente desde un dict crudo."""
+    """Extrae y normaliza la configuración del asistente desde un dict crudo cargado de settings."""
     if not isinstance(raw_cfg, dict):
         return AssistantConfig("", "gemini-3.1-flash-lite", True)
     return AssistantConfig(
@@ -556,7 +559,10 @@ def _call_gemini(
     api_key: str, 
     model: str
 ) -> Optional[str]:
-    """Invoca la API de Gemini realizando validaciones de seguridad previas y posteriores."""
+    """
+    Invoca la API de Gemini realizando validaciones de seguridad rigurosas previas y
+    posteriores, asegurando que la respuesta recibida no contenga contenido malicioso.
+    """
     if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
     if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     
@@ -613,7 +619,7 @@ def _call_gemini(
 
 def ask(question: str, context: Optional[SystemContext] = None,
         base: Union[str, Path, None] = None) -> Answer:
-    """Orquestador de consultas que elige entre motor local y Gemini según configuración."""
+    """Orquestador principal de consultas que elige entre motor local y Gemini según configuración."""
     if not _ensure_safe_text(question):
         return Answer("Entrada no válida.")
         

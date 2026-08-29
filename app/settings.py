@@ -293,14 +293,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     
     ruta = settings_path(custom_base)
     try:
-        if ruta.parent.exists():
-            ensure_safe_to_modify(str(ruta.parent))
-        try:
-            ruta.parent.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            return None
+        parent = ruta.parent
+        if parent.exists() and not parent.is_dir(): return None
         
-        usage = shutil.disk_usage(ruta.parent)
+        if parent.exists():
+            ensure_safe_to_modify(str(parent))
+        else:
+            parent.mkdir(parents=True, exist_ok=True)
+        
+        usage = shutil.disk_usage(parent)
         if usage.free < MAX_SETTINGS_SIZE * 2: return None
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
