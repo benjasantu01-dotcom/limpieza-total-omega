@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 47 | 4 | 7 | 2 | 54 |
+| 2026-08-27 | 47 | 4 | 7 | 2 | 50 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 26 | 1 | 4 | 1 | 8 |
+| 2026-08-29 | 28 | 1 | 5 | 1 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **51**
 - rendimiento: **49**
+- robustez ante casos límite: **40**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
 - `memory.py`: **21**
-- `scanner.py`: **20**
+- `scanner.py`: **21**
 - `branding.py`: **19**
 - `duplicates.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
 - `settings.py`: **18**
 - `diskreport.py`: **17**
 - `browser.py`: **16**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T01:52:14` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la lógica de escaneo ante archivos bloqueados o inaccesibles añadiendo manejo de errores específico dentro de `_is_safe_entry` y consolidando la verificación de existencia, evitando que excepciones de E/S interrumpan el bucle de procesamiento.
+- `2026-08-29T01:51:11` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `quarantine_file` ante condiciones de carrera (TOCTOU) y errores de sistema, añadiendo una verificación de tamaño previa a la lectura y asegurando que el archivo fuente no se elimine si el destino en cuarentena presenta cualquier discrepancia o si el archivo original fue modificado durante el proceso.
 - `2026-08-29T01:42:56` **organizer.py** (robustez ante casos límite): Se introdujo una validación de espacio en disco en `_process_directory` y se reforzó `_is_safe_for_disk_op` para prevenir fallos por rutas con caracteres inválidos o longitudes excesivas antes de procesar archivos, mejorando la resiliencia ante casos límite del sistema de archivos.
 - `2026-08-29T01:42:45` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `read_snapshot` ante errores de lectura de archivos y desbordamientos de buffer, garantizando que el sistema siempre devuelva un estado coherente incluso si `/proc/meminfo` entrega contenido malformado, vacío o inesperadamente grande.
 - `2026-08-29T01:42:04` **main.py** (robustez ante casos límite): Se reforzó la robustez del manejo de subprocesos y la interfaz al implementar una validación de seguridad adicional en `_worker_thread_logic` y mejorar la gestión de estados en `_set_busy`, asegurando que no se intente interactuar con widgets destruidos tras el cierre inesperado de un hilo o de la aplicación.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T01:01:34` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar redundancias de cálculo al llamar múltiples veces a `len()` y al transformar tamaños, reutilizando los resultados de los cachés de forma más eficiente y evitando llamadas innecesarias a `duplicates_mod.reclaimable_bytes` si la lista está vacía.
 - `2026-08-29T01:00:05` **duplicates.py** (rendimiento): Optimizé la función `_process_size_group` para evitar el cálculo innecesario del hash completo en archivos pequeños, aprovechando que si `size <= PARTIAL_READ_BYTES`, el hash parcial es matemáticamente suficiente para garantizar la igualdad del archivo, ahorrando una segunda lectura completa de disco.
 - `2026-08-29T00:51:20` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para reducir llamadas redundantes al sistema de archivos cacheando el resultado de `entry.stat()` en el bucle principal, evitando así múltiples lecturas costosas de metadatos por cada archivo.
-- `2026-08-29T00:51:08` **browser.py** (rendimiento): Se implementó la persistencia del diccionario `memo` en `detect_profiles` para evitar el cálculo redundante de tamaños de subcarpetas compartidas entre distintas configuraciones de navegador, mejorando drásticamente el rendimiento en escaneos profundos.
-- `2026-08-29T00:50:42` **branding.py** (rendimiento): Optimicé el cálculo de colores en `gradient_colors` eliminando la recreación innecesaria de listas y aprovechando la naturaleza de las tuplas, además de asegurar que el acceso a los gradientes sea más directo, reduciendo la presión sobre el recolector de basura en operaciones frecuentes de UI.

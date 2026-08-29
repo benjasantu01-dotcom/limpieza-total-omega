@@ -777,3 +777,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-29T01:42:56` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se introdujo una validación de espacio en disco en `_process_directory` y se reforzó `_is_safe_for_disk_op` para prevenir fallos por rutas con caracteres inválidos o longitudes excesivas antes de procesar archivos, mejorando la resiliencia ante casos límite del sistema de archivos.
 - `2026-08-29T01:42:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T01:42:56` Corrida terminada. Total usado hoy: 40.
+- `2026-08-29T01:50:35` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-29T01:51:11` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `quarantine_file` ante condiciones de carrera (TOCTOU) y errores de sistema, añadiendo una verificación de tamaño previa a la lectura y asegurando que el archivo fuente no se elimine si el destino en cuarentena presenta cualquier discrepancia o si el archivo original fue modificado durante el proceso.
+- `2026-08-29T01:51:38` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-08-29T01:52:05` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-29T01:52:14` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de la lógica de escaneo ante archivos bloqueados o inaccesibles añadiendo manejo de errores específico dentro de `_is_safe_entry` y consolidando la verificación de existencia, evitando que excepciones de E/S interrumpan el bucle de procesamiento.
+- `2026-08-29T01:52:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T01:52:14` Corrida terminada. Total usado hoy: 44.

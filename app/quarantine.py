@@ -330,7 +330,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         raise RuntimeError(f"Fallo crítico al persistir manifiesto: {e}")
 
 
-def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str:
+def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """Copia archivo al sandbox garantizando integridad mediante hash post-copia."""
     resolved_source = source.resolve()
     dest_dir = destination.parent.resolve()
@@ -340,7 +340,7 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
 
     try:
         usage = shutil.disk_usage(dest_dir)
-        if usage.free < (file_size + (1024 * 1024)):
+        if usage.free < (original_size + (1024 * 1024)):
             raise OSError("Espacio insuficiente en disco para aislamiento seguro.")
     except OSError as e:
         raise OSError(f"No se pudo determinar el espacio libre: {e}")
@@ -351,8 +351,9 @@ def _atomic_isolate_file(source: Path, destination: Path, file_size: int) -> str
             temp_file_path = Path(tf.name)
         shutil.copy2(resolved_source, temp_file_path)
         
-        if not temp_file_path.exists() or temp_file_path.stat().st_size != file_size:
-            raise OSError("Falla de integridad: archivo copiado no coincide en tamaño.")
+        # Validación de tamaño post-copia antes de mover
+        if temp_file_path.stat().st_size != original_size:
+            raise OSError("Falla de integridad: tamaño del archivo copiado difiere del origen.")
             
         os.replace(temp_file_path, destination)
         file_hash = _get_sha256(destination)
@@ -421,8 +422,13 @@ def quarantine_file(
         items_dict[item_id] = quarantine_item
         save_manifest(list(items_dict.values()), base)
         
-        # Verificación post-aislamiento para evitar TOCTOU antes de eliminar origen
-        if destination.exists() and _get_sha256(destination) == file_hash and not _is_file_locked(source_path):
+        # Verificación final post-aislamiento: verificar que origen no cambió y destino sigue intacto
+        if (destination.exists() and 
+            _get_sha256(destination) == file_hash and 
+            not _is_file_locked(source_path) and
+            source_path.exists() and 
+            source_path.stat().st_size == file_size):
+            
             try:
                 source_path.unlink()
             except OSError as e:

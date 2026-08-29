@@ -130,13 +130,16 @@ class Scanner:
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
+            if path_obj.resolve() != path_obj:
+                return False
+
             path_obj.relative_to(self.base_root)
             
             if self._is_reparse_point(entry):
                 return False
 
             return not is_protected_path(path_obj)
-        except (ValueError, RuntimeError):
+        except (ValueError, RuntimeError, OSError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
