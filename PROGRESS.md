@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 67 | 7 | 10 | 5 | 61 |
+| 2026-08-27 | 65 | 7 | 9 | 5 | 60 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 2 | 1 | 0 | 0 | 1 |
+| 2026-08-29 | 5 | 1 | 1 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **45**
 - seguridad defensiva: **44**
-- legibilidad y documentación: **43**
-- rendimiento: **41**
+- rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **21**
 - `assistant.py`: **21**
 - `branding.py`: **20**
-- `quarantine.py`: **19**
+- `scanner.py`: **20**
 - `settings.py`: **19**
+- `duplicates.py`: **19**
 - `memory.py`: **19**
-- `duplicates.py`: **18**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `browser.py`: **16**
-- `healthscore.py`: **14**
+- `healthscore.py`: **15**
 - `main.py`: **12**
 - `safety.py`: **11**
 - `startup.py`: **10**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T00:20:17` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de los tipos mediante docstrings explicativos en las funciones de cálculo, aclarando el propósito y el rango esperado de cada métrica para facilitar el mantenimiento a largo plazo.
+- `2026-08-29T00:19:53` **duplicates.py** (legibilidad y documentación): Se mejoró la legibilidad y mantenibilidad del módulo mediante la adición de Type Hints en la lógica de escaneo recursivo, se documentó el comportamiento de la heurística de Windows (reparse points) mediante un docstring explícito y se reemplazó el número mágico `0x400` por una constante descriptiva `FILE_ATTRIBUTE_REPARSE_POINT` para mayor claridad.
+- `2026-08-29T00:19:29` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando Type Hints faltantes en los retornos de funciones, aclarando la naturaleza recursiva de las mismas mediante docstrings, y asegurando que las excepciones capturadas sean explícitas para facilitar el mantenimiento.
 - `2026-08-29T00:10:43` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo docstrings descriptivos a las funciones clave y tipado más preciso, clarificando el propósito de las funciones internas que manejan la interacción con el sistema de archivos (`kernel32`, `scandir`, validaciones), lo cual facilita el mantenimiento y la auditoría de seguridad.
 - `2026-08-29T00:10:23` **branding.py** (legibilidad y documentación): Mejoré la documentación técnica y la robustez del módulo `branding.py` mediante la adición de Type Hints en parámetros complejos (como los objetos `canvas` de `customtkinter`) y la clarificación de los docstrings en funciones gráficas críticas, especificando sus requisitos de dependencia (duck-typing para métodos de dibujo).
 - `2026-08-28T14:49:06` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos JSON al reemplazar el bloque `try-except` genérico en `load()` por uno que captura explícitamente `json.JSONDecodeError` y `UnicodeDecodeError`, asegurando que problemas de formato no silencien errores críticos de permisos o sistema, además de añadir un control de validación de tipos estricto para evitar inyecciones inesperadas en el diccionario de configuración.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-28T14:22:53` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de análisis (`largest_files`, `usage_by_extension`, `largest_folders`) añadiendo validación explícita de `Path` mediante `resolve(strict=True)` dentro de un bloque `try-except` para asegurar que las rutas sean accesibles antes de intentar procesarlas, evitando que errores de sistema en la inicialización pasen desapercibidos o generen resultados vacíos silenciosos.
 - `2026-08-28T14:22:40` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `directory_size` y `_is_valid_cache_path` mediante la validación explícita de `Path` antes de operar, previniendo excepciones innecesarias ante entradas vacías, nulas o rutas malformadas.
 - `2026-08-28T14:19:19` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez en `_call_gemini` al añadir validación explícita de `candidates` y `content` para evitar `AttributeError` o `KeyError` ante respuestas de API malformadas, además de asegurar que `_parse_config` maneje de forma segura configuraciones parciales.
-- `2026-08-28T12:56:58` **startup.py** (seguridad defensiva): Se endurece la seguridad defensiva en la obtención de rutas desde el registro, incorporando una validación estricta de la estructura del CSV antes de procesarlo para evitar la inyección de comandos o datos malformados, y asegurando que cada `Path` sea filtrado por `is_protected_path` antes de cualquier operación de resolución.
-- `2026-08-28T12:56:27` **settings.py** (seguridad defensiva): Se reforzó la seguridad de la escritura atómica en `save()` aplicando `ensure_safe_to_modify` directamente sobre la ruta final antes de cualquier operación de I/O, garantizando que el sistema de archivos no sea manipulado en zonas protegidas, y se simplificó la lógica de validación para evitar excepciones innecesarias en `_run_safety_checks`.
-- `2026-08-28T12:46:19` **quarantine.py** (seguridad defensiva): Se ha mejorado `quarantine_file` para evitar una condición de carrera ("TOCTOU") verificando la integridad del archivo y su estado de bloqueo justo antes de la operación de `unlink` en la fuente, garantizando que el archivo eliminado es efectivamente el que se copió al sandbox.

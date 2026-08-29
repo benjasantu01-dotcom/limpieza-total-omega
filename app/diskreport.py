@@ -263,7 +263,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
         skip_protected: Si es True, evita entrar en rutas catalogadas como protegidas.
 
     Returns:
-        Generador de tuplas (ruta_absoluta, tamaño_en_bytes).
+        Generador que yield tuplas de (ruta_absoluta, tamaño_en_bytes).
     """
     try:
         root_path = Path(os.fspath(directory)).resolve(strict=True)
@@ -301,10 +301,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """
-    Identifica los N archivos más grandes en un directorio utilizando un heap.
+    Identifica los N archivos más grandes en un directorio mediante un recorrido recursivo.
     """
     try:
-        # Validación temprana de la raíz para evitar errores en el generador
         Path(os.fspath(directory)).resolve(strict=True)
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         return []
@@ -318,7 +317,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """
-    Agrupa el uso de espacio total por extensión de archivo.
+    Agrupa el uso de espacio total por extensión de archivo tras un análisis recursivo.
     """
     try:
         Path(os.fspath(directory)).resolve(strict=True)
@@ -346,7 +345,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
 
 def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
-    Identifica las subcarpetas de primer nivel que ocupan más espacio.
+    Identifica las subcarpetas de primer nivel que ocupan más espacio mediante recorrido recursivo.
     """
     if not isinstance(limit, int) or limit <= 0:
         return []
@@ -383,7 +382,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """
-    Calcula el tamaño total en bytes y el conteo de archivos en un directorio.
+    Calcula el tamaño total en bytes y el conteo de archivos en un directorio mediante recorrido recursivo.
     """
     if not isinstance(directory, (str, Path, os.PathLike)) or not directory:
         return 0, 0
@@ -396,7 +395,7 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
-    Recolección interna de métricas (tamaños, conteos, top files) en una pasada.
+    Recolección interna de métricas (tamaños, conteos, top files) en una pasada única.
     """
     total_bytes: int = 0
     total_files: int = 0

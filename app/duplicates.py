@@ -38,6 +38,9 @@ __all__ = [
 # archivos distintos y es una lectura despreciable incluso en discos lentos.
 PARTIAL_READ_BYTES: int = 64 * 1024
 
+# Constante para identificar puntos de reparse (Junctions/Symlinks) en Windows
+FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
+
 
 @dataclass
 class DuplicateGroup:
@@ -149,15 +152,16 @@ def _collect_candidates(
         return skip_protected and is_protected_path(path)
 
     def _scan_recursive(current_dir: Path) -> None:
+        """Recorre directorios evitando punteros recursivos o sistemas protegidos."""
         try:
             for entry in current_dir.iterdir():
                 if _should_skip(entry): continue
                 
                 try:
                     if entry.is_symlink(): continue
-                    # Verificar reparse points en Windows
-                    if os.name == 'nt':
-                        if entry.stat().st_file_attributes & 0x400: continue
+                    # Evitar seguir puntos de reparse (Junctions) en Windows para no duplicar datos
+                    if os.name == 'nt' and (entry.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
+                        continue
                     
                     if entry.is_dir():
                         resolved_entry = entry.resolve()
@@ -203,7 +207,6 @@ def _resolve_by_hashes(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Pipeline de validación: decide si aplicar hash completo directamente."""
-    # Filtro previo contra race conditions: asegurar que todos existan aún
     valid_paths = [p for p in paths if _is_valid_candidate(p)]
     if len(valid_paths) < 2: return []
     
