@@ -263,15 +263,15 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
     try:
         f = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
+        fieldnames = reader.fieldnames
+        if not fieldnames or len(fieldnames) < 2:
+            return []
+            
         for row in reader:
             try:
-                keys = list(row.keys())
-                if len(keys) < 2:
-                    continue
-                
-                # Prevenir procesamiento de encabezados de PowerShell (PSPath, PSParent, etc)
-                name_raw = row.get(keys[0], "")
-                cmd_raw = row.get(keys[1], "")
+                # Usar los dos primeros campos detectados en el CSV
+                name_raw = row.get(fieldnames[0], "")
+                cmd_raw = row.get(fieldnames[1], "")
                 
                 if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
                     continue

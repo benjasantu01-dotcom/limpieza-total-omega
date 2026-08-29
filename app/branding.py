@@ -388,6 +388,10 @@ def logo_ascii() -> str:
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
     """
     Renderiza las franjas degradadas internas del escudo.
+    :param canvas: Objeto de dibujo compatible con Protocolo CanvasElement.
+    :param canvas_x: Coordenada X base para el dibujo.
+    :param canvas_y: Coordenada Y base para el dibujo.
+    :param scale: Factor de escala escalar (1.0 = tamaño original 128px).
     """
     try:
         scale_f = float(scale)
@@ -411,6 +415,10 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
     Dibuja el escudo corporativo escalado y centrado en un canvas.
+    :param canvas: Objeto de dibujo compatible con Protocolo CanvasElement.
+    :param size: Altura total del escudo en píxeles.
+    :param canvas_x: Desplazamiento horizontal inicial.
+    :param canvas_y: Desplazamiento vertical inicial.
     """
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128.0))
@@ -437,7 +445,15 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal con degradado dividida en segmentos por color."""
+    """
+    Renderiza una línea horizontal con degradado dividida en segmentos por color.
+    :param canvas: Objeto de dibujo compatible con Protocolo CanvasElement.
+    :param width: Longitud total de la barra en píxeles.
+    :param height: Grosor vertical de la línea.
+    :param canvas_x: Posición inicial X.
+    :param canvas_y: Posición inicial Y.
+    :param stops: Colores clave del degradado.
+    """
     try:
         w_int = max(1, int(width))
         colores = gradient_colors(w_int, stops)
@@ -449,7 +465,15 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular (donut) de progreso."""
+    """
+    Dibuja un indicador circular (donut) de progreso.
+    :param canvas: Objeto de dibujo compatible con Protocolo CanvasElement.
+    :param percent: Valor numérico entre 0 y 100.
+    :param size: Diámetro exterior del anillo.
+    :param thickness: Grosor del trazo.
+    :param track: Color del fondo del anillo (track).
+    :param fill: Color del progreso.
+    """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
         diametro: int = max(20, int(size))

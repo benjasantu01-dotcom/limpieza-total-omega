@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple
@@ -156,7 +157,6 @@ class _Validators:
             p = Path(path_str).expanduser()
             resolved = p.resolve(strict=False)
             if not resolved.is_absolute(): return False
-            # Validar contra p explícitamente para evitar escapes antes de resolver
             if ".." in str(p): return False
             return _Validators._run_safety_checks(resolved)
         except (OSError, RuntimeError, PermissionError, AttributeError):
@@ -289,10 +289,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     
     ruta = settings_path(custom_base)
     try:
-        # Validación estricta de seguridad antes de tocar el sistema de archivos
         if ruta.parent.exists():
             ensure_safe_to_modify(str(ruta.parent))
         ruta.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Validación de espacio en disco previo a escritura
+        usage = shutil.disk_usage(ruta.parent)
+        if usage.free < MAX_SETTINGS_SIZE * 2: return None
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         encoded_data = data.encode("utf-8")
@@ -302,10 +305,12 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         with open(temp_path, "wb") as f:
             f.write(encoded_data)
             f.flush()
-            os.fsync(f.fileno())
+            try:
+                os.fsync(f.fileno())
+            except (OSError, AttributeError):
+                pass
         os.replace(temp_path, ruta)
         
-        # Validación de integridad post-escritura
         with open(ruta, "r", encoding="utf-8") as f:
             json.load(f)
             

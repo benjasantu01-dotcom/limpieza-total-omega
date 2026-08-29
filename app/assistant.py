@@ -290,8 +290,9 @@ class Answer:
 
 def _is_safe_text_structure(text: str) -> bool:
     """
-    Verifica que el texto no contenga estructuras sospechosas como rutas de sistema,
-    caracteres de control o intentos de inyección de directorio/comando.
+    Valida la ausencia de vectores de ataque comunes en el texto.
+    Verifica que no existan patrones de rutas, inyecciones de comandos,
+    ni secuencias de control o caracteres de omisión de derecha a izquierda (RTL).
     """
     if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text):
         return False
@@ -299,9 +300,9 @@ def _is_safe_text_structure(text: str) -> bool:
 
 def _ensure_safe_text(text: Any) -> bool:
     """
-    Validador de seguridad de capa superior: asegura que cualquier cadena procesada
-    sea texto plano, cumpla límites de tamaño, carezca de caracteres de control
-    y pase los filtros de estructura segura.
+    Filtro de seguridad de alto nivel para todo texto procesado.
+    Garantiza que la entrada es una cadena no vacía, dentro del límite de tamaño,
+    limpia de caracteres de control (que podrían romper la UI) y estructuralmente segura.
     """
     if not isinstance(text, str) or not text:
         return False
@@ -322,8 +323,9 @@ def _get_source_value(source: Any, key: str) -> Any:
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
     """
-    Extrae una métrica individual de 'source' mediante 'key', la valida contra
-    las restricciones de 'spec' y la asigna al 'ctx' si es correcta.
+    Extrae una métrica de la fuente y aplica un contrato de validación estricto.
+    Asegura que el valor sea numérico, finito y caiga dentro de los límites físicos
+    (min_val/max_val) definidos para cada métrica en MetricSpec.
     """
     val = _get_source_value(source, key)
     if not spec.is_valid_type(val):
