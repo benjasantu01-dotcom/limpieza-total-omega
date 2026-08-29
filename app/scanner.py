@@ -143,7 +143,8 @@ class Scanner:
             is_sym = entry.is_symlink()
             attr = entry.stat(follow_symlinks=False).st_file_attributes
             return is_sym or bool(attr & WIN_FILE_ATTR_REPARSE_POINT)
-        except (OSError, AttributeError, TypeError):
+        except (OSError, AttributeError, TypeError, FileNotFoundError):
+            # Ante fallo de acceso, marcar como True (seguridad conservadora: no entrar)
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:

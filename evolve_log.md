@@ -558,3 +558,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T10:41:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-08-29T10:41:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T10:41:34` Corrida terminada. Total usado hoy: 252.
+- `2026-08-29T10:50:10` Arrancando corrida. Quedan hoy ~48 peticiones objetivo.
+- `2026-08-29T10:50:40` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-29T10:51:05` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_reparse_point` incorporando un manejo defensivo contra `FileNotFoundError` (común al escanear procesos dinámicos o archivos temporales que desaparecen entre el `os.scandir` y el `stat`) y se corrigió la lógica de retorno para asegurar que, ante cualquier falla de acceso a atributos, el método asuma conservadoramente que la ruta es un punto de reparse para evitar la recursión infinita o errores de acceso.
+- `2026-08-29T10:51:34` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido una validación robusta para prevenir la escritura en dispositivos de solo lectura (como unidades ópticas o sistemas de archivos bloqueados) y para manejar el caso límite donde `os.fsync` falla en sistemas de archivos que no soportan la operación, garantizando la integridad sin bloquear la ejecución.
+- `2026-08-29T10:51:45` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-29T10:51:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T10:51:45` Corrida terminada. Total usado hoy: 256.

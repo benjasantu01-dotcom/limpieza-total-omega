@@ -276,7 +276,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga la configuración desde disco; ante error retorna valores seguros por defecto."""
     ruta = settings_path(custom_base)
     try:
-        # Solo consultamos stat si el archivo existe, el caché manejará la comparación mtime
         mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
         return _read_disk(str(ruta), mtime).copy()
     except (OSError, PermissionError, RuntimeError):
@@ -299,6 +298,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         
         if parent.exists():
             ensure_safe_to_modify(str(parent))
+            if not os.access(parent, os.W_OK): return None
         else:
             parent.mkdir(parents=True, exist_ok=True)
         
@@ -315,7 +315,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
                 f.write(encoded_data)
                 f.flush()
                 try: os.fsync(f.fileno())
-                except (OSError, AttributeError): pass
+                except (OSError, AttributeError, NotImplementedError): pass
             os.replace(temp_path, ruta)
         finally:
             if temp_path.exists():

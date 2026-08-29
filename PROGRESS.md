@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 106 | 7 | 15 | 6 | 118 |
-| 2026-08-29 | 122 | 6 | 18 | 9 | 97 |
+| 2026-08-28 | 106 | 7 | 15 | 6 | 114 |
+| 2026-08-29 | 124 | 6 | 18 | 9 | 99 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **52**
 - rendimiento: **45**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **42**
 - seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `settings.py`: **20**
+- `settings.py`: **21**
+- `scanner.py`: **20**
 - `duplicates.py`: **19**
 - `memory.py`: **19**
-- `scanner.py`: **19**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `branding.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T10:51:34` **settings.py** (robustez ante casos límite): Se ha añadido una validación robusta para prevenir la escritura en dispositivos de solo lectura (como unidades ópticas o sistemas de archivos bloqueados) y para manejar el caso límite donde `os.fsync` falla en sistemas de archivos que no soportan la operación, garantizando la integridad sin bloquear la ejecución.
+- `2026-08-29T10:51:05` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` incorporando un manejo defensivo contra `FileNotFoundError` (común al escanear procesos dinámicos o archivos temporales que desaparecen entre el `os.scandir` y el `stat`) y se corrigió la lógica de retorno para asegurar que, ante cualquier falla de acceso a atributos, el método asuma conservadoramente que la ruta es un punto de reparse para evitar la recursión infinita o errores de acceso.
 - `2026-08-29T10:41:30` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de "espacio disponible" más robusta en `quarantine_file` y una protección contra condiciones de carrera en el manifiesto al asegurar que la lectura y escritura se realicen sobre el estado más reciente después de posibles cambios en el filesystem.
 - `2026-08-29T10:40:30` **memory.py** (robustez ante casos límite): Se mejoró la robustez de `parse_windows_process_csv` ante entradas malformadas o PIDs inexistentes (valores negativos/cero) que podrían causar errores inesperados al procesar la salida de PowerShell.
 - `2026-08-29T10:32:04` **main.py** (robustez ante casos límite): Se reforzó la robustez del bucle principal (`_on_closing`) y la gestión de tareas asíncronas para prevenir condiciones de carrera durante el cierre de la aplicación, garantizando que el `ThreadPoolExecutor` no intente manipular widgets destruidos y que el estado de la UI sea consistente en situaciones de salida abrupta.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T09:50:44` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje pre-calculando los resultados de las funciones de puntuación en un diccionario local, evitando múltiples recorridos y llamadas redundantes durante la generación de recomendaciones.
 - `2026-08-29T09:50:32` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos `_collect_candidates` evitando llamadas redundantes a `stat()` y `is_file()` mediante el uso de `os.scandir` (vía `path.iterdir()` en Python 3.5+) y almacenando el `st_size` junto a la ruta para evitar un `stat()` adicional al agrupar, reduciendo drásticamente las operaciones de E/S.
 - `2026-08-29T09:49:38` **browser.py** (rendimiento): Implementé la persistencia del diccionario `memo` en `detect_profiles` para evitar el re-cálculo de tamaños de subcarpetas comunes (como las compartidas bajo "User Data") durante el escaneo de múltiples navegadores, optimizando significativamente el tiempo de ejecución en sistemas con muchos perfiles.
-- `2026-08-29T09:40:51` **branding.py** (rendimiento): Se ha optimizado la generación de degradados en `gradient_colors` eliminando la recreación innecesaria de listas de colores en cada iteración y utilizando una lógica de interpolación directa basada en los segmentos, mejorando el rendimiento en UI dinámicas.
-- `2026-08-29T09:40:33` **assistant.py** (rendimiento): Se optimizó el proceso de identificación de problemas activos mediante el uso de un generador (`_iter_active_problems`) y una evaluación perezosa, evitando la creación de listas intermedias innecesarias y mejorando la eficiencia en el acceso a atributos del contexto.
