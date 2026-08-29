@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 47 | 4 | 7 | 2 | 50 |
+| 2026-08-27 | 47 | 4 | 7 | 2 | 46 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 28 | 1 | 5 | 1 | 9 |
+| 2026-08-29 | 32 | 1 | 5 | 1 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **51**
 - legibilidad y documentación: **51**
 - rendimiento: **49**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **39**
+- robustez ante casos límite: **42**
+- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **22**
+- `assistant.py`: **23**
 - `memory.py`: **21**
 - `scanner.py`: **21**
-- `branding.py`: **19**
+- `branding.py`: **20**
 - `duplicates.py`: **19**
 - `quarantine.py`: **19**
-- `settings.py`: **18**
+- `settings.py`: **19**
 - `diskreport.py`: **17**
 - `browser.py`: **16**
 - `healthscore.py`: **15**
 - `main.py`: **14**
+- `startup.py`: **11**
 - `safety.py`: **11**
-- `startup.py`: **10**
 - `organizer.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T02:02:53` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita para evitar rutas relativas o maliciosas mediante `.resolve()`, asegurando que el directorio padre no solo sea verificable por `is_safe_to_modify`, sino que exista y sea un directorio real antes de intentar cualquier operación.
+- `2026-08-29T02:02:34` **assistant.py** (seguridad defensiva): Mejoré la seguridad en `_call_gemini` añadiendo una capa de validación que bloquea cualquier respuesta de la API que contenga indicios de rutas o caracteres sospechosos, reforzando el principio de "input/output validado" antes de mostrar contenido externo en la UI.
+- `2026-08-29T02:01:58` **startup.py** (robustez ante casos límite): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita para prevenir el procesamiento de filas de encabezado corruptas o mal formadas, y se protegió la lógica de tokenización de comandos contra excepciones de indexación, asegurando que ante valores inesperados (como strings vacíos o caracteres de control) la función retorne una cadena vacía en lugar de propagar un error.
+- `2026-08-29T02:01:28` **settings.py** (robustez ante casos límite): Se ha robustecido el proceso de escritura atómica en `save()` añadiendo un chequeo de existencia de `ruta.parent` antes de llamar a `ensure_safe_to_modify`, evitando errores de acceso en rutas inexistentes y garantizando que el árbol de directorios pueda crearse de forma segura.
 - `2026-08-29T01:52:14` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de la lógica de escaneo ante archivos bloqueados o inaccesibles añadiendo manejo de errores específico dentro de `_is_safe_entry` y consolidando la verificación de existencia, evitando que excepciones de E/S interrumpan el bucle de procesamiento.
 - `2026-08-29T01:51:11` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `quarantine_file` ante condiciones de carrera (TOCTOU) y errores de sistema, añadiendo una verificación de tamaño previa a la lectura y asegurando que el archivo fuente no se elimine si el destino en cuarentena presenta cualquier discrepancia o si el archivo original fue modificado durante el proceso.
 - `2026-08-29T01:42:56` **organizer.py** (robustez ante casos límite): Se introdujo una validación de espacio en disco en `_process_directory` y se reforzó `_is_safe_for_disk_op` para prevenir fallos por rutas con caracteres inválidos o longitudes excesivas antes de procesar archivos, mejorando la resiliencia ante casos límite del sistema de archivos.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T01:20:33` **scanner.py** (rendimiento): Optimicé el bucle de escaneo evitando llamadas innecesarias a `path.exists()` y `path.suffix` mediante la reutilización de los datos ya capturados por `os.scandir`, reduciendo drásticamente las syscalls redundantes durante el recorrido del disco.
 - `2026-08-29T01:11:32` **safety.py** (rendimiento): Se implementó un mecanismo de caché local dentro de `is_protected_path` utilizando un `dict` con un `lru_cache` implícito mediante `functools.lru_cache` para evitar la costosa reevaluación de `os.path.normcase` y el chequeo de `any()` sobre las estructuras de datos de protección en cada llamada repetida, mejorando el rendimiento en recorridos de directorios masivos.
 - `2026-08-29T01:10:46` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la doble iteración y conversión a lista en las funciones de acceso, y mejoré el cálculo del total de bytes para que sea una operación $O(1)$ sobre el objeto ya cargado en memoria, evitando recalculaciones redundantes sobre el disco.
-- `2026-08-29T01:01:47` **memory.py** (rendimiento): Se implementó un mecanismo de caché más eficiente para los snapshots de memoria global en `read_snapshot`, evitando llamadas innecesarias a la API de Windows o lecturas de archivo frecuentes mediante un TTL de 5 segundos, mejorando el rendimiento sin afectar la precisión necesaria.
-- `2026-08-29T01:01:34` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar redundancias de cálculo al llamar múltiples veces a `len()` y al transformar tamaños, reutilizando los resultados de los cachés de forma más eficiente y evitando llamadas innecesarias a `duplicates_mod.reclaimable_bytes` si la lista está vacía.
-- `2026-08-29T01:00:05` **duplicates.py** (rendimiento): Optimizé la función `_process_size_group` para evitar el cálculo innecesario del hash completo en archivos pequeños, aprovechando que si `size <= PARTIAL_READ_BYTES`, el hash parcial es matemáticamente suficiente para garantizar la igualdad del archivo, ahorrando una segunda lectura completa de disco.
-- `2026-08-29T00:51:20` **diskreport.py** (rendimiento): Optimizé la función `walk_files` para reducir llamadas redundantes al sistema de archivos cacheando el resultado de `entry.stat()` en el bucle principal, evitando así múltiples lecturas costosas de metadatos por cada archivo.

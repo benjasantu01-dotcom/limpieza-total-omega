@@ -287,7 +287,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(custom_base)
     try:
         # Validación estricta de seguridad antes de tocar el sistema de archivos
-        ensure_safe_to_modify(str(ruta.parent))
+        if ruta.parent.exists():
+            ensure_safe_to_modify(str(ruta.parent))
         ruta.parent.mkdir(parents=True, exist_ok=True)
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)

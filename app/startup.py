@@ -269,6 +269,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 if len(keys) < 2:
                     continue
                 
+                # Prevenir procesamiento de encabezados de PowerShell (PSPath, PSParent, etc)
                 name_raw = row.get(keys[0], "")
                 cmd_raw = row.get(keys[1], "")
                 
@@ -278,6 +279,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
                 cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
                 
+                # Ignorar campos PS o entradas vacías
                 if not name or not cmd or name.upper().startswith("PS"):
                     continue
                 if any(c in cmd for c in '<>|?*'):
