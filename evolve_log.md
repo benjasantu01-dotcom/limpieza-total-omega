@@ -486,3 +486,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-29T09:40:51` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la generación de degradados en `gradient_colors` eliminando la recreación innecesaria de listas de colores en cada iteración y utilizando una lógica de interpolación directa basada en los segmentos, mejorando el rendimiento en UI dinámicas.
 - `2026-08-29T09:40:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T09:40:51` Corrida terminada. Total usado hoy: 228.
+- `2026-08-29T09:49:01` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-29T09:49:38` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Implementé la persistencia del diccionario `memo` en `detect_profiles` para evitar el re-cálculo de tamaños de subcarpetas comunes (como las compartidas bajo "User Data") durante el escaneo de múltiples navegadores, optimizando significativamente el tiempo de ejecución en sistemas con muchos perfiles.
+- `2026-08-29T09:50:04` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-29T09:50:32` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Se optimizó el proceso de recolección de archivos `_collect_candidates` evitando llamadas redundantes a `stat()` y `is_file()` mediante el uso de `os.scandir` (vía `path.iterdir()` en Python 3.5+) y almacenando el `st_size` junto a la ruta para evitar un `stat()` adicional al agrupar, reduciendo drásticamente las operaciones de E/S.
+- `2026-08-29T09:50:44` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del puntaje pre-calculando los resultados de las funciones de puntuación en un diccionario local, evitando múltiples recorridos y llamadas redundantes durante la generación de recomendaciones.
+- `2026-08-29T09:50:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T09:50:44` Corrida terminada. Total usado hoy: 232.

@@ -197,36 +197,25 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño en bytes de un directorio mediante escaneo profundo.
-    
-    Args:
-        root_dir: Ruta absoluta a escanear.
-        is_junction_fn: Callback para detectar puntos de reparse de Windows.
-        kernel32: Instancia de WinDLL para chequeos de atributos.
-        memo: Caché de resultados previos para optimización.
-        base_check_path: Ruta raíz permitida para validar traversal.
-        depth: Profundidad actual de recursión para evitar ciclos.
-
-    Returns:
-        Tamaño total en bytes. Retorna 0 si la ruta es insegura o inaccesible.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
 
+    root_path = Path(root_dir).resolve()
+    root_abs = str(root_path)
+
+    if root_abs in memo:
+        return memo[root_abs]
+
+    # Bloqueo defensivo contra reparse points
+    if root_path.is_symlink() or is_junction_fn(root_dir) or os.path.ismount(root_dir):
+        return 0
+
+    if not _is_safe_to_traverse(root_path, base_check_path):
+        return 0
+
+    total: int = 0
     try:
-        root_path = Path(root_dir).resolve()
-        
-        # Bloqueo defensivo contra reparse points que escapan al control de seguridad
-        if root_path.is_symlink() or is_junction_fn(root_dir) or os.path.ismount(root_dir):
-            return 0
-
-        root_abs = str(root_path)
-        if root_abs in memo:
-            return memo[root_abs]
-
-        if not _is_safe_to_traverse(root_path, base_check_path):
-            return 0
-
-        total: int = 0
         with os.scandir(root_dir) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
@@ -241,7 +230,7 @@ def _sum_directory_recursive(
                         total += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError):
                     continue
-    except (PermissionError, OSError, ValueError):
+    except (PermissionError, OSError):
         return 0
     
     memo[root_abs] = total
@@ -251,7 +240,6 @@ def _sum_directory_recursive(
 def directory_size(path: Union[str, Path, None]) -> int:
     """
     Calcula el peso total de una carpeta tras validar seguridad con `is_safe_to_modify`.
-    Si la ruta está protegida o es inaccesible, retorna 0.
     """
     if path is None:
         return 0
@@ -265,15 +253,14 @@ def directory_size(path: Union[str, Path, None]) -> int:
             return 0
         
         is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
-        return _sum_directory_recursive(str(p_res), is_junction, _get_kernel32(), {}, p_res)
+        return _sum_directory_recursive(str(p_res), is_junction, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Valida la integridad de una ruta candidata a ser caché, asegurando que 
-    no sea una zona protegida y que resida dentro del perfil del usuario.
+    Valida la integridad de una ruta candidata a ser caché.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
@@ -299,8 +286,8 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea las rutas definidas en `cache_paths` para calcular el tamaño de caché.
-    Retorna una lista ordenada de objetos `BrowserCache` para ser consumida por la UI.
+    Escanea las rutas definidas en `cache_paths`. Utiliza un diccionario de 
+    memoización persistente para evitar re-cálculos redundantes entre navegadores.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -311,6 +298,7 @@ def detect_profiles(
     is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
+    # Memoización persistente para el escaneo de toda la sesión
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
@@ -328,7 +316,7 @@ def detect_profiles(
                     c_path = candidate.resolve()
                     path_str = str(c_path)
                     
-                    size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache, c_path)
+                    size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
         except (OSError, PermissionError, TypeError): 

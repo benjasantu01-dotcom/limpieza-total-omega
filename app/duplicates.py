@@ -39,7 +39,6 @@ __all__ = [
 PARTIAL_READ_BYTES: int = 64 * 1024
 
 # Constante para identificar puntos de reparse (Junctions/Symlinks) en Windows.
-# Se utiliza en bitwise AND con los atributos del archivo obtenidos vía stat().
 FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 
 
@@ -155,38 +154,25 @@ def _collect_candidates(
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: Set[Tuple[int, int]] = set()
 
-    def _should_skip(path: Path) -> bool:
-        return skip_protected and is_protected_path(path)
-
     def _scan_recursive(current_dir: Path) -> None:
         """Recorre directorios evitando punteros recursivos o sistemas protegidos."""
         try:
             for entry in current_dir.iterdir():
-                if _should_skip(entry): continue
+                if skip_protected and is_protected_path(entry): continue
                 
                 try:
-                    if entry.is_symlink(): continue
-                    # Evitar seguir puntos de reparse (Junctions) en Windows
-                    if os.name == 'nt':
-                        try:
-                            if entry.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT:
-                                continue
-                        except (OSError, AttributeError):
-                            continue
+                    stat = entry.stat()
+                    # Identificar directorios y evitar reparse points
+                    if os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
+                        continue
                     
                     if entry.is_dir():
-                        resolved_entry = entry.resolve()
-                        if is_protected_path(resolved_entry): continue
-                            
-                        stat = entry.stat()
                         dev_inode = (stat.st_dev, stat.st_ino)
                         if dev_inode not in visited_device_inodes:
                             visited_device_inodes.add(dev_inode)
                             _scan_recursive(entry)
-                    else:
-                        stat = entry.stat()
-                        if stat.st_size >= min_size:
-                            temp_map[int(stat.st_size)].append(entry)
+                    elif stat.st_size >= min_size:
+                        temp_map[int(stat.st_size)].append(entry)
                 except (OSError, PermissionError): continue
         except (OSError, PermissionError): pass
 
