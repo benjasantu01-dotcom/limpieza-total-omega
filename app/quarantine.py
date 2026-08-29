@@ -314,6 +314,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
+    temp_name = None
     try:
         with tempfile.NamedTemporaryFile("w", dir=base_path, encoding="utf-8", delete=False) as tf:
             temp_name = tf.name
@@ -324,7 +325,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
         _load_manifest_internal.cache_clear()
         return target_path
     except (OSError, TypeError, IOError) as e:
-        if 'temp_name' in locals() and os.path.exists(temp_name):
+        if temp_name and os.path.exists(temp_name):
             try: os.remove(temp_name)
             except OSError: pass
         raise RuntimeError(f"Fallo crítico al persistir manifiesto: {e}")

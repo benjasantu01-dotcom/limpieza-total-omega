@@ -72,6 +72,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """
     if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
         try:
+            # Validar existencia antes de consultar metadatos
+            if entry and not entry.is_file():
+                return None
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
@@ -200,7 +203,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
             try:
                 if (result := check(path, entry, now_ts)):
                     findings.append(result)
-            except Exception as e:
+            except (Exception, AttributeError) as e:
                 logger.debug(f"Fallo no crítico en regla {check.__name__} para {path}: {e}")
     return findings
 

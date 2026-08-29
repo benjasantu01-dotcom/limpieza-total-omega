@@ -1067,3 +1067,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-29T04:16:36` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-29T04:16:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T04:16:36` Corrida terminada. Total usado hoy: 100.
+- `2026-08-29T04:23:13` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-08-29T04:23:48` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `save_manifest` mediante el manejo explícito de errores durante la escritura, asegurando que si ocurre un fallo durante la serialización, el archivo temporal se elimine inmediatamente antes de propagar la excepción, manteniendo el sistema en un estado consistente.
+- `2026-08-29T04:24:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
+- `2026-08-29T04:24:33` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-29T04:24:43` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones en `scanner.py` mediante la captura explícita de `AttributeError` al acceder a metadatos de archivos y la verificación de existencia del archivo antes de operar, evitando fallos en condiciones de carrera (archivos temporales que desaparecen durante el escaneo).
+- `2026-08-29T04:24:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T04:24:43` Corrida terminada. Total usado hoy: 104.
