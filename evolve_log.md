@@ -1142,3 +1142,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T05:18:39` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `_sum_directory_recursive` implementando un chequeo de `is_protected_path` al inicio de cada iteración para reducir llamadas innecesarias al sistema de archivos y se centralizó la carga de `kernel32` para evitar instanciaciones redundantes dentro del bucle de escaneo.
 - `2026-08-29T05:18:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T05:18:39` Corrida terminada. Total usado hoy: 124.
+- `2026-08-29T05:24:18` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-08-29T05:24:47` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-29T05:25:09` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-08-29T05:25:32` ➖ Sin cambios en healthscore.py (enfoque: rendimiento). Motivo: Se optimizó el método `is_finite` en `SystemMetrics` utilizando un generador y una comprobación temprana para evitar la creación innecesaria de listas y reducir el uso de CPU al validar métricas.
+- `2026-08-29T05:26:22` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un filtro de caché `_last_card_values` en el método `_apply_card_updates` para evitar la sobrecarga de redibujado de widgets de la interfaz cuando los valores de métricas no han cambiado, optimizando el uso de CPU durante las actualizaciones cíclicas.
+- `2026-08-29T05:26:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T05:26:22` Corrida terminada. Total usado hoy: 128.
