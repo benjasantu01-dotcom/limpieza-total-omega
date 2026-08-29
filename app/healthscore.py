@@ -191,7 +191,17 @@ _SCORERS: Final = (
 )
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """Procesa métricas brutas y genera un puntaje de salud normalizado 0-100."""
+    """
+    Toma un objeto SystemMetrics, lo valida y calcula el puntaje global del sistema
+    combinando métricas individuales ponderadas según los pesos configurados en WEIGHTS.
+    
+    Args:
+        metrics: Objeto con los datos recolectados por otros módulos.
+        
+    Returns:
+        Un objeto HealthResult conteniendo el score final (0-100), la nota (A-F),
+        el desglose punto a punto y sugerencias basadas en umbrales de riesgo.
+    """
     if not isinstance(metrics, SystemMetrics) or type(metrics) is not SystemMetrics:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     

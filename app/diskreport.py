@@ -268,6 +268,9 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
 def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre el sistema de archivos buscando archivos y sus tamaños.
+    Implementa una pila (stack) para evitar la recursión profunda del intérprete y 
+    utiliza un conjunto de inodos (`visited_inodes`) para detectar y evitar bucles 
+    infinitos causados por puntos de reparse o hard links.
 
     Args:
         directory: Ruta raíz desde donde iniciar la búsqueda.
@@ -379,7 +382,10 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
 def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
     """
-    Calcula el tamaño total en bytes y el conteo de archivos en un directorio mediante recorrido recursivo.
+    Calcula el tamaño total en bytes y el conteo de archivos en un directorio.
+    
+    Returns:
+        Tupla (total_bytes: int, file_count: int).
     """
     total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):

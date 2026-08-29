@@ -38,7 +38,8 @@ __all__ = [
 # archivos distintos y es una lectura despreciable incluso en discos lentos.
 PARTIAL_READ_BYTES: int = 64 * 1024
 
-# Constante para identificar puntos de reparse (Junctions/Symlinks) en Windows
+# Constante para identificar puntos de reparse (Junctions/Symlinks) en Windows.
+# Se utiliza en bitwise AND con los atributos del archivo obtenidos vía stat().
 FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
 
 
@@ -100,7 +101,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """Verifica si un objeto Path es un archivo legible y no protegido por el sistema."""
+    """Validador central: verifica existencia, tipo archivo, permisos y protección."""
     if not isinstance(path, Path): return False
     try:
         return path.exists() and path.is_file() and not is_protected_path(path) and os.access(path, os.R_OK)
@@ -142,8 +143,8 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Exploración recursiva del sistema de archivos para identificar archivos con
-    tamaño >= min_size, evitando bucles mediante tracking de inodos.
+    Exploración recursiva del sistema de archivos mediante seguimiento de
+    dispositivo e inodo para evitar ciclos (bucles de enlaces simbólicos).
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: Set[Tuple[int, int]] = set()
@@ -188,7 +189,10 @@ def _collect_candidates(
 
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Aplica una función de hash para subdividir grupos de archivos existentes."""
+    """
+    Función de utilidad para particionar grupos de archivos utilizando una función
+    de hashing proporcionada. Filtra archivos inaccesibles durante el proceso.
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if isinstance(path, Path) and _is_valid_candidate(path) and (digest := hash_func(path)):
@@ -206,11 +210,11 @@ def _resolve_by_hashes(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Pipeline de validación: decide si aplicar hash completo directamente."""
+    """Pipeline: Determina si el hash parcial es suficiente o requiere verificación completa."""
     valid_paths = [p for p in paths if isinstance(p, Path) and _is_valid_candidate(p)]
     if len(valid_paths) < 2: return []
     
-    # Si el archivo es menor o igual al bloque parcial, el hash parcial es suficiente para confirmar identidad
+    # Si el archivo es menor o igual al bloque parcial, hash parcial confirma identidad
     results = _refine_by_hash(valid_paths, partial_hash) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(valid_paths)
             
     confirmed_groups: List[DuplicateGroup] = []
@@ -220,7 +224,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 
 
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """Punto de entrada principal para buscar duplicados y devolver grupos ordenados por ahorro potencial."""
+    """Punto de entrada principal: identifica, agrupa y ordena duplicados por potencial de ahorro."""
     if directories is None or min_size < 0: return []
     groups: List[DuplicateGroup] = []
     for size, paths in _collect_candidates(directories, min_size, skip_protected).items():
@@ -237,9 +241,9 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Selecciona heurísticamente el archivo 'original' para conservar:
-    1. Más antiguo (fecha de modificación).
-    2. En caso de empate, ruta más corta (suele indicar directorios raíz/raíz raíz).
+    Heurística de selección: sugiere el archivo original basándose en:
+    1. Menor fecha de última modificación.
+    2. En empate, la ruta más corta (prioriza directorios de nivel superior).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -261,7 +265,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Prepara un reporte textual detallado del grupo de duplicados para el usuario."""
+    """Genera una representación textual formateada del grupo para reporte."""
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return []
         
