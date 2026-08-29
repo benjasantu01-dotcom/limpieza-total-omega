@@ -958,3 +958,9 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - NameEr
 - `2026-08-29T14:46:13` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `save_logo_svg` ante errores de sistema de archivos (como directorios de solo lectura o falta de permisos) añadiendo una verificación previa de escritura y manejando explícitamente posibles fallos de E/S en la creación de directorios, manteniendo la integridad del bucle mediante `ensure_safe_to_modify`.
 - `2026-08-29T14:46:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T14:46:13` Corrida terminada. Total usado hoy: 348.
+- `2026-08-29T14:54:39` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-29T14:55:08` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_sum_directory_recursive` ante archivos bloqueados por el sistema operativo (error 32, "file in use") o errores de acceso durante `os.scandir` mediante un manejo de excepciones granular y defensivo, asegurando que el escaneo no se interrumpa ante un archivo ocupado.
+- `2026-08-29T14:55:36` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-29T14:55:36` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-29T14:55:36` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T14:55:36` Corrida terminada. Total usado hoy: 350.
