@@ -168,7 +168,9 @@ def _passes_system_checks(src: Path) -> bool:
     if os.name != "nt": return True
     try:
         stat = src.stat()
-        return not (stat.st_file_attributes & 0x7)
+        # Verificar atributos: 0x4 (System), 0x2 (Hidden), 0x1 (Read-only)
+        # 0x400 (Reparse Point) detectado adicionalmente para seguridad defensiva.
+        return not (stat.st_file_attributes & 0x407)
     except OSError:
         return False
 
@@ -189,6 +191,10 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not os.access(src, os.W_OK) or not os.access(dest.parent if dest.is_file() else dest, os.W_OK):
             return False
         if not src.anchor or not dest.anchor or src.anchor != dest.anchor:
+            return False
+        
+        # Validación de atributos Reparse Point preventivo para evitar junctions inesperadas
+        if os.name == "nt" and (src.stat().st_file_attributes & 0x400):
             return False
             
         return src.stat().st_size > 0 and _passes_system_checks(src) and not _is_file_locked(src)

@@ -299,10 +299,11 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
     """Verifica si child es un subdirectorio o archivo contenido en parent usando rutas reales."""
     if child is None or parent is None: return False
     try:
-        c_path = os.path.realpath(str(normalize(child)))
-        p_path = os.path.realpath(str(normalize(parent)))
+        c_path = Path(os.path.realpath(str(normalize(child))))
+        p_path = Path(os.path.realpath(str(normalize(parent))))
+        if not c_path.is_absolute() or not p_path.is_absolute(): return False
         if not allow_equal and c_path == p_path: return False
-        return os.path.commonpath([c_path, p_path]) == p_path
+        return os.path.commonpath([str(c_path), str(p_path)]) == str(p_path)
     except (ValueError, TypeError, OSError, RuntimeError): return False
 
 
