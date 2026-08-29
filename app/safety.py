@@ -226,8 +226,8 @@ def _check_file_integrity(path: Path) -> None:
 
     try:
         file_stat: os.stat_result = path.lstat()
-    except (PermissionError, OSError):
-        raise UnsafePathError(f"Error de acceso a metadatos: {ProtectionReason.INACCESSIBLE.value}")
+    except (PermissionError, OSError) as e:
+        raise UnsafePathError(f"Error de acceso a metadatos: {ProtectionReason.INACCESSIBLE.value} ({e.strerror})")
 
     for rule in _VALIDATORS:
         try:
@@ -235,6 +235,7 @@ def _check_file_integrity(path: Path) -> None:
                 _INTEGRITY_CACHE[path_key] = (now, False)
                 raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
         except (OSError, PermissionError):
+            # Si el predicado falla, asumimos precaución e ignoramos la validación específica
             continue
             
     _INTEGRITY_CACHE[path_key] = (now, True)
