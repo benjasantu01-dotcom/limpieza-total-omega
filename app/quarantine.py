@@ -28,7 +28,7 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 from pathlib import Path
 from functools import lru_cache
-from typing import List, Union, Dict, Any, TypeGuard, Optional
+from typing import List, Union, Dict, Any, Optional
 
 from safety import (
     UnsafePathError,

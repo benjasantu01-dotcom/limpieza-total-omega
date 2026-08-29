@@ -74,17 +74,17 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 para GlobalMemoryStatusEx; usa c_ulonglong para valores de 64 bits."""
+    """Estructura Win32 para GlobalMemoryStatusEx que mapea el estado global de la RAM."""
     _fields_: List[Tuple[str, type]] = [
-        ("dwLength", ctypes.c_ulong),              # Tamaño de la estructura en bytes
-        ("dwMemoryLoad", ctypes.c_ulong),          # Porcentaje de memoria en uso
-        ("ullTotalPhys", ctypes.c_ulonglong),      # RAM física total
-        ("ullAvailPhys", ctypes.c_ulonglong),      # RAM física disponible
+        ("dwLength", ctypes.c_ulong),              # Tamaño en bytes de la estructura
+        ("dwMemoryLoad", ctypes.c_ulong),          # Porcentaje de ocupación
+        ("ullTotalPhys", ctypes.c_ulonglong),      # Total de memoria física (bytes)
+        ("ullAvailPhys", ctypes.c_ulonglong),      # Memoria disponible (bytes)
         ("ullTotalPageFile", ctypes.c_ulonglong),  # Tamaño total del archivo de paginación
-        ("ullAvailPageFile", ctypes.c_ulonglong),  # Espacio libre en archivo de paginación
-        ("ullTotalVirtual", ctypes.c_ulonglong),   # Tamaño del espacio virtual total
+        ("ullAvailPageFile", ctypes.c_ulonglong),  # Tamaño libre del archivo de paginación
+        ("ullTotalVirtual", ctypes.c_ulonglong),   # Espacio virtual total
         ("ullAvailVirtual", ctypes.c_ulonglong),   # Espacio virtual disponible
-        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Reservado
+        ("ullAvailExtendedVirtual", ctypes.c_ulonglong), # Reservado por el sistema
     ]
 
 @dataclass(frozen=True)
@@ -267,14 +267,14 @@ def _is_system_process(pid: int) -> bool:
     """Verifica si el PID corresponde a un proceso crítico del sistema o la propia app."""
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
-def _get_process_path(handle: wintypes.HANDLE) -> Optional[str]:
+def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     """Resuelve la ruta completa del archivo ejecutable de un proceso mediante Win32 API."""
-    if not handle or handle == -1: return None
+    if not proc_handle or proc_handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
     size, buf = ctypes.c_ulong(4096), ctypes.create_unicode_buffer(4096)
     try:
-        if kernel32.QueryFullProcessImageNameW(handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
+        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError): pass
     return None
@@ -292,47 +292,47 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """Verifica integridad del proceso, su estado activo y la seguridad de su ubicación."""
+    """Verifica la integridad del proceso, su estado activo y la seguridad de su ubicación."""
     if proc_handle is None or proc_handle == -1: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
-    if not kernel32 or not hasattr(kernel32, "GetProcessId"): return False, "API no disponible."
+    if not kernel32 or not hasattr(kernel32, "GetProcessId"): return False, "API GetProcessId no disponible."
     
     try:
-        # Verificación doble de seguridad del PID
-        if kernel32.GetProcessId(proc_handle) != pid: return False, "PID mismatch."
+        # Verificar que el handle realmente pertenezca al PID objetivo
+        if kernel32.GetProcessId(proc_handle) != pid: return False, "Mismatch de PID."
         
         exit_code = ctypes.c_ulong()
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
-            return False, "Proceso no activo."
+            return False, "El proceso no está activo."
         
-        path = _get_process_path(proc_handle)
-        if not path: return False, "Ruta inaccesible."
-        return _validate_path_security(path)
+        exec_path = _get_process_path(proc_handle)
+        if not exec_path: return False, "Ruta del proceso inaccesible."
+        return _validate_path_security(exec_path)
     except (OSError, ctypes.ArgumentError):
-        return False, "Error interno verificando integridad."
+        return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """Intenta reducir el working set de un proceso específico tras validar su seguridad."""
-    if os.name != "nt": return False, "Solo disponible en Windows."
+    if os.name != "nt": return False, "Operación solo soportada en Windows."
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
-    if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
+    if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs del sistema no disponibles."
     
     try: target_pid = int(pid)
-    except (ValueError, TypeError): return False, "PID no válido."
-    if _is_system_process(target_pid): return False, "Proceso protegido por sistema."
+    except (ValueError, TypeError): return False, "PID proporcionado no es un número válido."
+    if _is_system_process(target_pid): return False, "El proceso está protegido por el sistema."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle or proc_handle == -1: 
-        return False, "No se pudo abrir el proceso (permisos insuficientes)."
+        return False, "No se pudo abrir el proceso (posible falta de privilegios)."
     
     try:
-        valid, reason = _is_safe_to_trim(proc_handle, target_pid)
-        if not valid: return False, reason or "Validación de seguridad fallida."
+        is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
+        if not is_safe: return False, error_reason or "Validación de seguridad fallida."
         if not psapi.EmptyWorkingSet(proc_handle): 
-            return False, f"Error del sistema {ctypes.get_last_error()}."
+            return False, f"El sistema denegó la operación (Error {ctypes.get_last_error()})."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (OSError, ctypes.ArgumentError, Exception) as e:
-        return False, f"Error inesperado: {type(e).__name__}"
+        return False, f"Error inesperado al intentar limpiar memoria: {type(e).__name__}"
     finally:
         if proc_handle and proc_handle != -1: 
             kernel32.CloseHandle(proc_handle)
