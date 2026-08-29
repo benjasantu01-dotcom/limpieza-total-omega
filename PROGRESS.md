@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 32
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 214
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 114 | 10 | 16 | 6 | 122 |
-| 2026-08-29 | 114 | 5 | 16 | 9 | 92 |
+| 2026-08-28 | 111 | 10 | 16 | 6 | 121 |
+| 2026-08-29 | 116 | 5 | 17 | 9 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **52**
-- seguridad defensiva: **47**
-- rendimiento: **43**
+- rendimiento: **45**
+- seguridad defensiva: **44**
 - robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `scanner.py`: **20**
 - `assistant.py`: **20**
-- `diskreport.py`: **19**
+- `settings.py`: **20**
 - `memory.py`: **19**
-- `scanner.py`: **19**
 - `duplicates.py`: **19**
-- `settings.py`: **19**
-- `branding.py`: **18**
-- `browser.py`: **17**
+- `diskreport.py`: **18**
+- `branding.py`: **17**
 - `quarantine.py`: **17**
 - `healthscore.py`: **16**
+- `browser.py`: **16**
 - `main.py`: **12**
 - `startup.py`: **11**
 - `organizer.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T10:10:54` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `_read_disk()` sustituyendo el cálculo repetitivo del `mtime` del archivo en cada llamada por un mecanismo de validación condicional que minimiza las consultas al sistema de archivos mediante `lru_cache`, evitando lecturas redundantes de disco.
+- `2026-08-29T10:10:40` **scanner.py** (rendimiento): Optimizamos `Scanner.process_entry` reemplazando la creación de objetos `Path` pesados por operaciones directas sobre `entry.name` y `entry.path`, evitando llamadas innecesarias al sistema de archivos al pre-filtrar por extensiones antes de instanciar rutas o resolverlas.
 - `2026-08-29T10:01:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de `lru_cache` con un `maxsize` ajustado y la validación de existencia del archivo antes de intentar el parsing JSON, evitando operaciones de I/O redundantes y bloqueantes en llamadas frecuentes.
 - `2026-08-29T10:00:53` **memory.py** (rendimiento): Se optimizó `top_memory_processes` reemplazando la lectura innecesaria de 20 procesos para filtrar solo 10, y se mejoró el rendimiento de `parse_windows_process_csv` utilizando una estructura de datos `list.append` eficiente con pre-filtrado de errores para evitar ciclos o lógica redundante.
 - `2026-08-29T09:50:44` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje pre-calculando los resultados de las funciones de puntuación en un diccionario local, evitando múltiples recorridos y llamadas redundantes durante la generación de recomendaciones.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T09:29:12` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings enriquecidos en funciones críticas para clarificar el flujo de validación y prevenir errores de lógica en la manipulación de archivos y manifiestos.
 - `2026-08-29T09:21:05` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la adición de docstrings detallados en funciones críticas, la incorporación de type hints faltantes y la normalización de la nomenclatura interna para asegurar que cada función exprese claramente su intención y responsabilidad.
 - `2026-08-29T09:20:52` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `memory.py` mediante la adición de Type Hints detallados en las funciones de acceso a la API (ctypes) y la clarificación de los propósitos de las máscaras de acceso, facilitando la auditoría de seguridad del código.
-- `2026-08-29T09:18:58` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones de cálculo de puntaje (`score_*`) y normalización (`_clamp`, `_to_float`, `_to_int`), explicando explícitamente su propósito y comportamiento ante valores inválidos.
-- `2026-08-29T09:10:19` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de filtrado, estandarizando el uso de `_is_valid_candidate` y clarificando las docstrings del pipeline de resolución, lo cual facilita el mantenimiento y la legibilidad exigida por el enfoque actual.

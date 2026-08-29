@@ -500,3 +500,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-29T10:01:35` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` mediante el uso de `lru_cache` con un `maxsize` ajustado y la validación de existencia del archivo antes de intentar el parsing JSON, evitando operaciones de I/O redundantes y bloqueantes en llamadas frecuentes.
 - `2026-08-29T10:01:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T10:01:35` Corrida terminada. Total usado hoy: 236.
+- `2026-08-29T10:09:26` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-29T10:09:48` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-08-29T10:10:15` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
+- `2026-08-29T10:10:40` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizamos `Scanner.process_entry` reemplazando la creación de objetos `Path` pesados por operaciones directas sobre `entry.name` y `entry.path`, evitando llamadas innecesarias al sistema de archivos al pre-filtrar por extensiones antes de instanciar rutas o resolverlas.
+- `2026-08-29T10:10:54` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` y `_read_disk()` sustituyendo el cálculo repetitivo del `mtime` del archivo en cada llamada por un mecanismo de validación condicional que minimiza las consultas al sistema de archivos mediante `lru_cache`, evitando lecturas redundantes de disco.
+- `2026-08-29T10:10:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T10:10:54` Corrida terminada. Total usado hoy: 240.

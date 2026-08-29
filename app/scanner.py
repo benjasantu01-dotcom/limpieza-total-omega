@@ -115,23 +115,18 @@ class Scanner:
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
         Valida si una entrada de directorio es segura y debe ser procesada.
-        
-        Verifica: longitud de ruta, nombres reservados, confinamiento al árbol 
-        de base_root, ausencia de reparse points y restricciones de safety.py.
         """
         if not entry or not entry.path:
             return False
         
         try:
-            path_obj = Path(entry.path).resolve(strict=True)
-            
-            if len(str(path_obj)) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+            if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
                 return False
             
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
-            # Verificación de confinamiento de ruta
+            path_obj = Path(entry.path).resolve()
             if self.base_root not in path_obj.parents and path_obj != self.base_root:
                 return False
             
@@ -158,18 +153,18 @@ class Scanner:
             stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """
-        Analiza una entrada: si es directorio, lo encola; si es archivo, aplica heurísticas.
-        """
+        """Analiza una entrada: si es directorio, lo encola; si es archivo, aplica heurísticas."""
         try:
-            if not self._is_safe_entry(entry):
-                return
+            _, ext = os.path.splitext(entry.name)
+            ext_low = ext.lower()
+            
             if entry.is_dir(follow_symlinks=False):
-                self._handle_directory(entry, stack)
+                if self._is_safe_entry(entry):
+                    self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                ext_low = os.path.splitext(entry.name)[1].lower()
                 if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low == ".pdf":
-                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
+                    if self._is_safe_entry(entry):
+                        self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError):
             logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}")
 
@@ -180,9 +175,7 @@ class Scanner:
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """
-    Ejecuta todas las reglas heurísticas registradas sobre un archivo.
-    """
+    """Ejecuta todas las reglas heurísticas registradas sobre un archivo."""
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -199,10 +192,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """
-    Punto de entrada para el escaneo recursivo de un directorio.
-    Utiliza un objeto Scanner para mantener el estado del recorrido.
-    """
+    """Punto de entrada para el escaneo recursivo de un directorio."""
     if directory is None:
         return []
     try:
@@ -229,10 +219,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
-    """
-    Invoca la API de PowerShell para verificar el estado de Defender y ejecutar 
-    un escaneo rápido (QuickScan).
-    """
+    """Invoca la API de PowerShell para verificar el estado de Defender y ejecutar un escaneo rápido."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],
