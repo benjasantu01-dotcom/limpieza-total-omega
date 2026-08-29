@@ -965,3 +965,4 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - NameEr
 - `2026-08-29T14:55:36` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T14:55:36` Corrida terminada. Total usado hoy: 350.
 - `2026-08-29T15:04:47` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-29T15:14:57` Presupuesto diario agotado (350 usados). Corte hasta mañana.
