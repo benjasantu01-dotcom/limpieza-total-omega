@@ -815,3 +815,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T13:14:19` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-08-29T13:14:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T13:14:19` Corrida terminada. Total usado hoy: 312.
+- `2026-08-29T13:22:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-29T13:23:21` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-29T13:23:58` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_entry` y `process_entry` ante rutas con caracteres inválidos o entradas nulas, garantizando que el escáner no aborte ante condiciones inesperadas del sistema de archivos y validando la integridad del objeto `entry` antes de su uso.
+- `2026-08-29T13:24:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-29T13:25:32` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` y `_Validators` implementando validaciones preventivas contra rutas inexistentes, estados de archivos corruptos y desbordamientos en la escritura, asegurando que la configuración nunca quede en un estado inválido o bloquee la app por excepciones no capturadas.
+- `2026-08-29T13:25:45` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `row` para manejar entradas malformadas y evitando el acceso mediante índices potencialmente fuera de rango, asegurando que el parser no falle ante entradas de registro inesperadas o corruptas.
+- `2026-08-29T13:25:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T13:25:45` Corrida terminada. Total usado hoy: 316.

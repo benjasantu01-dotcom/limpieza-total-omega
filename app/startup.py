@@ -289,6 +289,8 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             return []
             
         for row in reader:
+            if not isinstance(row, dict) or len(row) < 2:
+                continue
             try:
                 # Usar los dos primeros campos detectados en el CSV del registro
                 name_raw = row.get(fieldnames[0], "")

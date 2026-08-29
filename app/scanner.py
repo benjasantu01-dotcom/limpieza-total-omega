@@ -120,6 +120,7 @@ class Scanner:
             return False
         
         try:
+            # Validaciones preventivas de seguridad y estructura
             if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
                 return False
             
@@ -157,6 +158,8 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Analiza una entrada: si es directorio, lo encola; si es archivo, aplica heurísticas."""
+        if not entry or not entry.path:
+            return
         try:
             _, ext = os.path.splitext(entry.name)
             ext_low = ext.lower()
@@ -169,7 +172,7 @@ class Scanner:
                     if self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError):
-            logger.debug(f"Acceso denegado o entrada inválida {getattr(entry, 'path', 'unknown')}")
+            logger.debug(f"Acceso denegado o entrada inválida {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Ejecuta los detectores heurísticos sobre un archivo específico."""

@@ -294,13 +294,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(custom_base)
     try:
         parent = ruta.parent
-        if parent.exists() and not parent.is_dir(): return None
-        
-        if parent.exists():
-            ensure_safe_to_modify(str(parent))
-            if not os.access(parent, os.W_OK): return None
-        else:
+        if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
+        elif not parent.is_dir():
+            return None
+        
+        ensure_safe_to_modify(str(parent))
+        if not os.access(parent, os.W_OK): return None
             
         if ruta.exists():
             ensure_safe_to_modify(str(ruta))
@@ -312,7 +312,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         encoded_data = data.encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         
-        temp_path = ruta.with_suffix(".tmp")
+        temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         try:
             with open(temp_path, "wb") as f:
                 f.write(encoded_data)
