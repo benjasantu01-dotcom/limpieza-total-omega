@@ -200,7 +200,7 @@ def _sum_directory_recursive(
             return memo[root_abs]
 
         # Validación defensiva de seguridad en cada nodo de la recursión
-        if not root_path.exists() or not is_safe_to_modify(root_path):
+        if not root_path.exists() or not is_safe_to_modify(root_path) or is_protected_path(root_path):
             return 0
         if base_check_path and not _is_path_inside_base(root_path, base_check_path):
             return 0
@@ -290,7 +290,6 @@ def detect_profiles(
     is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
-    # Memoización persistente para reutilizar cálculos de subdirectorios comunes
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
@@ -306,7 +305,6 @@ def detect_profiles(
                     c_path = candidate.resolve()
                     path_str = str(c_path)
                     
-                    # Se pasa perf_cache para que mantenga memoria entre iteraciones
                     size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache, c_path)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))

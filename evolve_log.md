@@ -1102,3 +1102,43 @@ FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_delet
 - `2026-08-29T05:05:15` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones internas del motor de validación y enriqueciendo los type hints para clarificar el flujo de datos entre la configuración cruda y el esquema validado.
 - `2026-08-29T05:05:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T05:05:15` Corrida terminada. Total usado hoy: 120.
+- `2026-08-29T05:13:59` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-08-29T05:14:30` Tests FALLARON:
+```
+.................................................. [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:271: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.28s
+
+```
+- `2026-08-29T05:14:30` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y la robustez del código en `startup.py` mediante la refactorización de `_resolve_and_cache_path` para reducir su complejidad ciclomática, extrayendo la lógica de validación de rutas en una función auxiliar explícita (`_is_path_safe_to_process`) y añadiendo docstrings que explican el propósito de las validaciones de seguridad.
+- `2026-08-29T05:15:30` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-29T05:16:03` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-29T05:17:10` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-29T05:17:57` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó la detección de problemas evitando la creación de listas intermedias y mejorando la eficiencia del bucle de evaluación mediante el uso de generadores, reduciendo el consumo de memoria en consultas frecuentes.
+- `2026-08-29T05:18:28` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-29T05:18:39` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `_sum_directory_recursive` implementando un chequeo de `is_protected_path` al inicio de cada iteración para reducir llamadas innecesarias al sistema de archivos y se centralizó la carga de `kernel32` para evitar instanciaciones redundantes dentro del bucle de escaneo.
+- `2026-08-29T05:18:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T05:18:39` Corrida terminada. Total usado hoy: 124.

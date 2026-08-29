@@ -46,7 +46,7 @@ import re
 import math
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple
+from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, Iterator
 
 import settings
 from safety import is_protected_path
@@ -401,11 +401,17 @@ def explain_area(area: Any) -> str:
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
+def _iter_active_problems(ctx: SystemContext) -> Iterator[str]:
+    """Genera las descripciones de problemas activos de forma eficiente."""
+    for crit in _CRITERIOS_SALUD:
+        match = crit.format_if_triggered(ctx)
+        if match:
+            yield match
+
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa el contexto actual contra los criterios de salud de forma eficiente."""
     if not ctx.analyzed: return []
-    problemas = [crit.format_if_triggered(ctx) for crit in _CRITERIOS_SALUD]
-    return [p for p in problemas if p][:3]
+    return list(_iter_active_problems(ctx))[:3]
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde consultas sobre memoria RAM usando métricas de estado actual."""

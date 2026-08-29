@@ -7,46 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **231** (45.8% de aceptación)
-- Rechazadas por tests: 13
+- Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 12
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 15 | 1 | 2 | 0 | 16 |
+| 2026-08-27 | 13 | 1 | 2 | 0 | 14 |
 | 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 61 | 2 | 10 | 3 | 44 |
+| 2026-08-29 | 63 | 3 | 10 | 3 | 45 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **51**
 - seguridad defensiva: **49**
-- rendimiento: **40**
-- robustez ante casos límite: **38**
+- rendimiento: **42**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `assistant.py`: **22**
 - `scanner.py`: **21**
-- `assistant.py`: **21**
-- `memory.py`: **20**
 - `settings.py`: **20**
+- `memory.py`: **19**
 - `branding.py`: **18**
 - `quarantine.py`: **18**
 - `duplicates.py`: **18**
+- `browser.py`: **17**
 - `diskreport.py`: **17**
-- `browser.py`: **16**
 - `healthscore.py`: **16**
-- `main.py`: **15**
+- `main.py`: **14**
 - `safety.py`: **11**
 - `startup.py`: **11**
 - `organizer.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T05:18:39` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` implementando un chequeo de `is_protected_path` al inicio de cada iteración para reducir llamadas innecesarias al sistema de archivos y se centralizó la carga de `kernel32` para evitar instanciaciones redundantes dentro del bucle de escaneo.
+- `2026-08-29T05:17:57` **assistant.py** (rendimiento): Se optimizó la detección de problemas evitando la creación de listas intermedias y mejorando la eficiencia del bucle de evaluación mediante el uso de generadores, reduciendo el consumo de memoria en consultas frecuentes.
 - `2026-08-29T05:05:15` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del módulo documentando exhaustivamente las funciones internas del motor de validación y enriqueciendo los type hints para clarificar el flujo de datos entre la configuración cruda y el esquema validado.
 - `2026-08-29T05:05:03` **scanner.py** (legibilidad y documentación): Documenté con precisión mediante type hints extendidos y docstrings el contrato esperado para las funciones de inspección (checkers), clarificando qué parámetros son opcionales y el propósito de `now_ts` para reducir llamadas a I/O, mejorando la mantenibilidad del motor heurístico.
 - `2026-08-29T04:55:59` **quarantine.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de las funciones críticas de validación y utilidades de bajo nivel para elevar la legibilidad técnica y clarificar las garantías de seguridad del módulo.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T04:34:16` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para los nombres de las columnas del CSV antes de acceder a los datos, evitando excepciones `KeyError` ante salidas de PowerShell inesperadas o incompletas.
 - `2026-08-29T04:33:49` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` capturando explícitamente excepciones de `os.fsync` y añadiendo una validación de `disk full` mediante el chequeo de espacio libre antes de persistir, evitando así posibles corrupciones de archivos por errores de I/O de bajo nivel.
 - `2026-08-29T04:24:43` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `scanner.py` mediante la captura explícita de `AttributeError` al acceder a metadatos de archivos y la verificación de existencia del archivo antes de operar, evitando fallos en condiciones de carrera (archivos temporales que desaparecen durante el escaneo).
-- `2026-08-29T04:23:48` **quarantine.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `save_manifest` mediante el manejo explícito de errores durante la escritura, asegurando que si ocurre un fallo durante la serialización, el archivo temporal se elimine inmediatamente antes de propagar la excepción, manteniendo el sistema en un estado consistente.
-- `2026-08-29T04:15:56` **main.py** (manejo de errores y validación de entradas): Se ha mejorado `_validate_environment` para capturar errores de resolución de rutas de manera más robusta, asegurando que cualquier fallo al acceder al sistema de archivos local sea manejado sin interrumpir el hilo principal y proporcionando un contexto claro sobre la falla en lugar de lanzar una excepción genérica.
