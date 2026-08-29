@@ -586,8 +586,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el espacio ocupado total en bytes por los archivos aislados."""
-    items = _load_manifest_internal(str(quarantine_dir(base)))
-    return sum(item.size_bytes for item in items.values())
+    items_map = _load_manifest_internal(str(quarantine_dir(base)))
+    return sum(item.size_bytes for item in items_map.values())
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
@@ -597,7 +597,7 @@ def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
         return ["La cuarentena está vacía."]
     
     items = sorted(items_map.values(), key=lambda i: i.quarantined_at, reverse=True)
-    total_mb = sum(item.size_mb for item in items)
+    total_mb = sum(i.size_mb for i in items)
     
     lines = [f"{len(items)} archivo(s) en cuarentena — {round(total_mb, 2)} MB", ""]
     for item in items:

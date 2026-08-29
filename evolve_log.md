@@ -1149,3 +1149,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T05:26:22` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un filtro de caché `_last_card_values` en el método `_apply_card_updates` para evitar la sobrecarga de redibujado de widgets de la interfaz cuando los valores de métricas no han cambiado, optimizando el uso de CPU durante las actualizaciones cíclicas.
 - `2026-08-29T05:26:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T05:26:22` Corrida terminada. Total usado hoy: 128.
+- `2026-08-29T05:34:30` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-08-29T05:35:00` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica que evita invocar el subshell si la caché de 60 segundos es válida, reduciendo el overhead de spawnear procesos del sistema operativo.
+- `2026-08-29T05:35:26` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` de forma eficiente, evitando llamadas innecesarias a `path.resolve()` y `path.anchor` dentro del bucle interno, y consolidando la lógica de filtrado de extensiones.
+- `2026-08-29T05:35:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T05:36:12` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Se optimizó el rendimiento del cálculo de espacio y el resumen de cuarentena evitando la deserialización completa y el re-procesamiento de metadatos mediante el acceso directo a los valores del diccionario del manifiesto en lugar de recrear listas de objetos cada vez.
+- `2026-08-29T05:36:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-29T05:36:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T05:36:15` Corrida terminada. Total usado hoy: 132.
