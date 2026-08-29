@@ -137,7 +137,7 @@ def _is_allowed_directory(name: str) -> bool:
 def _is_file_locked(path: Path) -> bool:
     """
     Verifica si un archivo está bloqueado intentando abrirlo en modo exclusivo.
-    Retorna True si el archivo está en uso o inaccesible para escritura.
+    Utilizado para prevenir la eliminación o movimiento de archivos en uso por el sistema.
     """
     try:
         with open(path, "rb") as f:
@@ -162,7 +162,10 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 
 def _passes_system_checks(src: Path) -> bool:
-    """Valida a nivel SO que el archivo no sea un componente crítico mediante atributos de archivo."""
+    """
+    Valida atributos de archivo a nivel SO. 
+    Se asegura de no tocar archivos marcados como 'Sistema' o 'Oculto' (0x7) en Windows.
+    """
     if os.name != "nt": return True
     try:
         stat = src.stat()
@@ -173,8 +176,9 @@ def _passes_system_checks(src: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Valida la integridad y seguridad de una operación de movimiento.
-    Verifica permisos, existencia, recursión, estados de bloqueo y longitud de ruta.
+    Realiza validaciones integrales de seguridad antes de operaciones de disco.
+    Verifica: integridad, límites de longitud (MAX_PATH), permisos de escritura, 
+    propiedad de volumen y estados de bloqueo.
     """
     try:
         if not isinstance(src, Path) or not isinstance(dest, Path): return False
@@ -210,6 +214,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """
     Realiza un barrido recursivo del sistema de archivos buscando basura.
+    Ignora junctions y carpetas bloqueadas mediante la lista SYSTEM_FOLDER_BLOCKLIST.
     """
     try:
         abs_path = current_dir.resolve()
@@ -287,6 +292,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Ejecuta el traslado seguro de los archivos detectados hacia el directorio de revisión.
+    Usa ensure_safe_to_modify como salvaguarda final antes del movimiento.
     """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
