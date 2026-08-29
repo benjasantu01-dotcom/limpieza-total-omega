@@ -758,3 +758,14 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-29T01:23:18` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta contra `OverflowError` y `ValueError` en las funciones `_fmt_metric` y `_fmt_metric_sanitized` para manejar casos límite donde valores numéricos extremos o mal formados puedan causar excepciones al intentar formatearlos con `.f` o exceder la capacidad de representación de cadena.
 - `2026-08-29T01:23:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T01:23:18` Corrida terminada. Total usado hoy: 32.
+- `2026-08-29T01:30:09` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-29T01:30:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T01:30:46` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-29T01:31:10` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-29T01:31:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T01:31:41` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se ha robustecido el escaneo recursivo mediante la incorporación de una gestión de excepciones específica en `walk_files` para capturar `OSError` (incluyendo `FileNotFoundError` y `PermissionError`) durante la resolución y el acceso a los directorios, garantizando que el bucle principal sea tolerante a fallos ante cambios en el sistema de archivos durante la ejecución.
+- `2026-08-29T01:31:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T01:31:44` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-29T01:31:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-29T01:31:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T01:31:59` Corrida terminada. Total usado hoy: 36.
