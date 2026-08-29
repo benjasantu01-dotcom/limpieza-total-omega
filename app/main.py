@@ -1111,12 +1111,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         disk_info = self._get_home_disk_info()
             
         metrics = healthscore.SystemMetrics(
-            junk_mb=sum(j.size_bytes for j in junk) / (1024 * 1024),
+            junk_mb=sum(j.size_bytes for j in junk) / 1048576,
             suspicious_count=len(hallazgos),
             suspicious_warnings=sum(1 for h in hallazgos if h.severity == "warning"),
             memory_available_percent=snapshot.available_percent if snapshot else 100.0,
             disk_free_percent=(disk_info.free / disk_info.total * 100) if (disk_info and disk_info.total > 0) else 100.0,
-            duplicate_mb=duplicates_mod.reclaimable_bytes(dups) / (1024 * 1024),
+            duplicate_mb=(duplicates_mod.reclaimable_bytes(dups) / 1048576) if dups else 0.0,
             startup_count=len(arranque),
             quarantined_count=len(quarantine.list_items()),
         )
@@ -1252,7 +1252,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._invalidate_cache("junk")
             self._cache["junk"] = (junk, time.time())
             
-            total_mb = round(sum(j.size_bytes for j in junk) / (1024 * 1024), 2)
+            total_mb = round(sum(j.size_bytes for j in junk) / 1048576, 2)
             self.log(f"Encontrados {len(junk)} candidatos ({total_mb} MB).", "Limpieza")
             self._safe_run_ui_callback(self.refresh_list)
 

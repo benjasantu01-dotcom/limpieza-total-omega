@@ -732,3 +732,11 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-29T00:51:20` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `walk_files` para reducir llamadas redundantes al sistema de archivos cacheando el resultado de `entry.stat()` en el bucle principal, evitando así múltiples lecturas costosas de metadatos por cada archivo.
 - `2026-08-29T00:51:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T00:51:20` Corrida terminada. Total usado hoy: 20.
+- `2026-08-29T00:59:39` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-08-29T01:00:05` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la función `_process_size_group` para evitar el cálculo innecesario del hash completo en archivos pequeños, aprovechando que si `size <= PARTIAL_READ_BYTES`, el hash parcial es matemáticamente suficiente para garantizar la igualdad del archivo, ahorrando una segunda lectura completa de disco.
+- `2026-08-29T01:00:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-29T01:00:32` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-29T01:01:34` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` para evitar redundancias de cálculo al llamar múltiples veces a `len()` y al transformar tamaños, reutilizando los resultados de los cachés de forma más eficiente y evitando llamadas innecesarias a `duplicates_mod.reclaimable_bytes` si la lista está vacía.
+- `2026-08-29T01:01:47` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se implementó un mecanismo de caché más eficiente para los snapshots de memoria global en `read_snapshot`, evitando llamadas innecesarias a la API de Windows o lecturas de archivo frecuentes mediante un TTL de 5 segundos, mejorando el rendimiento sin afectar la precisión necesaria.
+- `2026-08-29T01:01:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T01:01:47` Corrida terminada. Total usado hoy: 24.

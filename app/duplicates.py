@@ -210,7 +210,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     valid_paths = [p for p in paths if _is_valid_candidate(p)]
     if len(valid_paths) < 2: return []
     
-    # Si el archivo es menor o igual al bloque parcial, el hash parcial es el final
+    # Si el archivo es menor o igual al bloque parcial, el hash parcial es suficiente para confirmar identidad
     results = _refine_by_hash(valid_paths, partial_hash) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(valid_paths)
             
     confirmed_groups: List[DuplicateGroup] = []

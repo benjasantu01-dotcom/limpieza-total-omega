@@ -193,22 +193,31 @@ def _read_windows_snapshot() -> MemorySnapshot:
     except (AttributeError, ValueError, TypeError, OverflowError, OSError):
         return MemorySnapshot(0, 0)
 
+_snap_cache_time: float = 0.0
+_snap_cache_data: Optional[MemorySnapshot] = None
+
 def read_snapshot() -> MemorySnapshot:
-    """Obtiene un snapshot global de la memoria según el sistema operativo actual."""
+    """Obtiene un snapshot global de la memoria, cacheado por 5s."""
+    global _snap_cache_time, _snap_cache_data
+    if (time.time() - _snap_cache_time) < 5 and _snap_cache_data:
+        return _snap_cache_data
+
     if os.name == "nt": 
-        return _read_windows_snapshot()
+        _snap_cache_data = _read_windows_snapshot()
+    else:
+        proc_path = "/proc/meminfo"
+        if os.path.exists(proc_path) and os.access(proc_path, os.R_OK):
+            try:
+                with open(proc_path, "r", encoding="utf-8") as f:
+                    content = f.read(16384)
+                    _snap_cache_data = parse_linux_meminfo(content) if content else MemorySnapshot(0, 0)
+            except (OSError, PermissionError, IOError):
+                _snap_cache_data = MemorySnapshot(0, 0)
+        else:
+            _snap_cache_data = MemorySnapshot(0, 0)
     
-    proc_path = "/proc/meminfo"
-    if os.path.exists(proc_path) and os.access(proc_path, os.R_OK):
-        try:
-            with open(proc_path, "r", encoding="utf-8") as f:
-                content = f.read(16384)
-                if content and content.strip():
-                    return parse_linux_meminfo(content)
-        except (OSError, PermissionError, IOError):
-            return MemorySnapshot(0, 0)
-            
-    return MemorySnapshot(0, 0)
+    _snap_cache_time = time.time()
+    return _snap_cache_data
 
 _proc_cache_time: float = 0.0
 _proc_cache_data: str = ""
