@@ -122,13 +122,16 @@ class StartupEntry:
         """Realiza la resolución profunda de la ruta: normaliza, verifica existencia y reparse points."""
         if not isinstance(path_string, str) or not path_string:
             return ""
+        # Filtrado preventivo de caracteres ilegales en rutas Windows
         if any(c in path_string for c in '<>|?*\0&;'):
             return ""
         
         try:
+            # Normalización inicial para evitar ataques de salto de directorio
             norm = os.path.normpath(path_string)
             if len(norm) > 4096 or norm.startswith(r"\\"):
                 return ""
+            # Bloqueo de nombres de dispositivos reservados en Windows
             stem = Path(norm).stem.upper()
             if stem in {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}:
                 return ""
@@ -142,6 +145,7 @@ class StartupEntry:
             abs_path = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
+            # Verificación de existencia segura
             if p.exists():
                 stat_info = p.lstat()
                 # Verifica el bit de Reparse Point (FILE_ATTRIBUTE_REPARSE_POINT)
@@ -159,6 +163,7 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
 
+            # Validación final de integridad de ruta tras resolución
             if not real_path_str.startswith(os.path.splitdrive(abs_path)[0]):
                 _EXISTS_CACHE[path_string] = False
                 return ""

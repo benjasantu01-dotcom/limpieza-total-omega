@@ -296,7 +296,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     try:
         if ruta.parent.exists():
             ensure_safe_to_modify(str(ruta.parent))
-        ruta.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            ruta.parent.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            return None
         
         usage = shutil.disk_usage(ruta.parent)
         if usage.free < MAX_SETTINGS_SIZE * 2: return None
@@ -306,14 +309,19 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         
         temp_path = ruta.with_suffix(".tmp")
-        with open(temp_path, "wb") as f:
-            f.write(encoded_data)
-            f.flush()
-            try:
-                os.fsync(f.fileno())
-            except (OSError, AttributeError):
-                pass
-        os.replace(temp_path, ruta)
+        try:
+            with open(temp_path, "wb") as f:
+                f.write(encoded_data)
+                f.flush()
+                try:
+                    os.fsync(f.fileno())
+                except (OSError, AttributeError):
+                    pass
+            os.replace(temp_path, ruta)
+        finally:
+            if temp_path.exists():
+                try: os.remove(temp_path)
+                except OSError: pass
             
         _read_disk.cache_clear()
         return ruta

@@ -601,7 +601,9 @@ def _call_gemini(
             final_text = _validate_response_length(limpia_final)
             
             # Validación estricta final: bloquea si la API intentó devolver contenido potencialmente peligroso
-            return final_text if _ensure_safe_text(final_text) else None
+            if not _ensure_safe_text(final_text) or is_protected_path(final_text):
+                return None
+            return final_text
     except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
         return None
 
