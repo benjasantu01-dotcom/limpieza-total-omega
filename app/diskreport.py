@@ -291,6 +291,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     try:
                         st = entry.stat(follow_symlinks=False)
                         if entry.is_dir(follow_symlinks=False):
+                            # Seguridad: Validar que no se escape del raíz
+                            target_path = Path(entry.path).resolve()
+                            if root_path not in target_path.parents and target_path != root_path:
+                                continue
+                            
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
@@ -350,6 +355,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
     for path, size in walk_files(p_base, skip_protected):
         try:
+            # Seguridad adicional: verificar que la ruta pertenece efectivamente al árbol de p_base
             relative = path.relative_to(p_base)
             if not relative.parts:
                 continue

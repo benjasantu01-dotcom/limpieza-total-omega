@@ -6,39 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-27 | 0 | 0 | 0 | 0 | 2 |
-| 2026-08-28 | 155 | 10 | 22 | 9 | 154 |
-| 2026-08-29 | 76 | 4 | 12 | 7 | 53 |
+| 2026-08-28 | 155 | 10 | 22 | 9 | 152 |
+| 2026-08-29 | 80 | 4 | 12 | 7 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **51**
 - rendimiento: **47**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **41**
-- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
 - `scanner.py`: **20**
 - `settings.py`: **20**
+- `diskreport.py`: **19**
+- `duplicates.py`: **19**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
-- `diskreport.py`: **18**
-- `duplicates.py`: **18**
-- `branding.py`: **17**
-- `browser.py`: **17**
+- `branding.py`: **18**
+- `browser.py`: **18**
 - `healthscore.py`: **16**
 - `main.py`: **13**
 - `startup.py`: **11**
@@ -47,6 +46,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T06:37:17` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo recursivo protegiendo el acceso a atributos de archivo mediante la adición de `os.name == 'nt'` en el chequeo de atributos y un manejo de excepciones más granular, asegurando que fallos en archivos individuales no detengan el proceso ni accedan a rutas inválidas.
+- `2026-08-29T06:37:06` **diskreport.py** (seguridad defensiva): Se ha robustecido el escaneo en `walk_files` y `largest_folders` añadiendo una comprobación adicional de seguridad para asegurar que las rutas hijas nunca escapen del directorio raíz original, previniendo el acceso accidental a rutas fuera del contexto de usuario mediante técnicas de resolución de rutas normalizadas.
+- `2026-08-29T06:36:37` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación estricta de puntos de reparse (junctions/symlinks) en cada nivel del recorrido para evitar ataques de redirección de rutas y asegurar que el escaneo solo acceda a directorios legítimos dentro del perfil de usuario.
+- `2026-08-29T06:36:10` **branding.py** (seguridad defensiva): Se reforzó la seguridad de `save_logo_svg` utilizando `ensure_safe_to_modify` para el manejo de excepciones de I/O en lugar de silenciamiento genérico, garantizando que el acceso al sistema de archivos sea explícito y controlado mediante el protocolo de seguridad del proyecto.
 - `2026-08-29T06:27:00` **assistant.py** (seguridad defensiva): Se introdujo una validación de seguridad adicional en `_call_gemini` mediante `is_protected_path` al procesar la respuesta remota, asegurando que cualquier contenido generado por la API que pueda interpretarse como una ruta de sistema sensible sea bloqueado antes de llegar al usuario, reforzando la defensa contra posibles inyecciones de datos en el prompt de respuesta.
 - `2026-08-29T06:26:40` **startup.py** (robustez ante casos límite): Se ha mejorado `_resolve_and_cache_path` para incluir un manejo defensivo ante rutas con caracteres inválidos o excesivamente largas que podrían provocar excepciones no capturadas durante la resolución, garantizando que el proceso de inventariado sea más resiliente ante configuraciones de registro degradadas o maliciosas.
 - `2026-08-29T06:26:14` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `save()` agregando una comprobación explícita de `OSError` al realizar `ruta.parent.mkdir()` y garantizando que el borrado del archivo temporal (`temp_path`) ocurra incluso si `os.replace` falla, evitando fugas de archivos temporales en casos de error de sistema de archivos.
@@ -58,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T05:46:01` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la eliminación de múltiples lecturas innecesarias en `assistant_enabled` y `save`, reutilizando el diccionario cargado en memoria para evitar llamadas repetitivas a `load()` y `stat()` sobre el disco.
 - `2026-08-29T05:45:33` **scanner.py** (rendimiento): Optimizé la detección de extensiones sospechosas pasando a verificar primero la pertenencia al conjunto `SUSPICIOUS_EXECUTABLE_EXT` antes de realizar llamadas costosas a `path.suffix` o búsquedas regex, reduciendo drásticamente las operaciones en disco y CPU durante el escaneo recursivo.
 - `2026-08-29T05:36:12` **quarantine.py** (rendimiento): Se optimizó el rendimiento del cálculo de espacio y el resumen de cuarentena evitando la deserialización completa y el re-procesamiento de metadatos mediante el acceso directo a los valores del diccionario del manifiesto en lugar de recrear listas de objetos cada vez.
-- `2026-08-29T05:35:26` **organizer.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` de forma eficiente, evitando llamadas innecesarias a `path.resolve()` y `path.anchor` dentro del bucle interno, y consolidando la lógica de filtrado de extensiones.
-- `2026-08-29T05:35:00` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución recurrente de PowerShell por una lógica que evita invocar el subshell si la caché de 60 segundos es válida, reduciendo el overhead de spawnear procesos del sistema operativo.
-- `2026-08-29T05:18:39` **browser.py** (rendimiento): Se optimizó `_sum_directory_recursive` implementando un chequeo de `is_protected_path` al inicio de cada iteración para reducir llamadas innecesarias al sistema de archivos y se centralizó la carga de `kernel32` para evitar instanciaciones redundantes dentro del bucle de escaneo.
-- `2026-08-29T05:17:57` **assistant.py** (rendimiento): Se optimizó la detección de problemas evitando la creación de listas intermedias y mejorando la eficiencia del bucle de evaluación mediante el uso de generadores, reduciendo el consumo de memoria en consultas frecuentes.

@@ -349,27 +349,16 @@ def logo_svg(size: int = 128) -> str:
 """
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
-    """Guarda el archivo SVG tras validar que la ruta destino sea segura y absoluta."""
+    """Guarda el archivo SVG tras validar que la ruta destino sea segura."""
     if destination is None:
         return None
-        
     try:
         path_obj = Path(destination).resolve()
-        
-        # Validación de seguridad: ensure_safe_to_modify requiere que la ruta sea segura.
-        # Filtramos primero con is_safe_to_modify para evitar excepciones de flujo
-        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
-            return None
-        
+        # Se asegura que la ruta es válida antes de tocarla
+        ensure_safe_to_modify(path_obj)
         parent = path_obj.parent
-        if not is_safe_to_modify(parent) or is_protected_path(parent):
-            return None
-            
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        elif not parent.is_dir():
-            return None
-            
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):

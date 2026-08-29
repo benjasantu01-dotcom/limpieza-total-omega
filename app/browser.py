@@ -167,6 +167,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
         
     try:
+        # Importante: is_symlink() no sigue enlaces, is_junction_fn lo verifica explícitamente.
         if entry.is_symlink() or is_junction_fn(entry.path) or os.path.ismount(entry.path):
             return True
         if __is_system_hidden(entry.path, kernel32):
@@ -194,12 +195,15 @@ def _sum_directory_recursive(
 
     try:
         root_path = Path(root_dir).resolve()
-        root_abs = str(root_path)
+        
+        # Bloqueo defensivo contra reparse points que escapan al control de seguridad
+        if root_path.is_symlink() or is_junction_fn(root_dir) or os.path.ismount(root_dir):
+            return 0
 
+        root_abs = str(root_path)
         if root_abs in memo:
             return memo[root_abs]
 
-        # Validación defensiva de seguridad en cada nodo de la recursión
         if not root_path.exists() or not is_safe_to_modify(root_path) or is_protected_path(root_path):
             return 0
         if base_check_path and not _is_path_inside_base(root_path, base_check_path):

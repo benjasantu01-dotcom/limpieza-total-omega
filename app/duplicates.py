@@ -160,9 +160,13 @@ def _collect_candidates(
                 
                 try:
                     if entry.is_symlink(): continue
-                    # Evitar seguir puntos de reparse (Junctions) en Windows
-                    if os.name == 'nt' and (entry.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
-                        continue
+                    # Evitar seguir puntos de reparse (Junctions) en Windows verificando atributos de forma segura
+                    if os.name == 'nt':
+                        try:
+                            if entry.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT:
+                                continue
+                        except (OSError, AttributeError):
+                            continue
                     
                     if entry.is_dir():
                         resolved_entry = entry.resolve()
