@@ -215,7 +215,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     ratios: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
     
-    # Iteración única para calcular ratios y puntos
+    # Iteración robusta para calcular ratios y puntos
     for area, scorer in _SCORERS:
         ratio = _clamp(scorer(metrics), 0.0, 1.0)
         weight = float(WEIGHTS.get(area, 0))
@@ -228,7 +228,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     recommendations = [
         rule.message_factory(metrics) 
         for rule in _RECOMMENDATION_RULES 
-        if rule.check(metrics, ratios[rule.area])
+        if rule.area in ratios and rule.check(metrics, ratios[rule.area])
     ]
             
     if metrics.quarantined_count > 0:

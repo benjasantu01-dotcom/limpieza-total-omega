@@ -154,12 +154,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         Finaliza las operaciones pendientes, cierra de forma limpia el 
         pool de hilos y destruye la instancia de la interfaz.
         """
+        if self._closing:
+            return
         self._closing = True
+        
         with self._task_lock:
             if self._executor:
-                self._executor.shutdown(wait=False, cancel_futures=True)
+                self._executor.shutdown(wait=False)
                 self._executor = None
+        
         try:
+            self.quit()
             self.destroy()
         except (tk.TclError, RuntimeError):
             pass

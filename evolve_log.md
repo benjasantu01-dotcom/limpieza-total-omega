@@ -544,3 +544,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-29T10:21:57` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o en uso (casos límite comunes al acceder a caché de navegadores abiertos) mediante la captura explícita de `OSError` con códigos de error específicos de Windows (32: en uso, 5: acceso denegado).
 - `2026-08-29T10:21:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-29T10:21:57` Corrida terminada. Total usado hoy: 244.
+- `2026-08-29T10:29:49` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-08-29T10:30:16` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-29T10:30:40` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-29T10:31:06` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez de `compute_score` ante posibles cambios en la estructura de `_SCORERS` o errores de acceso en `ratios`, evitando fallos de ejecución si una clave no está presente y garantizando que las métricas sean siempre tratadas como finitas antes de procesar el cálculo.
+- `2026-08-29T10:32:04` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se reforzó la robustez del bucle principal (`_on_closing`) y la gestión de tareas asíncronas para prevenir condiciones de carrera durante el cierre de la aplicación, garantizando que el `ThreadPoolExecutor` no intente manipular widgets destruidos y que el estado de la UI sea consistente en situaciones de salida abrupta.
+- `2026-08-29T10:32:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-29T10:32:04` Corrida terminada. Total usado hoy: 248.

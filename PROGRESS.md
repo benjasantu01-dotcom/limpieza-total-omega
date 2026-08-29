@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
-- Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 33
+- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 108 | 9 | 16 | 6 | 121 |
-| 2026-08-29 | 118 | 6 | 17 | 9 | 94 |
+| 2026-08-28 | 107 | 8 | 15 | 6 | 120 |
+| 2026-08-29 | 120 | 6 | 17 | 9 | 96 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **52**
 - rendimiento: **45**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
-- `scanner.py`: **20**
 - `settings.py`: **20**
 - `duplicates.py`: **19**
+- `scanner.py`: **19**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `branding.py`: **17**
 - `browser.py`: **17**
 - `quarantine.py`: **17**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
+- `main.py`: **12**
 - `startup.py`: **11**
 - `organizer.py`: **11**
 - `safety.py`: **11**
-- `main.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T10:32:04` **main.py** (robustez ante casos límite): Se reforzó la robustez del bucle principal (`_on_closing`) y la gestión de tareas asíncronas para prevenir condiciones de carrera durante el cierre de la aplicación, garantizando que el `ThreadPoolExecutor` no intente manipular widgets destruidos y que el estado de la UI sea consistente en situaciones de salida abrupta.
+- `2026-08-29T10:31:06` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `compute_score` ante posibles cambios en la estructura de `_SCORERS` o errores de acceso en `ratios`, evitando fallos de ejecución si una clave no está presente y garantizando que las métricas sean siempre tratadas como finitas antes de procesar el cálculo.
 - `2026-08-29T10:21:57` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` y `_sum_directory_recursive` ante archivos bloqueados o en uso (casos límite comunes al acceder a caché de navegadores abiertos) mediante la captura explícita de `OSError` con códigos de error específicos de Windows (32: en uso, 5: acceso denegado).
 - `2026-08-29T10:20:52` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del motor local al añadir validación de tipos y rangos en las funciones de manejo de métricas, evitando errores de ejecución ante entradas inesperadas (`NaN`, `inf`, o tipos erróneos) que podrían surgir tras análisis fallidos o corruptos.
 - `2026-08-29T10:10:54` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` y `_read_disk()` sustituyendo el cálculo repetitivo del `mtime` del archivo en cada llamada por un mecanismo de validación condicional que minimiza las consultas al sistema de archivos mediante `lru_cache`, evitando lecturas redundantes de disco.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T09:40:33` **assistant.py** (rendimiento): Se optimizó el proceso de identificación de problemas activos mediante el uso de un generador (`_iter_active_problems`) y una evaluación perezosa, evitando la creación de listas intermedias innecesarias y mejorando la eficiencia en el acceso a atributos del contexto.
 - `2026-08-29T09:39:53` **startup.py** (legibilidad y documentación): He mejorado la legibilidad y la mantenibilidad del archivo `startup.py` añadiendo tipos más precisos (especialmente en `_resolve_path_from_command` y `parse_registry_csv`), documentando los parámetros de las funciones críticas con docstrings extendidos que explican el contrato de los datos, y estandarizando la nomenclatura de las variables internas para eliminar ambigüedades técnicas.
 - `2026-08-29T09:39:24` **settings.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `settings.py` documentando los límites de los validadores y aclarando el propósito de `_read_disk` con type hints más precisos.
-- `2026-08-29T09:30:06` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos, se ha clarificado la semántica de la clase `Scanner` y sus métodos privados mediante type hints adicionales y mejores nombres para representar la intención, facilitando la comprensión del flujo de escaneo.
-- `2026-08-29T09:29:12` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings enriquecidos en funciones críticas para clarificar el flujo de validación y prevenir errores de lógica en la manipulación de archivos y manifiestos.
