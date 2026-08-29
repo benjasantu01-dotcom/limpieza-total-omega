@@ -73,6 +73,8 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
 def _validate_root(directory: Union[str, os.PathLike]) -> Optional[Path]:
     """Valida la entrada de directorio base para operaciones de escaneo."""
     try:
+        if directory is None:
+            return None
         p = Path(os.fspath(directory)).resolve(strict=True)
         if p.is_dir():
             return p
@@ -255,7 +257,7 @@ def _is_invalid_entry(entry: os.DirEntry, skip_protected: bool) -> bool:
     """Helper interno: verifica si una entrada de directorio debe ser ignorada."""
     try:
         # Verifica nombres con caracteres de control
-        if any(c < ' ' for c in entry.name):
+        if not entry.name or any(c < ' ' for c in entry.name):
             return True
         # Ignora enlaces simbólicos para evitar bucles o accesos a otras unidades
         if entry.is_symlink():
@@ -357,10 +359,11 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         try:
             # Seguridad adicional: verificar que la ruta pertenece efectivamente al árbol de p_base
             relative = path.relative_to(p_base)
-            if not relative.parts:
+            parts = relative.parts
+            if not parts:
                 continue
             
-            top_folder = p_base / relative.parts[0]
+            top_folder = p_base / parts[0]
             if skip_protected and is_protected_path(top_folder):
                 continue
             

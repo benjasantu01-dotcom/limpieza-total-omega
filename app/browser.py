@@ -90,6 +90,8 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt':
         return None
     try:
+        if not hasattr(ctypes, 'windll'):
+            return None
         return ctypes.windll.kernel32
     except (AttributeError, OSError, ValueError, RuntimeError):
         return None
@@ -118,6 +120,8 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     Valida si 'real_target' está contenido estrictamente dentro de 'real_base'
     usando resolución de rutas para prevenir ataques de directory traversal.
     """
+    if not isinstance(real_target, Path) or not isinstance(real_base, Path):
+        return False
     try:
         target = str(real_target.resolve())
         base = str(real_base.resolve())
@@ -128,7 +132,7 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
 
 def _is_excluded_file(name: str) -> bool:
     """Valida si un nombre de archivo está en la lista de bloqueo permanente."""
-    if not isinstance(name, str):
+    if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
 
@@ -160,10 +164,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
     
     name = entry.name
-    if not name:
-        return True
-
-    if _is_excluded_file(name):
+    if not name or _is_excluded_file(name):
         return True
         
     try:
@@ -258,7 +259,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     Valida la integridad de una ruta candidata a ser caché, asegurando que 
     no sea una zona protegida y que resida dentro del perfil del usuario.
     """
-    if candidate is None or not isinstance(candidate, Path):
+    if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
     try:
         if not candidate.exists():
@@ -288,7 +289,7 @@ def detect_profiles(
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
-    if not raw_bases or not browser_map:
+    if not raw_bases or not isinstance(browser_map, dict):
         return []
     
     is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
@@ -298,11 +299,13 @@ def detect_profiles(
     found: List[BrowserCache] = []
     
     for base in raw_bases:
-        if base is None or not base.exists(): continue
+        if not isinstance(base, Path) or not base.exists(): 
+            continue
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
-                if not rel_str: continue
+                if not isinstance(rel_str, str) or not rel_str: 
+                    continue
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 
                 if _is_valid_cache_path(candidate, real_base, is_junction):
@@ -312,7 +315,7 @@ def detect_profiles(
                     size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache, c_path)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
-        except (OSError, PermissionError): 
+        except (OSError, PermissionError, TypeError): 
             continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)

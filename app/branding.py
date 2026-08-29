@@ -264,7 +264,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
     """Transforma valores (R, G, B) a #RRGGBB."""
-    return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, c)) for c in rgb])
+    return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, int(c))) for c in rgb])
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
@@ -354,11 +354,14 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).resolve()
-        # Se asegura que la ruta es válida antes de tocarla
-        ensure_safe_to_modify(path_obj)
+        # Se asegura que la ruta es válida antes de intentar operar
+        if not is_safe_to_modify(path_obj):
+            return None
+            
         parent = path_obj.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
+            
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
