@@ -184,8 +184,8 @@ def _collect_candidates(
 
 def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
-    Función de particionamiento: agrupa rutas que comparten el mismo hash.
-    Los archivos que fallan el hashing o no son válidos son descartados.
+    Particiona una lista de archivos agrupándolos por el resultado de una función de hash.
+    Los archivos que no generan hash (por error o permiso) son excluidos del resultado.
     """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
@@ -208,11 +208,14 @@ def _resolve_by_hashes(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Pipeline: Determina si el hash parcial es suficiente según el tamaño del archivo."""
+    """
+    Pipeline de confirmación: decide el nivel de hashing necesario según el tamaño.
+    Si el archivo es menor que PARTIAL_READ_BYTES, el hash parcial es suficiente
+    para garantizar unicidad, evitando lecturas completas innecesarias.
+    """
     valid_paths = [p for p in paths if isinstance(p, Path) and _is_valid_candidate(p)]
     if len(valid_paths) < 2: return []
     
-    # Optimización: si el archivo es pequeño, el hash parcial es suficiente para confirmar identidad
     results = _refine_by_hash(valid_paths, partial_hash) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(valid_paths)
             
     confirmed_groups: List[DuplicateGroup] = []
