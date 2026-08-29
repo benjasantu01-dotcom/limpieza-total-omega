@@ -167,13 +167,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         line = line.strip()
         if not line: continue
         parts = [p.strip().strip("'\"") for p in line.split(",")]
-        if len(parts) >= 3 and parts[0] and parts[1].isdigit() and parts[2].isdigit():
-            try:
-                name, pid_val, ws_val = parts[0], int(parts[1]), int(parts[2])
-                if ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
-                    processes.append(ProcessMemory(name=name, pid=pid_val, working_set=ws_val))
-            except (ValueError, TypeError):
-                continue
+        if len(parts) == 3 and parts[1].isdigit() and parts[2].isdigit():
+            pid_val, ws_val = int(parts[1]), int(parts[2])
+            if ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
+                processes.append(ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val))
     processes.sort(key=lambda p: p.working_set, reverse=True)
     return processes[:limit]
 
@@ -227,7 +224,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (time.time() - _proc_cache_time) > 60:
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            "Get-Process | Where-Object {$_.Id -notin 0,4} | Select-Object Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
+            f"Get-Process | Where-Object {{$_.Id -notin 0,4}} | Select-Object Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First {limit} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
         ]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)

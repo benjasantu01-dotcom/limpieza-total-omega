@@ -277,11 +277,11 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if _is_file_locked(resolved_source):
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
 
-@lru_cache(maxsize=2)
+@lru_cache(maxsize=4)
 def _load_manifest_internal(base_str: str) -> Dict[str, QuarantineItem]:
     """Carga y parsea el manifiesto; uso interno cacheado."""
     path = _manifest_path(Path(base_str))
-    if not path.exists():
+    if not path.is_file():
         return {}
     try:
         with open(path, "r", encoding="utf-8") as f:

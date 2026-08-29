@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **228** (45.2% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 14
+- Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 117 | 10 | 16 | 6 | 123 |
-| 2026-08-29 | 112 | 5 | 16 | 8 | 91 |
+| 2026-08-28 | 114 | 10 | 16 | 6 | 122 |
+| 2026-08-29 | 114 | 5 | 16 | 9 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **52**
-- seguridad defensiva: **48**
-- rendimiento: **41**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **47**
+- rendimiento: **43**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `scanner.py`: **20**
-- `settings.py`: **20**
+- `assistant.py`: **20**
 - `diskreport.py`: **19**
+- `memory.py`: **19**
+- `scanner.py`: **19**
 - `duplicates.py`: **19**
+- `settings.py`: **19**
 - `branding.py`: **18**
-- `memory.py`: **18**
 - `browser.py`: **17**
+- `quarantine.py`: **17**
 - `healthscore.py`: **16**
-- `quarantine.py`: **16**
 - `main.py`: **12**
 - `startup.py`: **11**
 - `organizer.py`: **11**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-29T10:01:35` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de `lru_cache` con un `maxsize` ajustado y la validación de existencia del archivo antes de intentar el parsing JSON, evitando operaciones de I/O redundantes y bloqueantes en llamadas frecuentes.
+- `2026-08-29T10:00:53` **memory.py** (rendimiento): Se optimizó `top_memory_processes` reemplazando la lectura innecesaria de 20 procesos para filtrar solo 10, y se mejoró el rendimiento de `parse_windows_process_csv` utilizando una estructura de datos `list.append` eficiente con pre-filtrado de errores para evitar ciclos o lógica redundante.
 - `2026-08-29T09:50:44` **healthscore.py** (rendimiento): Optimicé el cálculo del puntaje pre-calculando los resultados de las funciones de puntuación en un diccionario local, evitando múltiples recorridos y llamadas redundantes durante la generación de recomendaciones.
 - `2026-08-29T09:50:32` **duplicates.py** (rendimiento): Se optimizó el proceso de recolección de archivos `_collect_candidates` evitando llamadas redundantes a `stat()` y `is_file()` mediante el uso de `os.scandir` (vía `path.iterdir()` en Python 3.5+) y almacenando el `st_size` junto a la ruta para evitar un `stat()` adicional al agrupar, reduciendo drásticamente las operaciones de E/S.
 - `2026-08-29T09:49:38` **browser.py** (rendimiento): Implementé la persistencia del diccionario `memo` en `detect_profiles` para evitar el re-cálculo de tamaños de subcarpetas comunes (como las compartidas bajo "User Data") durante el escaneo de múltiples navegadores, optimizando significativamente el tiempo de ejecución en sistemas con muchos perfiles.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T09:20:52` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad técnica de `memory.py` mediante la adición de Type Hints detallados en las funciones de acceso a la API (ctypes) y la clarificación de los propósitos de las máscaras de acceso, facilitando la auditoría de seguridad del código.
 - `2026-08-29T09:18:58` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings descriptivos a las funciones de cálculo de puntaje (`score_*`) y normalización (`_clamp`, `_to_float`, `_to_int`), explicando explícitamente su propósito y comportamiento ante valores inválidos.
 - `2026-08-29T09:10:19` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad de las funciones de filtrado, estandarizando el uso de `_is_valid_candidate` y clarificando las docstrings del pipeline de resolución, lo cual facilita el mantenimiento y la legibilidad exigida por el enfoque actual.
-- `2026-08-29T09:10:10` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo `diskreport.py` mediante la adición de docstrings estructurados (con secciones Args y Returns) y la clarificación de las responsabilidades de los helpers de escaneo, facilitando el mantenimiento y el cumplimiento de los estándares exigidos para el proyecto.
-- `2026-08-29T09:09:43` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `_sum_directory_recursive` mediante docstrings enriquecidos, tipado más preciso en los argumentos y la extracción de la lógica de chequeo de límites en una función auxiliar para clarificar el flujo de seguridad.
