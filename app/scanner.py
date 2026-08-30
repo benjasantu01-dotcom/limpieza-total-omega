@@ -114,9 +114,11 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root = base_root.resolve(strict=False)
+        self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que una ruta esté dentro del alcance definido por la raíz del escaneo."""
+        if not path_str: return False
         try:
             target = Path(path_str).resolve(strict=False)
             return self.base_root == target or self.base_root in target.parents
@@ -163,6 +165,7 @@ class Scanner:
         Gestiona la lógica de bifurcación: si es directorio lo encola, 
         si es archivo ejecutable/candidato, delega a las reglas heurísticas.
         """
+        if not entry or not entry.path: return
         try:
             if entry.is_dir(follow_symlinks=False):
                 if self._is_safe_entry(entry):
@@ -206,7 +209,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
     try:
         path_input: Path = Path(directory).resolve(strict=False)
-        if not path_input.is_dir() or is_protected_path(path_input):
+        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):
         return []

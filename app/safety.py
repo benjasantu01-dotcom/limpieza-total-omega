@@ -226,6 +226,10 @@ def _check_file_integrity(path: Path) -> None:
             if not is_safe: raise UnsafePathError("Operación denegada (cache hit).")
             return
 
+    # Validar existencia y accesibilidad antes de consultar metadatos
+    if not path.exists():
+        raise UnsafePathError("La ruta no existe.")
+
     try:
         file_stat = path.lstat()
     except (PermissionError, OSError) as e:
