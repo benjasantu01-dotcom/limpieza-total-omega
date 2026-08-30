@@ -307,12 +307,15 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     """Validación de seguridad defensiva para rutas de procesos."""
     if not isinstance(path, str) or not os.path.isabs(path) or path.startswith("\\\\"):
-        return False, "Ruta inválida o no soportada."
+        return False, "Ruta inválida o de red."
     try:
         p = Path(path).resolve(strict=True)
+        # Asegurar que sea una ruta local (letra de unidad) y no un dispositivo/recurso remoto
+        if len(str(p)) < 3 or str(p)[1] != ":":
+            return False, "Ejecutable fuera de unidades locales."
         if not p.is_file(): return False, "No es un ejecutable válido."
         if is_protected_path(str(p)): return False, "Ruta protegida."
-    except Exception: return False, "Error resolviendo ruta del proceso."
+    except Exception: return False, "Error resolviendo integridad de ruta."
     return True, None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:

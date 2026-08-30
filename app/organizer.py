@@ -94,10 +94,12 @@ class JunkFile:
         return _is_junk_path(self.path)
 
 
-def _is_junction(entry: os.DirEntry) -> bool:
+def _is_junction(entry: os.DirEntry | Path) -> bool:
     """Verifica si la entrada es un punto de reparse (Junction/Symlink) para evitar bucles infinitos."""
     try:
-        return entry.is_symlink() or (os.name == "nt" and bool(entry.stat().st_file_attributes & 0x400))
+        if isinstance(entry, os.DirEntry):
+            return entry.is_symlink() or (os.name == "nt" and bool(entry.stat().st_file_attributes & 0x400))
+        return entry.is_symlink() or (os.name == "nt" and bool(entry.lstat().st_file_attributes & 0x400))
     except (OSError, AttributeError):
         return False
 
@@ -160,7 +162,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """Realiza una batería de validaciones (existencia, permisos, límites de ruta) antes de ejecutar cualquier movimiento."""
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
-    # Validaciones básicas: evitar rutas extremas que fallan en Windows (260 chars MAX_PATH)
+    # Validaciones básicas
     if len(str(src)) > 240 or len(str(dest)) > 240: return False
     if not src.is_absolute() or not dest.is_absolute(): return False
     
@@ -172,11 +174,14 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(src, dest): return False
         
-        # Validar permisos de escritura en origen y destino
+        # Verificar que el destino no sea un punto de reparse que apunte fuera
+        if _is_junction(dest.parent if dest.is_file() else dest): return False
+        
+        # Validar permisos de escritura
         target_dir = dest.parent if dest.is_file() else dest
         if not (os.access(src, os.W_OK) and os.access(target_dir, os.W_OK)): return False
         
-        # Misma unidad lógica requerida para shutil.move eficiente
+        # Misma unidad lógica
         if src.drive != dest.drive: return False
         
         # Validaciones de atributos SO
@@ -244,9 +249,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Valida la viabilidad de un movimiento (espacio en disco, seguridad) y propone una ruta de destino única."""
     try:
         src_path = junk_file.path.resolve()
-        # Validar destino existente y montable
         if not dest_base.exists() or not dest_base.is_dir(): return None
-        # Chequeo de espacio: dejar al menos 50MB de buffer en la unidad destino
         if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): return None
         if not _is_safe_to_move(junk_file, dest_base): return None
         

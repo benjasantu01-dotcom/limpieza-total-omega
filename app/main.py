@@ -49,7 +49,7 @@ import os
 import time
 import tkinter as tk
 import threading
-from functools import lru_cache
+from functools import lru_cache, wraps
 from collections import OrderedDict
 from tkinter import filedialog, messagebox
 from pathlib import Path
@@ -84,7 +84,15 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
-# Validación de seguridad defensiva en el inicio: asegurar que no operamos en carpetas de sistema
+def ensure_safety(func):
+    """Decorador para asegurar que las operaciones de disco siempre validen la ruta raíz."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        safety.ensure_safe_to_modify(Path(".").resolve())
+        return func(*args, **kwargs)
+    return wrapper
+
+# Validación de seguridad defensiva en el inicio
 try:
     safety.ensure_safe_to_modify(Path(".").resolve())
 except safety.UnsafePathError as e:
@@ -195,13 +203,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """
         try:
             app_root = Path(__file__).resolve().parent
-            # Bloquear ejecución desde zonas de riesgo o rutas de sistema.
             safety.ensure_safe_to_modify(app_root)
             
             if app_root.is_symlink():
                 raise RuntimeError("La aplicación no puede ejecutarse desde un enlace simbólico.")
             
-            # Verificar permisos básicos en el perfil de usuario si es accesible
             home = Path.home()
             if home.exists() and home.is_dir():
                 try:
@@ -389,6 +395,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._build_tabs_container()
         self._build_footer()
 
+    @ensure_safety
     def _tab_factory(self, name: str) -> None:
         """
         Delega la construcción del contenido de cada pestaña a sus métodos específicos
@@ -404,8 +411,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if constructor and tab_frame:
             try:
                 if tab_frame.winfo_exists():
-                    # Validación de seguridad previa antes de cargar módulos de disco
-                    safety.ensure_safe_to_modify(Path(".").resolve())
                     constructor()
                     self._initialized_tabs[name] = True
             except Exception as e:
@@ -499,6 +504,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.activity.pack(side="right")
         self.activity.pack_forget()
 
+    @ensure_safety
     def _build_tab_salud(self) -> None:
         """Construye el dashboard central de salud con medidores y métricas clave."""
         tab = self.tabs["Salud"]
@@ -597,9 +603,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (tk.TclError, Exception):
             pass
 
+    @ensure_safety
     def _build_tab_limpieza(self) -> None:
         """Construye los controles y log para la gestión de archivos basura."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Limpieza"]
         row = self._button_row(tab)
         self._action(row, "Buscar basura", self.on_scan_junk, column=0)
@@ -628,9 +634,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._menu(options_container, ["size", "date"], self.sort_by,
                    lambda _: self.refresh_list(), width=110).grid(row=0, column=4, padx=4)
 
+    @ensure_safety
     def _build_tab_seguridad(self) -> None:
         """Construye las herramientas de escaneo heurístico y monitoreo de seguridad."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Seguridad"]
         row = self._button_row(tab)
         self._action(row, "Escaneo heurístico", self.on_heuristic_scan, column=0)
@@ -642,9 +648,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=3)
         self._make_output("Seguridad", tab)
 
+    @ensure_safety
     def _build_tab_cuarentena(self) -> None:
         """Crea la interfaz para listar y restaurar archivos aislados."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Cuarentena"]
         row = self._button_row(tab)
         self._action(row, "Ver cuarentena", self.on_list_quarantine, column=0)
@@ -660,9 +666,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.quarantine_id.grid(row=0, column=1, padx=4)
         self._make_output("Cuarentena", tab)
 
+    @ensure_safety
     def _build_tab_memoria(self) -> None:
         """Construye el panel de diagnóstico de RAM y gestión de procesos."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Memoria"]
         row = self._button_row(tab)
         self._action(row, "Diagnóstico de RAM", self.on_memory_report, column=0)
@@ -678,9 +684,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.pid_entry.grid(row=0, column=1, padx=4)
         self._make_output("Memoria", tab)
 
+    @ensure_safety
     def _build_tab_disco(self) -> None:
         """Construye los reportes de uso de disco y análisis de directorios."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Disco"]
         row = self._button_row(tab)
         self._action(row, "Espacio por unidad", self.on_drives_report, column=0)
@@ -688,9 +694,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=1)
         self._make_output("Disco", tab)
 
+    @ensure_safety
     def _build_tab_duplicados(self) -> None:
         """Crea las herramientas de búsqueda y gestión de archivos duplicados."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Duplicados"]
         row = self._button_row(tab)
         self._action(row, "Buscar duplicados", self.on_find_duplicates, column=0)
@@ -698,25 +704,25 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      danger=True, column=1)
         self._make_output("Duplicados", tab)
 
+    @ensure_safety
     def _build_tab_navegadores(self) -> None:
         """Construye el reporte de cachés de navegadores web."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Navegadores"]
         row = self._button_row(tab)
         self._action(row, "Detectar caché", self.on_browser_report, column=0)
         self._make_output("Navegadores", tab)
 
+    @ensure_safety
     def _build_tab_inicio(self) -> None:
         """Crea la vista para inspección de programas y tareas de inicio."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Inicio"]
         row = self._button_row(tab)
         self._action(row, "Ver programas de inicio", self.on_startup_report, column=0)
         self._make_output("Inicio", tab)
 
+    @ensure_safety
     def _build_tab_informe(self) -> None:
         """Configura los controles para exportación y generación de informes."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Informe"]
         row = self._button_row(tab)
         self._action(row, "Armar informe", self.on_build_report, column=0)
@@ -726,9 +732,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=2)
         self._make_output("Informe", tab)
 
+    @ensure_safety
     def _build_tab_asistente(self) -> None:
         """Construye el componente de chat interactivo con el asistente IA."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Asistente"]
         row = self._button_row(tab)
         self._action(row, "Preguntar", self.on_ask_assistant, column=0)
@@ -758,9 +764,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             ).grid(row=i // 3, column=i % 3, padx=4, pady=4, sticky="w")
         self._make_output("Asistente", tab)
 
+    @ensure_safety
     def _build_tab_ajustes(self) -> None:
         """Construye el formulario de configuración global de la aplicación."""
-        safety.ensure_safe_to_modify(Path(".").resolve())
         tab = self.tabs["Ajustes"]
         row = self._button_row(tab)
         self._action(row, "Guardar ajustes", self.on_save_settings, column=0)
@@ -1055,7 +1061,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         seguridad de la ruta antes de ejecutar la lógica del usuario.
         """
         try:
-            # Validar integridad del directorio de trabajo antes de realizar tareas
             safety.ensure_safe_to_modify(Path(".").resolve())
             if target and not self._is_safe_path(target):
                 raise safety.UnsafePathError(f"Operación no permitida en destino: {target}")
@@ -1129,7 +1134,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         junk = self._get_cached("junk") or []
         dups = self._get_cached("dups") or []
 
-        # Usar caché directo cuando sea posible, evitando regenerar el snapshot
         snapshot = self._get_cached("memory_snapshot") or memory_mod.read_snapshot()
         disk_info = self._get_home_disk_info()
             
@@ -1177,7 +1181,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _update_health_visuals(self, resultado: healthscore.ScoreResult, junk_mb: float, 
                                sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Actualiza los componentes visuales del dashboard de salud."""
-        # Evita redibujados innecesarios comprobando el estado previo
         state_key = (resultado.score, round(junk_mb, 1), sospechosos, round(ram_libre, 1), round(disco_libre, 1))
         if self._last_health_state == state_key:
             return
@@ -1203,7 +1206,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             "disco": f"{disco_libre:.0f}%",
         }
         
-        # Filtro de caché local para no tocar widgets si el texto no cambió
         if all(self._last_card_values.get(k) == v for k, v in valores.items()):
             return
         self._last_card_values = valores
@@ -1273,7 +1275,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Limpieza")
             self.log(f"Buscando basura en: {destino}...", "Limpieza")
             
-            # Usamos generador para filtrar candidatos inválidos antes de persistir
             raw_scan = scan_for_junk([self.scan_target] if self.scan_target else None)
             junk = [item for item in raw_scan if item.size_bytes > 0]
             
@@ -1308,7 +1309,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
         
-        # Filtrado selectivo sin duplicar listas masivas en memoria innecesariamente
         aptos = [jf for jf in junk if self._is_safe_path(jf.path)]
         
         if not aptos:
@@ -1323,7 +1323,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Validación de seguridad explícita sobre cada item en el momento de mover
             movidos = []
             for jf in aptos:
                 if self._is_safe_path(jf.path):
@@ -1351,7 +1350,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             try:
-                # Se asegura que la carpeta de trabajo y la operación sean seguras
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()
                 self.log(f"Borrados {n} archivos de la carpeta de revisión.", "Limpieza")
@@ -1466,7 +1464,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación defensiva: el estado de la cuarentena podría haber cambiado
             if not quarantine.item_exists(raw_id):
                 self._safe_run_ui_callback(lambda: self.log(f"Error: El ID '{raw_id}' no existe.", "Cuarentena"))
                 return
@@ -1570,7 +1567,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Verificación defensiva: validar existencia en el momento exacto de la ejecución
             if not memory_mod.process_exists(pid):
                 self._safe_run_ui_callback(lambda: self.log(f"Error: El proceso {pid} ya no está activo.", "Memoria"))
                 return
@@ -1686,7 +1682,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
             for ruta in aptos:
-                # Re-validar seguridad individual antes de mover
                 if self._is_safe_path(ruta):
                     quarantine.quarantine_file(ruta, reason="Copia duplicada")
                     movidos += 1
@@ -1796,7 +1791,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except (tk.TclError, Exception):
                 continue
         
-        # Validaciones de widgets de texto verificando su existencia
         try:
             if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                 valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
@@ -1859,7 +1853,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         def task() -> None:
             self.settings = settings_mod.reset()
-            # Actualizar variables de UI si existen los widgets
             for clave, variable in self.setting_vars.items():
                 try:
                     if clave in settings_mod.DEFAULTS:
@@ -1867,7 +1860,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 except (tk.TclError, RuntimeError, Exception):
                     continue
             
-            # Resetear entradas de texto si existen y el widget es accesible
             try:
                 if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
                     self.min_dup_entry.delete(0, "end")

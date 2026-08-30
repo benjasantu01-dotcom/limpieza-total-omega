@@ -519,11 +519,13 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     for item_id, item in list(items_dict.items()):
         try:
             stored_path = (quarantine_root / item.stored_name).resolve()
+            # Validación estricta de seguridad: el archivo debe existir y estar en el sandbox.
             if not stored_path.exists():
                 del items_dict[item_id]
                 modified = True
                 continue
             
+            # Verificación defensiva contra archivos corruptos o bloqueados antes del borrado.
             if _is_item_purgable(stored_path, item, quarantine_root):
                 if _safe_unlink(stored_path):
                     del items_dict[item_id]
