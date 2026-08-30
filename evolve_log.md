@@ -639,3 +639,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-30T06:55:18` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las funciones de escaneo mediante la validación explícita de tipos y la captura preventiva de errores en los parámetros de entrada, asegurando que `None` o tipos inesperados no interrumpan el flujo de trabajo ni propaguen excepciones hacia arriba en la pila.
 - `2026-08-30T06:55:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T06:55:18` Corrida terminada. Total usado hoy: 164.
+- `2026-08-30T07:03:03` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-08-30T07:03:41` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas críticas en bloques `try...except` más granulares y verificando explícitamente la existencia de archivos antes de operar, evitando que errores intermitentes de I/O detengan prematuramente el análisis completo del disco.
+- `2026-08-30T07:04:07` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `suggest_keeper` y `format_group` mediante validación explícita de tipos y estados, asegurando que las funciones no fallen silenciosamente ante datos inconsistentes y proporcionando un comportamiento robusto ante archivos inaccesibles durante la generación de reportes.
+- `2026-08-30T07:04:46` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` implementando una validación temprana de `None` y tipos inesperados para evitar excepciones en tiempo de ejecución si se inyectan datos erróneos desde otros módulos.
+- `2026-08-30T07:05:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-30T07:06:49` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-30T07:07:55` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-30T07:09:06` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_collect_settings` y `_validate_numeric_setting` para manejar de forma segura entradas vacías, tipos de datos inesperados y errores de widget en tiempo de ejecución, previniendo excepciones fatales durante la validación de configuraciones.
+- `2026-08-30T07:09:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T07:09:06` Corrida terminada. Total usado hoy: 168.

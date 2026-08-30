@@ -296,6 +296,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Verificar existencia y obtener stat en un solo paso
                         st = entry.stat(follow_symlinks=False)
                     except (PermissionError, OSError):
                         continue
@@ -401,12 +402,11 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     
-    # Usamos una lista simple para recolectar y ordenamos al final (O(N log N))
-    # Es más eficiente que mantener un heap de N elementos en cada paso.
     all_files: List[Tuple[int, Path]] = []
     
-    try:
-        for path, size in walk_files(directory, skip_protected):
+    # Procesar archivos de forma segura para evitar interrupciones por errores de I/O
+    for path, size in walk_files(directory, skip_protected):
+        try:
             total_bytes += size
             total_files += 1
             
@@ -414,8 +414,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
             ext_sizes[ext] += size
             ext_counts[ext] += 1
             all_files.append((size, path))
-    except Exception:
-        pass
+        except (OSError, TypeError):
+            continue
             
     top_files = heapq.nlargest(8, all_files, key=lambda x: x[0])
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files)

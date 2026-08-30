@@ -1766,7 +1766,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task)
 
-    def _validate_numeric_setting(self, value: Optional[str], default: int) -> int:
+    def _validate_numeric_setting(self, value: Any, default: int) -> int:
         """Valida que la entrada de configuración sea un entero positivo, retornando el default si falla."""
         try:
             if value is None:
@@ -1788,7 +1788,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for clave, variable in self.setting_vars.items():
             try:
                 valores[clave] = variable.get()
-            except Exception:
+            except (tk.TclError, Exception):
                 continue
         
         # Validaciones de widgets de texto verificando su existencia
@@ -1804,10 +1804,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 )
                 
             if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
-                clave_raw = self.api_key_entry.get().strip()
-                clave_api = "".join(c for c in clave_raw if c.isprintable())
-                if clave_api:
-                    valores["asistente_clave_api"] = clave_api
+                clave_raw = self.api_key_entry.get()
+                if clave_raw:
+                    clave_api = "".join(c for c in clave_raw if c.isprintable())
+                    if clave_api:
+                        valores["asistente_clave_api"] = clave_api
         except (tk.TclError, RuntimeError, Exception) as e:
             logging.error("Error al recopilar ajustes de la UI: %s", e)
         return valores

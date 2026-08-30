@@ -210,11 +210,10 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "arranque": lambda m: score_startup(m.startup_count)
 }
 
-def compute_score(metrics: SystemMetrics) -> HealthResult:
+def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Sintetiza métricas en un objeto HealthResult aplicando normalización y pesos."""
-    # Validación estricta de tipo antes de procesar cualquier dato
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
+    if metrics is None or not isinstance(metrics, SystemMetrics):
+        return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o inválida."])
     
     # Asegurar que los datos están sanitizados antes de aplicar lógica de negocio
     metrics.validate()
@@ -247,8 +246,8 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
-def summarize(result: HealthResult) -> List[str]:
-    if not isinstance(result, HealthResult): 
+def summarize(result: HealthResult | None) -> List[str]:
+    if result is None or not isinstance(result, HealthResult): 
         return ["Error: Formato de informe inválido."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]

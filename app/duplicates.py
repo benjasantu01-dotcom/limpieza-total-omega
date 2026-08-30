@@ -274,7 +274,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Genera una representación textual formateada del grupo para reporte."""
-    if not isinstance(group, DuplicateGroup) or not group.paths:
+    if not isinstance(group, DuplicateGroup) or group.paths is None:
         return []
         
     keeper = suggest_keeper(group)
