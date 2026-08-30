@@ -254,9 +254,12 @@ def normalize(path: PathLike) -> Path:
     if not path_str: raise ValueError("Entrada de ruta vacía.")
         
     try:
-        p = Path(path_str).expanduser()
-        resolved = p.resolve(strict=False)
-        if _is_reparse_point(p) and not str(resolved).startswith(str(p.parent)):
+        p = Path(path_str)
+        # Prevenir traversal antes de resolver
+        if ".." in p.parts: raise ValueError("Path traversal detectado.")
+        resolved = p.resolve()
+        # Verificar que el reparse point no escape del sandbox logico si es necesario
+        if _is_reparse_point(p) and not str(resolved).startswith(str(p.parent.absolute())):
             raise ValueError("Acceso restringido: reparse point con destino externo.")
         return resolved
     except (OSError, RuntimeError, TypeError) as e:
@@ -316,8 +319,6 @@ def _validate_structural_safety(path: Path, path_str: str) -> None:
     """Valida integridad estructural (caracteres, dispositivos, traversal) sin acceso a disco."""
     if _has_invalid_chars(path_str) or _is_reserved_device_name(path.name):
         raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
-    if ".." in path.parts:
-        raise UnsafePathError("Intento de path traversal detectado.")
     if path_str.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas de red (UNC) no permitidas.")
     if len(str(path)) >= MAX_PATH_LENGTH:

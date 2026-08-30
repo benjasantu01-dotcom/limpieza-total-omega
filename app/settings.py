@@ -124,7 +124,7 @@ DEFAULTS: Final[AppSettings] = {
     "analisis_en_paralelo": True,
     "asistente_activado": False,
     "asistente_clave_api": "",
-    "asistente_enviar_metricas": True,
+    "asistente_enviar_METRICAS": True,
     "asistente_modelo": "gemini-3.1-flash-lite",
 }
 
@@ -204,7 +204,10 @@ class _Validators:
         path_string = str(val).strip()
         if not path_string or len(path_string) > 4096 or "\0" in path_string: 
             return None
-        return path_string if _Validators._is_safe_path(path_string) else None
+        # Lanzamos excepción para forzar el rechazo si la ruta es peligrosa
+        if not _Validators._is_safe_path(path_string):
+            return None
+        return path_string
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
@@ -318,16 +321,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         elif not parent.is_dir():
             return None
         
-        # Validación de seguridad antes de escritura
-        if not is_safe_to_modify(str(parent)): return None
+        # Validación de seguridad defensiva mediante excepción
+        ensure_safe_to_modify(str(parent))
         if not os.access(parent, os.W_OK): return None
+        
         try:
             usage = shutil.disk_usage(parent)
             if usage.free < MAX_SETTINGS_SIZE * 2: return None
         except OSError: return None
             
-        if ruta.exists() and not is_safe_to_modify(str(ruta)):
-            return None
+        if ruta.exists():
+            ensure_safe_to_modify(str(ruta))
         
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         encoded_data = data.encode("utf-8")

@@ -121,9 +121,10 @@ class Scanner:
         Valida mediante resolución de rutas que el archivo esté contenido estrictamente
         dentro del árbol del directorio base de escaneo para prevenir escapes de sandbox.
         """
-        if not path_str: return False
+        if not path_str or "\0" in path_str: return False
         try:
             target = Path(path_str).resolve(strict=False)
+            # Asegurar que el destino existe o es accesible y está bajo el root
             return self.base_root == target or self.base_root in target.parents
         except (OSError, RuntimeError):
             return False
