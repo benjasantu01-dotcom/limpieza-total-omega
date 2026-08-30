@@ -148,10 +148,13 @@ class StartupEntry:
             p: Path = Path(abs_path)
             
             if p.exists():
-                stat_info = p.lstat()
-                if (stat_info.st_file_attributes & 0x00000400) != 0:
-                    _EXISTS_CACHE[path_string] = False
-                    return ""
+                try:
+                    stat_info = p.lstat()
+                    if (stat_info.st_file_attributes & 0x00000400) != 0:
+                        _EXISTS_CACHE[path_string] = False
+                        return ""
+                except OSError:
+                    pass
 
             if not p.is_absolute() or is_protected_path(p) or p.is_symlink():
                 _EXISTS_CACHE[path_string] = False
@@ -246,14 +249,17 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    if entry.is_file(follow_symlinks=False):
-                        _, ext = os.path.splitext(entry.name)
-                        if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
-                            found_entries.append(StartupEntry(
-                                name=os.path.splitext(entry.name)[0],
-                                command=entry.path,
-                                source="carpeta"
-                            ))
+                    try:
+                        if entry.is_file(follow_symlinks=False):
+                            _, ext = os.path.splitext(entry.name)
+                            if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
+                                found_entries.append(StartupEntry(
+                                    name=os.path.splitext(entry.name)[0],
+                                    command=entry.path,
+                                    source="carpeta"
+                                ))
+                    except OSError:
+                        continue
         except (OSError, PermissionError):
             continue
     return found_entries

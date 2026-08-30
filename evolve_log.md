@@ -1438,3 +1438,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-30T04:42:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
 - `2026-08-30T04:42:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T04:42:01` Corrida terminada. Total usado hoy: 112.
+- `2026-08-30T04:50:40` Arrancando corrida. Quedan hoy ~188 peticiones objetivo.
+- `2026-08-30T04:51:14` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: robustez ante casos límite).
+- `2026-08-30T04:51:36` ➖ Sin cambios en scanner.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez ante archivos bloqueados o volátiles mediante la adición de un manejo explícito de errores en `process_entry` y `scan_directory` para capturar `OSError` de forma granular, evitando que una excepción en un archivo individual detenga todo el recorrido del sistema.
+- `2026-08-30T04:52:04` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `settings.py` ante casos límite en la manipulación de archivos añadiendo un manejo explícito de `OSError` y condiciones de estado durante el volcado atómico, garantizando que el archivo no quede en un estado inconsistente ante fallos del sistema operativo.
+- `2026-08-30T04:52:23` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se introdujo una verificación de robustez ante permisos denegados en `entries_from_folders` mediante un bloque `try-except` más específico y se añadió un manejo de errores robusto al obtener el estado de archivo (`lstat`), evitando que una entrada individual mal formada o con permisos bloqueados interrumpa la resolución del resto de la lista.
+- `2026-08-30T04:52:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T04:52:23` Corrida terminada. Total usado hoy: 116.

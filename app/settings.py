@@ -342,6 +342,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
                 try: os.fsync(f.fileno())
                 except (OSError, AttributeError, NotImplementedError): pass
             os.replace(temp_path, ruta)
+        except OSError:
+            return None
         finally:
             if temp_path.exists():
                 try: os.remove(temp_path)
