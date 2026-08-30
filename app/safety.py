@@ -243,7 +243,7 @@ def _check_file_integrity(path: Path) -> None:
             if rule.predicate(path, file_stat):
                 _INTEGRITY_CACHE[path_key] = (now, False)
                 raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, TypeError):
             continue
             
     _INTEGRITY_CACHE[path_key] = (now, True)
@@ -363,7 +363,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
-    p = normalize(path)
+    try:
+        p = normalize(path)
+    except ValueError as e:
+        raise UnsafePathError(f"Ruta inválida: {e}")
     
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)

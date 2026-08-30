@@ -656,3 +656,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-30T07:15:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
 - `2026-08-30T07:15:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T07:15:35` Corrida terminada. Total usado hoy: 172.
+- `2026-08-30T07:23:28` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-30T07:23:58` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante entradas mal formadas o inaccesibles, añadiendo validaciones preventivas contra `None` y errores de acceso en `_check_file_integrity` que antes podían elevar excepciones no controladas.
+- `2026-08-30T07:24:23` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `check_recent_executable_in_downloads` capturando explícitamente el caso donde `entry.stat()` falla para archivos recién creados o en uso, y añadí validaciones de tipo/nulo en las funciones de chequeo para evitar excepciones inesperadas al procesar rutas volátiles.
+- `2026-08-30T07:24:50` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `save()` agregando un manejo explícito de errores durante la serialización JSON y la validación de integridad del archivo, asegurando que cualquier fallo intermedio libere recursos (ficheros) y no deje el sistema en un estado inconsistente.
+- `2026-08-30T07:24:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-30T07:24:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T07:24:59` Corrida terminada. Total usado hoy: 176.

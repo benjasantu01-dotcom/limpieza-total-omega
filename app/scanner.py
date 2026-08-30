@@ -69,6 +69,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
     La heurística prioriza la eficiencia usando el timestamp de inicio global (now_ts).
     """
+    if not path: return None
     path_str_lower = str(path).lower()
     if any(folder in path_str_lower for folder in WATCHED_FOLDERS):
         try:
@@ -78,6 +79,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
         except (OSError, AttributeError, ValueError, FileNotFoundError):
+            logger.debug(f"No se pudo acceder a los metadatos de {path}")
             return None
     return None
 
@@ -86,6 +88,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     Verifica si un ejecutable utiliza nombres de procesos críticos del sistema (ej. svchost.exe)
     cuando se encuentra ubicado fuera de directorios de sistema protegidos.
     """
+    if not path or not path.name: return None
     name_lower = path.name.lower()
     if name_lower in SYSTEM_LOOKALIKES:
         if is_protected_path(path):
@@ -191,7 +194,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
             try:
                 if (result := check(path, entry, now_ts)):
                     findings.append(result)
-            except (Exception, AttributeError) as e:
+            except Exception as e:
                 logger.debug(f"Fallo no crítico en regla {check.__name__} para {path}: {e}")
     return findings
 
