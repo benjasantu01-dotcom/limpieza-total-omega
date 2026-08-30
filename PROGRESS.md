@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 218
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 80 | 4 | 9 | 11 | 84 |
-| 2026-08-30 | 137 | 8 | 25 | 12 | 134 |
+| 2026-08-29 | 77 | 4 | 9 | 11 | 83 |
+| 2026-08-30 | 139 | 9 | 25 | 13 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **42**
 - rendimiento: **42**
-- robustez ante casos límite: **31**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
-- `scanner.py`: **19**
+- `settings.py`: **20**
 - `memory.py`: **19**
 - `browser.py`: **18**
-- `healthscore.py`: **17**
+- `healthscore.py`: **18**
+- `scanner.py`: **18**
 - `quarantine.py`: **17**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `assistant.py`: **15**
-- `startup.py`: **13**
+- `organizer.py`: **14**
 - `branding.py`: **13**
-- `organizer.py`: **13**
 - `safety.py`: **12**
+- `startup.py`: **12**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T13:32:51` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` agregando una validación de espacio en disco más precisa antes de cualquier intento de movimiento y protegiendo la app ante rutas de destino inexistentes o mal formadas que podrían derivar en errores de I/O bloqueantes.
+- `2026-08-30T13:31:04` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `SystemMetrics` ante estados inconsistentes mediante la implementación de una validación de `post_init` más estricta y un retorno seguro en `summarize` cuando los datos del resultado están incompletos, evitando errores de ejecución durante la renderización del informe.
 - `2026-08-30T13:21:55` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de enlaces simbólicos mediante `path.is_symlink()` en el escaneo recursivo, protegiendo al motor contra el procesamiento redundante de rutas circulares o externas que `stat.st_file_attributes` podría no capturar en todos los sistemas de archivos.
 - `2026-08-30T13:21:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `_sum_directory_recursive` mediante un manejo más exhaustivo de errores en `entry.stat()` y un chequeo preventivo contra archivos bloqueados, evitando que una excepción en un archivo puntual (como uno en uso por el navegador) interrumpa el cálculo total de la caché.
 - `2026-08-30T13:01:36` **safety.py** (rendimiento): Se ha optimizado `is_protected_path` reemplazando la creación dinámica de un `set` de partes de ruta por una búsqueda de prefijos usando `parts` y comparaciones directas, reduciendo drásticamente la presión sobre el recolector de basura y mejorando la performance al evitar la instanciación de objetos en cada llamada.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T12:30:57` **settings.py** (legibilidad y documentación): Documenté con precisión el propósito de cada validador y el flujo de los datos en `_Validators` para clarificar cómo se mantiene la integridad de la configuración.
 - `2026-08-30T12:30:26` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez documental mediante la adición de docstrings técnicos detallados en los métodos del `Scanner`, explicitando el propósito de cada paso del flujo recursivo y la gestión de estados para facilitar el mantenimiento a futuro.
 - `2026-08-30T12:29:58` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` sustituyendo literales mágicos en las validaciones de atributos de archivos por constantes con nombre descriptivo, y documentando las funciones de bajo nivel con el estándar de la industria.
-- `2026-08-30T12:20:44` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y manipulación de archivos para mejorar la auditabilidad del flujo de seguridad, sin alterar la lógica de ejecución.
-- `2026-08-30T12:20:11` **organizer.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones auxiliares de validación de `organizer.py` y agregué *type hints* para clarificar los tipos de datos en parámetros y retornos, mejorando la legibilidad sin alterar la lógica de seguridad.

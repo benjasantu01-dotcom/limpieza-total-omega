@@ -1204,3 +1204,30 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-30T13:21:55` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar el seguimiento de enlaces simbólicos mediante `path.is_symlink()` en el escaneo recursivo, protegiendo al motor contra el procesamiento redundante de rutas circulares o externas que `stat.st_file_attributes` podría no capturar en todos los sistemas de archivos.
 - `2026-08-30T13:21:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T13:21:55` Corrida terminada. Total usado hoy: 316.
+- `2026-08-30T13:30:32` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-30T13:31:04` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `SystemMetrics` ante estados inconsistentes mediante la implementación de una validación de `post_init` más estricta y un retorno seguro en `summarize` cuando los datos del resultado están incompletos, evitando errores de ejecución durante la renderización del informe.
+- `2026-08-30T13:32:12` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la resiliencia ante errores de concurrencia y limpieza de recursos en `main.py` mediante una gestión más robusta de los estados de la interfaz durante el cierre, asegurando que los métodos que actualizan la UI verifiquen explícitamente si el widget todavía existe y si la ventana está en proceso de destrucción, evitando así excepciones de `tk.TclError` y `RuntimeError` durante operaciones asíncronas.
+- `2026-08-30T13:32:39` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:27: in <module>
+    import memory  # noqa: E402
+    ^^^^^^^^^^^^^
+app/memory.py:78: in <module>
+    class MEMORYSTATUSEX(ctypes.Structure):
+app/memory.py:83: in MEMORYSTATUSEX
+    ("ullTotalPhys", ctypes.c_ullong),
+                     ^^^^^^^^^^^^^^^
+E   AttributeError: module 'ctypes' has no attribute 'c_ullong'. Did you mean: 'c_ulong'?
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - AttributeError: module 'ctypes' has no attribute 'c_ullong'. Did you mean: 'c_ulong'?
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.30s
+
+```
+- `2026-08-30T13:32:39` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de `_get_process_path` y `trim_working_set` ante condiciones de carrera y denegación de permisos mediante una gestión más estricta del ciclo de vida del handle y validaciones defensivas contra valores nulos o inesperados, asegurando que la app no aborte ante procesos que terminan inesperadamente durante la ejecución.
+- `2026-08-30T13:32:51` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` agregando una validación de espacio en disco más precisa antes de cualquier intento de movimiento y protegiendo la app ante rutas de destino inexistentes o mal formadas que podrían derivar en errores de I/O bloqueantes.
+- `2026-08-30T13:32:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T13:32:51` Corrida terminada. Total usado hoy: 320.

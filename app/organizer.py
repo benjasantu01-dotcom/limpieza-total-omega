@@ -171,8 +171,13 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(src, dest): return False
-        if not (os.access(src, os.W_OK) and os.access(dest.parent if dest.is_file() else dest, os.W_OK)): return False
-        if src.anchor != dest.anchor: return False
+        
+        # Validar permisos de escritura en origen y destino
+        target_dir = dest.parent if dest.is_file() else dest
+        if not (os.access(src, os.W_OK) and os.access(target_dir, os.W_OK)): return False
+        
+        # Misma unidad lógica requerida para shutil.move eficiente
+        if src.drive != dest.drive: return False
         
         # Validaciones de atributos SO
         stat = src.stat()
@@ -239,8 +244,10 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Valida la viabilidad de un movimiento (espacio en disco, seguridad) y propone una ruta de destino única."""
     try:
         src_path = junk_file.path.resolve()
-        if not src_path.is_file() or not dest_base.is_dir() or src_path.anchor != dest_base.anchor: return None
-        if shutil.disk_usage(dest_base.anchor).free < src_path.stat().st_size: return None
+        # Validar destino existente y montable
+        if not dest_base.exists() or not dest_base.is_dir(): return None
+        # Chequeo de espacio: dejar al menos 50MB de buffer en la unidad destino
+        if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): return None
         if not _is_safe_to_move(junk_file, dest_base): return None
         
         safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"

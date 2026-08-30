@@ -105,9 +105,10 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        # Validación de integridad: forzar que los campos sean numéricos antes de cualquier procesamiento
-        for field_name, value in self.__dict__.items():
-            if not isinstance(value, (int, float)):
+        # Validación de integridad: asegurar tipos antes de procesar y sanitizar valores
+        for field_name in self.__annotations__:
+            val = getattr(self, field_name)
+            if not isinstance(val, (int, float)):
                 setattr(self, field_name, 0.0)
         self.validate()
 
@@ -124,10 +125,8 @@ class SystemMetrics:
         
         if not self.is_finite():
             # Reset preventivo si detectamos valores no finitos (NaN/Inf)
-            self.junk_mb = 0.0
-            self.memory_available_percent = 0.0
-            self.disk_free_percent = 0.0
-            self.duplicate_mb = 0.0
+            for f in self.__annotations__:
+                setattr(self, f, 0.0)
 
     def is_finite(self) -> bool:
         """Verifica que todos los valores numéricos sean finitos (no NaN ni Inf)."""
@@ -259,6 +258,8 @@ def summarize(result: HealthResult | None) -> List[str]:
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
         puntos = result.breakdown.get(area, 0)
+        # Aseguramos límites para evitar strings mal formados si el breakdown es inconsistente
+        puntos = max(0, min(puntos, maximo))
         bar = ('#' * puntos) + ('.' * (maximo - puntos))
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
     
