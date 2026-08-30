@@ -21,7 +21,6 @@ import subprocess
 import csv
 import io
 import itertools
-import concurrent.futures
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
@@ -333,18 +332,14 @@ def list_startup_entries() -> List[StartupEntry]:
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-        f_folders = executor.submit(entries_from_folders)
-        f_registry = executor.submit(entries_from_registry)
-        
-        seen_names: Set[str] = set()
-        unique_entries: List[StartupEntry] = []
-        
-        for entry in itertools.chain(f_folders.result(), f_registry.result()):
-            name_n: str = entry.name.lower()
-            if name_n not in seen_names:
-                seen_names.add(name_n)
-                unique_entries.append(entry)
+    seen_names: Set[str] = set()
+    unique_entries: List[StartupEntry] = []
+    
+    for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
+        name_n: str = entry.name.lower()
+        if name_n not in seen_names:
+            seen_names.add(name_n)
+            unique_entries.append(entry)
             
     _FULL_SCAN_CACHE = unique_entries
     return unique_entries

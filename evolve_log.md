@@ -713,3 +713,29 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-30T08:36:25` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-08-30T08:36:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T08:36:25` Corrida terminada. Total usado hoy: 204.
+- `2026-08-30T08:45:05` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-08-30T08:45:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-30T08:46:36` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a disco al reemplazar `os.stat` (que implica una llamada al sistema por cada check) por un chequeo de `st_mtime` directo dentro de `_read_disk` y utilizando la persistencia del objeto `stat_info` ya recuperado para validar el tamaño, reduciendo la latencia en lecturas repetidas.
+- `2026-08-30T08:47:35` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` sustituyendo el `ThreadPoolExecutor` (que introduce sobrecarga de hilos y contexto innecesaria para solo dos tareas de I/O bloqueante) por una ejecución secuencial directa, mejorando la latencia inicial y reduciendo el consumo de memoria en dispositivos con recursos limitados.
+- `2026-08-30T08:48:17` Tests FALLARON:
+```
+bject of type 'float'
+
+app/assistant.py:115: ValueError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_a_healthy_system_gets_a_calm_answer - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - ValueError: Unknown format code 'd' for object of type 'float'
+9 failed, 290 passed in 2.22s
+
+```
+- `2026-08-30T08:48:17` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del sistema ante valores inesperados en las métricas mediante la implementación de `_safe_float` como filtro único y centralizado, asegurando que cualquier valor NaN, infinito o de tipo incorrecto sea descartado antes de alcanzar el contexto, evitando errores en cascada durante el formateo de las respuestas.
+- `2026-08-30T08:48:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-30T08:48:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T08:48:50` Corrida terminada. Total usado hoy: 208.

@@ -281,19 +281,16 @@ def validate(raw_values: Any) -> AppSettings:
 def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
     """Carga interna: valida el archivo en disco, retornando DEFAULTS ante cualquier error."""
     ruta = Path(ruta_str)
-    if not ruta.exists() or not os.access(ruta, os.R_OK):
-        return DEFAULTS.copy()
-    
-    stat_info = ruta.stat()
-    if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
-        return DEFAULTS.copy()
-            
     try:
+        stat_info = ruta.stat()
+        if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
+            return DEFAULTS.copy()
+            
         with open(ruta, "r", encoding="utf-8") as f:
             data: Any = json.load(f)
             if not _is_dict(data): return DEFAULTS.copy()
             return validate(data)
-    except (json.JSONDecodeError, UnicodeDecodeError, PermissionError):
+    except (json.JSONDecodeError, UnicodeDecodeError, PermissionError, OSError):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:

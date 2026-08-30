@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 25
 - Sin respuesta de la IA (error o límite): 215
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 128 | 8 | 17 | 17 | 130 |
-| 2026-08-30 | 90 | 3 | 18 | 8 | 85 |
+| 2026-08-29 | 126 | 8 | 16 | 17 | 129 |
+| 2026-08-30 | 92 | 4 | 18 | 8 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **48**
-- rendimiento: **39**
+- seguridad defensiva: **46**
+- rendimiento: **41**
 - robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
-- `memory.py`: **19**
+- `settings.py`: **22**
 - `scanner.py`: **19**
 - `browser.py`: **19**
 - `quarantine.py`: **18**
+- `memory.py`: **18**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
 - `assistant.py`: **16**
-- `duplicates.py`: **15**
 - `branding.py`: **14**
+- `duplicates.py`: **14**
+- `startup.py`: **13**
 - `organizer.py`: **12**
-- `startup.py`: **12**
 - `safety.py`: **11**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T08:47:35` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` sustituyendo el `ThreadPoolExecutor` (que introduce sobrecarga de hilos y contexto innecesaria para solo dos tareas de I/O bloqueante) por una ejecución secuencial directa, mejorando la latencia inicial y reduciendo el consumo de memoria en dispositivos con recursos limitados.
+- `2026-08-30T08:46:36` **settings.py** (rendimiento): Se optimizó el acceso a disco al reemplazar `os.stat` (que implica una llamada al sistema por cada check) por un chequeo de `st_mtime` directo dentro de `_read_disk` y utilizando la persistencia del objeto `stat_info` ya recuperado para validar el tamaño, reduciendo la latencia en lecturas repetidas.
 - `2026-08-30T08:36:16` **safety.py** (rendimiento): Optimicé el uso del sistema de archivos reemplazando las múltiples llamadas repetitivas a `os.stat` en los validadores por una única llamada en `_check_file_integrity`, pasando el objeto `stat_result` ya obtenido a cada predicado del pipeline.
 - `2026-08-30T08:35:21` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante la eliminación de la recarga innecesaria del manifiesto en operaciones que ya poseen el contexto de los ítems, y simplifiqué la lógica de `purge_all` para evitar llamadas redundantes a `load_manifest` y `save_manifest` dentro del bucle.
 - `2026-08-30T08:26:49` **organizer.py** (rendimiento): Optimizé `_process_directory` para reducir llamadas costosas a `os.path.exists` o `resolve` mediante el uso de los objetos `DirEntry` ya existentes y la cache local de atributos, mejorando el rendimiento en recorridos profundos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T07:54:31` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de type hints en los retornos de las funciones, se han clarificado las docstrings siguiendo los estándares PEP 257, y se han extraído validaciones complejas de `_is_safe_for_disk_op` hacia un estilo más legible y resiliente.
 - `2026-08-30T07:46:16` **memory.py** (legibilidad y documentación): Mejoré la documentación de `memory.py` mediante type hints explícitos, docstrings detallados en funciones críticas y la conversión de los estados internos de los procesos a una enumeración clara, aumentando la mantenibilidad sin cambiar la lógica.
 - `2026-08-30T07:44:45` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de datos mediante la adición de docstrings técnicos en las funciones de cálculo de puntaje (`score_junk`, `score_security`, etc.), explicando la lógica de normalización subyacente para facilitar el mantenimiento futuro.
-- `2026-08-30T07:44:18` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los nombres de las funciones internas en `duplicates.py` para clarificar la estrategia de desambiguación de duplicados y asegurar que el código sea autodocumentado para futuras auditorías.
-- `2026-08-30T07:35:24` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `all_drives_usage` y `walk_files`) y se mejoró la legibilidad mediante la extracción de la lógica de detección de unidades locales en Windows hacia una función privada, eliminando el ruido dentro del flujo principal.
