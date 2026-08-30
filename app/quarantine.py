@@ -308,7 +308,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
-    temp_path = None
+    temp_path: Optional[Path] = None
     try:
         with tempfile.NamedTemporaryFile("w", dir=base_path, encoding="utf-8", delete=False) as tf:
             temp_path = Path(tf.name)
@@ -340,7 +340,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if len(str(destination)) >= 250:
         raise OSError("Ruta de destino demasiado larga.")
 
-    temp_path = None
+    temp_path: Optional[Path] = None
     try:
         fd, temp_file_path = tempfile.mkstemp(dir=destination.parent, prefix=".tmp_q_")
         temp_path = Path(temp_file_path)

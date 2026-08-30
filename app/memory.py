@@ -143,26 +143,34 @@ def _create_mem_status_ex() -> MEMORYSTATUSEX:
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Parsea el contenido de /proc/meminfo para generar un snapshot."""
+    """Parsea el contenido de /proc/meminfo extrayendo métricas clave para el snapshot."""
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return MemorySnapshot(0, 0)
-    vals: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
-    found_keys = 0
+    
+    # Mapeo de claves esperadas en /proc/meminfo
+    metric_map: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
+    keys_found = 0
+    
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
-        key, rest = line.split(":", 1)
-        k = key.strip()
-        if k in vals:
-            parts = rest.strip().split()
+        key, raw_value = line.split(":", 1)
+        k_normalized = key.strip()
+        
+        if k_normalized in metric_map:
+            parts = raw_value.strip().split()
             try:
                 if parts and parts[0].isdigit():
-                    vals[k] = int(parts[0]) * 1024
-                    found_keys += 1
+                    # Convertir kB (estándar de Linux) a Bytes
+                    metric_map[k_normalized] = int(parts[0]) * 1024
+                    keys_found += 1
             except ValueError: continue
-    total = vals["MemTotal"]
-    if total <= 0 or found_keys == 0: return MemorySnapshot(0, 0)
-    available = vals["MemAvailable"] if vals["MemAvailable"] > 0 else vals["MemFree"]
-    return MemorySnapshot(total=total, available=min(available, total), cached=max(0, vals["Cached"]))
+            
+    total_mem = metric_map["MemTotal"]
+    if total_mem <= 0 or keys_found == 0: 
+        return MemorySnapshot(0, 0)
+    
+    available = metric_map["MemAvailable"] if metric_map["MemAvailable"] > 0 else metric_map["MemFree"]
+    return MemorySnapshot(total=total_mem, available=min(available, total_mem), cached=max(0, metric_map["Cached"]))
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
@@ -192,7 +200,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return proc_list[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Interroga la API Win32 GlobalMemoryStatusEx. Retorna 0s en caso de error de acceso."""
+    """
+    Interroga la API Win32 GlobalMemoryStatusEx. 
+    Retorna 0s en caso de error de acceso o si la librería no está cargada.
+    """
     try:
         kernel32 = getattr(ctypes.windll, "kernel32", None)
         if kernel32 is None or not hasattr(kernel32, "GlobalMemoryStatusEx"):
@@ -300,7 +311,10 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
-    """Extrae la ruta absoluta del ejecutable desde un handle de proceso vía Win32 API."""
+    """
+    Extrae la ruta absoluta del ejecutable desde un handle de proceso vía Win32 API.
+    Requiere que proc_handle tenga permisos PROCESS_QUERY_LIMITED_INFORMATION.
+    """
     if not proc_handle or proc_handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
@@ -309,6 +323,7 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     size = ctypes.c_ulong(MAX_PATH)
     buf = ctypes.create_unicode_buffer(MAX_PATH)
     try:
+        # Se intenta obtener la ruta completa usando la versión Unicode de la API
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError, ValueError): pass
@@ -329,7 +344,10 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida la integridad del proceso (PID, estado activo y ruta) antes de modificar su memoria."""
+    """
+    Valida la integridad del proceso (PID, estado activo y ruta segura)
+    antes de realizar cualquier operación de modificación de memoria.
+    """
     if proc_handle is None or proc_handle == -1: return False, "Handle inválido."
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "GetProcessId"): return False, "API GetProcessId no disponible."
@@ -337,6 +355,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
     try:
         if kernel32.GetProcessId(proc_handle) != pid: return False, "Mismatch de PID."
         exit_code = ctypes.c_ulong()
+        # Verificar si el proceso sigue vivo antes de intentar manipular su WorkingSet
         if not kernel32.GetExitCodeProcess(proc_handle, ctypes.byref(exit_code)) or exit_code.value != STILL_ACTIVE_EXIT_CODE:
             return False, "El proceso no está activo."
         exec_path = _get_process_path(proc_handle)
