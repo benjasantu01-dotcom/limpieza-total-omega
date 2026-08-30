@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 208
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 26
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 122 | 7 | 15 | 17 | 115 |
-| 2026-08-30 | 102 | 6 | 19 | 8 | 93 |
+| 2026-08-29 | 122 | 7 | 15 | 17 | 111 |
+| 2026-08-30 | 103 | 7 | 20 | 9 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **45**
+- seguridad defensiva: **46**
 - rendimiento: **41**
 - robustez ante casos límite: **36**
 
@@ -40,12 +40,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **15**
 - `branding.py`: **14**
 - `startup.py`: **14**
-- `organizer.py`: **12**
+- `organizer.py`: **13**
 - `safety.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T09:47:17` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` y `scan_for_junk` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta real (resolved) antes de entrar a cada subdirectorio, evitando así que el escáner se propague a zonas prohibidas por enlaces simbólicos o redirecciones.
 - `2026-08-30T09:38:23` **main.py** (seguridad defensiva): He refactorizado la lógica de validación del `_worker_thread_logic` para evitar el uso de `safety.ensure_safe_to_modify` como una función aislada que podría lanzar excepciones fuera de control, centralizando la protección en un bloque `try-except` robusto y garantizando que las verificaciones de seguridad se realicen siempre antes de la ejecución de la lógica, cumpliendo estrictamente con el enfoque de seguridad defensiva.
 - `2026-08-30T09:37:33` **healthscore.py** (seguridad defensiva): Reforcé la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación de tipo estricta en el constructor de `SystemMetrics` mediante `isinstance`, asegurando que el estado del sistema nunca se inicie con tipos de datos inesperados que podrían evadir los filtros de `validate()`.
 - `2026-08-30T09:36:43` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `drive_usage` asegurando que las rutas, tras ser resueltas, se validen contra `is_protected_path` antes de permitir cualquier procesamiento, evitando así posibles escapes a directorios del sistema mediante manipulación de rutas relativas o symlinks previos a la normalización.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T08:46:36` **settings.py** (rendimiento): Se optimizó el acceso a disco al reemplazar `os.stat` (que implica una llamada al sistema por cada check) por un chequeo de `st_mtime` directo dentro de `_read_disk` y utilizando la persistencia del objeto `stat_info` ya recuperado para validar el tamaño, reduciendo la latencia en lecturas repetidas.
 - `2026-08-30T08:36:16` **safety.py** (rendimiento): Optimicé el uso del sistema de archivos reemplazando las múltiples llamadas repetitivas a `os.stat` en los validadores por una única llamada en `_check_file_integrity`, pasando el objeto `stat_result` ya obtenido a cada predicado del pipeline.
 - `2026-08-30T08:35:21` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante la eliminación de la recarga innecesaria del manifiesto en operaciones que ya poseen el contexto de los ítems, y simplifiqué la lógica de `purge_all` para evitar llamadas redundantes a `load_manifest` y `save_manifest` dentro del bucle.
-- `2026-08-30T08:26:49` **organizer.py** (rendimiento): Optimizé `_process_directory` para reducir llamadas costosas a `os.path.exists` o `resolve` mediante el uso de los objetos `DirEntry` ya existentes y la cache local de atributos, mejorando el rendimiento en recorridos profundos.

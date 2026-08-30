@@ -826,3 +826,44 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-08-30T09:38:23` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). He refactorizado la lógica de validación del `_worker_thread_logic` para evitar el uso de `safety.ensure_safe_to_modify` como una función aislada que podría lanzar excepciones fuera de control, centralizando la protección en un bloque `try-except` robusto y garantizando que las verificaciones de seguridad se realicen siempre antes de la ejecución de la lógica, cumpliendo estrictamente con el enfoque de seguridad defensiva.
 - `2026-08-30T09:38:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T09:38:23` Corrida terminada. Total usado hoy: 228.
+- `2026-08-30T09:46:21` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-08-30T09:46:52` ➖ Sin cambios en memory.py (enfoque: seguridad defensiva). Motivo: Se ha mejorado la seguridad en `_validate_path_security` al evitar que la función lance excepciones al resolver rutas, garantizando que el flujo de control permanezca robusto incluso ante rutas inaccesibles o bloqueadas por el sistema.
+- `2026-08-30T09:47:17` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_directory` y `scan_for_junk` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta real (resolved) antes de entrar a cada subdirectorio, evitando así que el escáner se propague a zonas prohibidas por enlaces simbólicos o redirecciones.
+- `2026-08-30T09:47:48` Tests FALLARON:
+```
+[ 72%]
+.......................................................................F [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_purge_item_cannot_delete_outside_the_quarantine _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-2/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed in 1.24s
+
+```
+- `2026-08-30T09:47:48` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad en el aislamiento de archivos agregando una validación estricta de "Path Traversal" y resolución de rutas redundantes en el nombre de almacenamiento (`stored_name`), asegurando que no se pueda manipular el `item_id` o el nombre original para escapar del sandbox de cuarentena.
+- `2026-08-30T09:47:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-30T09:47:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T09:47:51` Corrida terminada. Total usado hoy: 232.

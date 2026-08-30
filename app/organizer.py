@@ -191,15 +191,15 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """Realiza un barrido recursivo seguro en el sistema de archivos."""
     try:
         abs_path = current_dir.resolve()
-        # Evitar rutas demasiado largas antes de escanear
         if len(str(abs_path)) > 240 or is_protected_path(abs_path): return
         
         with os.scandir(abs_path) as it:
             for entry in it:
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        if _is_allowed_directory(entry.name) and not _is_junction(entry):
-                            _process_directory(Path(entry.path), found)
+                        child_path = Path(entry.path).resolve()
+                        if _is_allowed_directory(entry.name) and not _is_junction(entry) and not is_protected_path(child_path):
+                            _process_directory(child_path, found)
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
                         if stats.st_size > 0:
@@ -218,8 +218,10 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     for d in search_dirs:
         try:
             path_obj = Path(d).expanduser()
-            if path_obj.exists() and not is_protected_path(path_obj):
-                _process_directory(path_obj.resolve(), found)
+            if path_obj.exists():
+                resolved = path_obj.resolve()
+                if not is_protected_path(resolved):
+                    _process_directory(resolved, found)
         except (OSError, RuntimeError):
             continue
     return found
