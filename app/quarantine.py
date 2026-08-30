@@ -265,8 +265,8 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
 
 @lru_cache(maxsize=4)
-def _load_manifest_internal(base_str: str) -> Dict[str, QuarantineItem]:
-    """Carga y parsea el manifiesto; uso interno cacheado."""
+def _load_manifest_internal(base_str: str, _mtime: float = 0.0) -> Dict[str, QuarantineItem]:
+    """Carga y parsea el manifiesto; usa _mtime como parámetro testigo para invalidar caché."""
     path = _manifest_path(Path(base_str))
     if not path.is_file():
         return {}
@@ -287,12 +287,15 @@ def _load_manifest_internal(base_str: str) -> Dict[str, QuarantineItem]:
         return {}
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Obtiene la lista actual de ítems en cuarentena."""
+    """Obtiene la lista actual de ítems en cuarentena con validación de mtime para eficiencia."""
     base_path = quarantine_dir(base)
+    m_path = _manifest_path(base_path)
+    mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
+    
     if force_reload:
         _load_manifest_internal.cache_clear()
         
-    return list(_load_manifest_internal(str(base_path)).values())
+    return list(_load_manifest_internal(str(base_path), mtime).values())
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
