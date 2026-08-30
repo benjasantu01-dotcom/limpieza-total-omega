@@ -209,11 +209,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """
     Valida que un objeto JunkFile sea movible bajo estrictas reglas de seguridad.
-    
-    Verificaciones:
-    1. Existencia y consistencia de tipos.
-    2. Integridad de la ruta destino.
-    3. Validación de permisos y bloqueos mediante _is_safe_for_disk_op.
     """
     if not isinstance(junk_file, JunkFile) or not junk_file.path: return False
     try:
@@ -277,7 +272,6 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
     Valida condiciones de seguridad y espacio previas al movimiento de un archivo.
-    Retorna la ruta destino absoluta y única si la operación es segura.
     """
     if not isinstance(junk_file.path, Path) or not dest_base: return None
     try:
@@ -285,7 +279,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if not src_path.exists() or not src_path.is_file() or not dest_base.is_dir(): 
             return None
         
-        if not src_path.anchor or not dest_base.anchor or src_path.anchor != dest_base.anchor:
+        if src_path.anchor != dest_base.anchor:
             return None
 
         if shutil.disk_usage(dest_base.anchor).free < src_path.stat().st_size: return None
@@ -301,19 +295,17 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """
-    Ejecuta el traslado seguro de los archivos encontrados hacia el directorio de revisión.
-    Solo mueve archivos que pasan las validaciones de seguridad estrictas.
-    """
+    """Ejecuta el traslado seguro de los archivos encontrados hacia el directorio de revisión."""
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
 
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
-        if not dest_base.is_dir() or not is_safe_to_modify(dest_base) or is_protected_path(dest_base): 
+        # Verificación estricta mediante seguridad antes de procesar
+        if not is_safe_to_modify(dest_base) or is_protected_path(dest_base): 
             return None
-    except (OSError, PermissionError, RuntimeError):
+    except (OSError, RuntimeError):
         return None
 
     for junk_file in files:
@@ -326,21 +318,17 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
                 shutil.move(str(junk_file.path), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError) as e:
             logger.error(f"Error moviendo {junk_file.path}: {e}")
-            continue
     return dest_base
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """
-    Elimina permanentemente archivos contenidos en la carpeta de revisión tras 
-    verificar que las rutas siguen siendo seguras y no están bloqueadas.
-    """
+    """Elimina permanentemente archivos tras verificar que las rutas siguen siendo seguras."""
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not dest.is_dir() or not is_safe_to_modify(dest) or is_protected_path(dest):
+        if not dest.exists() or not is_safe_to_modify(dest) or is_protected_path(dest):
             return 0
     except (OSError, RuntimeError):
         return 0
@@ -348,21 +336,11 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if not item.is_file() or item.is_symlink():
-                continue
-            
-            resolved_item = item.resolve()
-            if not resolved_item.is_relative_to(dest):
-                continue
-            
-            if not _passes_system_checks(item):
-                continue
-
-            if is_safe_to_modify(item) and not is_protected_path(item) and not _is_file_locked(item):
-                ensure_safe_to_modify(item)
-                item.unlink()
-                count += 1
+            if item.is_file() and is_safe_to_modify(item) and not is_protected_path(item):
+                if _passes_system_checks(item) and not _is_file_locked(item):
+                    ensure_safe_to_modify(item)
+                    item.unlink()
+                    count += 1
         except (PermissionError, OSError, ValueError) as e:
             logger.error(f"Error eliminando {item}: {e}")
-            continue
     return count

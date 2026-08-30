@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 30
-- Sin cambios (nada sustancial que mejorar): 19
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 37 | 1 | 5 | 0 | 47 |
+| 2026-08-28 | 34 | 1 | 5 | 0 | 46 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
-| 2026-08-30 | 24 | 0 | 3 | 1 | 36 |
+| 2026-08-30 | 25 | 0 | 4 | 2 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **44**
-- rendimiento: **42**
+- manejo de errores y validación de entradas: **47**
+- legibilidad y documentación: **43**
+- rendimiento: **40**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **22**
 - `memory.py`: **20**
 - `scanner.py`: **20**
-- `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
 - `browser.py`: **18**
-- `branding.py`: **16**
+- `assistant.py`: **17**
 - `duplicates.py`: **16**
+- `branding.py`: **15**
 - `healthscore.py`: **14**
 - `main.py`: **13**
-- `startup.py`: **11**
-- `organizer.py`: **10**
+- `organizer.py`: **11**
+- `startup.py`: **10**
 - `safety.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T02:48:42` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `stage_for_review` y `delete_reviewed` sustituyendo validaciones laxas por chequeos explícitos de `is_safe_to_modify`, garantizando que toda operación sobre archivos en cuarentena o revisión pase por el filtro de seguridad unificado y evitando el manejo de excepciones silenciadas que ocultaban errores de acceso.
 - `2026-08-30T02:40:26` **memory.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de la función `parse_windows_process_csv` agregando una validación explícita para asegurar que el `WorkingSet` sea un valor positivo y capturando errores de forma más granular para evitar que una línea mal formada interrumpa el procesamiento de la lista completa.
 - `2026-08-30T02:38:59` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` agregando una validación explícita para asegurar que todas las categorías en `WEIGHTS` sean procesables, evitando errores silenciosos si una clave faltara en `_SCORERS`, y asegurando que las recomendaciones manejen correctamente las áreas dinámicas.
 - `2026-08-30T02:38:32` **duplicates.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de excepciones en `_scan_recursive` para evitar que fallos aislados al leer atributos de archivos (por ejemplo, errores de permisos o accesos denegados) interrumpan prematuramente el escaneo completo de un directorio, asegurando una mayor resiliencia del proceso.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T00:48:11` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_for_disk_op` añadiendo una validación explícita de `is_protected_path` sobre la ruta resuelta (`resolve()`) antes de cualquier operación, garantizando que ni siquiera mediante enlaces simbólicos o redirecciones maliciosas se pueda operar fuera del alcance permitido.
 - `2026-08-30T00:48:00` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva al limitar las máscaras de acceso en `OpenProcess` al mínimo necesario y agregué una validación de existencia de archivo mediante `os.path.exists` antes de la resolución de `Path.resolve`, mitigando riesgos de manipulación de punteros durante la inspección de procesos.
 - `2026-08-30T00:47:31` **main.py** (seguridad defensiva): Se introdujo una comprobación explícita de seguridad al importar módulos de configuración y escaneo (`settings.py` y `scanner.py`) dentro de la app para asegurar que no se inicialicen sobre rutas de sistema protegidas, alineándose con el enfoque de seguridad defensiva.
-- `2026-08-30T00:37:14` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de la recolección de candidatos en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` en cada entrada del sistema de archivos antes de cualquier operación de stat o recursión, evitando así posibles accesos a rutas protegidas incluso si el sistema operativo no reporta atributos especiales.
