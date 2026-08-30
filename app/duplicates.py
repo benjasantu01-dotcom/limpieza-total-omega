@@ -234,7 +234,11 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """Punto de entrada principal: identifica, agrupa y ordena duplicados por potencial de ahorro."""
-    if directories is None or min_size < 0: return []
+    if not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
+        return []
+    if not isinstance(min_size, int) or min_size < 0: 
+        return []
+        
     groups: List[DuplicateGroup] = []
     for size, paths in _collect_candidates(directories, min_size, skip_protected).items():
         groups.extend(_process_size_group(size, paths))

@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **212** (42.1% de aceptación)
+- Mejoras aceptadas: **213** (42.3% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 105 | 7 | 14 | 15 | 95 |
-| 2026-08-30 | 107 | 7 | 20 | 9 | 125 |
+| 2026-08-29 | 103 | 7 | 12 | 15 | 95 |
+| 2026-08-30 | 110 | 7 | 20 | 9 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **43**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `scanner.py`: **19**
-- `quarantine.py`: **18**
-- `browser.py`: **18**
+- `browser.py`: **19**
 - `memory.py`: **18**
-- `diskreport.py`: **16**
+- `quarantine.py`: **17**
+- `diskreport.py`: **17**
 - `healthscore.py`: **16**
 - `assistant.py`: **15**
 - `startup.py`: **14**
-- `organizer.py`: **13**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
+- `organizer.py`: **12**
 - `branding.py`: **12**
 - `safety.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T11:29:40` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `find_duplicates` añadiendo validaciones preventivas de tipos y estados para los argumentos `directories` y `min_size`, asegurando que el flujo principal no procese entradas inválidas que podrían causar excepciones inesperadas.
+- `2026-08-30T11:29:15` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` agregando validaciones de tipo explícitas y manejos de excepciones específicos para evitar que rutas malformadas o problemas de permisos durante el escaneo causen fallos silenciosos o bloqueos inesperados.
+- `2026-08-30T11:28:46` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones en `_sum_directory_recursive` mediante el uso de `try-except` granulares para capturar fallos de acceso a metadatos, evitando que una entrada individual bloqueada detenga el conteo de todo el árbol.
 - `2026-08-30T11:20:56` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de los `handlers` de respuesta capturando excepciones de forma específica, evitando que errores de acceso a atributos o tipos inesperados en el objeto `SystemContext` (posiblemente mal inicializado) interrumpan la ejecución de la UI.
 - `2026-08-30T09:58:05` **startup.py** (seguridad defensiva): Se reforzó la seguridad en `_resolve_and_cache_path` añadiendo una validación explícita para prevenir la ejecución de archivos ubicados en rutas UNC (`\\`), las cuales pueden ser vectores de ataque (ej. ejecución de código remoto o exfiltración de NTLM hashes) si el sistema intenta resolverlas al escanear.
 - `2026-08-30T09:57:53` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save` eliminando la llamada directa a `ensure_safe_to_modify` sobre el archivo de configuración antes de verificar su existencia, reemplazándola por una validación lógica con `is_safe_to_modify` que impide operaciones sobre rutas fuera del espacio de trabajo sin lanzar excepciones prematuras en el flujo de guardado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T09:17:39` **settings.py** (robustez ante casos límite): Mejoré la robustez ante fallos de E/S en la carga inicial añadiendo un bloque `try-except` explícito en `_read_disk` que maneja archivos con formato JSON válido pero estructuralmente incompatible (ej. tipos de datos erróneos en claves), asegurando que ante cualquier desvío del esquema `AppSettings` se retorne siempre el estado por defecto.
 - `2026-08-30T09:17:02` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_is_safe_entry` al centralizar el manejo de errores de acceso a archivos, asegurando que `OSError` o `PermissionError` (comunes en escaneos de disco con permisos variables) no interrumpan el flujo, además de añadir un control explícito sobre la resolución de rutas mediante `resolve(strict=False)` para evitar fallos cuando el destino es una ruta inexistente pero referenciada.
 - `2026-08-30T09:11:39` **quarantine.py** (robustez ante casos límite): Se introdujo una validación crítica en `quarantine_file` para detectar y rechazar archivos con puntos de reparse (junctions/symlinks) al momento de leer sus metadatos iniciales, evitando errores de recursión o acceso a rutas fuera del scope de la aplicación antes de la operación de movimiento.
-- `2026-08-30T09:11:22` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_process_directory` y `_is_safe_for_disk_op` añadiendo validaciones contra rutas que exceden `MAX_PATH` (límite crítico en Windows) y manejando errores de `stat()` para archivos que se eliminan o cambian de permiso mientras el escáner los procesa, evitando excepciones no controladas durante el bucle.
-- `2026-08-30T09:09:55` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_get_process_path` para prevenir desbordamientos de buffer o rutas mal formadas (Unicode) utilizando `ctypes.create_unicode_buffer` con el tamaño correcto, además de robustecer la carga de librerías mediante una verificación de presencia de símbolos antes de su uso para evitar `AttributeError` en entornos con permisos restringidos.
-- `2026-08-30T08:57:02` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_scan_recursive` ante errores de acceso a disco y estados inconsistentes durante el recorrido, asegurando que si un archivo cambia de estado (se vuelve inaccesible o cambia de tamaño) mientras se procesa, la operación no se interrumpa.

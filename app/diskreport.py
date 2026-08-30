@@ -273,16 +273,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Implementa una lógica de DFS iterativo para evitar desbordamiento de pila y utiliza
     `os.scandir` para mejorar la performance. Saltea automáticamente puntos de reparse
     (junctions) y rutas de sistema si `skip_protected` es True.
-    
-    Args:
-        directory: Directorio raíz para comenzar la búsqueda.
-        skip_protected: Si es True, usa `safety.is_protected_path` para filtrar directorios.
-        
-    Yields:
-        Tuplas (Path, int) donde el entero representa el tamaño en bytes.
     """
     root_path = _validate_root(directory)
-    if not root_path or (skip_protected and is_protected_path(root_path)):
+    if not root_path:
         return
 
     # Evitar rutas UNC
@@ -298,7 +291,6 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Verificar existencia y obtener stat en un solo paso
                         st = entry.stat(follow_symlinks=False)
                     except (PermissionError, OSError):
                         continue
@@ -325,8 +317,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """Identifica los N archivos más grandes en un directorio usando una cola de prioridad."""
+    if not isinstance(limit, int) or limit <= 0:
+        return []
+    
     root_path = _validate_root(directory)
-    if not root_path or not isinstance(limit, int) or limit <= 0:
+    if not root_path:
         return []
     
     items: Generator[Tuple[int, Path], None, None] = ((s, p) for p, s in walk_files(root_path, skip_protected))
@@ -335,8 +330,11 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
 
 def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Agrupa el uso de espacio total por extensión de archivo."""
+    if not isinstance(limit, int) or limit <= 0:
+        return []
+
     root_path = _validate_root(directory)
-    if not root_path or not isinstance(limit, int) or limit <= 0:
+    if not root_path:
         return []
         
     size_map: Dict[str, int] = defaultdict(int)
@@ -361,7 +359,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
         return []
     
     p_base = _validate_root(directory)
-    if not p_base or (skip_protected and is_protected_path(p_base)):
+    if not p_base:
         return []
             
     sums: Dict[str, int] = defaultdict(int)
@@ -370,18 +368,17 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     for path, size in walk_files(p_base, skip_protected):
         try:
             relative = path.relative_to(p_base)
-            parts = relative.parts
-            if not parts:
+            if not relative.parts:
                 continue
             
-            top_folder = p_base / parts[0]
-            if skip_protected and is_protected_path(Path(top_folder)):
+            top_folder = p_base / relative.parts[0]
+            if skip_protected and is_protected_path(top_folder):
                 continue
             
             str_path = str(top_folder)
             sums[str_path] += size
             counts[str_path] += 1
-        except (ValueError, IndexError, AttributeError, OSError):
+        except (ValueError, OSError):
             continue
 
     results: List[FolderUsage] = [FolderUsage(Path(p), sums[p], counts[p]) for p in sums]
@@ -404,27 +401,21 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
     
-    # Usar heap de tamaño fijo para evitar cargar todos los archivos en memoria
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        try:
-            total_bytes += size
-            total_files += 1
+        total_bytes += size
+        total_files += 1
+        
+        ext = path.suffix.lower() or "(sin extensión)"
+        ext_sizes[ext] += size
+        ext_counts[ext] += 1
+        
+        if len(top_files_heap) < 8:
+            heapq.heappush(top_files_heap, (size, path))
+        else:
+            heapq.heappushpop(top_files_heap, (size, path))
             
-            ext = path.suffix.lower() or "(sin extensión)"
-            ext_sizes[ext] += size
-            ext_counts[ext] += 1
-            
-            # Mantener solo los 8 mayores archivos en el heap
-            if len(top_files_heap) < 8:
-                heapq.heappush(top_files_heap, (size, path))
-            else:
-                heapq.heappushpop(top_files_heap, (size, path))
-        except (OSError, TypeError):
-            continue
-            
-    # Ordenar los archivos recolectados de mayor a menor
     top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files)
 
@@ -434,9 +425,6 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     p_input = _validate_root(directory)
     if not p_input:
         return ["Error: Ruta no proporcionada, inexistente o formato inválido."]
-        
-    if skip_protected and is_protected_path(p_input):
-        return [f"Error: Ruta protegida no permitida: {p_input}"]
             
     data: SummaryData = _collect_summary_data(p_input, skip_protected)
     
