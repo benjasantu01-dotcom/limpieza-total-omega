@@ -270,12 +270,6 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
     """
     Convierte el CSV generado por PowerShell en una lista de objetos StartupEntry.
-    
-    Args:
-        csv_text: Salida cruda de 'ConvertTo-Csv' capturada de PowerShell.
-        source: Identificador del origen para el reporte de usuario.
-    Returns:
-        Lista de entradas validadas y sanitizadas para su ejecución segura.
     """
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
@@ -285,39 +279,36 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         fieldnames = reader.fieldnames
-        # Verificación estricta: requiere al menos 2 columnas para ser válida
+        # Verificación estricta: requiere al menos 2 columnas válidas
         if not fieldnames or len(fieldnames) < 2:
             return []
             
         for row in reader:
-            if not isinstance(row, dict) or len(row) < 2:
+            if not isinstance(row, dict):
                 continue
+            
+            # Extraer usando get para manejar casos de filas truncadas
+            name_raw = row.get(fieldnames[0])
+            cmd_raw = row.get(fieldnames[1])
+            
+            if name_raw is None or cmd_raw is None:
+                continue
+            
+            name = "".join(c for c in str(name_raw) if ord(c) >= 32).strip()
+            cmd = "".join(c for c in str(cmd_raw) if ord(c) >= 32).strip()
+            
+            if not name or not cmd or name.upper().startswith("PS"):
+                continue
+            if any(c in cmd for c in '<>|?*'):
+                continue
+            
             try:
-                # Usar los dos primeros campos detectados en el CSV del registro
-                name_raw = row.get(fieldnames[0], "")
-                cmd_raw = row.get(fieldnames[1], "")
-                
-                if name_raw is None or cmd_raw is None:
+                if is_protected_path(Path(cmd)):
                     continue
-                
-                name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
-                cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
-                
-                # Ignorar campos PS (PowerShell metadata) o entradas vacías
-                if not name or not cmd or name.upper().startswith("PS"):
-                    continue
-                if any(c in cmd for c in '<>|?*'):
-                    continue
-                
-                try:
-                    if is_protected_path(Path(cmd)):
-                        continue
-                except (ValueError, TypeError, OSError):
-                    continue
-                
-                parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
-            except (KeyError, ValueError, TypeError, AttributeError, OSError):
+            except (ValueError, TypeError, OSError):
                 continue
+                
+            parsed_entries.append(StartupEntry(name=name, command=cmd, source=source))
     except (csv.Error, OSError, ValueError, TypeError):
         return []
     return parsed_entries

@@ -1288,3 +1288,28 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - NameEr
 - `2026-08-30T02:49:53` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-30T02:49:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T02:49:53` Corrida terminada. Total usado hoy: 68.
+- `2026-08-30T02:58:24` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-30T02:58:49` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las validaciones en `Scanner._is_safe_entry` y `scan_directory` para manejar correctamente entradas `None` o rutas malformadas mediante guards explícitos, evitando excepciones no controladas durante el recorrido del sistema de archivos.
+- `2026-08-30T02:59:17` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_Validators.path` y `_Validators._run_safety_checks` para prevenir excepciones durante la validación de rutas, asegurando que cualquier entrada maliciosa o mal formada se descarte silenciosamente sin comprometer la estabilidad del sistema.
+- `2026-08-30T02:59:44` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita de `fieldnames` y tipos, previniendo errores de `IndexError` o `KeyError` ante CSVs malformados o vacíos, y se reemplazó el acceso directo por `get` con chequeos de `None` para garantizar que la ejecución no aborte ante entradas inesperadas.
+- `2026-08-30T03:00:04` Tests FALLARON:
+```
+: SyntaxWarning: invalid escape sequence '\)'
+    """Retorna True si la ruta es la raíz de una unidad (ej. C:\)."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_answers_are_never_empty - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_garbage_questions_still_get_an_answer - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_low_disk_is_reported_as_the_top_priority - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_local_answer_always_says_it_did_not_send_anything - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_ask_stays_local_when_the_assistant_is_off - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_online_failure_falls_back_to_local - ValueError: Unknown format code 'd' for object of type 'float'
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - ValueError: Unknown format code 'd' for object of type 'float'
+8 failed, 291 passed, 4 warnings in 1.53s
+
+```
+- `2026-08-30T03:00:04` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `ProblemCriterion.format_if_triggered` para extraer la lógica de evaluación en una función auxiliar, reduciendo la complejidad ciclomática y clarificando la validación de tipos de métricas.
+- `2026-08-30T03:00:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T03:00:04` Corrida terminada. Total usado hoy: 72.

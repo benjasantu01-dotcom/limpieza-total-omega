@@ -153,9 +153,12 @@ class _Validators:
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
         """Verifica restricciones de sistema: evita enlaces simbólicos o junctions."""
-        if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
+        try:
+            if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
+                return False
+            return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
+        except (OSError, PermissionError):
             return False
-        return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
@@ -163,9 +166,9 @@ class _Validators:
         if not path_str or ".." in path_str: return False
         try:
             p = Path(path_str).expanduser()
-            resolved = p.resolve(strict=False)
-            if not resolved.is_absolute(): return False
-            return _Validators._run_safety_checks(resolved)
+            if not p.is_absolute():
+                return False
+            return _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
 

@@ -103,9 +103,6 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo del sistema de archivos.
-    
-    Mantiene el estado de 'base_root' y 'seen' para asegurar que el recorrido 
-    sea determinista y no se produzcan bucles infinitos en el FS.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -123,16 +120,14 @@ class Scanner:
             return False
         
         try:
-            # Defensiva: evitar rutas con caracteres de ofuscación de control RTL
-            if entry.name and RTL_CHAR_RE.search(entry.name):
-                return False
-
-            if entry.name and RESERVED_NAMES_RE.match(entry.name):
+            if entry.name and (RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name)):
                 return False
 
             entry_path = Path(entry.path)
-            # Validar relación jerárquica robusta
-            if self.base_root not in entry_path.resolve().parents and entry_path.resolve() != self.base_root:
+            resolved_path = entry_path.resolve()
+            
+            # Validar relación jerárquica robusta: evitar escape del base_root
+            if self.base_root not in resolved_path.parents and resolved_path != self.base_root:
                 return False
             
             if self._is_reparse_point(entry):
@@ -145,9 +140,7 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Determina si un objeto es un junction o symlink mediante atributos de archivo."""
         try:
-            is_sym = entry.is_symlink()
-            attr = entry.stat(follow_symlinks=False).st_file_attributes
-            return is_sym or bool(attr & WIN_FILE_ATTR_REPARSE_POINT)
+            return entry.is_symlink() or bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError):
             return True 
 
@@ -183,6 +176,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Ejecuta todas las reglas heurísticas registradas sobre un archivo individual."""
+    if not path: return []
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -200,7 +194,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Punto de entrada principal para el escaneo recursivo de un directorio."""
-    if directory is None:
+    if not directory:
         return []
     try:
         path_input: Path = Path(directory).resolve(strict=True)
