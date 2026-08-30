@@ -73,7 +73,6 @@ WEIGHTS: Final[Dict[MetricKey, int]] = {
     "arranque": 8,
 }
 
-# Validación defensiva de la configuración
 if sum(WEIGHTS.values()) != 100:
     raise ValueError("La suma de pesos en WEIGHTS debe ser estrictamente 100.")
 
@@ -132,7 +131,6 @@ class HealthResult:
         return 80 <= self.score <= 100
 
 def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
-    """Asegura que un valor numérico esté dentro de un rango [low, high]. Retorna 'low' ante error."""
     try:
         val = float(value)
         if not math.isfinite(val): return low
@@ -141,53 +139,49 @@ def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
         return low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    """Convierte entrada a float, retornando default si el valor no es numérico o es NaN/Inf."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def _to_int(value: Any, default: int = 0) -> int:
-    """Convierte entrada a entero, retornando default si el valor no es convertible."""
     try:
         val = float(value)
         return int(val) if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula el ratio de salud para archivos basura: penaliza la cantidad de MB encontrados."""
+    """Ratio: (1.0 - (valor / umbral_máximo)). Un sistema limpio tiene ratio 1.0."""
     val = _to_float(junk_mb)
     return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa la seguridad: asigna penalizaciones pesadas por amenazas y advertencias."""
+    """Puntúa la seguridad penalizando amenazas (5%) y advertencias (25%) por unidad."""
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
-    penalty = (s * 0.05) + (w * 0.25)
-    return _clamp(1.0 - penalty, 0.0, 1.0)
+    return _clamp(1.0 - ((s * 0.05) + (w * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Puntúa el estado de la RAM basándose en el porcentaje de disponibilidad actual."""
+    """Puntúa RAM: el ratio es la disponibilidad porcentual escalada por el umbral crítico."""
     val = _to_float(available_percent)
     return _clamp(val * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Puntúa el espacio en disco según el ratio de disponibilidad (espacio libre)."""
+    """Puntúa disco: proporcional al espacio libre disponible."""
     val = _to_float(free_percent)
     return _clamp(val * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Puntúa la redundancia de archivos: el exceso de peso por duplicados degrada la salud."""
+    """Puntúa redundancia: menor peso encontrado equivale a mejor puntuación."""
     val = _to_float(duplicate_mb)
     return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Evalúa la carga en el arranque: penaliza linealmente el número de programas registrados."""
+    """Puntúa arranque: penaliza el recuento de aplicaciones cargadas al inicio."""
     val = _to_float(startup_count)
     return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Mapea un puntaje numérico (0-100) a una escala de letras académica A-F."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -195,20 +189,17 @@ def grade_for_score(score: float | int) -> str:
     if s >= 50: return "D"
     return "F"
 
-_SCORERS: Final = (
-    ("seguridad", lambda m: score_security(m.suspicious_count, m.suspicious_warnings)),
-    ("disco", lambda m: score_disk(m.disk_free_percent)),
-    ("memoria", lambda m: score_memory(m.memory_available_percent)),
-    ("basura", lambda m: score_junk(m.junk_mb)),
-    ("duplicados", lambda m: score_duplicates(m.duplicate_mb)),
-    ("arranque", lambda m: score_startup(m.startup_count))
-)
+_SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
+    "seguridad": lambda m: score_security(m.suspicious_count, m.suspicious_warnings),
+    "disco": lambda m: score_disk(m.disk_free_percent),
+    "memoria": lambda m: score_memory(m.memory_available_percent),
+    "basura": lambda m: score_junk(m.junk_mb),
+    "duplicados": lambda m: score_duplicates(m.duplicate_mb),
+    "arranque": lambda m: score_startup(m.startup_count)
+}
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
-    """
-    Función pura que sintetiza métricas en un objeto HealthResult.
-    Normaliza cada área, aplica los pesos definidos y genera recomendaciones.
-    """
+    """Sintetiza métricas en un objeto HealthResult aplicando normalización y pesos."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
@@ -220,24 +211,21 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     accumulated_points: float = 0.0
     recommendations: List[str] = []
     
-    # Asegurar que todas las áreas definidas en WEIGHTS tengan un scorer
     for area, weight in WEIGHTS.items():
-        scorer = next((s for n, s in _SCORERS if n == area), None)
-        if not scorer:
-            continue
+        scorer = _SCORERS.get(area)
+        if not scorer: continue
         
         ratio = _clamp(scorer(metrics), 0.0, 1.0)
         pts = round(ratio * weight)
         metric_breakdown[area] = int(pts)
         accumulated_points += pts
         
-        # Checkear recomendaciones según reglas predefinidas
-        for rule in _RECOMMENDATION_RULES:
-            if rule.area == area and rule.check(metrics, ratio):
+        # Filtrar reglas aplicables al área actual
+        for rule in [r for r in _RECOMMENDATION_RULES if r.area == area]:
+            if rule.check(metrics, ratio):
                 recommendations.append(rule.message_factory(metrics))
     
     final_score = int(_clamp(accumulated_points, 0.0, 100.0))
-    
     if metrics.quarantined_count > 0:
         recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
     
@@ -249,7 +237,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
     )
 
 def summarize(result: HealthResult) -> List[str]:
-    """Genera una representación textual y legible del informe de salud."""
     if not isinstance(result, HealthResult): 
         return ["Error: Formato de informe inválido."]
     
@@ -259,7 +246,5 @@ def summarize(result: HealthResult) -> List[str]:
         bar = ('#' * puntos) + ('.' * (maximo - puntos))
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
     
-    lines.append("")
-    lines.append("Recomendaciones:")
-    lines.extend(f"  - {r}" for r in result.recommendations) if result.recommendations else lines.append("  - Ninguna.")
+    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in result.recommendations]])
     return lines

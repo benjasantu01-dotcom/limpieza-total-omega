@@ -178,7 +178,12 @@ def _passes_system_checks(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza validaciones integrales de seguridad antes de cualquier operación de movimiento o borrado.
-    Verifica permisos, integridad de ruta, bloqueos de sistema y restricciones de solo lectura.
+    
+    Args:
+        src: Ruta del archivo fuente.
+        dest: Ruta o directorio destino.
+    Returns:
+        bool: True si la operación es segura según las reglas de safety.py y atributos SO.
     """
     try:
         if not isinstance(src, Path) or not isinstance(dest, Path): return False
@@ -207,9 +212,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """
-    Valida que un objeto JunkFile sea movible bajo estrictas reglas de seguridad.
-    """
+    """Valida que un objeto JunkFile sea movible bajo estrictas reglas de seguridad."""
     if not isinstance(junk_file, JunkFile) or not junk_file.path: return False
     try:
         current_path: Path = junk_file.path
@@ -245,7 +248,14 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
-    """Escanea rutas específicas en busca de archivos basura, retornando una lista de objetos JunkFile."""
+    """
+    Escanea rutas específicas en busca de archivos basura.
+    
+    Args:
+        directories: Lista de strings con rutas a escanear. Si es None, usa DEFAULT_SCAN_DIRS.
+    Returns:
+        List[JunkFile]: Lista de objetos encontrados.
+    """
     search_dirs = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     
@@ -272,6 +282,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
     Valida condiciones de seguridad y espacio previas al movimiento de un archivo.
+    Retorna la ruta destino si es válida, None en caso contrario.
     """
     if not isinstance(junk_file.path, Path) or not dest_base: return None
     try:
@@ -295,7 +306,15 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Ejecuta el traslado seguro de los archivos encontrados hacia el directorio de revisión."""
+    """
+    Ejecuta el traslado seguro de los archivos encontrados hacia el directorio de revisión.
+    
+    Args:
+        files: Lista de JunkFile a mover.
+        review_dir: Ruta destino para mover los archivos.
+    Returns:
+        Optional[Path]: La ruta de revisión creada si tuvo éxito, None si hubo error de seguridad.
+    """
     if not files or not isinstance(review_dir, str) or not review_dir.strip():
         return None
 
@@ -322,7 +341,14 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente archivos tras verificar que las rutas siguen siendo seguras."""
+    """
+    Elimina permanentemente archivos tras verificar que las rutas siguen siendo seguras.
+    
+    Args:
+        review_dir: Ruta donde residen los archivos revisados.
+    Returns:
+        int: Número de archivos eliminados correctamente.
+    """
     if not isinstance(review_dir, str) or not review_dir.strip():
         return 0
 
