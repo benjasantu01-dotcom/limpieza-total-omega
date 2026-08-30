@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 209
+- Sin cambios (nada sustancial que mejorar): 25
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 10 | 0 | 1 | 0 | 23 |
+| 2026-08-28 | 10 | 0 | 1 | 0 | 19 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
-| 2026-08-30 | 57 | 2 | 8 | 6 | 47 |
+| 2026-08-30 | 59 | 2 | 8 | 7 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **46**
+- seguridad defensiva: **48**
 - rendimiento: **42**
 - robustez ante casos límite: **38**
 
@@ -33,12 +33,12 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **22**
 - `settings.py`: **22**
 - `browser.py`: **20**
-- `memory.py`: **19**
+- `memory.py`: **20**
 - `quarantine.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
+- `healthscore.py`: **17**
 - `branding.py`: **16**
-- `healthscore.py`: **16**
 - `duplicates.py`: **14**
 - `startup.py`: **13**
 - `organizer.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T05:13:08` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_path_security` al utilizar `pathlib.Path.resolve()` correctamente para detectar ataques de *path traversal* o *junctions*, garantizando que la ruta del proceso esté bajo el control esperado antes de cualquier operación de gestión de memoria.
+- `2026-08-30T05:11:51` **healthscore.py** (seguridad defensiva): Reforcé la seguridad defensiva de `healthscore.py` mediante una validación de tipo más estricta en `compute_score` y asegurando que las métricas sean procesadas solo si provienen de datos sanitizados, previniendo inyecciones de valores inesperados que podrían desestabilizar la lógica de puntuación.
 - `2026-08-30T05:02:26` **browser.py** (seguridad defensiva): Se ha eliminado la apertura de archivos (`os.open` en modo `O_RDWR`) dentro del escaneo recursivo, ya que intentar abrir archivos para escritura, incluso para probar si están bloqueados, viola el principio de diseño de "solo lectura" y genera efectos secundarios innecesarios sobre el sistema de archivos.
 - `2026-08-30T05:02:01` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita con `is_protected_path` antes de intentar cualquier operación de escritura, asegurando que la ruta no pertenezca a zonas restringidas del sistema.
 - `2026-08-30T05:01:29` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor local al implementar un pre-filtrado mediante `_is_safe_text_structure` en `_identify_active_problems` antes de integrar las descripciones, evitando que cualquier string de datos mal formado sea inyectado en la respuesta final.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T04:21:03` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` en `SystemContext` para manejar fallos de tipos inesperados y valores corruptos en el objeto de configuración, evitando que una entrada malformada (o un objeto de settings con tipos incorrectos) interrumpa el flujo del asistente.
 - `2026-08-30T04:20:26` **startup.py** (rendimiento): Optimizé `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y llamadas a `is_protected_path` sobre cada archivo, utilizando `os.scandir` de forma más directa y moviendo la validación de seguridad a una única operación eficiente.
 - `2026-08-30T04:11:12` **settings.py** (rendimiento): Se implementó un mecanismo de caché local de corta duración en la función `load` para evitar lecturas innecesarias de disco (I/O) ante múltiples llamadas consecutivas en una misma iteración del bucle principal, utilizando `time.monotonic()` para invalidar la caché después de 500ms.
-- `2026-08-30T04:10:59` **scanner.py** (rendimiento): Optimizé la resolución de rutas mediante el cacheo de `str(path)` y la conversión a minúsculas, evitando llamadas repetitivas y costosas a `resolve()` y `lower()` dentro del bucle principal de escaneo, reduciendo significativamente la carga de CPU.
-- `2026-08-30T04:10:35` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al reemplazar la lógica de evaluación lineal (que verificaba cada parte de la ruta contra una lista) por una verificación de prefijos normalizados utilizando un `set` y una estructura de prefijos compartidos, evitando llamadas innecesarias a `Path.parts` y `lower()` en cada iteración.

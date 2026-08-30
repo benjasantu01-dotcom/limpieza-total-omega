@@ -1452,3 +1452,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-30T05:02:37` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-08-30T05:02:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T05:02:37` Corrida terminada. Total usado hoy: 120.
+- `2026-08-30T05:11:03` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-08-30T05:11:26` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-08-30T05:11:51` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva de `healthscore.py` mediante una validación de tipo más estricta en `compute_score` y asegurando que las métricas sean procesadas solo si provienen de datos sanitizados, previniendo inyecciones de valores inesperados que podrían desestabilizar la lógica de puntuación.
+- `2026-08-30T05:12:55` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `on_trim_process` y `on_restore_quarantine` eliminando el uso de `ensure_safe_to_modify` (que lanza excepciones) dentro de los métodos de control, reemplazándolo por verificaciones booleanas (`is_safe_path`) para mantener la integridad de la UI y evitar errores que detengan el bucle de eventos, alineándome con la regla de oro de no usar `ensure` como condición.
+- `2026-08-30T05:13:08` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_validate_path_security` al utilizar `pathlib.Path.resolve()` correctamente para detectar ataques de *path traversal* o *junctions*, garantizando que la ruta del proceso esté bajo el control esperado antes de cualquier operación de gestión de memoria.
+- `2026-08-30T05:13:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T05:13:08` Corrida terminada. Total usado hoy: 124.

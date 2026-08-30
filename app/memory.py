@@ -308,17 +308,13 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     """
     Validación de seguridad defensiva para rutas de procesos.
-    Verifica que la ruta sea absoluta, real (sin enlaces simbólicos/junctions)
-    y que no resida en directorios protegidos.
+    Verifica que la ruta sea absoluta y resuelve enlaces simbólicos/junctions.
     """
     if not isinstance(path, str) or not os.path.isabs(path) or path.startswith("\\\\"):
         return False, "Ruta inválida o no soportada."
-    if not os.path.exists(path):
-        return False, "El ejecutable no existe."
     try:
         p = Path(path).resolve(strict=True)
         if not p.is_file(): return False, "No es un ejecutable válido."
-        if p.is_symlink(): return False, "Enlace simbólico detectado."
         if is_protected_path(str(p)): return False, "Ruta protegida."
     except Exception: return False, "Error resolviendo ruta del proceso."
     return True, None

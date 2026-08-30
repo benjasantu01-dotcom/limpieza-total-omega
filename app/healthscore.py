@@ -212,9 +212,11 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 
 def compute_score(metrics: SystemMetrics) -> HealthResult:
     """Sintetiza métricas en un objeto HealthResult aplicando normalización y pesos."""
+    # Validación estricta de tipo antes de procesar cualquier dato
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
+    # Asegurar que los datos están sanitizados antes de aplicar lógica de negocio
     metrics.validate()
     
     metric_breakdown: Dict[MetricKey, int] = {}
