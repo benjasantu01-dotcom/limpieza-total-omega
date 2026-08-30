@@ -69,7 +69,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
     La heurística prioriza la eficiencia usando el timestamp de inicio global (now_ts).
     """
-    if any(part.lower() in WATCHED_FOLDERS for part in path.parts):
+    path_str_lower = str(path).lower()
+    if any(folder in path_str_lower for folder in WATCHED_FOLDERS):
         try:
             if entry and not entry.is_file():
                 return None
@@ -85,7 +86,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     Verifica si un ejecutable utiliza nombres de procesos críticos del sistema (ej. svchost.exe)
     cuando se encuentra ubicado fuera de directorios de sistema protegidos.
     """
-    if path and path.name and path.name.lower() in SYSTEM_LOOKALIKES:
+    name_lower = path.name.lower()
+    if name_lower in SYSTEM_LOOKALIKES:
         if is_protected_path(path):
             return None
         if SYSTEM32_LOWER not in str(path).lower():
@@ -109,12 +111,12 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root = base_root.resolve()
+        self.base_root_str = str(self.base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_inside_base_root(self, path: Path) -> bool:
+    def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que una ruta esté dentro del alcance definido por la raíz del escaneo."""
-        resolved_path = path.resolve()
-        return self.base_root in resolved_path.parents or resolved_path == self.base_root
+        return str(Path(path_str).resolve()).lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
@@ -128,7 +130,7 @@ class Scanner:
             if entry.name and (RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name)):
                 return False
 
-            if not self._is_inside_base_root(Path(entry.path)):
+            if not self._is_inside_base_root(entry.path):
                 return False
             
             if self._is_reparse_point(entry):

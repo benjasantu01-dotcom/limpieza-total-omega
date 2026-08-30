@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import time
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
@@ -99,6 +100,9 @@ SETTINGS_DIR: Final = Path("~/LimpiezaTotalOmega").expanduser()
 SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
+
+_CACHE: dict[str, tuple[float, AppSettings]] = {}
+_CACHE_TTL: Final = 0.5
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
@@ -280,11 +284,21 @@ def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga la configuración desde disco; ante error retorna valores seguros por defecto."""
+    """Carga la configuración desde disco; usa cache de corta duración para minimizar I/O."""
     ruta = settings_path(custom_base)
+    ruta_str = str(ruta)
+    now = time.monotonic()
+    
+    if ruta_str in _CACHE:
+        ts, data = _CACHE[ruta_str]
+        if now - ts < _CACHE_TTL:
+            return data.copy()
+            
     try:
         mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
-        return _read_disk(str(ruta), mtime).copy()
+        data = _read_disk(ruta_str, mtime).copy()
+        _CACHE[ruta_str] = (now, data)
+        return data
     except (OSError, PermissionError, RuntimeError):
         return DEFAULTS.copy()
 
@@ -334,6 +348,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
                 except OSError: pass
             
         _read_disk.cache_clear()
+        _CACHE.clear()
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError, json.JSONDecodeError):
         return None
