@@ -199,8 +199,9 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño en bytes de un directorio mediante escaneo profundo,
-    aplicando memoización para optimizar y evitando ciclos mediante límite de profundidad.
+    Calcula recursivamente el peso de una carpeta. Utiliza `memo` para evitar
+    re-procesamiento y `MAX_SCAN_DEPTH` para prevenir desbordamiento de pila.
+    Las rutas son validadas con `_is_safe_to_traverse` en cada nivel.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -249,6 +250,7 @@ def _sum_directory_recursive(
 def directory_size(path: Union[str, Path, None]) -> int:
     """
     Calcula el peso total de una carpeta tras validar seguridad con `is_safe_to_modify`.
+    Usa `resolve(strict=True)` para asegurar que el path no sea un enlace roto.
     """
     if path is None:
         return 0
@@ -269,8 +271,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Valida la integridad de una ruta candidata a ser caché, asegurando que
-    pertenezca al árbol permitido y no sea un elemento protegido.
+    Valida que la ruta candidata a caché sea un directorio real, seguro de
+    modificar, y que resida dentro del perfil de usuario permitido.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False

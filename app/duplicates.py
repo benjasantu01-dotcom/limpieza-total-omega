@@ -161,7 +161,6 @@ def _collect_candidates(
                 
                 try:
                     stat = entry.stat()
-                    # Identificar directorios y evitar reparse points
                     if os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
                         continue
                     
@@ -217,9 +216,14 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     para garantizar unicidad, evitando lecturas completas innecesarias.
     """
     valid_paths = [p for p in paths if isinstance(p, Path) and _is_valid_candidate(p)]
-    if len(valid_paths) < 2: return []
+    if len(valid_paths) < 2: 
+        return []
     
-    results = _refine_by_hash(valid_paths, partial_hash) if size <= PARTIAL_READ_BYTES else _resolve_by_hashes(valid_paths)
+    # Selección de estrategia según umbral de tamaño
+    if size <= PARTIAL_READ_BYTES:
+        results = _refine_by_hash(valid_paths, partial_hash)
+    else:
+        results = _resolve_by_hashes(valid_paths)
             
     confirmed_groups: List[DuplicateGroup] = []
     for digest, confirmed_paths in results.items():

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 221
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 31 | 1 | 5 | 0 | 45 |
+| 2026-08-28 | 30 | 1 | 4 | 0 | 43 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
-| 2026-08-30 | 28 | 1 | 4 | 2 | 37 |
+| 2026-08-30 | 31 | 1 | 4 | 3 | 37 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **50**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **39**
-- rendimiento: **37**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
 - `scanner.py`: **21**
-- `memory.py`: **20**
+- `memory.py`: **19**
+- `browser.py`: **19**
 - `quarantine.py`: **18**
-- `browser.py`: **18**
 - `assistant.py`: **17**
 - `diskreport.py`: **17**
-- `branding.py`: **15**
-- `duplicates.py`: **15**
+- `branding.py`: **16**
+- `duplicates.py`: **16**
 - `healthscore.py`: **14**
 - `main.py`: **12**
 - `startup.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T03:10:08` **duplicates.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad del flujo de procesamiento de duplicados mediante la adición de Type Hints detallados, docstrings descriptivos para funciones internas y la normalización de la lógica de retorno en `_process_size_group`.
+- `2026-08-30T03:09:35` **browser.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `Iterable` y `List` de `typing`) y docstrings detallados en funciones clave, explicando explícitamente las salvaguardas de seguridad (como la resolución de rutas `strict=True` y la validación de reparse points) para mejorar la mantenibilidad del código sin alterar su lógica.
+- `2026-08-30T03:09:09` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints más precisos en las constantes y estructurando los docstrings mediante secciones estándar (Args/Returns), facilitando la navegación técnica y el mantenimiento del sistema de diseño.
 - `2026-08-30T02:59:44` **startup.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `parse_registry_csv` añadiendo una validación explícita de `fieldnames` y tipos, previniendo errores de `IndexError` o `KeyError` ante CSVs malformados o vacíos, y se reemplazó el acceso directo por `get` con chequeos de `None` para garantizar que la ejecución no aborte ante entradas inesperadas.
 - `2026-08-30T02:59:17` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.path` y `_Validators._run_safety_checks` para prevenir excepciones durante la validación de rutas, asegurando que cualquier entrada maliciosa o mal formada se descarte silenciosamente sin comprometer la estabilidad del sistema.
 - `2026-08-30T02:58:49` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las validaciones en `Scanner._is_safe_entry` y `scan_directory` para manejar correctamente entradas `None` o rutas malformadas mediante guards explícitos, evitando excepciones no controladas durante el recorrido del sistema de archivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T02:28:35` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ProblemCriterion.format_if_triggered` y `_validate_and_assign` mediante la captura explícita de `AttributeError` y validaciones defensivas, evitando que un estado parcial o malformado del `SystemContext` interrumpa el flujo del asistente con excepciones no controladas.
 - `2026-08-30T01:07:24` **startup.py** (seguridad defensiva): Se reforzó la seguridad de `entries_from_registry` validando que la salida de PowerShell no contenga caracteres de control peligrosos antes de procesar el CSV, asegurando que el motor de parseo no sea inyectado mediante una salida de consola malintencionada.
 - `2026-08-30T01:06:49` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_safe_to_modify` antes de proceder con cualquier operación de escritura, asegurando que la ruta destino no sea un punto de reparse o junction, complementando así la validación del directorio padre y fortaleciendo la integridad del proceso de persistencia.
-- `2026-08-30T00:58:50` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` implementando una validación explícita para evitar que `_is_safe_entry` evalúe rutas que contienen caracteres de control de ofuscación (RTL), reduciendo el riesgo de confusión de rutas antes de cualquier operación.
-- `2026-08-30T00:58:41` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` para prevenir escapes de ruta mediante el uso de `resolve()` (que expande cualquier link simbólico o punto de reparse antes de comparar) y se ha añadido una validación adicional para asegurar que la ruta normalizada no pertenezca a la raíz del sistema, mitigando riesgos de seguridad en entornos con permisos elevados.
-- `2026-08-30T00:56:35` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación en `_validate_isolation_request` para impedir explícitamente el aislamiento de archivos que contengan puntos de reparse o enlaces simbólicos (junctions/symlinks), previniendo así posibles ataques de "link following" o recursiones inesperadas fuera del sandbox.

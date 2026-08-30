@@ -34,11 +34,7 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]  # (Color, Etiqueta)
 RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 
 class PaletteDict(TypedDict):
-    """
-    Define los roles funcionales de color. 
-    'surface' refiere a fondos de contenedores; 'accent' a elementos de acción; 
-    'text' a tipografía, con variantes 'muted' y 'dim' para jerarquía visual.
-    """
+    """Define los roles funcionales de color para la interfaz."""
     background: HexColor
     surface: HexColor
     surface_alt: HexColor
@@ -202,7 +198,7 @@ def severity_color(severity: Optional[str]) -> HexColor:
 
 @lru_cache(maxsize=16)
 def severity_label(severity: Optional[str]) -> str:
-    """Traduce el código de severidad a texto legible, usando el valor original como respaldo."""
+    """Traduce el código de severidad a texto legible."""
     if isinstance(severity, str) and (style := SEVERITY_STYLES.get(severity.lower())):
         return style[1]
     return severity.capitalize() if isinstance(severity, str) and severity.strip() else "Desconocido"
@@ -223,7 +219,14 @@ def grade_color(grade: Optional[str]) -> HexColor:
 
 @lru_cache(maxsize=128)
 def score_color(score: Union[float, int, None]) -> HexColor:
-    """Resuelve el color de un puntaje de salud (0.0-100.0) según rangos predefinidos."""
+    """
+    Resuelve el color de un puntaje de salud (0.0-100.0).
+    
+    Args:
+        score: Valor numérico del puntaje.
+    Returns:
+        HexColor correspondiente al umbral superado.
+    """
     if score is None:
         return C_TEXT_MUTED
     try:
@@ -251,6 +254,8 @@ def bar(percent: Union[float, int, None], width: int = 24,
         width: Longitud de la barra en caracteres.
         filled: Carácter para el segmento relleno.
         empty: Carácter para el segmento vacío.
+    Returns:
+        String con la barra renderizada.
     """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
@@ -363,7 +368,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificación previa de seguridad defensiva
         ensure_safe_to_modify(path_obj)
             
         parent = path_obj.parent
