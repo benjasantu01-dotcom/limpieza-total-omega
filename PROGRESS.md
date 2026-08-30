@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 10 | 0 | 1 | 0 | 27 |
+| 2026-08-28 | 10 | 0 | 1 | 0 | 23 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
-| 2026-08-30 | 54 | 2 | 8 | 6 | 46 |
+| 2026-08-30 | 57 | 2 | 8 | 6 | 47 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **43**
+- seguridad defensiva: **46**
 - rendimiento: **42**
 - robustez ante casos límite: **38**
 
@@ -32,13 +32,13 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `scanner.py`: **22**
 - `settings.py`: **22**
-- `browser.py`: **19**
+- `browser.py`: **20**
 - `memory.py`: **19**
 - `quarantine.py`: **19**
+- `assistant.py`: **18**
 - `diskreport.py`: **18**
-- `assistant.py`: **17**
+- `branding.py`: **16**
 - `healthscore.py`: **16**
-- `branding.py`: **15**
 - `duplicates.py`: **14**
 - `startup.py`: **13**
 - `organizer.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T05:02:26` **browser.py** (seguridad defensiva): Se ha eliminado la apertura de archivos (`os.open` en modo `O_RDWR`) dentro del escaneo recursivo, ya que intentar abrir archivos para escritura, incluso para probar si están bloqueados, viola el principio de diseño de "solo lectura" y genera efectos secundarios innecesarios sobre el sistema de archivos.
+- `2026-08-30T05:02:01` **branding.py** (seguridad defensiva): Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita con `is_protected_path` antes de intentar cualquier operación de escritura, asegurando que la ruta no pertenezca a zonas restringidas del sistema.
+- `2026-08-30T05:01:29` **assistant.py** (seguridad defensiva): Se reforzó la seguridad del motor local al implementar un pre-filtrado mediante `_is_safe_text_structure` en `_identify_active_problems` antes de integrar las descripciones, evitando que cualquier string de datos mal formado sea inyectado en la respuesta final.
 - `2026-08-30T04:52:23` **startup.py** (robustez ante casos límite): Se introdujo una verificación de robustez ante permisos denegados en `entries_from_folders` mediante un bloque `try-except` más específico y se añadió un manejo de errores robusto al obtener el estado de archivo (`lstat`), evitando que una entrada individual mal formada o con permisos bloqueados interrumpa la resolución del resto de la lista.
 - `2026-08-30T04:52:04` **settings.py** (robustez ante casos límite): Se reforzó la robustez de `settings.py` ante casos límite en la manipulación de archivos añadiendo un manejo explícito de `OSError` y condiciones de estado durante el volcado atómico, garantizando que el archivo no quede en un estado inconsistente ante fallos del sistema operativo.
 - `2026-08-30T04:41:56` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de "ruta existente y absoluta" en `quarantine_file` para asegurar que el archivo no sea una ruta relativa ambigua antes de realizar operaciones de IO, y se añadió una verificación de `path.exists()` dentro del flujo de `purge_all` para manejar escenarios donde los archivos pudieron ser borrados externamente, evitando así inconsistencias entre el sistema de archivos y el manifiesto.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T04:11:12` **settings.py** (rendimiento): Se implementó un mecanismo de caché local de corta duración en la función `load` para evitar lecturas innecesarias de disco (I/O) ante múltiples llamadas consecutivas en una misma iteración del bucle principal, utilizando `time.monotonic()` para invalidar la caché después de 500ms.
 - `2026-08-30T04:10:59` **scanner.py** (rendimiento): Optimizé la resolución de rutas mediante el cacheo de `str(path)` y la conversión a minúsculas, evitando llamadas repetitivas y costosas a `resolve()` y `lower()` dentro del bucle principal de escaneo, reduciendo significativamente la carga de CPU.
 - `2026-08-30T04:10:35` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al reemplazar la lógica de evaluación lineal (que verificaba cada parte de la ruta contra una lista) por una verificación de prefijos normalizados utilizando un `set` y una estructura de prefijos compartidos, evitando llamadas innecesarias a `Path.parts` y `lower()` en cada iteración.
-- `2026-08-30T04:01:48` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante el uso de `os.stat().st_mtime` para invalidar la caché solo cuando el archivo del manifiesto ha cambiado realmente, evitando innecesarios `cache_clear()` y re-parseos de JSON durante operaciones secuenciales de la interfaz.
-- `2026-08-30T03:54:05` **healthscore.py** (rendimiento): Optimizé la generación de recomendaciones en `compute_score` eliminando la creación de listas intermedias y el filtrado redundante dentro del bucle principal, reemplazándolo por una búsqueda eficiente mediante un diccionario pre-agrupado.
-- `2026-08-30T03:50:23` **diskreport.py** (rendimiento): Optimizamos la función `_collect_summary_data` para evitar llamadas redundantes a `heapq` y `sorted` dentro del loop principal, delegando la ordenación final a un único paso fuera del bucle, reduciendo significativamente la complejidad computacional durante el recorrido intensivo de disco.

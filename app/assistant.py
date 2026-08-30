@@ -115,7 +115,8 @@ class ProblemCriterion(NamedTuple):
             is_triggered = (self.operator == "<" and f_val < self.threshold) or \
                            (self.operator == ">" and f_val > self.threshold)
             
-            return self.message_format.format(f_val)[:_MAX_MSG_CHUNK] if is_triggered else None
+            msg = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]
+            return msg if (is_triggered and _is_safe_text_structure(msg)) else None
         except (ValueError, TypeError, AttributeError, KeyError):
             return None
 
@@ -420,7 +421,7 @@ def _iter_active_problems(ctx: SystemContext) -> Iterator[str]:
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa el contexto actual contra los criterios de salud de forma eficiente."""
     if not ctx.analyzed: return []
-    # Uso eficiente de islice para obtener como máximo 3 problemas sin instanciar la lista completa
+    # Uso eficiente de islice y validación para asegurar contenido limpio
     return list(islice(_iter_active_problems(ctx), 3))
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
@@ -601,7 +602,6 @@ def _call_gemini(
             data = json.loads(raw_res.decode("utf-8"))
             if not isinstance(data, dict): return None
             
-            # Verificación estricta de estructura antes de acceder a sub-llaves
             candidates = data.get("candidates")
             if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): return None
             
@@ -613,11 +613,9 @@ def _call_gemini(
             
             raw_text = str(parts[0].get("text", ""))
             
-            # Limpieza y validación rigurosa de la respuesta externa
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final_text = _validate_response_length(limpia_final)
             
-            # Validación estricta final: bloquea si la API intentó devolver contenido potencialmente peligroso
             if not _ensure_safe_text(final_text) or is_protected_path(final_text):
                 return None
             return final_text

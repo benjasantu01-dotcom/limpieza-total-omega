@@ -1445,3 +1445,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-30T04:52:23` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se introdujo una verificación de robustez ante permisos denegados en `entries_from_folders` mediante un bloque `try-except` más específico y se añadió un manejo de errores robusto al obtener el estado de archivo (`lstat`), evitando que una entrada individual mal formada o con permisos bloqueados interrumpa la resolución del resto de la lista.
 - `2026-08-30T04:52:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T04:52:23` Corrida terminada. Total usado hoy: 116.
+- `2026-08-30T05:00:52` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-08-30T05:01:29` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad del motor local al implementar un pre-filtrado mediante `_is_safe_text_structure` en `_identify_active_problems` antes de integrar las descripciones, evitando que cualquier string de datos mal formado sea inyectado en la respuesta final.
+- `2026-08-30T05:02:01` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad en `save_logo_svg` añadiendo una validación explícita con `is_protected_path` antes de intentar cualquier operación de escritura, asegurando que la ruta no pertenezca a zonas restringidas del sistema.
+- `2026-08-30T05:02:26` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha eliminado la apertura de archivos (`os.open` en modo `O_RDWR`) dentro del escaneo recursivo, ya que intentar abrir archivos para escritura, incluso para probar si están bloqueados, viola el principio de diseño de "solo lectura" y genera efectos secundarios innecesarios sobre el sistema de archivos.
+- `2026-08-30T05:02:37` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-08-30T05:02:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T05:02:37` Corrida terminada. Total usado hoy: 120.
