@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 220
+- Rechazadas por guardia de seguridad: 32
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 219
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 97 | 6 | 12 | 13 | 92 |
-| 2026-08-30 | 118 | 7 | 21 | 10 | 128 |
+| 2026-08-29 | 95 | 6 | 11 | 13 | 91 |
+| 2026-08-30 | 121 | 7 | 21 | 11 | 128 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **48**
-- legibilidad y documentación: **45**
-- rendimiento: **37**
+- legibilidad y documentación: **48**
 - robustez ante casos límite: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `scanner.py`: **19**
 - `browser.py`: **19**
-- `quarantine.py`: **18**
+- `diskreport.py`: **18**
 - `memory.py`: **18**
-- `diskreport.py`: **17**
-- `healthscore.py`: **16**
+- `scanner.py`: **18**
+- `healthscore.py`: **17**
+- `quarantine.py`: **17**
 - `assistant.py`: **15**
+- `duplicates.py`: **15**
 - `startup.py`: **14**
-- `duplicates.py`: **14**
 - `branding.py`: **13**
 - `safety.py`: **11**
 - `organizer.py`: **11**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T12:10:20` **healthscore.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de normalización de cada función `score_*` para aclarar qué representa exactamente el ratio obtenido, facilitando el mantenimiento y la comprensión de las fórmulas matemáticas empleadas.
+- `2026-08-30T12:09:55` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados que explican el "porqué" de las decisiones de diseño, aclarando el flujo del pipeline de hashing y las salvaguardas de seguridad implementadas.
+- `2026-08-30T12:09:30` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y claridad de `walk_files` mediante la sustitución de constantes numéricas (bitmask de atributos de archivo) por nombres descriptivos y la actualización de los docstrings para reflejar mejor el comportamiento de las exclusiones.
 - `2026-08-30T12:00:33` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` incluyendo Type Hints consistentes, docstrings detallados que clarifican las restricciones de seguridad y el flujo de los chequeos, y reemplacé el uso de `getattr(os.path, 'isjunction', ...)` por un alias interno más legible para mejorar la mantenibilidad.
 - `2026-08-30T12:00:22` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los tipos complejos y constantes de diseño, facilitando el mantenimiento y la comprensión de la jerarquía visual del proyecto.
 - `2026-08-30T11:59:51` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `handle_ram` para eliminar la lógica compleja anidada (bloque `if` con múltiples ternarios) a favor de una estructura de construcción de mensajes más clara, siguiendo el enfoque de legibilidad y documentación solicitado.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T11:29:15` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` agregando validaciones de tipo explícitas y manejos de excepciones específicos para evitar que rutas malformadas o problemas de permisos durante el escaneo causen fallos silenciosos o bloqueos inesperados.
 - `2026-08-30T11:28:46` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de las validaciones en `_sum_directory_recursive` mediante el uso de `try-except` granulares para capturar fallos de acceso a metadatos, evitando que una entrada individual bloqueada detenga el conteo de todo el árbol.
 - `2026-08-30T11:20:56` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de los `handlers` de respuesta capturando excepciones de forma específica, evitando que errores de acceso a atributos o tipos inesperados en el objeto `SystemContext` (posiblemente mal inicializado) interrumpan la ejecución de la UI.
-- `2026-08-30T09:58:05` **startup.py** (seguridad defensiva): Se reforzó la seguridad en `_resolve_and_cache_path` añadiendo una validación explícita para prevenir la ejecución de archivos ubicados en rutas UNC (`\\`), las cuales pueden ser vectores de ataque (ej. ejecución de código remoto o exfiltración de NTLM hashes) si el sistema intenta resolverlas al escanear.
-- `2026-08-30T09:57:53` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save` eliminando la llamada directa a `ensure_safe_to_modify` sobre el archivo de configuración antes de verificar su existencia, reemplazándola por una validación lógica con `is_safe_to_modify` que impide operaciones sobre rutas fuera del espacio de trabajo sin lanzar excepciones prematuras en el flujo de guardado.
-- `2026-08-30T09:57:25` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del método `_is_inside_base_root` añadiendo una comparación explícita de `Path.parents` para evitar que rutas que comparten prefijo de nombre de archivo pero no de directorio (ataques de "path traversal" o colisiones de nombres) sean procesadas incorrectamente fuera del alcance definido.

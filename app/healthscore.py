@@ -167,33 +167,33 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud respecto a archivos temporales: decae linealmente según el peso acumulado."""
+    """Calcula la salud: 1.0 (óptimo) si es 0 MB, bajando linealmente a 0.0 al llegar a _LIMIT_JUNK_MB."""
     val = _to_float(junk_mb)
     return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa la seguridad penalizando amenazas (5% por hit) y advertencias (25% por hit)."""
+    """Calcula la salud: penaliza amenazas críticas con 5% y advertencias con 25% por unidad detectada."""
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
     return _clamp(1.0 - ((s * 0.05) + (w * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Puntúa RAM: el ratio es la disponibilidad porcentual escalada por el umbral crítico definido."""
+    """Calcula la salud: normaliza el porcentaje de RAM libre respecto al umbral de criticidad definido."""
     val = _to_float(available_percent)
     return _clamp(val * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Puntúa disco: normaliza el espacio libre restante en función del umbral de alerta."""
+    """Calcula la salud: normaliza el espacio libre como ratio del umbral crítico de saturación de disco."""
     val = _to_float(free_percent)
     return _clamp(val * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Puntúa redundancia: calcula el impacto inversamente proporcional al tamaño de duplicados."""
+    """Calcula la salud: el impacto crece inversamente proporcional al espacio recuperable (0 MB = 1.0)."""
     val = _to_float(duplicate_mb)
     return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Puntúa arranque: penaliza la carga innecesaria de software al iniciar el sistema."""
+    """Calcula la salud: 1.0 si no hay programas de inicio, penalizando linealmente hasta el umbral definido."""
     val = _to_float(startup_count)
     return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0)
 

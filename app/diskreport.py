@@ -271,8 +271,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     Generador recursivo que recorre el sistema de archivos buscando archivos.
     
     Implementa una lógica de DFS iterativo para evitar desbordamiento de pila y utiliza
-    `os.scandir` para mejorar la performance. Saltea automáticamente puntos de reparse
-    (junctions) y rutas de sistema si `skip_protected` es True.
+    `os.scandir` para mejorar la performance. Saltea automáticamente puntos de reparse 
+    (como Windows Junctions o symlinks) y rutas bloqueadas por seguridad.
     """
     root_path = _validate_root(directory)
     if not root_path:
@@ -282,6 +282,8 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if str(root_path).startswith(("\\\\", "//")):
         return
 
+    # FILE_ATTRIBUTE_REPARSE_POINT = 0x400
+    REPARSE_POINT_ATTR = 0x400
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[str] = [str(root_path)]
     
@@ -295,9 +297,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     except (PermissionError, OSError):
                         continue
 
+                    # Filtrar caracteres de control en nombres de archivos
                     if not entry.name or any(c < ' ' for c in entry.name):
                         continue
-                    if entry.is_symlink() or (os.name == 'nt' and (st.st_file_attributes & 0x400)):
+                    
+                    # Saltear symlinks y puntos de reparse (Junctions en Windows)
+                    if entry.is_symlink() or (os.name == 'nt' and (st.st_file_attributes & REPARSE_POINT_ATTR)):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
