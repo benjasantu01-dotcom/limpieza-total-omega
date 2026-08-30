@@ -341,7 +341,9 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
-            _REGISTRY_CACHE = parse_registry_csv(result.stdout)
+            # Filtro defensivo: asegurar que solo contenga caracteres imprimibles
+            clean_out = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
+            _REGISTRY_CACHE = parse_registry_csv(clean_out)
             return _REGISTRY_CACHE
     except (OSError, subprocess.SubprocessError):
         pass

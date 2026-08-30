@@ -6,31 +6,31 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 57 | 2 | 7 | 1 | 63 |
+| 2026-08-28 | 57 | 2 | 7 | 1 | 59 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
-| 2026-08-30 | 16 | 0 | 3 | 0 | 5 |
+| 2026-08-30 | 18 | 0 | 3 | 0 | 7 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
+- seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **50**
 - rendimiento: **42**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
+- `settings.py`: **24**
 - `memory.py`: **21**
 - `scanner.py`: **21**
 - `quarantine.py`: **20**
@@ -42,11 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **15**
 - `main.py`: **14**
 - `organizer.py`: **11**
+- `startup.py`: **11**
 - `safety.py`: **10**
-- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T01:07:24` **startup.py** (seguridad defensiva): Se reforzó la seguridad de `entries_from_registry` validando que la salida de PowerShell no contenga caracteres de control peligrosos antes de procesar el CSV, asegurando que el motor de parseo no sea inyectado mediante una salida de consola malintencionada.
+- `2026-08-30T01:06:49` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_safe_to_modify` antes de proceder con cualquier operación de escritura, asegurando que la ruta destino no sea un punto de reparse o junction, complementando así la validación del directorio padre y fortaleciendo la integridad del proceso de persistencia.
 - `2026-08-30T00:58:50` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` implementando una validación explícita para evitar que `_is_safe_entry` evalúe rutas que contienen caracteres de control de ofuscación (RTL), reduciendo el riesgo de confusión de rutas antes de cualquier operación.
 - `2026-08-30T00:58:41` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_within_directory` para prevenir escapes de ruta mediante el uso de `resolve()` (que expande cualquier link simbólico o punto de reparse antes de comparar) y se ha añadido una validación adicional para asegurar que la ruta normalizada no pertenezca a la raíz del sistema, mitigando riesgos de seguridad en entornos con permisos elevados.
 - `2026-08-30T00:56:35` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad del módulo `quarantine.py` reforzando la validación en `_validate_isolation_request` para impedir explícitamente el aislamiento de archivos que contengan puntos de reparse o enlaces simbólicos (junctions/symlinks), previniendo así posibles ataques de "link following" o recursiones inesperadas fuera del sandbox.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T00:27:11` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` al validar la integridad estructural de la respuesta JSON antes de procesarla, asegurando que cualquier desviación en el esquema esperado resulte en un fallo seguro en lugar de una excepción no controlada.
 - `2026-08-30T00:26:50` **startup.py** (robustez ante casos límite): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila procesada posea el número mínimo de campos requeridos antes de intentar acceder a sus índices, evitando errores de `IndexError` o `KeyError` ante datos corruptos o mal formateados del registro.
 - `2026-08-30T00:26:24` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de entrada en el diccionario `DEFAULTS` y durante la validación al detectar una inconsistencia en la clave `asistente_enviar_METRICAS` (case-sensitive) que causaba que el valor real se perdiera o reiniciara, unificando además la estructura de validación para evitar errores silenciosos en tiempo de ejecución.
-- `2026-08-30T00:25:55` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_entry` y `process_entry` al manejar explícitamente `FileNotFoundError` (ocasionado por archivos que desaparecen entre el listado de `os.scandir` y la comprobación de atributos) y refiné la validación de rutas para prevenir errores en accesos concurrentes.
-- `2026-08-30T00:16:16` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de caracteres prohibidos y profundidad de ruta al nombre de archivo generado, previniendo excepciones por rutas inválidas o malformadas en el sistema de archivos al intentar aislar archivos con nombres exóticos o excesivamente largos.

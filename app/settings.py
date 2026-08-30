@@ -307,6 +307,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         if not os.access(parent, os.W_OK): return None
             
         if ruta.exists():
+            if not is_safe_to_modify(str(ruta)): return None
             ensure_safe_to_modify(str(ruta))
         
         usage = shutil.disk_usage(parent)
