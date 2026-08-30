@@ -307,6 +307,9 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     
                     if entry.is_dir(follow_symlinks=False):
                         p_entry = Path(entry.path)
+                        # Defensa adicional: verificar que p_entry mantenga root_path como base
+                        if root_path not in p_entry.parents and p_entry != root_path:
+                            continue
                         if skip_protected and is_protected_path(p_entry):
                             continue
                         inode_key = (st.st_dev, st.st_ino)
@@ -372,11 +375,16 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
     for path, size in walk_files(p_base, skip_protected):
         try:
+            # Obtener subcarpeta inmediata asegurando integridad de la ruta
             relative = path.relative_to(p_base)
             if not relative.parts:
                 continue
             
             top_folder = p_base / relative.parts[0]
+            # Validación de seguridad: debe estar bajo p_base
+            if not str(top_folder.resolve()).startswith(str(p_base.resolve())):
+                continue
+            
             if skip_protected and is_protected_path(top_folder):
                 continue
             

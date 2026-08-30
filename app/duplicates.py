@@ -163,10 +163,11 @@ def _collect_candidates(
     def _scan_recursive(current_dir: Path) -> None:
         try:
             for entry in current_dir.iterdir():
-                if skip_protected and is_protected_path(entry):
+                # Validación de seguridad defensiva sobre la ruta real de cada entrada
+                resolved_entry = entry.resolve()
+                if skip_protected and is_protected_path(resolved_entry):
                     continue
                 
-                # Evitar enlaces simbólicos para prevenir ciclos y acceso fuera de límites
                 if entry.is_symlink():
                     continue
 
