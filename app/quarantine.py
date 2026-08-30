@@ -338,6 +338,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
 
     temp_path = None
     try:
+        if not source.exists() or not source.is_file():
+            raise OSError("El archivo de origen desapareció antes del aislamiento.")
+            
         fd, temp_file_path = tempfile.mkstemp(dir=destination.parent, prefix=".tmp_q_")
         temp_path = Path(temp_file_path)
         os.close(fd)

@@ -271,7 +271,11 @@ def normalize(path: PathLike) -> Path:
         
     try:
         p = Path(path_str).expanduser()
-        return p.resolve(strict=False)
+        # Impedir resolución de puntos de reparse fuera del árbol base implícito
+        resolved = p.resolve(strict=False)
+        if _is_reparse_point(p) and not str(resolved).startswith(str(p.parent)):
+            raise ValueError("Acceso restringido: reparse point con destino externo.")
+        return resolved
     except (OSError, RuntimeError, TypeError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 
@@ -306,8 +310,8 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
     """Verifica si la ruta 'child' es descendiente de 'parent'."""
     if child is None or parent is None: return False
     try:
-        c_path = normalize(child).resolve()
-        p_path = normalize(parent).resolve()
+        c_path = normalize(child)
+        p_path = normalize(parent)
         
         if is_drive_root(c_path) or is_protected_path(c_path):
             return False

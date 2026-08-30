@@ -331,6 +331,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         if not isinstance(junk_file, JunkFile) or not getattr(junk_file, 'path', None): 
             continue
         try:
+            # Prevenir que el archivo origen sea movido a sí mismo o hacia una ruta anidada
+            if junk_file.path.resolve().is_relative_to(dest_base):
+                continue
+            
             target = _can_move_file(junk_file, dest_base)
             if target and is_safe_to_modify(junk_file.path):
                 ensure_safe_to_modify(junk_file.path)

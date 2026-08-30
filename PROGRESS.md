@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 31
+- Rechazadas por guardia de seguridad: 32
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 10 | 0 | 1 | 0 | 19 |
+| 2026-08-28 | 10 | 0 | 1 | 0 | 15 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
-| 2026-08-30 | 59 | 2 | 8 | 7 | 48 |
+| 2026-08-30 | 62 | 2 | 9 | 7 | 48 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
+- seguridad defensiva: **51**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **48**
 - rendimiento: **42**
 - robustez ante casos límite: **38**
 
@@ -34,19 +34,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **22**
 - `browser.py`: **20**
 - `memory.py`: **20**
-- `quarantine.py`: **19**
+- `quarantine.py`: **20**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `branding.py`: **16**
 - `duplicates.py`: **14**
+- `organizer.py`: **13**
 - `startup.py`: **13**
-- `organizer.py`: **12**
+- `safety.py`: **11**
 - `main.py`: **10**
-- `safety.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T05:22:42` **safety.py** (seguridad defensiva): Se reforzó la seguridad defensiva implementando una validación estricta de puntos de reparse (reparse points) durante la normalización de rutas, evitando que `resolve()` siga enlaces simbólicos o junctions fuera de la jerarquía permitida, previniendo así posibles ataques de "path traversal" hacia carpetas del sistema.
+- `2026-08-30T05:22:12` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` al añadir una validación de existencia mediante `source.exists()` y `source.is_file()` justo antes de la operación de copia, mitigando una condición de carrera (TOCTOU) donde el archivo original podría ser borrado o reemplazado por un enlace simbólico entre la validación inicial y la copia.
+- `2026-08-30T05:21:42` **organizer.py** (seguridad defensiva): Se añadió una validación estricta de rutas mediante `is_relative_to` (o lógica equivalente) en `stage_for_review` para asegurar que el archivo de origen no esté residiendo dentro del propio directorio de revisión, previniendo así posibles bucles de movimiento o corrupción de la estructura de archivos durante el procesamiento.
 - `2026-08-30T05:13:08` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_path_security` al utilizar `pathlib.Path.resolve()` correctamente para detectar ataques de *path traversal* o *junctions*, garantizando que la ruta del proceso esté bajo el control esperado antes de cualquier operación de gestión de memoria.
 - `2026-08-30T05:11:51` **healthscore.py** (seguridad defensiva): Reforcé la seguridad defensiva de `healthscore.py` mediante una validación de tipo más estricta en `compute_score` y asegurando que las métricas sean procesadas solo si provienen de datos sanitizados, previniendo inyecciones de valores inesperados que podrían desestabilizar la lógica de puntuación.
 - `2026-08-30T05:02:26` **browser.py** (seguridad defensiva): Se ha eliminado la apertura de archivos (`os.open` en modo `O_RDWR`) dentro del escaneo recursivo, ya que intentar abrir archivos para escritura, incluso para probar si están bloqueados, viola el principio de diseño de "solo lectura" y genera efectos secundarios innecesarios sobre el sistema de archivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T04:30:45` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante casos límite mediante la validación estricta de rutas UNC/Red y la protección contra `OSError` durante la resolución de rutas, evitando que fallos de acceso en unidades de red o volúmenes inaccesibles interrumpan el flujo de la aplicación.
 - `2026-08-30T04:21:45` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos bloqueados o en uso mediante el intento de apertura en modo escritura (`O_RDWR` con `os.open`), mejorando la robustez frente a errores de concurrencia al realizar el escaneo de caché, evitando excepciones no manejadas durante la lectura del tamaño.
 - `2026-08-30T04:21:35` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante fallos de E/S inesperados (como discos de solo lectura o falta de permisos en el directorio padre) añadiendo una validación más estricta antes de la creación del directorio y capturando errores específicos para evitar que la aplicación quede en un estado inconsistente.
-- `2026-08-30T04:21:03` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` en `SystemContext` para manejar fallos de tipos inesperados y valores corruptos en el objeto de configuración, evitando que una entrada malformada (o un objeto de settings con tipos incorrectos) interrumpa el flujo del asistente.
-- `2026-08-30T04:20:26` **startup.py** (rendimiento): Optimizé `entries_from_folders` para evitar la creación innecesaria de objetos `Path` y llamadas a `is_protected_path` sobre cada archivo, utilizando `os.scandir` de forma más directa y moviendo la validación de seguridad a una única operación eficiente.
-- `2026-08-30T04:11:12` **settings.py** (rendimiento): Se implementó un mecanismo de caché local de corta duración en la función `load` para evitar lecturas innecesarias de disco (I/O) ante múltiples llamadas consecutivas en una misma iteración del bucle principal, utilizando `time.monotonic()` para invalidar la caché después de 500ms.
