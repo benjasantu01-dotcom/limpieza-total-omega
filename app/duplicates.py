@@ -156,7 +156,9 @@ def _collect_candidates(
         """Recorre directorios evitando punteros recursivos o sistemas protegidos."""
         try:
             for entry in current_dir.iterdir():
-                if skip_protected and is_protected_path(entry): continue
+                # Validación de seguridad defensiva antes de cualquier operación
+                if skip_protected and is_protected_path(entry):
+                    continue
                 
                 try:
                     stat = entry.stat()
