@@ -8,23 +8,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 30
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 141 | 8 | 18 | 18 | 135 |
-| 2026-08-30 | 79 | 3 | 12 | 8 | 82 |
+| 2026-08-29 | 140 | 8 | 18 | 18 | 132 |
+| 2026-08-30 | 80 | 3 | 15 | 8 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **50**
-- legibilidad y documentación: **49**
-- robustez ante casos límite: **38**
+- legibilidad y documentación: **50**
+- robustez ante casos límite: **37**
 - rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
@@ -35,17 +35,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **19**
 - `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `assistant.py`: **17**
 - `diskreport.py`: **17**
+- `assistant.py`: **16**
 - `branding.py`: **15**
 - `duplicates.py`: **14**
+- `organizer.py`: **12**
 - `startup.py`: **12**
-- `organizer.py`: **11**
 - `safety.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T07:54:31` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de type hints en los retornos de las funciones, se han clarificado las docstrings siguiendo los estándares PEP 257, y se han extraído validaciones complejas de `_is_safe_for_disk_op` hacia un estilo más legible y resiliente.
 - `2026-08-30T07:46:16` **memory.py** (legibilidad y documentación): Mejoré la documentación de `memory.py` mediante type hints explícitos, docstrings detallados en funciones críticas y la conversión de los estados internos de los procesos a una enumeración clara, aumentando la mantenibilidad sin cambiar la lógica.
 - `2026-08-30T07:44:45` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de datos mediante la adición de docstrings técnicos en las funciones de cálculo de puntaje (`score_junk`, `score_security`, etc.), explicando la lógica de normalización subyacente para facilitar el mantenimiento futuro.
 - `2026-08-30T07:44:18` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los nombres de las funciones internas en `duplicates.py` para clarificar la estrategia de desambiguación de duplicados y asegurar que el código sea autodocumentado para futuras auditorías.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T07:04:46` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando una validación temprana de `None` y tipos inesperados para evitar excepciones en tiempo de ejecución si se inyectan datos erróneos desde otros módulos.
 - `2026-08-30T07:04:07` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `suggest_keeper` y `format_group` mediante validación explícita de tipos y estados, asegurando que las funciones no fallen silenciosamente ante datos inconsistentes y proporcionando un comportamiento robusto ante archivos inaccesibles durante la generación de reportes.
 - `2026-08-30T07:03:41` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas críticas en bloques `try...except` más granulares y verificando explícitamente la existencia de archivos antes de operar, evitando que errores intermitentes de I/O detengan prematuramente el análisis completo del disco.
-- `2026-08-30T06:55:18` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de escaneo mediante la validación explícita de tipos y la captura preventiva de errores en los parámetros de entrada, asegurando que `None` o tipos inesperados no interrumpan el flujo de trabajo ni propaguen excepciones hacia arriba en la pila.
