@@ -158,16 +158,18 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Verifica restricciones de sistema: evita enlaces simbólicos o junctions."""
         try:
-            if path_obj.is_symlink() or (hasattr(path_obj, 'is_junction') and path_obj.is_junction()):
+            # Resolvemos para limpiar '..' antes de cualquier chequeo
+            p = path_obj.resolve(strict=False)
+            if p.is_symlink() or (hasattr(p, 'is_junction') and p.is_junction()):
                 return False
-            return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
+            return not is_protected_path(str(p)) and is_safe_to_modify(str(p))
         except (OSError, PermissionError):
             return False
 
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Determina si una cadena representa una ruta válida, absoluta y segura."""
-        if not path_str or ".." in path_str: return False
+        if not path_str: return False
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute():
