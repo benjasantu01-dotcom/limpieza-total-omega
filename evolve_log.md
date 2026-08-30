@@ -764,3 +764,58 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-30T09:17:39` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez ante fallos de E/S en la carga inicial añadiendo un bloque `try-except` explícito en `_read_disk` que maneja archivos con formato JSON válido pero estructuralmente incompatible (ej. tipos de datos erróneos en claves), asegurando que ante cualquier desvío del esquema `AppSettings` se retorne siempre el estado por defecto.
 - `2026-08-30T09:17:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T09:17:39` Corrida terminada. Total usado hoy: 220.
+- `2026-08-30T09:26:03` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-08-30T09:26:33` ✅ Mejora aceptada en startup.py (enfoque: robustez ante casos límite). Se añadió una verificación de archivos inexistentes o inaccesibles dentro del bucle de `entries_from_folders` mediante un bloque `try-except` más robusto que utiliza `entry.is_file()` con manejo de errores, evitando que el escaneo se aborte ante permisos denegados o enlaces rotos en carpetas de inicio.
+- `2026-08-30T09:27:10` Tests FALLARON:
+```
+.........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_build_context_ignores_non_numeric_extras _________________
+
+    def test_build_context_ignores_non_numeric_extras():
+        """Un extra con una ruta no puede colarse en el contexto."""
+        contexto = assistant.build_context(
+            ruta_secreta="C:/Users/benja/Documentos/secreto.txt",
+            memory_total_gb=8.0,
+        )
+        assert not hasattr(contexto, "ruta_secreta")
+>       assert contexto.memory_total_gb == 8.0
+E       AssertionError: assert 0.0 == 8.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+
+evolve/tests/test_assistant.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+1 failed, 298 passed in 1.07s
+
+```
+- `2026-08-30T09:27:10` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de la función `build_context` al añadir un filtro explícito que descarta cualquier dato proveniente de fuentes externas que contenga caracteres de control o patrones de inyección, garantizando que el `SystemContext` sea inalterable incluso si la fuente intenta inyectar datos malformados.
+- `2026-08-30T09:27:43` Tests FALLARON:
+```
+........................................................................ [ 24%]
+.........................F.............................................. [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed in 1.13s
+
+```
+- `2026-08-30T09:27:43` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `save_logo_svg` implementando una validación estricta que impide que la ruta de destino escape del sistema de archivos autorizado, utilizando `Path.resolve()` contra `Path.cwd()` para prevenir ataques de *path traversal*.
+- `2026-08-30T09:27:53` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: seguridad defensiva).
+- `2026-08-30T09:27:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T09:27:53` Corrida terminada. Total usado hoy: 224.

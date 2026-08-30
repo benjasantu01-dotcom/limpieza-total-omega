@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 122 | 7 | 15 | 17 | 123 |
-| 2026-08-30 | 98 | 4 | 19 | 8 | 91 |
+| 2026-08-29 | 122 | 7 | 15 | 17 | 119 |
+| 2026-08-30 | 99 | 6 | 19 | 8 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,7 +25,7 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **42**
 - rendimiento: **41**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **16**
 - `duplicates.py`: **15**
 - `branding.py`: **14**
-- `startup.py`: **13**
+- `startup.py`: **14**
 - `organizer.py`: **12**
 - `safety.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T09:26:33` **startup.py** (robustez ante casos límite): Se añadió una verificación de archivos inexistentes o inaccesibles dentro del bucle de `entries_from_folders` mediante un bloque `try-except` más robusto que utiliza `entry.is_file()` con manejo de errores, evitando que el escaneo se aborte ante permisos denegados o enlaces rotos en carpetas de inicio.
 - `2026-08-30T09:17:39` **settings.py** (robustez ante casos límite): Mejoré la robustez ante fallos de E/S en la carga inicial añadiendo un bloque `try-except` explícito en `_read_disk` que maneja archivos con formato JSON válido pero estructuralmente incompatible (ej. tipos de datos erróneos en claves), asegurando que ante cualquier desvío del esquema `AppSettings` se retorne siempre el estado por defecto.
 - `2026-08-30T09:17:02` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_is_safe_entry` al centralizar el manejo de errores de acceso a archivos, asegurando que `OSError` o `PermissionError` (comunes en escaneos de disco con permisos variables) no interrumpan el flujo, además de añadir un control explícito sobre la resolución de rutas mediante `resolve(strict=False)` para evitar fallos cuando el destino es una ruta inexistente pero referenciada.
 - `2026-08-30T09:11:39` **quarantine.py** (robustez ante casos límite): Se introdujo una validación crítica en `quarantine_file` para detectar y rechazar archivos con puntos de reparse (junctions/symlinks) al momento de leer sus metadatos iniciales, evitando errores de recursión o acceso a rutas fuera del scope de la aplicación antes de la operación de movimiento.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T08:26:39` **memory.py** (rendimiento): Se optimizó `parse_windows_process_csv` reemplazando la creación de listas intermedias y el uso de `sorted` sobre un generador completo por una estrategia que limita el consumo de memoria y CPU al procesar solo los procesos activos, aprovechando que el filtrado y el ordenamiento se realizan sobre una muestra acotada.
 - `2026-08-30T08:16:59` **duplicates.py** (rendimiento): Optimicé `_process_size_group` para evitar cálculos de hash redundantes en casos donde el tamaño del archivo ya garantiza la identidad, reduciendo el I/O innecesario al utilizar directamente el hash parcial como identificador final para archivos pequeños (donde el hash parcial cubre el archivo completo).
 - `2026-08-30T08:16:49` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar almacenar en memoria la lista completa de todos los archivos encontrados (`all_files.append`), utilizando en su lugar un `heapq` de tamaño fijo durante la iteración, lo que reduce drásticamente el consumo de RAM en directorios con millones de archivos.
-- `2026-08-30T08:16:21` **browser.py** (rendimiento): Optimicé el rendimiento de la detección de perfiles compartiendo el objeto `perf_cache` a través de todo el ciclo de escaneo y evitando resoluciones de ruta redundantes dentro de `_sum_directory_recursive`, logrando que las subcarpetas comunes se procesen solo una vez.

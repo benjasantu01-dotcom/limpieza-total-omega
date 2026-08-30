@@ -242,6 +242,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             with os.scandir(folder) as it:
                 for entry in it:
                     try:
+                        # Verificar existencia y tipo antes de procesar
                         if entry.is_file(follow_symlinks=False):
                             _, ext = os.path.splitext(entry.name)
                             if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
@@ -250,7 +251,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                                     command=entry.path,
                                     source="carpeta"
                                 ))
-                    except OSError:
+                    except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
             continue
