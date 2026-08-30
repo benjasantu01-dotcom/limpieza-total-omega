@@ -508,24 +508,25 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         return 0
     
     purged_count = 0
-    for item_id in list(items_dict.keys()):
-        item = items_dict[item_id]
+    modified = False
+    for item_id, item in list(items_dict.items()):
         try:
             stored_path = (quarantine_root / item.stored_name).resolve()
-            
-            # Sincronización: si no existe físicamente, eliminamos del manifiesto
             if not stored_path.exists():
                 del items_dict[item_id]
+                modified = True
                 continue
             
             if _is_item_purgable(stored_path, item, quarantine_root):
                 if _safe_unlink(stored_path):
                     del items_dict[item_id]
                     purged_count += 1
+                    modified = True
         except (OSError, PermissionError, UnsafePathError):
             continue
             
-    save_manifest(list(items_dict.values()), base)
+    if modified:
+        save_manifest(list(items_dict.values()), base)
     return purged_count
 
 

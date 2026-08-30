@@ -183,21 +183,17 @@ def _is_file_in_use(path_str: str) -> bool:
     """
     Verifica si un archivo está bloqueado por otro proceso intentando abrirlo con acceso de escritura.
     """
-    path = Path(path_str)
-    if not path.exists():
-        return False
     if os.name == 'nt':
         try:
-            # GENERIC_WRITE = 0x40000000, OPEN_EXISTING = 3, FILE_SHARE_READ = 0x00000001
             handle = ctypes.windll.kernel32.CreateFileW(
-                str(path), 0x40000000, 0x00000001, None, 3, 0x00000080, None
+                path_str, 0x40000000, 0x00000001, None, 3, 0x00000080, None
             )
             if handle == -1: return True
             ctypes.windll.kernel32.CloseHandle(handle)
             return False
         except (AttributeError, OSError):
             return True
-    return not os.access(path, os.W_OK)
+    return False
 
 
 def _is_sensitive_extension(path: Path) -> bool:
@@ -220,9 +216,6 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity(path: Path) -> None:
     """
     Verifica la integridad de un archivo usando el pipeline _VALIDATORS.
-    
-    Raises:
-        UnsafePathError: Si alguna regla de seguridad es violada.
     """
     path_key = str(path)
     now = time.monotonic()
@@ -234,17 +227,14 @@ def _check_file_integrity(path: Path) -> None:
             return
 
     try:
-        file_stat: os.stat_result = path.lstat()
+        file_stat = path.lstat()
     except (PermissionError, OSError) as e:
-        raise UnsafePathError(f"Error de acceso a metadatos: {ProtectionReason.INACCESSIBLE.value} ({e.strerror})")
+        raise UnsafePathError(f"Error de acceso: {e.strerror}")
 
     for rule in _VALIDATORS:
-        try:
-            if rule.predicate(path, file_stat):
-                _INTEGRITY_CACHE[path_key] = (now, False)
-                raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
-        except (OSError, PermissionError, TypeError):
-            continue
+        if rule.predicate(path, file_stat):
+            _INTEGRITY_CACHE[path_key] = (now, False)
+            raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
             
     _INTEGRITY_CACHE[path_key] = (now, True)
 
@@ -271,7 +261,6 @@ def normalize(path: PathLike) -> Path:
         
     try:
         p = Path(path_str).expanduser()
-        # Impedir resolución de puntos de reparse fuera del árbol base implícito
         resolved = p.resolve(strict=False)
         if _is_reparse_point(p) and not str(resolved).startswith(str(p.parent)):
             raise ValueError("Acceso restringido: reparse point con destino externo.")
