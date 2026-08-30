@@ -139,7 +139,7 @@ def _get_sha256(path: Path) -> str:
         with open(path, "rb") as handle:
             while chunk := handle.read(131072):
                 sha256_hash.update(chunk)
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, IOError):
         return ""
     return sha256_hash.hexdigest()
 
@@ -303,25 +303,24 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     
-    # Validar tipos de elementos antes de intentar volcar a JSON
     if not all(isinstance(i, QuarantineItem) for i in items):
         raise TypeError("El manifiesto contiene objetos no compatibles con QuarantineItem.")
 
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
-    temp_name = None
+    temp_path = None
     try:
         with tempfile.NamedTemporaryFile("w", dir=base_path, encoding="utf-8", delete=False) as tf:
-            temp_name = tf.name
+            temp_path = Path(tf.name)
             json.dump([item.to_dict() for item in items], tf, indent=2, ensure_ascii=False)
             tf.flush()
             os.fsync(tf.fileno())
-        os.replace(temp_name, target_path)
+        os.replace(temp_path, target_path)
         _load_manifest_internal.cache_clear()
         return target_path
     except (OSError, TypeError, IOError) as e:
-        if temp_name and os.path.exists(temp_name):
-            try: os.remove(temp_name)
+        if temp_path and temp_path.exists():
+            try: os.remove(temp_path)
             except OSError: pass
         raise RuntimeError(f"Fallo crítico al persistir manifiesto: {e}")
 
@@ -343,15 +342,18 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
 
     temp_path = None
     try:
-        if not source.exists() or not source.is_file():
-            raise OSError("El archivo de origen desapareció antes del aislamiento.")
-            
         fd, temp_file_path = tempfile.mkstemp(dir=destination.parent, prefix=".tmp_q_")
         temp_path = Path(temp_file_path)
-        os.close(fd)
-        
-        shutil.copy2(source.resolve(), temp_path)
-        
+        try:
+            with os.fdopen(fd, 'wb') as tmp:
+                with open(source, 'rb') as src:
+                    shutil.copyfileobj(src, tmp)
+                tmp.flush()
+                os.fsync(tmp.fileno())
+        except Exception:
+            os.close(fd)
+            raise
+
         if temp_path.stat().st_size != original_size:
             raise OSError("Error de integridad: tamaño de archivo mismatch.")
             
@@ -362,7 +364,8 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         return file_hash
     except Exception as e:
         if temp_path and temp_path.exists():
-            _safe_unlink(temp_path)
+            try: os.remove(temp_path)
+            except OSError: pass
         raise RuntimeError(f"Error de sistema durante aislamiento: {e}")
 
 
@@ -377,7 +380,6 @@ def quarantine_file(
     
     source_path = Path(source).expanduser().resolve(strict=True)
     
-    # Pre-validación rápida antes de cualquier operación costosa
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError("No se permite aislar enlaces simbólicos o puntos de reparse.")
         

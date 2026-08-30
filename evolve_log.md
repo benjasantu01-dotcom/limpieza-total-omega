@@ -1087,3 +1087,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-08-30T11:29:51` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-30T11:29:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T11:29:51` Corrida terminada. Total usado hoy: 272.
+- `2026-08-30T11:38:28` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-30T11:39:37` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `main.py` mediante una validación estricta y defensiva de las entradas de usuario en la pestaña de Ajustes y en el manejo de procesos, utilizando bloques `try-except` específicos para evitar errores de tipo o conversión que pudieran corromper la configuración o la lógica de la aplicación.
+- `2026-08-30T11:40:05` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar errores de índice en líneas malformadas y asegurando que las conversiones numéricas no fallen silenciosamente.
+- `2026-08-30T11:40:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-30T11:40:49` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se mejoró la robustez de `_get_sha256` y `_atomic_isolate_file` incorporando un manejo de excepciones más granular y defensivo, asegurando que los descriptores de archivo se cierren correctamente ante fallos de I/O y evitando estados de error persistentes en el sistema.
+- `2026-08-30T11:40:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T11:40:49` Corrida terminada. Total usado hoy: 276.
