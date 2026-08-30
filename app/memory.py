@@ -342,9 +342,13 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     kernel32, psapi = getattr(ctypes.windll, "kernel32", None), getattr(ctypes.windll, "psapi", None)
     if not kernel32 or not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs del sistema no disponibles."
     
-    try: target_pid = int(pid)
-    except (ValueError, TypeError): return False, "PID proporcionado no es un número válido."
-    if _is_system_process(target_pid): return False, "El proceso está protegido por el sistema."
+    try:
+        target_pid = int(pid)
+    except (ValueError, TypeError):
+        return False, "PID proporcionado no es un número válido."
+        
+    if _is_system_process(target_pid): 
+        return False, "El proceso está protegido por el sistema."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle or proc_handle == -1: 
@@ -352,7 +356,8 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
-        if not is_safe: return False, error_reason or "Validación de seguridad fallida."
+        if not is_safe:
+            return False, error_reason or "Validación de seguridad fallida."
         if not psapi.EmptyWorkingSet(proc_handle): 
             raise OSError("El sistema denegó la operación.")
         return True, f"Working set liberado. {TRIM_WARNING}"

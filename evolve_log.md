@@ -649,3 +649,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-30T07:09:06` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_collect_settings` y `_validate_numeric_setting` para manejar de forma segura entradas vacías, tipos de datos inesperados y errores de widget en tiempo de ejecución, previniendo excepciones fatales durante la validación de configuraciones.
 - `2026-08-30T07:09:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T07:09:06` Corrida terminada. Total usado hoy: 168.
+- `2026-08-30T07:13:17` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-30T07:13:47` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de procesos en `trim_working_set` mediante la centralización de la limpieza de recursos (`finally`) y la validación estricta de parámetros, garantizando que el `handle` siempre se cierre incluso ante fallos inesperados de la API de Windows.
+- `2026-08-30T07:14:33` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-30T07:15:32` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_manifest` mediante la implementación de un manejo explícito de errores y validación de tipos antes de la persistencia atómica, asegurando que un fallo en la estructura de datos no resulte en un manifiesto corrupto o vacío.
+- `2026-08-30T07:15:35` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-30T07:15:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T07:15:35` Corrida terminada. Total usado hoy: 172.

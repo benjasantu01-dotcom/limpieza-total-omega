@@ -302,6 +302,11 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     """Persistencia atómica del manifiesto: escritura en archivo temporal y reemplazo posterior."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
+    
+    # Validar tipos de elementos antes de intentar volcar a JSON
+    if not all(isinstance(i, QuarantineItem) for i in items):
+        raise TypeError("El manifiesto contiene objetos no compatibles con QuarantineItem.")
+
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     temp_name = None
