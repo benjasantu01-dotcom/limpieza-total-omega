@@ -266,6 +266,11 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
+    
+    # Prevenir que se intenten aislar enlaces simbólicos o junctions
+    if source_path.is_symlink():
+        raise UnsafePathError("No se permite aislar enlaces simbólicos o puntos de reparse.")
+
     resolved_source = source_path.resolve()
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")

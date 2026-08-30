@@ -297,14 +297,18 @@ def is_protected_path(path: PathLike) -> bool:
 
 
 def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = False) -> bool:
-    """Verifica si child es un subdirectorio o archivo contenido en parent usando rutas reales."""
+    """Verifica si child es un subdirectorio o archivo contenido en parent usando rutas resueltas."""
     if child is None or parent is None: return False
     try:
-        c_path = Path(os.path.realpath(str(normalize(child))))
-        p_path = Path(os.path.realpath(str(normalize(parent))))
-        if not c_path.is_absolute() or not p_path.is_absolute(): return False
-        if not allow_equal and c_path == p_path: return False
-        return os.path.commonpath([str(c_path), str(p_path)]) == str(p_path)
+        c_path = normalize(child).resolve()
+        p_path = normalize(parent).resolve()
+        
+        # Prevenir que la raíz del sistema sea tratada como un directorio válido para operaciones de usuario
+        if is_drive_root(c_path) or is_protected_path(c_path):
+            return False
+            
+        return os.path.commonpath([str(c_path), str(p_path)]) == str(p_path) if allow_equal else \
+               (c_path != p_path and os.path.commonpath([str(c_path), str(p_path)]) == str(p_path))
     except (ValueError, TypeError, OSError, RuntimeError): return False
 
 

@@ -123,6 +123,10 @@ class Scanner:
             return False
         
         try:
+            # Defensiva: evitar rutas con caracteres de ofuscación de control RTL
+            if entry.name and RTL_CHAR_RE.search(entry.name):
+                return False
+
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
