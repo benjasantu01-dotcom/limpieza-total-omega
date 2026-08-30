@@ -163,37 +163,38 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Ratio: (1.0 - (valor / umbral_máximo)). Un sistema limpio tiene ratio 1.0."""
+    """Calcula la salud respecto a archivos temporales: decae linealmente según el peso acumulado."""
     val = _to_float(junk_mb)
     return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa la seguridad penalizando amenazas (5%) y advertencias (25%) por unidad."""
+    """Puntúa la seguridad penalizando amenazas (5% por hit) y advertencias (25% por hit)."""
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
     return _clamp(1.0 - ((s * 0.05) + (w * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Puntúa RAM: el ratio es la disponibilidad porcentual escalada por el umbral crítico."""
+    """Puntúa RAM: el ratio es la disponibilidad porcentual escalada por el umbral crítico definido."""
     val = _to_float(available_percent)
     return _clamp(val * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Puntúa disco: proporcional al espacio libre disponible."""
+    """Puntúa disco: normaliza el espacio libre restante en función del umbral de alerta."""
     val = _to_float(free_percent)
     return _clamp(val * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Puntúa redundancia: menor peso encontrado equivale a mejor puntuación."""
+    """Puntúa redundancia: calcula el impacto inversamente proporcional al tamaño de duplicados."""
     val = _to_float(duplicate_mb)
     return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Puntúa arranque: penaliza el recuento de aplicaciones cargadas al inicio."""
+    """Puntúa arranque: penaliza la carga innecesaria de software al iniciar el sistema."""
     val = _to_float(startup_count)
     return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
+    """Convierte un puntaje numérico en una letra de calificación (A-F)."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -247,6 +248,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Genera una representación textual y visual del resultado del análisis."""
     if result is None or not isinstance(result, HealthResult): 
         return ["Error: Formato de informe inválido."]
     

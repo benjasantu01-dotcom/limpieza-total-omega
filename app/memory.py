@@ -98,15 +98,18 @@ class MemorySnapshot:
 
     @property
     def used(self) -> BytesValue:
+        """Calcula la memoria en uso restando la disponible del total."""
         return max(0, self.total - self.available)
 
     @property
     def used_percent(self) -> float:
+        """Calcula el porcentaje de memoria ocupada respecto al total."""
         if self.total <= 0: return 0.0
         return round((self.used / self.total) * 100, 1)
 
     @property
     def available_percent(self) -> float:
+        """Calcula el porcentaje de memoria libre respecto al total."""
         if self.total <= 0: return 0.0
         return round((self.available / self.total) * 100, 1)
 
@@ -120,6 +123,7 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
+        """Retorna el consumo de memoria del proceso en Megabytes."""
         return round(self.working_set / BYTES_IN_MB, 1)
 
 def format_bytes(num: Optional[int | float]) -> str:
@@ -132,6 +136,7 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=1)
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
+    """Instancia y pre-configura la estructura de estado de memoria Win32."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat

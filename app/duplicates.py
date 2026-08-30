@@ -184,7 +184,7 @@ def _collect_candidates(
     return {size: files for size, files in temp_map.items() if len(files) > 1}
 
 
-def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
+def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
     """
     Particiona una lista de archivos agrupándolos por el resultado de una función de hash.
     Los archivos que no generan hash (por error o permiso) son excluidos del resultado.
@@ -196,16 +196,16 @@ def _refine_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
 
-def _resolve_by_hashes(candidates: List[Path]) -> Dict[str, List[Path]]:
+def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
-    Aplica una estrategia de dos niveles: 
+    Aplica una estrategia de dos niveles de refinamiento: 
     1. Hash Parcial (huella rápida).
     2. Hash Completo (SHA256, confirmación estricta).
     """
-    partial_results = _refine_by_hash(candidates, partial_hash)
+    partial_results = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     for subset in partial_results.values():
-        final_groups.update(_refine_by_hash(subset, hash_file))
+        final_groups.update(_group_paths_by_hash(subset, hash_file))
     return final_groups
 
 
@@ -219,11 +219,11 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     if len(valid_paths) < 2: 
         return []
     
-    # Selección de estrategia según umbral de tamaño
+    # Selección de estrategia según umbral de tamaño para optimizar I/O
     if size <= PARTIAL_READ_BYTES:
-        results = _refine_by_hash(valid_paths, partial_hash)
+        results = _group_paths_by_hash(valid_paths, partial_hash)
     else:
-        results = _resolve_by_hashes(valid_paths)
+        results = _refine_by_deep_hash(valid_paths)
             
     confirmed_groups: List[DuplicateGroup] = []
     for digest, confirmed_paths in results.items():

@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 144 | 8 | 19 | 18 | 135 |
-| 2026-08-30 | 76 | 3 | 11 | 8 | 82 |
+| 2026-08-29 | 141 | 8 | 18 | 18 | 135 |
+| 2026-08-30 | 79 | 3 | 12 | 8 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **50**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **49**
 - robustez ante casos límite: **38**
-- rendimiento: **34**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
-- `scanner.py`: **21**
+- `settings.py`: **21**
+- `scanner.py`: **20**
+- `memory.py`: **19**
 - `browser.py`: **19**
-- `memory.py`: **18**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
 - `assistant.py`: **17**
-- `healthscore.py`: **17**
 - `diskreport.py`: **17**
 - `branding.py`: **15**
-- `duplicates.py`: **13**
+- `duplicates.py`: **14**
 - `startup.py`: **12**
-- `safety.py`: **11**
 - `organizer.py`: **11**
+- `safety.py`: **10**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T07:46:16` **memory.py** (legibilidad y documentación): Mejoré la documentación de `memory.py` mediante type hints explícitos, docstrings detallados en funciones críticas y la conversión de los estados internos de los procesos a una enumeración clara, aumentando la mantenibilidad sin cambiar la lógica.
+- `2026-08-30T07:44:45` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de datos mediante la adición de docstrings técnicos en las funciones de cálculo de puntaje (`score_junk`, `score_security`, etc.), explicando la lógica de normalización subyacente para facilitar el mantenimiento futuro.
+- `2026-08-30T07:44:18` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los nombres de las funciones internas en `duplicates.py` para clarificar la estrategia de desambiguación de duplicados y asegurar que el código sea autodocumentado para futuras auditorías.
 - `2026-08-30T07:35:24` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `all_drives_usage` y `walk_files`) y se mejoró la legibilidad mediante la extracción de la lógica de detección de unidades locales en Windows hacia una función privada, eliminando el ruido dentro del flujo principal.
 - `2026-08-30T07:35:13` **browser.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings explicativos los mecanismos críticos de seguridad y recursión, clarificando la distinción entre las validaciones de ruta y los filtros de escaneo profundo.
 - `2026-08-30T07:34:47` **branding.py** (legibilidad y documentación): Se introdujeron docstrings detallados en todas las funciones que carecían de ellos y se estandarizaron los tipos de retorno y excepciones, mejorando la legibilidad técnica y facilitando el mantenimiento futuro.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T07:04:07` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `suggest_keeper` y `format_group` mediante validación explícita de tipos y estados, asegurando que las funciones no fallen silenciosamente ante datos inconsistentes y proporcionando un comportamiento robusto ante archivos inaccesibles durante la generación de reportes.
 - `2026-08-30T07:03:41` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `_collect_summary_data` envolviendo las llamadas críticas en bloques `try...except` más granulares y verificando explícitamente la existencia de archivos antes de operar, evitando que errores intermitentes de I/O detengan prematuramente el análisis completo del disco.
 - `2026-08-30T06:55:18` **browser.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de escaneo mediante la validación explícita de tipos y la captura preventiva de errores en los parámetros de entrada, asegurando que `None` o tipos inesperados no interrumpan el flujo de trabajo ni propaguen excepciones hacia arriba en la pila.
-- `2026-08-30T06:54:36` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `build_context` al añadir una validación temprana de tipos `isinstance(source, (dict, object))` para evitar `AttributeError` al intentar operar sobre tipos inesperados, además de asegurar que la ingesta de datos no se detenga silenciosamente ante errores en atributos individuales mediante un bloque `try-except` encapsulado.
-- `2026-08-30T05:32:19` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.path` para asegurar que las rutas configurables no solo sean absolutas, sino que también se resuelvan y validen contra el sistema de archivos antes de aceptarse, impidiendo posibles ataques de *path traversal* o referencias a rutas maliciosas incluso si el usuario intenta inyectar rutas engañosas en el JSON de configuración.
-- `2026-08-30T05:22:42` **safety.py** (seguridad defensiva): Se reforzó la seguridad defensiva implementando una validación estricta de puntos de reparse (reparse points) durante la normalización de rutas, evitando que `resolve()` siga enlaces simbólicos o junctions fuera de la jerarquía permitida, previniendo así posibles ataques de "path traversal" hacia carpetas del sistema.
