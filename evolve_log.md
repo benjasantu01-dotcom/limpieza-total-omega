@@ -1267,3 +1267,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - NameEr
 - `2026-08-30T02:21:51` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-30T02:21:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T02:21:51` Corrida terminada. Total usado hoy: 56.
+- `2026-08-30T02:27:54` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-30T02:28:35` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ProblemCriterion.format_if_triggered` y `_validate_and_assign` mediante la captura explícita de `AttributeError` y validaciones defensivas, evitando que un estado parcial o malformado del `SystemContext` interrumpa el flujo del asistente con excepciones no controladas.
+- `2026-08-30T02:29:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-30T02:29:32` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `detect_profiles` y `_sum_directory_recursive` validando tipos de datos y manejando excepciones de manera más granular para evitar interrupciones en el flujo de ejecución ante rutas corruptas o problemas de acceso, cumpliendo estrictamente con el enfoque de validación de entradas.
+- `2026-08-30T02:29:45` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `summarize` implementando un manejo de excepciones más granular durante la recolección de datos, garantizando que un error al procesar un archivo individual no invalide el informe completo y proporcionando retroalimentación clara en caso de fallo parcial.
+- `2026-08-30T02:29:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T02:29:45` Corrida terminada. Total usado hoy: 60.

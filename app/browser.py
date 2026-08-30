@@ -180,11 +180,14 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Verifica si el acceso a la ruta es seguro según las reglas del proyecto."""
-    if not path_obj.exists() or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+    try:
+        if not path_obj.exists() or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+            return False
+        if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
+            return False
+        return True
+    except (OSError, RuntimeError):
         return False
-    if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
-        return False
-    return True
 
 
 def _sum_directory_recursive(
@@ -202,10 +205,11 @@ def _sum_directory_recursive(
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
 
-    root_path = Path(root_dir).resolve()
-    
-    # Verificación de seguridad de contención estricta
-    if not _is_safe_to_traverse(root_path, base_check_path):
+    try:
+        root_path = Path(root_dir).resolve(strict=True)
+        if not _is_safe_to_traverse(root_path, base_check_path):
+            return 0
+    except (OSError, RuntimeError):
         return 0
         
     root_abs = str(root_path)
@@ -233,10 +237,7 @@ def _sum_directory_recursive(
                             )
                     elif entry.is_file(follow_symlinks=False):
                         total += entry.stat(follow_symlinks=False).st_size
-                except (OSError, PermissionError) as e:
-                    # Windows: 5 (Acceso denegado), 32 (Archivo en uso)
-                    if getattr(e, 'winerror', None) in (5, 32):
-                        continue
+                except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):
         return 0
@@ -312,7 +313,7 @@ def detect_profiles(
     found: List[BrowserCache] = []
     
     for base in raw_bases:
-        if not isinstance(base, Path) or not base.exists(): 
+        if not isinstance(base, Path): 
             continue
         try:
             real_base = base.resolve(strict=True)

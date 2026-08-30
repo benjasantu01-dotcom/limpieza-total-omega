@@ -6,37 +6,37 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **223** (44.2% de aceptación)
 - Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 19
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 42 | 1 | 6 | 1 | 48 |
+| 2026-08-28 | 40 | 1 | 6 | 0 | 47 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
-| 2026-08-30 | 18 | 0 | 3 | 0 | 35 |
+| 2026-08-30 | 21 | 0 | 3 | 0 | 36 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **47**
+- manejo de errores y validación de entradas: **43**
 - rendimiento: **42**
-- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **23**
 - `scanner.py`: **21**
-- `memory.py`: **20**
-- `quarantine.py`: **19**
-- `assistant.py`: **17**
-- `diskreport.py`: **17**
-- `browser.py`: **17**
+- `memory.py`: **19**
+- `assistant.py`: **18**
+- `diskreport.py`: **18**
+- `quarantine.py`: **18**
+- `browser.py`: **18**
 - `branding.py`: **16**
 - `duplicates.py`: **15**
 - `main.py`: **13**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T02:29:45` **diskreport.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `summarize` implementando un manejo de excepciones más granular durante la recolección de datos, garantizando que un error al procesar un archivo individual no invalide el informe completo y proporcionando retroalimentación clara en caso de fallo parcial.
+- `2026-08-30T02:29:32` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `_sum_directory_recursive` validando tipos de datos y manejando excepciones de manera más granular para evitar interrupciones en el flujo de ejecución ante rutas corruptas o problemas de acceso, cumpliendo estrictamente con el enfoque de validación de entradas.
+- `2026-08-30T02:28:35` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ProblemCriterion.format_if_triggered` y `_validate_and_assign` mediante la captura explícita de `AttributeError` y validaciones defensivas, evitando que un estado parcial o malformado del `SystemContext` interrumpa el flujo del asistente con excepciones no controladas.
 - `2026-08-30T01:07:24` **startup.py** (seguridad defensiva): Se reforzó la seguridad de `entries_from_registry` validando que la salida de PowerShell no contenga caracteres de control peligrosos antes de procesar el CSV, asegurando que el motor de parseo no sea inyectado mediante una salida de consola malintencionada.
 - `2026-08-30T01:06:49` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación explícita mediante `is_safe_to_modify` antes de proceder con cualquier operación de escritura, asegurando que la ruta destino no sea un punto de reparse o junction, complementando así la validación del directorio padre y fortaleciendo la integridad del proceso de persistencia.
 - `2026-08-30T00:58:50` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` implementando una validación explícita para evitar que `_is_safe_entry` evalúe rutas que contienen caracteres de control de ofuscación (RTL), reduciendo el riesgo de confusión de rutas antes de cualquier operación.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T00:37:05` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `walk_files` y `largest_folders` validando explícitamente que cualquier ruta derivada (`entry.path` o `top_folder`) sea tratada como un objeto `Path` antes de ser validada por `is_protected_path`, evitando inconsistencias de tipo y asegurando que ninguna ruta pase por alto los filtros de seguridad al recorrer el árbol.
 - `2026-08-30T00:36:39` **browser.py** (seguridad defensiva): Se ha mejorado la defensa contra el acceso a rutas protegidas mediante la implementación de `_is_canonical_path` en `_sum_directory_recursive`, asegurando que cada subdirectorio escaneado sea validado mediante `is_protected_path` y `is_safe_to_modify` antes de proceder, previniendo así posibles escapes de contexto durante la recursión.
 - `2026-08-30T00:36:13` **branding.py** (seguridad defensiva): Se reforzó la seguridad en `save_logo_svg` reemplazando la instanciación directa de `Path` por una validación previa de la ruta de destino, garantizando que ninguna escritura ocurra si la ruta es inválida, protegida o un punto de reparse, alineándose con las reglas de seguridad defensiva.
-- `2026-08-30T00:27:11` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` al validar la integridad estructural de la respuesta JSON antes de procesarla, asegurando que cualquier desviación en el esquema esperado resulte en un fallo seguro en lugar de una excepción no controlada.
-- `2026-08-30T00:26:50` **startup.py** (robustez ante casos límite): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila procesada posea el número mínimo de campos requeridos antes de intentar acceder a sus índices, evitando errores de `IndexError` o `KeyError` ante datos corruptos o mal formateados del registro.
-- `2026-08-30T00:26:24` **settings.py** (robustez ante casos límite): Mejoré la robustez de `settings.py` ante errores de entrada en el diccionario `DEFAULTS` y durante la validación al detectar una inconsistencia en la clave `asistente_enviar_METRICAS` (case-sensitive) que causaba que el valor real se perdiera o reiniciara, unificando además la estructura de validación para evitar errores silenciosos en tiempo de ejecución.

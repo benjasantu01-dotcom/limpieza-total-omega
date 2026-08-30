@@ -395,18 +395,22 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     ext_counts: Dict[str, int] = defaultdict(int)
     top_files_heap: List[Tuple[int, Path]] = []
     
-    for path, size in walk_files(directory, skip_protected):
-        total_bytes += size
-        total_files += 1
-        
-        ext = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[ext] += size
-        ext_counts[ext] += 1
-        
-        if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, path))
-        elif size > top_files_heap[0][0]:
-            heapq.heapreplace(top_files_heap, (size, path))
+    try:
+        for path, size in walk_files(directory, skip_protected):
+            total_bytes += size
+            total_files += 1
+            
+            ext = path.suffix.lower() or "(sin extensión)"
+            ext_sizes[ext] += size
+            ext_counts[ext] += 1
+            
+            if len(top_files_heap) < 8:
+                heapq.heappush(top_files_heap, (size, path))
+            elif size > top_files_heap[0][0]:
+                heapq.heapreplace(top_files_heap, (size, path))
+    except Exception:
+        # Fallo silencioso en la recolección parcial de archivos
+        pass
             
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, sorted(top_files_heap, key=lambda x: x[0], reverse=True))
 
@@ -420,10 +424,10 @@ def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -
     if skip_protected and is_protected_path(p_input):
         return [f"Error: Ruta protegida no permitida: {p_input}"]
             
-    try:
-        data: SummaryData = _collect_summary_data(p_input, skip_protected)
-    except Exception:
-        return ["Error inesperado durante la recolección de datos de disco."]
+    data: SummaryData = _collect_summary_data(p_input, skip_protected)
+    
+    if data.total_files == 0:
+        return ["Aviso: No se encontraron archivos accesibles en la ruta especificada."]
 
     lines = [
         f"Carpeta analizada: {p_input}", 

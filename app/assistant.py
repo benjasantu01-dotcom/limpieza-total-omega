@@ -103,8 +103,11 @@ class ProblemCriterion(NamedTuple):
         Retorna la cadena formateada si se cumple la condición, o None.
         """
         try:
+            if not hasattr(ctx, self.metric_key):
+                return None
             val = getattr(ctx, self.metric_key)
-            if val is None: return None
+            if val is None: 
+                return None
             f_val = _safe_float(val, -1.0)
             if f_val < 0:
                 return None
@@ -113,7 +116,7 @@ class ProblemCriterion(NamedTuple):
                            (self.operator == ">" and f_val > self.threshold)
             
             return self.message_format.format(f_val)[:_MAX_MSG_CHUNK] if is_triggered else None
-        except (AttributeError, ValueError, TypeError):
+        except (ValueError, TypeError, AttributeError, KeyError):
             return None
 
 class AreaExplanation(NamedTuple):
@@ -329,15 +332,15 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
     Asegura que el valor sea numérico, finito y caiga dentro de los límites físicos
     (min_val/max_val) definidos para cada métrica en MetricSpec.
     """
-    val = _get_source_value(source, key)
-    if not spec.is_valid_type(val):
-        return False
-    
-    clean_val = _safe_float(val, -1.0)
-    if clean_val < spec.min_val or clean_val > spec.max_val:
-        return False
-    
     try:
+        val = _get_source_value(source, key)
+        if not spec.is_valid_type(val):
+            return False
+        
+        clean_val = _safe_float(val, -1.0)
+        if clean_val < spec.min_val or clean_val > spec.max_val:
+            return False
+        
         setattr(ctx, key, spec.cast_func(clean_val))
         return True
     except (ValueError, TypeError, AttributeError):
