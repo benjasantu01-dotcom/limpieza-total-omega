@@ -40,6 +40,7 @@ __all__ = [
 FILE_ATTRIBUTE_HIDDEN: Final[int] = 0x02
 FILE_ATTRIBUTE_SYSTEM: Final[int] = 0x04
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x400
+MAX_PATH_LENGTH: Final[int] = 260
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -251,7 +252,6 @@ def normalize(path: PathLike) -> Path:
     except (TypeError, ValueError): raise ValueError("Entrada no convertible a string.")
 
     if not path_str: raise ValueError("Entrada de ruta vacía.")
-    if len(path_str) >= 260: raise ValueError("Longitud de ruta excede el límite permitido.")
         
     try:
         p = Path(path_str).expanduser()
@@ -320,7 +320,7 @@ def _validate_structural_safety(path: Path, path_str: str) -> None:
         raise UnsafePathError("Intento de path traversal detectado.")
     if path_str.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas de red (UNC) no permitidas.")
-    if len(str(path)) >= 260:
+    if len(str(path)) >= MAX_PATH_LENGTH:
         raise UnsafePathError("La ruta resultante excede la longitud máxima permitida.")
 
 
@@ -401,7 +401,7 @@ def describe_protection(path: PathLike) -> str:
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
     if is_protected_path(p): return f"'{p}' protegida por sistema."
     if p.exists():
-        if len(p.parts) > 64: return f"'{p}' profundidad excesiva."
+        if len(str(p)) >= MAX_PATH_LENGTH: return f"'{p}' longitud excesiva."
         if not os.access(p, os.W_OK): return f"'{p}' sin permisos de escritura."
         if os.path.islink(p): return f"'{p}' es un enlace simbólico."
         if os.path.ismount(p): return f"'{p}' es un punto de montaje."

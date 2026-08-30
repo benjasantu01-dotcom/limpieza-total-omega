@@ -178,6 +178,7 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
+                if entry.stat().st_size == 0: return
                 _, ext = os.path.splitext(entry.name)
                 ext_low = ext.lower()
                 if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low == ".pdf":
@@ -235,8 +236,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 for entry in it:
                     if entry:
                         scanner.process_entry(entry, stack)
-        except (PermissionError, OSError, FileNotFoundError):
-            logger.debug(f"Error accediendo a directorio {current_dir}")
+        except (PermissionError, OSError):
+            logger.debug(f"Acceso denegado al directorio {current_dir}")
             continue
     return scanner.results
 

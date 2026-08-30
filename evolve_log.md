@@ -1231,3 +1231,10 @@ ERROR evolve/tests/test_modules.py - AttributeError: module 'ctypes' has no attr
 - `2026-08-30T13:32:51` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` agregando una validación de espacio en disco más precisa antes de cualquier intento de movimiento y protegiendo la app ante rutas de destino inexistentes o mal formadas que podrían derivar en errores de I/O bloqueantes.
 - `2026-08-30T13:32:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T13:32:51` Corrida terminada. Total usado hoy: 320.
+- `2026-08-30T13:40:41` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-30T13:41:15` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de `os.fsync` y manejo de excepciones ante interrupciones de E/S en `_atomic_isolate_file` para evitar archivos corruptos o incompletos tras cortes de energía o bloqueos, fortaleciendo la robustez ante fallos inesperados de persistencia.
+- `2026-08-30T13:41:34` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-30T13:42:00` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha implementado una validación de longitud de ruta específica para Windows en `ensure_safe_to_modify` para prevenir errores de acceso (`OSError`) al manipular rutas largas que exceden el límite de la API estándar de Win32, fortaleciendo la robustez ante casos límite.
+- `2026-08-30T13:42:09` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó `Scanner.process_entry` para manejar archivos vacíos o inaccesibles de forma atómica y se blindó el `scan_directory` contra excepciones de sistema al listar directorios, evitando que una ruta bloqueada detenga el escaneo completo.
+- `2026-08-30T13:42:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T13:42:09` Corrida terminada. Total usado hoy: 324.

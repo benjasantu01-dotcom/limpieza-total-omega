@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 77 | 4 | 9 | 11 | 83 |
-| 2026-08-30 | 139 | 9 | 25 | 13 | 134 |
+| 2026-08-29 | 77 | 4 | 9 | 11 | 79 |
+| 2026-08-30 | 142 | 9 | 26 | 13 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,27 +25,30 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **42**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **20**
 - `memory.py`: **19**
+- `scanner.py`: **19**
 - `browser.py`: **18**
 - `healthscore.py`: **18**
-- `scanner.py`: **18**
-- `quarantine.py`: **17**
+- `quarantine.py`: **18**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `assistant.py`: **15**
 - `organizer.py`: **14**
 - `branding.py`: **13**
-- `safety.py`: **12**
+- `safety.py`: **13**
 - `startup.py`: **12**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T13:42:09` **scanner.py** (robustez ante casos límite): Se reforzó `Scanner.process_entry` para manejar archivos vacíos o inaccesibles de forma atómica y se blindó el `scan_directory` contra excepciones de sistema al listar directorios, evitando que una ruta bloqueada detenga el escaneo completo.
+- `2026-08-30T13:42:00` **safety.py** (robustez ante casos límite): Se ha implementado una validación de longitud de ruta específica para Windows en `ensure_safe_to_modify` para prevenir errores de acceso (`OSError`) al manipular rutas largas que exceden el límite de la API estándar de Win32, fortaleciendo la robustez ante casos límite.
+- `2026-08-30T13:41:15` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.fsync` y manejo de excepciones ante interrupciones de E/S en `_atomic_isolate_file` para evitar archivos corruptos o incompletos tras cortes de energía o bloqueos, fortaleciendo la robustez ante fallos inesperados de persistencia.
 - `2026-08-30T13:32:51` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` agregando una validación de espacio en disco más precisa antes de cualquier intento de movimiento y protegiendo la app ante rutas de destino inexistentes o mal formadas que podrían derivar en errores de I/O bloqueantes.
 - `2026-08-30T13:31:04` **healthscore.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `SystemMetrics` ante estados inconsistentes mediante la implementación de una validación de `post_init` más estricta y un retorno seguro en `summarize` cuando los datos del resultado están incompletos, evitando errores de ejecución durante la renderización del informe.
 - `2026-08-30T13:21:55` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de enlaces simbólicos mediante `path.is_symlink()` en el escaneo recursivo, protegiendo al motor contra el procesamiento redundante de rutas circulares o externas que `stat.st_file_attributes` podría no capturar en todos los sistemas de archivos.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T12:50:13` **duplicates.py** (rendimiento): Optimicé el rendimiento de `suggest_keeper` evitando llamadas innecesarias a `p.stat()` dentro de un bucle, reutilizando los resultados obtenidos durante el proceso de escaneo y evitando re-verificaciones redundantes de archivos ya validados.
 - `2026-08-30T12:40:54` **branding.py** (rendimiento): Se ha optimizado la gestión de la paleta convirtiendo el diccionario `_PALETTE_RAW` en un objeto `MappingProxyType` desde su creación, eliminando la necesidad de constantes intermedias redundantes y reduciendo la huella de memoria al evitar duplicados de cadenas en el módulo.
 - `2026-08-30T12:40:20` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` y `local_answer` reemplazando la creación y el recorrido de listas completas por iteradores eficientes, evitando el consumo de memoria innecesario al evaluar criterios de salud.
-- `2026-08-30T12:30:57` **settings.py** (legibilidad y documentación): Documenté con precisión el propósito de cada validador y el flujo de los datos en `_Validators` para clarificar cómo se mantiene la integridad de la configuración.
-- `2026-08-30T12:30:26` **scanner.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez documental mediante la adición de docstrings técnicos detallados en los métodos del `Scanner`, explicitando el propósito de cada paso del flujo recursivo y la gestión de estados para facilitar el mantenimiento a futuro.
-- `2026-08-30T12:29:58` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` sustituyendo literales mágicos en las validaciones de atributos de archivos por constantes con nombre descriptivo, y documentando las funciones de bajo nivel con el estándar de la industria.

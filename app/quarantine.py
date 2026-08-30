@@ -350,9 +350,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
                     shutil.copyfileobj(src, tmp)
                 tmp.flush()
                 os.fsync(tmp.fileno())
-        except Exception:
+        except (OSError, IOError) as e:
             os.close(fd)
-            raise
+            raise e
 
         if temp_path.stat().st_size != original_size:
             raise OSError("Error de integridad: tamaño de archivo mismatch.")
