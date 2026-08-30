@@ -416,16 +416,15 @@ def explain_area(area: Any) -> str:
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
 def _iter_active_problems(ctx: SystemContext) -> Iterator[str]:
-    """Genera las descripciones de problemas activos de forma eficiente mediante iteración."""
+    """Genera las descripciones de problemas activos de forma eficiente."""
     for crit in _CRITERIOS_SALUD:
         match = crit.format_if_triggered(ctx)
         if match:
             yield match
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    """Evalúa el contexto actual contra los criterios de salud de forma eficiente."""
+    """Evalúa el contexto actual contra los criterios de salud limitando la salida."""
     if not ctx.analyzed: return []
-    # Uso eficiente de islice y validación para asegurar contenido limpio
     return list(islice(_iter_active_problems(ctx), 3))
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
@@ -481,7 +480,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     try:
         score_val = str(ctx.score) if ctx.score is not None else "N/A"
         score_display = f"Tu puntaje es {score_val}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
-        problemas = _identify_active_problems(ctx)
+        problemas = list(_iter_active_problems(ctx))[:3]
         resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente para arreglar."
         explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio, con la seguridad pesando más."
         
@@ -533,12 +532,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     for token in _TOKEN_REGEX.findall(q_sanitized):
         handler_key = _KEYWORD_MAP.get(token)
         if handler_key:
-            try:
-                return _HANDLERS[handler_key](context, question)
-            except Exception:
-                continue
+            return _HANDLERS[handler_key](context, question)
 
-    problemas = _identify_active_problems(context)
+    problemas = list(islice(_iter_active_problems(context), 3))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "

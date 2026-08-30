@@ -158,7 +158,6 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Verifica restricciones de sistema: evita enlaces simbólicos o junctions."""
         try:
-            # Resolvemos para limpiar '..' antes de cualquier chequeo
             p = path_obj.resolve(strict=False)
             if p.is_symlink() or (hasattr(p, 'is_junction') and p.is_junction()):
                 return False
@@ -244,7 +243,13 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 }
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
-    """Retorna la ruta absoluta del archivo de configuración, validando la base."""
+    """
+    Retorna la ruta absoluta del archivo de configuración.
+    Args:
+        custom_base: Ruta base opcional para el archivo.
+    Returns:
+        Ruta absoluta validada del archivo config.json.
+    """
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
         base_str = str(custom_base)
@@ -255,7 +260,13 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida un dict contra AppSettings; usa DEFAULTS en caso de error o dato faltante."""
+    """
+    Valida un dict contra AppSettings usando el mapa de validadores.
+    Args:
+        raw_values: Objeto crudo (típicamente desde un JSON).
+    Returns:
+        Diccionario con la configuración validada, usando DEFAULTS en errores.
+    """
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
@@ -286,7 +297,11 @@ def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga la configuración desde disco; usa cache de corta duración para minimizar I/O."""
+    """
+    Carga la configuración desde disco con caché de corta duración.
+    Returns:
+        AppSettings: Configuración vigente o DEFAULTS.
+    """
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     now = time.monotonic()
@@ -305,7 +320,13 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste la configuración en disco mediante reemplazo atómico y validación previa."""
+    """
+    Persiste la configuración en disco mediante reemplazo atómico.
+    Args:
+        values: Diccionario de configuración a guardar.
+    Returns:
+        Ruta del archivo guardado o None si falló la validación/escritura.
+    """
     if not _is_dict(values): return None
     cleaned_settings = validate(values)
     
@@ -358,7 +379,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Aplica cambios parciales validados a la configuración actual."""
+    """
+    Aplica cambios parciales a la configuración actual y guarda.
+    Returns:
+        AppSettings: Nueva configuración completa tras aplicar cambios.
+    """
     current = load(custom_base)
     modified = False
     for k, v in changes.items():

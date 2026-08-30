@@ -684,3 +684,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-30T07:55:35` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
 - `2026-08-30T07:55:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T07:55:35` Corrida terminada. Total usado hoy: 188.
+- `2026-08-30T08:04:14` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-08-30T08:04:43` 🛑 Propuesta bloqueada por la guardia en scanner.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: Scanner._handle_directory
+- `2026-08-30T08:05:16` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones públicas, facilitando la comprensión del flujo de validación y la interacción con el sistema de archivos sin alterar la lógica de negocio.
+- `2026-08-30T08:05:46` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad de los métodos de resolución de rutas en `StartupEntry`, añadiendo docstrings descriptivos y type hints consistentes para clarificar la lógica de saneamiento de comandos y resolución de ejecutables, facilitando así el mantenimiento de la lógica de "lazy loading".
+- `2026-08-30T08:06:09` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` eliminando la creación innecesaria de una lista completa en memoria (`list(islice(...))`) y delegando la lógica de límite al generador, además de reemplazar la re-iteración en `local_answer` por una única evaluación más eficiente.
+- `2026-08-30T08:06:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T08:06:09` Corrida terminada. Total usado hoy: 192.
