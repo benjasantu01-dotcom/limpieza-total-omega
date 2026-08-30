@@ -166,6 +166,10 @@ def _collect_candidates(
                 if skip_protected and is_protected_path(entry):
                     continue
                 
+                # Evitar enlaces simbólicos para prevenir ciclos y acceso fuera de límites
+                if entry.is_symlink():
+                    continue
+
                 try:
                     stat = entry.stat()
                     if os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):

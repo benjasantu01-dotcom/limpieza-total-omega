@@ -1197,3 +1197,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-30T13:17:14` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
 - `2026-08-30T13:17:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T13:17:14` Corrida terminada. Total usado hoy: 312.
+- `2026-08-30T13:20:21` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-30T13:20:53` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-30T13:21:18` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_sum_directory_recursive` mediante un manejo más exhaustivo de errores en `entry.stat()` y un chequeo preventivo contra archivos bloqueados, evitando que una excepción en un archivo puntual (como uno en uso por el navegador) interrumpa el cálculo total de la caché.
+- `2026-08-30T13:21:45` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-30T13:21:55` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se introdujo una comprobación explícita para evitar el seguimiento de enlaces simbólicos mediante `path.is_symlink()` en el escaneo recursivo, protegiendo al motor contra el procesamiento redundante de rutas circulares o externas que `stat.st_file_attributes` podría no capturar en todos los sistemas de archivos.
+- `2026-08-30T13:21:55` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T13:21:55` Corrida terminada. Total usado hoy: 316.

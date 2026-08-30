@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 35
+- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 23
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 81 | 5 | 10 | 11 | 85 |
-| 2026-08-30 | 135 | 8 | 25 | 12 | 132 |
+| 2026-08-29 | 80 | 4 | 9 | 11 | 84 |
+| 2026-08-30 | 137 | 8 | 25 | 12 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **43**
+- seguridad defensiva: **42**
 - rendimiento: **42**
-- robustez ante casos límite: **29**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
-- `memory.py`: **20**
 - `scanner.py`: **19**
-- `browser.py`: **17**
+- `memory.py`: **19**
+- `browser.py`: **18**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `diskreport.py`: **16**
+- `duplicates.py`: **16**
 - `assistant.py`: **15**
-- `duplicates.py`: **15**
 - `startup.py`: **13**
 - `branding.py`: **13**
 - `organizer.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T13:21:55` **duplicates.py** (robustez ante casos límite): Se introdujo una comprobación explícita para evitar el seguimiento de enlaces simbólicos mediante `path.is_symlink()` en el escaneo recursivo, protegiendo al motor contra el procesamiento redundante de rutas circulares o externas que `stat.st_file_attributes` podría no capturar en todos los sistemas de archivos.
+- `2026-08-30T13:21:18` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `_sum_directory_recursive` mediante un manejo más exhaustivo de errores en `entry.stat()` y un chequeo preventivo contra archivos bloqueados, evitando que una excepción en un archivo puntual (como uno en uso por el navegador) interrumpa el cálculo total de la caché.
 - `2026-08-30T13:01:36` **safety.py** (rendimiento): Se ha optimizado `is_protected_path` reemplazando la creación dinámica de un `set` de partes de ruta por una búsqueda de prefijos usando `parts` y comparaciones directas, reduciendo drásticamente la presión sobre el recolector de basura y mejorando la performance al evitar la instanciación de objetos en cada llamada.
 - `2026-08-30T13:00:29` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando múltiples llamadas a `Path.resolve()` y `Path.is_file()` por el uso directo de los métodos de `os.DirEntry` y el caché de `stat()` ya obtenido, reduciendo drásticamente las llamadas al sistema de archivos (syscalls) en cada iteración del bucle.
 - `2026-08-30T12:52:05` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante el uso de `sys.stdin` o lectura directa optimizada para evitar la creación innecesaria de subprocesos cuando no es estrictamente necesario, y se refactorizó `read_snapshot` para evitar la apertura repetida de archivos en disco usando un buffer más eficiente.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T12:29:58` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` sustituyendo literales mágicos en las validaciones de atributos de archivos por constantes con nombre descriptivo, y documentando las funciones de bajo nivel con el estándar de la industria.
 - `2026-08-30T12:20:44` **quarantine.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings explicativos en las funciones críticas de validación y manipulación de archivos para mejorar la auditabilidad del flujo de seguridad, sin alterar la lógica de ejecución.
 - `2026-08-30T12:20:11` **organizer.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones auxiliares de validación de `organizer.py` y agregué *type hints* para clarificar los tipos de datos en parámetros y retornos, mejorando la legibilidad sin alterar la lógica de seguridad.
-- `2026-08-30T12:19:46` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en funciones críticas, aclarando el propósito y el manejo de excepciones de las APIs de bajo nivel, y renombré variables internas en `parse_linux_meminfo` para que el flujo de datos sea evidente sin necesidad de comentarios adicionales.
-- `2026-08-30T12:10:20` **healthscore.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de normalización de cada función `score_*` para aclarar qué representa exactamente el ratio obtenido, facilitando el mantenimiento y la comprensión de las fórmulas matemáticas empleadas.

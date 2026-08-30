@@ -225,15 +225,18 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        # Validación de seguridad antes de entrar
                         sub_path = Path(entry.path)
                         if _is_safe_to_traverse(sub_path, base_check_path):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                             )
                     elif entry.is_file(follow_symlinks=False):
-                        stat_info = entry.stat(follow_symlinks=False)
-                        total += stat_info.st_size
+                        # Se usa stat con manejo de errores robusto para archivos en uso
+                        try:
+                            stat_info = entry.stat(follow_symlinks=False)
+                            total += stat_info.st_size
+                        except (OSError, PermissionError):
+                            continue
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):
