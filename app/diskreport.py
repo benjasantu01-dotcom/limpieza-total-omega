@@ -217,12 +217,15 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         return None
         
     try:
-        p = Path(os.fspath(mount)).resolve()
-        if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
-            return None
-            
+        raw_p = Path(os.fspath(mount))
+        p = raw_p.resolve()
+        
+        # Bloquear rutas UNC que suelen causar bloqueos en threads de GUI
         str_mount = str(p)
         if str_mount.startswith(("\\\\", "//")):
+            return None
+            
+        if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
         usage = shutil.disk_usage(p)
@@ -278,6 +281,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     root_path = _validate_root(directory)
     if not root_path or (skip_protected and is_protected_path(root_path)):
+        return
+
+    # Evitar rutas UNC
+    if str(root_path).startswith(("\\\\", "//")):
         return
 
     visited_inodes: set[Tuple[int, int]] = set()

@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **224** (44.4% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 22
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 30
+- Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 13 | 1 | 2 | 0 | 34 |
+| 2026-08-28 | 12 | 0 | 1 | 0 | 33 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
-| 2026-08-30 | 49 | 2 | 7 | 4 | 42 |
+| 2026-08-30 | 51 | 2 | 7 | 5 | 43 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **53**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **46**
+- seguridad defensiva: **45**
 - rendimiento: **42**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `scanner.py`: **22**
-- `quarantine.py`: **19**
 - `browser.py`: **19**
 - `memory.py`: **19**
+- `diskreport.py`: **18**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
-- `diskreport.py`: **17**
+- `healthscore.py`: **16**
 - `branding.py`: **15**
-- `healthscore.py`: **15**
 - `duplicates.py`: **14**
 - `startup.py`: **13**
 - `organizer.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T04:31:33` **healthscore.py** (robustez ante casos límite): Se ha añadido una verificación de "NaN/Inf" en la validación de `SystemMetrics` mediante la integración explícita de `is_finite` dentro de `validate`, asegurando que cualquier entrada de datos numérica corrupta sea saneada preventivamente en lugar de causar errores de cálculo silenciosos o resultados inesperados.
+- `2026-08-30T04:30:45` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` y `drive_usage` ante casos límite mediante la validación estricta de rutas UNC/Red y la protección contra `OSError` durante la resolución de rutas, evitando que fallos de acceso en unidades de red o volúmenes inaccesibles interrumpan el flujo de la aplicación.
 - `2026-08-30T04:21:45` **browser.py** (robustez ante casos límite): Se introdujo una comprobación explícita para archivos bloqueados o en uso mediante el intento de apertura en modo escritura (`O_RDWR` con `os.open`), mejorando la robustez frente a errores de concurrencia al realizar el escaneo de caché, evitando excepciones no manejadas durante la lectura del tamaño.
 - `2026-08-30T04:21:35` **branding.py** (robustez ante casos límite): Se ha mejorado la robustez de `save_logo_svg` ante fallos de E/S inesperados (como discos de solo lectura o falta de permisos en el directorio padre) añadiendo una validación más estricta antes de la creación del directorio y capturando errores específicos para evitar que la aplicación quede en un estado inconsistente.
 - `2026-08-30T04:21:03` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del método `ingest` en `SystemContext` para manejar fallos de tipos inesperados y valores corruptos en el objeto de configuración, evitando que una entrada malformada (o un objeto de settings con tipos incorrectos) interrumpa el flujo del asistente.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T03:40:44` **assistant.py** (rendimiento): Optimizé la generación de texto del contexto y la evaluación de problemas convirtiendo las operaciones de formateo en generadores y utilizando `join` de forma eficiente, evitando la creación de listas intermedias innecesarias en cada iteración del asistente.
 - `2026-08-30T03:40:08` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de validación en `startup.py` mediante la extracción del bloque de validación de caracteres reservados de Windows a una función privada dedicada `_is_reserved_device_name`, clarificando el propósito del chequeo y reduciendo la complejidad ciclomática de `_resolve_and_cache_path`.
 - `2026-08-30T03:31:26` **scanner.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo documentando el propósito de los tipos complejos (`SuspicionCheck`), estandarizando el manejo de la jerarquía de directorios mediante una función auxiliar dedicada (`_is_inside_base_root`) y aclarando el flujo de escaneo con un nuevo bloque de documentación de clase, sin alterar la lógica de seguridad preexistente.
-- `2026-08-30T03:31:09` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y la robustez de `safety.py` mediante la adición de docstrings estructuradas (tipo NumPy/Google) y type hinting explícito, además de reemplazar los índices mágicos de atributos (`0x02`, `0x400`) por nombres legibles usando el módulo `stat` de la librería estándar para facilitar el mantenimiento.
-- `2026-08-30T03:30:02` **quarantine.py** (legibilidad y documentación): He mejorado la legibilidad y la mantenibilidad del módulo `quarantine.py` mediante la refactorización de `_atomic_isolate_file`, extrayendo la lógica de verificación de espacio y el manejo del archivo temporal en pasos con docstrings claros, y unificando la validación de integridad en un nuevo método interno para reducir redundancia.

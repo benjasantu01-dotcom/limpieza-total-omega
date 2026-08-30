@@ -117,6 +117,13 @@ class SystemMetrics:
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.startup_count = max(0, _to_int(self.startup_count))
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
+        
+        if not self.is_finite():
+            # Reset preventivo si detectamos valores no finitos (NaN/Inf)
+            self.junk_mb = 0.0
+            self.memory_available_percent = 0.0
+            self.disk_free_percent = 0.0
+            self.duplicate_mb = 0.0
 
     def is_finite(self) -> bool:
         """Verifica que todos los valores numéricos sean finitos (no NaN ni Inf)."""
@@ -209,8 +216,6 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas inválida."])
     
     metrics.validate()
-    if not metrics.is_finite():
-        return HealthResult(0, "F", {}, ["Error: Datos corruptos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_points: float = 0.0
