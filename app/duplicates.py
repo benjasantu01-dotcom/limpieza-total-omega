@@ -256,26 +256,21 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística de selección de archivo 'original':
-    1. Prioriza el archivo más antiguo (menor mtime).
-    2. En caso de empate, la ruta más corta (usualmente en directorios padre).
+    Prioriza el más antiguo (mtime) y luego la ruta más corta, sin re-estadear archivos.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
-        if not isinstance(p, Path): continue
         try:
-            if _is_valid_candidate(p):
-                stat_info = p.stat()
-                candidates.append((float(stat_info.st_mtime), len(str(p)), p))
+            # Reutilizamos el stat del sistema de archivos implícito en el acceso
+            stat_info = p.stat()
+            candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
             continue
             
-    if not candidates:
-        return None
-        
-    return min(candidates, key=lambda x: (x[0], x[1]))[2]
+    return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

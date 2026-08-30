@@ -1129,7 +1129,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         junk = self._get_cached("junk") or []
         dups = self._get_cached("dups") or []
 
-        snapshot = self._get_cached("memory_snapshot", provider=memory_mod.read_snapshot) or memory_mod.Snapshot(0, 0, 0)
+        # Usar caché directo cuando sea posible, evitando regenerar el snapshot
+        snapshot = self._get_cached("memory_snapshot") or memory_mod.read_snapshot()
         disk_info = self._get_home_disk_info()
             
         metrics = healthscore.SystemMetrics(

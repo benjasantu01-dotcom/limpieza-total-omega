@@ -227,9 +227,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     accumulated_points: float = 0.0
     recommendations: List[str] = []
     
-    for area, weight in WEIGHTS.items():
-        scorer = _SCORERS.get(area)
-        if not scorer: continue
+    # Usar el listado pre-iterado _WEIGHT_ITEMS_INT para evitar re-lookup en el dict WEIGHTS
+    for area, weight in _WEIGHT_ITEMS_INT:
+        scorer = _SCORERS[area]
         
         ratio = _clamp(scorer(metrics), 0.0, 1.0)
         pts = round(ratio * weight)

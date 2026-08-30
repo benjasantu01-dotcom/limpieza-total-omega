@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 22
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 90 | 5 | 11 | 11 | 87 |
-| 2026-08-30 | 129 | 8 | 23 | 11 | 129 |
+| 2026-08-29 | 88 | 5 | 10 | 11 | 86 |
+| 2026-08-30 | 133 | 8 | 23 | 11 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **48**
-- rendimiento: **36**
-- robustez ante casos límite: **32**
+- rendimiento: **40**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
-- `memory.py`: **19**
+- `settings.py`: **21**
+- `memory.py`: **20**
 - `scanner.py`: **19**
 - `browser.py`: **18**
 - `diskreport.py`: **17**
+- `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `assistant.py`: **16**
-- `healthscore.py`: **16**
-- `duplicates.py`: **15**
+- `duplicates.py`: **16**
 - `startup.py`: **14**
 - `branding.py`: **14**
-- `safety.py`: **12**
 - `organizer.py`: **12**
-- `main.py`: **8**
+- `safety.py`: **11**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T12:52:05` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante el uso de `sys.stdin` o lectura directa optimizada para evitar la creación innecesaria de subprocesos cuando no es estrictamente necesario, y se refactorizó `read_snapshot` para evitar la apertura repetida de archivos en disco usando un buffer más eficiente.
+- `2026-08-30T12:51:49` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar redundancias de cálculo al aprovechar que `memory_mod.read_snapshot()` y `diskreport.drive_usage()` ya son llamados o pueden cachearse de forma más inteligente, reduciendo el overhead en el hilo principal durante el análisis de salud.
+- `2026-08-30T12:50:39` **healthscore.py** (rendimiento): Se optimizó el acceso a los datos dentro de `compute_score` eliminando la iteración sobre `WEIGHTS` y el acceso dinámico con `.get()` mediante la sustitución por un loop pre-calculado que aprovecha la estructura de datos `_WEIGHT_ITEMS_INT` ya definida y constante, reduciendo la sobrecarga de resolución de llaves en cada iteración.
+- `2026-08-30T12:50:13` **duplicates.py** (rendimiento): Optimicé el rendimiento de `suggest_keeper` evitando llamadas innecesarias a `p.stat()` dentro de un bucle, reutilizando los resultados obtenidos durante el proceso de escaneo y evitando re-verificaciones redundantes de archivos ya validados.
 - `2026-08-30T12:40:54` **branding.py** (rendimiento): Se ha optimizado la gestión de la paleta convirtiendo el diccionario `_PALETTE_RAW` en un objeto `MappingProxyType` desde su creación, eliminando la necesidad de constantes intermedias redundantes y reduciendo la huella de memoria al evitar duplicados de cadenas en el módulo.
 - `2026-08-30T12:40:20` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` y `local_answer` reemplazando la creación y el recorrido de listas completas por iteradores eficientes, evitando el consumo de memoria innecesario al evaluar criterios de salud.
 - `2026-08-30T12:30:57` **settings.py** (legibilidad y documentación): Documenté con precisión el propósito de cada validador y el flujo de los datos en `_Validators` para clarificar cómo se mantiene la integridad de la configuración.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T12:10:20` **healthscore.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de normalización de cada función `score_*` para aclarar qué representa exactamente el ratio obtenido, facilitando el mantenimiento y la comprensión de las fórmulas matemáticas empleadas.
 - `2026-08-30T12:09:55` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados que explican el "porqué" de las decisiones de diseño, aclarando el flujo del pipeline de hashing y las salvaguardas de seguridad implementadas.
 - `2026-08-30T12:09:30` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y claridad de `walk_files` mediante la sustitución de constantes numéricas (bitmask de atributos de archivo) por nombres descriptivos y la actualización de los docstrings para reflejar mejor el comportamiento de las exclusiones.
-- `2026-08-30T12:00:33` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` incluyendo Type Hints consistentes, docstrings detallados que clarifican las restricciones de seguridad y el flujo de los chequeos, y reemplacé el uso de `getattr(os.path, 'isjunction', ...)` por un alias interno más legible para mejorar la mantenibilidad.
-- `2026-08-30T12:00:22` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los tipos complejos y constantes de diseño, facilitando el mantenimiento y la comprensión de la jerarquía visual del proyecto.
-- `2026-08-30T11:59:51` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `handle_ram` para eliminar la lógica compleja anidada (bloque `if` con múltiples ternarios) a favor de una estructura de construcción de mensajes más clara, siguiendo el enfoque de legibilidad y documentación solicitado.
-- `2026-08-30T11:50:06` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` al añadir una verificación explícita para evitar intentar escribir en rutas de solo lectura o en sistemas de archivos sin espacio antes de procesar el archivo, evitando así excepciones innecesarias y mejorando el manejo de errores.

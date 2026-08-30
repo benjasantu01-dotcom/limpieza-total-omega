@@ -1169,3 +1169,10 @@ FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_f
 - `2026-08-30T12:41:33` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-08-30T12:41:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T12:41:33` Corrida terminada. Total usado hoy: 300.
+- `2026-08-30T12:49:47` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-30T12:50:13` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `suggest_keeper` evitando llamadas innecesarias a `p.stat()` dentro de un bucle, reutilizando los resultados obtenidos durante el proceso de escaneo y evitando re-verificaciones redundantes de archivos ya validados.
+- `2026-08-30T12:50:39` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el acceso a los datos dentro de `compute_score` eliminando la iteración sobre `WEIGHTS` y el acceso dinámico con `.get()` mediante la sustitución por un loop pre-calculado que aprovecha la estructura de datos `_WEIGHT_ITEMS_INT` ya definida y constante, reduciendo la sobrecarga de resolución de llaves en cada iteración.
+- `2026-08-30T12:51:49` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` para evitar redundancias de cálculo al aprovechar que `memory_mod.read_snapshot()` y `diskreport.drive_usage()` ya son llamados o pueden cachearse de forma más inteligente, reduciendo el overhead en el hilo principal durante el análisis de salud.
+- `2026-08-30T12:52:05` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de métricas mediante el uso de `sys.stdin` o lectura directa optimizada para evitar la creación innecesaria de subprocesos cuando no es estrictamente necesario, y se refactorizó `read_snapshot` para evitar la apertura repetida de archivos en disco usando un buffer más eficiente.
+- `2026-08-30T12:52:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T12:52:05` Corrida terminada. Total usado hoy: 304.
