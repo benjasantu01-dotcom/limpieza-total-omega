@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **214** (42.5% de aceptación)
+- Mejoras aceptadas: **212** (42.1% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 217
+- Sin cambios (nada sustancial que mejorar): 24
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 108 | 7 | 14 | 16 | 95 |
-| 2026-08-30 | 106 | 7 | 20 | 9 | 122 |
+| 2026-08-29 | 105 | 7 | 14 | 15 | 95 |
+| 2026-08-30 | 107 | 7 | 20 | 9 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
 - seguridad defensiva: **49**
+- legibilidad y documentación: **46**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **39**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
-- `memory.py`: **19**
 - `scanner.py`: **19**
 - `quarantine.py`: **18**
 - `browser.py`: **18**
-- `healthscore.py`: **17**
+- `memory.py`: **18**
 - `diskreport.py`: **16**
-- `duplicates.py`: **14**
-- `assistant.py`: **14**
+- `healthscore.py`: **16**
+- `assistant.py`: **15**
 - `startup.py`: **14**
 - `organizer.py`: **13**
+- `duplicates.py`: **13**
 - `branding.py`: **12**
 - `safety.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T11:20:56` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de los `handlers` de respuesta capturando excepciones de forma específica, evitando que errores de acceso a atributos o tipos inesperados en el objeto `SystemContext` (posiblemente mal inicializado) interrumpan la ejecución de la UI.
 - `2026-08-30T09:58:05` **startup.py** (seguridad defensiva): Se reforzó la seguridad en `_resolve_and_cache_path` añadiendo una validación explícita para prevenir la ejecución de archivos ubicados en rutas UNC (`\\`), las cuales pueden ser vectores de ataque (ej. ejecución de código remoto o exfiltración de NTLM hashes) si el sistema intenta resolverlas al escanear.
 - `2026-08-30T09:57:53` **settings.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `save` eliminando la llamada directa a `ensure_safe_to_modify` sobre el archivo de configuración antes de verificar su existencia, reemplazándola por una validación lógica con `is_safe_to_modify` que impide operaciones sobre rutas fuera del espacio de trabajo sin lanzar excepciones prematuras en el flujo de guardado.
 - `2026-08-30T09:57:25` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del método `_is_inside_base_root` añadiendo una comparación explícita de `Path.parents` para evitar que rutas que comparten prefijo de nombre de archivo pero no de directorio (ataques de "path traversal" o colisiones de nombres) sean procesadas incorrectamente fuera del alcance definido.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T09:11:22` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_process_directory` y `_is_safe_for_disk_op` añadiendo validaciones contra rutas que exceden `MAX_PATH` (límite crítico en Windows) y manejando errores de `stat()` para archivos que se eliminan o cambian de permiso mientras el escáner los procesa, evitando excepciones no controladas durante el bucle.
 - `2026-08-30T09:09:55` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_get_process_path` para prevenir desbordamientos de buffer o rutas mal formadas (Unicode) utilizando `ctypes.create_unicode_buffer` con el tamaño correcto, además de robustecer la carga de librerías mediante una verificación de presencia de símbolos antes de su uso para evitar `AttributeError` en entornos con permisos restringidos.
 - `2026-08-30T08:57:02` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_scan_recursive` ante errores de acceso a disco y estados inconsistentes durante el recorrido, asegurando que si un archivo cambia de estado (se vuelve inaccesible o cambia de tamaño) mientras se procesa, la operación no se interrumpa.
-- `2026-08-30T08:47:35` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` sustituyendo el `ThreadPoolExecutor` (que introduce sobrecarga de hilos y contexto innecesaria para solo dos tareas de I/O bloqueante) por una ejecución secuencial directa, mejorando la latencia inicial y reduciendo el consumo de memoria en dispositivos con recursos limitados.

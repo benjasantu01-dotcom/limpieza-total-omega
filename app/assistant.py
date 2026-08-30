@@ -440,7 +440,7 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
         startup_ad = f" Sí te conviene mirar los {ctx.startup_count} programas de inicio." if ctx.startup_count > 12 else ""
         
         return Answer(_validate_response_length(f"{estado_msg} {accion_msg} {consejo_final}{startup_ad}"), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
-    except Exception:
+    except (AttributeError, TypeError, ValueError):
         return Answer("Hubo un error al procesar el estado de tu memoria.")
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
@@ -455,7 +455,7 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
         cierre = " Empezá por Limpieza: mueve los candidatos a una carpeta de revisión, no los borra."
         
         return Answer(_validate_response_length(f"{linea1} {linea2}{alerta}{cierre}"), notice=OFFLINE_NOTICE)
-    except Exception:
+    except (AttributeError, TypeError, ValueError):
         return Answer("Hubo un error al procesar el estado de tu disco.")
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
@@ -471,7 +471,7 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
             texto = f"{info} {sugerencia}{cierre}"
         
         return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
-    except Exception:
+    except (AttributeError, TypeError, ValueError):
         return Answer("Hubo un error al procesar los hallazgos de seguridad.")
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
@@ -485,7 +485,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
         explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio, con la seguridad pesando más."
         
         return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
-    except Exception:
+    except (AttributeError, TypeError, ValueError):
         return Answer("Hubo un error al leer tu puntaje de salud.")
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
@@ -498,7 +498,7 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
         cierre = " La app te los lista pero no los desactiva a propósito: hacelo desde el Administrador de tareas de Windows."
         
         return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
-    except Exception:
+    except (AttributeError, TypeError, ValueError):
         return Answer("Hubo un error al analizar tus programas de inicio.")
 
 _HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
@@ -531,8 +531,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
 
     for token in _TOKEN_REGEX.findall(q_sanitized):
         handler_key = _KEYWORD_MAP.get(token)
-        if handler_key:
-            return _HANDLERS[handler_key](context, question)
+        if handler_key and handler_key in _HANDLERS:
+            try:
+                return _HANDLERS[handler_key](context, question)
+            except Exception:
+                continue
 
     problemas = list(islice(_iter_active_problems(context), 3))
     puntaje_str = str(context.score) if context.score is not None else "N/A"
