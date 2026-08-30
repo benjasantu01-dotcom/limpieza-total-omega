@@ -364,6 +364,18 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     raw = _fmt_metric(val, unit, decimal)
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
+def _generate_context_lines(ctx: SystemContext) -> Iterator[str]:
+    """Generador eficiente de líneas para el contexto del sistema."""
+    score_val = _fmt_metric_sanitized(ctx.score) if ctx.score is not None else "N/A"
+    grade_val = str(ctx.grade)[:5] if isinstance(ctx.grade, str) else ""
+    yield f"Puntaje de salud: {score_val}{f' nota {grade_val}' if grade_val else ''}"
+    yield f"Basura: {_fmt_metric_sanitized(ctx.junk_mb, ' MB')}"
+    yield f"Sospechosos: {_fmt_metric_sanitized(ctx.suspicious_count)}"
+    yield f"RAM disponible: {_fmt_metric_sanitized(ctx.memory_available_percent, ' percent')}"
+    yield f"Disco libre: {_fmt_metric_sanitized(ctx.disk_free_percent, ' percent')}"
+    yield f"Duplicados: {_fmt_metric_sanitized(ctx.duplicate_mb, ' MB')}"
+    yield f"Inicio: {_fmt_metric_sanitized(ctx.startup_count)} items"
+
 def context_as_text(context: SystemContext) -> str:
     """
     Serializa el estado del sistema en un formato de texto plano y seguro para el consumo
@@ -372,18 +384,7 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed:
         return "No hay métricas disponibles todavía."
     try:
-        score_val = _fmt_metric_sanitized(context.score) if context.score is not None else "N/A"
-        grade_val = str(context.grade)[:5] if isinstance(context.grade, str) else ""
-        lines = (
-            f"Puntaje de salud: {score_val}{f' nota {grade_val}' if grade_val else ''}",
-            f"Basura: {_fmt_metric_sanitized(context.junk_mb, ' MB')}",
-            f"Sospechosos: {_fmt_metric_sanitized(context.suspicious_count)}",
-            f"RAM disponible: {_fmt_metric_sanitized(context.memory_available_percent, ' percent')}",
-            f"Disco libre: {_fmt_metric_sanitized(context.disk_free_percent, ' percent')}",
-            f"Duplicados: {_fmt_metric_sanitized(context.duplicate_mb, ' MB')}",
-            f"Inicio: {_fmt_metric_sanitized(context.startup_count)} items"
-        )
-        texto_unificado = "\n".join(lines)
+        texto_unificado = "\n".join(_generate_context_lines(context))
         if not _ensure_safe_text(texto_unificado):
             return "Error: el contexto generado no cumple los estándares de seguridad."
         return texto_unificado

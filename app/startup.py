@@ -85,6 +85,14 @@ class StartupEntry:
     _exec_cache: Optional[str] = field(default=None, init=False)
     _checked_exists: bool = field(default=False, init=False)
 
+    def _is_reserved_device_name(self, path_str: str) -> bool:
+        """Determina si la ruta contiene nombres de dispositivos reservados por Windows."""
+        reserved = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
+        try:
+            return Path(path_str).stem.upper() in reserved
+        except (ValueError, TypeError):
+            return True
+
     def _is_valid_executable(self, path: Path) -> bool:
         """Verifica si la extensión es válida y si la ruta no es un enlace simbólico."""
         try:
@@ -122,19 +130,12 @@ class StartupEntry:
         """Realiza la resolución profunda de la ruta: normaliza, verifica existencia y reparse points."""
         if not isinstance(path_string, str) or not path_string:
             return ""
-        # Filtrado preventivo de caracteres ilegales y rutas UNC inseguras
         if any(c in path_string for c in '<>|?*\0&;') or path_string.startswith(r"\\"):
             return ""
         
         try:
-            # Normalización inicial para evitar ataques de salto de directorio
             norm = os.path.normpath(path_string)
-            # Limite de longitud Windows MAX_PATH (260) para prevenir desbordamientos en APIs de sistema
-            if len(norm) > 260:
-                return ""
-            # Bloqueo de nombres de dispositivos reservados en Windows
-            stem = Path(norm).stem.upper()
-            if stem in {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}:
+            if len(norm) > 260 or self._is_reserved_device_name(norm):
                 return ""
         except (ValueError, TypeError):
             return ""
@@ -146,10 +147,8 @@ class StartupEntry:
             abs_path = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            # Verificación de existencia segura
             if p.exists():
                 stat_info = p.lstat()
-                # Verifica el bit de Reparse Point (FILE_ATTRIBUTE_REPARSE_POINT)
                 if (stat_info.st_file_attributes & 0x00000400) != 0:
                     _EXISTS_CACHE[path_string] = False
                     return ""
@@ -164,7 +163,6 @@ class StartupEntry:
                 _EXISTS_CACHE[path_string] = False
                 return ""
 
-            # Validación final de integridad de ruta tras resolución
             if not real_path_str.startswith(os.path.splitdrive(abs_path)[0]):
                 _EXISTS_CACHE[path_string] = False
                 return ""
@@ -279,7 +277,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         fieldnames = reader.fieldnames
-        # Verificación estricta: requiere al menos 2 columnas válidas
         if not fieldnames or len(fieldnames) < 2:
             return []
             
@@ -287,7 +284,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             if not isinstance(row, dict):
                 continue
             
-            # Extraer usando get para manejar casos de filas truncadas
             name_raw = row.get(fieldnames[0])
             cmd_raw = row.get(fieldnames[1])
             
@@ -332,7 +328,6 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
-            # Filtro defensivo: asegurar que solo contenga caracteres imprimibles
             clean_out = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
             _REGISTRY_CACHE = parse_registry_csv(clean_out)
             return _REGISTRY_CACHE

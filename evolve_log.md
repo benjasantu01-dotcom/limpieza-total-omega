@@ -1338,3 +1338,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-30T03:31:26` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad del archivo documentando el propósito de los tipos complejos (`SuspicionCheck`), estandarizando el manejo de la jerarquía de directorios mediante una función auxiliar dedicada (`_is_inside_base_root`) y aclarando el flujo de escaneo con un nuevo bloque de documentación de clase, sin alterar la lógica de seguridad preexistente.
 - `2026-08-30T03:31:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T03:31:26` Corrida terminada. Total usado hoy: 84.
+- `2026-08-30T03:39:15` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-08-30T03:39:41` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
+- `2026-08-30T03:40:08` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de la lógica de validación en `startup.py` mediante la extracción del bloque de validación de caracteres reservados de Windows a una función privada dedicada `_is_reserved_device_name`, clarificando el propósito del chequeo y reduciendo la complejidad ciclomática de `_resolve_and_cache_path`.
+- `2026-08-30T03:40:44` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé la generación de texto del contexto y la evaluación de problemas convirtiendo las operaciones de formateo en generadores y utilizando `join` de forma eficiente, evitando la creación de listas intermedias innecesarias en cada iteración del asistente.
+- `2026-08-30T03:41:01` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-30T03:41:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T03:41:01` Corrida terminada. Total usado hoy: 88.
