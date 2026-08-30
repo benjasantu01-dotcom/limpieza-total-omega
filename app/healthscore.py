@@ -217,19 +217,21 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error: Datos corruptos."])
     
     metric_breakdown: Dict[MetricKey, int] = {}
-    ratios: Dict[MetricKey, float] = {}
     accumulated_points: float = 0.0
     recommendations: List[str] = []
     
-    for area, scorer in _SCORERS:
+    # Asegurar que todas las áreas definidas en WEIGHTS tengan un scorer
+    for area, weight in WEIGHTS.items():
+        scorer = next((s for n, s in _SCORERS if n == area), None)
+        if not scorer:
+            continue
+        
         ratio = _clamp(scorer(metrics), 0.0, 1.0)
-        weight = float(WEIGHTS.get(area, 0))
-        ratios[area] = ratio
         pts = round(ratio * weight)
         metric_breakdown[area] = int(pts)
         accumulated_points += pts
         
-        # Checkear recomendaciones en el mismo loop
+        # Checkear recomendaciones según reglas predefinidas
         for rule in _RECOMMENDATION_RULES:
             if rule.area == area and rule.check(metrics, ratio):
                 recommendations.append(rule.message_factory(metrics))

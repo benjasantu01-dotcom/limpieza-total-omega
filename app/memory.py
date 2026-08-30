@@ -171,14 +171,15 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         for line in raw_csv_text.splitlines():
             line = line.strip()
             if not line: continue
-            # Split directo limitado a 2 comas (Nombre, PID, WS)
             parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
             if len(parts) == 3:
                 try:
-                    pid_val, ws_val = int(parts[1]), int(parts[2])
-                    if pid_val > 0 and ws_val > 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
+                    pid_val = int(parts[1])
+                    ws_val = int(parts[2])
+                    if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
                         yield ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val)
-                except (ValueError, TypeError): continue
+                except (ValueError, TypeError): 
+                    continue
 
     processes = sorted(process_generator(), key=lambda p: p.working_set, reverse=True)
     return processes[:limit]

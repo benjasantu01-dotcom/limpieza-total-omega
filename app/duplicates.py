@@ -156,7 +156,6 @@ def _collect_candidates(
         """Recorre directorios evitando punteros recursivos o sistemas protegidos."""
         try:
             for entry in current_dir.iterdir():
-                # Validación de seguridad defensiva antes de cualquier operación
                 if skip_protected and is_protected_path(entry):
                     continue
                 
@@ -173,8 +172,10 @@ def _collect_candidates(
                             _scan_recursive(entry)
                     elif stat.st_size >= min_size:
                         temp_map[int(stat.st_size)].append(entry)
-                except (OSError, PermissionError): continue
-        except (OSError, PermissionError): pass
+                except (OSError, PermissionError):
+                    continue
+        except (OSError, PermissionError):
+            pass
 
     if directories:
         roots = {r for item in directories if (r := _resolve_and_verify_root(item))}
