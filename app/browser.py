@@ -36,6 +36,16 @@ __all__ = [
     "SAFETY_NOTE",
 ]
 
+# Alias para funciones de chequeo de reparse points / junctions
+JunctionChecker = Callable[[str], bool]
+
+def _is_junction_default(path: str) -> bool:
+    """Fallback si el entorno no soporta la detección de junctions."""
+    return False
+
+# Acceso seguro a la funcionalidad de junctions si existe en el runtime
+_IS_JUNCTION_FN: JunctionChecker = getattr(os.path, 'isjunction', _is_junction_default)
+
 # Mapa de navegadores soportados a sus rutas relativas dentro de LOCALAPPDATA.
 BROWSER_CACHE_PATHS: Dict[str, str] = {
     "Google Chrome": r"Google\Chrome\User Data\Default\Cache",
@@ -65,9 +75,6 @@ SAFETY_NOTE: str = (
 MAX_SCAN_DEPTH: int = 15
 # Atributos: FILE_ATTRIBUTE_HIDDEN (0x01) | FILE_ATTRIBUTE_SYSTEM (0x02) | FILE_ATTRIBUTE_REPARSE_POINT (0x400)
 SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x400
-
-# Tipo alias para funciones que validan si una ruta es un punto de reparse/junction.
-JunctionChecker = Callable[[str], bool]
 
 @dataclass
 class BrowserCache:
@@ -251,8 +258,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
         if not p_res.is_dir() or os.path.ismount(str(p_res)) or is_protected_path(p_res) or not is_safe_to_modify(p_res):
             return 0
         
-        is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
-        return _sum_directory_recursive(str(p_res), is_junction, _get_kernel32(), {})
+        return _sum_directory_recursive(str(p_res), _IS_JUNCTION_FN, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
@@ -295,7 +301,6 @@ def detect_profiles(
     if not raw_bases or not isinstance(browser_map, dict):
         return []
     
-    is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
     perf_cache: Dict[str, int] = {}
@@ -311,11 +316,11 @@ def detect_profiles(
                     continue
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 
-                if _is_valid_cache_path(candidate, real_base, is_junction):
+                if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     c_path = candidate.resolve()
                     path_str = str(c_path)
                     
-                    size = _sum_directory_recursive(path_str, is_junction, k32, perf_cache, real_base)
+                    size = _sum_directory_recursive(path_str, _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
         except (OSError, PermissionError, TypeError): 

@@ -34,7 +34,7 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]  # (Color, Etiqueta)
 RGBTuple: TypeAlias = Tuple[int, int, int]  # Valores (R, G, B) de 0 a 255
 
 class PaletteDict(TypedDict):
-    """Define los roles funcionales de color para la interfaz."""
+    """Define los roles funcionales de color para la interfaz, garantizando consistencia temática."""
     background: HexColor
     surface: HexColor
     surface_alt: HexColor
@@ -58,7 +58,7 @@ class PaletteDict(TypedDict):
     glow: HexColor
 
 class FontSizesDict(TypedDict):
-    """Escala tipográfica jerárquica basada en puntos (pt)."""
+    """Escala tipográfica jerárquica basada en puntos (pt), asegurando legibilidad consistente."""
     display: int
     title: int
     subtitle: int
@@ -102,7 +102,7 @@ _PALETTE_RAW: Final[dict[str, HexColor]] = {
 }
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_RAW)
 
-# Constantes pre-resueltas para optimización de renderizado
+# Constantes pre-resueltas para optimización de renderizado de elementos críticos
 C_SURFACE: Final[HexColor] = _PALETTE_RAW["surface"]
 C_BACKGROUND: Final[HexColor] = _PALETTE_RAW["background"]
 C_GLOW: Final[HexColor] = _PALETTE_RAW["glow"]
@@ -153,8 +153,10 @@ ICONS: Final[Mapping[str, str]] = MappingProxyType({
     "Ajustes": "\u2699",      
 })
 
+# Puntos de control para interpolación de degradados (colores de marca)
 GRADIENT_STOPS: Final[Tuple[HexColor, ...]] = ("#00f0c0", "#7c5cff", "#ff2d78")
 
+# Umbrales para feedback visual del score de salud
 SCORE_THRESHOLDS: Final[List[Tuple[float, HexColor]]] = [
     (90.0, C_SUCCESS),
     (80.0, C_INFO),
@@ -335,7 +337,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
-    """Optimiza secuencias de colores agrupando segmentos adyacentes idénticos."""
+    """Optimiza secuencias de colores agrupando segmentos adyacentes idénticos para reducir llamadas de dibujo."""
     if not colors: return ()
     segments: List[Tuple[HexColor, int, int]] = []
     start = 0

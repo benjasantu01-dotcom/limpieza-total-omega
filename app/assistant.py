@@ -430,18 +430,25 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde consultas sobre memoria RAM usando métricas de estado actual."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    try:
-        mem_pct = _safe_float(ctx.memory_available_percent, 50.0)
-        total_gb = _safe_float(ctx.memory_total_gb, 0.0)
+    
+    mem_pct = _safe_float(ctx.memory_available_percent, 50.0)
+    total_gb = _safe_float(ctx.memory_total_gb, 0.0)
+    
+    # Construcción clara del diagnóstico de RAM
+    msg_parts = [f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."]
+    
+    if mem_pct < 15:
+        msg_parts.append("Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses; en la pestaña Memoria tenés qué consume más.")
+    else:
+        msg_parts.append("Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM.")
         
-        estado_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
-        accion_msg = "Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses; en la pestaña Memoria tenés qué consume más." if mem_pct < 15 else "Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
-        consejo_final = "No busques un 'liberador de RAM': suben el número de memoria libre pero la PC queda más lenta."
-        startup_ad = f" Sí te conviene mirar los {ctx.startup_count} programas de inicio." if ctx.startup_count > 12 else ""
+    msg_parts.append("No busques un 'liberador de RAM': suben el número de memoria libre pero la PC queda más lenta.")
+    
+    if ctx.startup_count > 12:
+        msg_parts.append(f"Sí te conviene mirar los {ctx.startup_count} programas de inicio.")
         
-        return Answer(_validate_response_length(f"{estado_msg} {accion_msg} {consejo_final}{startup_ad}"), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
-    except (AttributeError, TypeError, ValueError):
-        return Answer("Hubo un error al procesar el estado de tu memoria.")
+    full_text = " ".join(msg_parts)
+    return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Proporciona diagnóstico de espacio en disco y posibles acciones de recuperación."""
