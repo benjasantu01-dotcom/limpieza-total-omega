@@ -243,20 +243,14 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     scan_folders = folders if folders is not None else startup_folders()
     
     for folder in scan_folders:
-        if not isinstance(folder, Path) or is_protected_path(folder):
-            continue
         try:
             with os.scandir(folder) as it:
                 for entry in it:
-                    name, ext = os.path.splitext(entry.name)
-                    if ext.lower() not in EXECUTABLE_EXTS:
-                        continue
-                    
-                    p_entry = Path(entry.path)
-                    if entry.is_file(follow_symlinks=False) and not p_entry.is_symlink():
-                        if not is_protected_path(p_entry):
+                    if entry.is_file(follow_symlinks=False):
+                        _, ext = os.path.splitext(entry.name)
+                        if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
                             found_entries.append(StartupEntry(
-                                name=name,
+                                name=os.path.splitext(entry.name)[0],
                                 command=entry.path,
                                 source="carpeta"
                             ))

@@ -369,10 +369,12 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         path_obj = Path(destination).resolve()
         ensure_safe_to_modify(path_obj)
-            
         parent = path_obj.parent
+        
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
+        elif not parent.is_dir():
+            return None
             
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj

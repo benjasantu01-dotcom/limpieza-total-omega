@@ -264,7 +264,7 @@ class SystemContext:
         Intenta extraer y validar métricas desde una fuente externa (dict u objeto).
         Retorna True si al menos una métrica válida fue procesada.
         """
-        if source is None or not isinstance(source, (dict, object)):
+        if not isinstance(source, (dict, object)):
             return False
             
         found_data = False
@@ -272,11 +272,14 @@ class SystemContext:
             if _validate_and_assign(self, source, key, spec):
                 found_data = True
         
-        grade_val = _get_source_value(source, "grade")
-        if isinstance(grade_val, str):
-            clean_grade = grade_val[:10].strip()
-            if _ensure_safe_text(clean_grade):
-                self.grade = clean_grade
+        try:
+            grade_val = _get_source_value(source, "grade")
+            if isinstance(grade_val, str):
+                clean_grade = grade_val[:10].strip()
+                if _ensure_safe_text(clean_grade):
+                    self.grade = clean_grade
+        except Exception:
+            pass
         
         return found_data
 

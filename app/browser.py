@@ -237,7 +237,14 @@ def _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                             )
                     elif entry.is_file(follow_symlinks=False):
-                        total += entry.stat(follow_symlinks=False).st_size
+                        # Técnica de sondeo: intentar abrir en modo lectura/escritura para verificar si el archivo está bloqueado
+                        try:
+                            fd = os.open(entry.path, os.O_RDWR)
+                            os.close(fd)
+                            total += entry.stat(follow_symlinks=False).st_size
+                        except OSError:
+                            # Archivo en uso o denegado: ignorar para el cálculo total de forma segura
+                            continue
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):
