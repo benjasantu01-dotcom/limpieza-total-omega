@@ -33,11 +33,9 @@ class Suspicion:
     reason: str
     severity: str
 
-# Alias para funciones que evalúan un archivo.
-# Una 'SuspicionCheck' es una función de inspección pura:
-# - path: La ruta del archivo a inspeccionar.
-# - entry: Opcional, instancia de os.DirEntry si ya fue obtenida (evita llamadas a disco).
-# - now_ts: Timestamp capturado al inicio para auditorías temporales coherentes.
+# Alias para funciones de chequeo heurístico.
+# Reciben la ruta del archivo, una entrada de directorio opcional (para rendimiento)
+# y el timestamp de inicio global para asegurar coherencia en comparaciones temporales.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
 # Alias para representar una colección de hallazgos durante un proceso de escaneo.
@@ -103,6 +101,8 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo del sistema de archivos.
+    Mantiene el contexto del escaneo, el registro de resultados y las rutas visitadas
+    para evitar ciclos y redundancias.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -110,6 +110,11 @@ class Scanner:
         self.seen: set[str] = set()
         self.base_root = base_root.resolve()
         self.now_ts: float = datetime.now().timestamp()
+
+    def _is_inside_base_root(self, path: Path) -> bool:
+        """Verifica que una ruta esté dentro del alcance definido por la raíz del escaneo."""
+        resolved_path = path.resolve()
+        return self.base_root in resolved_path.parents or resolved_path == self.base_root
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
@@ -123,17 +128,13 @@ class Scanner:
             if entry.name and (RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name)):
                 return False
 
-            entry_path = Path(entry.path)
-            resolved_path = entry_path.resolve()
-            
-            # Validar relación jerárquica robusta: evitar escape del base_root
-            if self.base_root not in resolved_path.parents and resolved_path != self.base_root:
+            if not self._is_inside_base_root(Path(entry.path)):
                 return False
             
             if self._is_reparse_point(entry):
                 return False
 
-            return not is_protected_path(entry_path)
+            return not is_protected_path(Path(entry.path))
         except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError):
             return False
 
