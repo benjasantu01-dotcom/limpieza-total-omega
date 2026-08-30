@@ -183,12 +183,18 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
     """
     Genera un nombre de archivo para el sandbox saneando caracteres y evitando nombres reservados.
     """
-    safe_name_chars = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
-    parts = safe_name_chars.split('.')
+    # Saneamiento estricto contra caracteres inválidos en sistemas de archivos
+    sanitized = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
+    if not sanitized or sanitized in (".", ".."):
+        sanitized = "unknown_file"
+        
+    parts = sanitized.split('.')
     name_base = parts[0] if parts[0] else "q_file"
     if name_base.upper() in WINDOWS_RESERVED_NAMES:
         name_base = f"q_{name_base}"
+    
     extension = f".{parts[-1]}" if len(parts) > 1 else ""
+    # Asegurar longitud razonable tras añadir prefijo de ID
     return f"{item_id}__{name_base[:64]}{extension}"[:128]
 
 

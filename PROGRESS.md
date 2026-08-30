@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 29
+- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 57 | 3 | 7 | 1 | 82 |
+| 2026-08-28 | 57 | 2 | 7 | 1 | 79 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
-| 2026-08-30 | 1 | 0 | 0 | 0 | 3 |
+| 2026-08-30 | 2 | 0 | 1 | 0 | 5 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,16 +26,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **42**
 - seguridad defensiva: **39**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `memory.py`: **20**
+- `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
-- `quarantine.py`: **18**
 - `browser.py`: **17**
 - `branding.py`: **16**
 - `duplicates.py`: **16**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T00:16:16` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de caracteres prohibidos y profundidad de ruta al nombre de archivo generado, previniendo excepciones por rutas inválidas o malformadas en el sistema de archivos al intentar aislar archivos con nombres exóticos o excesivamente largos.
 - `2026-08-30T00:07:07` **main.py** (robustez ante casos límite): Se mejora la robustez ante estados inconsistentes de la interfaz durante el cierre de la aplicación agregando verificaciones de existencia de widgets antes de cualquier manipulación en los callbacks de hilos secundarios y métodos asíncronos.
 - `2026-08-29T14:55:08` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `_sum_directory_recursive` ante archivos bloqueados por el sistema operativo (error 32, "file in use") o errores de acceso durante `os.scandir` mediante un manejo de excepciones granular y defensivo, asegurando que el escaneo no se interrumpa ante un archivo ocupado.
 - `2026-08-29T14:44:55` **settings.py** (rendimiento): Se implementó un cacheo más eficiente en `_read_disk` utilizando `os.stat().st_mtime` para evitar la redundancia de lectura y parseo JSON en disco cuando el archivo no ha sido modificado, optimizando el rendimiento de las llamadas recurrentes a `get` y `load`.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T13:55:09` **safety.py** (legibilidad y documentación): Se introdujo una enumeración `ValidationContext` y se reestructuró `ensure_safe_to_modify` para separar la validación de integridad (chequeo de estado del archivo) de la validación estructural (políticas de ruta), mejorando la legibilidad del flujo de control y facilitando el mantenimiento de las reglas de seguridad.
 - `2026-08-29T13:54:35` **quarantine.py** (legibilidad y documentación): He mejorado la documentación de `quarantine_file` y `_atomic_isolate_file` añadiendo type hints más precisos y docstrings explicativos que detallan el flujo de seguridad, haciendo más transparente el proceso crítico de aislamiento atómico.
 - `2026-08-29T13:54:02` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y type hints consistentes en funciones críticas, clarificando la intención y los contratos de seguridad (`is_safe_to_move` y `_is_safe_for_disk_op`) para facilitar futuras auditorías.
-- `2026-08-29T13:45:36` **memory.py** (legibilidad y documentación): Mejoré la documentación de las funciones de bajo nivel en `memory.py` mediante type hints explícitos, docstrings detallados que explican el "porqué" de las validaciones de seguridad, y la estandarización de los retornos de error para facilitar la trazabilidad del estado del sistema.
