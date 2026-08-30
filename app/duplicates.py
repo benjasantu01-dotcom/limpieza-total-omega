@@ -212,14 +212,13 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Pipeline de confirmación: decide el nivel de hashing necesario según el tamaño.
-    Si el archivo es menor que PARTIAL_READ_BYTES, el hash parcial es suficiente
-    para garantizar unicidad, evitando lecturas completas innecesarias.
+    Si el archivo es menor que PARTIAL_READ_BYTES, el hash parcial es el hash completo.
     """
     valid_paths = [p for p in paths if isinstance(p, Path) and _is_valid_candidate(p)]
     if len(valid_paths) < 2: 
         return []
     
-    # Selección de estrategia según umbral de tamaño para optimizar I/O
+    # Si el archivo cabe entero en el buffer, el hash parcial es el hash definitivo
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(valid_paths, partial_hash)
     else:

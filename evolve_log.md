@@ -691,3 +691,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-30T08:06:09` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` eliminando la creación innecesaria de una lista completa en memoria (`list(islice(...))`) y delegando la lógica de límite al generador, además de reemplazar la re-iteración en `local_answer` por una única evaluación más eficiente.
 - `2026-08-30T08:06:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T08:06:09` Corrida terminada. Total usado hoy: 192.
+- `2026-08-30T08:14:24` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-08-30T08:15:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-30T08:15:52` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-30T08:16:21` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento de la detección de perfiles compartiendo el objeto `perf_cache` a través de todo el ciclo de escaneo y evitando resoluciones de ruta redundantes dentro de `_sum_directory_recursive`, logrando que las subcarpetas comunes se procesen solo una vez.
+- `2026-08-30T08:16:49` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé la función `_collect_summary_data` para evitar almacenar en memoria la lista completa de todos los archivos encontrados (`all_files.append`), utilizando en su lugar un `heapq` de tamaño fijo durante la iteración, lo que reduce drásticamente el consumo de RAM en directorios con millones de archivos.
+- `2026-08-30T08:16:59` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_process_size_group` para evitar cálculos de hash redundantes en casos donde el tamaño del archivo ya garantiza la identidad, reduciendo el I/O innecesario al utilizar directamente el hash parcial como identificador final para archivos pequeños (donde el hash parcial cubre el archivo completo).
+- `2026-08-30T08:16:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T08:16:59` Corrida terminada. Total usado hoy: 196.

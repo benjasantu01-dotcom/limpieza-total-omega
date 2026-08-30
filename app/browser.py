@@ -192,7 +192,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
 
 
 def _sum_directory_recursive(
-    root_dir: str, 
+    root_abs: str, 
     is_junction_fn: JunctionChecker, 
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
@@ -203,22 +203,11 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso de una carpeta utilizando `os.scandir` para rendimiento.
     Usa `memo` para cachear resultados de subcarpetas y `MAX_SCAN_DEPTH` para evitar recursión infinita.
     """
-    if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
+    if depth > MAX_SCAN_DEPTH or not root_abs:
         return 0
-
-    try:
-        root_path = Path(root_dir).resolve(strict=True)
-        if not _is_safe_to_traverse(root_path, base_check_path):
-            return 0
-    except (OSError, RuntimeError):
-        return 0
-        
-    root_abs = str(root_path)
+    
     if root_abs in memo:
         return memo[root_abs]
-
-    if root_path.is_symlink() or is_junction_fn(root_abs) or os.path.ismount(root_abs):
-        return 0
 
     total: int = 0
     try:
@@ -229,6 +218,7 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
+                        # Validación de seguridad antes de entrar
                         sub_path = Path(entry.path)
                         if _is_safe_to_traverse(sub_path, base_check_path):
                             total += _sum_directory_recursive(
