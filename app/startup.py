@@ -285,6 +285,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
         fieldnames = reader.fieldnames
+        # Verificación estricta: requiere al menos 2 columnas para ser válida
         if not fieldnames or len(fieldnames) < 2:
             return []
             
@@ -296,7 +297,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
                 name_raw = row.get(fieldnames[0], "")
                 cmd_raw = row.get(fieldnames[1], "")
                 
-                if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
+                if name_raw is None or cmd_raw is None:
                     continue
                 
                 name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()

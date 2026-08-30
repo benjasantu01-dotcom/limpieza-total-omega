@@ -78,7 +78,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
                 return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-        except (OSError, AttributeError, ValueError):
+        except (OSError, AttributeError, ValueError, FileNotFoundError):
             return None
     return None
 
@@ -126,16 +126,16 @@ class Scanner:
             if entry.name and RESERVED_NAMES_RE.match(entry.name):
                 return False
 
-            # Comprobación de integridad de la ruta comparando contra base_root sin resolver constantemente
             entry_path = Path(entry.path)
-            if self.base_root not in entry_path.parents and entry_path != self.base_root:
+            # Validar relación jerárquica robusta
+            if self.base_root not in entry_path.resolve().parents and entry_path.resolve() != self.base_root:
                 return False
             
             if self._is_reparse_point(entry):
                 return False
 
             return not is_protected_path(entry_path)
-        except (ValueError, RuntimeError, OSError, TypeError):
+        except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
@@ -158,21 +158,18 @@ class Scanner:
         Gestiona la lógica de bifurcación: si es directorio lo encola, 
         si es archivo ejecutable/candidato, delega a las reglas heurísticas.
         """
-        if not entry or not entry.path:
-            return
         try:
-            _, ext = os.path.splitext(entry.name)
-            ext_low = ext.lower()
-            
             if entry.is_dir(follow_symlinks=False):
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
+                _, ext = os.path.splitext(entry.name)
+                ext_low = ext.lower()
                 if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low == ".pdf":
                     if self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry, ext_low)
-        except (OSError, PermissionError, TypeError):
-            logger.debug(f"Acceso denegado o entrada inválida {entry.path}")
+        except (OSError, PermissionError, TypeError, FileNotFoundError):
+            logger.debug(f"Acceso denegado o entrada volátil: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """Ejecuta detectores sobre un archivo específico y agrega al registro central de resultados."""
@@ -219,7 +216,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
                 for entry in it:
                     if entry:
                         scanner.process_entry(entry, stack)
-        except (PermissionError, OSError):
+        except (PermissionError, OSError, FileNotFoundError):
             logger.debug(f"Error accediendo a directorio {current_dir}")
             continue
     return scanner.results

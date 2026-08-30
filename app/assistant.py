@@ -594,6 +594,7 @@ def _call_gemini(
             data = json.loads(raw_res.decode("utf-8"))
             if not isinstance(data, dict): return None
             
+            # Verificación estricta de estructura antes de acceder a sub-llaves
             candidates = data.get("candidates")
             if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): return None
             
@@ -601,9 +602,9 @@ def _call_gemini(
             if not isinstance(content, dict): return None
             
             parts = content.get("parts")
-            if not isinstance(parts, list) or not parts: return None
+            if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict): return None
             
-            raw_text = "".join(str(p.get("text", "")) for p in parts if isinstance(p, dict))
+            raw_text = str(parts[0].get("text", ""))
             
             # Limpieza y validación rigurosa de la respuesta externa
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
