@@ -270,8 +270,11 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            if _validate_and_assign(self, source, key, spec):
-                found_data = True
+            try:
+                if _validate_and_assign(self, source, key, spec):
+                    found_data = True
+            except Exception:
+                continue
         
         try:
             grade_val = _get_source_value(source, "grade")
@@ -355,6 +358,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
+    # Filtro preventivo para tipos inválidos que no sean dict ni objetos
     sources = [s for s in (metrics, health, extra) if isinstance(s, (dict, object))]
     
     for src in sources:

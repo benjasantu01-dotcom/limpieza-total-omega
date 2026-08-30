@@ -168,7 +168,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
         
     try:
-        # Importante: is_symlink() no sigue enlaces, is_junction_fn lo verifica explícitamente.
         if entry.is_symlink() or is_junction_fn(entry.path) or os.path.ismount(entry.path):
             return True
         if __is_system_hidden(entry.path, kernel32):
@@ -180,6 +179,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """Verifica si el acceso a la ruta es seguro según las reglas del proyecto."""
+    if not isinstance(path_obj, Path):
+        return False
     try:
         if not path_obj.exists() or not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return False
@@ -201,7 +202,6 @@ def _sum_directory_recursive(
     """
     Calcula recursivamente el peso de una carpeta. Utiliza `memo` para evitar
     re-procesamiento y `MAX_SCAN_DEPTH` para prevenir desbordamiento de pila.
-    Las rutas son validadas con `_is_safe_to_traverse` en cada nivel.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
@@ -217,7 +217,6 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
-    # Bloqueo defensivo contra reparse points y enlaces simbólicos
     if root_path.is_symlink() or is_junction_fn(root_abs) or os.path.ismount(root_abs):
         return 0
 
@@ -230,14 +229,12 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        # Validación defensiva extra durante la recursión
                         sub_path = Path(entry.path)
                         if _is_safe_to_traverse(sub_path, base_check_path):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                             )
                     elif entry.is_file(follow_symlinks=False):
-                        # Solo lectura: se obtiene el tamaño mediante stat para evitar efectos secundarios
                         total += entry.stat(follow_symlinks=False).st_size
                 except (OSError, PermissionError):
                     continue
@@ -251,7 +248,6 @@ def _sum_directory_recursive(
 def directory_size(path: Union[str, Path, None]) -> int:
     """
     Calcula el peso total de una carpeta tras validar seguridad con `is_safe_to_modify`.
-    Usa `resolve(strict=True)` para asegurar que el path no sea un enlace roto.
     """
     if path is None:
         return 0
@@ -311,7 +307,6 @@ def detect_profiles(
     is_junction: JunctionChecker = getattr(os.path, 'isjunction', lambda _: False)
     k32 = _get_kernel32()
     
-    # Memoización persistente para el escaneo de toda la sesión
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
