@@ -184,9 +184,13 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not isinstance(src, Path) or not isinstance(dest, Path): return False
         if len(str(src)) > 240 or len(str(dest)) > 240: return False
         if not src.is_absolute() or not dest.is_absolute(): return False
+        
+        # Validación crítica: verificar que la ruta real sea segura
+        src_res, dest_res = src.resolve(), dest.resolve()
+        if is_protected_path(src_res) or is_protected_path(dest_res): return False
+        
         if not src.exists() or not src.is_file(): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
-        if is_protected_path(src) or is_protected_path(dest): return False
         if _is_recursive_violation(src, dest): return False
         if not os.access(src, os.W_OK) or not os.access(dest.parent if dest.is_file() else dest, os.W_OK):
             return False
@@ -214,7 +218,7 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     if not isinstance(junk_file, JunkFile) or not junk_file.path: return False
     try:
         current_path: Path = junk_file.path
-        if not current_path.exists() or is_protected_path(current_path) or is_protected_path(dest):
+        if not current_path.exists():
             return False
         return _is_safe_for_disk_op(current_path, dest)
     except (OSError, RuntimeError):

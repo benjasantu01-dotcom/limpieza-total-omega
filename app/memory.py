@@ -45,6 +45,7 @@ BYTES_IN_MB: Final[int] = 1024 * 1024
 BYTE_UNITS: Final[Tuple[str, ...]] = ("B", "KB", "MB", "GB", "TB")
 
 # Máscaras de acceso para operaciones de proceso seguro en Win32
+# Se usa PROCESS_QUERY_LIMITED_INFORMATION para minimizar privilegios
 PROCESS_QUERY_LIMITED_INFORMATION: Final[int] = 0x1000
 PROCESS_SET_QUOTA: Final[int] = 0x0100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
@@ -300,6 +301,8 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     """
     if not isinstance(path, str) or not os.path.isabs(path) or path.startswith("\\\\"):
         return False, "Ruta inválida o no soportada."
+    if not os.path.exists(path):
+        return False, "El ejecutable no existe."
     try:
         p = Path(path).resolve(strict=True)
         if not p.is_file(): return False, "No es un ejecutable válido."
