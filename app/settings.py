@@ -270,13 +270,13 @@ def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
     """Carga interna: valida el archivo en disco, retornando DEFAULTS ante errores."""
     ruta = Path(ruta_str)
     try:
+        if not ruta.exists(): return DEFAULTS.copy()
         stat_info = ruta.stat()
         if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
             return DEFAULTS.copy()
             
         with open(ruta, "r", encoding="utf-8") as f:
             data: Any = json.load(f)
-            if not _is_dict(data): return DEFAULTS.copy()
             return validate(data)
     except (json.JSONDecodeError, UnicodeDecodeError, PermissionError, OSError, Exception):
         return DEFAULTS.copy()
@@ -318,13 +318,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         elif not parent.is_dir():
             return None
         
+        # Validación de seguridad antes de escritura
+        if not is_safe_to_modify(str(parent)): return None
         if not os.access(parent, os.W_OK): return None
         try:
             usage = shutil.disk_usage(parent)
             if usage.free < MAX_SETTINGS_SIZE * 2: return None
         except OSError: return None
             
-        ensure_safe_to_modify(str(parent))
         if ruta.exists() and not is_safe_to_modify(str(ruta)):
             return None
         

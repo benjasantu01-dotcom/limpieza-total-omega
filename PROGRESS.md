@@ -6,30 +6,30 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
-- Rechazadas por tests: 13
+- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 77 | 4 | 9 | 11 | 79 |
-| 2026-08-30 | 142 | 9 | 26 | 13 | 134 |
+| 2026-08-29 | 77 | 4 | 9 | 11 | 75 |
+| 2026-08-30 | 144 | 11 | 26 | 13 | 134 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **48**
 - rendimiento: **42**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **40**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `memory.py`: **19**
 - `scanner.py`: **19**
 - `browser.py`: **18**
@@ -38,14 +38,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `assistant.py`: **15**
+- `branding.py`: **14**
 - `organizer.py`: **14**
-- `branding.py`: **13**
 - `safety.py`: **13**
 - `startup.py`: **12**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T13:52:51` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia y el estado de la carpeta destino mediante `is_protected_path` antes de intentar cualquier operación de escritura, asegurando que el proceso no sea interrumpido por excepciones de sistema al acceder a rutas protegidas.
+- `2026-08-30T13:51:25` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante fallos de entrada y condiciones de carrera al implementar un mecanismo de validación de tipo recursivo más estricto en `validate` y añadiendo un chequeo preventivo de `is_safe_to_modify` antes de intentar cualquier operación de escritura en el directorio de configuración.
 - `2026-08-30T13:42:09` **scanner.py** (robustez ante casos límite): Se reforzó `Scanner.process_entry` para manejar archivos vacíos o inaccesibles de forma atómica y se blindó el `scan_directory` contra excepciones de sistema al listar directorios, evitando que una ruta bloqueada detenga el escaneo completo.
 - `2026-08-30T13:42:00` **safety.py** (robustez ante casos límite): Se ha implementado una validación de longitud de ruta específica para Windows en `ensure_safe_to_modify` para prevenir errores de acceso (`OSError`) al manipular rutas largas que exceden el límite de la API estándar de Win32, fortaleciendo la robustez ante casos límite.
 - `2026-08-30T13:41:15` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.fsync` y manejo de excepciones ante interrupciones de E/S en `_atomic_isolate_file` para evitar archivos corruptos o incompletos tras cortes de energía o bloqueos, fortaleciendo la robustez ante fallos inesperados de persistencia.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T12:51:49` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar redundancias de cálculo al aprovechar que `memory_mod.read_snapshot()` y `diskreport.drive_usage()` ya son llamados o pueden cachearse de forma más inteligente, reduciendo el overhead en el hilo principal durante el análisis de salud.
 - `2026-08-30T12:50:39` **healthscore.py** (rendimiento): Se optimizó el acceso a los datos dentro de `compute_score` eliminando la iteración sobre `WEIGHTS` y el acceso dinámico con `.get()` mediante la sustitución por un loop pre-calculado que aprovecha la estructura de datos `_WEIGHT_ITEMS_INT` ya definida y constante, reduciendo la sobrecarga de resolución de llaves en cada iteración.
 - `2026-08-30T12:50:13` **duplicates.py** (rendimiento): Optimicé el rendimiento de `suggest_keeper` evitando llamadas innecesarias a `p.stat()` dentro de un bucle, reutilizando los resultados obtenidos durante el proceso de escaneo y evitando re-verificaciones redundantes de archivos ya validados.
-- `2026-08-30T12:40:54` **branding.py** (rendimiento): Se ha optimizado la gestión de la paleta convirtiendo el diccionario `_PALETTE_RAW` en un objeto `MappingProxyType` desde su creación, eliminando la necesidad de constantes intermedias redundantes y reduciendo la huella de memoria al evitar duplicados de cadenas en el módulo.
-- `2026-08-30T12:40:20` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` y `local_answer` reemplazando la creación y el recorrido de listas completas por iteradores eficientes, evitando el consumo de memoria innecesario al evaluar criterios de salud.

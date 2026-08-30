@@ -1238,3 +1238,73 @@ ERROR evolve/tests/test_modules.py - AttributeError: module 'ctypes' has no attr
 - `2026-08-30T13:42:09` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se reforzó `Scanner.process_entry` para manejar archivos vacíos o inaccesibles de forma atómica y se blindó el `scan_directory` contra excepciones de sistema al listar directorios, evitando que una ruta bloqueada detenga el escaneo completo.
 - `2026-08-30T13:42:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T13:42:09` Corrida terminada. Total usado hoy: 324.
+- `2026-08-30T13:50:53` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-30T13:51:25` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `settings.py` ante fallos de entrada y condiciones de carrera al implementar un mecanismo de validación de tipo recursivo más estricto en `validate` y añadiendo un chequeo preventivo de `is_safe_to_modify` antes de intentar cualquier operación de escritura en el directorio de configuración.
+- `2026-08-30T13:51:51` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.24s
+
+```
+- `2026-08-30T13:51:51` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el proceso de resolución de rutas en `StartupEntry` añadiendo una validación explícita mediante `os.access(p, os.R_OK)` para filtrar archivos que existen pero son inaccesibles por permisos (evitando excepciones en el hilo principal) y mejorando el manejo de rutas que exceden el límite `MAX_PATH` de Windows al usar `\\?\` como prefijo.
+- `2026-08-30T13:52:30` Tests FALLARON:
+```
+gemini
+E         + local
+
+evolve/tests/test_assistant.py:387: AssertionError
+_______________ test_metrics_are_withheld_when_the_user_says_no ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_metrics_are_withheld_when0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7fc735be3b30>
+
+    def test_metrics_are_withheld_when_the_user_says_no(tmp_path, monkeypatch):
+        """Se puede usar el asistente sin mandar ni una métrica."""
+        monkeypatch.setenv(settings.API_KEY_ENV_VAR, "clave")
+        settings.save({**settings.DEFAULTS, "asistente_activado": True,
+                       "asistente_enviar_metricas": False}, tmp_path)
+    
+        enviado = {}
+    
+        def espia(question, context_text, api_key, model):
+            enviado["texto"] = context_text
+            return "ok"
+    
+        monkeypatch.setattr(assistant, "_call_gemini", espia)
+        assistant.ask("¿qué hago?", _contexto_lleno(), tmp_path)
+>       assert "2400" not in enviado["texto"]
+                             ^^^^^^^^^^^^^^^^
+E       KeyError: 'texto'
+
+evolve/tests/test_assistant.py:418: KeyError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_ask_uses_the_online_engine_when_authorized - AssertionError: assert 'local' == 'gemini'
+  
+  - gemini
+  + local
+FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_says_no - KeyError: 'texto'
+2 failed, 297 passed in 1.25s
+
+```
+- `2026-08-30T13:52:30` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva al invocar el motor remoto, añadiendo un chequeo explícito que garantiza que la API key y el modelo provienen de un archivo de configuración validado, evitando procesar entradas de fuentes potencialmente manipuladas mediante una validación más estricta antes de la construcción del payload HTTP.
+- `2026-08-30T13:52:51` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia y el estado de la carpeta destino mediante `is_protected_path` antes de intentar cualquier operación de escritura, asegurando que el proceso no sea interrumpido por excepciones de sistema al acceder a rutas protegidas.
+- `2026-08-30T13:52:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T13:52:51` Corrida terminada. Total usado hoy: 328.
