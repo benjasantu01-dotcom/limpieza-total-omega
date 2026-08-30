@@ -867,3 +867,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-08-30T09:47:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-30T09:47:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T09:47:51` Corrida terminada. Total usado hoy: 232.
+- `2026-08-30T09:56:32` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-08-30T09:57:00` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-30T09:57:25` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva del método `_is_inside_base_root` añadiendo una comparación explícita de `Path.parents` para evitar que rutas que comparten prefijo de nombre de archivo pero no de directorio (ataques de "path traversal" o colisiones de nombres) sean procesadas incorrectamente fuera del alcance definido.
+- `2026-08-30T09:57:53` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `save` eliminando la llamada directa a `ensure_safe_to_modify` sobre el archivo de configuración antes de verificar su existencia, reemplazándola por una validación lógica con `is_safe_to_modify` que impide operaciones sobre rutas fuera del espacio de trabajo sin lanzar excepciones prematuras en el flujo de guardado.
+- `2026-08-30T09:58:05` ✅ Mejora aceptada en startup.py (enfoque: seguridad defensiva). Se reforzó la seguridad en `_resolve_and_cache_path` añadiendo una validación explícita para prevenir la ejecución de archivos ubicados en rutas UNC (`\\`), las cuales pueden ser vectores de ataque (ej. ejecución de código remoto o exfiltración de NTLM hashes) si el sistema intenta resolverlas al escanear.
+- `2026-08-30T09:58:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T09:58:05` Corrida terminada. Total usado hoy: 236.

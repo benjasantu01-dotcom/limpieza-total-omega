@@ -114,13 +114,12 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root = base_root.resolve(strict=False)
-        self.base_root_str = str(self.base_root).lower()
-        self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que una ruta esté dentro del alcance definido por la raíz del escaneo."""
         try:
-            return str(Path(path_str).resolve(strict=False)).lower().startswith(self.base_root_str)
+            target = Path(path_str).resolve(strict=False)
+            return self.base_root == target or self.base_root in target.parents
         except (OSError, RuntimeError):
             return False
 

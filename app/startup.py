@@ -106,7 +106,7 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae y valida una ruta de archivo si viene delimitada por comillas dobles."""
+        """Extracts and validates a path if it is enclosed in double quotes."""
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
         end_quote: int = raw_command.find('"', 1)
@@ -126,9 +126,11 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza, valida existencia y descarta rutas peligrosas usando caché para optimizar."""
+        """Normaliza, valida existencia y descarta rutas UNC y peligrosas usando caché."""
         if not isinstance(path_string, str) or not path_string:
             return ""
+        
+        # Prevenir rutas UNC (starts with \\) que pueden disparar conexiones de red
         if any(c in path_string for c in '<>|?*\0&;') or path_string.startswith(r"\\"):
             return ""
         
