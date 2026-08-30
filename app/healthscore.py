@@ -105,6 +105,10 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
+        # Validación de integridad: forzar que los campos sean numéricos antes de cualquier procesamiento
+        for field_name, value in self.__dict__.items():
+            if not isinstance(value, (int, float)):
+                setattr(self, field_name, 0.0)
         self.validate()
 
     def validate(self) -> None:

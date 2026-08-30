@@ -78,13 +78,13 @@ def _validate_root(directory: Union[str, os.PathLike]) -> Optional[Path]:
         directory: Ruta a validar como punto de inicio.
         
     Returns:
-        Objeto Path resuelto si es un directorio válido, None en otro caso.
+        Objeto Path resuelto si es un directorio válido y no protegido, None en otro caso.
     """
     try:
         if directory is None:
             return None
         p = Path(os.fspath(directory)).resolve(strict=True)
-        if p.is_dir():
+        if p.is_dir() and not is_protected_path(p):
             return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         pass

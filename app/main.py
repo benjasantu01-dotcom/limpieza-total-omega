@@ -85,7 +85,11 @@ logging.basicConfig(
 )
 
 # Validación de seguridad defensiva en el inicio: asegurar que no operamos en carpetas de sistema
-safety.ensure_safe_to_modify(Path(".").resolve())
+try:
+    safety.ensure_safe_to_modify(Path(".").resolve())
+except safety.UnsafePathError as e:
+    logging.critical("Iniciando desde ruta insegura: %s", e)
+    raise
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")

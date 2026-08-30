@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 122 | 7 | 15 | 17 | 119 |
-| 2026-08-30 | 99 | 6 | 19 | 8 | 92 |
+| 2026-08-29 | 122 | 7 | 15 | 17 | 115 |
+| 2026-08-30 | 102 | 6 | 19 | 8 | 93 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **42**
+- seguridad defensiva: **45**
 - rendimiento: **41**
 - robustez ante casos límite: **36**
 
@@ -34,18 +34,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `memory.py`: **19**
-- `diskreport.py`: **17**
-- `healthscore.py`: **17**
+- `diskreport.py`: **18**
+- `healthscore.py`: **18**
 - `assistant.py`: **16**
 - `duplicates.py`: **15**
 - `branding.py`: **14**
 - `startup.py`: **14**
 - `organizer.py`: **12**
 - `safety.py`: **10**
-- `main.py`: **8**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T09:38:23` **main.py** (seguridad defensiva): He refactorizado la lógica de validación del `_worker_thread_logic` para evitar el uso de `safety.ensure_safe_to_modify` como una función aislada que podría lanzar excepciones fuera de control, centralizando la protección en un bloque `try-except` robusto y garantizando que las verificaciones de seguridad se realicen siempre antes de la ejecución de la lógica, cumpliendo estrictamente con el enfoque de seguridad defensiva.
+- `2026-08-30T09:37:33` **healthscore.py** (seguridad defensiva): Reforcé la integridad del sistema ante datos de entrada maliciosos o corruptos añadiendo una validación de tipo estricta en el constructor de `SystemMetrics` mediante `isinstance`, asegurando que el estado del sistema nunca se inicie con tipos de datos inesperados que podrían evadir los filtros de `validate()`.
+- `2026-08-30T09:36:43` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_validate_root` y `drive_usage` asegurando que las rutas, tras ser resueltas, se validen contra `is_protected_path` antes de permitir cualquier procesamiento, evitando así posibles escapes a directorios del sistema mediante manipulación de rutas relativas o symlinks previos a la normalización.
 - `2026-08-30T09:26:33` **startup.py** (robustez ante casos límite): Se añadió una verificación de archivos inexistentes o inaccesibles dentro del bucle de `entries_from_folders` mediante un bloque `try-except` más robusto que utiliza `entry.is_file()` con manejo de errores, evitando que el escaneo se aborte ante permisos denegados o enlaces rotos en carpetas de inicio.
 - `2026-08-30T09:17:39` **settings.py** (robustez ante casos límite): Mejoré la robustez ante fallos de E/S en la carga inicial añadiendo un bloque `try-except` explícito en `_read_disk` que maneja archivos con formato JSON válido pero estructuralmente incompatible (ej. tipos de datos erróneos en claves), asegurando que ante cualquier desvío del esquema `AppSettings` se retorne siempre el estado por defecto.
 - `2026-08-30T09:17:02` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_is_safe_entry` al centralizar el manejo de errores de acceso a archivos, asegurando que `OSError` o `PermissionError` (comunes en escaneos de disco con permisos variables) no interrumpan el flujo, además de añadir un control explícito sobre la resolución de rutas mediante `resolve(strict=False)` para evitar fallos cuando el destino es una ruta inexistente pero referenciada.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T08:36:16` **safety.py** (rendimiento): Optimicé el uso del sistema de archivos reemplazando las múltiples llamadas repetitivas a `os.stat` en los validadores por una única llamada en `_check_file_integrity`, pasando el objeto `stat_result` ya obtenido a cada predicado del pipeline.
 - `2026-08-30T08:35:21` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` mediante la eliminación de la recarga innecesaria del manifiesto en operaciones que ya poseen el contexto de los ítems, y simplifiqué la lógica de `purge_all` para evitar llamadas redundantes a `load_manifest` y `save_manifest` dentro del bucle.
 - `2026-08-30T08:26:49` **organizer.py** (rendimiento): Optimizé `_process_directory` para reducir llamadas costosas a `os.path.exists` o `resolve` mediante el uso de los objetos `DirEntry` ya existentes y la cache local de atributos, mejorando el rendimiento en recorridos profundos.
-- `2026-08-30T08:26:39` **memory.py** (rendimiento): Se optimizó `parse_windows_process_csv` reemplazando la creación de listas intermedias y el uso de `sorted` sobre un generador completo por una estrategia que limita el consumo de memoria y CPU al procesar solo los procesos activos, aprovechando que el filtrado y el ordenamiento se realizan sobre una muestra acotada.
-- `2026-08-30T08:16:59` **duplicates.py** (rendimiento): Optimicé `_process_size_group` para evitar cálculos de hash redundantes en casos donde el tamaño del archivo ya garantiza la identidad, reduciendo el I/O innecesario al utilizar directamente el hash parcial como identificador final para archivos pequeños (donde el hash parcial cubre el archivo completo).
-- `2026-08-30T08:16:49` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar almacenar en memoria la lista completa de todos los archivos encontrados (`all_files.append`), utilizando en su lugar un `heapq` de tamaño fijo durante la iteración, lo que reduce drásticamente el consumo de RAM en directorios con millones de archivos.
