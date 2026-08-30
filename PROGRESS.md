@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 34
+- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 126 | 8 | 16 | 17 | 129 |
-| 2026-08-30 | 92 | 4 | 18 | 8 | 86 |
+| 2026-08-29 | 124 | 7 | 15 | 17 | 129 |
+| 2026-08-30 | 93 | 4 | 18 | 8 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **50**
-- seguridad defensiva: **46**
+- seguridad defensiva: **44**
 - rendimiento: **41**
-- robustez ante casos límite: **29**
+- robustez ante casos límite: **30**
 
 ## Mejoras aceptadas por archivo
 
@@ -37,15 +37,16 @@ Este archivo se regenera solo en cada corrida a partir de
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
 - `assistant.py`: **16**
+- `duplicates.py`: **15**
 - `branding.py`: **14**
-- `duplicates.py`: **14**
 - `startup.py`: **13**
-- `organizer.py`: **12**
-- `safety.py`: **11**
+- `organizer.py`: **11**
+- `safety.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T08:57:02` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `_scan_recursive` ante errores de acceso a disco y estados inconsistentes durante el recorrido, asegurando que si un archivo cambia de estado (se vuelve inaccesible o cambia de tamaño) mientras se procesa, la operación no se interrumpa.
 - `2026-08-30T08:47:35` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` sustituyendo el `ThreadPoolExecutor` (que introduce sobrecarga de hilos y contexto innecesaria para solo dos tareas de I/O bloqueante) por una ejecución secuencial directa, mejorando la latencia inicial y reduciendo el consumo de memoria en dispositivos con recursos limitados.
 - `2026-08-30T08:46:36` **settings.py** (rendimiento): Se optimizó el acceso a disco al reemplazar `os.stat` (que implica una llamada al sistema por cada check) por un chequeo de `st_mtime` directo dentro de `_read_disk` y utilizando la persistencia del objeto `stat_info` ya recuperado para validar el tamaño, reduciendo la latencia en lecturas repetidas.
 - `2026-08-30T08:36:16` **safety.py** (rendimiento): Optimicé el uso del sistema de archivos reemplazando las múltiples llamadas repetitivas a `os.stat` en los validadores por una única llamada en `_check_file_integrity`, pasando el objeto `stat_result` ya obtenido a cada predicado del pipeline.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T08:05:16` **settings.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones públicas, facilitando la comprensión del flujo de validación y la interacción con el sistema de archivos sin alterar la lógica de negocio.
 - `2026-08-30T07:54:31` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la incorporación de type hints en los retornos de las funciones, se han clarificado las docstrings siguiendo los estándares PEP 257, y se han extraído validaciones complejas de `_is_safe_for_disk_op` hacia un estilo más legible y resiliente.
 - `2026-08-30T07:46:16` **memory.py** (legibilidad y documentación): Mejoré la documentación de `memory.py` mediante type hints explícitos, docstrings detallados en funciones críticas y la conversión de los estados internos de los procesos a una enumeración clara, aumentando la mantenibilidad sin cambiar la lógica.
-- `2026-08-30T07:44:45` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del flujo de datos mediante la adición de docstrings técnicos en las funciones de cálculo de puntaje (`score_junk`, `score_security`, etc.), explicando la lógica de normalización subyacente para facilitar el mantenimiento futuro.

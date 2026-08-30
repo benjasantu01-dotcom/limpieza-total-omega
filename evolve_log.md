@@ -739,3 +739,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-30T08:48:50` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-08-30T08:48:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T08:48:50` Corrida terminada. Total usado hoy: 208.
+- `2026-08-30T08:55:24` Arrancando corrida. Quedan hoy ~92 peticiones objetivo.
+- `2026-08-30T08:56:02` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-08-30T08:56:34` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-30T08:57:02` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_scan_recursive` ante errores de acceso a disco y estados inconsistentes durante el recorrido, asegurando que si un archivo cambia de estado (se vuelve inaccesible o cambia de tamaño) mientras se procesa, la operación no se interrumpa.
+- `2026-08-30T08:57:11` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-30T08:57:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T08:57:11` Corrida terminada. Total usado hoy: 212.

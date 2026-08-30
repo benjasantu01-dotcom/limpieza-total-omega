@@ -172,8 +172,10 @@ def _collect_candidates(
                     elif stat.st_size >= min_size:
                         temp_map[int(stat.st_size)].append(entry)
                 except (OSError, PermissionError):
+                    # Ignorar archivos que desaparecieron o no se pueden leer durante la enumeración
                     continue
         except (OSError, PermissionError):
+            # Ignorar directorios sin permisos de lectura
             pass
 
     if directories:
