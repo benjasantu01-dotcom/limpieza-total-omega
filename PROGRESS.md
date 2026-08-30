@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 25
 - Sin respuesta de la IA (error o límite): 214
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 135 | 8 | 17 | 17 | 131 |
-| 2026-08-30 | 86 | 3 | 16 | 8 | 83 |
+| 2026-08-29 | 132 | 8 | 17 | 17 | 130 |
+| 2026-08-30 | 88 | 3 | 17 | 8 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
 - legibilidad y documentación: **52**
 - manejo de errores y validación de entradas: **50**
-- rendimiento: **35**
-- robustez ante casos límite: **32**
+- rendimiento: **37**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
-- `scanner.py`: **20**
+- `settings.py`: **21**
 - `browser.py`: **20**
+- `memory.py`: **19**
+- `scanner.py`: **19**
 - `diskreport.py`: **18**
-- `memory.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
 - `branding.py`: **15**
 - `duplicates.py`: **15**
-- `startup.py`: **13**
-- `organizer.py`: **11**
+- `organizer.py`: **12**
+- `startup.py`: **12**
 - `safety.py`: **10**
 - `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T08:26:49` **organizer.py** (rendimiento): Optimizé `_process_directory` para reducir llamadas costosas a `os.path.exists` o `resolve` mediante el uso de los objetos `DirEntry` ya existentes y la cache local de atributos, mejorando el rendimiento en recorridos profundos.
+- `2026-08-30T08:26:39` **memory.py** (rendimiento): Se optimizó `parse_windows_process_csv` reemplazando la creación de listas intermedias y el uso de `sorted` sobre un generador completo por una estrategia que limita el consumo de memoria y CPU al procesar solo los procesos activos, aprovechando que el filtrado y el ordenamiento se realizan sobre una muestra acotada.
 - `2026-08-30T08:16:59` **duplicates.py** (rendimiento): Optimicé `_process_size_group` para evitar cálculos de hash redundantes en casos donde el tamaño del archivo ya garantiza la identidad, reduciendo el I/O innecesario al utilizar directamente el hash parcial como identificador final para archivos pequeños (donde el hash parcial cubre el archivo completo).
 - `2026-08-30T08:16:49` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar almacenar en memoria la lista completa de todos los archivos encontrados (`all_files.append`), utilizando en su lugar un `heapq` de tamaño fijo durante la iteración, lo que reduce drásticamente el consumo de RAM en directorios con millones de archivos.
 - `2026-08-30T08:16:21` **browser.py** (rendimiento): Optimicé el rendimiento de la detección de perfiles compartiendo el objeto `perf_cache` a través de todo el ciclo de escaneo y evitando resoluciones de ruta redundantes dentro de `_sum_directory_recursive`, logrando que las subcarpetas comunes se procesen solo una vez.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T07:35:24` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `all_drives_usage` y `walk_files`) y se mejoró la legibilidad mediante la extracción de la lógica de detección de unidades locales en Windows hacia una función privada, eliminando el ruido dentro del flujo principal.
 - `2026-08-30T07:35:13` **browser.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings explicativos los mecanismos críticos de seguridad y recursión, clarificando la distinción entre las validaciones de ruta y los filtros de escaneo profundo.
 - `2026-08-30T07:34:47` **branding.py** (legibilidad y documentación): Se introdujeron docstrings detallados en todas las funciones que carecían de ellos y se estandarizaron los tipos de retorno y excepciones, mejorando la legibilidad técnica y facilitando el mantenimiento futuro.
-- `2026-08-30T07:24:23` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `check_recent_executable_in_downloads` capturando explícitamente el caso donde `entry.stat()` falla para archivos recién creados o en uso, y añadí validaciones de tipo/nulo en las funciones de chequeo para evitar excepciones inesperadas al procesar rutas volátiles.
-- `2026-08-30T07:23:58` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas mal formadas o inaccesibles, añadiendo validaciones preventivas contra `None` y errores de acceso en `_check_file_integrity` que antes podían elevar excepciones no controladas.

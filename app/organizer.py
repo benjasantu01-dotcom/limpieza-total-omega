@@ -200,7 +200,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                             _process_directory(Path(entry.path), found)
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
-                        if stats.st_size > 0 and shutil.disk_usage(anchor).free > stats.st_size:
+                        if stats.st_size > 0:
+                            # Evitar el cálculo frecuente de espacio en disco fuera de este bloque
                             found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue

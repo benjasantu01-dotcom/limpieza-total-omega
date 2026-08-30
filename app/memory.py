@@ -166,28 +166,28 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
-    Convierte la salida cruda de PowerShell (formato: Nombre,PID,WorkingSet) en objetos ProcessMemory.
-    Filtra procesos críticos y valida que el formato sea numérico antes de instanciar.
+    Convierte la salida cruda de PowerShell en objetos ProcessMemory.
+    Filtra procesos críticos y retorna los 'limit' procesos más pesados.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
-    def process_generator():
-        for line in raw_csv_text.splitlines():
-            line = line.strip()
-            if not line: continue
-            parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
-            if len(parts) == 3:
-                try:
-                    pid_val = int(parts[1])
-                    ws_val = int(parts[2])
-                    if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
-                        yield ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val)
-                except (ValueError, TypeError): 
-                    continue
-
-    processes = sorted(process_generator(), key=lambda p: p.working_set, reverse=True)
-    return processes[:limit]
+    proc_list: List[ProcessMemory] = []
+    for line in raw_csv_text.splitlines():
+        line = line.strip()
+        if not line: continue
+        parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
+        if len(parts) == 3:
+            try:
+                pid_val = int(parts[1])
+                ws_val = int(parts[2])
+                if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
+                    proc_list.append(ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val))
+            except (ValueError, TypeError): 
+                continue
+    
+    proc_list.sort(key=lambda p: p.working_set, reverse=True)
+    return proc_list[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Interroga la API Win32 GlobalMemoryStatusEx. Retorna 0s en caso de error de acceso."""

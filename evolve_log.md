@@ -699,3 +699,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-30T08:16:59` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_process_size_group` para evitar cálculos de hash redundantes en casos donde el tamaño del archivo ya garantiza la identidad, reduciendo el I/O innecesario al utilizar directamente el hash parcial como identificador final para archivos pequeños (donde el hash parcial cubre el archivo completo).
 - `2026-08-30T08:16:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T08:16:59` Corrida terminada. Total usado hoy: 196.
+- `2026-08-30T08:24:35` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-30T08:25:01` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-30T08:26:12` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-08-30T08:26:39` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó `parse_windows_process_csv` reemplazando la creación de listas intermedias y el uso de `sorted` sobre un generador completo por una estrategia que limita el consumo de memoria y CPU al procesar solo los procesos activos, aprovechando que el filtrado y el ordenamiento se realizan sobre una muestra acotada.
+- `2026-08-30T08:26:49` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé `_process_directory` para reducir llamadas costosas a `os.path.exists` o `resolve` mediante el uso de los objetos `DirEntry` ya existentes y la cache local de atributos, mejorando el rendimiento en recorridos profundos.
+- `2026-08-30T08:26:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T08:26:49` Corrida terminada. Total usado hoy: 200.
