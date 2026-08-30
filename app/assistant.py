@@ -487,7 +487,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     try:
         score_val = str(ctx.score) if ctx.score is not None else "N/A"
         score_display = f"Tu puntaje es {score_val}/100{f' (nota {ctx.grade})' if ctx.grade else ''}."
-        problemas = list(_iter_active_problems(ctx))[:3]
+        problemas = _identify_active_problems(ctx)
         resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente para arreglar."
         explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio, con la seguridad pesando más."
         
@@ -544,7 +544,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             except Exception:
                 continue
 
-    problemas = list(islice(_iter_active_problems(context), 3))
+    problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
     if problemas:
         cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "

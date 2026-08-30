@@ -77,7 +77,7 @@ APP_VERSION: Final[str] = "2.1.0"
 UI_FONT_FAMILY: Final[str] = "Segoe UI"
 UI_FONT_BOLD: Final[str] = "bold"
 
-_PALETTE_RAW: Final[dict[str, HexColor]] = {
+PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "background": "#0a0e17",
     "surface": "#141b2d",
     "surface_alt": "#1e2740",
@@ -99,19 +99,18 @@ _PALETTE_RAW: Final[dict[str, HexColor]] = {
     "text_dim": "#5c6b85",
     "border": "#2a3654",
     "glow": "#00f0c0",
-}
-PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType(_PALETTE_RAW)
+})
 
 # Constantes pre-resueltas para optimización de renderizado de elementos críticos
-C_SURFACE: Final[HexColor] = _PALETTE_RAW["surface"]
-C_BACKGROUND: Final[HexColor] = _PALETTE_RAW["background"]
-C_GLOW: Final[HexColor] = _PALETTE_RAW["glow"]
-C_TEXT_MUTED: Final[HexColor] = _PALETTE_RAW["text_muted"]
-C_SUCCESS: Final[HexColor] = _PALETTE_RAW["success"]
-C_INFO: Final[HexColor] = _PALETTE_RAW["info"]
-C_WARNING: Final[HexColor] = _PALETTE_RAW["warning"]
-C_DANGER: Final[HexColor] = _PALETTE_RAW["danger"]
-C_SURFACE_ALT: Final[HexColor] = _PALETTE_RAW["surface_alt"]
+C_SURFACE: Final[HexColor] = PALETTE["surface"]
+C_BACKGROUND: Final[HexColor] = PALETTE["background"]
+C_GLOW: Final[HexColor] = PALETTE["glow"]
+C_TEXT_MUTED: Final[HexColor] = PALETTE["text_muted"]
+C_SUCCESS: Final[HexColor] = PALETTE["success"]
+C_INFO: Final[HexColor] = PALETTE["info"]
+C_WARNING: Final[HexColor] = PALETTE["warning"]
+C_DANGER: Final[HexColor] = PALETTE["danger"]
+C_SURFACE_ALT: Final[HexColor] = PALETTE["surface_alt"]
 
 FONT_SIZES: Final[FontSizesDict] = {
     "display": 46,

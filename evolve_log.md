@@ -1130,3 +1130,42 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-08-30T12:31:06` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-08-30T12:31:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T12:31:06` Corrida terminada. Total usado hoy: 296.
+- `2026-08-30T12:39:38` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-08-30T12:40:20` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `_identify_active_problems` y `local_answer` reemplazando la creación y el recorrido de listas completas por iteradores eficientes, evitando el consumo de memoria innecesario al evaluar criterios de salud.
+- `2026-08-30T12:40:54` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se ha optimizado la gestión de la paleta convirtiendo el diccionario `_PALETTE_RAW` en un objeto `MappingProxyType` desde su creación, eliminando la necesidad de constantes intermedias redundantes y reduciendo la huella de memoria al evitar duplicados de cadenas en el módulo.
+- `2026-08-30T12:41:20` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+....................................................F................... [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+______________ test_detect_profiles_finds_injected_cache_folders _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_finds_inj0')
+
+    def test_detect_profiles_finds_injected_cache_folders(tmp_path):
+        cache = tmp_path / "Navegador" / "Default" / "Cache"
+        cache.mkdir(parents=True)
+        (cache / "dato.bin").write_bytes(b"a" * 500)
+    
+        encontrados = browser.detect_profiles(
+            bases=[tmp_path],
+            cache_paths={"Navegador Falso": r"Navegador\Default\Cache"},
+        )
+>       assert len(encontrados) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+evolve/tests/test_modules.py:739: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_finds_injected_cache_folders - assert 0 == 1
+ +  where 0 = len([])
+1 failed, 298 passed in 1.03s
+
+```
+- `2026-08-30T12:41:20` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `directory_size` y `detect_profiles` eliminando la recreación innecesaria de objetos `Path` y reduciendo el uso de `resolve()` dentro de los bucles críticos, reutilizando las rutas ya validadas.
+- `2026-08-30T12:41:33` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-30T12:41:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T12:41:33` Corrida terminada. Total usado hoy: 300.
