@@ -1408,3 +1408,4 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-30T16:44:26` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-30T16:54:37` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-30T17:04:49` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-30T17:15:01` Presupuesto diario agotado (350 usados). Corte hasta mañana.
