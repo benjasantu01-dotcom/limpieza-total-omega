@@ -223,9 +223,9 @@ def score_color(score: Union[float, int, None]) -> HexColor:
     Resuelve el color de un puntaje de salud (0.0-100.0).
     
     Args:
-        score: Valor numérico del puntaje.
+        score: Valor numérico del puntaje a evaluar.
     Returns:
-        HexColor correspondiente al umbral superado.
+        HexColor correspondiente al umbral de riesgo alcanzado.
     """
     if score is None:
         return C_TEXT_MUTED
@@ -251,11 +251,11 @@ def bar(percent: Union[float, int, None], width: int = 24,
     
     Args:
         percent: Valor numérico (0.0-100.0).
-        width: Longitud de la barra en caracteres.
-        filled: Carácter para el segmento relleno.
-        empty: Carácter para el segmento vacío.
+        width: Longitud total de la barra en número de caracteres.
+        filled: Carácter para el segmento relleno (por defecto bloque sólido).
+        empty: Carácter para el segmento vacío (por defecto bloque sombreado).
     Returns:
-        String con la barra renderizada.
+        String formateado con la barra renderizada.
     """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
@@ -267,7 +267,7 @@ def bar(percent: Union[float, int, None], width: int = 24,
 
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Transforma color #RRGGBB a valores decimales (0-255)."""
+    """Transforma color formato #RRGGBB a una tupla de valores decimales (0-255)."""
     if not isinstance(value, str) or len(value) != 7 or not value.startswith("#"):
         return (0, 0, 0)
     try:
@@ -276,12 +276,21 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
         return (0, 0, 0)
 
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
-    """Transforma valores (R, G, B) a string #RRGGBB."""
+    """Transforma valores (R, G, B) a string hexadecimal #RRGGBB."""
     return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, int(c))) for c in rgb])
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Interpola linealmente entre dos colores."""
+    """
+    Interpola linealmente entre dos colores según un factor de ratio (0.0 a 1.0).
+    
+    Args:
+        start: Color inicial en formato #RRGGBB.
+        end: Color final en formato #RRGGBB.
+        ratio: Factor de mezcla (0.0 = total start, 1.0 = total end).
+    Returns:
+        Color resultante mezclado.
+    """
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -294,7 +303,15 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=32)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
-    """Genera una secuencia de colores interpolados aritméticamente."""
+    """
+    Genera una secuencia de colores interpolados aritméticamente entre puntos de parada.
+    
+    Args:
+        steps: Cantidad total de colores a generar en la secuencia.
+        stops: Tupla de colores base que definen el degradado.
+    Returns:
+        Tupla de colores hexadecimales.
+    """
     n = max(1, int(steps))
     if not stops: return (C_GLOW,) * n
     if len(stops) < 2: return (stops[0],) * n
@@ -318,7 +335,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=8)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
-    """Optimiza secuencias de colores agrupando segmentos adyacentes iguales."""
+    """Optimiza secuencias de colores agrupando segmentos adyacentes idénticos."""
     if not colors: return ()
     segments: List[Tuple[HexColor, int, int]] = []
     start = 0
@@ -331,13 +348,20 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor,
 
 @lru_cache(maxsize=8)
 def _get_shield_coords(s: float) -> Tuple[float, ...]:
-    """Calcula vértices normalizados del logo para escalado vectorial."""
+    """Calcula vértices normalizados del escudo para escalado vectorial."""
     base: List[float] = [64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31]
     return tuple(v * float(s) for v in base)
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Genera una representación SVG del logotipo corporativo."""
+    """
+    Genera el código XML (SVG) que representa el logotipo corporativo.
+    
+    Args:
+        size: Dimensiones del área de visualización (viewbox).
+    Returns:
+        String conteniendo el marcado SVG generado.
+    """
     s: int = max(1, min(4096, int(size)))
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
@@ -363,12 +387,16 @@ def logo_svg(size: int = 128) -> str:
 """
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
-    """Guarda el archivo SVG tras validar que la ruta destino sea segura."""
+    """
+    Guarda el archivo SVG del logo tras validar que la ruta destino sea segura.
+    
+    Returns:
+        La ruta del archivo guardado o None si la operación no fue posible.
+    """
     if destination is None:
         return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificación doble de seguridad: protección contra rutas del sistema
         if is_protected_path(path_obj):
             return None
         ensure_safe_to_modify(path_obj)
@@ -385,7 +413,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         return None
 
 def logo_ascii() -> str:
-    """Retorna la representación artística en texto del logo."""
+    """Retorna la representación artística (ASCII art) del logotipo."""
     return r"""
    ___  __  __ ___ ___   _
   / _ \|  \/  | __/ __| /_\
@@ -395,7 +423,7 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas del escudo."""
+    """Renderiza las franjas degradadas internas del escudo en el canvas proporcionado."""
     try:
         scale_f = float(scale)
         franjas_count: int = max(6, int(28 * scale_f))
@@ -417,10 +445,10 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """
-    Dibuja el escudo corporativo escalado en un canvas.
+    Dibuja el escudo corporativo escalado en un elemento canvas.
     
     Args:
-        canvas: Protocolo de dibujo tipo Canvas.
+        canvas: Objeto canvas compatible con el protocolo CanvasElement.
         size: Altura total del logo en píxeles.
         canvas_x: Desplazamiento horizontal inicial (X).
         canvas_y: Desplazamiento vertical inicial (Y).
@@ -451,15 +479,15 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
     """
-    Renderiza una línea horizontal con degradado en un canvas.
+    Renderiza una línea horizontal decorativa con degradado en el canvas.
     
     Args:
-        canvas: Protocolo de dibujo tipo Canvas.
-        width: Longitud de la línea en píxeles.
-        height: Grosor vertical de la línea.
-        canvas_x: Coordenada X de origen.
-        canvas_y: Coordenada Y de origen.
-        stops: Tupla de colores HEX para el degradado.
+        canvas: Canvas compatible.
+        width: Longitud de la barra en píxeles.
+        height: Grosor vertical de la barra.
+        canvas_x: Coordenada X inicial.
+        canvas_y: Coordenada Y inicial.
+        stops: Colores para el degradado.
     """
     try:
         w_int = max(1, int(width))
@@ -473,17 +501,17 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
     """
-    Dibuja un indicador circular (donut) de progreso.
+    Dibuja un indicador circular (donut) de progreso en el canvas.
     
     Args:
-        canvas: Protocolo de dibujo tipo Canvas.
+        canvas: Canvas destino.
         percent: Porcentaje de avance (0.0 a 100.0).
         size: Diámetro exterior en píxeles.
-        canvas_x: Posición X del centro.
-        canvas_y: Posición Y del centro.
+        canvas_x: Coordenada X del centro del anillo.
+        canvas_y: Coordenada Y del centro del anillo.
         thickness: Grosor del trazo circular.
-        track: Color de fondo del track (opcional).
-        fill: Color de progreso (opcional).
+        track: Color opcional para el fondo del anillo (track).
+        fill: Color opcional para el progreso.
     """
     try:
         valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))

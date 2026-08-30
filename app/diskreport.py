@@ -91,6 +91,13 @@ def _validate_root(directory: Union[str, os.PathLike]) -> Optional[Path]:
     return None
 
 
+def _get_local_windows_drives() -> List[str]:
+    """Detecta las unidades de disco montadas en entornos Windows."""
+    import string
+    return [f"{letter}:\\" for letter in string.ascii_uppercase
+            if os.path.exists(f"{letter}:\\")]
+
+
 @dataclass
 class FileEntry:
     """
@@ -244,19 +251,14 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     Returns:
         Lista de objetos DriveUsage con la información del sistema.
     """
+    target_mounts: Iterable[str]
     if mounts is None:
-        if os.name == "nt":
-            import string
-            mounts = [f"{letter}:\\" for letter in string.ascii_uppercase
-                      if os.path.exists(f"{letter}:\\")]
-        else:
-            mounts = ["/"]
-    
-    if not isinstance(mounts, Iterable):
-        return []
+        target_mounts = _get_local_windows_drives() if os.name == "nt" else ["/"]
+    else:
+        target_mounts = mounts
     
     results: List[DriveUsage] = []
-    for mount in mounts:
+    for mount in target_mounts:
         if isinstance(mount, str) and mount:
             usage = drive_usage(mount)
             if usage:

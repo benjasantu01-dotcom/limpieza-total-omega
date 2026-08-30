@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 29
+- Rechazadas por guardia de seguridad: 30
 - Sin cambios (nada sustancial que mejorar): 26
-- Sin respuesta de la IA (error o límite): 218
+- Sin respuesta de la IA (error o límite): 217
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 147 | 8 | 19 | 18 | 136 |
-| 2026-08-30 | 73 | 3 | 10 | 8 | 82 |
+| 2026-08-29 | 144 | 8 | 19 | 18 | 135 |
+| 2026-08-30 | 76 | 3 | 11 | 8 | 82 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **50**
-- legibilidad y documentación: **43**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **38**
-- rendimiento: **37**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `scanner.py`: **21**
-- `memory.py`: **19**
-- `quarantine.py`: **19**
-- `browser.py`: **18**
+- `browser.py`: **19**
+- `memory.py`: **18**
+- `quarantine.py`: **18**
 - `assistant.py`: **17**
 - `healthscore.py`: **17**
-- `diskreport.py`: **16**
-- `branding.py`: **14**
+- `diskreport.py`: **17**
+- `branding.py`: **15**
 - `duplicates.py`: **13**
 - `startup.py`: **12**
 - `safety.py`: **11**
 - `organizer.py`: **11**
-- `main.py`: **10**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T07:35:24` **diskreport.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `all_drives_usage` y `walk_files`) y se mejoró la legibilidad mediante la extracción de la lógica de detección de unidades locales en Windows hacia una función privada, eliminando el ruido dentro del flujo principal.
+- `2026-08-30T07:35:13` **browser.py** (legibilidad y documentación): Documenté con type hints más precisos y docstrings explicativos los mecanismos críticos de seguridad y recursión, clarificando la distinción entre las validaciones de ruta y los filtros de escaneo profundo.
+- `2026-08-30T07:34:47` **branding.py** (legibilidad y documentación): Se introdujeron docstrings detallados en todas las funciones que carecían de ellos y se estandarizaron los tipos de retorno y excepciones, mejorando la legibilidad técnica y facilitando el mantenimiento futuro.
 - `2026-08-30T07:24:23` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `check_recent_executable_in_downloads` capturando explícitamente el caso donde `entry.stat()` falla para archivos recién creados o en uso, y añadí validaciones de tipo/nulo en las funciones de chequeo para evitar excepciones inesperadas al procesar rutas volátiles.
 - `2026-08-30T07:23:58` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas mal formadas o inaccesibles, añadiendo validaciones preventivas contra `None` y errores de acceso en `_check_file_integrity` que antes podían elevar excepciones no controladas.
 - `2026-08-30T07:15:32` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_manifest` mediante la implementación de un manejo explícito de errores y validación de tipos antes de la persistencia atómica, asegurando que un fallo en la estructura de datos no resulte en un manifiesto corrupto o vacío.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T06:54:36` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `build_context` al añadir una validación temprana de tipos `isinstance(source, (dict, object))` para evitar `AttributeError` al intentar operar sobre tipos inesperados, además de asegurar que la ingesta de datos no se detenga silenciosamente ante errores en atributos individuales mediante un bloque `try-except` encapsulado.
 - `2026-08-30T05:32:19` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.path` para asegurar que las rutas configurables no solo sean absolutas, sino que también se resuelvan y validen contra el sistema de archivos antes de aceptarse, impidiendo posibles ataques de *path traversal* o referencias a rutas maliciosas incluso si el usuario intenta inyectar rutas engañosas en el JSON de configuración.
 - `2026-08-30T05:22:42` **safety.py** (seguridad defensiva): Se reforzó la seguridad defensiva implementando una validación estricta de puntos de reparse (reparse points) durante la normalización de rutas, evitando que `resolve()` siga enlaces simbólicos o junctions fuera de la jerarquía permitida, previniendo así posibles ataques de "path traversal" hacia carpetas del sistema.
-- `2026-08-30T05:22:12` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` al añadir una validación de existencia mediante `source.exists()` y `source.is_file()` justo antes de la operación de copia, mitigando una condición de carrera (TOCTOU) donde el archivo original podría ser borrado o reemplazado por un enlace simbólico entre la validación inicial y la copia.
-- `2026-08-30T05:21:42` **organizer.py** (seguridad defensiva): Se añadió una validación estricta de rutas mediante `is_relative_to` (o lógica equivalente) en `stage_for_review` para asegurar que el archivo de origen no esté residiendo dentro del propio directorio de revisión, previniendo así posibles bucles de movimiento o corrupción de la estructura de archivos durante el procesamiento.
-- `2026-08-30T05:13:08` **memory.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_path_security` al utilizar `pathlib.Path.resolve()` correctamente para detectar ataques de *path traversal* o *junctions*, garantizando que la ruta del proceso esté bajo el control esperado antes de cualquier operación de gestión de memoria.

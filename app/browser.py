@@ -66,7 +66,7 @@ MAX_SCAN_DEPTH: int = 15
 # Atributos: FILE_ATTRIBUTE_HIDDEN (0x01) | FILE_ATTRIBUTE_SYSTEM (0x02) | FILE_ATTRIBUTE_REPARSE_POINT (0x400)
 SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x400
 
-# Tipo alias para claridad en funciones de callback de sistema
+# Tipo alias para funciones que validan si una ruta es un punto de reparse/junction.
 JunctionChecker = Callable[[str], bool]
 
 @dataclass
@@ -200,8 +200,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el peso de una carpeta. Utiliza `memo` para evitar
-    re-procesamiento y `MAX_SCAN_DEPTH` para prevenir desbordamiento de pila.
+    Calcula recursivamente el peso de una carpeta utilizando `os.scandir` para rendimiento.
+    Usa `memo` para cachear resultados de subcarpetas y `MAX_SCAN_DEPTH` para evitar recursión infinita.
     """
     if depth > MAX_SCAN_DEPTH or not isinstance(root_dir, str) or not root_dir:
         return 0
