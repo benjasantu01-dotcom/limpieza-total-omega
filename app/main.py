@@ -1234,23 +1234,28 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             folder = self._ask_folder()
             if folder:
                 self.scan_target = folder
-                self.target_label.configure(text=folder)
+                if hasattr(self, 'target_label') and self.target_label.winfo_exists():
+                    self.target_label.configure(text=folder)
             else:
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
-                self.target_label.configure(text="")
+                if hasattr(self, 'target_label') and self.target_label.winfo_exists():
+                    self.target_label.configure(text="")
         elif choice == "Por defecto (Temp + Descargas)":
             self.scan_target = None
-            self.target_label.configure(text="")
+            if hasattr(self, 'target_label') and self.target_label.winfo_exists():
+                self.target_label.configure(text="")
         else:
             if self._is_safe_target_dir(choice):
                 self.scan_target = choice
-                self.target_label.configure(text=f"Unidad completa: {choice}")
+                if hasattr(self, 'target_label') and self.target_label.winfo_exists():
+                    self.target_label.configure(text=f"Unidad completa: {choice}")
             else:
                 self.log(f"Error: La ruta {choice} no es válida o es insegura.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
-                self.target_label.configure(text="")
+                if hasattr(self, 'target_label') and self.target_label.winfo_exists():
+                    self.target_label.configure(text="")
 
     def on_scan_junk(self) -> None:
         """Ejecuta la búsqueda de archivos basura usando un procesamiento eficiente."""

@@ -1017,3 +1017,10 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - NameEr
 - `2026-08-29T23:34:25` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-29T23:44:35` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-29T23:54:50` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-30T00:05:05` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-08-30T00:05:32` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-08-30T00:05:56` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-08-30T00:07:07` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se mejora la robustez ante estados inconsistentes de la interfaz durante el cierre de la aplicación agregando verificaciones de existencia de widgets antes de cualquier manipulación en los callbacks de hilos secundarios y métodos asíncronos.
+- `2026-08-30T00:07:20` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-30T00:07:20` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T00:07:20` Corrida terminada. Total usado hoy: 4.

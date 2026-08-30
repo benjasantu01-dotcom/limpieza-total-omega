@@ -5,33 +5,34 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **221** (44.0% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 29
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 221
+- Sin respuesta de la IA (error o límite): 224
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-28 | 59 | 3 | 7 | 1 | 82 |
+| 2026-08-28 | 57 | 3 | 7 | 1 | 82 |
 | 2026-08-29 | 162 | 9 | 22 | 18 | 139 |
+| 2026-08-30 | 1 | 0 | 0 | 0 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **50**
 - rendimiento: **42**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **39**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **23**
-- `scanner.py`: **20**
+- `settings.py`: **22**
 - `memory.py`: **20**
+- `scanner.py`: **19**
 - `assistant.py`: **18**
 - `diskreport.py`: **18**
 - `quarantine.py`: **18**
@@ -39,13 +40,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `branding.py`: **16**
 - `duplicates.py`: **16**
 - `healthscore.py`: **15**
-- `main.py`: **12**
+- `main.py`: **13**
 - `organizer.py`: **10**
 - `safety.py`: **9**
 - `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T00:07:07` **main.py** (robustez ante casos límite): Se mejora la robustez ante estados inconsistentes de la interfaz durante el cierre de la aplicación agregando verificaciones de existencia de widgets antes de cualquier manipulación en los callbacks de hilos secundarios y métodos asíncronos.
 - `2026-08-29T14:55:08` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `_sum_directory_recursive` ante archivos bloqueados por el sistema operativo (error 32, "file in use") o errores de acceso durante `os.scandir` mediante un manejo de excepciones granular y defensivo, asegurando que el escaneo no se interrumpa ante un archivo ocupado.
 - `2026-08-29T14:44:55` **settings.py** (rendimiento): Se implementó un cacheo más eficiente en `_read_disk` utilizando `os.stat().st_mtime` para evitar la redundancia de lectura y parseo JSON en disco cuando el archivo no ha sido modificado, optimizando el rendimiento de las llamadas recurrentes a `get` y `load`.
 - `2026-08-29T14:35:42` **scanner.py** (rendimiento): Optimicé el rendimiento de `_is_safe_entry` eliminando la llamada redundante `path_obj.exists()` (que requiere acceso a disco) y reemplazándola por una validación de caché local, además de evitar la resolución completa de ruta innecesaria.
@@ -60,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-29T13:54:35` **quarantine.py** (legibilidad y documentación): He mejorado la documentación de `quarantine_file` y `_atomic_isolate_file` añadiendo type hints más precisos y docstrings explicativos que detallan el flujo de seguridad, haciendo más transparente el proceso crítico de aislamiento atómico.
 - `2026-08-29T13:54:02` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y type hints consistentes en funciones críticas, clarificando la intención y los contratos de seguridad (`is_safe_to_move` y `_is_safe_for_disk_op`) para facilitar futuras auditorías.
 - `2026-08-29T13:45:36` **memory.py** (legibilidad y documentación): Mejoré la documentación de las funciones de bajo nivel en `memory.py` mediante type hints explícitos, docstrings detallados que explican el "porqué" de las validaciones de seguridad, y la estandarización de los retornos de error para facilitar la trazabilidad del estado del sistema.
-- `2026-08-29T13:44:06` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones de cálculo de puntaje (`score_*`) y la clase principal, especificando el contrato de entrada y el objetivo de normalización para clarificar el flujo de datos.
