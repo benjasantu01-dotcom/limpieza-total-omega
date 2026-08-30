@@ -87,6 +87,11 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
+# Estructura optimizada para lookup O(1) de reglas
+_RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
+for rule in _RECOMMENDATION_RULES:
+    _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
+
 @dataclass
 class SystemMetrics:
     """Contenedor de datos inmutable para el estado del sistema, con validación de tipo."""
@@ -220,8 +225,7 @@ def compute_score(metrics: SystemMetrics) -> HealthResult:
         metric_breakdown[area] = int(pts)
         accumulated_points += pts
         
-        # Filtrar reglas aplicables al área actual
-        for rule in [r for r in _RECOMMENDATION_RULES if r.area == area]:
+        for rule in _RULES_BY_AREA.get(area, []):
             if rule.check(metrics, ratio):
                 recommendations.append(rule.message_factory(metrics))
     

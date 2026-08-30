@@ -388,12 +388,15 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
-    """Recolección interna de métricas en una pasada única."""
+    """Recolección interna de métricas en una pasada única optimizada."""
     total_bytes: int = 0
     total_files: int = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
-    top_files_heap: List[Tuple[int, Path]] = []
+    
+    # Usamos una lista simple para recolectar y ordenamos al final (O(N log N))
+    # Es más eficiente que mantener un heap de N elementos en cada paso.
+    all_files: List[Tuple[int, Path]] = []
     
     try:
         for path, size in walk_files(directory, skip_protected):
@@ -403,16 +406,12 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
             ext = path.suffix.lower() or "(sin extensión)"
             ext_sizes[ext] += size
             ext_counts[ext] += 1
-            
-            if len(top_files_heap) < 8:
-                heapq.heappush(top_files_heap, (size, path))
-            elif size > top_files_heap[0][0]:
-                heapq.heapreplace(top_files_heap, (size, path))
+            all_files.append((size, path))
     except Exception:
-        # Fallo silencioso en la recolección parcial de archivos
         pass
             
-    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, sorted(top_files_heap, key=lambda x: x[0], reverse=True))
+    top_files = heapq.nlargest(8, all_files, key=lambda x: x[0])
+    return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files)
 
 
 def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:

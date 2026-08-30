@@ -1345,3 +1345,14 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-30T03:41:01` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
 - `2026-08-30T03:41:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T03:41:01` Corrida terminada. Total usado hoy: 88.
+- `2026-08-30T03:49:31` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-30T03:49:57` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-30T03:50:23` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos la función `_collect_summary_data` para evitar llamadas redundantes a `heapq` y `sorted` dentro del loop principal, delegando la ordenación final a un único paso fuera del bucle, reduciendo significativamente la complejidad computacional durante el recorrido intensivo de disco.
+- `2026-08-30T03:50:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-30T03:50:47` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-30T03:51:04` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-30T03:52:00` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-08-30T03:53:15` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-30T03:54:05` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimizé la generación de recomendaciones en `compute_score` eliminando la creación de listas intermedias y el filtrado redundante dentro del bucle principal, reemplazándolo por una búsqueda eficiente mediante un diccionario pre-agrupado.
+- `2026-08-30T03:54:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T03:54:05` Corrida terminada. Total usado hoy: 92.
