@@ -275,16 +275,15 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """Verifica si la ruta reside dentro de directorios de sistema protegidos."""
     if not path: return True
-
     try:
         p = normalize(path)
         norm_case = os.path.normcase(str(p))
-        
         if any(norm_case.startswith(root) for root in _SYSTEM_ROOT_PATHS):
             return True
-            
-        path_parts = {part.lower() for part in p.parts}
-        return not PROTECTED_DIR_NAMES.isdisjoint(path_parts) or p == Path(p.anchor)
+        for part in p.parts:
+            if part.lower() in PROTECTED_DIR_NAMES:
+                return True
+        return p == Path(p.anchor)
     except (ValueError, TypeError, OSError, RuntimeError): 
         return True
 

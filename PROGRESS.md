@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 22
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 23
 - Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 88 | 5 | 10 | 11 | 86 |
-| 2026-08-30 | 133 | 8 | 23 | 11 | 129 |
+| 2026-08-29 | 84 | 5 | 10 | 11 | 86 |
+| 2026-08-30 | 135 | 8 | 24 | 12 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
-- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **48**
-- rendimiento: **40**
-- robustez ante casos límite: **30**
+- seguridad defensiva: **46**
+- rendimiento: **42**
+- robustez ante casos límite: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
 - `memory.py`: **20**
 - `scanner.py`: **19**
-- `browser.py`: **18**
 - `diskreport.py`: **17**
+- `browser.py`: **17**
 - `healthscore.py`: **17**
 - `quarantine.py`: **17**
-- `assistant.py`: **16**
 - `duplicates.py`: **16**
-- `startup.py`: **14**
-- `branding.py`: **14**
-- `organizer.py`: **12**
-- `safety.py`: **11**
+- `assistant.py`: **15**
+- `startup.py`: **13**
+- `branding.py`: **13**
+- `organizer.py`: **13**
+- `safety.py`: **12**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T13:01:36` **safety.py** (rendimiento): Se ha optimizado `is_protected_path` reemplazando la creación dinámica de un `set` de partes de ruta por una búsqueda de prefijos usando `parts` y comparaciones directas, reduciendo drásticamente la presión sobre el recolector de basura y mejorando la performance al evitar la instanciación de objetos en cada llamada.
+- `2026-08-30T13:00:29` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` reemplazando múltiples llamadas a `Path.resolve()` y `Path.is_file()` por el uso directo de los métodos de `os.DirEntry` y el caché de `stat()` ya obtenido, reduciendo drásticamente las llamadas al sistema de archivos (syscalls) en cada iteración del bucle.
 - `2026-08-30T12:52:05` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante el uso de `sys.stdin` o lectura directa optimizada para evitar la creación innecesaria de subprocesos cuando no es estrictamente necesario, y se refactorizó `read_snapshot` para evitar la apertura repetida de archivos en disco usando un buffer más eficiente.
 - `2026-08-30T12:51:49` **main.py** (rendimiento): Optimicé el método `_compile_metrics` para evitar redundancias de cálculo al aprovechar que `memory_mod.read_snapshot()` y `diskreport.drive_usage()` ya son llamados o pueden cachearse de forma más inteligente, reduciendo el overhead en el hilo principal durante el análisis de salud.
 - `2026-08-30T12:50:39` **healthscore.py** (rendimiento): Se optimizó el acceso a los datos dentro de `compute_score` eliminando la iteración sobre `WEIGHTS` y el acceso dinámico con `.get()` mediante la sustitución por un loop pre-calculado que aprovecha la estructura de datos `_WEIGHT_ITEMS_INT` ya definida y constante, reduciendo la sobrecarga de resolución de llaves en cada iteración.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T12:20:11` **organizer.py** (legibilidad y documentación): Documenté con docstrings detallados las funciones auxiliares de validación de `organizer.py` y agregué *type hints* para clarificar los tipos de datos en parámetros y retornos, mejorando la legibilidad sin alterar la lógica de seguridad.
 - `2026-08-30T12:19:46` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en funciones críticas, aclarando el propósito y el manejo de excepciones de las APIs de bajo nivel, y renombré variables internas en `parse_linux_meminfo` para que el flujo de datos sea evidente sin necesidad de comentarios adicionales.
 - `2026-08-30T12:10:20` **healthscore.py** (legibilidad y documentación): Documenté con docstrings detallados la lógica de normalización de cada función `score_*` para aclarar qué representa exactamente el ratio obtenido, facilitando el mantenimiento y la comprensión de las fórmulas matemáticas empleadas.
-- `2026-08-30T12:09:55` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados que explican el "porqué" de las decisiones de diseño, aclarando el flujo del pipeline de hashing y las salvaguardas de seguridad implementadas.
-- `2026-08-30T12:09:30` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y claridad de `walk_files` mediante la sustitución de constantes numéricas (bitmask de atributos de archivo) por nombres descriptivos y la actualización de los docstrings para reflejar mejor el comportamiento de las exclusiones.

@@ -5,7 +5,7 @@ en carpetas ordenadas por tamaño o fecha, sin borrar nada automáticamente.
 
 Filosofía de seguridad: este módulo NUNCA borra archivos por sí solo.
 Solo mueve candidatos a una carpeta de revisión ("_Para_Revisar") para
-que el usuario decida qué borrar. Borrar es una acción explícita y
+que el usuario descida qué borrar. Borrar es una acción explícita y
 separada (ver delete_reviewed()).
 """
 
@@ -190,16 +190,14 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """Realiza un recorrido recursivo en profundidad del sistema de archivos, ignorando rutas protegidas o puntos de unión."""
     try:
-        abs_path = current_dir.resolve()
-        if len(str(abs_path)) > 240 or is_protected_path(abs_path): return
-        
-        with os.scandir(abs_path) as it:
+        with os.scandir(current_dir) as it:
             for entry in it:
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        child_path = Path(entry.path).resolve()
-                        if _is_allowed_directory(entry.name) and not _is_junction(entry) and not is_protected_path(child_path):
-                            _process_directory(child_path, found)
+                        if _is_allowed_directory(entry.name) and not _is_junction(entry):
+                            child_path = Path(entry.path)
+                            if not is_protected_path(child_path):
+                                _process_directory(child_path, found)
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
                         if stats.st_size > 0:
