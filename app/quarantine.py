@@ -367,7 +367,7 @@ def quarantine_file(
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
     
-    source_path = Path(source).expanduser().resolve()
+    source_path = Path(source).expanduser().resolve(strict=True)
     if not source_path.is_file():
         raise FileNotFoundError(f"Archivo origen inaccesible: {source_path}")
     
@@ -505,6 +505,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
         try:
             stored_path = (quarantine_root / item.stored_name).resolve()
             
+            # Sincronización: si no existe físicamente, eliminamos del manifiesto
             if not stored_path.exists():
                 del items_dict[item_id]
                 continue

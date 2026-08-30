@@ -1431,3 +1431,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-08-30T04:32:23` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante la concurrencia y la integridad de los hilos implementando un control estricto sobre `_executor` y `_tasks_running`, asegurando que no se disparen nuevas tareas ni se acceda a recursos si la aplicación está en proceso de cierre.
 - `2026-08-30T04:32:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T04:32:23` Corrida terminada. Total usado hoy: 108.
+- `2026-08-30T04:40:28` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-08-30T04:40:58` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-08-30T04:41:25` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-30T04:41:56` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de "ruta existente y absoluta" en `quarantine_file` para asegurar que el archivo no sea una ruta relativa ambigua antes de realizar operaciones de IO, y se añadió una verificación de `path.exists()` dentro del flujo de `purge_all` para manejar escenarios donde los archivos pudieron ser borrados externamente, evitando así inconsistencias entre el sistema de archivos y el manifiesto.
+- `2026-08-30T04:42:01` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 108): unterminated string literal (detected at line 108)
+- `2026-08-30T04:42:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T04:42:01` Corrida terminada. Total usado hoy: 112.
