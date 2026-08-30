@@ -160,12 +160,13 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """Realiza validaciones integrales de seguridad antes de operaciones de archivo."""
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
-    # Validaciones básicas de integridad
+    # Validaciones básicas: evitar rutas extremas que fallan en Windows (260 chars MAX_PATH)
     if len(str(src)) > 240 or len(str(dest)) > 240: return False
     if not src.is_absolute() or not dest.is_absolute(): return False
-    if not src.exists() or not src.is_file(): return False
     
     try:
+        if not src.exists() or not src.is_file(): return False
+        
         # Validación de protección de rutas y permisos de acceso
         if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
@@ -174,8 +175,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if src.anchor != dest.anchor: return False
         
         # Validaciones de atributos SO
-        if os.name == "nt" and (src.stat().st_file_attributes & 0x400): return False
-        return src.stat().st_size > 0 and _passes_system_checks(src) and not _is_file_locked(src)
+        stat = src.stat()
+        if os.name == "nt" and (stat.st_file_attributes & 0x400): return False
+        return stat.st_size > 0 and _passes_system_checks(src) and not _is_file_locked(src)
     except (OSError, RuntimeError, AttributeError):
         return False
 
@@ -189,8 +191,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """Realiza un barrido recursivo seguro en el sistema de archivos."""
     try:
         abs_path = current_dir.resolve()
-        if is_protected_path(abs_path): return
-        anchor = abs_path.anchor
+        # Evitar rutas demasiado largas antes de escanear
+        if len(str(abs_path)) > 240 or is_protected_path(abs_path): return
         
         with os.scandir(abs_path) as it:
             for entry in it:
@@ -201,7 +203,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
                         if stats.st_size > 0:
-                            # Evitar el cálculo frecuente de espacio en disco fuera de este bloque
                             found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue

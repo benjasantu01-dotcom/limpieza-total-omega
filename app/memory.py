@@ -302,12 +302,14 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     if not proc_handle or proc_handle == -1: return None
     kernel32 = getattr(ctypes.windll, "kernel32", None)
     if not kernel32 or not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
-    size = ctypes.c_ulong(4096)
-    buf = ctypes.create_unicode_buffer(4096)
+    
+    MAX_PATH = 4096
+    size = ctypes.c_ulong(MAX_PATH)
+    buf = ctypes.create_unicode_buffer(MAX_PATH)
     try:
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
             return str(buf.value)
-    except (OSError, ctypes.ArgumentError): pass
+    except (OSError, ctypes.ArgumentError, ValueError): pass
     return None
 
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:

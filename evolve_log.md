@@ -746,3 +746,14 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-30T08:57:11` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
 - `2026-08-30T08:57:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-30T08:57:11` Corrida terminada. Total usado hoy: 212.
+- `2026-08-30T09:05:38` Arrancando corrida. Quedan hoy ~88 peticiones objetivo.
+- `2026-08-30T09:05:49` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-30T09:06:52` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-30T09:07:58` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-30T09:09:10` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-08-30T09:09:55` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_get_process_path` para prevenir desbordamientos de buffer o rutas mal formadas (Unicode) utilizando `ctypes.create_unicode_buffer` con el tamaño correcto, además de robustecer la carga de librerías mediante una verificación de presencia de símbolos antes de su uso para evitar `AttributeError` en entornos con permisos restringidos.
+- `2026-08-30T09:10:55` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-30T09:11:22` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_process_directory` y `_is_safe_for_disk_op` añadiendo validaciones contra rutas que exceden `MAX_PATH` (límite crítico en Windows) y manejando errores de `stat()` para archivos que se eliminan o cambian de permiso mientras el escáner los procesa, evitando excepciones no controladas durante el bucle.
+- `2026-08-30T09:11:39` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación crítica en `quarantine_file` para detectar y rechazar archivos con puntos de reparse (junctions/symlinks) al momento de leer sus metadatos iniciales, evitando errores de recursión o acceso a rutas fuera del scope de la aplicación antes de la operación de movimiento.
+- `2026-08-30T09:11:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-30T09:11:39` Corrida terminada. Total usado hoy: 216.

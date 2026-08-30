@@ -376,6 +376,11 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).expanduser().resolve(strict=True)
+    
+    # Pre-validación rápida antes de cualquier operación costosa
+    if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
+        raise UnsafePathError("No se permite aislar enlaces simbólicos o puntos de reparse.")
+        
     if not source_path.is_file():
         raise FileNotFoundError(f"Archivo origen inaccesible: {source_path}")
     
