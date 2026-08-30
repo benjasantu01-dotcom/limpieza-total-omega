@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **220** (43.7% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 217
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 122 | 7 | 15 | 17 | 127 |
-| 2026-08-30 | 96 | 4 | 18 | 8 | 90 |
+| 2026-08-29 | 122 | 7 | 15 | 17 | 123 |
+| 2026-08-30 | 98 | 4 | 19 | 8 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,15 +25,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **50**
 - seguridad defensiva: **42**
 - rendimiento: **41**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
+- `settings.py`: **22**
 - `browser.py`: **19**
 - `quarantine.py`: **19**
+- `scanner.py`: **19**
 - `memory.py`: **19**
-- `scanner.py`: **18**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
 - `assistant.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-30T09:17:39` **settings.py** (robustez ante casos límite): Mejoré la robustez ante fallos de E/S en la carga inicial añadiendo un bloque `try-except` explícito en `_read_disk` que maneja archivos con formato JSON válido pero estructuralmente incompatible (ej. tipos de datos erróneos en claves), asegurando que ante cualquier desvío del esquema `AppSettings` se retorne siempre el estado por defecto.
+- `2026-08-30T09:17:02` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_reparse_point` y `_is_safe_entry` al centralizar el manejo de errores de acceso a archivos, asegurando que `OSError` o `PermissionError` (comunes en escaneos de disco con permisos variables) no interrumpan el flujo, además de añadir un control explícito sobre la resolución de rutas mediante `resolve(strict=False)` para evitar fallos cuando el destino es una ruta inexistente pero referenciada.
 - `2026-08-30T09:11:39` **quarantine.py** (robustez ante casos límite): Se introdujo una validación crítica en `quarantine_file` para detectar y rechazar archivos con puntos de reparse (junctions/symlinks) al momento de leer sus metadatos iniciales, evitando errores de recursión o acceso a rutas fuera del scope de la aplicación antes de la operación de movimiento.
 - `2026-08-30T09:11:22` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_process_directory` y `_is_safe_for_disk_op` añadiendo validaciones contra rutas que exceden `MAX_PATH` (límite crítico en Windows) y manejando errores de `stat()` para archivos que se eliminan o cambian de permiso mientras el escáner los procesa, evitando excepciones no controladas durante el bucle.
 - `2026-08-30T09:09:55` **memory.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_get_process_path` para prevenir desbordamientos de buffer o rutas mal formadas (Unicode) utilizando `ctypes.create_unicode_buffer` con el tamaño correcto, además de robustecer la carga de librerías mediante una verificación de presencia de símbolos antes de su uso para evitar `AttributeError` en entornos con permisos restringidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T08:16:59` **duplicates.py** (rendimiento): Optimicé `_process_size_group` para evitar cálculos de hash redundantes en casos donde el tamaño del archivo ya garantiza la identidad, reduciendo el I/O innecesario al utilizar directamente el hash parcial como identificador final para archivos pequeños (donde el hash parcial cubre el archivo completo).
 - `2026-08-30T08:16:49` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar almacenar en memoria la lista completa de todos los archivos encontrados (`all_files.append`), utilizando en su lugar un `heapq` de tamaño fijo durante la iteración, lo que reduce drásticamente el consumo de RAM en directorios con millones de archivos.
 - `2026-08-30T08:16:21` **browser.py** (rendimiento): Optimicé el rendimiento de la detección de perfiles compartiendo el objeto `perf_cache` a través de todo el ciclo de escaneo y evitando resoluciones de ruta redundantes dentro de `_sum_directory_recursive`, logrando que las subcarpetas comunes se procesen solo una vez.
-- `2026-08-30T08:06:09` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando la creación innecesaria de una lista completa en memoria (`list(islice(...))`) y delegando la lógica de límite al generador, además de reemplazar la re-iteración en `local_answer` por una única evaluación más eficiente.
-- `2026-08-30T08:05:46` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de los métodos de resolución de rutas en `StartupEntry`, añadiendo docstrings descriptivos y type hints consistentes para clarificar la lógica de saneamiento de comandos y resolución de ejecutables, facilitando así el mantenimiento de la lógica de "lazy loading".

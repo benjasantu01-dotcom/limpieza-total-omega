@@ -113,13 +113,16 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root.resolve()
+        self.base_root = base_root.resolve(strict=False)
         self.base_root_str = str(self.base_root).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que una ruta esté dentro del alcance definido por la raíz del escaneo."""
-        return str(Path(path_str).resolve()).lower().startswith(self.base_root_str)
+        try:
+            return str(Path(path_str).resolve(strict=False)).lower().startswith(self.base_root_str)
+        except (OSError, RuntimeError):
+            return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
@@ -203,7 +206,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     if not directory:
         return []
     try:
-        path_input: Path = Path(directory).resolve(strict=True)
+        path_input: Path = Path(directory).resolve(strict=False)
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):

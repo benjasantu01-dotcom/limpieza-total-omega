@@ -290,7 +290,7 @@ def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
             data: Any = json.load(f)
             if not _is_dict(data): return DEFAULTS.copy()
             return validate(data)
-    except (json.JSONDecodeError, UnicodeDecodeError, PermissionError, OSError):
+    except (json.JSONDecodeError, UnicodeDecodeError, PermissionError, OSError, Exception):
         return DEFAULTS.copy()
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
