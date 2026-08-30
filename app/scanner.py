@@ -117,7 +117,10 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
-        """Verifica que una ruta esté dentro del alcance definido por la raíz del escaneo."""
+        """
+        Valida mediante resolución de rutas que el archivo esté contenido estrictamente
+        dentro del árbol del directorio base de escaneo para prevenir escapes de sandbox.
+        """
         if not path_str: return False
         try:
             target = Path(path_str).resolve(strict=False)
@@ -127,8 +130,9 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida si una entrada de directorio es segura, cumple con las restricciones de 
-        longitud de ruta, no es un punto de reparse y no está en la lista de bloqueo.
+        Valida que la entrada sea segura para el escaneo: verifica longitud de ruta,
+        caracteres inválidos, límites de recursión y denegación explícita mediante 
+        `is_protected_path`.
         """
         if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
@@ -148,22 +152,25 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si un objeto es un junction o symlink mediante atributos de archivo."""
+        """
+        Detecta junctions, symlinks y puntos de reparse mediante atributos de archivo 
+        de bajo nivel para evitar bucles infinitos en el sistema de archivos.
+        """
         try:
             return entry.is_symlink() or bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError):
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Agrega un directorio a la pila de procesamiento si aún no fue visitado."""
+        """Gestiona la cola de recursión añadiendo directorios validados al stack."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Gestiona la lógica de bifurcación: si es directorio lo encola, 
-        si es archivo ejecutable/candidato, delega a las reglas heurísticas.
+        Clasifica una entrada del sistema de archivos. Si es directorio lo encola,
+        si es un archivo ejecutable u objeto de riesgo, dispara el análisis heurístico.
         """
         if not entry or not entry.path: return
         try:
@@ -180,7 +187,10 @@ class Scanner:
             logger.debug(f"Acceso denegado o entrada volátil: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta detectores sobre un archivo específico y agrega al registro central de resultados."""
+        """
+        Ejecuta el motor de reglas sobre un archivo candidato y consolida los hallazgos 
+        en la lista interna de resultados del objeto Scanner.
+        """
         if path.name and RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
