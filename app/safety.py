@@ -177,17 +177,20 @@ def _is_reparse_point(path: Path) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
     """Verifica exclusividad de archivo intentando abrirlo con acceso de escritura mediante WinAPI."""
-    if os.name == 'nt':
-        try:
-            handle = ctypes.windll.kernel32.CreateFileW(
-                path_str, 0x40000000, 0x00000001, None, 3, 0x00000080, None
-            )
-            if handle == -1: return True
-            ctypes.windll.kernel32.CloseHandle(handle)
-            return False
-        except (AttributeError, OSError):
-            return True
-    return False
+    if os.name != 'nt':
+        return False
+    try:
+        # GENERIC_WRITE (0x40000000), FILE_SHARE_READ|WRITE|DELETE (0x00000007), 
+        # OPEN_EXISTING (3), FILE_ATTRIBUTE_NORMAL (0x80)
+        handle = ctypes.windll.kernel32.CreateFileW(
+            path_str, 0x40000000, 0x00000007, None, 3, 0x00000080, None
+        )
+        if handle == -1: return True
+        ctypes.windll.kernel32.CloseHandle(handle)
+        return False
+    except (AttributeError, OSError, PermissionError):
+        # Si no podemos abrirlo para verificar, asumimos que está en uso o inaccesible
+        return True
 
 
 def _is_sensitive_extension(path: Path) -> bool:

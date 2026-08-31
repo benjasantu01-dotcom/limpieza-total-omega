@@ -159,7 +159,9 @@ class Scanner:
         de bajo nivel para evitar bucles infinitos en el sistema de archivos.
         """
         try:
-            return entry.is_symlink() or bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
+            if entry.is_symlink():
+                return True
+            return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError):
             return True 
 
@@ -180,6 +182,7 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
+                # Usar estático de la entrada para evitar lecturas innecesarias
                 if entry.stat().st_size == 0: return
                 
                 _, ext = os.path.splitext(entry.name)
@@ -190,7 +193,7 @@ class Scanner:
                     if self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError, FileNotFoundError):
-            logger.debug(f"Acceso denegado o entrada volátil: {entry.path}")
+            logger.debug(f"Acceso denegado o archivo eliminado durante escaneo: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """
