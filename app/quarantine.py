@@ -384,7 +384,6 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).expanduser().resolve(strict=True)
-    # Captura inicial para detectar manipulación durante la operación
     s_stat = source_path.stat()
     original_mtime = s_stat.st_mtime
     original_size = s_stat.st_size
@@ -420,7 +419,6 @@ def quarantine_file(
         items_dict[item_id] = quarantine_item
         save_manifest(list(items_dict.values()), base)
         
-        # Verificación post-aislamiento: integridad + origen inalterado
         post_stat = source_path.stat()
         if (destination.exists() and quarantine_item.verify_integrity(destination) 
             and post_stat.st_mtime == original_mtime 
@@ -428,13 +426,13 @@ def quarantine_file(
             and not _is_file_locked(source_path)):
             source_path.unlink()
         else:
-            raise RuntimeError("La integridad falló o el archivo origen fue alterado durante el proceso; el origen se mantiene.")
+            raise RuntimeError("La integridad falló o el archivo origen fue alterado durante el proceso.")
             
         return quarantine_item
-    except Exception:
+    except (OSError, RuntimeError) as e:
         if destination.exists():
             _safe_unlink(destination)
-        raise
+        raise RuntimeError(f"Error fatal durante finalización de aislamiento: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
@@ -443,9 +441,7 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Restaura un archivo al origen original tras validaciones exhaustivas de seguridad.
-    """
+    """Restaura un archivo al origen original tras validaciones exhaustivas de seguridad."""
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido o vacío.")
     base_path = quarantine_dir(base)
@@ -536,16 +532,19 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     ids_to_remove = []
     
     for item_id, item in items_dict.items():
-        stored_path = (quarantine_root / item.stored_name).resolve()
-        
-        if not stored_path.exists():
-            ids_to_remove.append(item_id)
-            continue
+        try:
+            stored_path = (quarantine_root / item.stored_name).resolve()
             
-        if _is_item_purgable(stored_path, item, quarantine_root):
-            if _safe_unlink(stored_path):
+            if not stored_path.exists():
                 ids_to_remove.append(item_id)
-                purged_count += 1
+                continue
+                
+            if _is_item_purgable(stored_path, item, quarantine_root):
+                if _safe_unlink(stored_path):
+                    ids_to_remove.append(item_id)
+                    purged_count += 1
+        except Exception:
+            continue
             
     if ids_to_remove:
         for i_id in ids_to_remove:

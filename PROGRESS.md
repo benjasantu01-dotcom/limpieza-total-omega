@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 211
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 73 | 8 | 11 | 6 | 62 |
-| 2026-08-31 | 149 | 10 | 26 | 10 | 149 |
+| 2026-08-30 | 70 | 8 | 11 | 6 | 61 |
+| 2026-08-31 | 151 | 10 | 27 | 10 | 150 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **49**
-- legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
-- rendimiento: **39**
+- legibilidad y documentación: **42**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **21**
-- `browser.py`: **20**
 - `settings.py`: **20**
-- `assistant.py`: **19**
-- `quarantine.py`: **18**
+- `quarantine.py`: **19**
+- `browser.py`: **19**
+- `organizer.py`: **18**
 - `scanner.py`: **18**
+- `assistant.py`: **18**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
-- `organizer.py`: **17**
 - `healthscore.py`: **16**
 - `safety.py`: **14**
 - `branding.py`: **11**
-- `startup.py`: **7**
 - `main.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T15:09:58` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `quarantine_file` para asegurar que el sistema no se detenga ante fallos de I/O parciales al iterar o procesar archivos, reemplazando excepciones genéricas por capturas controladas que mantienen la integridad del manifiesto.
+- `2026-08-31T15:09:24` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo validaciones explícitas de entrada, manejo de excepciones más fino en el cálculo de espacio en disco y validación de integridad de rutas para evitar errores en tiempo de ejecución al manipular archivos bloqueados o inexistentes.
 - `2026-08-31T15:03:54` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` y `read_snapshot` integrando validaciones de tipo y estructura más estrictas para prevenir fallos silenciosos ante entradas inesperadas o corrupción de datos.
 - `2026-08-31T14:59:45` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos al agregar una validación de `math.isfinite` en la inicialización y una verificación explícita de `isinstance` en las funciones de conversión, evitando que valores `None` o tipos inesperados propaguen errores silenciosos durante el cálculo del puntaje.
 - `2026-08-31T14:59:18` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando un chequeo previo de `os.access(path, os.R_OK)` y validación de tipo, evitando excepciones innecesarias durante la lectura de archivos bloqueados por el sistema operativo o con permisos restringidos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T13:08:24` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de seguridad en `_validate_path_security` utilizando `Path.parents` y comparaciones de rutas normalizadas en lugar de un `startswith` simple, lo cual previene vulnerabilidades de "path traversal" o falsos positivos con carpetas que comparten prefijos (ej: `C:\WindowsApp` vs `C:\Windows`).
 - `2026-08-31T13:06:40` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `SystemMetrics` mediante la incorporación de una verificación de integridad (`is_finite`) obligatoria antes de cualquier cálculo, asegurando que los datos de entrada (potencialmente externos) no introduzcan valores no numéricos o `NaN` que invaliden la lógica de puntaje.
 - `2026-08-31T12:57:40` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` integrando una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de entrar en cualquier operación de entrada/salida, evitando el riesgo de seguir enlaces simbólicos o puntos de reparse que apunten a directorios protegidos fuera del alcance original.
-- `2026-08-31T12:57:32` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad de `walk_files` al añadir una validación estricta de la ruta resuelta contra el directorio base mediante `Path.is_relative_to` (o equivalente) para prevenir ataques de escape de directorio mediante enlaces simbólicos complejos, asegurando que el escáner nunca se desvíe fuera del alcance autorizado.
-- `2026-08-31T12:57:02` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación explícita de `is_safe_to_modify` para cada subcarpeta accedida, evitando que el escaneo pueda derivar en rutas protegidas o fuera del ámbito permitido durante la recursión profunda.

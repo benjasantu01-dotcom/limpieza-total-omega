@@ -269,7 +269,14 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         src_path: Path = junk_file.path.resolve()
         if src_path.parent == src_path or dest_base.parent == dest_base: return None
         if not dest_base.exists() or not dest_base.is_dir(): return None
-        if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): return None
+        
+        # Validar espacio antes de intentar cualquier operación
+        try:
+            if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
+                return None
+        except OSError:
+            return None
+            
         if not _is_safe_to_move(junk_file, dest_base): return None
         if src_path.is_relative_to(dest_base) or dest_base.is_relative_to(src_path.parent): return None
         
