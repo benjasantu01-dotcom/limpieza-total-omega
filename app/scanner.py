@@ -121,7 +121,7 @@ class Scanner:
         Valida mediante resolución de rutas que el archivo esté contenido estrictamente
         dentro del árbol del directorio base de escaneo para prevenir escapes de sandbox.
         """
-        if not path_str or "\0" in path_str: return False
+        if not isinstance(path_str, str) or not path_str or "\0" in path_str: return False
         try:
             target = Path(path_str).resolve(strict=False)
             return self.base_root == target or self.base_root in target.parents
@@ -227,11 +227,12 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """Punto de entrada principal para el escaneo recursivo de un directorio."""
-    if not directory:
+    if not isinstance(directory, (str, Path)):
         return []
+        
     try:
-        path_input: Path = Path(directory).resolve(strict=False)
-        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
+        path_input = Path(directory).resolve(strict=False)
+        if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):
         return []

@@ -106,6 +106,7 @@ _CACHE_TTL: Final = 1.0
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
+VALID_MODELS: Final[frozenset[str]] = frozenset(("gemini-3.1-flash-lite", "gemini-3.1-pro"))
 
 _STR_TO_ENUM: Final[dict[str, ConfigKey]] = {k.value: k for k in ConfigKey}
 
@@ -136,7 +137,8 @@ _NUMERIC_LIMITS: Final[dict[ConfigKey, _NumericRange]] = {
 
 _ENUM_VALS: Final[dict[ConfigKey, frozenset[str]]] = {
     ConfigKey.TEMA: VALID_THEMES,
-    ConfigKey.ACENTO: VALID_ACCENTS
+    ConfigKey.ACENTO: VALID_ACCENTS,
+    ConfigKey.ASISTENTE_MODELO: VALID_MODELS
 }
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:

@@ -180,8 +180,6 @@ def _is_file_in_use(path_str: str) -> bool:
     if os.name != 'nt':
         return False
     try:
-        # GENERIC_WRITE (0x40000000), FILE_SHARE_READ|WRITE|DELETE (0x00000007), 
-        # OPEN_EXISTING (3), FILE_ATTRIBUTE_NORMAL (0x80)
         handle = ctypes.windll.kernel32.CreateFileW(
             path_str, 0x40000000, 0x00000007, None, 3, 0x00000080, None
         )
@@ -189,7 +187,6 @@ def _is_file_in_use(path_str: str) -> bool:
         ctypes.windll.kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, PermissionError):
-        # Si no podemos abrirlo para verificar, asumimos que está en uso o inaccesible
         return True
 
 
@@ -258,10 +255,8 @@ def normalize(path: PathLike) -> Path:
         
     try:
         p = Path(path_str)
-        # Prevenir traversal antes de resolver
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
         resolved = p.resolve()
-        # Verificar que el reparse point no escape del sandbox logico si es necesario
         if _is_reparse_point(p) and not str(resolved).startswith(str(p.parent.absolute())):
             raise ValueError("Acceso restringido: reparse point con destino externo.")
         return resolved
@@ -368,11 +363,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
             raise UnsafePathError("Tipo de archivo no soportado.")
         _check_file_integrity(p)
     else:
-        parent = p.parent
-        if parent.exists():
-            if not os.access(parent, os.W_OK):
-                raise UnsafePathError("Escritura bloqueada: directorio padre restringido.")
-        elif is_protected_path(parent):
+        # Validación preventiva para rutas no existentes
+        if is_protected_path(p.parent):
             raise UnsafePathError("Escritura bloqueada: directorio padre protegido.")
     
     if not allow_sensitive and _is_sensitive_extension(p):
