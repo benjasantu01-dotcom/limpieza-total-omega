@@ -39,6 +39,7 @@ __all__ = [
 # Constantes de atributos de archivo Win32
 FILE_ATTRIBUTE_HIDDEN: Final[int] = 0x02
 FILE_ATTRIBUTE_SYSTEM: Final[int] = 0x04
+FILE_ATTRIBUTE_OFFLINE: Final[int] = 0x1000
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x400
 MAX_PATH_LENGTH: Final[int] = 260
 
@@ -52,7 +53,7 @@ class ProtectionReason(Enum):
     REPARSE_POINT = "punto de reparse"
     READ_ONLY = "solo lectura"
     IN_USE = "en uso"
-    SYSTEM_HIDDEN = "sistema/oculto"
+    SYSTEM_HIDDEN = "sistema/oculto/offline"
     HARD_LINK = "hard link detectado"
     SYMLINK = "enlace simbólico detectado"
     ADS = "ADS (flujos alternativos)"
@@ -148,13 +149,13 @@ def _has_alternate_data_stream(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Verifica si el archivo tiene los atributos 'Sistema' u 'Oculto' mediante WinAPI."""
+    """Verifica si el archivo tiene atributos 'Sistema', 'Oculto' u 'Offline' mediante WinAPI."""
     if os.name != 'nt' or not isinstance(path, Path):
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         if attrs == -1: return False
-        return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM))
+        return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
     except (OSError, AttributeError, TypeError, ValueError):
         return False 
 
@@ -423,7 +424,7 @@ def describe_protection(path: PathLike) -> str:
         if os.path.ismount(p): return f"'{p}' es un punto de montaje."
         if _is_readonly(p): return f"'{p}' es solo lectura."
         if _is_file_in_use(str(p)): return f"'{p}' en uso por otro proceso."
-        if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema."
+        if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema/offline."
         if _has_alternate_data_stream(p): return f"'{p}' contiene ADS."
         if p.is_file() and p.stat().st_size == 0: return f"'{p}' es un archivo vacío."
     if _is_sensitive_extension(p): return f"'{p.name}' extensión sensible."

@@ -38,7 +38,7 @@ class Suspicion:
 # y el timestamp de inicio global para asegurar coherencia en comparaciones temporales.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
-# Alias para representar una colección de hallazgos durante un proceso de escaneo.
+# Alias para representar una colección de hallagzos durante un proceso de escaneo.
 ScanResult: TypeAlias = List[Suspicion]
 
 # Expresiones regulares para detección de ofuscación
@@ -161,6 +161,7 @@ class Scanner:
         try:
             if entry.is_symlink():
                 return True
+            # Intentar obtener atributos sin seguir enlaces. Si falla, asumir punto de reparse por seguridad.
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError):
             return True 
@@ -182,7 +183,11 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                if entry.stat().st_size == 0: return
+                # Usar try-except en el stat para manejar archivos bloqueados por el SO
+                try:
+                    if entry.stat().st_size == 0: return
+                except OSError:
+                    return
                 
                 _, ext = os.path.splitext(entry.name)
                 ext_low = ext.lower()
@@ -191,7 +196,7 @@ class Scanner:
                     if self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError, FileNotFoundError):
-            logger.debug(f"Acceso denegado o archivo eliminado durante escaneo: {entry.path}")
+            logger.debug(f"Acceso denegado o archivo inaccesible durante escaneo: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """

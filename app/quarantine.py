@@ -146,7 +146,7 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """Determina si un archivo está bloqueado por otro proceso intentando abrirlo en modo exclusivo."""
-    if not isinstance(path, Path) or not path.exists():
+    if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
     try:
         with open(path, "rb") as f:
@@ -215,6 +215,9 @@ def _check_windows_file_attributes(path_str: str) -> None:
     """Verifica atributos de sistema o de solo lectura en Windows, bloqueando el aislamiento de archivos críticos."""
     if os.name != 'nt':
         return
+    path_obj = Path(path_str)
+    if len(path_obj.parts) > 64:
+        raise UnsafePathError("Profundidad de ruta excesiva en sistema Windows.")
     import ctypes
     attrs = ctypes.windll.kernel32.GetFileAttributesW(path_str)
     if attrs != -1:
