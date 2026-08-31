@@ -265,7 +265,7 @@ class SystemContext:
             try:
                 if _validate_and_assign(self, source, key, spec):
                     found_data = True
-            except Exception:
+            except (AttributeError, ValueError, TypeError):
                 continue
         
         try:

@@ -357,13 +357,15 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if destination is None: return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificación previa preventiva
         if not is_safe_to_modify(path_obj): return None
         
         ensure_safe_to_modify(path_obj)
         parent = path_obj.parent
-        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        elif not parent.is_dir(): return None
+        if not parent.exists():
+            parent.mkdir(parents=True, exist_ok=True)
+        elif not parent.is_dir():
+            return None
+            
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
@@ -445,7 +447,8 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               fill: Optional[HexColor] = None) -> None:
     """Dibuja un indicador circular (donut) de progreso en el canvas."""
     try:
-        valor: float = max(0.0, min(100.0, float(percent) if percent is not None else 0.0))
+        if percent is None: return
+        valor: float = max(0.0, min(100.0, float(percent)))
         diametro: int = max(20, int(size))
         grosor: int = max(2, min(int(thickness), (diametro // 2) - 1))
         
