@@ -699,3 +699,35 @@ ERROR evolve/tests/test_modules.py
 - `2026-08-31T03:48:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-08-31T03:48:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T03:48:43` Corrida terminada. Total usado hoy: 92.
+- `2026-08-31T03:56:53` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-08-31T03:57:23` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-31T03:57:54` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` al asegurar que las rutas candidatas sean verificadas por `is_protected_path` después de resolver posibles enlaces simbólicos y antes de cualquier operación de escaneo, evitando que el escáner sea engañado por estructuras de archivos que intenten salir del `base_root` o acceder a carpetas de sistema ocultas mediante redirecciones.
+- `2026-08-31T03:58:27` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` añadiendo una verificación previa mediante `is_safe_to_modify` antes de intentar cualquier operación de escritura, evitando así el uso de una excepción como mecanismo de control de flujo estándar y garantizando que el sistema se mantenga dentro de los límites de seguridad incluso ante condiciones de carrera o rutas maliciosas.
+- `2026-08-31T03:58:27` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T03:58:47` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.29s
+
+```
+- `2026-08-31T03:58:47` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se refuerza la seguridad defensiva en `_resolve_and_cache_path` mediante la implementación de una verificación de integridad de la ruta (`is_safe_to_modify`) antes de intentar cualquier resolución costosa o procesamiento de archivos, evitando así el procesamiento de rutas potencialmente maliciosas que evaden los filtros previos.
+- `2026-08-31T03:58:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T03:58:47` Corrida terminada. Total usado hoy: 96.

@@ -308,16 +308,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         elif not parent.is_dir():
             return None
         
-        ensure_safe_to_modify(str(parent))
-        
+        # Validación defensiva previa a cualquier IO de escritura
+        if not is_safe_to_modify(str(parent)) or (ruta.exists() and not is_safe_to_modify(str(ruta))):
+            return None
+            
         try:
             usage = shutil.disk_usage(parent)
             if usage.free < MAX_SETTINGS_SIZE * 2: return None
         except OSError: return None
             
-        if ruta.exists():
-            ensure_safe_to_modify(str(ruta))
-        
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         encoded_data = data.encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None

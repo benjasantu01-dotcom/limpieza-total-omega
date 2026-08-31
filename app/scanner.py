@@ -132,7 +132,7 @@ class Scanner:
         """
         Valida que la entrada sea segura para el escaneo: verifica longitud de ruta,
         caracteres inválidos, límites de recursión y denegación explícita mediante 
-        `is_protected_path`.
+        `is_protected_path` sobre una ruta resuelta.
         """
         if not entry or not entry.path:
             return False
@@ -148,8 +148,11 @@ class Scanner:
             
             if self._is_reparse_point(entry):
                 return False
-
-            return not is_protected_path(Path(entry.path))
+            
+            # Verificación crítica: Resolvemos la ruta para evitar engaños por enlaces 
+            # internos y confirmamos que no sea una ruta protegida del sistema.
+            resolved_path = Path(entry.path).resolve()
+            return not is_protected_path(resolved_path)
         except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError):
             return False
 

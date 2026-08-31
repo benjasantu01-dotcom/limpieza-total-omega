@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
-- Rechazadas por tests: 19
+- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Rechazadas por tests: 20
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 25
-- Sin respuesta de la IA (error o límite): 197
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 28 | 3 | 3 | 6 | 22 |
+| 2026-08-29 | 28 | 3 | 3 | 6 | 18 |
 | 2026-08-30 | 154 | 11 | 27 | 14 | 144 |
-| 2026-08-31 | 41 | 5 | 10 | 5 | 31 |
+| 2026-08-31 | 43 | 6 | 10 | 5 | 32 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **48**
-- seguridad defensiva: **47**
 - rendimiento: **39**
 - robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
-- `scanner.py`: **19**
+- `settings.py`: **21**
+- `scanner.py`: **20**
 - `browser.py`: **19**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T03:58:27` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una verificación previa mediante `is_safe_to_modify` antes de intentar cualquier operación de escritura, evitando así el uso de una excepción como mecanismo de control de flujo estándar y garantizando que el sistema se mantenga dentro de los límites de seguridad incluso ante condiciones de carrera o rutas maliciosas.
+- `2026-08-31T03:57:54` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` al asegurar que las rutas candidatas sean verificadas por `is_protected_path` después de resolver posibles enlaces simbólicos y antes de cualquier operación de escaneo, evitando que el escáner sea engañado por estructuras de archivos que intenten salir del `base_root` o acceder a carpetas de sistema ocultas mediante redirecciones.
 - `2026-08-31T03:48:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez de `quarantine_file` al introducir una verificación de existencia post-aislamiento pero pre-eliminación del origen, asegurando que si el archivo de cuarentena no pudo ser verificado o consolidado, el archivo original nunca sea borrado del disco.
 - `2026-08-31T03:47:58` **organizer.py** (seguridad defensiva): Se ha robustecido la validación en `_can_move_file` añadiendo una comprobación explícita para evitar que se intente mover un archivo hacia un destino que sea su propia carpeta padre o que resida dentro de una estructura de archivos ya protegida, reforzando la integridad de los datos durante la etapa de staging.
 - `2026-08-31T03:37:24` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez del escaneo de duplicados añadiendo una validación de seguridad explícita en `_collect_candidates` para prevenir el seguimiento de enlaces simbólicos o puntos de reparse que apunten fuera de los directorios permitidos, cerrando una brecha de seguridad defensiva.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T03:07:34` **memory.py** (robustez ante casos límite): Se mejora la robustez de `parse_windows_process_csv` agregando una validación explícita para evitar que una línea con valores numéricos negativos o malformados cause una excepción no controlada o el registro de datos inválidos en el reporte de memoria.
 - `2026-08-31T02:57:15` **healthscore.py** (robustez ante casos límite): Introduje una validación defensiva en `_SCORERS` para garantizar que si un área definida en `WEIGHTS` carece de una función de puntuación asociada, el sistema no colapse, y además reforcé `compute_score` para manejar el caso de una configuración de pesos parcial o errónea sin interrumpir la ejecución.
 - `2026-08-31T02:56:38` **diskreport.py** (robustez ante casos límite): Mejoré la robustez de `walk_files` ante archivos bloqueados por otros procesos (uso exclusivo) capturando `OSError` específicamente en `st.st_size`, evitando que el iterador falle silenciosamente y permitiendo que el escaneo continúe con el resto del directorio.
-- `2026-08-31T02:56:09` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `directory_size` ante el caso límite de una ruta que no existe o es inaccesible, asegurando que la función maneje errores de forma elegante sin propagar excepciones que interrumpan el bucle principal.
-- `2026-08-31T02:47:34` **branding.py** (robustez ante casos límite): Se ha añadido un método `_get_rgb_safe` para centralizar la validación de valores decimales (0-255) y prevenir errores de renderizado o excepciones inesperadas al procesar configuraciones de color potencialmente corruptas.
