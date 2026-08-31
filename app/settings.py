@@ -179,7 +179,7 @@ class _Validators:
 
     @staticmethod
     def bool(key: ConfigKey, val: Any) -> Optional[bool]:
-        """Normaliza entradas (str/int/bool) a booleano estricto."""
+        """Normaliza entradas a booleano, permitiendo variantes de texto (si/no/true/false)."""
         if isinstance(val, bool): return val
         if isinstance(val, str):
             normalized = val.strip().lower()
@@ -190,7 +190,7 @@ class _Validators:
     @staticmethod
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
-        """Castea a entero y asegura que esté dentro de los límites de _NUMERIC_LIMITS."""
+        """Castea a entero forzando el valor dentro de los límites definidos en _NUMERIC_LIMITS."""
         try:
             parsed_value: int = int(val)
             limit = _NUMERIC_LIMITS.get(key, _NumericRange(0, 10**9))
@@ -199,7 +199,7 @@ class _Validators:
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida si la cadena es una ruta segura, sin caracteres nulos y dentro de límites de longitud."""
+        """Valida que la entrada sea una ruta absoluta, no contenga null bytes y sea segura."""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or len(path_string) > 4096 or "\0" in path_string: 
@@ -210,7 +210,7 @@ class _Validators:
 
     @staticmethod
     def _validate_enum_str(text: str, key: ConfigKey) -> Optional[str]:
-        """Verifica que el string pertenezca al dominio permitido para la clave (Ej: temas)."""
+        """Verifica que el valor string esté dentro de un conjunto de opciones permitidas (Enums)."""
         val = text.lower()
         if key in _ENUM_VALS: return val if val in _ENUM_VALS[key] else None
         return text if len(text) <= 512 else None
@@ -218,7 +218,7 @@ class _Validators:
     @staticmethod
     @type_check
     def str(key: ConfigKey, val: Any) -> Optional[str]:
-        """Valida strings generales, eliminando caracteres de control, rutas relativas y verificando dominios enum."""
+        """Limpia strings de control/relativos y valida dominios específicos (temas, acentos)."""
         if not isinstance(val, str): return None
         text = val.strip()
         if not text or "\0" in text or any(ord(c) < 32 for c in text) or ".." in text or len(text) > 1024: return None

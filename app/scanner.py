@@ -48,6 +48,7 @@ RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|L
 
 # Conjuntos de constantes para comparación rápida
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
+SUSPICIOUS_CONTENT_EXT: Final[frozenset[str]] = frozenset({".pdf"})
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
 
@@ -171,8 +172,8 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Clasifica una entrada del sistema de archivos. Si es directorio lo encola,
-        si es un archivo ejecutable u objeto de riesgo, dispara el análisis heurístico.
+        Clasifica una entrada. Si es directorio válido lo añade a la pila de recursión.
+        Si es un archivo con extensión sospechosa, dispara el motor heurístico.
         """
         if not entry or not entry.path: return
         try:
@@ -181,9 +182,12 @@ class Scanner:
                     self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
                 if entry.stat().st_size == 0: return
+                
                 _, ext = os.path.splitext(entry.name)
                 ext_low = ext.lower()
-                if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low == ".pdf":
+                
+                # Identificar si el archivo requiere inspección heurística
+                if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low in SUSPICIOUS_CONTENT_EXT:
                     if self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError, FileNotFoundError):

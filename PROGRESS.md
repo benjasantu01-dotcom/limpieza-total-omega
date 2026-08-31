@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **215** (42.7% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 214
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 44 | 3 | 5 | 9 | 45 |
+| 2026-08-29 | 42 | 3 | 5 | 9 | 43 |
 | 2026-08-30 | 154 | 11 | 27 | 14 | 144 |
-| 2026-08-31 | 17 | 1 | 4 | 1 | 25 |
+| 2026-08-31 | 20 | 1 | 4 | 1 | 26 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **51**
 - seguridad defensiva: **50**
-- legibilidad y documentación: **49**
 - manejo de errores y validación de entradas: **48**
-- robustez ante casos límite: **35**
-- rendimiento: **33**
+- rendimiento: **34**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `memory.py`: **19**
-- `scanner.py`: **18**
-- `healthscore.py`: **17**
+- `scanner.py`: **19**
 - `quarantine.py`: **17**
 - `browser.py`: **17**
 - `diskreport.py`: **16**
 - `organizer.py`: **16**
+- `healthscore.py`: **16**
 - `duplicates.py`: **15**
 - `safety.py`: **14**
+- `assistant.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **12**
-- `assistant.py`: **12**
-- `main.py`: **10**
+- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T02:06:43` **assistant.py** (rendimiento): Optimicé el motor de reglas local transformando el diccionario de búsqueda `_KEYWORD_MAP` en un diccionario de acceso directo a las funciones `_HANDLERS`, eliminando la necesidad de iterar sobre cada palabra del input para encontrar una coincidencia, lo que mejora el rendimiento de respuesta ante consultas del usuario.
+- `2026-08-31T02:05:51` **settings.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de `_Validators` y se añadió documentación técnica (docstrings) explicativa para aclarar la lógica de validación, garantizando que el mantenimiento futuro sea robusto ante errores de tipos o desbordamientos.
+- `2026-08-31T02:05:23` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método `Scanner.process_entry` y se extrajo la lógica de filtrado de extensiones a una constante bien definida, mejorando la legibilidad del flujo de escaneo sin alterar la funcionalidad.
 - `2026-08-31T01:56:24` **safety.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_structural_safety` y `_validate_boundary_conditions` hacia un patrón de validación más claro, documentado con docstrings explicativos y utilizando nombres de parámetros más precisos para alinear el código con las expectativas de seguridad del proyecto.
 - `2026-08-31T01:55:02` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la refactorización de la lógica de recorrido y validación, extrayendo la condición compleja de `_process_directory` a una función predictiva con nombre claro y documentando las restricciones críticas de seguridad para evitar errores futuros.
 - `2026-08-31T01:46:47` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `MemorySnapshot` y el refinamiento de la estructura de tipos, asegurando que las funciones complejas de manejo de memoria (especialmente aquellas que operan sobre APIs de bajo nivel) tengan una explicación clara del flujo de control y las garantías de seguridad.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T01:24:53` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scanner.py` mediante la captura explícita de `None` y excepciones en `_is_inside_base_root` y `_is_safe_entry`, asegurando que el motor de escaneo no falle ante rutas inválidas o errores de resolución del sistema de archivos.
 - `2026-08-31T01:14:51` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `stage_for_review` validando explícitamente la integridad de los parámetros (`junk_file` y `dest`) para evitar excepciones en tiempo de ejecución al manipular rutas potencialmente inválidas o `None`.
 - `2026-08-31T01:14:21` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo validaciones explícitas de tipos y estados para prevenir excepciones inesperadas al procesar cadenas de texto malformadas o PIDs inválidos provenientes de PowerShell.
-- `2026-08-31T01:06:01` **main.py** (manejo de errores y validación de entradas): Se ha centralizado la validación de todas las entradas del usuario en el panel de ajustes y la gestión de procesos mediante una nueva función `_safe_get_entry_value`, evitando la repetición de lógica `try-except` y asegurando que valores malformados o vacíos no causen errores en tiempo de ejecución.
-- `2026-08-31T01:05:03` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando una validación temprana de integridad más estricta mediante `isinstance` y chequeos de estado, evitando el uso de atributos que podrían ser `None` o inconsistentes.
-- `2026-08-31T01:04:38` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) validando que el archivo sea efectivamente un archivo y no un directorio o enlace roto antes de intentar abrirlo, y se han añadido chequeos de tipos defensivos en `find_duplicates` para evitar excepciones ante entradas malformadas.

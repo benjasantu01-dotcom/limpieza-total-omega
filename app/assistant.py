@@ -187,14 +187,6 @@ _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
 _MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]+$")
 _API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]+$")
 
-_KEYWORD_MAP: Final[dict[str, str]] = {
-    "ram": "ram", "memoria": "ram", "lenta": "ram", "lento": "ram", "acelerar": "ram",
-    "espacio": "disco", "disco": "disco", "lleno": "disco", "recuperar": "disco", "liberar": "disco",
-    "seguro": "security", "virus": "security", "sospechos": "security", "borrar": "security", "peligro": "security",
-    "puntaje": "score", "salud": "score", "nota": "score", "score": "score",
-    "inicio": "startup", "arranque": "startup", "arranca": "startup", "encender": "startup"
-}
-
 _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
     ProblemCriterion("suspicious_warnings", 0, ">", "{:d} archivo(s) sospechosos"),
@@ -358,7 +350,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
-    # Filtro preventivo para tipos inválidos que no sean dict ni objetos
     sources = [s for s in (metrics, health, extra) if isinstance(s, (dict, object))]
     
     for src in sources:
@@ -437,7 +428,6 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     mem_pct = _safe_float(ctx.memory_available_percent, 50.0)
     total_gb = _safe_float(ctx.memory_total_gb, 0.0)
     
-    # Construcción clara del diagnóstico de RAM
     msg_parts = [f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."]
     
     if mem_pct < 15:
@@ -511,12 +501,12 @@ def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     except (AttributeError, TypeError, ValueError):
         return Answer("Hubo un error al analizar tus programas de inicio.")
 
-_HANDLERS: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
-    "ram": handle_ram,
-    "disco": handle_disk,
-    "security": handle_security,
-    "score": handle_score,
-    "startup": handle_startup
+_KEYWORD_TO_HANDLER: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
+    "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
+    "espacio": handle_disk, "disco": handle_disk, "lleno": handle_disk, "recuperar": handle_disk, "liberar": handle_disk,
+    "seguro": handle_security, "virus": handle_security, "sospechos": handle_security, "borrar": handle_security, "peligro": handle_security,
+    "puntaje": handle_score, "salud": handle_score, "nota": handle_score, "score": handle_score,
+    "inicio": handle_startup, "arranque": handle_startup, "arranca": handle_startup, "encender": handle_startup
 }
 
 def _sanitize_query(question: str) -> str:
@@ -540,12 +530,9 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         )
 
     for token in _TOKEN_REGEX.findall(q_sanitized):
-        handler_key = _KEYWORD_MAP.get(token)
-        if handler_key and handler_key in _HANDLERS:
-            try:
-                return _HANDLERS[handler_key](context, question)
-            except Exception:
-                continue
+        handler = _KEYWORD_TO_HANDLER.get(token)
+        if handler:
+            return handler(context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"

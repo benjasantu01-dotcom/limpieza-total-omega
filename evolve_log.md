@@ -530,3 +530,11 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-31T01:56:24` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_structural_safety` y `_validate_boundary_conditions` hacia un patrón de validación más claro, documentado con docstrings explicativos y utilizando nombres de parámetros más precisos para alinear el código con las expectativas de seguridad del proyecto.
 - `2026-08-31T01:56:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T01:56:24` Corrida terminada. Total usado hoy: 48.
+- `2026-08-31T02:04:40` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-08-31T02:04:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T02:05:23` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en el método `Scanner.process_entry` y se extrajo la lógica de filtrado de extensiones a una constante bien definida, mejorando la legibilidad del flujo de escaneo sin alterar la funcionalidad.
+- `2026-08-31T02:05:51` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron type hints en los métodos de `_Validators` y se añadió documentación técnica (docstrings) explicativa para aclarar la lógica de validación, garantizando que el mantenimiento futuro sea robusto ante errores de tipos o desbordamientos.
+- `2026-08-31T02:06:22` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
+- `2026-08-31T02:06:43` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el motor de reglas local transformando el diccionario de búsqueda `_KEYWORD_MAP` en un diccionario de acceso directo a las funciones `_HANDLERS`, eliminando la necesidad de iterar sobre cada palabra del input para encontrar una coincidencia, lo que mejora el rendimiento de respuesta ante consultas del usuario.
+- `2026-08-31T02:06:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T02:06:43` Corrida terminada. Total usado hoy: 52.
