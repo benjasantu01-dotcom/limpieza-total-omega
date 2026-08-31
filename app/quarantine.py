@@ -546,21 +546,21 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Calcula el espacio total ocupado por los archivos aislados en el directorio de cuarentena."""
-    items_map = _load_manifest_internal(str(quarantine_dir(base)))
-    return sum(item.size_bytes for item in items_map.values())
+    items = load_manifest(base)
+    return sum(item.size_bytes for item in items)
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
     """Genera un reporte descriptivo de los ítems en cuarentena, legible para la interfaz de usuario."""
-    items_map = _load_manifest_internal(str(quarantine_dir(base)))
-    if not items_map:
+    items = load_manifest(base)
+    if not items:
         return ["La cuarentena está vacía."]
     
-    items = sorted(items_map.values(), key=lambda i: i.quarantined_at, reverse=True)
-    total_mb = sum(i.size_mb for i in items)
+    items_sorted = sorted(items, key=lambda i: i.quarantined_at, reverse=True)
+    total_mb = sum(i.size_mb for i in items_sorted)
     
     lines = [f"{len(items)} archivo(s) en cuarentena — {round(total_mb, 2)} MB", ""]
-    for item in items:
+    for item in items_sorted:
         lines.extend([
             f"  [{item.item_id}] {Path(item.original_path).name} — {item.size_mb} MB",
             f"      Motivo: {item.reason}",

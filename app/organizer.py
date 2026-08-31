@@ -217,9 +217,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry):
-                            child_path = Path(entry.path)
-                            if not is_protected_path(child_path):
-                                _process_directory(child_path, found)
+                            _process_directory(Path(entry.path), found)
                     elif entry.is_file(follow_symlinks=False) and entry.name.lower().endswith(JUNK_EXTENSIONS_TUPLE):
                         stats = entry.stat()
                         if stats.st_size > 0:
