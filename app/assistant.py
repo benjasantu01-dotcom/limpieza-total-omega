@@ -362,8 +362,11 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     sources = [s for s in (metrics, health, extra) if isinstance(s, (dict, object))]
     
     for src in sources:
-        if ctx.ingest(src):
-            ctx.analyzed = True
+        try:
+            if ctx.ingest(src):
+                ctx.analyzed = True
+        except (Exception, TypeError, AttributeError):
+            continue
             
     return ctx
 

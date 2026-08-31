@@ -130,8 +130,8 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
-        target = str(real_target.resolve())
-        base = str(real_base.resolve())
+        target = str(real_target.resolve(strict=True))
+        base = str(real_base.resolve(strict=True))
         return os.path.commonpath([target, base]) == base
     except (OSError, ValueError, RuntimeError, PermissionError):
         return False
@@ -171,7 +171,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
     
     name = entry.name
-    if not name or _is_excluded_file(name):
+    if not isinstance(name, str) or not name or _is_excluded_file(name):
         return True
         
     try:
@@ -226,7 +226,6 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         sub_path = Path(entry.path)
-                        # Protección adicional: verificar si el subdirectorio es una ruta protegida
                         if is_protected_path(sub_path):
                             continue
                         if _is_safe_to_traverse(sub_path, base_check_path):

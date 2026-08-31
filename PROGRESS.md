@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **216** (42.9% de aceptación)
+- Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 216
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 62 | 4 | 7 | 10 | 51 |
+| 2026-08-29 | 59 | 4 | 7 | 10 | 50 |
 | 2026-08-30 | 154 | 11 | 27 | 14 | 144 |
-| 2026-08-31 | 0 | 0 | 0 | 0 | 20 |
+| 2026-08-31 | 2 | 0 | 0 | 0 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- legibilidad y documentación: **49**
+- legibilidad y documentación: **46**
 - rendimiento: **42**
-- manejo de errores y validación de entradas: **38**
+- manejo de errores y validación de entradas: **40**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
-- `memory.py`: **19**
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `healthscore.py`: **17**
-- `browser.py`: **17**
-- `organizer.py`: **15**
+- `browser.py`: **18**
+- `memory.py`: **18**
+- `healthscore.py`: **16**
 - `duplicates.py`: **15**
 - `diskreport.py`: **15**
-- `assistant.py`: **13**
+- `assistant.py`: **14**
+- `organizer.py`: **14**
 - `safety.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T00:55:47` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_should_skip_entry` añadiendo validaciones explícitas de tipos y estados, previniendo errores en tiempo de ejecución al manipular rutas malformadas.
+- `2026-08-31T00:55:04` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación explícita mediante un bloque `try-except` encapsulado y checks de tipo para prevenir que fuentes de datos inesperadas (como objetos malformados) propaguen excepciones que interrumpan la ejecución.
 - `2026-08-30T14:22:53` **settings.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_Validators.path` y `save` mediante el uso de `ensure_safe_to_modify` para transformar las validaciones de tipo booleano en excepciones robustas cuando una operación de escritura o configuración implica rutas, evitando así que una ruta maliciosa o mal configurada pase inadvertida por el sistema.
 - `2026-08-30T14:22:40` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_inside_base_root` añadiendo una comprobación explícita para prevenir ataques de Directory Traversal mediante caracteres nulos o rutas mal formadas, y se aseguró la integridad de `_is_safe_entry` ante accesos a rutas inexistentes.
 - `2026-08-30T14:22:16` **safety.py** (seguridad defensiva): Se introdujo una validación estricta de "Path Traversal" y "nodos de reparse" en el proceso de normalización y chequeo de integridad para evitar que rutas manipuladas con `..` o puntos de montaje ocultos evadan los filtros de seguridad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T13:52:51` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` validando la existencia y el estado de la carpeta destino mediante `is_protected_path` antes de intentar cualquier operación de escritura, asegurando que el proceso no sea interrumpido por excepciones de sistema al acceder a rutas protegidas.
 - `2026-08-30T13:51:25` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `settings.py` ante fallos de entrada y condiciones de carrera al implementar un mecanismo de validación de tipo recursivo más estricto en `validate` y añadiendo un chequeo preventivo de `is_safe_to_modify` antes de intentar cualquier operación de escritura en el directorio de configuración.
 - `2026-08-30T13:42:09` **scanner.py** (robustez ante casos límite): Se reforzó `Scanner.process_entry` para manejar archivos vacíos o inaccesibles de forma atómica y se blindó el `scan_directory` contra excepciones de sistema al listar directorios, evitando que una ruta bloqueada detenga el escaneo completo.
-- `2026-08-30T13:42:00` **safety.py** (robustez ante casos límite): Se ha implementado una validación de longitud de ruta específica para Windows en `ensure_safe_to_modify` para prevenir errores de acceso (`OSError`) al manipular rutas largas que exceden el límite de la API estándar de Win32, fortaleciendo la robustez ante casos límite.
-- `2026-08-30T13:41:15` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de `os.fsync` y manejo de excepciones ante interrupciones de E/S en `_atomic_isolate_file` para evitar archivos corruptos o incompletos tras cortes de energía o bloqueos, fortaleciendo la robustez ante fallos inesperados de persistencia.
