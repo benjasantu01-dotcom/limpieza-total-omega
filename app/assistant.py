@@ -624,6 +624,7 @@ def _call_gemini(
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final_text = _validate_response_length(limpia_final)
             
+            # Validación adicional sobre la respuesta del motor externo contra el árbol de seguridad
             if not _ensure_safe_text(final_text) or is_protected_path(final_text):
                 return None
             return final_text

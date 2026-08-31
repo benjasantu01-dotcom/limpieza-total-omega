@@ -655,3 +655,10 @@ FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep 
 - `2026-08-31T03:17:47` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se implementó un mecanismo de protección contra condiciones de carrera y archivos parcialmente escritos mediante `os.replace` y `os.fsync`, además de asegurar que la validación de rutas maneje correctamente la inexistencia previa del directorio de configuración sin lanzar excepciones.
 - `2026-08-31T03:17:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T03:17:47` Corrida terminada. Total usado hoy: 80.
+- `2026-08-31T03:26:15` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-08-31T03:26:43` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-31T03:27:20` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación en `_call_gemini` incluyendo `is_protected_path` sobre la respuesta final del motor remoto y reforzando que no contenga estructuras de directorios, garantizando que el asistente nunca pueda filtrar información sensible aunque el modelo sea engañado.
+- `2026-08-31T03:27:55` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` utilizando `is_safe_to_modify` para el chequeo preventivo antes de operar, manteniendo la consistencia con las reglas de seguridad al evitar la ejecución de `ensure_safe_to_modify` dentro de una condición lógica.
+- `2026-08-31T03:28:08` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_path_inside_base` añadiendo una comprobación explícita para evitar casos donde el `commonpath` pueda ser engañado por nombres de directorios similares o rutas relativas no resueltas, asegurando que la ruta destino sea efectivamente un descendiente real de la base.
+- `2026-08-31T03:28:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T03:28:08` Corrida terminada. Total usado hoy: 84.

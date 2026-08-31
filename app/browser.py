@@ -130,9 +130,10 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
-        target = str(real_target.resolve(strict=True))
-        base = str(real_base.resolve(strict=True))
-        return os.path.commonpath([target, base]) == base
+        target = real_target.resolve(strict=True)
+        base = real_base.resolve(strict=True)
+        # Comprobación de prefijo en los componentes para asegurar contención real
+        return base in target.parents or target == base
     except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
