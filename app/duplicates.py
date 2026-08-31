@@ -69,12 +69,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de memoria constante.
     """
-    path_obj = Path(path) if path is not None else None
-    if path_obj is None or not path_obj.is_file() or not _is_valid_candidate(path_obj):
-        return None
     try:
         digest = hashlib.sha256()
-        with open(path_obj, "rb") as f:
+        with open(path, "rb") as f:
             while True:
                 buffer = f.read(chunk_size)
                 if not buffer:
@@ -89,11 +86,8 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Genera una huella dactilar rápida leyendo solo el inicio del archivo.
     """
-    path_obj = Path(path) if path is not None else None
-    if path_obj is None or not path_obj.is_file() or not _is_valid_candidate(path_obj):
-        return None
     try:
-        with open(path_obj, "rb") as f:
+        with open(path, "rb") as f:
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()
@@ -105,7 +99,6 @@ def _is_valid_candidate(path: Path) -> bool:
     """
     Valida si una ruta es un archivo legible que no pertenece a áreas protegidas.
     """
-    if not isinstance(path, Path): return False
     try:
         return path.exists() and path.is_file() and not is_protected_path(path) and os.access(path, os.R_OK)
     except (OSError, ValueError):
@@ -120,14 +113,13 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None: return groups
     
     for p in paths:
-        if not isinstance(p, Path): continue
-        try:
-            if _is_valid_candidate(p):
-                st = p.stat()
-                if st.st_size > 0:
-                    groups[st.st_size].append(p)
-        except (OSError, PermissionError):
-            continue
+        if isinstance(p, Path) and _is_valid_candidate(p):
+            try:
+                size = p.stat().st_size
+                if size > 0:
+                    groups[size].append(p)
+            except (OSError, PermissionError):
+                continue
     return groups
 
 
@@ -150,9 +142,6 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo del sistema de archivos utilizando os.scandir.
-    
-    Implementa prevención de bucles infinitos mediante el rastreo de 
-    pares (device, inode) y salta explícitamente puntos de reparse (Junctions).
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: Set[Tuple[int, int]] = set()
@@ -162,26 +151,24 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        entry_path = Path(entry.path)
-                        # Saltear rutas protegidas si está configurado
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
-                        
                         # Obtener atributos evitando seguir enlaces simbólicos
                         stat = entry.stat(follow_symlinks=False)
                         
-                        # Bloquear puntos de reparse (Junctions/Symlinks en Windows/Linux)
                         if entry.is_symlink() or (os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)):
                             continue
                         
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
+                            continue
+                        
                         if entry.is_dir():
-                            # Evitar ciclos recorriendo solo nodos únicos
                             dev_inode = (stat.st_dev, stat.st_ino)
                             if dev_inode not in visited_device_inodes:
                                 visited_device_inodes.add(dev_inode)
                                 _scan_recursive(entry_path)
                         elif entry.is_file() and stat.st_size >= min_size:
-                            temp_map[int(stat.st_size)].append(entry_path)
+                            if os.access(entry_path, os.R_OK):
+                                temp_map[int(stat.st_size)].append(entry_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -199,7 +186,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
     """Genera grupos de archivos agrupados por un digest específico."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
-        if isinstance(path, Path) and (digest := hash_func(path)):
+        if (digest := hash_func(path)):
             groups_by_digest[digest].append(path)
     return {d: p for d, p in groups_by_digest.items() if len(p) > 1}
 
@@ -215,15 +202,13 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """Ejecuta el pipeline de hashing según el tamaño del archivo."""
-    valid_paths = [p for p in paths if isinstance(p, Path) and _is_valid_candidate(p)]
-    if len(valid_paths) < 2: 
+    if len(paths) < 2: 
         return []
     
-    # Si es menor o igual al buffer de lectura, basta con el hash parcial
     if size <= PARTIAL_READ_BYTES:
-        results = _group_paths_by_hash(valid_paths, partial_hash)
+        results = _group_paths_by_hash(paths, partial_hash)
     else:
-        results = _refine_by_deep_hash(valid_paths)
+        results = _refine_by_deep_hash(paths)
             
     return [DuplicateGroup(digest, size, sorted(confirmed_paths)) for digest, confirmed_paths in results.items()]
 

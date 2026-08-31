@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 205
@@ -16,24 +16,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 152 | 11 | 27 | 14 | 140 |
-| 2026-08-31 | 69 | 7 | 14 | 5 | 65 |
+| 2026-08-30 | 150 | 11 | 26 | 14 | 139 |
+| 2026-08-31 | 70 | 8 | 15 | 5 | 66 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **35**
-- rendimiento: **34**
+- rendimiento: **35**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **20**
-- `scanner.py`: **19**
-- `settings.py`: **19**
+- `duplicates.py`: **18**
+- `scanner.py`: **18**
+- `settings.py`: **18**
 - `assistant.py`: **17**
-- `duplicates.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **17**
 - `quarantine.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T06:50:56` **duplicates.py** (rendimiento): Optimizamos el proceso de hashing evitando llamadas redundantes a `is_valid_candidate` dentro de los bucles críticos y mejorando el filtrado inicial en `_process_size_group` para reducir la presión de I/O.
 - `2026-08-31T06:41:49` **browser.py** (rendimiento): Se optimizó el escaneo recursivo de archivos moviendo la instanciación de `ctypes.WinDLL` fuera del bucle principal y eliminando llamadas redundantes a `Path.resolve(strict=True)` dentro de la recursión, reduciendo drásticamente las llamadas al sistema y el overhead de objetos.
 - `2026-08-31T06:40:38` **assistant.py** (rendimiento): Se optimizó el motor de inferencia local reemplazando la búsqueda lineal sobre `_KEYWORD_TO_HANDLER` (que realizaba `findall` y luego comparaciones) por un proceso de tokenización única que permite acceso directo (`O(1)`) mediante el uso de un `set` de claves de intersección, reduciendo la complejidad computacional en cada consulta del usuario.
 - `2026-08-31T06:31:02` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y el refinamiento de las sugerencias de tipo, aclarando el propósito y el flujo de los mecanismos de seguridad y escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T06:00:56` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `branding.py` mediante la adición de docstrings técnicos detallados en funciones de manipulación de color y la especificación de tipos en las variables internas de `draw_logo` para clarificar la lógica de escalado vectorial y renderizado.
 - `2026-08-31T06:00:22` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `handle_ram` y `handle_disk`, extrayendo la lógica de formateo y construcción de mensajes a bloques claros con tipos anotados, y añadiendo docstrings descriptivos que explican el propósito de cada sección de diagnóstico.
 - `2026-08-31T05:59:42` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar fallos por corrupción en la cabecera CSV o claves malformadas, garantizando que el método `next()` del lector no eleve excepciones inesperadas al procesar registros mal estructurados.
-- `2026-08-31T05:50:58` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez en la validación de `asistente_modelo` dentro de `_Validators.str` para prevenir la inyección de valores arbitrarios o potencialmente maliciosos si el JSON fuera manipulado manualmente, añadiendo una lista de permitidos explícita.

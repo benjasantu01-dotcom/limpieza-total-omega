@@ -1029,3 +1029,35 @@ FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missi
 - `2026-08-31T06:42:04` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-08-31T06:42:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T06:42:04` Corrida terminada. Total usado hoy: 160.
+- `2026-08-31T06:50:06` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-08-31T06:50:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T06:50:11` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-31T06:50:17` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-31T06:50:56` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizamos el proceso de hashing evitando llamadas redundantes a `is_valid_candidate` dentro de los bucles críticos y mejorando el filtrado inicial en `_process_size_group` para reducir la presión de I/O.
+- `2026-08-31T06:51:26` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-08-31T06:52:26` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-31T06:53:29` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-31T06:54:35` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-31T06:56:00` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._is_safe_disk_operation, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._verify_disk_path
+- `2026-08-31T06:56:19` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T06:56:31` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-31T06:56:53` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+evolve/tests/test_modules.py:27: in <module>
+    import memory  # noqa: E402
+    ^^^^^^^^^^^^^
+app/memory.py:126: in <module>
+    class ProcessMemory:
+E   ValueError: 'extra' in __slots__ conflicts with class variable
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py - ValueError: 'extra' in __slots__ conflicts with class variable
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.24s
+
+```
+- `2026-08-31T06:56:53` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Optimicé `parse_windows_process_csv` reemplazando la creación de listas intermedias y el doble procesamiento de líneas por una lógica de generación eficiente que utiliza `__slots__` en la clase `ProcessMemory` para reducir el consumo de memoria durante el análisis de procesos.
+- `2026-08-31T06:56:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T06:56:53` Corrida terminada. Total usado hoy: 164.
