@@ -148,13 +148,14 @@ class StartupEntry:
             abs_path = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
+            # Comprobación de existencia protegida por errores de permiso
             if p.exists():
                 try:
                     stat_info = p.lstat()
                     if (stat_info.st_file_attributes & 0x00000400) != 0:
                         _EXISTS_CACHE[path_string] = False
                         return ""
-                except OSError:
+                except (OSError, PermissionError):
                     pass
 
             if not p.is_absolute() or is_protected_path(p) or p.is_symlink():

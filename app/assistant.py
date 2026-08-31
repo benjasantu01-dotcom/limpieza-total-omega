@@ -252,6 +252,11 @@ class SystemContext:
     browser_cache_mb: float = 0.0
     analyzed: bool = False
 
+    @property
+    def is_valid_structure(self) -> bool:
+        """Verifica que el estado actual cumple con las garantías de seguridad de texto."""
+        return _ensure_safe_text(self.grade)
+
     def ingest(self, source: Any) -> bool:
         """
         Intenta extraer y validar métricas desde una fuente externa (dict u objeto).
@@ -271,13 +276,14 @@ class SystemContext:
         try:
             grade_val = _get_source_value(source, "grade")
             if isinstance(grade_val, str):
-                clean_grade = grade_val[:10].strip()
-                if _ensure_safe_text(clean_grade):
+                # Limpieza defensiva inmediata antes de la asignación
+                clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
+                if _is_safe_text_structure(clean_grade):
                     self.grade = clean_grade
         except Exception:
             pass
         
-        return found_data
+        return found_data and self.is_valid_structure
 
 @dataclass
 class Answer:
@@ -321,7 +327,6 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        # Acceso protegido a atributos para evitar triggers de propiedades maliciosas
         if hasattr(source, key):
             return getattr(source, key, None)
         return None
@@ -353,7 +358,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
-    # Procesar solo fuentes seguras de tipo objeto o dict
     sources = [s for s in [metrics, health, extra] if isinstance(s, (dict, object))]
     
     for src in sources:
@@ -387,7 +391,7 @@ def context_as_text(context: SystemContext) -> str:
     Serializa el estado del sistema en un formato de texto plano y seguro para el consumo
     del motor remoto, garantizando que solo se exporten métricas agregadas.
     """
-    if not isinstance(context, SystemContext) or not context.analyzed:
+    if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
         return "No hay métricas disponibles todavía."
     try:
         texto_unificado = "\n".join(_generate_context_lines(context))
@@ -433,7 +437,6 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     total_gb = _safe_float(getattr(ctx, "memory_total_gb", 0.0), 0.0)
     startup_count = int(getattr(ctx, "startup_count", 0))
     
-    # Construcción pedagógica del diagnóstico
     status_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     performance_tip = (
         "Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses."
@@ -462,7 +465,6 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
         cache = _safe_float(getattr(ctx, "browser_cache_mb", 0.0))
         free = _safe_float(getattr(ctx, "disk_free_percent", 100.0))
         
-        # Estructura del diagnóstico de espacio
         recuperable = junk + dup + cache
         diagnostico = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
         detalle = f"Esto incluye: {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f' y {cache:.0f} MB de caché' if cache > 0 else ''}."
@@ -540,7 +542,7 @@ def local_answer(question: str, context: SystemContext) -> Answer:
     if not _ensure_safe_text(q_sanitized):
         return Answer("Entrada no válida.")
 
-    if not isinstance(context, SystemContext) or not context.analyzed:
+    if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
         return Answer(
             text="Todavía no corriste ningún análisis. Andá a la pestaña Salud "
                  "y apretá 'Analizar el sistema': es de solo lectura.",
@@ -548,12 +550,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
 
-    # Optimización: buscar intersección directa entre tokens y claves del mapa (O(1) average lookup)
     query_tokens = set(_TOKEN_REGEX.findall(q_sanitized))
     matches = query_tokens.intersection(_KEYWORD_TO_HANDLER.keys())
     
     if matches:
-        # Priorizar el primer handler encontrado por intersección
         handler = _KEYWORD_TO_HANDLER[next(iter(matches))]
         return handler(context, question)
 
@@ -639,7 +639,6 @@ def _call_gemini(
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final_text = _validate_response_length(limpia_final)
             
-            # Validación adicional sobre la respuesta del motor externo contra el árbol de seguridad
             if not _ensure_safe_text(final_text) or is_protected_path(final_text):
                 return None
             return final_text

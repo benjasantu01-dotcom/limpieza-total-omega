@@ -281,7 +281,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             if now - ts < _CACHE_TTL:
                 return data.copy()
                 
-        if not ruta.exists(): 
+        if not ruta.exists() or ruta.stat().st_size == 0: 
             return DEFAULTS.copy()
         
         mtime = ruta.stat().st_mtime
