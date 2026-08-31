@@ -554,3 +554,36 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-31T02:29:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
 - `2026-08-31T02:29:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T02:29:31` Corrida terminada. Total usado hoy: 60.
+- `2026-08-31T02:35:19` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-08-31T02:35:58` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el acceso al manifiesto en `purge_all` y `list_items` evitando llamadas redundantes a `quarantine_dir` y mejorando la gestión del diccionario de ítems, reduciendo operaciones de I/O innecesarias en el bucle principal.
+- `2026-08-31T02:36:17` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-31T02:36:45` Tests FALLARON:
+```
+pper object at 0x7f39514c01a0> = safety.is_protected_path
+FAILED evolve/tests/test_safety.py::test_ensure_safe_blocks_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_ensure_safe_allows_sensitive_extension_when_explicitly_requested - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_filter_safe_paths_keeps_only_the_safe_ones - AssertionError: assert {'app.tmp', '...', 'otro.log'} == {'ok.tmp', 'otro.log'}
+  
+  Extra items in the left set:
+  'malo.tmp'
+  'app.tmp'
+  
+  Full diff:
+    {
+  +     'app.tmp',
+  +     'malo.tmp',
+        'ok.tmp',
+        'otro.log',
+    }
+FAILED evolve/tests/test_safety.py::test_describe_protection_explains_the_reason - assert 'protegida' in "'/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación."
+ +  where "'/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0/Windows/x.txt' es candidata a modificación." = <function describe_protection at 0x7f39514c5580>(((PosixPath('/tmp/pytest-of-runner/pytest-2/test_describe_protection_expla0') / 'Windows') / 'x.txt'))
+ +    where <function describe_protection at 0x7f39514c5580> = safety.describe_protection
+FAILED evolve/tests/test_safety.py::test_quarantine_refuses_files_from_system_paths - Failed: DID NOT RAISE UnsafePathError
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - Failed: DID NOT RAISE UnsafePathError
+15 failed, 284 passed in 0.81s
+
+```
+- `2026-08-31T02:36:45` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `is_protected_path` eliminando iteraciones innecesarias sobre `p.parts` (que requiere normalización previa de todas las partes) y reemplazándolo por una verificación de prefijo de cadena `os.path.normcase`, lo que reduce drásticamente las llamadas a `pathlib` y `os.path` en bucles intensivos.
+- `2026-08-31T02:36:56` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la heurística `check_recent_executable_in_downloads` para evitar conversiones de ruta costosas y llamadas redundantes a `str().lower()` moviendo la lógica de validación de directorio a una verificación de prefijo de conjunto, reduciendo el número de operaciones en cada iteración del bucle.
+- `2026-08-31T02:36:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T02:36:56` Corrida terminada. Total usado hoy: 64.

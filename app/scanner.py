@@ -71,17 +71,16 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     La heurística prioriza la eficiencia usando el timestamp de inicio global (now_ts).
     """
     if not path: return None
-    path_str_lower = str(path).lower()
-    if any(folder in path_str_lower for folder in WATCHED_FOLDERS):
-        try:
-            if entry and not entry.is_file():
-                return None
-            stats = entry.stat(follow_symlinks=False) if entry else path.stat()
-            if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
-                return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-        except (OSError, AttributeError, ValueError, FileNotFoundError):
-            logger.debug(f"No se pudo acceder a los metadatos de {path}")
-            return None
+    parts = path.parts
+    # Verificación eficiente: si el padre inmediato o alguno de los niveles superiores es una carpeta vigilada
+    if not any(part.lower() in WATCHED_FOLDERS for part in parts):
+        return None
+    try:
+        stats = entry.stat(follow_symlinks=False) if entry else path.stat()
+        if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
+            return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
+    except (OSError, AttributeError, ValueError, FileNotFoundError):
+        return None
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:

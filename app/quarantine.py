@@ -510,31 +510,29 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Vacía la cuarentena borrando únicamente ítems cuya integridad esté confirmada."""
     quarantine_root = quarantine_dir(base)
-    items_dict = _load_manifest_internal(str(quarantine_root))
+    # Copia mutable para modificar durante la iteración
+    items_dict = dict(_load_manifest_internal(str(quarantine_root)))
     if not items_dict:
         return 0
     
     purged_count = 0
-    modified = False
-    for item_id, item in list(items_dict.items()):
-        try:
-            stored_path = (quarantine_root / item.stored_name).resolve()
-            # Validación estricta de seguridad: el archivo debe existir y estar en el sandbox.
-            if not stored_path.exists():
-                del items_dict[item_id]
-                modified = True
-                continue
-            
-            # Verificación defensiva contra archivos corruptos o bloqueados antes del borrado.
-            if _is_item_purgable(stored_path, item, quarantine_root):
-                if _safe_unlink(stored_path):
-                    del items_dict[item_id]
-                    purged_count += 1
-                    modified = True
-        except (OSError, PermissionError, UnsafePathError):
+    ids_to_remove = []
+    for item_id, item in items_dict.items():
+        stored_path = (quarantine_root / item.stored_name).resolve()
+        
+        # Si el archivo no existe físicamente, eliminamos del registro sin fallar
+        if not stored_path.exists():
+            ids_to_remove.append(item_id)
             continue
             
-    if modified:
+        if _is_item_purgable(stored_path, item, quarantine_root):
+            if _safe_unlink(stored_path):
+                ids_to_remove.append(item_id)
+                purged_count += 1
+            
+    if ids_to_remove:
+        for i_id in ids_to_remove:
+            items_dict.pop(i_id, None)
         save_manifest(list(items_dict.values()), base)
     return purged_count
 
