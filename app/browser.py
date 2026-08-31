@@ -185,7 +185,10 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
-    """Verifica si el acceso a la ruta es seguro según las reglas del proyecto."""
+    """
+    Verifica si el acceso a la ruta es seguro según las reglas del proyecto:
+    debe existir, ser modificable, no estar protegida y estar bajo la base permitida.
+    """
     if not isinstance(path_obj, Path):
         return False
     try:
@@ -226,8 +229,7 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         sub_path = Path(entry.path)
-                        if is_protected_path(sub_path):
-                            continue
+                        # Validación de seguridad antes de profundizar
                         if _is_safe_to_traverse(sub_path, base_check_path):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
@@ -249,7 +251,8 @@ def _sum_directory_recursive(
 
 def directory_size(path: Union[str, Path, None]) -> int:
     """
-    Calcula el peso total de una carpeta tras validar seguridad con `is_safe_to_modify`.
+    Calcula el peso total de una carpeta tras validar seguridad.
+    Esta función es el punto de entrada para consultas externas de tamaño.
     """
     if path is None:
         return 0
@@ -259,7 +262,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
             return 0
         
         p_res = p_obj.resolve(strict=True)
-        if not p_res.is_dir() or os.path.ismount(str(p_res)) or is_protected_path(p_res) or not is_safe_to_modify(p_res):
+        # Se reutiliza la lógica de validación de seguridad centralizada
+        if not p_res.is_dir() or not _is_safe_to_traverse(p_res, None):
             return 0
         
         return _sum_directory_recursive(str(p_res), _IS_JUNCTION_FN, _get_kernel32(), {})
@@ -280,10 +284,9 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
             
         real_candidate = candidate.resolve(strict=True)
         
+        # Validaciones de seguridad: tipo de ruta, acceso, y contención en la base
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or os.path.ismount(str(real_candidate)) or
-            not real_candidate.is_dir() or is_protected_path(real_candidate) or 
-            not is_safe_to_modify(real_candidate) or
-            not _is_path_inside_base(real_candidate, base_path) or 
+            not real_candidate.is_dir() or not _is_safe_to_traverse(real_candidate, base_path) or
             _is_excluded_file(real_candidate.name)):
             return False
         return True

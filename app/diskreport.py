@@ -42,6 +42,8 @@ __all__ = [
     "summarize",
 ]
 
+MB_SIZE = 1024 * 1024
+
 
 class SummaryData(NamedTuple):
     """Contenedor de resultados para el análisis unificado de directorios."""
@@ -57,7 +59,7 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
     Convierte una medida de bytes a Megabytes (MB).
     
     Args:
-        size_bytes: Cantidad de bytes a convertir.
+        size_bytes: Cantidad de bytes a convertir (int o float).
         
     Returns:
         Valor en MB redondeado a dos decimales. Retorna 0.0 para entradas inválidas.
@@ -67,7 +69,7 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
     val = float(size_bytes)
     if val <= 0:
         return 0.0
-    return round(val / (1024 * 1024), 2)
+    return round(val / MB_SIZE, 2)
 
 
 def _validate_root(directory: Union[str, os.PathLike]) -> Optional[Path]:
@@ -75,7 +77,7 @@ def _validate_root(directory: Union[str, os.PathLike]) -> Optional[Path]:
     Valida la entrada de directorio base para operaciones de escaneo.
     
     Args:
-        directory: Ruta a validar como punto de inicio.
+        directory: Ruta (str o PathLike) a validar como punto de inicio.
         
     Returns:
         Objeto Path resuelto si es un directorio válido y no protegido, None en otro caso.
@@ -190,7 +192,7 @@ def format_size(num: Union[int, float, None]) -> str:
     Convierte una cantidad de bytes a una cadena legible (ej: '1.2 GB').
     
     Args:
-        num: Valor numérico en bytes.
+        num: Valor numérico en bytes (int, float o None).
         
     Returns:
         String formateado con la unidad correspondiente. '0 B' si la entrada es inválida.
@@ -215,7 +217,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     Consulta el estado de almacenamiento de una unidad específica.
 
     Args:
-        mount: Ruta o letra de unidad a consultar.
+        mount: Ruta (str o PathLike) o None a consultar.
 
     Returns:
         Objeto DriveUsage con las métricas, o None si la ruta es inválida/protegida.
