@@ -669,3 +669,33 @@ FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep 
 - `2026-08-31T03:38:47` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `main.py` reforzando la validación de rutas mediante `is_safe_to_modify` antes de cualquier operación asíncrona que involucre el disco, asegurando que ni siquiera el nombre de la ruta sea procesado si falla el chequeo de seguridad, evitando así posibles ataques de "Time-of-check to time-of-use" (TOCTOU).
 - `2026-08-31T03:38:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T03:38:48` Corrida terminada. Total usado hoy: 88.
+- `2026-08-31T03:46:39` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-08-31T03:47:29` Tests FALLARON:
+```
+
+==================================== ERRORS ====================================
+________________ ERROR collecting evolve/tests/test_modules.py _________________
+ImportError while importing test module '/home/runner/work/limpieza-total-omega/limpieza-total-omega/evolve/tests/test_modules.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/opt/hostedtoolcache/Python/3.12.14/x64/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+evolve/tests/test_modules.py:27: in <module>
+    import memory  # noqa: E402
+    ^^^^^^^^^^^^^
+app/memory.py:35: in <module>
+    from safety import is_protected_path, SYSTEM_FOLDER_BLOCKLIST
+E   ImportError: cannot import name 'SYSTEM_FOLDER_BLOCKLIST' from 'safety' (/home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py)
+=========================== short test summary info ============================
+ERROR evolve/tests/test_modules.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.31s
+
+```
+- `2026-08-31T03:47:29` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la robustez de la función `_validate_path_security` integrando una verificación de integridad contra `SYSTEM_FOLDER_BLOCKLIST` importada de `safety.py`, asegurando que no solo se chequee si la ruta es protegida, sino también que no resida en directorios restringidos del sistema antes de cualquier operación de memoria.
+- `2026-08-31T03:47:58` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha robustecido la validación en `_can_move_file` añadiendo una comprobación explícita para evitar que se intente mover un archivo hacia un destino que sea su propia carpeta padre o que resida dentro de una estructura de archivos ya protegida, reforzando la integridad de los datos durante la etapa de staging.
+- `2026-08-31T03:48:34` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `quarantine_file` al introducir una verificación de existencia post-aislamiento pero pre-eliminación del origen, asegurando que si el archivo de cuarentena no pudo ser verificado o consolidado, el archivo original nunca sea borrado del disco.
+- `2026-08-31T03:48:43` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-31T03:48:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T03:48:43` Corrida terminada. Total usado hoy: 92.

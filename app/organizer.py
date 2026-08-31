@@ -252,6 +252,8 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if not dest_base.exists() or not dest_base.is_dir(): return None
         if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): return None
         if not _is_safe_to_move(junk_file, dest_base): return None
+        # Validación extra de seguridad: el origen no debe ser subcarpeta del destino ni viceversa
+        if src_path.is_relative_to(dest_base) or dest_base.is_relative_to(src_path.parent): return None
         
         safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
         target = (_generate_unique_target(dest_base / safe_name)).resolve()

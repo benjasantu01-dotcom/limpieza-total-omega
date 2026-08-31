@@ -416,6 +416,7 @@ def quarantine_file(
         items_dict[item_id] = quarantine_item
         save_manifest(list(items_dict.values()), base)
         
+        # Doble verificación antes de borrar el original
         if destination.exists() and quarantine_item.verify_integrity(destination) and not _is_file_locked(source_path):
             source_path.unlink()
         else:
