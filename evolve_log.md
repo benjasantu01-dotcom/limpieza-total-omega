@@ -1444,3 +1444,10 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-31T11:56:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
 - `2026-08-31T11:56:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T11:56:22` Corrida terminada. Total usado hoy: 272.
+- `2026-08-31T12:05:02` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-08-31T12:05:34` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se ha optimizado el rendimiento de `is_protected_path` al reemplazar la iteración manual por elementos (`p.parts`) por una búsqueda basada en conjuntos (`set.intersection`), lo cual es computacionalmente más eficiente y elimina la necesidad de iterar sobre todo el árbol del archivo.
+- `2026-08-31T12:05:59` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento de `scan_directory` y `Scanner.process_entry` evitando llamadas redundantes a `os.path.exists` y `os.path.isdir` al aprovechar la información que ya proporciona `os.DirEntry` durante la iteración, reduciendo drásticamente las syscalls innecesarias.
+- `2026-08-31T12:06:29` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el sistema de caché convirtiendo `_CACHE` en una estructura más eficiente y aplicando una verificación de `st_mtime` antes de realizar el parseo JSON, evitando deserializaciones innecesarias cuando el archivo en disco no ha cambiado.
+- `2026-08-31T12:06:42` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-31T12:06:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T12:06:42` Corrida terminada. Total usado hoy: 276.
