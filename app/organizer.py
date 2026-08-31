@@ -194,7 +194,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Verifica si un objeto JunkFile es seguro para mover, validando tanto la existencia del origen como los permisos del destino."""
-    return isinstance(junk_file, JunkFile) and junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
+    if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
+    return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
@@ -247,6 +248,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Valida la viabilidad de un movimiento (espacio en disco, seguridad) y propone una ruta de destino única."""
+    if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
     try:
         src_path = junk_file.path.resolve()
         if not dest_base.exists() or not dest_base.is_dir(): return None
@@ -273,7 +275,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     for junk_file in files:
         try:
-            if not isinstance(junk_file, JunkFile): continue
+            if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
             if junk_file.path.resolve().is_relative_to(dest_base): continue
             
             target = _can_move_file(junk_file, dest_base)

@@ -182,14 +182,15 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
         if len(parts) != 3: continue
         try:
+            name_val = str(parts[0])
             pid_val = int(parts[1])
             ws_val = int(parts[2])
             if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
-                proc_list.append(ProcessMemory(name=parts[0], pid=pid_val, working_set=ws_val))
+                proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=ws_val))
         except (ValueError, TypeError): continue
     
     proc_list.sort(key=lambda p: p.working_set, reverse=True)
-    return proc_list[:limit]
+    return proc_list[:max(0, limit)]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Interroga la API Win32 GlobalMemoryStatusEx."""
