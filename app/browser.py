@@ -124,22 +124,21 @@ def base_directories() -> List[Path]:
 
 def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     """
-    Valida si 'real_target' está contenido estrictamente dentro de 'real_base'
-    usando resolución de rutas para prevenir ataques de directory traversal.
+    Valida la jerarquía: confirma que 'real_target' se encuentra dentro de 'real_base'.
+    Requiere rutas resueltas (absolutas y sin symlinks) para evitar saltos de directorio.
     """
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
         target = real_target.resolve(strict=True)
         base = real_base.resolve(strict=True)
-        # Comprobación segura de relación de padres
         return base == target or base in target.parents
     except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
 
 def _is_excluded_file(name: str) -> bool:
-    """Valida si un nombre de archivo está en la lista de bloqueo permanente."""
+    """Verifica si un nombre de archivo está en la lista de bloqueo permanente (NEVER_TOUCH)."""
     if not isinstance(name, str) or not name:
         return True
     return name.lower() in NEVER_TOUCH
@@ -147,8 +146,8 @@ def _is_excluded_file(name: str) -> bool:
 
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """
-    Verifica atributos de sistema u ocultos usando la API de Win32.
-    El chequeo es preventivo para evitar escanear zonas de protección del SO.
+    Consulta los atributos de archivo mediante la API de Win32 para identificar
+    elementos marcados como ocultos o de sistema, evitando el escaneo innecesario.
     """
     if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
@@ -165,8 +164,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Filtra entradas del sistema (ocultas, junctions, symlinks) que no deben
-    ser recorridas para evitar loops infinitos o modificación de archivos críticos.
+    Determina si una entrada (archivo o carpeta) debe ignorarse basándose en
+    atributos de sistema, tipos de enlace (junctions/symlinks) o bloqueo de nombres.
     """
     if entry is None or not hasattr(entry, 'name') or not hasattr(entry, 'path'):
         return True
@@ -187,8 +186,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """
-    Verifica si el acceso a la ruta es seguro según las reglas del proyecto:
-    debe existir, ser modificable, no estar protegida y estar bajo la base permitida.
+    Valida si el acceso a la ruta es seguro: verifica permisos, inexistencia
+    de protecciones y, si se provee, que esté dentro del 'base_check_path' resuelto.
     """
     if not isinstance(path_obj, Path):
         return False
@@ -211,8 +210,9 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el peso de una carpeta utilizando `os.scandir` para rendimiento.
-    Usa `memo` para cachear resultados de subcarpetas y `MAX_SCAN_DEPTH` para evitar recursión infinita.
+    Calcula el tamaño acumulado de archivos dentro de 'root_abs'. 
+    Utiliza un diccionario 'memo' para cachear resultados de subdirectorios 
+    y evitar redundancia, limitando la recursión mediante 'MAX_SCAN_DEPTH'.
     """
     if depth > MAX_SCAN_DEPTH or not root_abs or not isinstance(root_abs, str):
         return 0
@@ -248,8 +248,8 @@ def _sum_directory_recursive(
 
 def directory_size(path: Union[str, Path, None]) -> int:
     """
-    Calcula el peso total de una carpeta tras validar seguridad.
-    Esta función es el punto de entrada para consultas externas de tamaño.
+    Punto de entrada para obtener el tamaño (bytes) de una ruta.
+    Valida que la ruta sea segura y la resuelve antes de iniciar el escaneo recursivo.
     """
     if path is None:
         return 0
@@ -269,8 +269,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Valida que la ruta candidata a caché sea un directorio real, seguro de
-    modificar, y que resida dentro del perfil de usuario permitido.
+    Verifica que la carpeta de caché candidata no sea un enlace externo,
+    que sea una ruta segura, y que se mantenga bajo el 'base_path' permitido.
     """
     if not isinstance(candidate, Path) or not isinstance(base_path, Path):
         return False
@@ -294,8 +294,9 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea las rutas definidas en `cache_paths`. Utiliza un diccionario de 
-    memoización persistente para evitar re-cálculos redundantes entre navegadores.
+    Escanea las rutas definidas en 'cache_paths' relativas a 'bases'.
+    Retorna una lista de objetos 'BrowserCache' ordenados por peso, utilizando 
+    memoización para optimizar el cálculo del tamaño total en disco.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS

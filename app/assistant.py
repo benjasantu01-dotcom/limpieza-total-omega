@@ -429,14 +429,18 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     total_gb = _safe_float(getattr(ctx, "memory_total_gb", 0.0), 0.0)
     startup_count = int(getattr(ctx, "startup_count", 0))
     
-    msg_parts = [f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."]
+    # Construcción pedagógica del diagnóstico
+    status_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
+    performance_tip = (
+        "Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses."
+        if mem_pct < 15 else "Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM."
+    )
     
-    if mem_pct < 15:
-        msg_parts.append("Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses.")
-    else:
-        msg_parts.append("Eso está bien. Si la PC va lenta, el problema seguramente no es la RAM.")
-        
-    msg_parts.append("No busques un 'liberador de RAM': la PC queda más lenta.")
+    msg_parts = [
+        status_msg,
+        performance_tip,
+        "No busques un 'liberador de RAM': la PC queda más lenta."
+    ]
     
     if startup_count > 12:
         msg_parts.append(f"Sí te conviene mirar los {startup_count} programas de inicio.")
@@ -447,19 +451,22 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Proporciona diagnóstico de espacio en disco y posibles acciones de recuperación."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
+    
     try:
         junk = _safe_float(getattr(ctx, "junk_mb", 0.0))
         dup = _safe_float(getattr(ctx, "duplicate_mb", 0.0))
         cache = _safe_float(getattr(ctx, "browser_cache_mb", 0.0))
         free = _safe_float(getattr(ctx, "disk_free_percent", 100.0))
         
+        # Estructura del diagnóstico de espacio
         recuperable = junk + dup + cache
-        linea1 = f"Tenés {free:.0f}% libre en disco."
-        linea2 = f"Podés recuperar cerca de {recuperable:.0f} MB: {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f' y {cache:.0f} MB de caché' if cache > 0 else ''}."
-        alerta = " Estás por debajo del 10%, y ahí Windows empieza a andar mal. Es lo primero que atendería." if free < 10 else ""
-        cierre = " Empezá por Limpieza: mueve los candidatos a revisión."
+        diagnostico = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
+        detalle = f"Esto incluye: {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f' y {cache:.0f} MB de caché' if cache > 0 else ''}."
+        advertencia = " Estás por debajo del 10%: esto afecta la estabilidad. Es urgente." if free < 10 else ""
+        accion = " Empezá por Limpieza: mueve los candidatos a revisión."
         
-        return Answer(_validate_response_length(f"{linea1} {linea2}{alerta}{cierre}"), notice=OFFLINE_NOTICE)
+        full_text = f"{diagnostico} {detalle}{advertencia}{accion}"
+        return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE)
     except (AttributeError, TypeError, ValueError):
         return Answer("Hubo un error al procesar el estado de tu disco.")
 

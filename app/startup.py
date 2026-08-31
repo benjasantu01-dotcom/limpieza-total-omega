@@ -269,16 +269,20 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
     try:
         f = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
-        fieldnames = reader.fieldnames
-        if not fieldnames or len(fieldnames) < 2:
+        
+        # Validar estructura mínima antes de iterar
+        if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
+        field_name = reader.fieldnames[0]
+        field_cmd = reader.fieldnames[1]
+            
         for row in reader:
-            if not isinstance(row, dict) or len(row) < 2:
+            if not isinstance(row, dict):
                 continue
             
-            name_raw = row.get(fieldnames[0])
-            cmd_raw = row.get(fieldnames[1])
+            name_raw = row.get(field_name)
+            cmd_raw = row.get(field_cmd)
             
             if name_raw is None or cmd_raw is None:
                 continue
