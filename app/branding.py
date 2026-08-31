@@ -251,6 +251,10 @@ def bar(percent: Union[float, int, None], width: int = 24,
     except (TypeError, ValueError):
         return empty * max(1, int(width))
 
+def _get_rgb_safe(val: float) -> int:
+    """Asegura que un valor sea un entero en el rango 0-255."""
+    return max(0, min(255, int(val)))
+
 @lru_cache(maxsize=128)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
     """Transforma color formato #RRGGBB a una tupla de valores decimales (0-255)."""
@@ -263,7 +267,7 @@ def _hex_to_rgb(value: HexColor) -> RGBTuple:
 
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
     """Transforma valores (R, G, B) a string hexadecimal #RRGGBB."""
-    return "#{:02x}{:02x}{:02x}".format(*[max(0, min(255, int(c))) for c in rgb])
+    return "#{:02x}{:02x}{:02x}".format(*map(_get_rgb_safe, rgb))
 
 @lru_cache(maxsize=64)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
@@ -273,9 +277,9 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     r2, g2, b2 = _hex_to_rgb(end)
     ratio = max(0.0, min(1.0, float(ratio)))
     return _rgb_to_hex((
-        int(r1 + (r2 - r1) * ratio),
-        int(g1 + (g2 - g1) * ratio),
-        int(b1 + (b2 - b1) * ratio)
+        r1 + (r2 - r1) * ratio,
+        g1 + (g2 - g1) * ratio,
+        b1 + (b2 - b1) * ratio
     ))
 
 @lru_cache(maxsize=32)
@@ -295,9 +299,9 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
         r_delta = pos - idx
         s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
         return _rgb_to_hex((
-            int(s1[0] + (s2[0] - s1[0]) * r_delta),
-            int(s1[1] + (s2[1] - s1[1]) * r_delta),
-            int(s1[2] + (s2[2] - s1[2]) * r_delta)
+            s1[0] + (s2[0] - s1[0]) * r_delta,
+            s1[1] + (s2[1] - s1[1]) * r_delta,
+            s1[2] + (s2[2] - s1[2]) * r_delta
         ))
         
     return tuple(get_color(i) for i in range(n))

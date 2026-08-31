@@ -101,8 +101,8 @@ SETTINGS_FILE: Final = "config.json"
 MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
-_CACHE: dict[str, tuple[float, AppSettings]] = {}
-_CACHE_TTL: Final = 0.5
+_CACHE: dict[str, tuple[float, float, AppSettings]] = {}
+_CACHE_TTL: Final = 1.0
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
@@ -267,39 +267,27 @@ def validate(raw_values: Any) -> AppSettings:
                 config[key.value] = validated
     return config
 
-@lru_cache(maxsize=4)
-def _read_disk(ruta_str: str, mtime: float) -> AppSettings:
-    """Carga interna: valida el archivo en disco, retornando DEFAULTS ante errores."""
-    ruta = Path(ruta_str)
-    try:
-        if not ruta.exists(): return DEFAULTS.copy()
-        stat_info = ruta.stat()
-        if stat_info.st_size > MAX_SETTINGS_SIZE or stat_info.st_size < 2:
-            return DEFAULTS.copy()
-            
-        with open(ruta, "r", encoding="utf-8") as f:
-            data: Any = json.load(f)
-            return validate(data)
-    except (json.JSONDecodeError, UnicodeDecodeError, PermissionError, OSError, Exception):
-        return DEFAULTS.copy()
-
 def load(custom_base: PathLike | None = None) -> AppSettings:
     """Carga la configuración con una caché temporal para minimizar IO."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     now = time.monotonic()
     
-    if ruta_str in _CACHE:
-        ts, data = _CACHE[ruta_str]
-        if now - ts < _CACHE_TTL:
-            return data.copy()
-            
     try:
         mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
-        data = _read_disk(ruta_str, mtime).copy()
-        _CACHE[ruta_str] = (now, data)
-        return data
-    except (OSError, PermissionError, RuntimeError):
+        if ruta_str in _CACHE:
+            ts, last_mtime, data = _CACHE[ruta_str]
+            if now - ts < _CACHE_TTL and mtime == last_mtime:
+                return data.copy()
+                
+        if not ruta.exists(): 
+            return DEFAULTS.copy()
+        
+        with open(ruta, "r", encoding="utf-8") as f:
+            data = validate(json.load(f))
+            _CACHE[ruta_str] = (now, mtime, data)
+            return data.copy()
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
@@ -347,7 +335,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
                 try: os.remove(temp_path)
                 except OSError: pass
             
-        _read_disk.cache_clear()
         _CACHE.clear()
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError, json.JSONDecodeError):

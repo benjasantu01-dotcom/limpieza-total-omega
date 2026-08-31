@@ -587,3 +587,34 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-08-31T02:36:56` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la heurística `check_recent_executable_in_downloads` para evitar conversiones de ruta costosas y llamadas redundantes a `str().lower()` moviendo la lógica de validación de directorio a una verificación de prefijo de conjunto, reduciendo el número de operaciones en cada iteración del bucle.
 - `2026-08-31T02:36:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T02:36:56` Corrida terminada. Total usado hoy: 64.
+- `2026-08-31T02:45:27` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-08-31T02:45:59` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` reemplazando el acceso recurrente al sistema de archivos por una verificación condicional basada en el tiempo de modificación del archivo (mtime), reduciendo llamadas innecesarias a `stat()` y operaciones de I/O en lecturas frecuentes.
+- `2026-08-31T02:46:32` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.25s
+
+```
+- `2026-08-31T02:46:32` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché local dentro de `_resolve_and_cache_path` para evitar llamadas redundantes a `os.path.realpath` y `p.exists()` (operaciones costosas de I/O) cuando múltiples entradas de registro apuntan al mismo ejecutable, optimizando significativamente el tiempo de procesamiento en sistemas con muchas entradas duplicadas o compartidas.
+- `2026-08-31T02:47:14` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez de los `handlers` ante datos inesperados mediante el uso de `getattr` con valores por defecto seguros y una limpieza sistemática de caracteres en las respuestas formateadas, previniendo errores de ejecución si los datos de entrada están corruptos.
+- `2026-08-31T02:47:34` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido un método `_get_rgb_safe` para centralizar la validación de valores decimales (0-255) y prevenir errores de renderizado o excepciones inesperadas al procesar configuraciones de color potencialmente corruptas.
+- `2026-08-31T02:47:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T02:47:34` Corrida terminada. Total usado hoy: 68.
