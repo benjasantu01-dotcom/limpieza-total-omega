@@ -153,6 +153,7 @@ def _passes_system_checks(src: Path) -> bool:
     if os.name != "nt": return True
     try:
         stat = src.stat()
+        # 0x407: 0x4 (System), 0x2 (Hidden), 0x1 (ReadOnly)
         return not (stat.st_file_attributes & 0x407)
     except OSError:
         return False
@@ -162,29 +163,21 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """Realiza una batería de validaciones (existencia, permisos, límites de ruta) antes de ejecutar cualquier movimiento."""
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
-    # Validaciones básicas
     if len(str(src)) > 240 or len(str(dest)) > 240: return False
     if not src.is_absolute() or not dest.is_absolute(): return False
     
     try:
         if not src.exists() or not src.is_file(): return False
         
-        # Validación de protección de rutas y permisos de acceso
         if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(src, dest): return False
-        
-        # Verificar que el destino no sea un punto de reparse que apunte fuera
         if _is_junction(dest.parent if dest.is_file() else dest): return False
         
-        # Validar permisos de escritura
         target_dir = dest.parent if dest.is_file() else dest
         if not (os.access(src, os.W_OK) and os.access(target_dir, os.W_OK)): return False
-        
-        # Misma unidad lógica
         if src.drive != dest.drive: return False
         
-        # Validaciones de atributos SO
         stat = src.stat()
         if os.name == "nt" and (stat.st_file_attributes & 0x400): return False
         return stat.st_size > 0 and _passes_system_checks(src) and not _is_file_locked(src)
@@ -198,6 +191,11 @@ def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 
+def _should_scan_directory(entry: os.DirEntry) -> bool:
+    """Determina si una subcarpeta es apta para ser escaneada basándose en su nombre y naturaleza técnica."""
+    return _is_allowed_directory(entry.name) and not _is_junction(entry)
+
+
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """Realiza un recorrido recursivo en profundidad del sistema de archivos, ignorando rutas protegidas o puntos de unión."""
     try:
@@ -205,7 +203,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
             for entry in it:
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        if _is_allowed_directory(entry.name) and not _is_junction(entry):
+                        if _should_scan_directory(entry):
                             child_path = Path(entry.path)
                             if not is_protected_path(child_path):
                                 _process_directory(child_path, found)

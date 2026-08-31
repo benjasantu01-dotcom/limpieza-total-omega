@@ -503,3 +503,30 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-31T01:46:47` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `MemorySnapshot` y el refinamiento de la estructura de tipos, asegurando que las funciones complejas de manejo de memoria (especialmente aquellas que operan sobre APIs de bajo nivel) tengan una explicación clara del flujo de control y las garantías de seguridad.
 - `2026-08-31T01:46:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T01:46:47` Corrida terminada. Total usado hoy: 44.
+- `2026-08-31T01:54:30` Arrancando corrida. Quedan hoy ~256 peticiones objetivo.
+- `2026-08-31T01:55:02` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y el mantenimiento de `organizer.py` mediante la refactorización de la lógica de recorrido y validación, extrayendo la condición compleja de `_process_directory` a una función predictiva con nombre claro y documentando las restricciones críticas de seguridad para evitar errores futuros.
+- `2026-08-31T01:55:45` Tests FALLARON:
+```
+ia protegida al sandbox, verifica integridad y consolida el archivo."""
+>       _ensure_disk_space(destination.parent, original_size)
+        ^^^^^^^^^^^^^^^^^^
+E       NameError: name '_ensure_disk_space' is not defined
+
+app/quarantine.py:343: NameError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - NameError: name '_ensure_disk_space' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - NameError: name '_ensure_disk_space' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - NameError: name '_ensure_disk_space' is not defined
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - NameError: name '_ensure_disk_space' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - NameError: name '_ensure_disk_space' is not defined
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - NameError: name '_ensure_disk_space' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - NameError: name '_ensure_disk_space' is not defined
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - NameError: name '_ensure_disk_space' is not defined
+8 failed, 291 passed in 1.36s
+
+```
+- `2026-08-31T01:55:45` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación interna y legibilidad de `quarantine_file` mediante un bloque de docstring explicativo (que justifica la secuencia crítica de operaciones) y se ha extraído la lógica de creación del ítem en una función auxiliar `_create_item_metadata` para reducir el acoplamiento y mejorar la claridad del flujo principal.
+- `2026-08-31T01:56:05` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-08-31T01:56:24` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_structural_safety` y `_validate_boundary_conditions` hacia un patrón de validación más claro, documentado con docstrings explicativos y utilizando nombres de parámetros más precisos para alinear el código con las expectativas de seguridad del proyecto.
+- `2026-08-31T01:56:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T01:56:24` Corrida terminada. Total usado hoy: 48.

@@ -315,25 +315,31 @@ def is_sensitive_file(path: PathLike) -> bool:
     except (TypeError, ValueError, OSError): return True 
 
 
-def _validate_structural_safety(path: Path, path_str: str) -> None:
-    """Valida integridad estructural (caracteres, dispositivos, traversal) sin acceso a disco."""
-    if _has_invalid_chars(path_str) or _is_reserved_device_name(path.name):
+def _validate_structural_safety(target_path: Path, path_string: str) -> None:
+    """
+    Valida la integridad estructural de la ruta.
+    Detecta nombres reservados, caracteres ilegales y rutas de red UNC.
+    """
+    if _has_invalid_chars(path_string) or _is_reserved_device_name(target_path.name):
         raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
-    if path_str.startswith(("\\\\", "//")):
+    if path_string.startswith(("\\\\", "//")):
         raise UnsafePathError("Rutas de red (UNC) no permitidas.")
-    if len(str(path)) >= MAX_PATH_LENGTH:
+    if len(str(target_path)) >= MAX_PATH_LENGTH:
         raise UnsafePathError("La ruta resultante excede la longitud máxima permitida.")
 
 
-def _validate_boundary_conditions(path: Path, base_dir: PathLike | None) -> None:
-    """Verifica límites geográficos y de sistema para la manipulación de archivos."""
-    if base_dir and not is_within_directory(path, base_dir, allow_equal=True):
+def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
+    """
+    Verifica que la operación se mantenga dentro de los límites geográficos permitidos.
+    Asegura que no se acceda a rutas de sistema o al directorio de ejecución.
+    """
+    if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Operación fuera del directorio base permitido.")
-    if is_within_directory(path, Path.cwd(), allow_equal=True):
+    if is_within_directory(target_path, Path.cwd(), allow_equal=True):
         raise UnsafePathError("Operación denegada en el directorio de ejecución.")
-    if is_drive_root(path) or is_protected_path(path):
+    if is_drive_root(target_path) or is_protected_path(target_path):
         raise UnsafePathError("Ruta de sistema protegida.")
-    if _is_reparse_point(path):
+    if _is_reparse_point(target_path):
         raise UnsafePathError("Seguridad denegada: nodo de reparse detectado.")
 
 
