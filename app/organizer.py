@@ -142,14 +142,15 @@ def _is_file_locked(path: Path) -> bool:
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
     """Previene que el destino sea la misma carpeta o una carpeta padre de la fuente para evitar recursión circular."""
     try:
-        s, d = src.resolve(), dest.resolve()
+        s: Path = src.resolve()
+        d: Path = dest.resolve()
         return s == d or d.is_relative_to(s)
     except (OSError, RuntimeError, ValueError):
         return True
 
 
 def _passes_system_checks(src: Path) -> bool:
-    """Verifica si un archivo en Windows tiene atributos especiales de sistema o de solo lectura (FILE_ATTRIBUTE_SYSTEM/READONLY)."""
+    """Verifica si un archivo en Windows tiene atributos especiales de sistema o de solo lectura."""
     if os.name != "nt": return True
     try:
         stat = src.stat()
@@ -160,7 +161,14 @@ def _passes_system_checks(src: Path) -> bool:
 
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Realiza una batería de validaciones (existencia, permisos, límites de ruta) antes de ejecutar cualquier movimiento."""
+    """
+    Realiza una batería de validaciones antes de cualquier operación de movimiento.
+    Args:
+        src: Path origen del archivo.
+        dest: Path destino (archivo o directorio).
+    Returns:
+        bool: True si la operación cumple con todos los criterios de seguridad.
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
     if len(str(src)) > 240 or len(str(dest)) > 240: return False
@@ -174,7 +182,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if _is_recursive_violation(src, dest): return False
         if _is_junction(dest.parent if dest.is_file() else dest): return False
         
-        target_dir = dest.parent if dest.is_file() else dest
+        target_dir: Path = dest.parent if dest.is_file() else dest
         if not (os.access(src, os.W_OK) and os.access(target_dir, os.W_OK)): return False
         if src.drive != dest.drive: return False
         
@@ -186,7 +194,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """Verifica si un objeto JunkFile es seguro para mover, validando tanto la existencia del origen como los permisos del destino."""
+    """Verifica si un objeto JunkFile es seguro para mover."""
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
     return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
@@ -197,7 +205,12 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
-    """Realiza un recorrido recursivo en profundidad del sistema de archivos, ignorando rutas protegidas o puntos de unión."""
+    """
+    Recorre recursivamente un directorio buscando archivos basura.
+    Args:
+        current_dir: Directorio a escanear.
+        found: Lista acumulativa de JunkFiles encontrados.
+    """
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
@@ -218,15 +231,15 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
-    """Escanea los directorios especificados en busca de archivos basura, delegando la recursión a _process_directory."""
-    search_dirs = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
+    """Escanea los directorios especificados en busca de archivos basura."""
+    search_dirs: List[Path] = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     
     for d in search_dirs:
         try:
-            path_obj = Path(d).expanduser()
+            path_obj: Path = Path(d).expanduser()
             if path_obj.exists():
-                resolved = path_obj.resolve()
+                resolved: Path = path_obj.resolve()
                 if not is_protected_path(resolved):
                     _process_directory(resolved, found)
         except (OSError, RuntimeError):
@@ -245,28 +258,32 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """Valida la viabilidad de un movimiento (espacio en disco, seguridad) y propone una ruta de destino única."""
+    """
+    Valida la viabilidad de un movimiento y propone una ruta de destino única.
+    Returns:
+        Optional[Path]: La ruta de destino final o None si la operación es insegura.
+    """
     if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
     try:
-        src_path = junk_file.path.resolve()
+        src_path: Path = junk_file.path.resolve()
         if not dest_base.exists() or not dest_base.is_dir(): return None
         if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): return None
         if not _is_safe_to_move(junk_file, dest_base): return None
         if src_path.is_relative_to(dest_base) or dest_base.is_relative_to(src_path.parent): return None
         
-        safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
-        target = (_generate_unique_target(dest_base / safe_name)).resolve()
+        safe_name: str = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
+        target: Path = (_generate_unique_target(dest_base / safe_name)).resolve()
         return target if target.is_relative_to(dest_base) else None
     except (OSError, ValueError, AttributeError):
         return None
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Traslada una lista de archivos basura hacia un directorio de revisión, validando la seguridad de cada operación individualmente."""
+    """Traslada una lista de archivos basura hacia un directorio de revisión."""
     if not files or not isinstance(review_dir, str): return None
 
     try:
-        dest_base = Path(review_dir).expanduser().resolve()
+        dest_base: Path = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         if not is_safe_to_modify(dest_base) or is_protected_path(dest_base): return None
     except (OSError, RuntimeError):
@@ -275,10 +292,10 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     for junk_file in files:
         try:
             if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
-            src = junk_file.path.resolve()
+            src: Path = junk_file.path.resolve()
             if src.is_relative_to(dest_base): continue
             
-            target = _can_move_file(junk_file, dest_base)
+            target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and is_safe_to_modify(src):
                 ensure_safe_to_modify(src)
                 shutil.move(str(src), str(target))
@@ -288,11 +305,11 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """Elimina permanentemente los archivos contenidos en el directorio de revisión, previa validación de integridad."""
+    """Elimina permanentemente los archivos contenidos en el directorio de revisión."""
     if not isinstance(review_dir, str): return 0
 
     try:
-        dest = Path(review_dir).expanduser().resolve()
+        dest: Path = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
     except (OSError, RuntimeError):
         return 0

@@ -76,7 +76,11 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 para GlobalMemoryStatusEx que mapea el estado global de la RAM."""
+    """
+    Estructura Win32 para GlobalMemoryStatusEx.
+    Los campos corresponden exactamente a la definición oficial de Microsoft,
+    utilizando ctypes.c_ulonglong para valores de 64 bits.
+    """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -343,6 +347,11 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Verifica que el proceso sea legítimo antes de realizar operaciones de memoria.
+    
+    Realiza una triple comprobación:
+    1. Verifica que el proceso no haya terminado (coherencia de PID/Handle).
+    2. Resuelve la ruta del ejecutable para descartar malware o procesos de sistema.
+    3. Valida la integridad de la ruta mediante `safety.py`.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
