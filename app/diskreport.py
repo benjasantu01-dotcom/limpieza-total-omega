@@ -295,7 +295,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                 for entry in iterator:
                     try:
                         st = entry.stat(follow_symlinks=False)
-                    except (PermissionError, OSError):
+                    except (PermissionError, OSError, FileNotFoundError):
                         continue
 
                     # Ignorar nombres nulos o caracteres de control
@@ -308,7 +308,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     
                     if entry.is_dir(follow_symlinks=False):
                         child_path = Path(entry.path)
-                        resolved_child = child_path.resolve()
+                        try:
+                            resolved_child = child_path.resolve()
+                        except OSError:
+                            continue
                         
                         # Prevenir salida del directorio raíz original
                         if not str(resolved_child).startswith(root_str):
@@ -323,8 +326,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(resolved_child)
                                 
                     elif entry.is_file(follow_symlinks=False):
-                        yield Path(entry.path), max(0, st.st_size)
-        except (PermissionError, OSError):
+                        # Evitar tamaños negativos por corrupción o error de sistema
+                        file_size = st.st_size if st.st_size > 0 else 0
+                        yield Path(entry.path), file_size
+        except (PermissionError, OSError, FileNotFoundError):
             continue
 
 

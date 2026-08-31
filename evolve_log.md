@@ -1451,3 +1451,10 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-31T12:06:42` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
 - `2026-08-31T12:06:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T12:06:42` Corrida terminada. Total usado hoy: 276.
+- `2026-08-31T12:15:09` Arrancando corrida. Quedan hoy ~24 peticiones objetivo.
+- `2026-08-31T12:15:47` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_safe_float` y `_get_source_value` para manejar situaciones donde el contexto contiene valores `NaN`, infinitos, tipos de datos inesperados (como `None` o listas), o atributos corruptos, asegurando que el asistente no colapse ante métricas malformadas o estados parciales del sistema.
+- `2026-08-31T12:16:19` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-31T12:16:46` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_sum_directory_recursive` y `_should_skip_entry` ante archivos bloqueados o denegados durante el escaneo, asegurando que el proceso no aborte inesperadamente y que los permisos se manejen correctamente mediante excepciones específicas.
+- `2026-08-31T12:17:01` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el recorrido (concurrencia) y archivos cuyo tamaño reportado por el sistema es negativo o inconsistente, añadiendo un chequeo explícito `if st.st_size < 0` tras el `stat` para evitar errores en cálculos de espacio.
+- `2026-08-31T12:17:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T12:17:01` Corrida terminada. Total usado hoy: 280.

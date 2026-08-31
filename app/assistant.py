@@ -220,10 +220,10 @@ _VALIDATORS: Final[dict[str, MetricSpec]] = {
 }
 
 def _safe_float(val: Any, default: float = 0.0) -> float:
-    """Conversión segura a float. Retorna default si el valor no es numérico, es infinito o NaN."""
-    if not isinstance(val, (int, float)) or isinstance(val, bool):
-        return default
+    """Conversión segura a float que maneja tipos inesperados, NaN e infinitos."""
     try:
+        if isinstance(val, bool) or not isinstance(val, (int, float, str)):
+            return default
         f = float(val)
         return f if math.isfinite(f) else default
     except (TypeError, ValueError):
@@ -317,13 +317,11 @@ def _ensure_safe_text(text: Any) -> bool:
     return _is_safe_text_structure(text)
 
 def _get_source_value(source: Any, key: str) -> Any:
-    """Centraliza la extracción de valores desde diccionarios u objetos."""
+    """Centraliza la extracción de valores desde diccionarios u objetos de forma robusta."""
     try:
         if isinstance(source, dict):
             return source.get(key)
-        if hasattr(source, key):
-            return getattr(source, key, None)
-        return None
+        return getattr(source, key, None)
     except Exception:
         return None
 
