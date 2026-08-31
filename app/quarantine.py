@@ -384,7 +384,10 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).expanduser().resolve(strict=True)
-    original_mtime = source_path.stat().st_mtime
+    # Captura inicial para detectar manipulación durante la operación
+    s_stat = source_path.stat()
+    original_mtime = s_stat.st_mtime
+    original_size = s_stat.st_size
     
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
         raise UnsafePathError("No se permite aislar enlaces simbólicos o puntos de reparse.")
@@ -395,14 +398,13 @@ def quarantine_file(
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
     
-    file_size = source_path.stat().st_size
     item_id = uuid.uuid4().hex[:12]
     destination = dest_dir / _generate_safe_stored_name(source_path, item_id)
     
     if destination.exists():
         raise FileExistsError(f"Colisión de nombre en el sandbox: {destination.name}")
         
-    file_hash = _atomic_isolate_file(source_path, destination, file_size)
+    file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
     try:
         items_dict = _load_manifest_internal(str(dest_dir))
@@ -410,7 +412,7 @@ def quarantine_file(
             item_id=item_id,
             original_path=str(source_path),
             stored_name=destination.name,
-            size_bytes=file_size,
+            size_bytes=original_size,
             reason=str(reason) if reason else "Sin motivo",
             quarantined_at=datetime.now().isoformat(timespec="seconds"),
             sha256=file_hash,
@@ -418,12 +420,15 @@ def quarantine_file(
         items_dict[item_id] = quarantine_item
         save_manifest(list(items_dict.values()), base)
         
+        # Verificación post-aislamiento: integridad + origen inalterado
+        post_stat = source_path.stat()
         if (destination.exists() and quarantine_item.verify_integrity(destination) 
-            and not _is_file_locked(source_path) 
-            and source_path.stat().st_mtime == original_mtime):
+            and post_stat.st_mtime == original_mtime 
+            and post_stat.st_size == original_size
+            and not _is_file_locked(source_path)):
             source_path.unlink()
         else:
-            raise RuntimeError("La integridad post-aislamiento falló o el archivo cambió; el origen no fue eliminado.")
+            raise RuntimeError("La integridad falló o el archivo origen fue alterado durante el proceso; el origen se mantiene.")
             
         return quarantine_item
     except Exception:

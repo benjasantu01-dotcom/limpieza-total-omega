@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **231** (45.8% de aceptación)
+- Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 43
+- Rechazadas por guardia de seguridad: 44
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 91 | 8 | 18 | 7 | 80 |
-| 2026-08-31 | 140 | 10 | 25 | 10 | 115 |
+| 2026-08-30 | 91 | 8 | 18 | 7 | 76 |
+| 2026-08-31 | 141 | 10 | 26 | 10 | 117 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
-- seguridad defensiva: **47**
+- seguridad defensiva: **48**
 - robustez ante casos límite: **42**
 - rendimiento: **39**
 
@@ -33,10 +33,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **21**
 - `settings.py`: **20**
 - `assistant.py`: **19**
+- `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
-- `quarantine.py`: **18**
 - `organizer.py`: **18**
 - `healthscore.py`: **17**
 - `safety.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T13:17:01` **quarantine.py** (seguridad defensiva): Se reforzó `quarantine_file` para evitar condiciones de carrera y asegurar que el archivo origen no se haya modificado (cambio de contenido o permisos) entre la validación inicial y el momento del `unlink`, mitigando riesgos de seguridad al manipular archivos que podrían ser maliciosos.
 - `2026-08-31T13:08:38` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita para evitar que se procesen rutas que contengan caracteres nulos o nombres de dispositivos reservados en Windows, mitigando posibles vectores de ataque por manipulación de rutas que evaden los chequeos estándar.
 - `2026-08-31T13:08:24` **memory.py** (seguridad defensiva): Se ha mejorado la robustez de la validación de seguridad en `_validate_path_security` utilizando `Path.parents` y comparaciones de rutas normalizadas en lugar de un `startswith` simple, lo cual previene vulnerabilidades de "path traversal" o falsos positivos con carpetas que comparten prefijos (ej: `C:\WindowsApp` vs `C:\Windows`).
 - `2026-08-31T13:06:40` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `SystemMetrics` mediante la incorporación de una verificación de integridad (`is_finite`) obligatoria antes de cualquier cálculo, asegurando que los datos de entrada (potencialmente externos) no introduzcan valores no numéricos o `NaN` que invaliden la lógica de puntaje.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T12:26:20` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `compute_score` ante posibles entradas malformadas o métricas inconsistentes (valores infinitos o tipos incorrectos) mediante validaciones explícitas antes del procesamiento, asegurando que la interfaz siempre reciba datos procesables incluso ante estados de error.
 - `2026-08-31T12:25:51` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `suggest_keeper` y `format_group` ante casos de archivos eliminados o inaccesibles durante la ejecución, asegurando que si `path.stat()` falla, la aplicación no colapse y el usuario reciba una información precisa en lugar de una excepción.
 - `2026-08-31T12:17:01` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el recorrido (concurrencia) y archivos cuyo tamaño reportado por el sistema es negativo o inconsistente, añadiendo un chequeo explícito `if st.st_size < 0` tras el `stat` para evitar errores en cálculos de espacio.
-- `2026-08-31T12:16:46` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_sum_directory_recursive` y `_should_skip_entry` ante archivos bloqueados o denegados durante el escaneo, asegurando que el proceso no aborte inesperadamente y que los permisos se manejen correctamente mediante excepciones específicas.

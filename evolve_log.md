@@ -1530,3 +1530,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-31T13:08:38` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita para evitar que se procesen rutas que contengan caracteres nulos o nombres de dispositivos reservados en Windows, mitigando posibles vectores de ataque por manipulación de rutas que evaden los chequeos estándar.
 - `2026-08-31T13:08:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T13:08:38` Corrida terminada. Total usado hoy: 300.
+- `2026-08-31T13:16:22` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-31T13:17:01` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó `quarantine_file` para evitar condiciones de carrera y asegurar que el archivo origen no se haya modificado (cambio de contenido o permisos) entre la validación inicial y el momento del `unlink`, mitigando riesgos de seguridad al manipular archivos que podrían ser maliciosos.
+- `2026-08-31T13:17:21` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-08-31T13:17:51` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-31T13:18:02` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-08-31T13:18:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T13:18:02` Corrida terminada. Total usado hoy: 304.
