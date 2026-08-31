@@ -148,7 +148,7 @@ class Scanner:
             if self._is_reparse_point(entry):
                 return False
             
-            resolved_path = Path(entry.path).resolve()
+            resolved_path = Path(entry.path).resolve(strict=False)
             return not is_protected_path(resolved_path)
         except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError):
             return False

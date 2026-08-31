@@ -1120,3 +1120,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'extra' in __slots__ conflicts 
 - `2026-08-31T08:44:34` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la integridad del proceso `quarantine_file` al introducir una validación de tiempo de vida (mtime) en la fuente antes del borrado, previniendo condiciones de carrera donde un archivo legítimo podría haber sido reemplazado o modificado durante el proceso de aislamiento.
 - `2026-08-31T08:44:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T08:44:34` Corrida terminada. Total usado hoy: 196.
+- `2026-08-31T08:50:53` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-08-31T08:51:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-31T08:51:45` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-08-31T08:52:15` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva de `scanner.py` al encapsular la validación de rutas dentro de `_is_safe_entry`, garantizando que cualquier acceso a `path.resolve()` maneje excepciones de sistema de forma segura para evitar que el escáner se detenga prematuramente ante rutas excepcionales o bloqueadas.
+- `2026-08-31T08:52:30` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save()` al verificar que la ruta final (`ruta`) sea segura tras la creación del directorio padre, asegurando que ninguna manipulación de la estructura de carpetas permita la escritura fuera de los límites permitidos incluso si `parent.mkdir` tiene éxito.
+- `2026-08-31T08:52:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T08:52:30` Corrida terminada. Total usado hoy: 200.

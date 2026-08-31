@@ -310,7 +310,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         elif not parent.is_dir():
             return None
         
-        if not is_safe_to_modify(str(parent)) or (ruta.exists() and not is_safe_to_modify(str(ruta))):
+        # Validación final de seguridad post-creación de carpeta
+        if not is_safe_to_modify(str(parent)) or not is_safe_to_modify(str(ruta)):
             return None
             
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
