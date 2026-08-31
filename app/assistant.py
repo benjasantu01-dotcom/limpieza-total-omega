@@ -630,6 +630,7 @@ def _call_gemini(
             limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final_text = _validate_response_length(limpia_final)
             
+            # Validación de salida crítica: asegurar que no haya rutas en la respuesta final
             if not _ensure_safe_text(final_text) or is_protected_path(final_text):
                 return None
             return final_text

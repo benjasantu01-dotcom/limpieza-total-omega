@@ -1508,3 +1508,11 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-31T12:37:16` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `os.path.lexists` en `ensure_safe_to_modify` para detectar enlaces simbólicos rotos o puntos de reparse inexistentes que anteriormente evadían el chequeo de seguridad al fallar `p.exists()`.
 - `2026-08-31T12:37:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T12:37:16` Corrida terminada. Total usado hoy: 288.
+- `2026-08-31T12:45:48` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-08-31T12:46:15` ➖ Sin cambios en scanner.py (enfoque: robustez ante casos límite). Motivo: Se introdujo una validación robusta contra errores de permiso y condiciones de carrera en `process_entry` mediante un manejo explícito de `OSError` al intentar leer atributos del archivo, asegurando que el escáner no aborte ante archivos bloqueados por el sistema o procesos en uso.
+- `2026-08-31T12:46:43` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `load` y `save` ante archivos corruptos o bloqueados, envolviendo las operaciones de lectura/escritura en bloques `try...except` más granulares y asegurando que `json.load` no procese contenido vacío o malformado que pudiera causar desbordamientos de memoria.
+- `2026-08-31T12:47:08` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-08-31T12:47:08` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T12:47:37` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se refuerza la seguridad defensiva en `_call_gemini` integrando `is_protected_path` como una barrera de salida crítica para validar que la respuesta generada por la IA no contenga inadvertidamente rutas de sistema o patrones bloqueados, además de asegurar que `_ensure_safe_text` se aplique sobre el resultado final procesado antes de ser retornado.
+- `2026-08-31T12:47:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T12:47:37` Corrida terminada. Total usado hoy: 292.

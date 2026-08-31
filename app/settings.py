@@ -253,7 +253,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     try:
-        if ruta.exists():
+        if ruta.exists() and ruta.stat().st_size <= MAX_SETTINGS_SIZE:
             mtime = ruta.stat().st_mtime
             if ruta_str in _CACHE:
                 cached_mtime, cached_data = _CACHE[ruta_str]
@@ -261,7 +261,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                     return cached_data.copy()
             
             with open(ruta, "r", encoding="utf-8") as f:
-                data = validate(json.load(f))
+                raw_data = json.load(f)
+                data = validate(raw_data)
                 _CACHE[ruta_str] = (mtime, data)
                 return data.copy()
         return DEFAULTS.copy()
