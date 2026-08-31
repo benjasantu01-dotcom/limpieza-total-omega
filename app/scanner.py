@@ -124,11 +124,11 @@ class Scanner:
         Valida que el archivo esté contenido estrictamente dentro del árbol del directorio 
         base, previniendo el escape de la jerarquía de escaneo definida por el usuario.
         """
-        if not isinstance(path_str, str) or not path_str or "\0" in path_str: return False
+        if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
         try:
             target = Path(path_str).resolve(strict=False)
             return self.base_root == target or self.base_root in target.parents
-        except (OSError, RuntimeError, TypeError):
+        except (OSError, RuntimeError, TypeError, ValueError):
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -234,7 +234,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     Punto de entrada principal. Inicia un escaneo recursivo mediante una pila (Stack)
     para procesar el sistema de archivos de forma eficiente y segura.
     """
-    if not isinstance(directory, (str, Path)):
+    if not directory:
         return []
         
     try:

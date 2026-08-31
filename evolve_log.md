@@ -588,3 +588,9 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-31T15:10:36` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
 - `2026-08-31T15:10:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T15:10:36` Corrida terminada. Total usado hoy: 348.
+- `2026-08-31T15:19:13` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-31T15:19:41` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_is_inside_base_root` y `scan_directory` validando entradas nulas o rutas inválidas de forma temprana para evitar excepciones de `Path.resolve()` en entornos con permisos restringidos.
+- `2026-08-31T15:20:09` ➖ Sin cambios en settings.py (enfoque: manejo de errores y validación de entradas). Motivo: Refactoricé `load` para utilizar un bloque `try-except` más robusto que capture específicamente `json.JSONDecodeError` y `UnicodeDecodeError` durante la lectura del archivo, asegurando que ante cualquier corrupción o error de codificación en el archivo persistido, el sistema retorne silenciosamente los valores de fábrica.
+- `2026-08-31T15:20:09` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-08-31T15:20:09` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T15:20:09` Corrida terminada. Total usado hoy: 350.
