@@ -252,7 +252,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         if not dest_base.exists() or not dest_base.is_dir(): return None
         if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): return None
         if not _is_safe_to_move(junk_file, dest_base): return None
-        # Validación extra de seguridad: el origen no debe ser subcarpeta del destino ni viceversa
         if src_path.is_relative_to(dest_base) or dest_base.is_relative_to(src_path.parent): return None
         
         safe_name = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
@@ -267,7 +266,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     if not files or not isinstance(review_dir, str): return None
 
     try:
-        dest_base: Path = Path(review_dir).expanduser().resolve()
+        dest_base = Path(review_dir).expanduser().resolve()
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         if not is_safe_to_modify(dest_base) or is_protected_path(dest_base): return None
     except (OSError, RuntimeError):
@@ -276,12 +275,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
     for junk_file in files:
         try:
             if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
-            if junk_file.path.resolve().is_relative_to(dest_base): continue
+            src = junk_file.path.resolve()
+            if src.is_relative_to(dest_base): continue
             
             target = _can_move_file(junk_file, dest_base)
-            if target and is_safe_to_modify(junk_file.path):
-                ensure_safe_to_modify(junk_file.path)
-                shutil.move(str(junk_file.path), str(target))
+            if target and is_safe_to_modify(src):
+                ensure_safe_to_modify(src)
+                shutil.move(str(src), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError) as e:
             logger.error(f"Error moviendo {junk_file.path}: {e}")
     return dest_base
@@ -292,7 +292,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     if not isinstance(review_dir, str): return 0
 
     try:
-        dest: Path = Path(review_dir).expanduser().resolve()
+        dest = Path(review_dir).expanduser().resolve()
         if not dest.exists() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
     except (OSError, RuntimeError):
         return 0

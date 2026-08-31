@@ -487,8 +487,12 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         save_manifest(list(items_dict.values()), base)
         return False
         
-    if not quarantine_item.verify_integrity(stored_file) or not _is_within_quarantine_sandbox(stored_file, base_path):
-        raise UnsafePathError(f"Integridad o seguridad comprometida para ítem {item_id}.")
+    # Validar integridad explícitamente antes de intentar borrar
+    if not quarantine_item.verify_integrity(stored_file):
+        raise UnsafePathError(f"Integridad física fallida para ítem {item_id}: el hash no coincide.")
+        
+    if not _is_within_quarantine_sandbox(stored_file, base_path):
+        raise UnsafePathError(f"Seguridad comprometida para ítem {item_id}: fuera de sandbox.")
         
     if _safe_unlink(stored_file):
         items_dict.pop(item_id, None)
@@ -522,10 +526,11 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     purged_count = 0
     ids_to_remove = []
+    
+    # Validamos integridad y existencia antes de cualquier borrado masivo
     for item_id, item in items_dict.items():
         stored_path = (quarantine_root / item.stored_name).resolve()
         
-        # Si el archivo no existe físicamente, eliminamos del registro sin fallar
         if not stored_path.exists():
             ids_to_remove.append(item_id)
             continue
@@ -534,6 +539,10 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
             if _safe_unlink(stored_path):
                 ids_to_remove.append(item_id)
                 purged_count += 1
+        else:
+            # Si el archivo existe pero la integridad falla, no borramos el manifiesto
+            # para no perder la referencia del archivo potencialmente corrupto.
+            continue
             
     if ids_to_remove:
         for i_id in ids_to_remove:

@@ -944,3 +944,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-31T05:30:08` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Se reforzó `compute_score` y `summarize` implementando chequeos explícitos de `None` y validación de tipos, evitando errores de ejecución si los módulos anteriores entregan datos corruptos o inesperados, además de asegurar que las recomendaciones siempre tengan una salida válida.
 - `2026-08-31T05:30:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T05:30:08` Corrida terminada. Total usado hoy: 132.
+- `2026-08-31T05:38:41` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-08-31T05:39:42` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-31T05:40:45` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-31T05:41:51` Problema de red hablando con Gemini (intento 3/3). Esperando 12s...
+- `2026-08-31T05:43:03` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-08-31T05:43:52` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_read_windows_snapshot` y `trim_working_set` reemplazando llamadas a `getattr` potencialmente peligrosas por verificaciones de existencia explícitas y encapsulando la lógica de manejo de errores para evitar fugas de handles y estados indefinidos ante fallos de la API de Windows.
+- `2026-08-31T05:44:19` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las validaciones de seguridad en `stage_for_review` y `delete_reviewed` al asegurar que los caminos resultantes de `resolve()` no sean nulos y verificando la integridad de los objetos antes de operar, evitando posibles errores de tipo en tiempo de ejecución.
+- `2026-08-31T05:44:40` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `purge_all` y `purge_item` reemplazando la lógica de borrado silente por un manejo de errores más explícito, asegurando que si un archivo existe pero falla su integridad (hash), la operación se detenga antes de intentar borrar, y mejorando la consistencia del estado del manifiesto ante fallos parciales.
+- `2026-08-31T05:44:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T05:44:40` Corrida terminada. Total usado hoy: 136.
