@@ -843,6 +843,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             font=ctk.CTkFont(size=branding.font_size("body")),
         ).grid(row=row, column=column, sticky="w", padx=(0, 24), pady=6)
 
+    def _safe_get_entry_value(self, entry_widget: ctk.CTkEntry, default: Any, numeric: bool = False) -> Any:
+        """Helper para extraer y validar de forma segura valores de widgets de entrada."""
+        try:
+            if not entry_widget or not entry_widget.winfo_exists():
+                return default
+            val = entry_widget.get().strip()
+            if not val: return default
+            return int(val) if numeric else val
+        except Exception:
+            return default
+
     def _is_safe_disk_operation(self, path: Union[str, Path]) -> bool:
         """Verifica de forma segura que la ruta de destino permita operaciones de escritura."""
         try:
@@ -1455,10 +1466,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_restore_quarantine(self) -> None:
         """Restaura un archivo aislado desde su ID."""
-        if not hasattr(self, 'quarantine_id') or not self.quarantine_id.winfo_exists():
-            return
-        
-        raw_id = self.quarantine_id.get().strip()
+        raw_id = self._safe_get_entry_value(getattr(self, 'quarantine_id', None), "")
         if not raw_id:
             messagebox.showinfo("Falta el ID", "Pegá el ID del archivo que querés restaurar.")
             return
@@ -1550,15 +1558,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def on_trim_process(self) -> None:
         """Intenta liberar memoria de un proceso por su PID."""
-        if not hasattr(self, 'pid_entry') or not self.pid_entry.winfo_exists():
-            return
-            
-        raw = self.pid_entry.get().strip()
-        if not raw.isdigit():
+        pid = self._safe_get_entry_value(getattr(self, 'pid_entry', None), None, numeric=True)
+        if pid is None:
             messagebox.showwarning("Error", "Ingresá un PID numérico válido.")
             return
         
-        pid = int(raw)
         if pid < 100:
             self.log(f"Error: PID {pid} es un proceso protegido del sistema.", "Memoria")
             return
@@ -1771,10 +1775,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             if value is None:
                 return default
-            raw = str(value).strip()
-            if not raw:
-                return default
-            val = int(raw)
+            val = int(str(value).strip())
             return val if val > 0 else default
         except (ValueError, TypeError):
             return default
@@ -1792,23 +1793,19 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 continue
         
         try:
-            if hasattr(self, 'min_dup_entry') and self.min_dup_entry.winfo_exists():
-                valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-                    self.min_dup_entry.get(), 64
-                )
-            
-            if hasattr(self, 'top_files_entry') and self.top_files_entry.winfo_exists():
-                valores["top_archivos"] = self._validate_numeric_setting(
-                    self.top_files_entry.get(), 15
-                )
+            valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
+                self._safe_get_entry_value(getattr(self, 'min_dup_entry', None), 64), 64
+            )
+            valores["top_archivos"] = self._validate_numeric_setting(
+                self._safe_get_entry_value(getattr(self, 'top_files_entry', None), 15), 15
+            )
                 
-            if hasattr(self, 'api_key_entry') and self.api_key_entry.winfo_exists():
-                clave_raw = self.api_key_entry.get()
-                if clave_raw:
-                    clave_api = "".join(c for c in clave_raw if c.isprintable())
-                    if clave_api:
-                        valores["asistente_clave_api"] = clave_api
-        except (tk.TclError, RuntimeError, Exception) as e:
+            clave_raw = self._safe_get_entry_value(getattr(self, 'api_key_entry', None), "")
+            if clave_raw:
+                clave_api = "".join(c for c in clave_raw if c.isprintable())
+                if clave_api:
+                    valores["asistente_clave_api"] = clave_api
+        except Exception as e:
             logging.error("Error al recopilar ajustes de la UI: %s", e)
         return valores
 

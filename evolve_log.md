@@ -468,3 +468,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-31T00:55:47` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_path_inside_base` y `_should_skip_entry` añadiendo validaciones explícitas de tipos y estados, previniendo errores en tiempo de ejecución al manipular rutas malformadas.
 - `2026-08-31T00:55:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T00:55:47` Corrida terminada. Total usado hoy: 24.
+- `2026-08-31T01:03:32` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-08-31T01:04:11` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-31T01:04:38` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de las funciones de hash (`hash_file` y `partial_hash`) validando que el archivo sea efectivamente un archivo y no un directorio o enlace roto antes de intentar abrirlo, y se han añadido chequeos de tipos defensivos en `find_duplicates` para evitar excepciones ante entradas malformadas.
+- `2026-08-31T01:05:03` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` y `summarize` implementando una validación temprana de integridad más estricta mediante `isinstance` y chequeos de estado, evitando el uso de atributos que podrían ser `None` o inconsistentes.
+- `2026-08-31T01:06:01` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se ha centralizado la validación de todas las entradas del usuario en el panel de ajustes y la gestión de procesos mediante una nueva función `_safe_get_entry_value`, evitando la repetición de lógica `try-except` y asegurando que valores malformados o vacíos no causen errores en tiempo de ejecución.
+- `2026-08-31T01:06:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T01:06:01` Corrida terminada. Total usado hoy: 28.

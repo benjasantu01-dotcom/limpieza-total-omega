@@ -72,7 +72,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     y predecible de memoria, independientemente del tamaño del archivo.
     """
     path_obj = Path(path) if path is not None else None
-    if path_obj is None or not _is_valid_candidate(path_obj):
+    if path_obj is None or not path_obj.is_file() or not _is_valid_candidate(path_obj):
         return None
     try:
         digest = hashlib.sha256()
@@ -94,7 +94,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     lecturas I/O costosas sobre archivos grandes.
     """
     path_obj = Path(path) if path is not None else None
-    if path_obj is None or not _is_valid_candidate(path_obj):
+    if path_obj is None or not path_obj.is_file() or not _is_valid_candidate(path_obj):
         return None
     try:
         with open(path_obj, "rb") as f:
@@ -140,6 +140,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 def _resolve_and_verify_root(item: Union[str, Path]) -> Optional[Path]:
     """Normaliza rutas de entrada y asegura que sean directorios accesibles."""
     try:
+        if not item: return None
         root = Path(item).resolve(strict=False)
         if root.is_dir() and not is_protected_path(root):
             return root
@@ -188,8 +189,8 @@ def _collect_candidates(
         except (OSError, PermissionError):
             pass
 
-    if directories:
-        roots = {r for item in directories if (r := _resolve_and_verify_root(item))}
+    if directories and isinstance(directories, Iterable):
+        roots = {r for item in directories if item and (r := _resolve_and_verify_root(item))}
         for root in roots:
             _scan_recursive(root)
             
@@ -240,7 +241,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """Punto de entrada: identifica y ordena grupos de duplicados por impacto (wasted_bytes)."""
-    if not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
+    if directories is None or not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []
     if not isinstance(min_size, int) or min_size < 0: 
         return []

@@ -216,19 +216,18 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Sintetiza métricas en un objeto HealthResult aplicando normalización y pesos."""
-    if metrics is None or not isinstance(metrics, SystemMetrics):
+    if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o inválida."])
     
-    # Asegurar que los datos están sanitizados antes de aplicar lógica de negocio
     metrics.validate()
     
     metric_breakdown: Dict[MetricKey, int] = {}
     accumulated_points: float = 0.0
     recommendations: List[str] = []
     
-    # Usar el listado pre-iterado _WEIGHT_ITEMS_INT para evitar re-lookup en el dict WEIGHTS
     for area, weight in _WEIGHT_ITEMS_INT:
-        scorer = _SCORERS[area]
+        scorer = _SCORERS.get(area)
+        if not scorer: continue
         
         ratio = _clamp(scorer(metrics), 0.0, 1.0)
         pts = round(ratio * weight)
@@ -252,13 +251,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una representación textual y visual del resultado del análisis."""
-    if result is None or not isinstance(result, HealthResult): 
+    if not isinstance(result, HealthResult): 
         return ["Error: Formato de informe inválido."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
         puntos = result.breakdown.get(area, 0)
-        # Aseguramos límites para evitar strings mal formados si el breakdown es inconsistente
         puntos = max(0, min(puntos, maximo))
         bar = ('#' * puntos) + ('.' * (maximo - puntos))
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
