@@ -361,10 +361,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     sources = [s for s in [metrics, health, extra] if isinstance(s, (dict, object))]
     
     for src in sources:
+        # Validación defensiva estricta: asegurar que 'ingest' recibe entradas sanas
+        if not isinstance(src, (dict, object)):
+            continue
         try:
             if ctx.ingest(src):
                 ctx.analyzed = True
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             continue
             
     return ctx

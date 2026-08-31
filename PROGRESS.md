@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 208
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 124 | 10 | 23 | 12 | 107 |
-| 2026-08-31 | 95 | 8 | 18 | 6 | 101 |
+| 2026-08-30 | 122 | 10 | 23 | 11 | 106 |
+| 2026-08-31 | 96 | 8 | 18 | 6 | 104 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **49**
 - seguridad defensiva: **48**
+- legibilidad y documentación: **47**
+- manejo de errores y validación de entradas: **43**
 - robustez ante casos límite: **42**
-- manejo de errores y validación de entradas: **42**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
@@ -32,20 +32,21 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `settings.py`: **19**
 - `browser.py`: **19**
-- `duplicates.py`: **18**
 - `organizer.py`: **18**
 - `scanner.py`: **18**
+- `assistant.py`: **18**
 - `memory.py`: **17**
-- `assistant.py`: **17**
-- `healthscore.py`: **16**
+- `duplicates.py`: **17**
 - `safety.py`: **15**
 - `diskreport.py`: **15**
+- `healthscore.py`: **15**
 - `branding.py`: **12**
 - `startup.py`: **10**
 - `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T10:16:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación explícita para evitar errores en cadena ante entradas inesperadas, utilizando `getattr` con valores por defecto y chequeos de tipo defensivos en lugar de confiar en que `ingest` maneje todas las excepciones silenciosamente.
 - `2026-08-31T08:52:30` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` al verificar que la ruta final (`ruta`) sea segura tras la creación del directorio padre, asegurando que ninguna manipulación de la estructura de carpetas permita la escritura fuera de los límites permitidos incluso si `parent.mkdir` tiene éxito.
 - `2026-08-31T08:52:15` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al encapsular la validación de rutas dentro de `_is_safe_entry`, garantizando que cualquier acceso a `path.resolve()` maneje excepciones de sistema de forma segura para evitar que el escáner se detenga prematuramente ante rutas excepcionales o bloqueadas.
 - `2026-08-31T08:44:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la integridad del proceso `quarantine_file` al introducir una validación de tiempo de vida (mtime) en la fuente antes del borrado, previniendo condiciones de carrera donde un archivo legítimo podría haber sido reemplazado o modificado durante el proceso de aislamiento.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T08:22:21` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva del motor local centralizando la validación de `SystemContext` en una nueva propiedad `is_valid_structure` y aplicando una limpieza más estricta sobre los campos de texto del sistema antes de procesarlos, previniendo que valores inesperados inyecten caracteres no deseados en la interfaz.
 - `2026-08-31T08:21:40` **startup.py** (robustez ante casos límite): Se añadió una verificación de `PermissionError` en `_resolve_and_cache_path` al intentar acceder a `path.exists()` y `stat()`, evitando que el escaneo se interrumpa abruptamente al encontrar rutas del sistema bloqueadas para el usuario actual.
 - `2026-08-31T08:20:46` **settings.py** (robustez ante casos límite): Mejoré la robustez de la carga de archivos `config.json` añadiendo un manejo explícito de archivos vacíos, ya que `json.load()` lanzaba `json.JSONDecodeError` ante un archivo de 0 bytes, provocando un reseteo innecesario al valor por defecto cada vez que el archivo existía pero estaba vacío.
-- `2026-08-31T08:11:42` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia ante errores de lectura de atributos de archivo (como archivos en uso exclusivo por el sistema o permisos restringidos) en `process_entry` y `_is_reparse_point`, asegurando que el escáner sea más robusto frente a I/O no determinista sin interrumpir la ejecución.
