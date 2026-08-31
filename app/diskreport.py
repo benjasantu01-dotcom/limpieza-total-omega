@@ -320,7 +320,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                             stack.append(entry.path)
                                 
                     elif entry.is_file(follow_symlinks=False):
-                        yield Path(entry.path), max(0, st.st_size)
+                        try:
+                            file_size = st.st_size
+                        except OSError:
+                            continue
+                        yield Path(entry.path), max(0, file_size)
         except (PermissionError, OSError):
             continue
 

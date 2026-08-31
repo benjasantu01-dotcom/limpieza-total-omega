@@ -261,13 +261,16 @@ def directory_size(path: Union[str, Path, None]) -> int:
         if not p_obj.exists():
             return 0
         
+        # Uso de resolve para normalizar y evitar problemas de paths relativos
         p_res = p_obj.resolve(strict=True)
-        # Se reutiliza la lógica de validación de seguridad centralizada
+        
+        # Validaciones de seguridad centralizadas
         if not p_res.is_dir() or not _is_safe_to_traverse(p_res, None):
             return 0
         
         return _sum_directory_recursive(str(p_res), _IS_JUNCTION_FN, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
+        # Captura cualquier error de permisos o inexistencia de ruta durante la resolución
         return 0
 
 

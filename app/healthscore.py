@@ -227,7 +227,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     
     for area, weight in _WEIGHT_ITEMS_INT:
         scorer = _SCORERS.get(area)
-        if not scorer: continue
+        if not scorer:
+            # Si un área en WEIGHTS no tiene scorer, ignoramos los puntos para no sesgar
+            continue
         
         ratio = _clamp(scorer(metrics), 0.0, 1.0)
         pts = round(ratio * weight)

@@ -618,3 +618,26 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-31T02:47:34` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se ha añadido un método `_get_rgb_safe` para centralizar la validación de valores decimales (0-255) y prevenir errores de renderizado o excepciones inesperadas al procesar configuraciones de color potencialmente corruptas.
 - `2026-08-31T02:47:34` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T02:47:34` Corrida terminada. Total usado hoy: 68.
+- `2026-08-31T02:55:41` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-08-31T02:56:09` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `directory_size` ante el caso límite de una ruta que no existe o es inaccesible, asegurando que la función maneje errores de forma elegante sin propagar excepciones que interrumpan el bucle principal.
+- `2026-08-31T02:56:38` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Mejoré la robustez de `walk_files` ante archivos bloqueados por otros procesos (uso exclusivo) capturando `OSError` específicamente en `st.st_size`, evitando que el iterador falle silenciosamente y permitiendo que el escaneo continúe con el resto del directorio.
+- `2026-08-31T02:57:04` Tests FALLARON:
+```
+   lineas = duplicates.format_group(duplicates.DuplicateGroup("x", 5, [a, b]))
+        texto = "\n".join(lineas)
+>       assert "conservar" in texto and "duplicado" in texto
+E       AssertionError: assert ('conservar' in '2 copias de 0.0 MB (recuperable: 0.0 MB)\n   [duplicado] /tmp/pytest-of-runner/pytest-3/test_format_group_marks_which_0/a.txt\n   [duplicado] /tmp/pytest-of-runner/pytest-3/test_format_group_marks_which_0/b.txt')
+
+evolve/tests/test_modules.py:522: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_suggest_keeper_prefers_the_oldest_copy - AssertionError: assert None == PosixPath('/tmp/pytest-of-runner/pytest-3/test_suggest_keeper_prefers_th0/viejo.txt')
+ +  where None = <function suggest_keeper at 0x7f9931858360>(DuplicateGroup(digest='x', size_bytes=5, paths=[PosixPath('/tmp/pytest-of-runner/pytest-3/test_suggest_keeper_prefers_th0/nuevo.txt'), PosixPath('/tmp/pytest-of-runner/pytest-3/test_suggest_keeper_prefers_th0/viejo.txt')]))
+ +    where <function suggest_keeper at 0x7f9931858360> = duplicates.suggest_keeper
+FAILED evolve/tests/test_modules.py::test_format_group_marks_which_copy_to_keep - AssertionError: assert ('conservar' in '2 copias de 0.0 MB (recuperable: 0.0 MB)\n   [duplicado] /tmp/pytest-of-runner/pytest-3/test_format_group_marks_which_0/a.txt\n   [duplicado] /tmp/pytest-of-runner/pytest-3/test_format_group_marks_which_0/b.txt')
+2 failed, 297 passed in 1.05s
+
+```
+- `2026-08-31T02:57:04` ❌ Mejora descartada en duplicates.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el manejo de errores en `_collect_candidates` para prevenir que fallos inesperados en la lectura de atributos de archivo (como archivos bloqueados por el SO o metadatos inconsistentes) interrumpan el escaneo de todo un directorio.
+- `2026-08-31T02:57:15` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Introduje una validación defensiva en `_SCORERS` para garantizar que si un área definida en `WEIGHTS` carece de una función de puntuación asociada, el sistema no colapse, y además reforcé `compute_score` para manejar el caso de una configuración de pesos parcial o errónea sin interrumpir la ejecución.
+- `2026-08-31T02:57:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T02:57:15` Corrida terminada. Total usado hoy: 72.
