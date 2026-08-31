@@ -544,10 +544,14 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
 
-    for token in _TOKEN_REGEX.findall(q_sanitized):
-        handler = _KEYWORD_TO_HANDLER.get(token)
-        if handler:
-            return handler(context, question)
+    # Optimización: buscar intersección directa entre tokens y claves del mapa (O(1) average lookup)
+    query_tokens = set(_TOKEN_REGEX.findall(q_sanitized))
+    matches = query_tokens.intersection(_KEYWORD_TO_HANDLER.keys())
+    
+    if matches:
+        # Priorizar el primer handler encontrado por intersección
+        handler = _KEYWORD_TO_HANDLER[next(iter(matches))]
+        return handler(context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"

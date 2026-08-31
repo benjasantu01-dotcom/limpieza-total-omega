@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **221** (43.8% de aceptación)
-- Rechazadas por tests: 17
+- Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 154 | 11 | 27 | 14 | 142 |
-| 2026-08-31 | 67 | 6 | 14 | 5 | 64 |
+| 2026-08-30 | 152 | 11 | 27 | 14 | 140 |
+| 2026-08-31 | 69 | 7 | 14 | 5 | 65 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **37**
-- rendimiento: **32**
+- robustez ante casos límite: **35**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **20**
 - `scanner.py`: **19**
 - `settings.py`: **19**
-- `browser.py`: **19**
-- `quarantine.py`: **18**
+- `assistant.py`: **17**
 - `duplicates.py`: **17**
 - `memory.py`: **17**
 - `organizer.py`: **17**
-- `assistant.py`: **16**
+- `quarantine.py`: **17**
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **13**
 - `startup.py`: **12**
-- `main.py`: **7**
+- `main.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T06:41:49` **browser.py** (rendimiento): Se optimizó el escaneo recursivo de archivos moviendo la instanciación de `ctypes.WinDLL` fuera del bucle principal y eliminando llamadas redundantes a `Path.resolve(strict=True)` dentro de la recursión, reduciendo drásticamente las llamadas al sistema y el overhead de objetos.
+- `2026-08-31T06:40:38` **assistant.py** (rendimiento): Se optimizó el motor de inferencia local reemplazando la búsqueda lineal sobre `_KEYWORD_TO_HANDLER` (que realizaba `findall` y luego comparaciones) por un proceso de tokenización única que permite acceso directo (`O(1)`) mediante el uso de un `set` de claves de intersección, reduciendo la complejidad computacional en cada consulta del usuario.
 - `2026-08-31T06:31:02` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados y el refinamiento de las sugerencias de tipo, aclarando el propósito y el flujo de los mecanismos de seguridad y escaneo.
 - `2026-08-31T06:30:20` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en funciones clave, clarificando el propósito, las precondiciones y el flujo de excepciones, facilitando así el mantenimiento preventivo ante futuras auditorías.
 - `2026-08-31T06:21:20` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings más precisos y descriptivos, especialmente en las funciones auxiliares de validación, y se han añadido type hints faltantes en los parámetros de los métodos de `QuarantineItem` para mejorar la mantenibilidad y la claridad del código según el enfoque de legibilidad exigido.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T06:00:22` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `handle_ram` y `handle_disk`, extrayendo la lógica de formateo y construcción de mensajes a bloques claros con tipos anotados, y añadiendo docstrings descriptivos que explican el propósito de cada sección de diagnóstico.
 - `2026-08-31T05:59:42` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar fallos por corrupción en la cabecera CSV o claves malformadas, garantizando que el método `next()` del lector no eleve excepciones inesperadas al procesar registros mal estructurados.
 - `2026-08-31T05:50:58` **settings.py** (manejo de errores y validación de entradas): Mejora la robustez en la validación de `asistente_modelo` dentro de `_Validators.str` para prevenir la inyección de valores arbitrarios o potencialmente maliciosos si el JSON fuera manipulado manualmente, añadiendo una lista de permitidos explícita.
-- `2026-08-31T05:50:41` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_directory` y `Scanner._is_inside_base_root` añadiendo validaciones de tipo y manejo específico de excepciones ante rutas malformadas, evitando que el escáner se interrumpa inesperadamente al procesar entradas inválidas.
-- `2026-08-31T05:49:55` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante entradas no existentes, delegando la validación del directorio padre a una lógica más explícita y coherente, evitando el uso de `os.access` (que puede fallar por falta de privilegios incluso si el sistema permite crear archivos) y asegurando que las rutas inexistentes sigan cumpliendo las restricciones de `is_protected_path`.

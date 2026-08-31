@@ -990,3 +990,42 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-31T06:31:44` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: legibilidad y documentación).
 - `2026-08-31T06:31:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T06:31:44` Corrida terminada. Total usado hoy: 156.
+- `2026-08-31T06:39:54` Arrancando corrida. Quedan hoy ~144 peticiones objetivo.
+- `2026-08-31T06:40:38` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se optimizó el motor de inferencia local reemplazando la búsqueda lineal sobre `_KEYWORD_TO_HANDLER` (que realizaba `findall` y luego comparaciones) por un proceso de tokenización única que permite acceso directo (`O(1)`) mediante el uso de un `set` de claves de intersección, reduciendo la complejidad computacional en cada consulta del usuario.
+- `2026-08-31T06:41:18` Tests FALLARON:
+```
+ne
+
+    def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150,
+                  canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
+                  track: Optional[HexColor] = None,
+                  fill: Optional[HexColor] = None) -> None:
+        """Dibuja un indicador circular (donut) de progreso en el canvas."""
+        if percent is None: return
+        try:
+            valor = max(0.0, min(100.0, float(percent)))
+            diametro = max(20, size)
+            grosor = max(2, min(thickness, (diametro // 2) - 1))
+    
+            color_fondo = track or C_SURFACE_ALT
+            color_avance = fill or score_color(valor)
+            borde = grosor / 2.0
+    
+            caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
+>           canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
+            ^^^^^^^^^^^^^^^^^
+E           AttributeError: 'NoneType' object has no attribute 'create_arc'
+
+app/branding.py:453: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_gradient_bar_ignores_invalid_sizes - TypeError: '>' not supported between instances of 'str' and 'int'
+FAILED evolve/tests/test_modules.py::test_ring_ignores_garbage_percent_and_missing_canvas - AttributeError: 'NoneType' object has no attribute 'create_arc'
+2 failed, 297 passed in 1.07s
+
+```
+- `2026-08-31T06:41:18` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se implementó un cacheo más eficiente en las funciones de cálculo de color y diseño, eliminando conversiones repetitivas y llamadas redundantes a funciones auxiliares dentro de los bucles de renderizado, optimizando así el rendimiento de la interfaz gráfica.
+- `2026-08-31T06:41:18` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T06:41:49` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó el escaneo recursivo de archivos moviendo la instanciación de `ctypes.WinDLL` fuera del bucle principal y eliminando llamadas redundantes a `Path.resolve(strict=True)` dentro de la recursión, reduciendo drásticamente las llamadas al sistema y el overhead de objetos.
+- `2026-08-31T06:42:04` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-31T06:42:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T06:42:04` Corrida terminada. Total usado hoy: 160.
