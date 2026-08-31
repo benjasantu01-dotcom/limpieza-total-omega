@@ -1465,3 +1465,46 @@ FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not
 - `2026-08-31T12:27:22` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `parse_windows_process_csv` ante errores de formato en la salida de PowerShell o datos inesperados, implementando un filtro de seguridad en la creación del objeto `ProcessMemory` para asegurar que el `working_set` sea coherente y no contenga valores de error (negativos) antes de procesarlos.
 - `2026-08-31T12:27:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T12:27:22` Corrida terminada. Total usado hoy: 284.
+- `2026-08-31T12:35:37` Arrancando corrida. Quedan hoy ~16 peticiones objetivo.
+- `2026-08-31T12:36:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-08-31T12:36:37` Tests FALLARON:
+```
+^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+base_str = '/tmp/pytest-of-runner/pytest-1/test_corrupt_manifest_does_not0/_Cuarentena'
+_mtime = 1788179797.052668
+
+    @lru_cache(maxsize=4)
+    def _load_manifest_internal(base_str: str, _mtime: float = 0.0) -> Dict[str, QuarantineItem]:
+        """Carga interna el manifiesto, utilizando el mtime del archivo como clave de caché para invalidación automática."""
+        path = _manifest_path(Path(base_str))
+        if not path.is_file():
+            return {}
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if not isinstance(data, list):
+                    return {}
+    
+                return {
+                    str(entry["item_id"]): item
+                    for entry in data
+                    if isinstance(entry, dict) and (item := QuarantineItem.from_dict(entry))
+                }
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:291: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 1.27s
+
+```
+- `2026-08-31T12:36:37` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se introdujo una validación de concurrencia y estado de archivo en `quarantine_file` para asegurar que el archivo origen no sea un directorio especial (junction/mount point) y que no haya cambiado durante la lectura inicial, previniendo errores de acceso en escenarios de alta actividad de disco.
+- `2026-08-31T12:36:56` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-08-31T12:36:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T12:37:16` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se introdujo la verificación `os.path.lexists` en `ensure_safe_to_modify` para detectar enlaces simbólicos rotos o puntos de reparse inexistentes que anteriormente evadían el chequeo de seguridad al fallar `p.exists()`.
+- `2026-08-31T12:37:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T12:37:16` Corrida terminada. Total usado hoy: 288.

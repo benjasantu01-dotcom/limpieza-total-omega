@@ -367,7 +367,7 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    if p.exists():
+    if p.exists() or os.path.lexists(p):
         if not (p.is_file() or p.is_dir()):
             raise UnsafePathError("Tipo de archivo no soportado.")
         _check_file_integrity(p)

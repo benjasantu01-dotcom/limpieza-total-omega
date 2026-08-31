@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 42
+- Rechazadas por guardia de seguridad: 43
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 91 | 9 | 18 | 7 | 95 |
-| 2026-08-31 | 130 | 9 | 24 | 8 | 113 |
+| 2026-08-30 | 91 | 8 | 18 | 7 | 92 |
+| 2026-08-31 | 131 | 10 | 25 | 8 | 114 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **41**
 - rendimiento: **39**
 - seguridad defensiva: **39**
 
@@ -39,13 +39,14 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **17**
 - `organizer.py`: **17**
 - `healthscore.py`: **16**
-- `safety.py`: **14**
+- `safety.py`: **15**
 - `branding.py`: **10**
 - `main.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T12:37:16` **safety.py** (robustez ante casos límite): Se introdujo la verificación `os.path.lexists` en `ensure_safe_to_modify` para detectar enlaces simbólicos rotos o puntos de reparse inexistentes que anteriormente evadían el chequeo de seguridad al fallar `p.exists()`.
 - `2026-08-31T12:27:22` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_windows_process_csv` ante errores de formato en la salida de PowerShell o datos inesperados, implementando un filtro de seguridad en la creación del objeto `ProcessMemory` para asegurar que el `working_set` sea coherente y no contenga valores de error (negativos) antes de procesarlos.
 - `2026-08-31T12:26:20` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `compute_score` ante posibles entradas malformadas o métricas inconsistentes (valores infinitos o tipos incorrectos) mediante validaciones explícitas antes del procesamiento, asegurando que la interfaz siempre reciba datos procesables incluso ante estados de error.
 - `2026-08-31T12:25:51` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `suggest_keeper` y `format_group` ante casos de archivos eliminados o inaccesibles durante la ejecución, asegurando que si `path.stat()` falla, la aplicación no colapse y el usuario reciba una información precisa en lugar de una excepción.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T11:46:01` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de la clase `SystemMetrics` reemplazando la iteración completa sobre `self.__dict__.values()` por una verificación más eficiente, y pre-calculé los valores de normalización de forma que se evite la ejecución repetida de `max(1e-9, ...)` en tiempo de ejecución.
 - `2026-08-31T11:45:31` **duplicates.py** (rendimiento): Optimicé el proceso de hashing refinado (`_refine_by_deep_hash`) evitando leer archivos completos cuando el hash parcial ya es único, reduciendo drásticamente las operaciones de E/S innecesarias en archivos con igual tamaño pero distinto contenido inicial.
 - `2026-08-31T11:45:01` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando el uso de `path.suffix` repetitivo y convirtiendo las colecciones `defaultdict` a diccionarios estándar después de la recolección para reducir el *overhead* de búsqueda y memoria durante la agregación, manteniendo la eficiencia O(N log K) del heap.
-- `2026-08-31T11:35:22` **assistant.py** (rendimiento): Optimicé el acceso al diccionario de manejadores en `local_answer` convirtiendo `_KEYWORD_TO_HANDLER` en un diccionario global con las palabras clave normalizadas, evitando la iteración innecesaria sobre el mismo durante cada consulta y mejorando la eficiencia en la búsqueda de correspondencias.
