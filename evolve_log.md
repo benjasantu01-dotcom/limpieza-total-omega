@@ -482,3 +482,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-31T01:15:39` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 109): unterminated string literal (detected at line 109)
 - `2026-08-31T01:15:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T01:15:39` Corrida terminada. Total usado hoy: 32.
+- `2026-08-31T01:23:58` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-08-31T01:24:28` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-31T01:24:53` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scanner.py` mediante la captura explícita de `None` y excepciones en `_is_inside_base_root` y `_is_safe_entry`, asegurando que el motor de escaneo no falle ante rutas inválidas o errores de resolución del sistema de archivos.
+- `2026-08-31T01:25:27` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save()` reemplazando el chequeo de acceso mediante `os.access` (que es propenso a condiciones de carrera) por un bloque `try/except` envolviendo la operación de escritura, asegurando que cualquier fallo de permisos o I/O sea capturado limpiamente sin corromper la configuración.
+- `2026-08-31T01:25:41` ✅ Mejora aceptada en startup.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV contenga al menos dos columnas antes de intentar acceder a ellas, previniendo posibles errores de `IndexError` o `KeyError` ante CSVs malformados.
+- `2026-08-31T01:25:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T01:25:41` Corrida terminada. Total usado hoy: 36.

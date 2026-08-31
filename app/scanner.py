@@ -116,7 +116,7 @@ class Scanner:
         self.base_root = base_root.resolve(strict=False)
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_inside_base_root(self, path_str: str) -> bool:
+    def _is_inside_base_root(self, path_str: Optional[str]) -> bool:
         """
         Valida mediante resolución de rutas que el archivo esté contenido estrictamente
         dentro del árbol del directorio base de escaneo para prevenir escapes de sandbox.
@@ -124,9 +124,8 @@ class Scanner:
         if not path_str or "\0" in path_str: return False
         try:
             target = Path(path_str).resolve(strict=False)
-            # Asegurar que el destino existe o es accesible y está bajo el root
             return self.base_root == target or self.base_root in target.parents
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, TypeError):
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -135,7 +134,9 @@ class Scanner:
         caracteres inválidos, límites de recursión y denegación explícita mediante 
         `is_protected_path`.
         """
-        if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+        if not entry or not entry.path:
+            return False
+        if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
         try:

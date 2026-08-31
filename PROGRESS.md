@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 53 | 4 | 6 | 10 | 49 |
+| 2026-08-29 | 50 | 4 | 6 | 10 | 48 |
 | 2026-08-30 | 154 | 11 | 27 | 14 | 144 |
-| 2026-08-31 | 7 | 0 | 1 | 1 | 23 |
+| 2026-08-31 | 10 | 0 | 1 | 1 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **45**
+- manejo de errores y validación de entradas: **48**
 - legibilidad y documentación: **42**
-- rendimiento: **40**
+- rendimiento: **37**
 - robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `memory.py`: **19**
-- `browser.py`: **18**
+- `scanner.py`: **19**
 - `quarantine.py`: **18**
-- `scanner.py`: **18**
-- `healthscore.py`: **17**
-- `duplicates.py`: **16**
+- `browser.py`: **17**
+- `healthscore.py`: **16**
 - `diskreport.py`: **15**
 - `organizer.py`: **15**
+- `duplicates.py`: **15**
 - `assistant.py`: **13**
 - `safety.py`: **13**
+- `startup.py`: **12**
 - `branding.py`: **11**
-- `startup.py`: **11**
 - `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T01:25:41` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV contenga al menos dos columnas antes de intentar acceder a ellas, previniendo posibles errores de `IndexError` o `KeyError` ante CSVs malformados.
+- `2026-08-31T01:25:27` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` reemplazando el chequeo de acceso mediante `os.access` (que es propenso a condiciones de carrera) por un bloque `try/except` envolviendo la operación de escritura, asegurando que cualquier fallo de permisos o I/O sea capturado limpiamente sin corromper la configuración.
+- `2026-08-31T01:24:53` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scanner.py` mediante la captura explícita de `None` y excepciones en `_is_inside_base_root` y `_is_safe_entry`, asegurando que el motor de escaneo no falle ante rutas inválidas o errores de resolución del sistema de archivos.
 - `2026-08-31T01:14:51` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `stage_for_review` validando explícitamente la integridad de los parámetros (`junk_file` y `dest`) para evitar excepciones en tiempo de ejecución al manipular rutas potencialmente inválidas o `None`.
 - `2026-08-31T01:14:21` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo validaciones explícitas de tipos y estados para prevenir excepciones inesperadas al procesar cadenas de texto malformadas o PIDs inválidos provenientes de PowerShell.
 - `2026-08-31T01:06:01` **main.py** (manejo de errores y validación de entradas): Se ha centralizado la validación de todas las entradas del usuario en el panel de ajustes y la gestión de procesos mediante una nueva función `_safe_get_entry_value`, evitando la repetición de lógica `try-except` y asegurando que valores malformados o vacíos no causen errores en tiempo de ejecución.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-30T14:22:16` **safety.py** (seguridad defensiva): Se introdujo una validación estricta de "Path Traversal" y "nodos de reparse" en el proceso de normalización y chequeo de integridad para evitar que rutas manipuladas con `..` o puntos de montaje ocultos evadan los filtros de seguridad.
 - `2026-08-30T14:13:42` **quarantine.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `quarantine.py` integrando una verificación de integridad física antes del borrado masivo en `purge_all`, asegurando que `_safe_unlink` se ejecute únicamente sobre rutas validadas dentro del sandbox y consistentes con el manifiesto, evitando posibles condiciones de carrera.
 - `2026-08-30T14:13:23` **organizer.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `_is_safe_for_disk_op` al integrar una verificación de puntos de reparse (reparse points) más estricta sobre el destino, garantizando que ninguna operación de movimiento pueda ser redireccionada fuera de la jerarquía de destino prevista.
-- `2026-08-30T14:12:59` **memory.py** (seguridad defensiva): Se reforzó `_validate_path_security` para prevenir ataques de suplantación o manipulación de rutas, asegurando que el ejecutable detectado esté efectivamente dentro de una unidad local y no sea una ruta de red o un enlace simbólico que apunte fuera de los directorios permitidos por la política de seguridad del proyecto.
-- `2026-08-30T14:12:31` **main.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `main.py` mediante la implementación de un decorador de validación (`@ensure_safety`) aplicado a los métodos que ejecutan tareas asíncronas de E/S, garantizando que ninguna operación sobre el sistema de archivos se inicie sin pasar el filtro de `safety.ensure_safe_to_modify`.
-- `2026-08-30T14:02:30` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta real (`resolve()`) antes de cualquier operación recursiva, previniendo que la lógica de búsqueda pueda ser engañada por enlaces simbólicos complejos o manipulaciones de rutas fuera de los directorios permitidos.

@@ -274,7 +274,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             return []
             
         for row in reader:
-            if not isinstance(row, dict):
+            if not isinstance(row, dict) or len(row) < 2:
                 continue
             
             name_raw = row.get(fieldnames[0])
