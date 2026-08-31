@@ -386,8 +386,6 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).expanduser().resolve(strict=True)
-    
-    # Capturar estado antes de aislar para evitar condiciones de carrera (time-of-check to time-of-use)
     original_mtime = source_path.stat().st_mtime
     
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
@@ -422,7 +420,6 @@ def quarantine_file(
         items_dict[item_id] = quarantine_item
         save_manifest(list(items_dict.values()), base)
         
-        # Verificación final de integridad y mtime antes de borrar el original
         if (destination.exists() and quarantine_item.verify_integrity(destination) 
             and not _is_file_locked(source_path) 
             and source_path.stat().st_mtime == original_mtime):

@@ -168,7 +168,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Gestiona la cola de recursión añadiendo directorios validados al stack."""
-        if entry.path and entry.path not in self.seen:
+        if entry.path and entry.path not in self.seen and os.path.isdir(entry.path):
             self.seen.add(entry.path)
             stack.append(entry.path)
 
@@ -177,7 +177,7 @@ class Scanner:
         Clasifica una entrada de sistema: si es un directorio, lo añade a la pila;
         si es un archivo, determina si requiere inspección heurística.
         """
-        if not entry or not entry.path: return
+        if not entry or not entry.path or not os.path.exists(entry.path): return
         try:
             if entry.is_dir(follow_symlinks=False):
                 if self._is_safe_entry(entry):
@@ -209,7 +209,7 @@ class Scanner:
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Ejecuta todas las reglas heurísticas registradas sobre un archivo individual."""
-    if not path: return []
+    if not path or not path.exists(): return []
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):
@@ -235,7 +235,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve(strict=False)
-        if not path_input.is_dir() or is_protected_path(path_input):
+        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):
         return []
@@ -247,6 +247,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     while stack:
         current_dir = stack.pop()
         try:
+            if not os.path.exists(current_dir): continue
             with os.scandir(current_dir) as it:
                 for entry in it:
                     if entry:

@@ -154,7 +154,7 @@ def _is_system_or_hidden(path: Path) -> bool:
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs == -1: return False
+        if attrs == -1 or attrs == 0xFFFFFFFF: return False
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
     except (OSError, AttributeError, TypeError, ValueError):
         return False 
@@ -169,7 +169,7 @@ def _is_reparse_point(path: Path) -> bool:
         return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs == -1: return False
+        if attrs == -1 or attrs == 0xFFFFFFFF: return False
         return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
     except (OSError, AttributeError, TypeError, ValueError):
         return False
@@ -178,16 +178,16 @@ def _is_reparse_point(path: Path) -> bool:
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
     """Verifica exclusividad de archivo intentando abrirlo con acceso de escritura mediante WinAPI."""
-    if os.name != 'nt':
+    if os.name != 'nt' or not isinstance(path_str, str):
         return False
     try:
         handle = ctypes.windll.kernel32.CreateFileW(
             path_str, 0x40000000, 0x00000007, None, 3, 0x00000080, None
         )
-        if handle == -1: return True
+        if handle == -1 or handle == 0xFFFFFFFF: return True
         ctypes.windll.kernel32.CloseHandle(handle)
         return False
-    except (AttributeError, OSError, PermissionError):
+    except (AttributeError, OSError, PermissionError, TypeError):
         return True
 
 
