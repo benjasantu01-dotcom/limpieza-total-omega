@@ -264,7 +264,10 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     
     for path in group.paths:
-        if not isinstance(path, Path) or not _is_valid_candidate(path):
+        if not isinstance(path, Path) or not path.exists():
+            lines.append(f"   [desaparecido] {path}")
+            continue
+        elif not _is_valid_candidate(path):
             lines.append(f"   [inaccesible] {path}")
             continue
         label = 'conservar' if keeper is not None and path == keeper else 'duplicado'

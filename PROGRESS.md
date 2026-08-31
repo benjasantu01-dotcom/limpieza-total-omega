@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 93 | 9 | 19 | 7 | 96 |
-| 2026-08-31 | 127 | 9 | 23 | 8 | 113 |
+| 2026-08-30 | 91 | 9 | 18 | 7 | 95 |
+| 2026-08-31 | 130 | 9 | 24 | 8 | 113 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
-- seguridad defensiva: **41**
+- robustez ante casos límite: **40**
 - rendimiento: **39**
-- robustez ante casos límite: **37**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
+- `duplicates.py`: **21**
 - `browser.py`: **20**
-- `duplicates.py`: **20**
 - `scanner.py`: **19**
+- `settings.py`: **19**
 - `assistant.py`: **18**
 - `quarantine.py`: **18**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
 - `organizer.py`: **17**
-- `memory.py`: **16**
-- `safety.py`: **15**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
+- `safety.py`: **14**
 - `branding.py`: **10**
 - `main.py`: **8**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T12:27:22` **memory.py** (robustez ante casos límite): Se ha mejorado la robustez de `parse_windows_process_csv` ante errores de formato en la salida de PowerShell o datos inesperados, implementando un filtro de seguridad en la creación del objeto `ProcessMemory` para asegurar que el `working_set` sea coherente y no contenga valores de error (negativos) antes de procesarlos.
+- `2026-08-31T12:26:20` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `summarize` y `compute_score` ante posibles entradas malformadas o métricas inconsistentes (valores infinitos o tipos incorrectos) mediante validaciones explícitas antes del procesamiento, asegurando que la interfaz siempre reciba datos procesables incluso ante estados de error.
+- `2026-08-31T12:25:51` **duplicates.py** (robustez ante casos límite): Se mejora la robustez de `suggest_keeper` y `format_group` ante casos de archivos eliminados o inaccesibles durante la ejecución, asegurando que si `path.stat()` falla, la aplicación no colapse y el usuario reciba una información precisa en lugar de una excepción.
 - `2026-08-31T12:17:01` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos que desaparecen durante el recorrido (concurrencia) y archivos cuyo tamaño reportado por el sistema es negativo o inconsistente, añadiendo un chequeo explícito `if st.st_size < 0` tras el `stat` para evitar errores en cálculos de espacio.
 - `2026-08-31T12:16:46` **browser.py** (robustez ante casos límite): Mejoré la robustez de `_sum_directory_recursive` y `_should_skip_entry` ante archivos bloqueados o denegados durante el escaneo, asegurando que el proceso no aborte inesperadamente y que los permisos se manejen correctamente mediante excepciones específicas.
 - `2026-08-31T12:15:47` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_safe_float` y `_get_source_value` para manejar situaciones donde el contexto contiene valores `NaN`, infinitos, tipos de datos inesperados (como `None` o listas), o atributos corruptos, asegurando que el asistente no colapse ante métricas malformadas o estados parciales del sistema.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T11:45:31` **duplicates.py** (rendimiento): Optimicé el proceso de hashing refinado (`_refine_by_deep_hash`) evitando leer archivos completos cuando el hash parcial ya es único, reduciendo drásticamente las operaciones de E/S innecesarias en archivos con igual tamaño pero distinto contenido inicial.
 - `2026-08-31T11:45:01` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando el uso de `path.suffix` repetitivo y convirtiendo las colecciones `defaultdict` a diccionarios estándar después de la recolección para reducir el *overhead* de búsqueda y memoria durante la agregación, manteniendo la eficiencia O(N log K) del heap.
 - `2026-08-31T11:35:22` **assistant.py** (rendimiento): Optimicé el acceso al diccionario de manejadores en `local_answer` convirtiendo `_KEYWORD_TO_HANDLER` en un diccionario global con las palabras clave normalizadas, evitando la iteración innecesaria sobre el mismo durante cada consulta y mejorando la eficiencia en la búsqueda de correspondencias.
-- `2026-08-31T11:25:51` **settings.py** (legibilidad y documentación): Se agregaron docstrings detallados a las funciones de persistencia (`load`, `save`, `update`) para explicar las garantías de atomicidad, el manejo de errores ante corrupción de archivos y el uso de caché, mejorando la mantenibilidad técnica del módulo.
-- `2026-08-31T11:25:36` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de escaneo y la clarificación de docstrings en las heurísticas, siguiendo el objetivo de legibilidad del proyecto.
-- `2026-08-31T11:18:38` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args`, `Returns` y `Raises`) en funciones críticas para facilitar la comprensión de las precondiciones de seguridad y el flujo de control, manteniendo la integridad operativa.

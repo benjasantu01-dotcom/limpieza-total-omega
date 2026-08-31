@@ -117,17 +117,12 @@ class SystemMetrics:
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
         self.startup_count = max(0, _to_int(self.startup_count))
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
-        
-        if not self.is_finite():
-            for f in self.__dataclass_fields__:
-                if not math.isfinite(getattr(self, f)):
-                    setattr(self, f, 0.0)
 
     def is_finite(self) -> bool:
         """Verifica que los valores numéricos sean finitos mediante acceso directo por campos."""
         for f in self.__dataclass_fields__:
             val = getattr(self, f)
-            if isinstance(val, (int, float)) and not math.isfinite(val):
+            if isinstance(val, (int, float)) and not math.isfinite(float(val)):
                 return False
         return True
 
