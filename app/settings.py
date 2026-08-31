@@ -160,7 +160,6 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Verifica restricciones de sistema: evita enlaces simbólicos o junctions."""
         try:
-            # resolve() es costoso, usamos is_symlink directo si es posible
             if path_obj.is_symlink(): return False
             if hasattr(path_obj, 'is_junction') and path_obj.is_junction(): return False
             return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
@@ -275,7 +274,6 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     now = time.monotonic()
     
     try:
-        # Optimización: Solo consultar stat si es absolutamente necesario
         if ruta_str in _CACHE:
             ts, last_mtime, data = _CACHE[ruta_str]
             if now - ts < _CACHE_TTL:
@@ -310,7 +308,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         elif not parent.is_dir():
             return None
         
-        # Validación final de seguridad post-creación de carpeta
         if not is_safe_to_modify(str(parent)) or not is_safe_to_modify(str(ruta)):
             return None
             
@@ -324,7 +321,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
             f.flush()
             try: os.fsync(f.fileno())
             except (OSError, AttributeError, NotImplementedError): pass
-        os.replace(temp_path, ruta)
+        
+        if temp_path.exists():
+            os.replace(temp_path, ruta)
         
         _CACHE.clear()
         return ruta

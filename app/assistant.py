@@ -267,21 +267,15 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            try:
-                if _validate_and_assign(self, source, key, spec):
-                    found_data = True
-            except Exception:
-                continue
+            if _validate_and_assign(self, source, key, spec):
+                found_data = True
         
-        try:
-            grade_val = _get_source_value(source, "grade")
-            if isinstance(grade_val, str):
-                # Limpieza defensiva inmediata antes de la asignación
-                clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
-                if _is_safe_text_structure(clean_grade):
-                    self.grade = clean_grade
-        except Exception:
-            pass
+        # Procesamiento específico de grado de salud
+        grade_val = _get_source_value(source, "grade")
+        if isinstance(grade_val, str):
+            clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
+            if _is_safe_text_structure(clean_grade):
+                self.grade = clean_grade
         
         return found_data and self.is_valid_structure
 
@@ -361,9 +355,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     sources = [s for s in [metrics, health, extra] if isinstance(s, (dict, object))]
     
     for src in sources:
-        # Validación defensiva estricta: asegurar que 'ingest' recibe entradas sanas
-        if not isinstance(src, (dict, object)):
-            continue
         try:
             if ctx.ingest(src):
                 ctx.analyzed = True

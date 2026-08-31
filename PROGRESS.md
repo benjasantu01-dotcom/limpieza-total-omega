@@ -6,8 +6,8 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
-- Rechazadas por tests: 18
+- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 211
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 114 | 10 | 21 | 11 | 104 |
-| 2026-08-31 | 104 | 8 | 19 | 6 | 107 |
+| 2026-08-30 | 113 | 9 | 21 | 10 | 103 |
+| 2026-08-31 | 106 | 8 | 19 | 7 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **51**
+- manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **48**
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **41**
-- rendimiento: **36**
+- legibilidad y documentación: **42**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **20**
 - `browser.py`: **20**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
 - `scanner.py`: **18**
+- `assistant.py`: **18**
 - `duplicates.py`: **18**
-- `assistant.py`: **17**
 - `organizer.py`: **17**
-- `healthscore.py`: **16**
 - `memory.py`: **16**
 - `safety.py`: **15**
 - `diskreport.py`: **15**
+- `healthscore.py`: **15**
 - `branding.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T10:55:11` **assistant.py** (legibilidad y documentación): Mejora la legibilidad del motor de decisiones y la gestión de métricas mediante la extracción de la lógica de evaluación en `SystemContext.ingest`, reduciendo el acoplamiento y facilitando futuras expansiones.
+- `2026-08-31T10:54:04` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la escritura de archivos en `save()` añadiendo un chequeo explícito de integridad antes de la sobreescritura, asegurando que `temp_path` no sobrescriba archivos críticos y que las operaciones de sistema se manejen dentro de bloques `try-except` más granulares.
 - `2026-08-31T10:45:03` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `process_entry` y `scan_directory` validando explícitamente la existencia de las rutas antes de procesarlas y endureciendo el manejo de excepciones al interactuar con el sistema de archivos, previniendo fallos en tiempo de ejecución ante permisos denegados o archivos eliminados durante el proceso.
 - `2026-08-31T10:44:49` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_in_use` y `_is_system_or_hidden` añadiendo validaciones de tipo explícitas y capturas de excepciones más granulares para prevenir que errores inesperados de la API de Windows aborten procesos legítimos, alineándose con el enfoque de manejo de errores y validación de entradas.
 - `2026-08-31T10:43:53` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la operación crítica de copiado y borrado en un bloque `try...finally` más estricto, asegurando que si ocurre un fallo durante la validación del hash post-copia, el archivo temporal se elimine siempre, evitando dejar residuos en el directorio de cuarentena.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T08:52:15` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al encapsular la validación de rutas dentro de `_is_safe_entry`, garantizando que cualquier acceso a `path.resolve()` maneje excepciones de sistema de forma segura para evitar que el escáner se detenga prematuramente ante rutas excepcionales o bloqueadas.
 - `2026-08-31T08:44:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la integridad del proceso `quarantine_file` al introducir una validación de tiempo de vida (mtime) en la fuente antes del borrado, previniendo condiciones de carrera donde un archivo legítimo podría haber sido reemplazado o modificado durante el proceso de aislamiento.
 - `2026-08-31T08:44:13` **organizer.py** (seguridad defensiva): Se ha robustecido la validación de seguridad en `_is_safe_for_disk_op` para verificar explícitamente que la ruta origen no sea una ruta UNC (Universal Naming Convention), previniendo posibles errores de resolución de red o comportamientos inesperados en operaciones de I/O al tratar con recursos compartidos no locales.
-- `2026-08-31T08:42:31` **memory.py** (seguridad defensiva): Se ha implementado una validación de ruta estricta en `_validate_path_security` para asegurar que solo se procesen ejecutables que residan dentro de directorios de usuario permitidos, bloqueando intentos de trim en ejecutables ubicados en directorios del sistema (como `C:\Windows` o `C:\Program Files`) para prevenir inyecciones de comandos o manipulación de procesos protegidos.
-- `2026-08-31T08:42:00` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `on_stage` y `on_quarantine_duplicates` aplicando una doble verificación de seguridad antes de procesar las listas de archivos, asegurando que solo se consideren archivos que pasen `is_safe_path` (que verifica existencia, symlinks y permisos) incluso si la lista fue generada previamente, evitando condiciones de carrera donde un archivo podría volverse inseguro entre la búsqueda y la acción.
