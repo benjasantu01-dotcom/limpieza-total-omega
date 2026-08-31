@@ -310,6 +310,9 @@ def detect_profiles(
     
     k32 = _get_kernel32()
     
+    # El mapa de memoización ahora vive aquí y se comparte para todas las rutas.
+    # Dado que los navegadores comparten estructuras comunes, esto evita 
+    # re-escanear directorios ya visitados.
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     

@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 15
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 24
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-29 | 42 | 3 | 5 | 9 | 43 |
+| 2026-08-29 | 40 | 3 | 4 | 9 | 42 |
 | 2026-08-30 | 154 | 11 | 27 | 14 | 144 |
-| 2026-08-31 | 20 | 1 | 4 | 1 | 26 |
+| 2026-08-31 | 22 | 1 | 4 | 1 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **51**
 - seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **48**
-- rendimiento: **34**
-- robustez ante casos límite: **33**
+- rendimiento: **36**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
-- `memory.py`: **19**
 - `scanner.py`: **19**
-- `quarantine.py`: **17**
-- `browser.py`: **17**
+- `browser.py`: **18**
+- `memory.py`: **18**
 - `diskreport.py`: **16**
 - `organizer.py`: **16**
+- `quarantine.py`: **16**
+- `duplicates.py`: **16**
 - `healthscore.py`: **16**
-- `duplicates.py`: **15**
 - `safety.py`: **14**
 - `assistant.py`: **13**
 - `branding.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T02:16:36` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` en lugar de `path.iterdir()`, lo cual reduce drásticamente el número de llamadas al sistema (syscalls) al obtener la información de `stat` y el tipo de archivo directamente durante la iteración, evitando el costo de múltiples llamadas posteriores `stat()` y `is_dir()` para cada entrada.
+- `2026-08-31T02:15:56` **browser.py** (rendimiento): Se optimizó `detect_profiles` para eliminar redundancias en el cálculo de tamaños, aprovechando que varias rutas de navegadores (Chrome, Edge, Brave, etc.) comparten el mismo directorio raíz de `User Data`, evitando así re-escanear subárboles enteros.
 - `2026-08-31T02:06:43` **assistant.py** (rendimiento): Optimicé el motor de reglas local transformando el diccionario de búsqueda `_KEYWORD_MAP` en un diccionario de acceso directo a las funciones `_HANDLERS`, eliminando la necesidad de iterar sobre cada palabra del input para encontrar una coincidencia, lo que mejora el rendimiento de respuesta ante consultas del usuario.
 - `2026-08-31T02:05:51` **settings.py** (legibilidad y documentación): Se introdujeron type hints en los métodos de `_Validators` y se añadió documentación técnica (docstrings) explicativa para aclarar la lógica de validación, garantizando que el mantenimiento futuro sea robusto ante errores de tipos o desbordamientos.
 - `2026-08-31T02:05:23` **scanner.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en el método `Scanner.process_entry` y se extrajo la lógica de filtrado de extensiones a una constante bien definida, mejorando la legibilidad del flujo de escaneo sin alterar la funcionalidad.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T01:25:41` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para asegurar que cada fila del CSV contenga al menos dos columnas antes de intentar acceder a ellas, previniendo posibles errores de `IndexError` o `KeyError` ante CSVs malformados.
 - `2026-08-31T01:25:27` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` reemplazando el chequeo de acceso mediante `os.access` (que es propenso a condiciones de carrera) por un bloque `try/except` envolviendo la operación de escritura, asegurando que cualquier fallo de permisos o I/O sea capturado limpiamente sin corromper la configuración.
 - `2026-08-31T01:24:53` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `scanner.py` mediante la captura explícita de `None` y excepciones en `_is_inside_base_root` y `_is_safe_entry`, asegurando que el motor de escaneo no falle ante rutas inválidas o errores de resolución del sistema de archivos.
-- `2026-08-31T01:14:51` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `stage_for_review` validando explícitamente la integridad de los parámetros (`junk_file` y `dest`) para evitar excepciones en tiempo de ejecución al manipular rutas potencialmente inválidas o `None`.
-- `2026-08-31T01:14:21` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo validaciones explícitas de tipos y estados para prevenir excepciones inesperadas al procesar cadenas de texto malformadas o PIDs inválidos provenientes de PowerShell.

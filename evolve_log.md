@@ -538,3 +538,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-31T02:06:43` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el motor de reglas local transformando el diccionario de búsqueda `_KEYWORD_MAP` en un diccionario de acceso directo a las funciones `_HANDLERS`, eliminando la necesidad de iterar sobre cada palabra del input para encontrar una coincidencia, lo que mejora el rendimiento de respuesta ante consultas del usuario.
 - `2026-08-31T02:06:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T02:06:43` Corrida terminada. Total usado hoy: 52.
+- `2026-08-31T02:14:51` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-08-31T02:15:31` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-31T02:15:56` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó `detect_profiles` para eliminar redundancias en el cálculo de tamaños, aprovechando que varias rutas de navegadores (Chrome, Edge, Brave, etc.) comparten el mismo directorio raíz de `User Data`, evitando así re-escanear subárboles enteros.
+- `2026-08-31T02:16:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-08-31T02:16:36` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` en lugar de `path.iterdir()`, lo cual reduce drásticamente el número de llamadas al sistema (syscalls) al obtener la información de `stat` y el tipo de archivo directamente durante la iteración, evitando el costo de múltiples llamadas posteriores `stat()` y `is_dir()` para cada entrada.
+- `2026-08-31T02:16:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T02:16:36` Corrida terminada. Total usado hoy: 56.

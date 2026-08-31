@@ -155,37 +155,35 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo que utiliza el dispositivo e inodo para prevenir ciclos 
-    infinitos causados por enlaces simbólicos o puntos de reparse (junctions).
+    Escaneo recursivo optimizado con os.scandir para minimizar llamadas al sistema,
+    previendo ciclos mediante el seguimiento de dispositivos e inodos.
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: Set[Tuple[int, int]] = set()
 
     def _scan_recursive(current_dir: Path) -> None:
         try:
-            for entry in current_dir.iterdir():
-                # Validación de seguridad defensiva sobre la ruta real de cada entrada
-                resolved_entry = entry.resolve()
-                if skip_protected and is_protected_path(resolved_entry):
-                    continue
-                
-                if entry.is_symlink():
-                    continue
-
-                try:
-                    stat = entry.stat()
-                    if os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT):
+            with os.scandir(current_dir) as it:
+                for entry in it:
+                    if skip_protected and is_protected_path(Path(entry.path)):
                         continue
                     
-                    if entry.is_dir():
-                        dev_inode = (stat.st_dev, stat.st_ino)
-                        if dev_inode not in visited_device_inodes:
-                            visited_device_inodes.add(dev_inode)
-                            _scan_recursive(entry)
-                    elif stat.st_size >= min_size:
-                        temp_map[int(stat.st_size)].append(entry)
-                except (OSError, PermissionError):
-                    continue
+                    try:
+                        stat = entry.stat(follow_symlinks=False)
+                        
+                        # Prevenir puntos de reparse/enlaces
+                        if entry.is_symlink() or (os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)):
+                            continue
+                        
+                        if entry.is_dir():
+                            dev_inode = (stat.st_dev, stat.st_ino)
+                            if dev_inode not in visited_device_inodes:
+                                visited_device_inodes.add(dev_inode)
+                                _scan_recursive(Path(entry.path))
+                        elif entry.is_file() and stat.st_size >= min_size:
+                            temp_map[int(stat.st_size)].append(Path(entry.path))
+                    except (OSError, PermissionError):
+                        continue
         except (OSError, PermissionError):
             pass
 
