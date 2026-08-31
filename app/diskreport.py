@@ -284,7 +284,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         return
 
     REPARSE_POINT_ATTR = 0x400
-    root_str = str(root_path)
     visited_inodes: set[Tuple[int, int]] = set()
     stack: List[Path] = [root_path]
     
@@ -309,12 +308,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     if entry.is_dir(follow_symlinks=False):
                         child_path = Path(entry.path)
                         try:
-                            resolved_child = child_path.resolve()
-                        except OSError:
-                            continue
-                        
-                        # Prevenir salida del directorio raíz original
-                        if not str(resolved_child).startswith(root_str):
+                            resolved_child = child_path.resolve(strict=True)
+                            # Validar confinamiento estrictamente dentro de root_path
+                            if not str(resolved_child).startswith(str(root_path)):
+                                continue
+                        except (OSError, RuntimeError):
                             continue
                                 
                         if skip_protected and is_protected_path(resolved_child):

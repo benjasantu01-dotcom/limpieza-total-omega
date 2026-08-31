@@ -214,7 +214,9 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        if _is_safe_to_traverse(Path(entry.path), base_check_path):
+                        path_obj = Path(entry.path)
+                        # Validación defensiva adicional para cada subdirectorio
+                        if is_safe_to_modify(path_obj) and _is_safe_to_traverse(path_obj, base_check_path):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                             )

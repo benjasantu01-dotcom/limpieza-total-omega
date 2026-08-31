@@ -153,7 +153,8 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path):
+                        # Validación de seguridad defensiva previa a cualquier acceso
+                        if is_protected_path(entry_path):
                             continue
 
                         stat = entry.stat(follow_symlinks=False)

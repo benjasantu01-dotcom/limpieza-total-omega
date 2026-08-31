@@ -365,17 +365,16 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         path_obj = Path(destination).resolve()
         
-        # Validación: solo proceder si la ruta es apta para escritura
-        if not is_safe_to_modify(path_obj):
-            return None
-            
+        # Validación estricta mediante el guardia de seguridad del proyecto
         ensure_safe_to_modify(path_obj)
+        
         parent = path_obj.parent
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None
             
+        # Operación protegida por el chequeo previo
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
