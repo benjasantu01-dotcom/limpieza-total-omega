@@ -228,7 +228,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     for area, weight in _WEIGHT_ITEMS_INT:
         scorer = _SCORERS.get(area)
         if not scorer:
-            # Si un área en WEIGHTS no tiene scorer, ignoramos los puntos para no sesgar
             continue
         
         ratio = _clamp(scorer(metrics), 0.0, 1.0)
@@ -254,7 +253,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una representación textual y visual del resultado del análisis."""
     if not isinstance(result, HealthResult): 
-        return ["Error: Formato de informe inválido."]
+        return ["Error: Informe no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
@@ -263,5 +262,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         bar = ('#' * puntos) + ('.' * (maximo - puntos))
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
     
-    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in result.recommendations]])
+    recs = result.recommendations if result.recommendations else ["El sistema está en buen estado."]
+    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in recs]])
     return lines

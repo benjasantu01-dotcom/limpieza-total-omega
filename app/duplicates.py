@@ -162,29 +162,30 @@ def _collect_candidates(
     visited_device_inodes: Set[Tuple[int, int]] = set()
 
     def _scan_recursive(current_dir: Path) -> None:
+        if not current_dir or not current_dir.is_dir():
+            return
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    if skip_protected and is_protected_path(Path(entry.path)):
-                        continue
-                    
                     try:
+                        entry_path = Path(entry.path)
+                        if skip_protected and is_protected_path(entry_path):
+                            continue
+                        
                         stat = entry.stat(follow_symlinks=False)
                         
-                        # Prevenir puntos de reparse/enlaces externos o cíclicos
                         if entry.is_symlink() or (os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)):
                             continue
                         
                         if entry.is_dir():
-                            # Validar seguridad antes de descender
-                            if not is_protected_path(Path(entry.path)):
+                            if not is_protected_path(entry_path):
                                 dev_inode = (stat.st_dev, stat.st_ino)
                                 if dev_inode not in visited_device_inodes:
                                     visited_device_inodes.add(dev_inode)
-                                    _scan_recursive(Path(entry.path))
+                                    _scan_recursive(entry_path)
                         elif entry.is_file() and stat.st_size >= min_size:
-                            if not is_protected_path(Path(entry.path)):
-                                temp_map[int(stat.st_size)].append(Path(entry.path))
+                            if not is_protected_path(entry_path):
+                                temp_map[int(stat.st_size)].append(entry_path)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -271,7 +272,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         try:
-            # Reutilizamos el stat del sistema de archivos implícito en el acceso
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):

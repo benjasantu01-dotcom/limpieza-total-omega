@@ -132,8 +132,8 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     try:
         target = real_target.resolve(strict=True)
         base = real_base.resolve(strict=True)
-        # Comprobación de prefijo en los componentes para asegurar contención real
-        return base in target.parents or target == base
+        # Comprobación segura de relación de padres
+        return base == target or base in target.parents
     except (OSError, ValueError, RuntimeError, PermissionError):
         return False
 
@@ -214,7 +214,7 @@ def _sum_directory_recursive(
     Calcula recursivamente el peso de una carpeta utilizando `os.scandir` para rendimiento.
     Usa `memo` para cachear resultados de subcarpetas y `MAX_SCAN_DEPTH` para evitar recursión infinita.
     """
-    if depth > MAX_SCAN_DEPTH or not root_abs:
+    if depth > MAX_SCAN_DEPTH or not root_abs or not isinstance(root_abs, str):
         return 0
     
     if root_abs in memo:
@@ -230,17 +230,13 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         sub_path = Path(entry.path)
-                        # Validación de seguridad antes de profundizar
                         if _is_safe_to_traverse(sub_path, base_check_path):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                             )
                     elif entry.is_file(follow_symlinks=False):
-                        try:
-                            stat_info = entry.stat(follow_symlinks=False)
-                            total += stat_info.st_size
-                        except (OSError, PermissionError):
-                            continue
+                        stat_info = entry.stat(follow_symlinks=False)
+                        total += stat_info.st_size
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):
@@ -262,16 +258,12 @@ def directory_size(path: Union[str, Path, None]) -> int:
         if not p_obj.exists():
             return 0
         
-        # Uso de resolve para normalizar y evitar problemas de paths relativos
         p_res = p_obj.resolve(strict=True)
-        
-        # Validaciones de seguridad centralizadas
         if not p_res.is_dir() or not _is_safe_to_traverse(p_res, None):
             return 0
         
         return _sum_directory_recursive(str(p_res), _IS_JUNCTION_FN, _get_kernel32(), {})
     except (OSError, PermissionError, RuntimeError, ValueError):
-        # Captura cualquier error de permisos o inexistencia de ruta durante la resolución
         return 0
 
 
@@ -288,7 +280,6 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
             
         real_candidate = candidate.resolve(strict=True)
         
-        # Validaciones de seguridad: tipo de ruta, acceso, y contención en la base
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or os.path.ismount(str(real_candidate)) or
             not real_candidate.is_dir() or not _is_safe_to_traverse(real_candidate, base_path) or
             _is_excluded_file(real_candidate.name)):
@@ -313,10 +304,6 @@ def detect_profiles(
         return []
     
     k32 = _get_kernel32()
-    
-    # El mapa de memoización ahora vive aquí y se comparte para todas las rutas.
-    # Dado que los navegadores comparten estructuras comunes, esto evita 
-    # re-escanear directorios ya visitados.
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     

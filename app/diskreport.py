@@ -222,19 +222,19 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     Returns:
         Objeto DriveUsage con las métricas, o None si la ruta es inválida/protegida.
     """
-    if not isinstance(mount, (str, os.PathLike)):
+    if mount is None or not isinstance(mount, (str, os.PathLike)):
         return None
         
     try:
-        raw_p = Path(os.fspath(mount))
-        p = raw_p.resolve()
+        p = Path(os.fspath(mount)).resolve()
+        if not p.is_dir():
+            return None
         
-        # Bloquear rutas UNC que suelen causar bloqueos en threads de GUI
         str_mount = str(p)
         if str_mount.startswith(("\\\\", "//")):
             return None
             
-        if not p.exists() or is_protected_path(p) or not os.access(p, os.R_OK):
+        if is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
         usage = shutil.disk_usage(p)
@@ -280,11 +280,10 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not root_path:
         return
 
-    # FILE_ATTRIBUTE_REPARSE_POINT = 0x400
     REPARSE_POINT_ATTR = 0x400
     root_str = str(root_path)
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[str] = [root_str]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -296,16 +295,13 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                     except (PermissionError, OSError):
                         continue
 
-                    # Filtrar caracteres de control en nombres de archivos
                     if not entry.name or any(c < ' ' for c in entry.name):
                         continue
                     
-                    # Saltear symlinks y puntos de reparse (Junctions en Windows)
                     if entry.is_symlink() or (os.name == 'nt' and (st.st_file_attributes & REPARSE_POINT_ATTR)):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        # Validación estricta de límites de directorio
                         p_entry = Path(entry.path).resolve()
                         if not str(p_entry).startswith(root_str):
                             continue
@@ -316,7 +312,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         inode_key = (st.st_dev, st.st_ino)
                         if inode_key not in visited_inodes:
                             visited_inodes.add(inode_key)
-                            stack.append(entry.path)
+                            stack.append(p_entry)
                                 
                     elif entry.is_file(follow_symlinks=False):
                         try:
@@ -380,13 +376,11 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
     for path, size in walk_files(p_base, skip_protected):
         try:
-            # Obtener subcarpeta inmediata asegurando integridad de la ruta
             relative = path.relative_to(p_base)
             if not relative.parts:
                 continue
             
             top_folder = p_base / relative.parts[0]
-            # Validación de seguridad: debe estar bajo p_base
             if not str(top_folder.resolve()).startswith(str(p_base.resolve())):
                 continue
             
