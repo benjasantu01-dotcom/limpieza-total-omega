@@ -208,7 +208,11 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Ejecuta el pipeline de validadores de integridad contra una ruta específica."""
+    """
+    Realiza un chequeo exhaustivo de integridad.
+    Si se detecta una violación, levanta UnsafePathError. 
+    Usa caché con TTL para optimizar el rendimiento en iteraciones de bucle frecuentes.
+    """
     path_key = str(path)
     now = time.monotonic()
     
@@ -345,8 +349,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     Valida si una ruta puede ser modificada, levantando excepciones ante riesgos.
     
+    Esta función es el punto de entrada crítico antes de realizar cualquier cambio
+    en el sistema de archivos (borrar o mover). Implementa validación estructural,
+    geográfica y de integridad.
+    
     Raises:
-        UnsafePathError: Si la ruta no cumple con los estándares de seguridad.
+        UnsafePathError: Si la ruta no es segura, está protegida o viola restricciones.
     """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
@@ -374,7 +382,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeGuard[PathLike]:
-    """Retorna True si una ruta es segura para ser modificada; útil en lógica de control."""
+    """
+    Retorna True si una ruta es segura para ser modificada; 
+    debe usarse en condiciones `if` dentro de los módulos de procesamiento.
+    """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)
         return True
@@ -382,7 +393,10 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeG
 
 
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
-    """Filtra una colección de rutas reteniendo solo aquellas que superan el control de seguridad."""
+    """
+    Filtra una colección de rutas reteniendo solo aquellas que superan el control de seguridad.
+    Resulta ideal para pre-procesar listas de archivos antes de su manipulación masiva.
+    """
     results = []
     for p in paths:
         if p is not None and is_safe_to_modify(p, allow_sensitive=allow_sensitive):

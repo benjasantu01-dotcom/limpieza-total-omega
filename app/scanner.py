@@ -106,8 +106,8 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo del sistema de archivos.
-    Mantiene el contexto del escaneo, el registro de resultados y las rutas visitadas
-    para evitar ciclos y redundancias.
+    Mantiene el contexto, el registro de resultados y las rutas visitadas
+    para prevenir el procesamiento redundante y bucles infinitos.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -118,8 +118,8 @@ class Scanner:
 
     def _is_inside_base_root(self, path_str: Optional[str]) -> bool:
         """
-        Valida mediante resolución de rutas que el archivo esté contenido estrictamente
-        dentro del árbol del directorio base de escaneo para prevenir escapes de sandbox.
+        Valida que el archivo esté contenido estrictamente dentro del árbol del directorio 
+        base, previniendo el escape de la jerarquía de escaneo definida por el usuario.
         """
         if not isinstance(path_str, str) or not path_str or "\0" in path_str: return False
         try:
@@ -130,9 +130,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida que la entrada sea segura para el escaneo: verifica longitud de ruta,
-        caracteres inválidos, límites de recursión y denegación explícita mediante 
-        `is_protected_path` sobre una ruta resuelta.
+        Valida la integridad y seguridad de una entrada. Aplica filtros de longitud,
+        nombres reservados, caracteres de ofuscación y chequeos de rutas protegidas.
         """
         if not entry or not entry.path:
             return False
@@ -149,8 +148,6 @@ class Scanner:
             if self._is_reparse_point(entry):
                 return False
             
-            # Verificación crítica: Resolvemos la ruta para evitar engaños por enlaces 
-            # internos y confirmamos que no sea una ruta protegida del sistema.
             resolved_path = Path(entry.path).resolve()
             return not is_protected_path(resolved_path)
         except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError):
@@ -158,8 +155,8 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta junctions, symlinks y puntos de reparse mediante atributos de archivo 
-        de bajo nivel para evitar bucles infinitos en el sistema de archivos.
+        Detecta puntos de reparse (junctions, enlaces simbólicos) mediante consulta de
+        atributos de bajo nivel para prevenir recursión infinita.
         """
         try:
             if entry.is_symlink():
@@ -176,8 +173,8 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Clasifica una entrada. Si es directorio válido lo añade a la pila de recursión.
-        Si es un archivo con extensión sospechosa, dispara el motor heurístico.
+        Clasifica una entrada de sistema: si es un directorio, lo añade a la pila;
+        si es un archivo, determina si requiere inspección heurística.
         """
         if not entry or not entry.path: return
         try:
@@ -185,13 +182,11 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                # Usar estático de la entrada para evitar lecturas innecesarias
                 if entry.stat().st_size == 0: return
                 
                 _, ext = os.path.splitext(entry.name)
                 ext_low = ext.lower()
                 
-                # Identificar si el archivo requiere inspección heurística
                 if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low in SUSPICIOUS_CONTENT_EXT:
                     if self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry, ext_low)
@@ -200,8 +195,8 @@ class Scanner:
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """
-        Ejecuta el motor de reglas sobre un archivo candidato y consolida los hallazgos 
-        en la lista interna de resultados del objeto Scanner.
+        Dispara el motor de reglas para un archivo específico y agrega las posibles
+        sospechas encontradas al reporte global del escáner.
         """
         if path.name and RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
@@ -226,7 +221,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Punto de entrada principal para el escaneo recursivo de un directorio."""
+    """
+    Punto de entrada principal. Inicia un escaneo recursivo mediante una pila (Stack)
+    para procesar el sistema de archivos de forma eficiente y segura.
+    """
     if not isinstance(directory, (str, Path)):
         return []
         
