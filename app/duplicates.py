@@ -151,14 +151,15 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
+                        entry_path = Path(entry.path)
+                        # Protección defensiva extra: omitir rutas protegidas antes de consultar stat
+                        if skip_protected and is_protected_path(entry_path):
+                            continue
+
                         # Obtener atributos evitando seguir enlaces simbólicos
                         stat = entry.stat(follow_symlinks=False)
                         
                         if entry.is_symlink() or (os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)):
-                            continue
-                        
-                        entry_path = Path(entry.path)
-                        if skip_protected and is_protected_path(entry_path):
                             continue
                         
                         if entry.is_dir():

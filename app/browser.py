@@ -126,8 +126,10 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     Requiere rutas resueltas (absolutas y sin symlinks) para evitar saltos de directorio.
     """
     try:
-        return real_base == real_target or real_base in real_target.parents
-    except Exception:
+        target_str = str(real_target)
+        base_str = str(real_base)
+        return os.path.commonpath([target_str, base_str]) == base_str
+    except (ValueError, Exception):
         return False
 
 
@@ -178,7 +180,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     try:
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return False
-        if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
+        if base_check_path and not _is_path_inside_base(path_obj.resolve(), base_check_path):
             return False
         return True
     except (OSError, RuntimeError):

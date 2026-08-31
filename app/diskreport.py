@@ -379,13 +379,15 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
 
     for path, size in walk_files(p_base, skip_protected):
         try:
+            # Validamos que el archivo esté realmente bajo p_base antes de computar
+            if not str(path.resolve()).startswith(str(p_base)):
+                continue
+
             relative = path.relative_to(p_base)
             if not relative.parts:
                 continue
             
             top_folder = p_base / relative.parts[0]
-            if not str(top_folder.resolve()).startswith(str(p_base.resolve())):
-                continue
             
             if skip_protected and is_protected_path(top_folder):
                 continue

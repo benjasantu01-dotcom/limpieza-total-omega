@@ -105,14 +105,10 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        for field_name in self.__annotations__:
-            val = getattr(self, field_name)
-            if not isinstance(val, (int, float)):
-                setattr(self, field_name, 0.0)
         self.validate()
 
     def validate(self) -> None:
-        """Aplica saneamiento defensivo sobre las métricas recibidas."""
+        """Aplica saneamiento defensivo estricto sobre las métricas recibidas."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -123,8 +119,8 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
         
         if not self.is_finite():
-            for f in self.__annotations__:
-                setattr(self, f, 0.0)
+            for f in self.__dataclass_fields__:
+                setattr(self, f, 0.0 if isinstance(getattr(self, f), (int, float)) else 0)
 
     def is_finite(self) -> bool:
         """Verifica que todos los valores numéricos sean finitos (no NaN ni Inf)."""
