@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **219** (43.5% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 41
-- Sin cambios (nada sustancial que mejorar): 18
+- Rechazadas por guardia de seguridad: 42
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 104 | 9 | 20 | 10 | 101 |
-| 2026-08-31 | 115 | 8 | 21 | 8 | 108 |
+| 2026-08-30 | 103 | 9 | 20 | 9 | 99 |
+| 2026-08-31 | 116 | 8 | 22 | 8 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **38**
-- rendimiento: **30**
+- robustez ante casos límite: **37**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
@@ -33,11 +33,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **20**
 - `quarantine.py`: **19**
 - `duplicates.py`: **19**
+- `assistant.py`: **18**
 - `organizer.py`: **18**
 - `scanner.py`: **18**
-- `assistant.py`: **17**
 - `memory.py`: **17**
-- `healthscore.py`: **16**
+- `healthscore.py`: **15**
 - `diskreport.py`: **15**
 - `safety.py`: **14**
 - `branding.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T11:35:22` **assistant.py** (rendimiento): Optimicé el acceso al diccionario de manejadores en `local_answer` convirtiendo `_KEYWORD_TO_HANDLER` en un diccionario global con las palabras clave normalizadas, evitando la iteración innecesaria sobre el mismo durante cada consulta y mejorando la eficiencia en la búsqueda de correspondencias.
 - `2026-08-31T11:25:51` **settings.py** (legibilidad y documentación): Se agregaron docstrings detallados a las funciones de persistencia (`load`, `save`, `update`) para explicar las garantías de atomicidad, el manejo de errores ante corrupción de archivos y el uso de caché, mejorando la mantenibilidad técnica del módulo.
 - `2026-08-31T11:25:36` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de escaneo y la clarificación de docstrings en las heurísticas, siguiendo el objetivo de legibilidad del proyecto.
 - `2026-08-31T11:18:38` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args`, `Returns` y `Raises`) en funciones críticas para facilitar la comprensión de las precondiciones de seguridad y el flujo de control, manteniendo la integridad operativa.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T10:45:03` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `process_entry` y `scan_directory` validando explícitamente la existencia de las rutas antes de procesarlas y endureciendo el manejo de excepciones al interactuar con el sistema de archivos, previniendo fallos en tiempo de ejecución ante permisos denegados o archivos eliminados durante el proceso.
 - `2026-08-31T10:44:49` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_in_use` y `_is_system_or_hidden` añadiendo validaciones de tipo explícitas y capturas de excepciones más granulares para prevenir que errores inesperados de la API de Windows aborten procesos legítimos, alineándose con el enfoque de manejo de errores y validación de entradas.
 - `2026-08-31T10:43:53` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la operación crítica de copiado y borrado en un bloque `try...finally` más estricto, asegurando que si ocurre un fallo durante la validación del hash post-copia, el archivo temporal se elimine siempre, evitando dejar residuos en el directorio de cuarentena.
-- `2026-08-31T10:35:56` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la inicialización y el manejo de excepciones en la carga dinámica de pestañas y en el pool de hilos, asegurando que cualquier fallo al acceder a widgets (`TclError`) o al resolver rutas sea capturado sin romper el bucle de eventos, manteniendo la estabilidad de la interfaz durante operaciones asíncronas.

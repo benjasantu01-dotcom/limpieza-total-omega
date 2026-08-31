@@ -1390,3 +1390,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'extra' in __slots__ conflicts 
 - `2026-08-31T11:25:51` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se agregaron docstrings detallados a las funciones de persistencia (`load`, `save`, `update`) para explicar las garantías de atomicidad, el manejo de errores ante corrupción de archivos y el uso de caché, mejorando la mantenibilidad técnica del módulo.
 - `2026-08-31T11:25:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T11:25:51` Corrida terminada. Total usado hoy: 260.
+- `2026-08-31T11:34:16` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-08-31T11:34:42` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._extract_quoted_path, StartupEntry._is_valid_executable, StartupEntry._sanitize_command
+- `2026-08-31T11:35:22` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el acceso al diccionario de manejadores en `local_answer` convirtiendo `_KEYWORD_TO_HANDLER` en un diccionario global con las palabras clave normalizadas, evitando la iteración innecesaria sobre el mismo durante cada consulta y mejorando la eficiencia en la búsqueda de correspondencias.
+- `2026-08-31T11:35:53` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-08-31T11:36:03` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
+- `2026-08-31T11:36:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T11:36:03` Corrida terminada. Total usado hoy: 264.

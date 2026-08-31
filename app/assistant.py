@@ -544,12 +544,11 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
 
-    query_tokens = set(_TOKEN_REGEX.findall(q_sanitized))
-    matches = query_tokens.intersection(_KEYWORD_TO_HANDLER.keys())
-    
-    if matches:
-        handler = _KEYWORD_TO_HANDLER[next(iter(matches))]
-        return handler(context, question)
+    query_tokens = _TOKEN_REGEX.findall(q_sanitized)
+    for token in query_tokens:
+        handler = _KEYWORD_TO_HANDLER.get(token)
+        if handler:
+            return handler(context, question)
 
     problemas = _identify_active_problems(context)
     puntaje_str = str(context.score) if context.score is not None else "N/A"
