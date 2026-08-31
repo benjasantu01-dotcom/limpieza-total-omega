@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **218** (43.3% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 122 | 10 | 23 | 11 | 106 |
-| 2026-08-31 | 96 | 8 | 18 | 6 | 104 |
+| 2026-08-30 | 119 | 10 | 22 | 11 | 106 |
+| 2026-08-31 | 99 | 8 | 18 | 6 | 105 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **48**
-- legibilidad y documentación: **47**
-- manejo de errores y validación de entradas: **43**
+- manejo de errores y validación de entradas: **46**
+- legibilidad y documentación: **44**
 - robustez ante casos límite: **42**
 - rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `quarantine.py`: **19**
+- `browser.py`: **20**
 - `settings.py`: **19**
-- `browser.py`: **19**
-- `organizer.py`: **18**
 - `scanner.py`: **18**
 - `assistant.py`: **18**
-- `memory.py`: **17**
-- `duplicates.py`: **17**
+- `quarantine.py`: **18**
+- `duplicates.py`: **18**
+- `organizer.py`: **17**
+- `diskreport.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **15**
-- `diskreport.py`: **15**
 - `healthscore.py`: **15**
 - `branding.py`: **12**
 - `startup.py`: **10**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T10:24:41` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo defensivo de errores, evitando que un estado interno inconsistente o un `stat` fallido interrumpan el flujo de trabajo de la UI.
+- `2026-08-31T10:24:28` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` agregando chequeos explícitos para evitar errores al intentar convertir tipos `None` o rutas mal formadas en `Path`, asegurando que el bucle de escaneo sea resiliente ante entradas inesperadas.
+- `2026-08-31T10:23:59` **browser.py** (manejo de errores y validación de entradas): Se fortaleció la robustez de `detect_profiles` y `directory_size` añadiendo validaciones de tipo y estructura frente a entradas mal formadas o nulas, mitigando riesgos de errores en tiempo de ejecución al manipular rutas dinámicas.
 - `2026-08-31T10:16:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación explícita para evitar errores en cadena ante entradas inesperadas, utilizando `getattr` con valores por defecto y chequeos de tipo defensivos en lugar de confiar en que `ingest` maneje todas las excepciones silenciosamente.
 - `2026-08-31T08:52:30` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` al verificar que la ruta final (`ruta`) sea segura tras la creación del directorio padre, asegurando que ninguna manipulación de la estructura de carpetas permita la escritura fuera de los límites permitidos incluso si `parent.mkdir` tiene éxito.
 - `2026-08-31T08:52:15` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al encapsular la validación de rutas dentro de `_is_safe_entry`, garantizando que cualquier acceso a `path.resolve()` maneje excepciones de sistema de forma segura para evitar que el escáner se detenga prematuramente ante rutas excepcionales o bloqueadas.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T08:31:30` **diskreport.py** (seguridad defensiva): Reforcé la seguridad defensiva al añadir un chequeo estricto de `resolve()` antes de realizar operaciones de archivo en `largest_folders`, evitando el potencial escape de la ruta base mediante técnicas de "path traversal" o manipulación de enlaces simbólicos maliciosos.
 - `2026-08-31T08:30:58` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de la jerarquía de rutas utilizando `os.path.commonpath`, asegurando que el escaneo nunca escape de la carpeta base permitida incluso ante posibles manipulaciones de enlaces simbólicos o rutas relativas.
 - `2026-08-31T08:22:52` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` al reemplazar el uso de `is_safe_to_modify` por un control explícito más robusto, asegurando que la validación de la ruta sea consistente con las reglas del proyecto al capturar errores de resolución antes de intentar realizar operaciones de escritura.
-- `2026-08-31T08:22:21` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva del motor local centralizando la validación de `SystemContext` en una nueva propiedad `is_valid_structure` y aplicando una limpieza más estricta sobre los campos de texto del sistema antes de procesarlos, previniendo que valores inesperados inyecten caracteres no deseados en la interfaz.
-- `2026-08-31T08:21:40` **startup.py** (robustez ante casos límite): Se añadió una verificación de `PermissionError` en `_resolve_and_cache_path` al intentar acceder a `path.exists()` y `stat()`, evitando que el escaneo se interrumpa abruptamente al encontrar rutas del sistema bloqueadas para el usuario actual.
-- `2026-08-31T08:20:46` **settings.py** (robustez ante casos límite): Mejoré la robustez de la carga de archivos `config.json` añadiendo un manejo explícito de archivos vacíos, ya que `json.load()` lanzaba `json.JSONDecodeError` ante un archivo de 0 bytes, provocando un reseteo innecesario al valor por defecto cada vez que el archivo existía pero estaba vacío.

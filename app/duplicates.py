@@ -152,11 +152,9 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         entry_path = Path(entry.path)
-                        # Protección defensiva extra: omitir rutas protegidas antes de consultar stat
                         if skip_protected and is_protected_path(entry_path):
                             continue
 
-                        # Obtener atributos evitando seguir enlaces simbólicos
                         stat = entry.stat(follow_symlinks=False)
                         
                         if entry.is_symlink() or (os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)):
@@ -241,6 +239,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
+        if not isinstance(p, Path): continue
         try:
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
@@ -252,7 +251,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
 
 def format_group(group: DuplicateGroup) -> List[str]:
     """Transforma un DuplicateGroup en líneas descriptivas para la UI."""
-    if not isinstance(group, DuplicateGroup) or group.paths is None:
+    if not isinstance(group, DuplicateGroup) or not hasattr(group, 'paths') or group.paths is None:
         return []
         
     keeper = suggest_keeper(group)

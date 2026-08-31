@@ -72,7 +72,7 @@ def _bytes_to_mb(size_bytes: int | float) -> float:
     return round(val / MB_SIZE, 2)
 
 
-def _validate_root(directory: Union[str, os.PathLike]) -> Optional[Path]:
+def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Valida la entrada de directorio base para operaciones de escaneo.
     
@@ -222,12 +222,12 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     Returns:
         Objeto DriveUsage con las métricas, o None si la ruta es inválida/protegida.
     """
-    if mount is None or not isinstance(mount, (str, os.PathLike)):
+    if mount is None:
         return None
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        if not p.is_dir():
+        if not p.exists() or not p.is_dir():
             return None
         
         str_mount = str(p)
@@ -268,7 +268,7 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
     return results
 
 
-def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
+def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Generador recursivo que recorre el sistema de archivos buscando archivos.
     
@@ -305,17 +305,20 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        p_entry = Path(entry.path).resolve()
-                        if not str(p_entry).startswith(root_str):
+                        try:
+                            p_entry = Path(entry.path).resolve()
+                            if not str(p_entry).startswith(root_str):
+                                continue
+                                
+                            if skip_protected and is_protected_path(p_entry):
+                                continue
+                                
+                            inode_key = (st.st_dev, st.st_ino)
+                            if inode_key not in visited_inodes:
+                                visited_inodes.add(inode_key)
+                                stack.append(p_entry)
+                        except (OSError, RuntimeError):
                             continue
-                            
-                        if skip_protected and is_protected_path(p_entry):
-                            continue
-                            
-                        inode_key = (st.st_dev, st.st_ino)
-                        if inode_key not in visited_inodes:
-                            visited_inodes.add(inode_key)
-                            stack.append(p_entry)
                                 
                     elif entry.is_file(follow_symlinks=False):
                         try:
@@ -327,7 +330,7 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
             continue
 
 
-def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
+def largest_files(directory: Union[str, os.PathLike, None], limit: int = 20, skip_protected: bool = True) -> List[FileEntry]:
     """Identifica los N archivos más grandes en un directorio usando una cola de prioridad."""
     if not isinstance(limit, int) or limit <= 0:
         return []
@@ -340,7 +343,7 @@ def largest_files(directory: Union[str, os.PathLike], limit: int = 20, skip_prot
     return [FileEntry(path=p, size_bytes=s) for s, p in heapq.nlargest(limit, items, key=lambda x: x[0])]
 
 
-def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
+def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15, skip_protected: bool = True) -> List[ExtensionUsage]:
     """Agrupa el uso de espacio total por extensión de archivo."""
     if not isinstance(limit, int) or limit <= 0:
         return []
@@ -365,7 +368,7 @@ def usage_by_extension(directory: Union[str, os.PathLike], limit: int = 15, skip
     return heapq.nlargest(limit, usage_list, key=lambda u: u.size_bytes)
 
 
-def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
+def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """Identifica las subcarpetas más pesadas."""
     if not isinstance(limit, int) or limit <= 0:
         return []
@@ -402,7 +405,7 @@ def largest_folders(directory: Union[str, os.PathLike], limit: int = 10, skip_pr
     return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
 
 
-def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) -> Tuple[int, int]:
+def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
     """Calcula el tamaño total y el conteo de archivos."""
     total_bytes, file_count = 0, 0
     for _, size in walk_files(directory, skip_protected):
@@ -442,7 +445,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     return SummaryData(total_bytes, total_files, ext_sizes, ext_counts, top_files)
 
 
-def summarize(directory: Union[str, os.PathLike], skip_protected: bool = True) -> List[str]:
+def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
     """Genera un informe textual unificado."""
     p_input = _validate_root(directory)
     if not p_input:

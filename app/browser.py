@@ -238,7 +238,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
     Punto de entrada para obtener el tamaño (bytes) de una ruta.
     Valida que la ruta sea segura y la resuelve antes de iniciar el escaneo recursivo.
     """
-    if path is None:
+    if not isinstance(path, (str, Path)):
         return 0
     try:
         p_res = Path(path).resolve(strict=True)
@@ -288,9 +288,13 @@ def detect_profiles(
     found: List[BrowserCache] = []
     
     for base in raw_bases:
+        if not isinstance(base, Path):
+            continue
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
+                if not isinstance(rel_str, str):
+                    continue
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     c_path = candidate.resolve()
