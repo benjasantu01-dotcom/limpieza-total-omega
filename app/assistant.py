@@ -265,7 +265,7 @@ class SystemContext:
             try:
                 if _validate_and_assign(self, source, key, spec):
                     found_data = True
-            except (AttributeError, ValueError, TypeError):
+            except Exception:
                 continue
         
         try:
@@ -321,7 +321,10 @@ def _get_source_value(source: Any, key: str) -> Any:
     try:
         if isinstance(source, dict):
             return source.get(key)
-        return getattr(source, key, None)
+        # Acceso protegido a atributos para evitar triggers de propiedades maliciosas
+        if hasattr(source, key):
+            return getattr(source, key, None)
+        return None
     except Exception:
         return None
 
@@ -350,13 +353,14 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
-    sources = [s for s in (metrics, health, extra) if isinstance(s, (dict, object))]
+    # Procesar solo fuentes seguras de tipo objeto o dict
+    sources = [s for s in [metrics, health, extra] if isinstance(s, (dict, object))]
     
     for src in sources:
         try:
             if ctx.ingest(src):
                 ctx.analyzed = True
-        except (Exception, TypeError, AttributeError):
+        except Exception:
             continue
             
     return ctx

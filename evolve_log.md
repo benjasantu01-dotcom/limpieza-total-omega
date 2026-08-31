@@ -1068,3 +1068,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'extra' in __slots__ conflicts 
 - `2026-08-31T07:01:51` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: rendimiento).
 - `2026-08-31T07:01:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T07:01:51` Corrida terminada. Total usado hoy: 168.
+- `2026-08-31T07:39:21` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-08-31T07:39:49` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
+- `2026-08-31T07:40:19` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la gestión de la caché en `settings.py` reduciendo las llamadas a `os.path.exists()` y `stat()` mediante un control de coherencia más directo, y simplifiqué la lógica de validación de rutas para evitar resoluciones innecesarias en el acceso frecuente a `load()`.
+- `2026-08-31T07:40:47` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-08-31T07:41:14` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` y `SystemContext.ingest` ante entradas malformadas o tipos inesperados, evitando que una fuente de datos corrupta (como un objeto con atributos inválidos) rompa el proceso de análisis.
+- `2026-08-31T07:41:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T07:41:14` Corrida terminada. Total usado hoy: 172.

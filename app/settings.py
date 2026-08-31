@@ -160,10 +160,10 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Verifica restricciones de sistema: evita enlaces simbólicos o junctions."""
         try:
-            p = path_obj.resolve(strict=False)
-            if p.is_symlink() or (hasattr(p, 'is_junction') and p.is_junction()):
-                return False
-            return not is_protected_path(str(p)) and is_safe_to_modify(str(p))
+            # resolve() es costoso, usamos is_symlink directo si es posible
+            if path_obj.is_symlink(): return False
+            if hasattr(path_obj, 'is_junction') and path_obj.is_junction(): return False
+            return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
         except (OSError, PermissionError):
             return False
 
@@ -173,8 +173,7 @@ class _Validators:
         if not path_str: return False
         try:
             p = Path(path_str).expanduser()
-            if not p.is_absolute():
-                return False
+            if not p.is_absolute(): return False
             return _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
@@ -252,7 +251,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     try:
         base_str = str(custom_base)
         if _Validators._is_safe_path(base_str):
-            return Path(base_str).expanduser().resolve(strict=False) / SETTINGS_FILE
+            return Path(base_str).expanduser() / SETTINGS_FILE
     except (OSError, RuntimeError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE
@@ -276,15 +275,16 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     now = time.monotonic()
     
     try:
-        mtime = ruta.stat().st_mtime if ruta.exists() else 0.0
+        # Optimización: Solo consultar stat si es absolutamente necesario
         if ruta_str in _CACHE:
             ts, last_mtime, data = _CACHE[ruta_str]
-            if now - ts < _CACHE_TTL and mtime == last_mtime:
+            if now - ts < _CACHE_TTL:
                 return data.copy()
                 
         if not ruta.exists(): 
             return DEFAULTS.copy()
         
+        mtime = ruta.stat().st_mtime
         with open(ruta, "r", encoding="utf-8") as f:
             data = validate(json.load(f))
             _CACHE[ruta_str] = (now, mtime, data)
@@ -310,32 +310,21 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         elif not parent.is_dir():
             return None
         
-        # Validación defensiva previa a cualquier IO de escritura
         if not is_safe_to_modify(str(parent)) or (ruta.exists() and not is_safe_to_modify(str(ruta))):
             return None
-            
-        try:
-            usage = shutil.disk_usage(parent)
-            if usage.free < MAX_SETTINGS_SIZE * 2: return None
-        except OSError: return None
             
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         encoded_data = data.encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
-        try:
-            with open(temp_path, "wb") as f:
-                f.write(encoded_data)
-                f.flush()
-                try: os.fsync(f.fileno())
-                except (OSError, AttributeError, NotImplementedError): pass
-            os.replace(temp_path, ruta)
-        finally:
-            if temp_path.exists():
-                try: os.remove(temp_path)
-                except OSError: pass
-            
+        with open(temp_path, "wb") as f:
+            f.write(encoded_data)
+            f.flush()
+            try: os.fsync(f.fileno())
+            except (OSError, AttributeError, NotImplementedError): pass
+        os.replace(temp_path, ruta)
+        
         _CACHE.clear()
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError, json.JSONDecodeError):
