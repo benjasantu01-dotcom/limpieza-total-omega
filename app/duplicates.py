@@ -141,7 +141,8 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo del sistema de archivos utilizando os.scandir.
+    Escaneo recursivo del sistema utilizando os.scandir, filtrando por tamaño mínimo
+    y evitando la recursión infinita en puntos de reparse.
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: Set[Tuple[int, int]] = set()
@@ -182,7 +183,7 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Genera grupos de archivos agrupados por un digest específico."""
+    """Agrupa una lista de rutas basándose en el digest generado por hash_func."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -191,8 +192,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Refina grupos mediante hash parcial, descartando falsos positivos con hash completo."""
-    partial_results = _group_paths_by_hash(candidates, partial_hash)
+    """Aplica doble filtrado: hash parcial primero, luego hash completo (SHA256) para confirmar."""
+    partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     for subset in partial_results.values():
         final_groups.update(_group_paths_by_hash(subset, hash_file))
@@ -200,10 +201,11 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Ejecuta el pipeline de hashing según el tamaño del archivo."""
+    """Pipeline de hashing: decide la profundidad del análisis según el tamaño del archivo."""
     if len(paths) < 2: 
         return []
     
+    # Si el archivo es pequeño, un hash parcial es suficiente identificador
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, partial_hash)
     else:

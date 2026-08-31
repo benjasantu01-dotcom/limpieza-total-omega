@@ -42,7 +42,7 @@ __all__ = [
     "summarize",
 ]
 
-MB_SIZE = 1024 * 1024
+MB_SIZE: int = 1024 * 1024
 
 
 class SummaryData(NamedTuple):
@@ -298,34 +298,32 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     except (PermissionError, OSError):
                         continue
 
+                    # Ignorar nombres nulos o caracteres de control
                     if not entry.name or any(c < ' ' for c in entry.name):
                         continue
                     
+                    # Saltar enlaces simbólicos y puntos de reparse
                     if entry.is_symlink() or (os.name == 'nt' and (st.st_file_attributes & REPARSE_POINT_ATTR)):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        try:
-                            p_entry = Path(entry.path).resolve()
-                            if not str(p_entry).startswith(root_str):
-                                continue
-                                
-                            if skip_protected and is_protected_path(p_entry):
-                                continue
-                                
-                            inode_key = (st.st_dev, st.st_ino)
-                            if inode_key not in visited_inodes:
-                                visited_inodes.add(inode_key)
-                                stack.append(p_entry)
-                        except (OSError, RuntimeError):
+                        child_path = Path(entry.path)
+                        resolved_child = child_path.resolve()
+                        
+                        # Prevenir salida del directorio raíz original
+                        if not str(resolved_child).startswith(root_str):
                             continue
+                                
+                        if skip_protected and is_protected_path(resolved_child):
+                            continue
+                                
+                        inode_key = (st.st_dev, st.st_ino)
+                        if inode_key not in visited_inodes:
+                            visited_inodes.add(inode_key)
+                            stack.append(resolved_child)
                                 
                     elif entry.is_file(follow_symlinks=False):
-                        try:
-                            file_size = st.st_size
-                        except OSError:
-                            continue
-                        yield Path(entry.path), max(0, file_size)
+                        yield Path(entry.path), max(0, st.st_size)
         except (PermissionError, OSError):
             continue
 
@@ -382,16 +380,12 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
     for path, size in walk_files(p_base, skip_protected):
         try:
-            # Validamos que el archivo esté realmente bajo p_base antes de computar
-            if not str(path.resolve()).startswith(str(p_base)):
-                continue
-
+            # Validamos que el archivo esté bajo p_base antes de computar
             relative = path.relative_to(p_base)
             if not relative.parts:
                 continue
             
             top_folder = p_base / relative.parts[0]
-            
             if skip_protected and is_protected_path(top_folder):
                 continue
             

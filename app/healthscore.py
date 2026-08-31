@@ -160,27 +160,33 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula salud inversa: 0 MB = 1.0, >= 5000 MB = 0.0."""
     val = _to_float(junk_mb)
     return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Puntúa seguridad castigando hallazgos (5%) y advertencias (25%) por unidad."""
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
     return _clamp(1.0 - ((s * 0.05) + (w * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Normaliza disponibilidad RAM respecto a umbral crítico de saturación."""
     val = _to_float(available_percent)
     return _clamp(val * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Normaliza espacio en disco respecto al umbral de riesgo."""
     val = _to_float(free_percent)
     return _clamp(val * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula salud inversa: 0 MB duplicados = 1.0, >= 2000 MB = 0.0."""
     val = _to_float(duplicate_mb)
     return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
+    """Calcula salud inversa: 0 programas de inicio = 1.0, >= 20 = 0.0."""
     val = _to_float(startup_count)
     return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0)
 

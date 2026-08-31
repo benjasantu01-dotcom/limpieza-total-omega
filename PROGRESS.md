@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **221** (43.8% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 211
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 113 | 9 | 21 | 10 | 103 |
-| 2026-08-31 | 106 | 8 | 19 | 7 | 108 |
+| 2026-08-30 | 111 | 9 | 20 | 10 | 102 |
+| 2026-08-31 | 110 | 8 | 19 | 7 | 108 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **48**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **42**
-- legibilidad y documentación: **42**
-- rendimiento: **35**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **21**
 - `settings.py`: **20**
-- `browser.py`: **20**
-- `quarantine.py`: **19**
+- `duplicates.py`: **19**
 - `scanner.py`: **18**
 - `assistant.py`: **18**
-- `duplicates.py`: **18**
+- `quarantine.py`: **18**
 - `organizer.py`: **17**
+- `diskreport.py`: **16**
+- `healthscore.py`: **16**
 - `memory.py`: **16**
-- `safety.py`: **15**
-- `diskreport.py`: **15**
-- `healthscore.py`: **15**
+- `safety.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T11:05:16` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenimiento mediante la adición de docstrings técnicos en las funciones de cálculo, aclarando la lógica matemática detrás de cada factor de normalización.
+- `2026-08-31T11:05:04` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en el pipeline de escaneo y enriqueciendo los docstrings de las funciones privadas para clarificar su rol en la estrategia de tres pasos (Tamaño -> Hash Parcial -> Hash Completo).
+- `2026-08-31T11:04:41` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez documental de `diskreport.py` mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en los nombres de las variables internas y la simplificación de la lógica de `walk_files` para mejorar su mantenibilidad.
+- `2026-08-31T11:04:13` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando type hints explícitos en los parámetros de las funciones y clarificando las docstrings de las funciones recursivas, enfatizando el propósito de la memoización para mejorar la legibilidad del flujo de datos en el análisis de disco.
 - `2026-08-31T10:55:11` **assistant.py** (legibilidad y documentación): Mejora la legibilidad del motor de decisiones y la gestión de métricas mediante la extracción de la lógica de evaluación en `SystemContext.ingest`, reduciendo el acoplamiento y facilitando futuras expansiones.
 - `2026-08-31T10:54:04` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la escritura de archivos en `save()` añadiendo un chequeo explícito de integridad antes de la sobreescritura, asegurando que `temp_path` no sobrescriba archivos críticos y que las operaciones de sistema se manejen dentro de bloques `try-except` más granulares.
 - `2026-08-31T10:45:03` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `process_entry` y `scan_directory` validando explícitamente la existencia de las rutas antes de procesarlas y endureciendo el manejo de excepciones al interactuar con el sistema de archivos, previniendo fallos en tiempo de ejecución ante permisos denegados o archivos eliminados durante el proceso.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T10:24:28` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` agregando chequeos explícitos para evitar errores al intentar convertir tipos `None` o rutas mal formadas en `Path`, asegurando que el bucle de escaneo sea resiliente ante entradas inesperadas.
 - `2026-08-31T10:23:59` **browser.py** (manejo de errores y validación de entradas): Se fortaleció la robustez de `detect_profiles` y `directory_size` añadiendo validaciones de tipo y estructura frente a entradas mal formadas o nulas, mitigando riesgos de errores en tiempo de ejecución al manipular rutas dinámicas.
 - `2026-08-31T10:16:20` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `build_context` implementando una validación explícita para evitar errores en cadena ante entradas inesperadas, utilizando `getattr` con valores por defecto y chequeos de tipo defensivos en lugar de confiar en que `ingest` maneje todas las excepciones silenciosamente.
-- `2026-08-31T08:52:30` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` al verificar que la ruta final (`ruta`) sea segura tras la creación del directorio padre, asegurando que ninguna manipulación de la estructura de carpetas permita la escritura fuera de los límites permitidos incluso si `parent.mkdir` tiene éxito.
-- `2026-08-31T08:52:15` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva de `scanner.py` al encapsular la validación de rutas dentro de `_is_safe_entry`, garantizando que cualquier acceso a `path.resolve()` maneje excepciones de sistema de forma segura para evitar que el escáner se detenga prematuramente ante rutas excepcionales o bloqueadas.
-- `2026-08-31T08:44:34` **quarantine.py** (seguridad defensiva): Se ha mejorado la integridad del proceso `quarantine_file` al introducir una validación de tiempo de vida (mtime) en la fuente antes del borrado, previniendo condiciones de carrera donde un archivo legítimo podría haber sido reemplazado o modificado durante el proceso de aislamiento.
-- `2026-08-31T08:44:13` **organizer.py** (seguridad defensiva): Se ha robustecido la validación de seguridad en `_is_safe_for_disk_op` para verificar explícitamente que la ruta origen no sea una ruta UNC (Universal Naming Convention), previniendo posibles errores de resolución de red o comportamientos inesperados en operaciones de I/O al tratar con recursos compartidos no locales.
