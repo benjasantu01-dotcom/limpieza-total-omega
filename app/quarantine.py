@@ -440,7 +440,21 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Restaura un archivo al origen original, realizando validaciones de seguridad exhaustivas previas."""
+    """
+    Restaura un archivo al origen original tras validaciones exhaustivas de seguridad.
+
+    Args:
+        item_id: Identificador único del archivo en cuarentena.
+        base: Ruta base del directorio de cuarentena.
+
+    Returns:
+        Path: Ruta donde el archivo fue restaurado.
+
+    Raises:
+        KeyError: Si el item_id no existe.
+        RuntimeError: Si la integridad física falla o el origen está ocupado.
+        UnsafePathError: Si el destino final es inseguro o protegido.
+    """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido o vacío.")
     base_path = quarantine_dir(base)

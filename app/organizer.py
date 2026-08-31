@@ -163,15 +163,16 @@ def _passes_system_checks(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza una batería de validaciones antes de cualquier operación de movimiento.
+    
     Args:
-        src: Path origen del archivo.
-        dest: Path destino (archivo o directorio).
+        src: Objeto Path del archivo origen.
+        dest: Objeto Path del destino (archivo o directorio).
+        
     Returns:
-        bool: True si la operación cumple con todos los criterios de seguridad.
+        bool: True si la operación es segura según los guards, False en caso contrario.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
-    # Impedir operar directamente en la raíz de la unidad y detectar rutas UNC
     if src.parent == src or dest.parent == dest: return False
     if str(src).startswith(r"\\") or str(dest).startswith(r"\\"): return False
     
@@ -268,7 +269,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
     try:
         src_path: Path = junk_file.path.resolve()
-        # Evitar operar sobre raíz de unidad
         if src_path.parent == src_path or dest_base.parent == dest_base: return None
         if not dest_base.exists() or not dest_base.is_dir(): return None
         if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): return None
