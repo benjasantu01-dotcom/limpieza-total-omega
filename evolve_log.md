@@ -496,3 +496,10 @@ FAILED evolve/tests/test_assistant.py::test_metrics_are_withheld_when_the_user_s
 - `2026-08-31T01:36:10` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de los parámetros de tipo y se han extraído constantes mágicas (`1024 * 1024`) a una constante de módulo `MB_SIZE` para mejorar la mantenibilidad y legibilidad del código.
 - `2026-08-31T01:36:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T01:36:10` Corrida terminada. Total usado hoy: 40.
+- `2026-08-31T01:44:21` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-08-31T01:44:49` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: legibilidad y documentación).
+- `2026-08-31T01:45:18` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad del flujo de datos mediante la adición de docstrings técnicos en las funciones de cálculo (`score_*`), especificando las unidades y la lógica de normalización para facilitar el mantenimiento y auditoría del modelo de scoring.
+- `2026-08-31T01:46:32` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-08-31T01:46:47` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings técnicos en los métodos de `MemorySnapshot` y el refinamiento de la estructura de tipos, asegurando que las funciones complejas de manejo de memoria (especialmente aquellas que operan sobre APIs de bajo nivel) tengan una explicación clara del flujo de control y las garantías de seguridad.
+- `2026-08-31T01:46:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T01:46:47` Corrida terminada. Total usado hoy: 44.

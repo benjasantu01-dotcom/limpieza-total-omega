@@ -166,33 +166,33 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud: 1.0 (óptimo) si es 0 MB, bajando linealmente a 0.0 al llegar a _LIMIT_JUNK_MB."""
+    """Salud de basura: 1.0 si es 0 MB, desciende a 0.0 al alcanzar _LIMIT_JUNK_MB."""
     val = _to_float(junk_mb)
     return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Calcula la salud: penaliza amenazas críticas con 5% y advertencias con 25% por unidad detectada."""
+    """Salud de seguridad: penaliza c/amenaza crítica (-5%) y advertencia (-25%)."""
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
     return _clamp(1.0 - ((s * 0.05) + (w * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud: normaliza el porcentaje de RAM libre respecto al umbral de criticidad definido."""
+    """Salud de RAM: ratio entre % disponible y el umbral de criticidad."""
     val = _to_float(available_percent)
     return _clamp(val * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula la salud: normaliza el espacio libre como ratio del umbral crítico de saturación de disco."""
+    """Salud de disco: ratio entre % libre y el umbral de criticidad definido."""
     val = _to_float(free_percent)
     return _clamp(val * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula la salud: el impacto crece inversamente proporcional al espacio recuperable (0 MB = 1.0)."""
+    """Salud de duplicados: inverso al espacio recuperable (0 MB = 1.0)."""
     val = _to_float(duplicate_mb)
     return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula la salud: 1.0 si no hay programas de inicio, penalizando linealmente hasta el umbral definido."""
+    """Salud de arranque: 1.0 si hay 0 entradas, penalización lineal hasta _LIMIT_STARTUP_COUNT."""
     val = _to_float(startup_count)
     return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0)
 
