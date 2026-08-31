@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **217** (43.1% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 19
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 143 | 11 | 25 | 14 | 139 |
-| 2026-08-31 | 74 | 8 | 16 | 5 | 69 |
+| 2026-08-30 | 140 | 11 | 24 | 14 | 139 |
+| 2026-08-31 | 76 | 8 | 16 | 5 | 71 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
-- seguridad defensiva: **43**
+- seguridad defensiva: **40**
 - rendimiento: **38**
-- robustez ante casos límite: **33**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **20**
 - `settings.py`: **19**
-- `browser.py`: **19**
-- `organizer.py`: **18**
-- `quarantine.py`: **18**
 - `scanner.py`: **18**
-- `memory.py`: **17**
+- `duplicates.py`: **18**
 - `assistant.py`: **17**
-- `duplicates.py`: **17**
+- `organizer.py`: **17**
+- `quarantine.py`: **17**
 - `healthscore.py`: **16**
+- `memory.py`: **16**
 - `safety.py`: **15**
 - `diskreport.py`: **15**
 - `branding.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T07:51:23` **duplicates.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de I/O en el proceso de hashing (`hash_file` y `partial_hash`) asegurando que cualquier fallo al leer un archivo (ej. archivo bloqueado por el sistema) no propague una excepción y se maneje de forma consistente mediante la validación de `_is_valid_candidate`.
+- `2026-08-31T07:50:40` **browser.py** (robustez ante casos límite): Se reforzó la robustez de `_sum_directory_recursive` mediante el uso de un manejo de errores más específico y local al acceso de archivos, asegurando que un solo archivo bloqueado o un error de sistema durante el escaneo no aborte el cálculo del tamaño del árbol completo.
 - `2026-08-31T07:41:14` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` y `SystemContext.ingest` ante entradas malformadas o tipos inesperados, evitando que una fuente de datos corrupta (como un objeto con atributos inválidos) rompa el proceso de análisis.
 - `2026-08-31T07:40:19` **settings.py** (rendimiento): Optimizé la gestión de la caché en `settings.py` reduciendo las llamadas a `os.path.exists()` y `stat()` mediante un control de coherencia más directo, y simplifiqué la lógica de validación de rutas para evitar resoluciones innecesarias en el acceso frecuente a `load()`.
 - `2026-08-31T07:01:21` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la re-lectura del archivo JSON en `total_quarantined_bytes` y `summarize`, reutilizando el caché existente de `_load_manifest_internal` para evitar operaciones redundantes de E/S.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T06:20:44` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones Args/Returns) en las funciones críticas de validación y procesamiento de archivos, y se han añadido type hints en variables internas para mejorar la legibilidad y el análisis estático.
 - `2026-08-31T06:20:08` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de los métodos de la estructura `MEMORYSTATUSEX` para clarificar el uso de la API Win32, y se ha introducido un bloque `Docstring` explicativo en `_is_safe_to_trim` para clarificar la lógica de seguridad necesaria para una operación que toca la memoria de procesos ajenos.
 - `2026-08-31T06:10:41` **healthscore.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la migración de las reglas de recomendación de un estilo imperativo y difícil de seguir a una estructura declarativa y tipada, facilitando la comprensión del flujo de evaluación y reduciendo errores en futuras extensiones.
-- `2026-08-31T06:10:15` **duplicates.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de Type Hints detallados y la refactorización de `_collect_candidates` para mejorar la claridad de su lógica recursiva, documentando explícitamente el manejo de puntos de reparse y la prevención de ciclos.
-- `2026-08-31T06:09:48` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación de `walk_files` y `_collect_summary_data` clarificando los mecanismos de exclusión de seguridad y el uso de colas de prioridad (heaps), además de normalizar la consistencia de tipos en las anotaciones para evitar ambigüedades.

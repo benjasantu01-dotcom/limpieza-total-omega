@@ -1075,3 +1075,10 @@ ERROR evolve/tests/test_modules.py - ValueError: 'extra' in __slots__ conflicts 
 - `2026-08-31T07:41:14` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `build_context` y `SystemContext.ingest` ante entradas malformadas o tipos inesperados, evitando que una fuente de datos corrupta (como un objeto con atributos inválidos) rompa el proceso de análisis.
 - `2026-08-31T07:41:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T07:41:14` Corrida terminada. Total usado hoy: 172.
+- `2026-08-31T07:49:33` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-08-31T07:50:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-08-31T07:50:40` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_sum_directory_recursive` mediante el uso de un manejo de errores más específico y local al acceso de archivos, asegurando que un solo archivo bloqueado o un error de sistema durante el escaneo no aborte el cálculo del tamaño del árbol completo.
+- `2026-08-31T07:51:07` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-08-31T07:51:23` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de I/O en el proceso de hashing (`hash_file` y `partial_hash`) asegurando que cualquier fallo al leer un archivo (ej. archivo bloqueado por el sistema) no propague una excepción y se maneje de forma consistente mediante la validación de `_is_valid_candidate`.
+- `2026-08-31T07:51:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T07:51:23` Corrida terminada. Total usado hoy: 176.
