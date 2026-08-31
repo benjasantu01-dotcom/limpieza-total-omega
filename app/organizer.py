@@ -171,6 +171,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
+    # Impedir operar directamente en la raíz de la unidad
+    if src.parent == src or dest.parent == dest: return False
+    
     if len(str(src)) > 240 or len(str(dest)) > 240: return False
     if not src.is_absolute() or not dest.is_absolute(): return False
     
@@ -264,6 +267,8 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
     try:
         src_path: Path = junk_file.path.resolve()
+        # Evitar operar sobre raíz de unidad
+        if src_path.parent == src_path or dest_base.parent == dest_base: return None
         if not dest_base.exists() or not dest_base.is_dir(): return None
         if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): return None
         if not _is_safe_to_move(junk_file, dest_base): return None

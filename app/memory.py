@@ -235,14 +235,19 @@ def read_snapshot() -> MemorySnapshot:
         _snap_cache_data = _read_windows_snapshot()
     else:
         try:
-            with open("/proc/meminfo", "r", buffering=1024, encoding="utf-8") as f:
-                content = f.read(4096)
-                _snap_cache_data = parse_linux_meminfo(content) if content else MemorySnapshot(0, 0)
+            # Validar existencia antes de lectura
+            mem_path = Path("/proc/meminfo")
+            if mem_path.exists():
+                with open(mem_path, "r", buffering=1024, encoding="utf-8") as f:
+                    content = f.read(4096)
+                    _snap_cache_data = parse_linux_meminfo(content) if content else MemorySnapshot(0, 0)
+            else:
+                _snap_cache_data = MemorySnapshot(0, 0)
         except (OSError, PermissionError, IOError):
             _snap_cache_data = MemorySnapshot(0, 0)
     
     _snap_cache_time = now
-    return _snap_cache_data
+    return _snap_cache_data or MemorySnapshot(0, 0)
 
 _proc_cache_time: float = 0.0
 _proc_cache_data: str = ""
@@ -262,11 +267,13 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
             f"Get-Process | Where-Object {{$_.Id -notin 0,4}} | Select-Object Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First {limit} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
         ]
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
+            # Uso de timeout para evitar bloqueo indefinido en caso de colgado del shell
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
             if proc.returncode == 0 and proc.stdout:
                 _proc_cache_data = proc.stdout
                 _proc_cache_time = now
-        except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): pass
+        except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
+            pass
             
     return parse_windows_process_csv(_proc_cache_data, limit=limit)
 
