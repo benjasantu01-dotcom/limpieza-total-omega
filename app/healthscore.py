@@ -216,7 +216,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if not scorer:
             continue
         
-        ratio = _clamp(scorer(metrics), 0.0, 1.0)
+        try:
+            ratio = _clamp(scorer(metrics), 0.0, 1.0)
+        except (AttributeError, TypeError):
+            ratio = 0.0
+            
         pts = round(ratio * weight)
         metric_breakdown[area] = int(pts)
         accumulated_points += pts

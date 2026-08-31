@@ -410,6 +410,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         if constructor and tab_frame:
             try:
+                # Verificación de existencia del widget antes de construir
                 if tab_frame.winfo_exists():
                     constructor()
                     self._initialized_tabs[name] = True
@@ -977,8 +978,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for tab, msgs in logs_por_tab.items():
             box = self._box(tab)
             if box and box.winfo_exists():
-                box.insert("end", "\n".join(msgs) + "\n")
-                box.see("end")
+                try:
+                    box.insert("end", "\n".join(msgs) + "\n")
+                    box.see("end")
+                except tk.TclError:
+                    pass
 
     def clear(self, tab: str = "Limpieza") -> None:
         """Limpia todo el texto del log de la pestaña especificada."""

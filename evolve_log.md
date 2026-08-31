@@ -1341,3 +1341,12 @@ ERROR evolve/tests/test_modules.py - ValueError: 'extra' in __slots__ conflicts 
 - `2026-08-31T10:24:41` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo explícitas y manejo defensivo de errores, evitando que un estado interno inconsistente o un `stat` fallido interrumpan el flujo de trabajo de la UI.
 - `2026-08-31T10:24:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T10:24:41` Corrida terminada. Total usado hoy: 236.
+- `2026-08-31T10:33:02` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-08-31T10:33:31` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `compute_score` agregando una validación explícita para evitar divisiones por cero en el cálculo de `_INV_RAM` y `_INV_DISK` mediante el uso de `max(1e-9, ...)` en las constantes globales y una verificación de seguridad al acceder a los datos de la instancia en tiempo de ejecución.
+- `2026-08-31T10:34:31` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-31T10:34:35` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-31T10:35:56` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la inicialización y el manejo de excepciones en la carga dinámica de pestañas y en el pool de hilos, asegurando que cualquier fallo al acceder a widgets (`TclError`) o al resolver rutas sea capturado sin romper el bucle de eventos, manteniendo la estabilidad de la interfaz durante operaciones asíncronas.
+- `2026-08-31T10:36:25` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-31T10:36:37` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-08-31T10:36:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T10:36:37` Corrida terminada. Total usado hoy: 240.
