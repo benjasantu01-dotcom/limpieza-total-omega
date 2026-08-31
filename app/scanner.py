@@ -38,7 +38,7 @@ class Suspicion:
 # y el timestamp de inicio global para asegurar coherencia en comparaciones temporales.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
-# Alias para representar una colección de hallagzos durante un proceso de escaneo.
+# Alias para representar una colección de hallazgos durante un proceso de escaneo.
 ScanResult: TypeAlias = List[Suspicion]
 
 # Expresiones regulares para detección de ofuscación
@@ -60,7 +60,10 @@ MAX_PATH_LENGTH: Final[int] = 260
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Evalúa si el nombre del archivo contiene una doble extensión maliciosa."""
+    """
+    Evalúa si el nombre del archivo contiene una doble extensión maliciosa.
+    Detecta patrones donde un archivo ejecutable intenta enmascararse como un documento (ej. .pdf.exe).
+    """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
@@ -68,11 +71,11 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
-    La heurística prioriza la eficiencia usando el timestamp de inicio global (now_ts).
+    La heurística prioriza la eficiencia usando el timestamp de inicio global (now_ts) 
+    para evitar llamadas recurrentes al sistema de archivos.
     """
     if not path: return None
     parts = path.parts
-    # Verificación eficiente: si el padre inmediato o alguno de los niveles superiores es una carpeta vigilada
     if not any(part.lower() in WATCHED_FOLDERS for part in parts):
         return None
     try:
@@ -161,7 +164,6 @@ class Scanner:
         try:
             if entry.is_symlink():
                 return True
-            # Intentar obtener atributos sin seguir enlaces. Si falla, asumir punto de reparse por seguridad.
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError):
             return True 
@@ -183,7 +185,6 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                # Usar try-except en el stat para manejar archivos bloqueados por el SO
                 try:
                     if entry.stat().st_size == 0: return
                 except OSError:
@@ -208,7 +209,11 @@ class Scanner:
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Ejecuta todas las reglas heurísticas registradas sobre un archivo individual."""
+    """
+    Ejecuta todas las reglas heurísticas registradas sobre un archivo individual.
+    Recibe la ruta, el timestamp de referencia y los datos opcionales de la entrada
+    para evitar re-lecturas innecesarias de metadatos.
+    """
     if not path or not path.exists(): return []
     findings: ScanResult = []
     

@@ -1381,3 +1381,12 @@ ERROR evolve/tests/test_modules.py - ValueError: 'extra' in __slots__ conflicts 
 - `2026-08-31T11:18:38` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args`, `Returns` y `Raises`) en funciones críticas para facilitar la comprensión de las precondiciones de seguridad y el flujo de control, manteniendo la integridad operativa.
 - `2026-08-31T11:18:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T11:18:38` Corrida terminada. Total usado hoy: 256.
+- `2026-08-31T11:24:04` Arrancando corrida. Quedan hoy ~44 peticiones objetivo.
+- `2026-08-31T11:24:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T11:24:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-08-31T11:24:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 118): unterminated string literal (detected at line 118)
+- `2026-08-31T11:25:07` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: ValidationContext, _CheckResult
+- `2026-08-31T11:25:36` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de escaneo y la clarificación de docstrings en las heurísticas, siguiendo el objetivo de legibilidad del proyecto.
+- `2026-08-31T11:25:51` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se agregaron docstrings detallados a las funciones de persistencia (`load`, `save`, `update`) para explicar las garantías de atomicidad, el manejo de errores ante corrupción de archivos y el uso de caché, mejorando la mantenibilidad técnica del módulo.
+- `2026-08-31T11:25:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T11:25:51` Corrida terminada. Total usado hoy: 260.

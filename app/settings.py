@@ -268,7 +268,12 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Carga la configuración con una caché temporal para minimizar IO."""
+    """
+    Carga la configuración desde el disco, aplicando validaciones estrictas.
+    Utiliza una caché en memoria (_CACHE) válida por _CACHE_TTL segundos para 
+    evitar E/S excesiva. Si el archivo falta, está corrupto o es inaccesible, 
+    retorna una copia de DEFAULTS para asegurar que la app siempre inicie.
+    """
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     now = time.monotonic()
@@ -291,7 +296,12 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
-    """Persiste en disco mediante un proceso atómico de escritura para prevenir corrupción."""
+    """
+    Persiste la configuración de forma atómica: escribe en un archivo .tmp y 
+    luego reemplaza el original usando os.replace(). Esta técnica previene que 
+    un error de escritura (ej. falta de disco) deje un archivo de configuración 
+    corrupto. Valida cada valor y limpia la caché global tras el éxito.
+    """
     if not _is_dict(values): return None
     cleaned_settings = validate(values)
     
@@ -331,7 +341,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Aplica un subconjunto de cambios y persiste si hay modificaciones reales."""
+    """
+    Aplica modificaciones parciales a la configuración actual mediante un ciclo de 
+    carga-validación-guardado. Solo invoca save() si los cambios validados 
+    difieren efectivamente de los valores persistidos actualmente.
+    """
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
