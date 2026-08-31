@@ -171,8 +171,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
-    # Impedir operar directamente en la raíz de la unidad
+    # Impedir operar directamente en la raíz de la unidad y detectar rutas UNC
     if src.parent == src or dest.parent == dest: return False
+    if str(src).startswith(r"\\") or str(dest).startswith(r"\\"): return False
     
     if len(str(src)) > 240 or len(str(dest)) > 240: return False
     if not src.is_absolute() or not dest.is_absolute(): return False

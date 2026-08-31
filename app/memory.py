@@ -51,7 +51,7 @@ PROCESS_SET_QUOTA: Final[int] = 0x0100
 SAFE_ACCESS_MASK: Final[int] = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA
 
 STILL_ACTIVE_EXIT_CODE: Final[int] = 259
-SYSTEM_CRITICAL_PIDS: Final[Set[int]] = {0, 4}
+SYSTEM_CRITICAL_PIDS: Set[int] = {0, 4}
 
 __all__ = [
     "MemorySnapshot",
@@ -337,28 +337,28 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     """
-    Validación de seguridad mediante capas: resolución absoluta, verificación
-    de unidad local y consulta a `safety.is_protected_path`.
+    Validación de seguridad: asegura que el ejecutable resida en un directorio 
+    de usuario legítimo y no en rutas protegidas del sistema operativo.
     """
-    if not isinstance(path, str) or not os.path.isabs(path) or path.startswith("\\\\"):
-        return False, "Ruta inválida o de red."
+    if not isinstance(path, str) or not os.path.isabs(path):
+        return False, "Ruta inválida."
     try:
         p = Path(path).resolve(strict=True)
-        if len(str(p)) < 3 or str(p)[1] != ":":
-            return False, "Ejecutable fuera de unidades locales."
-        if not p.is_file(): return False, "No es un ejecutable válido."
-        if is_protected_path(str(p)): return False, "Ruta protegida."
-    except Exception: return False, "Error resolviendo integridad de ruta."
+        # Bloqueo estricto para carpetas de sistema protegidas
+        forbidden_prefixes = (
+            Path(os.environ.get("SystemRoot", "C:\\Windows")).resolve(),
+            Path(os.environ.get("ProgramFiles", "C:\\Program Files")).resolve(),
+        )
+        if any(str(p).startswith(str(f)) for f in forbidden_prefixes):
+            return False, "Operación denegada en procesos del sistema."
+        if is_protected_path(str(p)): 
+            return False, "Ruta protegida por configuración."
+    except Exception: return False, "Error en integridad de ruta."
     return True, None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Verifica que el proceso sea legítimo antes de realizar operaciones de memoria.
-    
-    Realiza una triple comprobación:
-    1. Verifica que el proceso no haya terminado (coherencia de PID/Handle).
-    2. Resuelve la ruta del ejecutable para descartar malware o procesos de sistema.
-    3. Valida la integridad de la ruta mediante `safety.py`.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32

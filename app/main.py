@@ -1320,6 +1320,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
         
+        # Doble verificación: filtro por seguridad actual
         aptos = [jf for jf in junk if self._is_safe_path(jf.path)]
         
         if not aptos:
@@ -1334,10 +1335,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            movidos = []
-            for jf in aptos:
-                if self._is_safe_path(jf.path):
-                    movidos.append(jf)
+            # Re-verificar cada uno por seguridad en el hilo asíncrono
+            movidos = [jf for jf in aptos if self._is_safe_path(jf.path)]
             
             if not movidos:
                 self.log("Error: Los archivos ya no son seguros para mover.", "Limpieza")
@@ -1420,6 +1419,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
         
+        # Doble verificación: filtro por seguridad actual
         aptos = [s for s in suspicions if self._is_safe_path(s.path)]
         
         if not aptos:
@@ -1438,6 +1438,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando archivos...")
             aislados = 0
             for item_s in suspicions:
+                # Verificación final de seguridad antes de cada movimiento
                 if self._is_safe_path(item_s.path):
                     item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
                     self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
@@ -1669,6 +1670,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             conservar = duplicates_mod.suggest_keeper(grupo)
             a_mover.extend([p for p in grupo.paths if p != conservar])
 
+        # Doble verificación: filtrar solo lo que sigue siendo seguro
         aptos = [r for r in a_mover if self._is_safe_path(r)]
         
         if not aptos:
@@ -1686,6 +1688,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
             for ruta in aptos:
+                # Verificación final antes de cada movimiento
                 if self._is_safe_path(ruta):
                     quarantine.quarantine_file(ruta, reason="Copia duplicada")
                     movidos += 1
