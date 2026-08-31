@@ -51,12 +51,12 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización segura (evitando división por cero)
-_INV_JUNK: Final[float] = 1.0 / max(1e-9, _LIMIT_JUNK_MB)
-_INV_DUP: Final[float] = 1.0 / max(1e-9, _LIMIT_DUPLICATE_MB)
-_INV_STARTUP: Final[float] = 1.0 / max(1, float(_LIMIT_STARTUP_COUNT))
-_INV_RAM: Final[float] = 1.0 / max(1e-9, _LIMIT_RAM_PERCENT)
-_INV_DISK: Final[float] = 1.0 / max(1e-9, _LIMIT_DISK_PERCENT)
+# Factores de normalización pre-calculados (evitando lógica repetitiva en loops)
+_INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
+_INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
+_INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
+_INV_RAM: Final[float] = 1.0 / _LIMIT_RAM_PERCENT
+_INV_DISK: Final[float] = 1.0 / _LIMIT_DISK_PERCENT
 
 # Niveles de severidad para generar sugerencias automáticas
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
@@ -120,11 +120,16 @@ class SystemMetrics:
         
         if not self.is_finite():
             for f in self.__dataclass_fields__:
-                setattr(self, f, 0.0 if isinstance(getattr(self, f), (int, float)) else 0)
+                if not math.isfinite(getattr(self, f)):
+                    setattr(self, f, 0.0)
 
     def is_finite(self) -> bool:
-        """Verifica que todos los valores numéricos sean finitos (no NaN ni Inf)."""
-        return all(math.isfinite(v) if isinstance(v, (int, float)) else True for v in self.__dict__.values())
+        """Verifica que los valores numéricos sean finitos mediante acceso directo por campos."""
+        for f in self.__dataclass_fields__:
+            val = getattr(self, f)
+            if isinstance(val, (int, float)) and not math.isfinite(val):
+                return False
+        return True
 
 @dataclass
 class HealthResult:
@@ -161,34 +166,27 @@ def _to_int(value: Any, default: int = 0) -> int:
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
     """Calcula salud inversa: 0 MB = 1.0, >= 5000 MB = 0.0."""
-    val = _to_float(junk_mb)
-    return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0)
+    return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """Puntúa seguridad castigando hallazgos (5%) y advertencias (25%) por unidad."""
-    s = _to_float(suspicious_count)
-    w = _to_float(warnings)
-    return _clamp(1.0 - ((s * 0.05) + (w * 0.25)), 0.0, 1.0)
+    return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Normaliza disponibilidad RAM respecto a umbral crítico de saturación."""
-    val = _to_float(available_percent)
-    return _clamp(val * _INV_RAM, 0.0, 1.0)
+    return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Normaliza espacio en disco respecto al umbral de riesgo."""
-    val = _to_float(free_percent)
-    return _clamp(val * _INV_DISK, 0.0, 1.0)
+    return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula salud inversa: 0 MB duplicados = 1.0, >= 2000 MB = 0.0."""
-    val = _to_float(duplicate_mb)
-    return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0)
+    return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
     """Calcula salud inversa: 0 programas de inicio = 1.0, >= 20 = 0.0."""
-    val = _to_float(startup_count)
-    return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0)
+    return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
     s = _to_float(score)
@@ -222,11 +220,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         if not scorer:
             continue
         
-        try:
-            ratio = _clamp(scorer(metrics), 0.0, 1.0)
-        except (AttributeError, TypeError):
-            ratio = 0.0
-            
+        ratio = _clamp(scorer(metrics), 0.0, 1.0)
         pts = round(ratio * weight)
         metric_breakdown[area] = int(pts)
         accumulated_points += pts

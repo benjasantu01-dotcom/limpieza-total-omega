@@ -1144,6 +1144,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Reúne métricas de todos los módulos para calcular el puntaje global de salud."""
+        # Se utilizan los caches para evitar operaciones de I/O repetidas innecesarias
         hallazgos = self._get_cached("suspicions") or []
         arranque = self._get_cached("startup") or []
         junk = self._get_cached("junk") or []

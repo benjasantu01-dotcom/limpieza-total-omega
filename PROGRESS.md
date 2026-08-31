@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 42
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Rechazadas por guardia de seguridad: 41
+- Sin cambios (nada sustancial que mejorar): 16
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 103 | 9 | 20 | 9 | 99 |
-| 2026-08-31 | 116 | 8 | 22 | 8 | 110 |
+| 2026-08-30 | 102 | 9 | 19 | 8 | 98 |
+| 2026-08-31 | 120 | 8 | 22 | 8 | 110 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
 - seguridad defensiva: **48**
-- robustez ante casos límite: **37**
-- rendimiento: **31**
+- robustez ante casos límite: **36**
+- rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **20**
 - `browser.py`: **20**
-- `quarantine.py`: **19**
-- `duplicates.py`: **19**
+- `duplicates.py`: **20**
 - `assistant.py`: **18**
 - `organizer.py`: **18**
+- `quarantine.py`: **18**
 - `scanner.py`: **18**
 - `memory.py`: **17**
-- `healthscore.py`: **15**
-- `diskreport.py`: **15**
+- `healthscore.py`: **16**
+- `diskreport.py`: **16**
 - `safety.py`: **14**
 - `branding.py`: **11**
 - `startup.py`: **8**
-- `main.py`: **7**
+- `main.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T11:46:59` **main.py** (rendimiento): Se implementó un mecanismo de caché con invalidación selectiva más eficiente y centralizado en `main.py`, reemplazando llamadas repetitivas a funciones de red/disco por lecturas de memoria con TTL en los análisis de salud (`_compile_metrics`), lo cual reduce drásticamente el overhead de I/O en la pestaña de Salud sin alterar el comportamiento.
+- `2026-08-31T11:46:01` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de la clase `SystemMetrics` reemplazando la iteración completa sobre `self.__dict__.values()` por una verificación más eficiente, y pre-calculé los valores de normalización de forma que se evite la ejecución repetida de `max(1e-9, ...)` en tiempo de ejecución.
+- `2026-08-31T11:45:31` **duplicates.py** (rendimiento): Optimicé el proceso de hashing refinado (`_refine_by_deep_hash`) evitando leer archivos completos cuando el hash parcial ya es único, reduciendo drásticamente las operaciones de E/S innecesarias en archivos con igual tamaño pero distinto contenido inicial.
+- `2026-08-31T11:45:01` **diskreport.py** (rendimiento): Optimicé el rendimiento de `_collect_summary_data` eliminando el uso de `path.suffix` repetitivo y convirtiendo las colecciones `defaultdict` a diccionarios estándar después de la recolección para reducir el *overhead* de búsqueda y memoria durante la agregación, manteniendo la eficiencia O(N log K) del heap.
 - `2026-08-31T11:35:22` **assistant.py** (rendimiento): Optimicé el acceso al diccionario de manejadores en `local_answer` convirtiendo `_KEYWORD_TO_HANDLER` en un diccionario global con las palabras clave normalizadas, evitando la iteración innecesaria sobre el mismo durante cada consulta y mejorando la eficiencia en la búsqueda de correspondencias.
 - `2026-08-31T11:25:51` **settings.py** (legibilidad y documentación): Se agregaron docstrings detallados a las funciones de persistencia (`load`, `save`, `update`) para explicar las garantías de atomicidad, el manejo de errores ante corrupción de archivos y el uso de caché, mejorando la mantenibilidad técnica del módulo.
 - `2026-08-31T11:25:36` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de escaneo y la clarificación de docstrings en las heurísticas, siguiendo el objetivo de legibilidad del proyecto.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T11:04:41` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez documental de `diskreport.py` mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en los nombres de las variables internas y la simplificación de la lógica de `walk_files` para mejorar su mantenibilidad.
 - `2026-08-31T11:04:13` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando type hints explícitos en los parámetros de las funciones y clarificando las docstrings de las funciones recursivas, enfatizando el propósito de la memoización para mejorar la legibilidad del flujo de datos en el análisis de disco.
 - `2026-08-31T10:55:11` **assistant.py** (legibilidad y documentación): Mejora la legibilidad del motor de decisiones y la gestión de métricas mediante la extracción de la lógica de evaluación en `SystemContext.ingest`, reduciendo el acoplamiento y facilitando futuras expansiones.
-- `2026-08-31T10:54:04` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la escritura de archivos en `save()` añadiendo un chequeo explícito de integridad antes de la sobreescritura, asegurando que `temp_path` no sobrescriba archivos críticos y que las operaciones de sistema se manejen dentro de bloques `try-except` más granulares.
-- `2026-08-31T10:45:03` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `process_entry` y `scan_directory` validando explícitamente la existencia de las rutas antes de procesarlas y endureciendo el manejo de excepciones al interactuar con el sistema de archivos, previniendo fallos en tiempo de ejecución ante permisos denegados o archivos eliminados durante el proceso.
-- `2026-08-31T10:44:49` **safety.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_file_in_use` y `_is_system_or_hidden` añadiendo validaciones de tipo explícitas y capturas de excepciones más granulares para prevenir que errores inesperados de la API de Windows aborten procesos legítimos, alineándose con el enfoque de manejo de errores y validación de entradas.
-- `2026-08-31T10:43:53` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la operación crítica de copiado y borrado en un bloque `try...finally` más estricto, asegurando que si ocurre un fallo durante la validación del hash post-copia, el archivo temporal se elimine siempre, evitando dejar residuos en el directorio de cuarentena.

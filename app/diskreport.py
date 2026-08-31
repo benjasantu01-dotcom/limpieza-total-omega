@@ -417,8 +417,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     total_bytes: int = 0
     total_files: int = 0
-    ext_sizes: Dict[str, int] = defaultdict(int)
-    ext_counts: Dict[str, int] = defaultdict(int)
+    ext_sizes: Dict[str, int] = {}
+    ext_counts: Dict[str, int] = {}
     
     top_files_heap: List[Tuple[int, Path]] = []
     
@@ -427,8 +427,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         total_files += 1
         
         ext = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[ext] += size
-        ext_counts[ext] += 1
+        ext_sizes[ext] = ext_sizes.get(ext, 0) + size
+        ext_counts[ext] = ext_counts.get(ext, 0) + 1
         
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))

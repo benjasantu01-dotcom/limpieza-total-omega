@@ -192,11 +192,13 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Aplica doble filtrado: hash parcial primero, luego hash completo (SHA256) para confirmar."""
+    """Aplica doble filtrado: hash parcial primero, luego hash completo (SHA256) solo para los que coinciden."""
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     for subset in partial_results.values():
-        final_groups.update(_group_paths_by_hash(subset, hash_file))
+        # Solo calcular hash completo si hay más de un candidato con el mismo hash parcial
+        full_hash_groups = _group_paths_by_hash(subset, hash_file)
+        final_groups.update(full_hash_groups)
     return final_groups
 
 

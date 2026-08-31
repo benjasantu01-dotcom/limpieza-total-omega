@@ -1397,3 +1397,11 @@ ERROR evolve/tests/test_modules.py - ValueError: 'extra' in __slots__ conflicts 
 - `2026-08-31T11:36:03` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: rendimiento).
 - `2026-08-31T11:36:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T11:36:03` Corrida terminada. Total usado hoy: 264.
+- `2026-08-31T11:44:32` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-08-31T11:45:01` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_summary_data` eliminando el uso de `path.suffix` repetitivo y convirtiendo las colecciones `defaultdict` a diccionarios estándar después de la recolección para reducir el *overhead* de búsqueda y memoria durante la agregación, manteniendo la eficiencia O(N log K) del heap.
+- `2026-08-31T11:45:31` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el proceso de hashing refinado (`_refine_by_deep_hash`) evitando leer archivos completos cuando el hash parcial ya es único, reduciendo drásticamente las operaciones de E/S innecesarias en archivos con igual tamaño pero distinto contenido inicial.
+- `2026-08-31T11:45:31` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T11:46:01` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el método `is_finite` de la clase `SystemMetrics` reemplazando la iteración completa sobre `self.__dict__.values()` por una verificación más eficiente, y pre-calculé los valores de normalización de forma que se evite la ejecución repetida de `max(1e-9, ...)` en tiempo de ejecución.
+- `2026-08-31T11:46:59` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché con invalidación selectiva más eficiente y centralizado en `main.py`, reemplazando llamadas repetitivas a funciones de red/disco por lecturas de memoria con TTL en los análisis de salud (`_compile_metrics`), lo cual reduce drásticamente el overhead de I/O en la pestaña de Salud sin alterar el comportamiento.
+- `2026-08-31T11:46:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T11:46:59` Corrida terminada. Total usado hoy: 268.
