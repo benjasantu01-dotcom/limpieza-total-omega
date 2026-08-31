@@ -171,17 +171,20 @@ def _collect_candidates(
                     try:
                         stat = entry.stat(follow_symlinks=False)
                         
-                        # Prevenir puntos de reparse/enlaces
+                        # Prevenir puntos de reparse/enlaces externos o cíclicos
                         if entry.is_symlink() or (os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)):
                             continue
                         
                         if entry.is_dir():
-                            dev_inode = (stat.st_dev, stat.st_ino)
-                            if dev_inode not in visited_device_inodes:
-                                visited_device_inodes.add(dev_inode)
-                                _scan_recursive(Path(entry.path))
+                            # Validar seguridad antes de descender
+                            if not is_protected_path(Path(entry.path)):
+                                dev_inode = (stat.st_dev, stat.st_ino)
+                                if dev_inode not in visited_device_inodes:
+                                    visited_device_inodes.add(dev_inode)
+                                    _scan_recursive(Path(entry.path))
                         elif entry.is_file() and stat.st_size >= min_size:
-                            temp_map[int(stat.st_size)].append(Path(entry.path))
+                            if not is_protected_path(Path(entry.path)):
+                                temp_map[int(stat.st_size)].append(Path(entry.path))
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

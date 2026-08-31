@@ -280,14 +280,11 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     if not root_path:
         return
 
-    # Evitar rutas UNC
-    if str(root_path).startswith(("\\\\", "//")):
-        return
-
     # FILE_ATTRIBUTE_REPARSE_POINT = 0x400
     REPARSE_POINT_ATTR = 0x400
+    root_str = str(root_path)
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[str] = [str(root_path)]
+    stack: List[str] = [root_str]
     
     while stack:
         current_dir = stack.pop()
@@ -308,12 +305,14 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        p_entry = Path(entry.path)
-                        # Defensa adicional: verificar que p_entry mantenga root_path como base
-                        if root_path not in p_entry.parents and p_entry != root_path:
+                        # Validación estricta de límites de directorio
+                        p_entry = Path(entry.path).resolve()
+                        if not str(p_entry).startswith(root_str):
                             continue
+                            
                         if skip_protected and is_protected_path(p_entry):
                             continue
+                            
                         inode_key = (st.st_dev, st.st_ino)
                         if inode_key not in visited_inodes:
                             visited_inodes.add(inode_key)
