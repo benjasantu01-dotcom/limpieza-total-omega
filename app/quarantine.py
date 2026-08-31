@@ -247,7 +247,11 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if source_path.is_symlink():
         raise UnsafePathError("No se permite aislar enlaces simbólicos o puntos de reparse.")
 
-    resolved_source = source_path.resolve()
+    try:
+        resolved_source = source_path.resolve()
+    except OSError as e:
+        raise UnsafePathError(f"Ruta origen inaccesible: {e}")
+
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")
     if resolved_source.parent == dest_dir.resolve():

@@ -193,6 +193,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             name_val = str(parts[0])
             pid_val = int(parts[1])
             ws_val = int(parts[2])
+            # Validación estricta: PID positivo, WS no negativo y no crítico
             if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
                 proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=ws_val))
         except (ValueError, TypeError): continue
