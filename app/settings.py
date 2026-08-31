@@ -281,12 +281,16 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(custom_base)
     try:
         parent = ruta.parent
+        # Validar de forma preventiva el directorio base antes de cualquier operación
+        if not _Validators._is_safe_path(str(parent)):
+            return None
+        
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None
         
-        if not is_safe_to_modify(str(parent)) or not is_safe_to_modify(str(ruta)):
+        if not is_safe_to_modify(str(ruta)):
             return None
             
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
