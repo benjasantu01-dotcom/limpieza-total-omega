@@ -272,9 +272,12 @@ def walk_files(directory: Union[str, os.PathLike], skip_protected: bool = True) 
     """
     Generador recursivo que recorre el sistema de archivos buscando archivos.
     
-    Implementa una lógica de DFS iterativo para evitar desbordamiento de pila y utiliza
-    `os.scandir` para mejorar la performance. Saltea automáticamente puntos de reparse 
-    (como Windows Junctions o symlinks) y rutas bloqueadas por seguridad.
+    Implementa DFS iterativo para evitar desbordamiento de pila y utiliza `os.scandir`.
+    Saltea puntos de reparse (Junctions/symlinks) para evitar recursión infinita
+    y descarta rutas bloqueadas según `is_protected_path` para garantizar seguridad.
+    
+    Yields:
+        Tupla (ruta del archivo, tamaño en bytes).
     """
     root_path = _validate_root(directory)
     if not root_path:
@@ -407,7 +410,12 @@ def total_size(directory: Union[str, os.PathLike], skip_protected: bool = True) 
 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
-    """Recolección interna de métricas en una pasada única optimizada."""
+    """
+    Recolección interna de métricas en una pasada única optimizada.
+    
+    Utiliza un heap de tamaño fijo para mantener los archivos más grandes 
+    en O(log N) sin necesidad de cargar toda la lista en memoria.
+    """
     total_bytes: int = 0
     total_files: int = 0
     ext_sizes: Dict[str, int] = defaultdict(int)

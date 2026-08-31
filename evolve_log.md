@@ -969,3 +969,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-08-31T06:01:07` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante docstrings que explican el propósito de las funciones de bajo nivel y refiné los nombres de los argumentos internos para aclarar que operan sobre rutas ya resueltas (reales), facilitando el mantenimiento futuro.
 - `2026-08-31T06:01:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T06:01:07` Corrida terminada. Total usado hoy: 144.
+- `2026-08-31T06:09:16` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-08-31T06:09:48` ✅ Mejora aceptada en diskreport.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación de `walk_files` y `_collect_summary_data` clarificando los mecanismos de exclusión de seguridad y el uso de colas de prioridad (heaps), además de normalizar la consistencia de tipos en las anotaciones para evitar ambigüedades.
+- `2026-08-31T06:10:15` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica mediante la adición de Type Hints detallados y la refactorización de `_collect_candidates` para mejorar la claridad de su lógica recursiva, documentando explícitamente el manejo de puntos de reparse y la prevención de ciclos.
+- `2026-08-31T06:10:41` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la migración de las reglas de recomendación de un estilo imperativo y difícil de seguir a una estructura declarativa y tipada, facilitando la comprensión del flujo de evaluación y reduciendo errores en futuras extensiones.
+- `2026-08-31T06:11:02` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): el archivo se encogió al 34% del original (posible pérdida de código)
+- `2026-08-31T06:11:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T06:11:02` Corrida terminada. Total usado hoy: 148.

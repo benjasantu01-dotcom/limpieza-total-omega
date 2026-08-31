@@ -78,6 +78,7 @@ if sum(WEIGHTS.values()) != 100:
 
 _WEIGHT_ITEMS_INT: Final[List[Tuple[MetricKey, int]]] = list(WEIGHTS.items())
 
+# Declaración centralizada de reglas lógicas para facilitar auditoría y mantenimiento
 _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("seguridad", WARN_THRESHOLD_HIGH, lambda m: f"Revisá los {m.suspicious_count} hallazgo(s) de seguridad.", lambda m, r: r < WARN_THRESHOLD_HIGH),
     RecommendationRule("disco", WARN_THRESHOLD_LOW, lambda m: f"Queda {m.disk_free_percent:.1f}% de disco libre.", lambda m, r: r < WARN_THRESHOLD_LOW),
@@ -87,7 +88,6 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
-# Estructura optimizada para lookup O(1) de reglas
 _RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
 for rule in _RECOMMENDATION_RULES:
     _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
@@ -105,7 +105,6 @@ class SystemMetrics:
     quarantined_count: int = 0
 
     def __post_init__(self) -> None:
-        # Validación de integridad: asegurar tipos antes de procesar y sanitizar valores
         for field_name in self.__annotations__:
             val = getattr(self, field_name)
             if not isinstance(val, (int, float)):
@@ -124,7 +123,6 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
         
         if not self.is_finite():
-            # Reset preventivo si detectamos valores no finitos (NaN/Inf)
             for f in self.__annotations__:
                 setattr(self, f, 0.0)
 
@@ -166,38 +164,31 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Salud de basura: 1.0 si es 0 MB, desciende a 0.0 al alcanzar _LIMIT_JUNK_MB."""
     val = _to_float(junk_mb)
     return _clamp(1.0 - (val * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Salud de seguridad: penaliza c/amenaza crítica (-5%) y advertencia (-25%)."""
     s = _to_float(suspicious_count)
     w = _to_float(warnings)
     return _clamp(1.0 - ((s * 0.05) + (w * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Salud de RAM: ratio entre % disponible y el umbral de criticidad."""
     val = _to_float(available_percent)
     return _clamp(val * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Salud de disco: ratio entre % libre y el umbral de criticidad definido."""
     val = _to_float(free_percent)
     return _clamp(val * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Salud de duplicados: inverso al espacio recuperable (0 MB = 1.0)."""
     val = _to_float(duplicate_mb)
     return _clamp(1.0 - (val * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Salud de arranque: 1.0 si hay 0 entradas, penalización lineal hasta _LIMIT_STARTUP_COUNT."""
     val = _to_float(startup_count)
     return _clamp(1.0 - (val * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Convierte un puntaje numérico en una letra de calificación (A-F)."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -215,7 +206,6 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 }
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Sintetiza métricas en un objeto HealthResult aplicando normalización y pesos."""
     if not isinstance(metrics, SystemMetrics):
         return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o inválida."])
     
@@ -251,7 +241,6 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera una representación textual y visual del resultado del análisis."""
     if not isinstance(result, HealthResult): 
         return ["Error: Informe no disponible."]
     
