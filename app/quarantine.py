@@ -283,13 +283,11 @@ def _load_manifest_internal(base_str: str, _mtime: float = 0.0) -> Dict[str, Qua
             if not isinstance(data, list):
                 return {}
             
-            items: Dict[str, QuarantineItem] = {}
-            for entry in data:
-                if isinstance(entry, dict):
-                    item = QuarantineItem.from_dict(entry)
-                    if item:
-                        items[item.item_id] = item
-            return items
+            return {
+                str(entry["item_id"]): item 
+                for entry in data 
+                if isinstance(entry, dict) and (item := QuarantineItem.from_dict(entry))
+            }
     except (json.JSONDecodeError, OSError, PermissionError):
         return {}
 
@@ -442,18 +440,6 @@ def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[Quaranti
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
     Restaura un archivo al origen original tras validaciones exhaustivas de seguridad.
-
-    Args:
-        item_id: Identificador único del archivo en cuarentena.
-        base: Ruta base del directorio de cuarentena.
-
-    Returns:
-        Path: Ruta donde el archivo fue restaurado.
-
-    Raises:
-        KeyError: Si el item_id no existe.
-        RuntimeError: Si la integridad física falla o el origen está ocupado.
-        UnsafePathError: Si el destino final es inseguro o protegido.
     """
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido o vacío.")
@@ -537,7 +523,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Elimina todos los archivos verificados de la cuarentena, purgando el manifiesto y el almacenamiento."""
     quarantine_root = quarantine_dir(base)
-    items_dict = dict(_load_manifest_internal(str(quarantine_root)))
+    items_dict = _load_manifest_internal(str(quarantine_root))
     if not items_dict:
         return 0
     

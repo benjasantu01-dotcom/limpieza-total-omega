@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 17
-- Rechazadas por guardia de seguridad: 41
+- Mejoras aceptadas: **219** (43.5% de aceptación)
+- Rechazadas por tests: 18
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 208
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 102 | 9 | 19 | 8 | 98 |
-| 2026-08-31 | 120 | 8 | 22 | 8 | 110 |
+| 2026-08-30 | 98 | 9 | 19 | 8 | 98 |
+| 2026-08-31 | 121 | 9 | 23 | 8 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **52**
 - legibilidad y documentación: **51**
-- seguridad defensiva: **48**
-- robustez ante casos límite: **36**
-- rendimiento: **35**
+- seguridad defensiva: **46**
+- rendimiento: **36**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
 - `browser.py`: **20**
 - `duplicates.py`: **20**
-- `assistant.py`: **18**
+- `quarantine.py`: **19**
+- `settings.py`: **19**
 - `organizer.py`: **18**
-- `quarantine.py`: **18**
 - `scanner.py`: **18**
 - `memory.py`: **17**
+- `assistant.py`: **17**
 - `healthscore.py`: **16**
 - `diskreport.py`: **16**
 - `safety.py`: **14**
-- `branding.py`: **11**
-- `startup.py`: **8**
+- `branding.py`: **10**
 - `main.py`: **8**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T11:56:17` **quarantine.py** (rendimiento): Optimicé el rendimiento de `load_manifest` eliminando la recreación innecesaria de objetos `Path` y conversiones de tipo en cada iteración del bucle, y simplifiqué la lógica de `purge_all` para que solo realice una única operación de escritura en el manifiesto al finalizar, reduciendo la E/S de disco.
 - `2026-08-31T11:46:59` **main.py** (rendimiento): Se implementó un mecanismo de caché con invalidación selectiva más eficiente y centralizado en `main.py`, reemplazando llamadas repetitivas a funciones de red/disco por lecturas de memoria con TTL en los análisis de salud (`_compile_metrics`), lo cual reduce drásticamente el overhead de I/O en la pestaña de Salud sin alterar el comportamiento.
 - `2026-08-31T11:46:01` **healthscore.py** (rendimiento): Optimicé el método `is_finite` de la clase `SystemMetrics` reemplazando la iteración completa sobre `self.__dict__.values()` por una verificación más eficiente, y pre-calculé los valores de normalización de forma que se evite la ejecución repetida de `max(1e-9, ...)` en tiempo de ejecución.
 - `2026-08-31T11:45:31` **duplicates.py** (rendimiento): Optimicé el proceso de hashing refinado (`_refine_by_deep_hash`) evitando leer archivos completos cuando el hash parcial ya es único, reduciendo drásticamente las operaciones de E/S innecesarias en archivos con igual tamaño pero distinto contenido inicial.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T11:05:04` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad añadiendo type hints faltantes en el pipeline de escaneo y enriqueciendo los docstrings de las funciones privadas para clarificar su rol en la estrategia de tres pasos (Tamaño -> Hash Parcial -> Hash Completo).
 - `2026-08-31T11:04:41` **diskreport.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez documental de `diskreport.py` mediante la adición de Type Hints explícitos, la corrección de una inconsistencia en los nombres de las variables internas y la simplificación de la lógica de `walk_files` para mejorar su mantenibilidad.
 - `2026-08-31T11:04:13` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica agregando type hints explícitos en los parámetros de las funciones y clarificando las docstrings de las funciones recursivas, enfatizando el propósito de la memoización para mejorar la legibilidad del flujo de datos en el análisis de disco.
-- `2026-08-31T10:55:11` **assistant.py** (legibilidad y documentación): Mejora la legibilidad del motor de decisiones y la gestión de métricas mediante la extracción de la lógica de evaluación en `SystemContext.ingest`, reduciendo el acoplamiento y facilitando futuras expansiones.

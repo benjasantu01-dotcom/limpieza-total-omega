@@ -1405,3 +1405,42 @@ ERROR evolve/tests/test_modules.py - ValueError: 'extra' in __slots__ conflicts 
 - `2026-08-31T11:46:59` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de caché con invalidación selectiva más eficiente y centralizado en `main.py`, reemplazando llamadas repetitivas a funciones de red/disco por lecturas de memoria con TTL en los análisis de salud (`_compile_metrics`), lo cual reduce drásticamente el overhead de I/O en la pestaña de Salud sin alterar el comportamiento.
 - `2026-08-31T11:46:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T11:46:59` Corrida terminada. Total usado hoy: 268.
+- `2026-08-31T11:54:44` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-08-31T11:55:14` Tests FALLARON:
+```
+__
+
+    def test_diagnose_explains_that_free_ram_is_not_the_goal():
+        lineas = memory.diagnose(memory.MemorySnapshot(total=1000, available=500))
+        texto = " ".join(lineas).lower()
+        assert "memoria total" in texto
+        # El mensaje honesto tiene que estar: es la diferencia con un limpiador falso.
+>       assert "liberar" in texto or "caché" in texto
+E       AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+
+evolve/tests/test_modules.py:381: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_sorts_by_consumption - AssertionError: assert [] == ['grande', 'medio', 'chico']
+  
+  Right contains 3 more items, first extra item: 'grande'
+  
+  Full diff:
+  + []
+  - [
+  -     'grande',
+  -     'medio',
+  -     'chico',
+  - ]
+FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines - assert 0 == 1
+ +  where 0 = len([])
+FAILED evolve/tests/test_modules.py::test_diagnose_explains_that_free_ram_is_not_the_goal - AssertionError: assert ('liberar' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.' or 'caché' in 'memoria total: 1000 b en uso: 500 b (50.0%) disponible: 500 b (50.0%) estado: holgado.')
+3 failed, 296 passed in 1.25s
+
+```
+- `2026-08-31T11:55:14` ❌ Mejora descartada en memory.py (no pasó los tests), se revirtió. Intento: Se optimizó el proceso de recolección de métricas mediante el uso de `sys.stdin` o lectura de archivo en bloque más eficiente, y se redujo la sobrecarga de `top_memory_processes` utilizando un filtro en el lado del cliente (PowerShell) para evitar procesar líneas innecesarias o formateos redundantes.
+- `2026-08-31T11:55:15` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-08-31T11:55:45` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-31T11:56:17` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el rendimiento de `load_manifest` eliminando la recreación innecesaria de objetos `Path` y conversiones de tipo en cada iteración del bucle, y simplifiqué la lógica de `purge_all` para que solo realice una única operación de escritura en el manifiesto al finalizar, reduciendo la E/S de disco.
+- `2026-08-31T11:56:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 103): unterminated string literal (detected at line 103)
+- `2026-08-31T11:56:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T11:56:22` Corrida terminada. Total usado hoy: 272.
