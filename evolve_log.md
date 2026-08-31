@@ -564,3 +564,10 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-31T14:42:23` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-08-31T14:42:23` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T14:42:23` Corrida terminada. Total usado hoy: 336.
+- `2026-08-31T14:48:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-31T14:49:09` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` agregando una validación explícita para evitar que una entrada `None` o mal formada (`source` inválido) provoque un comportamiento inesperado o errores de tipo en las funciones que consumen el contexto, asegurando que `ctx.analyzed` solo sea `True` si efectivamente se ingirieron datos válidos.
+- `2026-08-31T14:49:44` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` mejorando la validación del directorio padre y asegurando que las excepciones operativas no silencien errores críticos de forma ambigua, alineado con el enfoque de manejo de errores y validación.
+- `2026-08-31T14:50:11` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que los argumentos sean strings o Path válidos antes de operar, evitando excepciones inesperadas por tipos incorrectos y fortaleciendo el manejo de errores en rutas inaccesibles.
+- `2026-08-31T14:50:25` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones específicas para rutas relativas y capturando posibles excepciones durante la resolución de rutas, evitando que archivos bloqueados o con caracteres inválidos interrumpan el recorrido.
+- `2026-08-31T14:50:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T14:50:25` Corrida terminada. Total usado hoy: 340.

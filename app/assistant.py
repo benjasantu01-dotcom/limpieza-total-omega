@@ -350,8 +350,12 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
+    # Filtramos fuentes nulas o inválidas explícitamente antes de iterar
     sources = [s for s in [metrics, health, extra] if isinstance(s, (dict, object))]
     
+    if not sources:
+        return ctx
+
     for src in sources:
         try:
             if ctx.ingest(src):

@@ -199,7 +199,7 @@ def _sum_directory_recursive(
     Calcula recursivamente el tamaño de archivos en 'root_abs' con límite de profundidad,
     manejando permisos denegados o archivos inaccesibles silenciosamente.
     """
-    if depth > MAX_SCAN_DEPTH:
+    if not isinstance(root_abs, str) or depth > MAX_SCAN_DEPTH:
         return 0
     
     if root_abs in memo:
@@ -215,7 +215,6 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         path_obj = Path(entry.path)
-                        # Validación defensiva adicional para cada subdirectorio
                         if is_safe_to_modify(path_obj) and _is_safe_to_traverse(path_obj, base_check_path):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1

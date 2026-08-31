@@ -302,30 +302,29 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     # Saltar enlaces simbólicos y puntos de reparse
-                    if entry.is_symlink() or (os.name == 'nt' and (st.st_file_attributes & REPARSE_POINT_ATTR)):
+                    if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        child_path = Path(entry.path)
                         try:
-                            resolved_child = child_path.resolve(strict=True)
+                            child_path = Path(entry.path).resolve(strict=True)
                             # Validar confinamiento estrictamente dentro de root_path
-                            if not str(resolved_child).startswith(str(root_path)):
+                            if not str(child_path).startswith(str(root_path)):
                                 continue
                         except (OSError, RuntimeError):
                             continue
                                 
-                        if skip_protected and is_protected_path(resolved_child):
+                        if skip_protected and is_protected_path(child_path):
                             continue
                                 
                         inode_key = (st.st_dev, st.st_ino)
                         if inode_key not in visited_inodes:
                             visited_inodes.add(inode_key)
-                            stack.append(resolved_child)
+                            stack.append(child_path)
                                 
                     elif entry.is_file(follow_symlinks=False):
                         # Evitar tamaños negativos por corrupción o error de sistema
-                        file_size = st.st_size if st.st_size > 0 else 0
+                        file_size = max(0, st.st_size)
                         yield Path(entry.path), file_size
         except (PermissionError, OSError, FileNotFoundError):
             continue
@@ -383,19 +382,21 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
     for path, size in walk_files(p_base, skip_protected):
         try:
-            # Validamos que el archivo esté bajo p_base antes de computar
+            # Validamos el archivo bajo p_base para obtener su carpeta top
             relative = path.relative_to(p_base)
             if not relative.parts:
                 continue
             
             top_folder = p_base / relative.parts[0]
+            
+            # Verificación de seguridad adicional
             if skip_protected and is_protected_path(top_folder):
                 continue
             
             str_path = str(top_folder)
             sums[str_path] += size
             counts[str_path] += 1
-        except (ValueError, OSError):
+        except (ValueError, OSError, RuntimeError):
             continue
 
     results: List[FolderUsage] = [FolderUsage(Path(p), sums[p], counts[p]) for p in sums]
