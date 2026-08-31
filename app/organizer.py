@@ -163,15 +163,13 @@ def _passes_system_checks(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza una batería de validaciones antes de cualquier operación de movimiento.
-    
-    Args:
-        src: Objeto Path del archivo origen.
-        dest: Objeto Path del destino (archivo o directorio).
-        
-    Returns:
-        bool: True si la operación es segura según los guards, False en caso contrario.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
+    
+    # Validaciones preventivas de seguridad de rutas
+    path_str = str(src)
+    if "\0" in path_str or any(c in path_str for c in ["<", ">", "|"]): return False
+    if os.name == "nt" and any(path_str.upper().startswith(d) for d in ["CON:", "PRN:", "AUX:", "NUL:"]): return False
     
     if src.parent == src or dest.parent == dest: return False
     if str(src).startswith(r"\\") or str(dest).startswith(r"\\"): return False

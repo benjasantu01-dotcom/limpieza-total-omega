@@ -319,12 +319,17 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
         return False, "Ruta inválida."
     try:
         p = Path(path).resolve(strict=True)
-        forbidden_prefixes = (
+        # Comparación robusta contra carpetas de sistema protegidas
+        forbidden_base_paths = [
             Path(os.environ.get("SystemRoot", "C:\\Windows")).resolve(),
             Path(os.environ.get("ProgramFiles", "C:\\Program Files")).resolve(),
-        )
-        if any(str(p).startswith(str(f)) for f in forbidden_prefixes):
-            return False, "Operación denegada en procesos del sistema."
+            Path(os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)")).resolve(),
+        ]
+        
+        for forbidden in forbidden_base_paths:
+            if forbidden in p.parents or p == forbidden:
+                return False, "Operación denegada en procesos del sistema."
+                
         if is_protected_path(str(p)): 
             return False, "Ruta protegida por configuración."
     except Exception: return False, "Error en integridad de ruta."

@@ -119,12 +119,8 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        """Verifica que los valores numéricos sean finitos mediante acceso directo por campos."""
-        for f in self.__dataclass_fields__:
-            val = getattr(self, f)
-            if isinstance(val, (int, float)) and not math.isfinite(float(val)):
-                return False
-        return True
+        """Verifica que los valores numéricos sean finitos."""
+        return all(math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__)
 
 @dataclass
 class HealthResult:
@@ -201,8 +197,8 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 }
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    if not isinstance(metrics, SystemMetrics):
-        return HealthResult(0, "F", {}, ["Error: Instancia de métricas nula o inválida."])
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
+        return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
     metrics.validate()
     
