@@ -596,3 +596,4 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-31T15:20:09` Corrida terminada. Total usado hoy: 350.
 - `2026-08-31T15:29:21` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-31T15:39:35` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-08-31T15:49:44` Presupuesto diario agotado (350 usados). Corte hasta mañana.
