@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **220** (43.7% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 18
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 210
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 74 | 8 | 14 | 6 | 62 |
-| 2026-08-31 | 146 | 10 | 26 | 10 | 148 |
+| 2026-08-30 | 73 | 8 | 11 | 6 | 62 |
+| 2026-08-31 | 149 | 10 | 26 | 10 | 149 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
-- manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **44**
+- manejo de errores y validación de entradas: **49**
+- legibilidad y documentación: **43**
 - robustez ante casos límite: **42**
 - rendimiento: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
+- `duplicates.py`: **21**
 - `browser.py`: **20**
-- `duplicates.py`: **20**
+- `settings.py`: **20**
 - `assistant.py`: **19**
 - `quarantine.py`: **18**
 - `scanner.py`: **18**
 - `diskreport.py`: **17**
+- `memory.py`: **17**
 - `organizer.py`: **17**
-- `memory.py`: **16**
-- `healthscore.py`: **15**
+- `healthscore.py`: **16**
 - `safety.py`: **14**
 - `branding.py`: **11**
 - `startup.py`: **7**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-08-31T15:03:54` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` y `read_snapshot` integrando validaciones de tipo y estructura más estrictas para prevenir fallos silenciosos ante entradas inesperadas o corrupción de datos.
+- `2026-08-31T14:59:45` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos al agregar una validación de `math.isfinite` en la inicialización y una verificación explícita de `isinstance` en las funciones de conversión, evitando que valores `None` o tipos inesperados propaguen errores silenciosos durante el cálculo del puntaje.
+- `2026-08-31T14:59:18` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando un chequeo previo de `os.access(path, os.R_OK)` y validación de tipo, evitando excepciones innecesarias durante la lectura de archivos bloqueados por el sistema operativo o con permisos restringidos.
 - `2026-08-31T14:50:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones específicas para rutas relativas y capturando posibles excepciones durante la resolución de rutas, evitando que archivos bloqueados o con caracteres inválidos interrumpan el recorrido.
 - `2026-08-31T14:50:11` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `directory_size` y `_sum_directory_recursive` validando explícitamente que los argumentos sean strings o Path válidos antes de operar, evitando excepciones inesperadas por tipos incorrectos y fortaleciendo el manejo de errores en rutas inaccesibles.
 - `2026-08-31T14:49:44` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` mejorando la validación del directorio padre y asegurando que las excepciones operativas no silencien errores críticos de forma ambigua, alineado con el enfoque de manejo de errores y validación.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T12:57:40` **duplicates.py** (seguridad defensiva): Se ha mejorado la robustez de `_collect_candidates` integrando una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de entrar en cualquier operación de entrada/salida, evitando el riesgo de seguir enlaces simbólicos o puntos de reparse que apunten a directorios protegidos fuera del alcance original.
 - `2026-08-31T12:57:32` **diskreport.py** (seguridad defensiva): Se reforzó la seguridad de `walk_files` al añadir una validación estricta de la ruta resuelta contra el directorio base mediante `Path.is_relative_to` (o equivalente) para prevenir ataques de escape de directorio mediante enlaces simbólicos complejos, asegurando que el escáner nunca se desvíe fuera del alcance autorizado.
 - `2026-08-31T12:57:02` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante una validación explícita de `is_safe_to_modify` para cada subcarpeta accedida, evitando que el escaneo pueda derivar en rutas protegidas o fuera del ámbito permitido durante la recursión profunda.
-- `2026-08-31T12:56:35` **branding.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `save_logo_svg` reemplazando el uso de `path_obj.write_text` (que es una operación de escritura directa no protegida por bloqueos de sistema) por una secuencia más robusta que utiliza `ensure_safe_to_modify` para garantizar que la ruta sea legítima antes de realizar cualquier cambio en el sistema de archivos.
-- `2026-08-31T12:47:37` **assistant.py** (seguridad defensiva): Se refuerza la seguridad defensiva en `_call_gemini` integrando `is_protected_path` como una barrera de salida crítica para validar que la respuesta generada por la IA no contenga inadvertidamente rutas de sistema o patrones bloqueados, además de asegurar que `_ensure_safe_text` se aplique sobre el resultado final procesado antes de ser retornado.
-- `2026-08-31T12:46:43` **settings.py** (robustez ante casos límite): Se ha mejorado la robustez de `load` y `save` ante archivos corruptos o bloqueados, envolviendo las operaciones de lectura/escritura en bloques `try...except` más granulares y asegurando que `json.load` no procese contenido vacío o malformado que pudiera causar desbordamientos de memoria.

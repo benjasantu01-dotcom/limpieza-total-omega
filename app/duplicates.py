@@ -69,9 +69,12 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de memoria constante.
     """
+    path_obj = Path(path)
+    if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
+        return None
     try:
         digest = hashlib.sha256()
-        with open(path, "rb") as f:
+        with open(path_obj, "rb") as f:
             while True:
                 buffer = f.read(chunk_size)
                 if not buffer:
@@ -86,8 +89,11 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Genera una huella dactilar rápida leyendo solo el inicio del archivo.
     """
+    path_obj = Path(path)
+    if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
+        return None
     try:
-        with open(path, "rb") as f:
+        with open(path_obj, "rb") as f:
             content = f.read(read_bytes)
             if not content: return None
             return hashlib.sha256(content).hexdigest()

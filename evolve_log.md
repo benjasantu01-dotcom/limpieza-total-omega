@@ -571,3 +571,13 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-31T14:50:25` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones específicas para rutas relativas y capturando posibles excepciones durante la resolución de rutas, evitando que archivos bloqueados o con caracteres inválidos interrumpan el recorrido.
 - `2026-08-31T14:50:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T14:50:25` Corrida terminada. Total usado hoy: 340.
+- `2026-08-31T14:58:49` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-08-31T14:59:18` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando un chequeo previo de `os.access(path, os.R_OK)` y validación de tipo, evitando excepciones innecesarias durante la lectura de archivos bloqueados por el sistema operativo o con permisos restringidos.
+- `2026-08-31T14:59:45` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez del manejo de datos al agregar una validación de `math.isfinite` en la inicialización y una verificación explícita de `isinstance` en las funciones de conversión, evitando que valores `None` o tipos inesperados propaguen errores silenciosos durante el cálculo del puntaje.
+- `2026-08-31T15:00:45` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-31T15:01:48` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-31T15:02:10` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-08-31T15:03:22` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-08-31T15:03:54` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` y `read_snapshot` integrando validaciones de tipo y estructura más estrictas para prevenir fallos silenciosos ante entradas inesperadas o corrupción de datos.
+- `2026-08-31T15:03:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T15:03:54` Corrida terminada. Total usado hoy: 344.

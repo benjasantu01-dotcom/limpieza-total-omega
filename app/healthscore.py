@@ -120,7 +120,7 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Verifica que los valores numéricos sean finitos."""
-        return all(math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__)
+        return all(isinstance(getattr(self, f), (int, float)) and math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__)
 
 @dataclass
 class HealthResult:
@@ -144,12 +144,14 @@ def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
         return low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    if value is None: return default
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def _to_int(value: Any, default: int = 0) -> int:
+    if value is None: return default
     try:
         val = float(value)
         return int(val) if math.isfinite(val) else default

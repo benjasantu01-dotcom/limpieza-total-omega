@@ -161,7 +161,7 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
                 if parts and parts[0].isdigit():
                     metric_map[k_normalized] = int(parts[0]) * 1024
                     keys_found += 1
-            except ValueError: continue
+            except (ValueError, TypeError): continue
             
     total_mem = metric_map["MemTotal"]
     if total_mem <= 0 or keys_found == 0: 
@@ -191,7 +191,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         except (ValueError, TypeError): continue
     
     proc_list.sort(key=lambda p: p.working_set, reverse=True)
-    return proc_list[:max(0, limit)]
+    return proc_list[:max(0, int(limit))]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Llamada a API Win32 GlobalMemoryStatusEx."""
@@ -246,7 +246,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     if (now - _proc_cache_time) > 60:
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            f"Get-Process | Where-Object {{$_.Id -notin 0,4}} | Select-Object Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First {limit} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
+            f"Get-Process | Where-Object {{$_.Id -notin 0,4}} | Select-Object Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First {max(1, limit)} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
         ]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
@@ -319,7 +319,6 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
         return False, "Ruta inválida."
     try:
         p = Path(path).resolve(strict=True)
-        # Comparación robusta contra carpetas de sistema protegidas
         forbidden_base_paths = [
             Path(os.environ.get("SystemRoot", "C:\\Windows")).resolve(),
             Path(os.environ.get("ProgramFiles", "C:\\Program Files")).resolve(),
