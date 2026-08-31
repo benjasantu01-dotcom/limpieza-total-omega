@@ -545,3 +545,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-08-31T02:16:36` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` en lugar de `path.iterdir()`, lo cual reduce drásticamente el número de llamadas al sistema (syscalls) al obtener la información de `stat` y el tipo de archivo directamente durante la iteración, evitando el costo de múltiples llamadas posteriores `stat()` y `is_dir()` para cada entrada.
 - `2026-08-31T02:16:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-08-31T02:16:36` Corrida terminada. Total usado hoy: 56.
+- `2026-08-31T02:25:01` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-08-31T02:25:28` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__, SystemMetrics.is_finite
+- `2026-08-31T02:26:28` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-08-31T02:27:31` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-08-31T02:28:52` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-08-31T02:29:22` ➖ Sin cambios en memory.py (enfoque: rendimiento). Motivo: Se optimizó el rendimiento del módulo `memory.py` mediante la implementación de `lru_cache` con un tiempo de expiración lógico en `top_memory_processes`, evitando la ejecución redundante y costosa del subproceso de PowerShell si la consulta es frecuente (menos de 60 segundos), reduciendo así la carga innecesaria sobre el sistema.
+- `2026-08-31T02:29:31` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-08-31T02:29:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-08-31T02:29:31` Corrida terminada. Total usado hoy: 60.
