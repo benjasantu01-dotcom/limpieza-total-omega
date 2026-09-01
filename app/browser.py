@@ -98,7 +98,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
         return None
     try:
         return ctypes.windll.kernel32
-    except (AttributeError, OSError, ValueError, RuntimeError):
+    except Exception:
         return None
 
 
@@ -220,7 +220,9 @@ def _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                             )
                     elif entry.is_file(follow_symlinks=False):
-                        total += entry.stat(follow_symlinks=False).st_size
+                        # Se usa stat protegido para evitar errores en archivos en uso
+                        stats = entry.stat(follow_symlinks=False)
+                        total += stats.st_size
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):

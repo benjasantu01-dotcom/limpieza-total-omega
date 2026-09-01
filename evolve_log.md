@@ -718,3 +718,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T01:15:03` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `build_context` para que, ante fuentes de datos parcial o totalmente corrompidas (por ejemplo, diccionarios con tipos inesperados o atributos faltantes), la aplicación no interrumpa el flujo del asistente y logre recuperar al menos las métricas válidas.
 - `2026-09-01T01:15:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T01:15:03` Corrida terminada. Total usado hoy: 32.
+- `2026-09-01T01:21:37` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-01T01:22:11` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-01T01:22:43` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `_get_kernel32` para evitar errores en entornos donde `ctypes` falle al cargar, y se añadió un manejo de errores más específico en `_sum_directory_recursive` mediante el uso de `stat` protegido para prevenir fallos al encontrar archivos bloqueados o con metadatos inaccesibles durante el escaneo.
+- `2026-09-01T01:23:13` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-09-01T01:23:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-01T01:23:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T01:23:59` Corrida terminada. Total usado hoy: 36.

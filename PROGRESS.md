@@ -7,39 +7,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **225** (44.6% de aceptación)
-- Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Rechazadas por tests: 15
+- Rechazadas por guardia de seguridad: 38
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 52 | 5 | 8 | 6 | 51 |
+| 2026-08-30 | 51 | 4 | 7 | 5 | 51 |
 | 2026-08-31 | 152 | 10 | 27 | 11 | 150 |
-| 2026-09-01 | 21 | 1 | 4 | 1 | 5 |
+| 2026-09-01 | 22 | 1 | 4 | 1 | 8 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **46**
+- seguridad defensiva: **45**
 - rendimiento: **37**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **21**
+- `browser.py`: **21**
 - `duplicates.py`: **21**
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `browser.py`: **20**
 - `quarantine.py`: **18**
-- `organizer.py`: **17**
 - `diskreport.py`: **17**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
+- `organizer.py`: **16**
 - `safety.py`: **15**
 - `branding.py`: **12**
 - `main.py`: **6**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T01:22:43` **browser.py** (robustez ante casos límite): Se mejoró la robustez de `_get_kernel32` para evitar errores en entornos donde `ctypes` falle al cargar, y se añadió un manejo de errores más específico en `_sum_directory_recursive` mediante el uso de `stat` protegido para prevenir fallos al encontrar archivos bloqueados o con metadatos inaccesibles durante el escaneo.
 - `2026-09-01T01:15:03` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `SystemContext.ingest` y `build_context` para que, ante fuentes de datos parcial o totalmente corrompidas (por ejemplo, diccionarios con tipos inesperados o atributos faltantes), la aplicación no interrumpa el flujo del asistente y logre recuperar al menos las métricas válidas.
 - `2026-09-01T01:14:09` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando llamadas redundantes a `os.path.stat` y accesos innecesarios al disco cuando la caché es válida, al consolidar la verificación de metadatos en una única llamada.
 - `2026-09-01T01:11:59` **scanner.py** (rendimiento): Optimizé la detección de carpetas monitoreadas y el chequeo de seguridad convirtiendo las listas de comparación en conjuntos (sets) de búsqueda local y reduciendo las llamadas redundantes a `Path.resolve()` dentro del bucle de escaneo, mejorando el rendimiento en directorios con miles de archivos.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T00:31:50` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `stack` y `ScanResult`), se añadieron docstrings explicativos en funciones críticas para aclarar el flujo de control y se refinó la nomenclatura de parámetros en el registro de escaneo para mejorar la mantenibilidad y claridad del código.
 - `2026-09-01T00:31:21` **safety.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los chequeos internos en `_validate_structural_safety` y `_validate_boundary_conditions` para clarificar la lógica de seguridad y evitar ambigüedades en futuras auditorías de código.
 - `2026-09-01T00:21:18` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de las funciones de validación crítica en `organizer.py`, añadiendo docstrings que explicitan el "porqué" de las restricciones de seguridad para mejorar la mantenibilidad a largo plazo sin alterar la lógica de ejecución.
-- `2026-09-01T00:20:53` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` añadiendo type hints faltantes, docstrings detallados en las funciones de bajo nivel y una sección de advertencia clara, manteniendo la integridad del código.
