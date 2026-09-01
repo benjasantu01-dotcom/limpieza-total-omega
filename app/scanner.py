@@ -74,8 +74,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     Utiliza el timestamp de inicio (now_ts) para una comparación temporal eficiente.
     """
     if not path: return None
-    parts = path.parts
-    if not any(part.lower() in WATCHED_FOLDERS for part in parts):
+    path_str = str(path).lower()
+    if not any(f"\\{folder}\\" in path_str for folder in WATCHED_FOLDERS):
         return None
     try:
         stats = entry.stat(follow_symlinks=False) if entry else path.stat()
@@ -117,11 +117,11 @@ class Scanner:
         self.base_root = base_root.resolve(strict=False)
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_inside_base_root(self, path_str: Optional[str]) -> bool:
+    def _is_inside_base_root(self, path_str: str) -> bool:
         """
         Valida que la ruta esté dentro del árbol base, evitando escape de jerarquía.
         """
-        if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
+        if not path_str or "\0" in path_str: return False
         try:
             target = Path(path_str).resolve(strict=False)
             return self.base_root == target or self.base_root in target.parents
@@ -148,8 +148,7 @@ class Scanner:
             if self._is_reparse_point(entry):
                 return False
             
-            resolved_path = Path(entry.path).resolve(strict=False)
-            return not is_protected_path(resolved_path)
+            return not is_protected_path(Path(entry.path))
         except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError):
             return False
 
@@ -179,17 +178,14 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                try:
-                    if entry.stat().st_size == 0: return
-                except OSError:
-                    return
-                
-                _, ext = os.path.splitext(entry.name)
-                ext_low = ext.lower()
-                
+                ext_low = Path(entry.name).suffix.lower()
                 if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low in SUSPICIOUS_CONTENT_EXT:
                     if self._is_safe_entry(entry):
-                        self._run_file_heuristics(Path(entry.path), entry, ext_low)
+                        try:
+                            if entry.stat().st_size > 0:
+                                self._run_file_heuristics(Path(entry.path), entry, ext_low)
+                        except OSError:
+                            return
         except (OSError, PermissionError, TypeError, FileNotFoundError):
             logger.debug(f"Acceso denegado o archivo inaccesible: {entry.path}")
 

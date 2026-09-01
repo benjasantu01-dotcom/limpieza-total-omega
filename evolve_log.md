@@ -708,3 +708,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T01:04:10` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_is_system_or_hidden` y `_is_reparse_point` eliminando el uso de `ctypes` (llamada costosa) en cada iteración, sustituyéndolo por el chequeo nativo de `os.stat` (cuyo resultado es compatible con las máscaras de Windows) y el uso de `path.lstat()` que ya se invoca en los chequeos principales.
 - `2026-09-01T01:04:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T01:04:10` Corrida terminada. Total usado hoy: 28.
+- `2026-09-01T01:11:23` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-01T01:11:59` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la detección de carpetas monitoreadas y el chequeo de seguridad convirtiendo las listas de comparación en conjuntos (sets) de búsqueda local y reduciendo las llamadas redundantes a `Path.resolve()` dentro del bucle de escaneo, mejorando el rendimiento en directorios con miles de archivos.
+- `2026-09-01T01:12:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-01T01:13:01` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-01T01:13:28` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-01T01:14:09` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando llamadas redundantes a `os.path.stat` y accesos innecesarios al disco cuando la caché es válida, al consolidar la verificación de metadatos en una única llamada.
+- `2026-09-01T01:14:36` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-01T01:15:03` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `build_context` para que, ante fuentes de datos parcial o totalmente corrompidas (por ejemplo, diccionarios con tipos inesperados o atributos faltantes), la aplicación no interrumpa el flujo del asistente y logre recuperar al menos las métricas válidas.
+- `2026-09-01T01:15:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T01:15:03` Corrida terminada. Total usado hoy: 32.

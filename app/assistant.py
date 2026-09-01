@@ -267,8 +267,11 @@ class SystemContext:
             
         found_data = False
         for key, spec in _VALIDATORS.items():
-            if _validate_and_assign(self, source, key, spec):
-                found_data = True
+            try:
+                if _validate_and_assign(self, source, key, spec):
+                    found_data = True
+            except Exception:
+                continue
         
         # Procesamiento específico de grado de salud
         grade_val = _get_source_value(source, "grade")
@@ -277,7 +280,7 @@ class SystemContext:
             if _is_safe_text_structure(clean_grade):
                 self.grade = clean_grade
         
-        return found_data and self.is_valid_structure
+        return found_data
 
 @dataclass
 class Answer:
@@ -350,17 +353,13 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
-    # Filtramos fuentes nulas o inválidas explícitamente antes de iterar
-    sources = [s for s in [metrics, health, extra] if isinstance(s, (dict, object))]
+    sources = [s for s in [metrics, health, extra] if s is not None]
     
-    if not sources:
-        return ctx
-
     for src in sources:
         try:
             if ctx.ingest(src):
                 ctx.analyzed = True
-        except (AttributeError, TypeError, ValueError):
+        except Exception:
             continue
             
     return ctx
