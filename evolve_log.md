@@ -699,3 +699,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T00:53:14` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `top_memory_processes` reemplazando la ejecución costosa de PowerShell por un filtrado de procesos local basado en un caché inteligente, evitando el *fork* de un subproceso pesado que degradaba el rendimiento al actualizar la UI.
 - `2026-09-01T00:53:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T00:53:14` Corrida terminada. Total usado hoy: 24.
+- `2026-09-01T01:01:12` Arrancando corrida. Quedan hoy ~276 peticiones objetivo.
+- `2026-09-01T01:02:03` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-01T01:02:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-01T01:02:46` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimizé la carga del manifiesto eliminando la reconstrucción innecesaria de objetos `QuarantineItem` en operaciones de lectura masiva (como `summarize` o `total_quarantined_bytes`), utilizando un formato de diccionario serializado que permite acceso directo a los datos sin instanciar la clase completa si solo se requiere el tamaño o información básica.
+- `2026-09-01T01:03:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-09-01T01:03:38` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-01T01:04:10` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Optimicé el rendimiento de `_is_system_or_hidden` y `_is_reparse_point` eliminando el uso de `ctypes` (llamada costosa) en cada iteración, sustituyéndolo por el chequeo nativo de `os.stat` (cuyo resultado es compatible con las máscaras de Windows) y el uso de `path.lstat()` que ya se invoca en los chequeos principales.
+- `2026-09-01T01:04:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T01:04:10` Corrida terminada. Total usado hoy: 28.

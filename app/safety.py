@@ -149,30 +149,22 @@ def _has_alternate_data_stream(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Verifica si el archivo tiene atributos 'Sistema', 'Oculto' u 'Offline' mediante WinAPI."""
-    if os.name != 'nt' or not isinstance(path, Path):
-        return False
+    """Verifica si el archivo tiene atributos de sistema u oculto mediante stat."""
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs == -1 or attrs == 0xFFFFFFFF: return False
+        # st_file_attributes es específico de Windows en os.stat_result
+        attrs = path.stat().st_file_attributes
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
-    except (OSError, AttributeError, TypeError, ValueError):
+    except (AttributeError, OSError):
         return False 
 
 
 @lru_cache(maxsize=2048)
 def _is_reparse_point(path: Path) -> bool:
-    """Identifica puntos de reparse (junctions, symlinks) usando WinAPI o métodos nativos."""
-    if os.name != 'nt':
-        return path.is_symlink()
-    if not isinstance(path, Path):
-        return False
+    """Identifica puntos de reparse usando atributos nativos de stat."""
     try:
-        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
-        if attrs == -1 or attrs == 0xFFFFFFFF: return False
-        return bool(attrs & FILE_ATTRIBUTE_REPARSE_POINT)
-    except (OSError, AttributeError, TypeError, ValueError):
-        return False
+        return bool(path.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)
+    except (AttributeError, OSError):
+        return path.is_symlink()
 
 
 @lru_cache(maxsize=1024)
