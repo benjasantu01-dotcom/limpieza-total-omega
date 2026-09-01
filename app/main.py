@@ -1193,32 +1193,31 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def on_target_choice_changed(self, choice: str) -> None:
         """Callback al cambiar el objetivo de escaneo."""
+        def update_label(txt: str) -> None:
+            if hasattr(self, 'target_label') and self.target_label.winfo_exists():
+                self.target_label.configure(text=txt)
+
         if choice == "Elegir carpeta...":
             folder = self._ask_folder()
             if folder:
                 self.scan_target = folder
-                if hasattr(self, 'target_label') and self.target_label.winfo_exists():
-                    self.target_label.configure(text=folder)
+                update_label(folder)
             else:
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
-                if hasattr(self, 'target_label') and self.target_label.winfo_exists():
-                    self.target_label.configure(text="")
+                update_label("")
         elif choice == "Por defecto (Temp + Descargas)":
             self.scan_target = None
-            if hasattr(self, 'target_label') and self.target_label.winfo_exists():
-                self.target_label.configure(text="")
+            update_label("")
         else:
             if self._is_safe_target_dir(choice):
                 self.scan_target = choice
-                if hasattr(self, 'target_label') and self.target_label.winfo_exists():
-                    self.target_label.configure(text=f"Unidad completa: {choice}")
+                update_label(f"Unidad completa: {choice}")
             else:
                 self.log(f"Error: La ruta {choice} no es válida o es insegura.", "Limpieza")
                 self.target_choice.set("Por defecto (Temp + Descargas)")
                 self.scan_target = None
-                if hasattr(self, 'target_label') and self.target_label.winfo_exists():
-                    self.target_label.configure(text="")
+                update_label("")
 
     def on_scan_junk(self) -> None:
         """Busca archivos basura según la configuración actual."""

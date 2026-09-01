@@ -371,7 +371,7 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         for _, size in walk_files(directory, skip_protected):
             total_bytes += size
             file_count += 1
-    except Exception:
+    except (OSError, PermissionError, TypeError):
         pass
     return total_bytes, file_count
 
@@ -389,6 +389,9 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
+        if not path or not isinstance(size, (int, float)):
+            continue
+            
         total_bytes += size
         total_files += 1
         
@@ -413,7 +416,7 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
             
     try:
         data: SummaryData = _collect_summary_data(p_input, skip_protected)
-    except Exception:
+    except (OSError, PermissionError, RuntimeError):
         return ["Error: Fallo inesperado durante el análisis del disco."]
     
     if data.total_files == 0:
