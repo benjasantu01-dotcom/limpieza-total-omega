@@ -107,7 +107,7 @@ def _is_junk_path(path: Path) -> bool:
 
 
 def _is_unc_path(path: Path) -> bool:
-    """Detecta si una ruta corresponde a una ruta UNC de red."""
+    """Detecta si una ruta corresponde a una ruta UNC de red (formato \\servidor\recurso)."""
     try:
         return str(path.absolute()).startswith(("\\\\", "//"))
     except Exception:
@@ -165,6 +165,7 @@ def _passes_system_checks(src: Path) -> bool:
     if os.name != "nt": return True
     try:
         stat = src.stat()
+        # 0x407 bitmask: 0x4 (SYSTEM), 0x2 (HIDDEN), 0x1 (READONLY)
         return not (stat.st_file_attributes & 0x407)
     except OSError:
         return False
@@ -172,12 +173,14 @@ def _passes_system_checks(src: Path) -> bool:
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
-    Validación de seguridad para operaciones de disco (mover/borrar).
+    Realiza una validación exhaustiva de seguridad antes de mover o borrar un archivo.
+    Considera rutas UNC, nombres reservados, protecciones de SO y bloqueos de proceso.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
     if _is_unc_path(src) or _is_unc_path(dest): return False
     
+    # Bloqueo de nombres de dispositivos reservados en Windows
     path_str = str(src).lower()
     reserved = {"con", "prn", "aux", "nul", "com1", "lpt1"}
     if any(path_str.startswith(r) for r in reserved): return False
@@ -191,6 +194,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         
         if _is_junction(s_res) or _is_junction(dest.parent if dest.is_file() else dest): return False
         
+        # Integración con el módulo de seguridad central (safety.py)
         if is_protected_path(s_res) or is_protected_path(dest.resolve()): return False
         if not is_safe_to_modify(s_res) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(s_res, dest): return False
@@ -205,7 +209,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
-    """Verifica si un objeto JunkFile es seguro para mover."""
+    """Verifica si un objeto JunkFile es seguro para la operación de movimiento."""
     if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
     return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
@@ -275,7 +279,8 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
-    Valida espacio y seguridad antes de proponer una ruta de movimiento.
+    Valida el espacio disponible en disco y la seguridad de la ruta antes de proponer una ruta de movimiento.
+    Retorna la ruta destino completa o None si la operación no es viable.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
     if _is_unc_path(dest_base): return None
@@ -283,6 +288,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
         src_path: Path = junk_file.path.resolve()
         if not dest_base.exists() or not dest_base.is_dir(): return None
         
+        # Validar espacio (al menos 50MB libres extra)
         try:
             if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
                 return None

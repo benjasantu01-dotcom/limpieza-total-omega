@@ -333,8 +333,11 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
-    Realiza validaciones de bajo nivel: nombres reservados, caracteres ilegales,
-    conexiones de red (UNC) y límites de longitud definidos por Windows.
+    Valida la integridad técnica de la cadena de la ruta contra:
+    - Caracteres de control no permitidos (RTL/Unicode).
+    - Nombres reservados de dispositivos Windows (CON, PRN, etc).
+    - Rutas de red UNC (seguridad contra ejecución remota).
+    - Límites de longitud MAX_PATH de Windows.
     """
     if _has_invalid_chars(path_string):
         raise UnsafePathError("La ruta contiene caracteres inválidos o no soportados.")
@@ -352,8 +355,12 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
     """
-    Aplica filtros de contención lógica: impide salir del directorio de trabajo,
-    acceder a la raíz de la unidad o interactuar con nodos de reparse.
+    Valida las restricciones lógicas y de alcance (scope) del sistema:
+    - Impide escape fuera del directorio raíz definido (sandbox).
+    - Previene modificación del directorio de trabajo actual (root).
+    - Bloquea acceso a raíces de unidad (C:\).
+    - Protege directorios definidos en PROTECTED_DIR_NAMES.
+    - Rechaza nodos de reparse (Junctions/Symlinks) para evitar saltos.
     """
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("La ruta objetivo está fuera del alcance definido por el usuario.")

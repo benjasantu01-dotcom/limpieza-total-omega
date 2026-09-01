@@ -249,7 +249,17 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Realiza chequeos de seguridad antes de permitir el movimiento de un archivo al sandbox."""
+    """
+    Valida la viabilidad de aislar un archivo realizando chequeos de seguridad.
+    
+    Argumentos:
+        source_path: Path al archivo que se pretende poner en cuarentena.
+        dest_dir: Path donde reside el sandbox de cuarentena.
+    
+    Excepciones:
+        UnsafePathError: Si la ruta no es segura, está protegida o es un enlace.
+        IOError: Si el archivo está siendo usado por otro proceso.
+    """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     
@@ -344,8 +354,16 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """
-    Aísla un archivo copiándolo primero a un archivo temporal y verificando su integridad final.
-    El uso de os.replace asegura que la operación sea atómica a nivel de sistema de archivos.
+    Aísla un archivo copiándolo a un sandbox de forma atómica.
+    
+    Argumentos:
+        source: Path al archivo original a aislar.
+        destination: Path objetivo dentro del directorio de cuarentena.
+        original_size: Tamaño esperado para validación de integridad.
+        
+    Excepciones:
+        UnsafePathError: Si el destino intenta escapar del sandbox.
+        OSError: Si el tamaño post-copia no coincide o falta espacio.
     """
     if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
         raise UnsafePathError("Operación denegada: intento de escritura fuera del sandbox.")
@@ -369,7 +387,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             os.close(fd)
             raise e
 
-        # Verificación explícita post-copia antes de validar hash
         if temp_path.stat().st_size != original_size:
             raise OSError("Error de integridad: el tamaño del archivo copiado no coincide.")
             
@@ -411,10 +428,8 @@ def quarantine_file(
         
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
-    # Verificación final de integridad y persistencia
     operation_succeeded = False
     try:
-        # Re-verificar tamaño final post-copia
         if destination.stat().st_size != original_size:
             raise RuntimeError("Integridad comprometida: el archivo destino cambió tamaño.")
 
@@ -438,7 +453,6 @@ def quarantine_file(
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
         
-        # Último check antes de borrar el original
         if destination.exists() and quarantine_item.verify_integrity(destination):
             source_path.unlink()
             operation_succeeded = True
@@ -454,7 +468,6 @@ def quarantine_file(
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna la lista de ítems en cuarentena, ordenados del más reciente al más antiguo."""
-    # Nota: load_manifest ya instancia los objetos, manteniendo eficiencia vía el cache de raw.
     return sorted(load_manifest(base), key=lambda item: item.quarantined_at, reverse=True)
 
 
@@ -527,7 +540,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Verifica si un ítem en cuarentena cumple todas las condiciones para ser eliminado (integridad y seguridad)."""
     try:
-        # Validación de sandbox y seguridad estricta
         if not _is_within_quarantine_sandbox(file_path, base_path):
             return False
         return (
@@ -553,11 +565,9 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     for item in items:
         stored_path = (quarantine_root / item.stored_name).resolve()
-        # Chequeo defensivo: el archivo debe existir y pasar todas las validaciones de seguridad
         if _is_item_purgable(stored_path, item, quarantine_root) and _safe_unlink(stored_path):
             purged_count += 1
         elif stored_path.exists():
-            # Si no se purga pero existe (y no es eliminable), se mantiene en el manifiesto
             kept_items.append(item)
             
     if purged_count > 0:
@@ -569,7 +579,6 @@ def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> 
     """Calcula el espacio total ocupado por los archivos en cuarentena leyendo el manifiesto crudo."""
     base_path = quarantine_dir(base)
     mtime = _manifest_path(base_path).stat().st_mtime if _manifest_path(base_path).exists() else 0.0
-    # Acceso directo al cache, sin instanciar objetos QuarantineItem
     raw_data = _load_manifest_raw(str(base_path), mtime)
     return sum(int(d.get("size_bytes", 0)) for d in raw_data if isinstance(d, dict))
 
