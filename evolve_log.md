@@ -644,3 +644,11 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-08-31T23:29:27` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-31T23:39:35` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-08-31T23:49:46` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-01T00:00:00` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-01T00:00:53` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-01T00:01:35` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` hacia un diseño de "early return" y la extracción de la lógica de construcción del payload JSON a una función dedicada, reduciendo el anidamiento y clarificando el flujo de seguridad.
+- `2026-09-01T00:01:46` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-01T00:02:28` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y el tipado de `branding.py` mediante la adición de docstrings técnicos en las funciones de dibujo y la especificación de tipos en las funciones auxiliares de color, facilitando la comprensión del motor gráfico a otros desarrolladores.
+- `2026-09-01T00:02:43` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la inclusión de type hints precisos, la estandarización de docstrings y la clarificación de la responsabilidad de cada función helper para facilitar el mantenimiento y la auditoría.
+- `2026-09-01T00:02:43` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T00:02:43` Corrida terminada. Total usado hoy: 4.

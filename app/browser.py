@@ -156,8 +156,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Determina si una entrada (archivo o carpeta) debe ignorarse basándose en
-    atributos de sistema, tipos de enlace (junctions/symlinks) o bloqueo de nombres.
+    Filtro de exclusión para el escaneo recursivo: identifica si una entrada debe ser ignorada
+    por restricciones de seguridad, tipo de enlace o metadatos de sistema.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -196,8 +196,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el tamaño de archivos en 'root_abs' con límite de profundidad,
-    manejando permisos denegados o archivos inaccesibles silenciosamente.
+    Acumulador recursivo de tamaño en bytes. Utiliza memoización para evitar
+    re-procesamiento y `os.scandir` para eficiencia en el I/O.
     """
     if not isinstance(root_abs, str) or depth > MAX_SCAN_DEPTH:
         return 0
@@ -232,8 +232,8 @@ def _sum_directory_recursive(
 
 def directory_size(path: Union[str, Path, None]) -> int:
     """
-    Punto de entrada para obtener el tamaño (bytes) de una ruta.
-    Valida que la ruta sea segura y la resuelve antes de iniciar el escaneo recursivo.
+    Punto de entrada público para obtener el tamaño (bytes) de una ruta.
+    Valida la seguridad de la ruta antes de iniciar el escaneo recursivo.
     """
     if not isinstance(path, (str, Path)):
         return 0
@@ -248,8 +248,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Verifica que la carpeta de caché candidata no sea un enlace externo,
-    que sea una ruta segura, y que se mantenga bajo el 'base_path' permitido.
+    Verifica si una ruta es un directorio de caché válido, asegurando que no escape
+    del entorno base permitido mediante chequeos de resolución de rutas.
     """
     try:
         if not candidate.exists():
@@ -271,8 +271,7 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea las rutas definidas en 'cache_paths' relativas a 'bases'.
-    Retorna una lista de objetos 'BrowserCache' ordenados por peso, utilizando 
-    memoización para optimizar el cálculo del tamaño total en disco.
+    Retorna una lista de objetos 'BrowserCache' ordenados por peso.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -306,12 +305,12 @@ def detect_profiles(
 
 
 def total_cache_bytes(caches: Iterable[BrowserCache] | None = None) -> int:
-    """Calcula el acumulado de bytes de todas las cachés identificadas."""
+    """Calcula el acumulado total de bytes de las cachés provistas."""
     return sum(cache.size_bytes for cache in (caches or []))
 
 
 def summarize(caches: Optional[List[BrowserCache]] = None) -> List[str]:
-    """Genera una representación de texto para el reporte de salud del sistema."""
+    """Genera una representación de texto legible con el reporte de ocupación."""
     current_caches = caches if caches is not None else detect_profiles()
     if not current_caches:
         return ["No se detectaron cachés de navegador en este sistema."]

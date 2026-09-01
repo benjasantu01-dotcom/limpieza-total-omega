@@ -578,31 +578,22 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         allow_metrics=bool(raw_cfg.get("asistente_enviar_metricas", True))
     )
 
-def _call_gemini(
-    question: str, 
-    context_text: str, 
-    api_key: str, 
-    model: str
-) -> Optional[str]:
-    """
-    Invoca la API de Gemini realizando validaciones de seguridad rigurosas previas y
-    posteriores, asegurando que la respuesta recibida no contenga contenido malicioso.
-    """
-    if not isinstance(api_key, str) or not isinstance(model, str) or not api_key: return None
-    if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
+def _build_payload(question: str, context_text: str) -> bytes:
+    """Construye el cuerpo de la solicitud JSON de forma segura."""
+    prompt = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {question}"
+    return json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
+
+def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
+    """Invoca la API de Gemini realizando validaciones de seguridad rigurosas."""
+    if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
+    if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     
     safe_q = _sanitize_query(question)
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
-    
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_c): return None
     
     try:
-        prompt_full = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{safe_c}\n\nPregunta del usuario: {safe_q}"
-        if len(prompt_full) > _MAX_PROMPT_LIMIT: return None
-        
-        data_packet = {"contents": [{"parts": [{"text": prompt_full}]}]}
-        payload = json.dumps(data_packet).encode("utf-8")
-        
+        payload = _build_payload(safe_q, safe_c)
         if len(payload) > _MAX_PROMPT_LIMIT * 2: return None
         
         req = urllib.request.Request(
@@ -620,24 +611,14 @@ def _call_gemini(
             data = json.loads(raw_res.decode("utf-8"))
             if not isinstance(data, dict): return None
             
-            candidates = data.get("candidates")
-            if not isinstance(candidates, list) or not candidates or not isinstance(candidates[0], dict): return None
+            parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])
+            if not parts or "text" not in parts[0]: return None
             
-            content = candidates[0].get("content")
-            if not isinstance(content, dict): return None
+            raw_text = str(parts[0]["text"])
+            clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
+            final = _validate_response_length(clean)
             
-            parts = content.get("parts")
-            if not isinstance(parts, list) or not parts or not isinstance(parts[0], dict): return None
-            
-            raw_text = str(parts[0].get("text", ""))
-            
-            limpia_final = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
-            final_text = _validate_response_length(limpia_final)
-            
-            # Validación de salida crítica: asegurar que no haya rutas en la respuesta final
-            if not _ensure_safe_text(final_text) or is_protected_path(final_text):
-                return None
-            return final_text
+            return final if _ensure_safe_text(final) and not is_protected_path(final) else None
     except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
         return None
 
