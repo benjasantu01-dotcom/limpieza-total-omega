@@ -1050,3 +1050,31 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-01T04:48:11` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados en funciones clave que carecían de ellos o cuya lógica era densa, además de unificar los nombres de parámetros de rutas para mayor consistencia interna.
 - `2026-09-01T04:48:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T04:48:11` Corrida terminada. Total usado hoy: 116.
+- `2026-09-01T04:56:01` Arrancando corrida. Quedan hoy ~184 peticiones objetivo.
+- `2026-09-01T04:56:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
+- `2026-09-01T04:56:52` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_structural_safety` y `_validate_boundary_conditions` para que devuelvan mensajes de error más granulares y específicos, facilitando el diagnóstico de fallos en el bucle autónomo.
+- `2026-09-01T04:57:18` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados y la normalización de la estructura de las funciones de chequeo, asegurando que el contrato de `SuspicionCheck` sea consistente en todo el módulo.
+- `2026-09-01T04:57:32` Tests FALLARON:
+```
+          "  Comportamiento", f"    Confirmar siempre: {'sí' if current['confirmar_siempre'] else 'no'}",
+            f"    Pestaña inicial: {current['abrir_en']}", f"    Recordar carpeta: {'sí' if current['recordar_ultima_carpeta'] else 'no'}", "",
+            "  Rendimiento", f"    Duplicados desde: {current['duplicados_tamano_minimo_kb']} KB",
+            f"    Top de archivos: {current['top_archivos']}", f"    Análisis en paralelo: {'sí' if current['analisis_en_paralelo'] else 'no'}", "",
+>           "  Asistente IA", f"    Activado: {'sí' if current['asistente_activado'] else 'no'}",
+                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            f"    Clave: {origin}", f"    Modelo: {current['asistente_modelo']}", ""
+        ]
+E       KeyError: 'asistente_activado'
+
+app/settings.py:372: KeyError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_defaults_are_complete_and_typed - AssertionError: assert 'asistente_activado' in {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...}
+ +  where {'tema': 'oscuro', 'acento': 'menta', 'mostrar_barras': True, 'animaciones': True, ...} = settings.DEFAULTS
+FAILED evolve/tests/test_assistant.py::test_assistant_is_off_by_default - KeyError: 'asistente_activado'
+FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyError: 'asistente_activado'
+3 failed, 296 passed in 1.35s
+
+```
+- `2026-09-01T04:57:32` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Documenté con docstrings claros y tipado los helpers y validadores críticos de `settings.py` para facilitar la comprensión de las reglas de negocio y los límites de seguridad aplicados en el manejo de configuración.
+- `2026-09-01T04:57:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T04:57:32` Corrida terminada. Total usado hoy: 120.

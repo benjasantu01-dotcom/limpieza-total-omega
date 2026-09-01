@@ -62,7 +62,9 @@ WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Evalúa si el nombre del archivo contiene una doble extensión maliciosa.
-    Detecta patrones donde un archivo ejecutable intenta enmascararse como un documento.
+    
+    Analiza mediante regex si una extensión de documento precede a una ejecutable.
+    Esta técnica es común en ataques de suplantación de tipo de archivo.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -71,13 +73,16 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
-    Utiliza el timestamp de inicio (now_ts) para una comparación temporal eficiente.
+    
+    Utiliza un timestamp precalculado (now_ts) para evitar llamadas redundantes a time.now().
+    El chequeo se realiza solo en las carpetas definidas en WATCHED_FOLDERS.
     """
     if not path: return None
     path_str = str(path).lower()
     if not any(f"\\{folder}\\" in path_str for folder in WATCHED_FOLDERS):
         return None
     try:
+        # Usa os.DirEntry si está disponible para optimizar el acceso a metadatos
         if entry and entry.is_file():
             stats = entry.stat(follow_symlinks=False)
         else:
@@ -91,8 +96,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Verifica si un ejecutable utiliza nombres de procesos críticos del sistema fuera
-    de los directorios protegidos.
+    Detecta si un ejecutable intenta suplantar procesos críticos del sistema.
+    
+    Ignora archivos legítimos localizados dentro de la carpeta System32 o rutas protegidas.
     """
     if not path or not path.name: return None
     name_lower = path.name.lower()
@@ -112,7 +118,9 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo del sistema de archivos.
-    Mantiene el contexto, el registro de resultados y las rutas visitadas.
+    
+    Mantiene el contexto necesario para evitar ciclos, validar rutas contra la raíz
+    base y centralizar los resultados encontrados durante el recorrido recursivo.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -123,7 +131,7 @@ class Scanner:
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """
-        Valida que la ruta esté dentro del árbol base, evitando escape de jerarquía.
+        Valida que la ruta sea un descendiente de base_root para contener el escaneo.
         """
         if not path_str or "\0" in path_str: return False
         try:
@@ -143,7 +151,6 @@ class Scanner:
             return False
         
         try:
-            # Verifica si es punto de reparse antes de cualquier otra lógica
             if self._is_reparse_point(entry):
                 return False
 

@@ -316,12 +316,14 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     Realiza validaciones de bajo nivel: nombres reservados, caracteres ilegales,
     conexiones de red (UNC) y límites de longitud definidos por Windows.
     """
-    if _has_invalid_chars(path_string) or _is_reserved_device_name(target_path.name):
-        raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
+    if _has_invalid_chars(path_string):
+        raise UnsafePathError("La ruta contiene caracteres inválidos o no soportados.")
+    if _is_reserved_device_name(target_path.name):
+        raise UnsafePathError(f"El nombre '{target_path.name}' es un dispositivo reservado por el sistema.")
     if path_string.startswith(("\\\\", "//")):
-        raise UnsafePathError("Rutas de red (UNC) no permitidas.")
+        raise UnsafePathError("Operación en rutas de red (UNC) bloqueada por seguridad.")
     if len(str(target_path)) >= MAX_PATH_LENGTH:
-        raise UnsafePathError("La ruta resultante excede la longitud máxima permitida.")
+        raise UnsafePathError(f"Ruta demasiado larga (límite {MAX_PATH_LENGTH} caracteres).")
 
 
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
@@ -330,13 +332,15 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
     acceder a la raíz de la unidad o interactuar con nodos de reparse.
     """
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
-        raise UnsafePathError("Operación fuera del directorio base permitido.")
+        raise UnsafePathError("La ruta objetivo está fuera del alcance definido por el usuario.")
     if is_within_directory(target_path, Path.cwd(), allow_equal=True):
-        raise UnsafePathError("Operación denegada en el directorio de ejecución.")
-    if is_drive_root(target_path) or is_protected_path(target_path):
-        raise UnsafePathError("Ruta de sistema protegida.")
+        raise UnsafePathError("No se permite modificar archivos en el directorio raíz de la aplicación.")
+    if is_drive_root(target_path):
+        raise UnsafePathError("Operación denegada: intento de acceso a la raíz de una unidad lógica.")
+    if is_protected_path(target_path):
+        raise UnsafePathError("Operación denegada: la ruta se encuentra en un directorio de sistema protegido.")
     if _is_reparse_point(target_path):
-        raise UnsafePathError("Seguridad denegada: nodo de reparse detectado.")
+        raise UnsafePathError("Seguridad denegada: nodo de reparse (junction/symlink) detectado.")
 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
@@ -367,20 +371,20 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
     if exists:
         if not (p.is_file() or p.is_dir()):
-            raise UnsafePathError("Tipo de archivo no soportado.")
+            raise UnsafePathError("Tipo de objeto no soportado para modificación.")
         try:
             if not os.access(p, os.W_OK):
-                raise UnsafePathError("Sin permisos de escritura en la ruta.")
+                raise UnsafePathError("No se dispone de permisos de escritura sobre el archivo.")
         except OSError:
-            raise UnsafePathError("Error al verificar permisos de acceso.")
+            raise UnsafePathError("Error de sistema al verificar permisos de acceso.")
         _check_file_integrity(p)
     else:
         # Validación preventiva para rutas no existentes
         if is_protected_path(p.parent):
-            raise UnsafePathError("Escritura bloqueada: directorio padre protegido.")
+            raise UnsafePathError("Escritura bloqueada: el directorio contenedor está protegido.")
     
     if not allow_sensitive and _is_sensitive_extension(p):
-        raise UnsafePathError("Extensión de archivo sensible.")
+        raise UnsafePathError(f"La extensión '{p.suffix}' está marcada como sensible.")
             
     return p
 
