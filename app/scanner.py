@@ -78,8 +78,9 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     El chequeo se realiza solo en las carpetas definidas en WATCHED_FOLDERS.
     """
     if not path: return None
-    path_str = str(path).lower()
-    if not any(f"\\{folder}\\" in path_str for folder in WATCHED_FOLDERS):
+    path_parts = path.parts
+    # Verificación eficiente: buscamos si alguna parte de la ruta coincide con las carpetas monitoreadas
+    if not any(part.lower() in WATCHED_FOLDERS for part in path_parts):
         return None
     try:
         # Usa os.DirEntry si está disponible para optimizar el acceso a metadatos

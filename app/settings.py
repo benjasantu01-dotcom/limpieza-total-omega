@@ -242,8 +242,9 @@ def validate(raw_values: Any) -> AppSettings:
     if not _is_dict(raw_values): return config
     for key_enum in ConfigKey:
         val = raw_values.get(key_enum.value)
-        if val is not None and key_enum in _VALIDATOR_MAP:
-            validated = _VALIDATOR_MAP[key_enum](key_enum, val)
+        validator = _VALIDATOR_MAP.get(key_enum)
+        if val is not None and validator:
+            validated = validator(key_enum, val)
             if validated is not None:
                 config[key_enum.value] = validated
     return config
@@ -252,8 +253,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     """Lee y valida el JSON de configuración desde disco, usando caché para minimizar I/O."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
+    
+    if not ruta.exists(): return DEFAULTS.copy()
+    
     try:
-        if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         if stats.st_size <= MAX_SETTINGS_SIZE:
             mtime = stats.st_mtime
@@ -314,8 +317,9 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     modified = False
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)
-        if key_enum and key_enum in _VALIDATOR_MAP:
-            val = _VALIDATOR_MAP[key_enum](key_enum, v)
+        validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
+        if validator:
+            val = validator(key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val
                 modified = True

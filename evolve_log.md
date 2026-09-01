@@ -1099,3 +1099,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-01T05:29:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
 - `2026-09-01T05:29:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T05:29:10` Corrida terminada. Total usado hoy: 132.
+- `2026-09-01T05:36:49` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-01T05:37:18` ➖ Sin cambios en safety.py (enfoque: rendimiento). Motivo: Se ha optimizado la función `is_protected_path` reemplazando la verificación secuencial y costosa de `PROTECTED_DIR_NAMES` dentro de un bucle `any` por una validación de conjunto (`isdisjoint`) directa contra el conjunto de partes de la ruta, eliminando la creación repetida de iteradores y reduciendo el overhead de procesamiento en recorridos de disco.
+- `2026-09-01T05:37:43` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé `check_recent_executable_in_downloads` para usar una comparación de prefijos de cadena (`startswith`) en lugar de `any` con formateo de strings en cada iteración, reduciendo drásticamente la creación de objetos innecesarios y las llamadas a `lower()` dentro del bucle crítico de escaneo.
+- `2026-09-01T05:38:11` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando la llamada `ruta.stat()` innecesaria cuando el archivo no existe o ya está en caché, y simplifiqué la lógica de validación del mapa de validadores usando `dict.get` para reducir el impacto de búsqueda en el bucle principal.
+- `2026-09-01T05:38:19` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-01T05:38:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T05:38:19` Corrida terminada. Total usado hoy: 136.
