@@ -200,7 +200,7 @@ def _sum_directory_recursive(
     Realiza un escaneo recursivo limitado por profundidad para calcular el peso en bytes.
     Utiliza memoización para evitar ciclos o re-cálculos en estructuras de directorios.
     """
-    if not isinstance(root_abs, str) or depth > MAX_SCAN_DEPTH:
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
     if root_abs in memo:
@@ -243,7 +243,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
     Punto de entrada público para obtener el tamaño (bytes) de una ruta.
     Valida la seguridad de la ruta antes de iniciar el escaneo recursivo.
     """
-    if not path or not isinstance(path, (str, Path)):
+    if path is None or not isinstance(path, (str, Path)):
         return 0
     try:
         p_res = Path(path).resolve(strict=True)

@@ -270,8 +270,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     
                     if entry.is_dir(follow_symlinks=False):
                         child_path = Path(entry.path)
-                        # Validar que no hay escape de directorio
-                        if not child_path.is_relative_to(root_path):
+                        try:
+                            if not child_path.is_relative_to(root_path):
+                                continue
+                        except ValueError:
                             continue
                                 
                         if skip_protected and is_protected_path(child_path):
@@ -391,12 +393,8 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         total_files += 1
         
         ext = path.suffix.lower() or "(sin extensión)"
-        if ext in ext_sizes:
-            ext_sizes[ext] += size
-            ext_counts[ext] += 1
-        else:
-            ext_sizes[ext] = size
-            ext_counts[ext] = 1
+        ext_sizes[ext] = ext_sizes.get(ext, 0) + size
+        ext_counts[ext] = ext_counts.get(ext, 0) + 1
         
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))
@@ -413,7 +411,10 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     if not p_input:
         return ["Error: Ruta no proporcionada, inexistente o formato inválido."]
             
-    data: SummaryData = _collect_summary_data(p_input, skip_protected)
+    try:
+        data: SummaryData = _collect_summary_data(p_input, skip_protected)
+    except Exception:
+        return ["Error: Fallo inesperado durante el análisis del disco."]
     
     if data.total_files == 0:
         return ["Aviso: No se encontraron archivos accesibles en la ruta especificada."]

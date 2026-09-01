@@ -612,13 +612,30 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
-            data = json.loads(raw_res.decode("utf-8"))
+            try:
+                data = json.loads(raw_res.decode("utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return None
+            
             if not isinstance(data, dict): return None
             
-            parts = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])
-            if not parts or "text" not in parts[0]: return None
+            # Verificación profunda de estructura de la API: candidates[0].content.parts[0].text
+            candidates = data.get("candidates")
+            if not isinstance(candidates, list) or not candidates: return None
             
-            raw_text = str(parts[0]["text"])
+            first_candidate = candidates[0]
+            if not isinstance(first_candidate, dict): return None
+            
+            content = first_candidate.get("content")
+            if not isinstance(content, dict): return None
+            
+            parts = content.get("parts")
+            if not isinstance(parts, list) or not parts: return None
+            
+            text_part = parts[0]
+            if not isinstance(text_part, dict) or "text" not in text_part: return None
+            
+            raw_text = str(text_part["text"])
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
@@ -626,7 +643,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if not _ensure_safe_text(final) or is_protected_path(final):
                 return None
             return final
-    except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+    except (urllib.error.URLError, OSError, KeyError, TypeError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
