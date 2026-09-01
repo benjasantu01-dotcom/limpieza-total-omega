@@ -78,7 +78,11 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     if not any(f"\\{folder}\\" in path_str for folder in WATCHED_FOLDERS):
         return None
     try:
-        stats = entry.stat(follow_symlinks=False) if entry else path.stat()
+        if entry and entry.is_file():
+            stats = entry.stat(follow_symlinks=False)
+        else:
+            stats = path.stat()
+            
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, ValueError, FileNotFoundError):

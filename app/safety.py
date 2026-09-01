@@ -360,12 +360,19 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    if p.exists() or os.path.lexists(p):
+    try:
+        exists = p.exists() or os.path.lexists(p)
+    except OSError:
+        raise UnsafePathError("Error al verificar existencia de ruta.")
+
+    if exists:
         if not (p.is_file() or p.is_dir()):
             raise UnsafePathError("Tipo de archivo no soportado.")
-        # Verificación final de permisos a nivel de sistema operativo
-        if not os.access(p, os.W_OK):
-            raise UnsafePathError("Sin permisos de escritura en la ruta.")
+        try:
+            if not os.access(p, os.W_OK):
+                raise UnsafePathError("Sin permisos de escritura en la ruta.")
+        except OSError:
+            raise UnsafePathError("Error al verificar permisos de acceso.")
         _check_file_integrity(p)
     else:
         # Validación preventiva para rutas no existentes
@@ -413,15 +420,18 @@ def describe_protection(path: PathLike) -> str:
     if raw_str.startswith(("\\\\", "//")): return f"'{raw_str}' es ruta de red."
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
     if is_protected_path(p): return f"'{p}' protegida por sistema."
-    if p.exists():
-        if len(str(p)) >= MAX_PATH_LENGTH: return f"'{p}' longitud excesiva."
-        if not os.access(p, os.W_OK): return f"'{p}' sin permisos de escritura."
-        if os.path.islink(p): return f"'{p}' es un enlace simbólico."
-        if os.path.ismount(p): return f"'{p}' es un punto de montaje."
-        if _is_readonly(p): return f"'{p}' es solo lectura."
-        if _is_file_in_use(str(p)): return f"'{p}' en uso por otro proceso."
-        if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema/offline."
-        if _has_alternate_data_stream(p): return f"'{p}' contiene ADS."
-        if p.is_file() and p.stat().st_size == 0: return f"'{p}' es un archivo vacío."
+    try:
+        if p.exists():
+            if len(str(p)) >= MAX_PATH_LENGTH: return f"'{p}' longitud excesiva."
+            if not os.access(p, os.W_OK): return f"'{p}' sin permisos de escritura."
+            if os.path.islink(p): return f"'{p}' es un enlace simbólico."
+            if os.path.ismount(p): return f"'{p}' es un punto de montaje."
+            if _is_readonly(p): return f"'{p}' es solo lectura."
+            if _is_file_in_use(str(p)): return f"'{p}' en uso por otro proceso."
+            if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema/offline."
+            if _has_alternate_data_stream(p): return f"'{p}' contiene ADS."
+            if p.is_file() and p.stat().st_size == 0: return f"'{p}' es un archivo vacío."
+    except OSError:
+        pass
     if _is_sensitive_extension(p): return f"'{p.name}' extensión sensible."
     return f"'{p}' es candidata a modificación."

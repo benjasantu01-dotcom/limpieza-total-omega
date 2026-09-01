@@ -326,6 +326,8 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     """Valida preventivamente si el dispositivo cuenta con suficiente espacio libre para albergar el nuevo ítem."""
+    if not os.access(dest_dir, os.W_OK):
+        raise PermissionError(f"Directorio sin permisos de escritura: {dest_dir}")
     usage = shutil.disk_usage(dest_dir)
     margin = max(int(required_size * 0.05), 5 * 1024 * 1024)
     if usage.free < (required_size + margin):
