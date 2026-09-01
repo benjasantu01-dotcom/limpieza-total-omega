@@ -242,17 +242,22 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """Escanea los directorios especificados en busca de archivos basura."""
+    if directories is not None and not isinstance(directories, list):
+        return []
+    
     search_dirs: List[Path] = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
     found: List[JunkFile] = []
     
     for d in search_dirs:
         try:
+            if not isinstance(d, (str, Path)):
+                continue
             path_obj: Path = Path(d).expanduser()
             if path_obj.exists():
                 resolved: Path = path_obj.resolve()
                 if not is_protected_path(resolved):
                     _process_directory(resolved, found)
-        except (OSError, RuntimeError):
+        except (OSError, RuntimeError, TypeError):
             continue
     return found
 

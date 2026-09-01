@@ -92,6 +92,16 @@ def ensure_safety(func):
         return func(*args, **kwargs)
     return wrapper
 
+def safe_ui_operation(func):
+    """Decorador para capturar errores de widgets que ocurren durante el cierre o redibujo."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except (tk.TclError, RuntimeError) as e:
+            logging.debug("Ignorando error de UI en %s: %s", func.__name__, e)
+    return wrapper
+
 # Validación de seguridad defensiva en el inicio
 try:
     safety.ensure_safe_to_modify(Path(".").resolve())
@@ -184,17 +194,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (tk.TclError, RuntimeError):
             pass
 
+    @safe_ui_operation
     def _safe_run_ui_callback(self, callback: Callable[[], None]) -> None:
-        """
-        Ejecuta una actualización de UI de forma segura mediante `after_idle`.
-        Verifica el flag `_closing` para evitar intentar redibujar componentes
-        en una ventana ya destruida o en proceso de cierre.
-        """
+        """Ejecuta una actualización de UI mediante `after_idle`."""
         if not self._closing:
-            try:
-                self.after_idle(callback)
-            except (tk.TclError, RuntimeError):
-                pass
+            self.after_idle(callback)
 
     def _validate_environment(self) -> None:
         """
@@ -261,34 +265,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
         self._debounces: Dict[str, str] = {}
         
+    @safe_ui_operation
     def _toggle_ui_availability(self, active: bool) -> None:
-        """
-        Alterna el estado de habilitación de todos los botones registrados
-        en la lista `_active_buttons` para prevenir entradas concurrentes 
-        durante la ejecución de tareas de E/S.
-        """
+        """Alterna el estado de habilitación de todos los botones registrados."""
         for btn in self._active_buttons:
-            try:
-                if btn.winfo_exists():
-                    btn.configure(state="normal" if active else "disabled")
-            except (tk.TclError, RuntimeError):
-                pass
+            if btn.winfo_exists():
+                btn.configure(state="normal" if active else "disabled")
 
+    @safe_ui_operation
     def _debounce_action(self, key: str, delay: int, callback: Callable[[], Any]) -> None:
-        """
-        Retrasa la ejecución de un callback para consolidar eventos rápidos 
-        evitando saturar el hilo principal con tareas redundantes.
-        """
+        """Retrasa la ejecución de un callback para consolidar eventos rápidos."""
         if key in self._debounces:
-            try:
-                self.after_cancel(self._debounces[key])
-            except (tk.TclError, Exception):
-                pass
+            self.after_cancel(self._debounces[key])
         if not self._closing:
-            try:
-                self._debounces[key] = self.after(delay, callback)
-            except (tk.TclError, RuntimeError):
-                pass
+            self._debounces[key] = self.after(delay, callback)
 
     def _create_styled_label(self, parent: ctk.CTk, text: str, style: str, **kwargs: Any) -> ctk.CTkLabel:
         """
@@ -410,17 +400,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         if constructor and tab_frame:
             try:
-                # Verificación de existencia del widget antes de construir
                 if tab_frame.winfo_exists():
                     constructor()
                     self._initialized_tabs[name] = True
             except Exception as e:
                 logging.error("Fallo crítico en el constructor de la pestaña %s: %s", name, e)
-                try:
-                    if tab_frame.winfo_exists():
-                        self._create_styled_label(tab_frame, f"Error cargando módulo: {type(e).__name__}", "caption").pack(padx=20, pady=20)
-                except (tk.TclError, RuntimeError):
-                    pass
 
     def _build_tabs_container(self) -> None:
         """Genera el contenedor de pestañas (tabview) e inicializa cada una."""
@@ -445,17 +429,14 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             
         self._tab_factory(TABS[0])
 
+    @safe_ui_operation
     def _on_tab_change(self, tab_label: str) -> None:
         """Callback al cambiar de pestaña para inicializar el contenido bajo demanda."""
         for original_name in TABS:
             if branding.tab_label(original_name) == tab_label:
                 tab_frame = self.tabs.get(original_name)
-                if tab_frame:
-                    try:
-                        if tab_frame.winfo_exists():
-                            self._tab_factory(original_name)
-                    except (tk.TclError, RuntimeError):
-                        pass
+                if tab_frame and tab_frame.winfo_exists():
+                    self._tab_factory(original_name)
                 break
 
     def _build_header(self) -> None:
@@ -587,22 +568,20 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Solicita el redibujo del medidor de salud central con debounce."""
         self._debounce_action("gauge", 50, lambda: self._render_gauge(score, grade))
 
+    @safe_ui_operation
     def _render_gauge(self, score: int, grade: str) -> None:
         """Dibuja el gráfico del medidor de salud en el lienzo especificado."""
-        try:
-            if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists():
-                return
-            
-            self.gauge.delete("all")
-            branding.draw_ring(self.gauge, score, size=176, thickness=15)
-            
-            color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
-            self.gauge.create_text(88, 78, text=str(score), fill=branding.score_color(score),
-                                   font=("Segoe UI", branding.font_size("display"), "bold"))
-            self.gauge.create_text(88, 116, text=f"nota {grade}", fill=color_nota,
-                                   font=("Segoe UI", branding.font_size("body"), "bold"))
-        except (tk.TclError, Exception):
-            pass
+        if self._closing or not hasattr(self, 'gauge') or not self.gauge.winfo_exists():
+            return
+        
+        self.gauge.delete("all")
+        branding.draw_ring(self.gauge, score, size=176, thickness=15)
+        
+        color_nota = branding.grade_color(grade) if grade != "-" else branding.color("text_dim")
+        self.gauge.create_text(88, 78, text=str(score), fill=branding.score_color(score),
+                                font=("Segoe UI", branding.font_size("display"), "bold"))
+        self.gauge.create_text(88, 116, text=f"nota {grade}", fill=color_nota,
+                                font=("Segoe UI", branding.font_size("body"), "bold"))
 
     @ensure_safety
     def _build_tab_limpieza(self) -> None:
@@ -960,6 +939,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._log_scheduled = True
                 self.after(50, self._flush_logs)
 
+    @safe_ui_operation
     def _flush_logs(self) -> None:
         """Vuelca la cola de mensajes acumulados en la interfaz visual consolidando por pestaña."""
         self._log_scheduled = False
@@ -970,7 +950,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             pendientes = self._log_queue
             self._log_queue = []
         
-        # Agrupar mensajes para reducir las llamadas a widget methods
         logs_por_tab: Dict[str, List[str]] = {}
         for tab, msg in pendientes:
             logs_por_tab.setdefault(tab, []).append(msg)
@@ -978,41 +957,30 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         for tab, msgs in logs_por_tab.items():
             box = self._box(tab)
             if box and box.winfo_exists():
-                try:
-                    box.insert("end", "\n".join(msgs) + "\n")
-                    box.see("end")
-                except tk.TclError:
-                    pass
+                box.insert("end", "\n".join(msgs) + "\n")
+                box.see("end")
 
+    @safe_ui_operation
     def clear(self, tab: str = "Limpieza") -> None:
         """Limpia todo el texto del log de la pestaña especificada."""
         box = self._box(tab)
-        if box:
-            try:
-                if box.winfo_exists():
-                    box.delete("1.0", "end")
-            except (tk.TclError, RuntimeError):
-                pass
+        if box and box.winfo_exists():
+            box.delete("1.0", "end")
 
+    @safe_ui_operation
     def set_status(self, text: str) -> None:
         """Actualiza el mensaje de estado en el pie de página."""
-        try:
-            if not self._closing and hasattr(self, 'status') and self.status.winfo_exists():
-                self.status.configure(text=text)
-        except (tk.TclError, RuntimeError):
-            pass
+        if not self._closing and hasattr(self, 'status') and self.status.winfo_exists():
+            self.status.configure(text=text)
 
+    @safe_ui_operation
     def log_lines(self, lines: List[str], tab: str) -> None:
         """Reemplaza el log de la pestaña con una lista de líneas nuevas."""
         self.clear(tab)
         box = self._box(tab)
-        if box:
-            try:
-                if box.winfo_exists():
-                    box.insert("1.0", "\n".join(lines))
-                    box.see("1.0")
-            except (tk.TclError, RuntimeError):
-                pass
+        if box and box.winfo_exists():
+            box.insert("1.0", "\n".join(lines))
+            box.see("1.0")
         self.report_data[tab.lower()] = list(lines)
 
     def _set_busy(self, busy: bool) -> None:
@@ -1147,7 +1115,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Reúne métricas de todos los módulos para calcular el puntaje global de salud."""
-        # Se utilizan los caches para evitar operaciones de I/O repetidas innecesarias
         hallazgos = self._get_cached("suspicions") or []
         arranque = self._get_cached("startup") or []
         junk = self._get_cached("junk") or []
@@ -1215,6 +1182,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Actualiza las etiquetas de las tarjetas de métricas."""
         self._debounce_action("update_cards", 100, lambda: self._apply_card_updates(junk_mb, sospechosos, ram_libre, disco_libre))
 
+    @safe_ui_operation
     def _apply_card_updates(self, junk_mb: float, sospechosos: int, ram_libre: float, disco_libre: float) -> None:
         """Aplica los cambios a las etiquetas de las tarjetas con verificación de estado."""
         if self._closing: return
@@ -1236,27 +1204,23 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             "disco": branding.score_color(disco_libre * 5),
         }
         for clave, label in self.cards.items():
-            try:
-                if label.winfo_exists():
-                    label.configure(text=valores[clave], text_color=colores[clave])
-            except (tk.TclError, RuntimeError):
-                pass
+            if label.winfo_exists():
+                label.configure(text=valores[clave], text_color=colores[clave])
 
+    @safe_ui_operation
     def _update_health_bars(self, resultado: healthscore.ScoreResult) -> None:
         """Actualiza las barras de progreso del desglose de salud."""
         for clave, (barra, label) in self.area_bars.items():
-            try:
-                if barra.winfo_exists():
-                    puntos = resultado.breakdown.get(clave, 0)
-                    maximo = healthscore.WEIGHTS.get(clave, 1)
-                    proporcion = puntos / maximo if maximo else 0
-                    c = branding.score_color(proporcion * 100)
-                    barra.configure(progress_color=c)
-                    barra.set(proporcion)
-                    label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
-            except (tk.TclError, RuntimeError):
-                pass
+            if barra.winfo_exists():
+                puntos = resultado.breakdown.get(clave, 0)
+                maximo = healthscore.WEIGHTS.get(clave, 1)
+                proporcion = puntos / maximo if maximo else 0
+                c = branding.score_color(proporcion * 100)
+                barra.configure(progress_color=c)
+                barra.set(proporcion)
+                label.configure(text=f"{puntos:.0f}/{maximo}", text_color=c)
 
+    @safe_ui_operation
     def on_target_choice_changed(self, choice: str) -> None:
         """Maneja el selector de destinos del escaneo."""
         if choice == "Elegir carpeta...":
@@ -1306,6 +1270,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
         self.run_async(task, check_safety=True, target=self.scan_target)
 
+    @safe_ui_operation
     def refresh_list(self) -> None:
         """Refresca el listado visual de basura según el filtro de orden."""
         junk = self._get_cached("junk") or []
@@ -1313,13 +1278,9 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
         box = self._box("Limpieza")
-        if box:
-            try:
-                if box.winfo_exists():
-                    box.delete("1.0", "end")
-                    box.insert("1.0", "\n".join(lines))
-            except (tk.TclError, RuntimeError):
-                pass
+        if box and box.winfo_exists():
+            box.delete("1.0", "end")
+            box.insert("1.0", "\n".join(lines))
 
     def on_stage(self) -> None:
         """Mueve los candidatos a revisión segura."""
@@ -1328,7 +1289,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
         
-        # Doble verificación: filtro por seguridad actual
         aptos = [jf for jf in junk if self._is_safe_path(jf.path)]
         
         if not aptos:
@@ -1343,13 +1303,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
-            # Re-verificar cada uno por seguridad en el hilo asíncrono
             movidos = [jf for jf in aptos if self._is_safe_path(jf.path)]
-            
             if not movidos:
                 self.log("Error: Los archivos ya no son seguros para mover.", "Limpieza")
                 return
-
             self.set_status("Moviendo a revisión...")
             dest = stage_for_review(movidos)
             self.log(f"Movidos {len(movidos)} archivos a: {dest}", "Limpieza")
@@ -1382,9 +1339,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status(f"Escaneando {folder}...")
             self.clear("Seguridad")
             self.log(f"Escaneo heurístico en: {folder}", "Seguridad")
-            
             results = scan_directory(folder)
-            
             self._invalidate_cache("suspicions")
             self._cache["suspicions"] = (results, time.time())
 
@@ -1427,9 +1382,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
         
-        # Doble verificación: filtro por seguridad actual
         aptos = [s for s in suspicions if self._is_safe_path(s.path)]
-        
         if not aptos:
             messagebox.showwarning("Nada que aislar", "Los archivos sospechosos se encuentran en rutas protegidas.")
             return
@@ -1446,7 +1399,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando archivos...")
             aislados = 0
             for item_s in suspicions:
-                # Verificación final de seguridad antes de cada movimiento
                 if self._is_safe_path(item_s.path):
                     item = quarantine.quarantine_file(item_s.path, reason="Marcado por escaneo heurístico")
                     self.log(f"Aislado [{item.item_id}] {item_s.path}", "Seguridad")
@@ -1678,7 +1630,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             conservar = duplicates_mod.suggest_keeper(grupo)
             a_mover.extend([p for p in grupo.paths if p != conservar])
 
-        # Doble verificación: filtrar solo lo que sigue siendo seguro
         aptos = [r for r in a_mover if self._is_safe_path(r)]
         
         if not aptos:
@@ -1696,7 +1647,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.set_status("Aislando copias duplicadas...")
             movidos = 0
             for ruta in aptos:
-                # Verificación final antes de cada movimiento
                 if self._is_safe_path(ruta):
                     quarantine.quarantine_file(ruta, reason="Copia duplicada")
                     movidos += 1
