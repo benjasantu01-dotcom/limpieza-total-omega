@@ -161,39 +161,31 @@ def _collect_candidates(
 ) -> Dict[int, List[Path]]:
     """
     Escaneo recursivo del sistema utilizando os.scandir, filtrando por tamaño mínimo
-    y evitando la recursión infinita en puntos de reparse.
+    y evitando la recursión infinita en puntos de reparse mediante identificadores de sistema (dev, ino).
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
-    visited_device_inodes: Set[Tuple[int, int]] = set()
-    visited_paths: Set[Path] = set()
+    visited_inodes: Set[Tuple[int, int]] = set()
 
     def _scan_recursive(current_dir: Path) -> None:
-        if current_dir in visited_paths:
-            return
-        visited_paths.add(current_dir)
-
         try:
+            stat_root = current_dir.stat()
+            inode = (stat_root.st_dev, stat_root.st_ino)
+            if inode in visited_inodes:
+                return
+            visited_inodes.add(inode)
+
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        entry_path = Path(entry.path)
-                        if is_protected_path(entry_path):
+                        if is_protected_path(Path(entry.path)):
                             continue
 
-                        stat = entry.stat(follow_symlinks=False)
-                        
-                        # Evitar seguir symlinks o puntos de reparse (Junctions)
-                        if entry.is_symlink() or (os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)):
-                            continue
-                        
-                        if entry.is_dir():
-                            dev_inode = (stat.st_dev, stat.st_ino)
-                            if dev_inode not in visited_device_inodes:
-                                visited_device_inodes.add(dev_inode)
-                                _scan_recursive(entry_path)
-                        elif entry.is_file() and stat.st_size >= min_size:
-                            if os.access(entry_path, os.R_OK):
-                                temp_map[int(stat.st_size)].append(entry_path)
+                        if entry.is_dir(follow_symlinks=False):
+                            _scan_recursive(Path(entry.path))
+                        elif entry.is_file(follow_symlinks=False):
+                            stat = entry.stat()
+                            if stat.st_size >= min_size:
+                                temp_map[int(stat.st_size)].append(Path(entry.path))
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

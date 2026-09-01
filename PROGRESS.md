@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **237** (47.0% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 39
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 204
 
@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 121 | 6 | 20 | 8 | 121 |
-| 2026-09-01 | 115 | 5 | 19 | 6 | 83 |
+| 2026-08-31 | 119 | 6 | 19 | 8 | 120 |
+| 2026-09-01 | 118 | 5 | 19 | 6 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **52**
-- robustez ante casos límite: **38**
-- rendimiento: **34**
+- rendimiento: **37**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
-- `quarantine.py`: **21**
+- `browser.py`: **21**
 - `scanner.py`: **20**
-- `browser.py`: **20**
+- `duplicates.py`: **20**
+- `quarantine.py`: **20**
 - `settings.py`: **20**
-- `duplicates.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
 - `organizer.py`: **18**
-- `safety.py`: **16**
 - `memory.py`: **16**
+- `safety.py`: **15**
 - `healthscore.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **9**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T09:43:10` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para reducir drásticamente el uso de memoria y las syscalls innecesarias al sustituir `visited_paths` (set de objetos `Path` pesados) por un set de tuplas `(dev, ino)` (st_dev, st_ino) que identifica unívocamente archivos y directorios a nivel de sistema de archivos, mejorando la detección de ciclos y la eficiencia del escaneo.
+- `2026-09-01T09:42:45` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` para evitar el uso de `dict.get` dentro del bucle principal, reemplazándolo por `defaultdict` para reducir la sobrecarga de consultas y mejorar la velocidad de procesamiento en directorios con miles de archivos.
+- `2026-09-01T09:42:18` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo introduciendo un caché local (`perf_cache`) compartido entre todas las rutas de un mismo navegador, evitando re-procesar subdirectorios comunes (ej. `User Data`) que son compartidos por múltiples entradas de caché.
 - `2026-09-01T09:35:17` **assistant.py** (rendimiento): Se implementó un `lru_cache` en `context_as_text` para evitar la serialización y formateo repetitivo del contexto en cada interacción, mejorando el rendimiento en el bucle de consultas.
 - `2026-09-01T09:33:36` **startup.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el docstring de la clase `StartupEntry` y se añadieron *type hints* faltantes en los métodos de resolución de rutas para mejorar la claridad sobre las expectativas de datos y la robustez del manejo de errores.
 - `2026-09-01T09:32:23` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings descriptivos en las funciones principales para clarificar las responsabilidades de validación y persistencia, mejorando la legibilidad técnica del módulo sin alterar su lógica.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T09:03:37` **diskreport.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `walk_files` y `largest_folders` mediante la adición de Type Hints explícitos, documentación de parámetros críticos y la simplificación de la lógica de recorrido, asegurando que las asunciones sobre el sistema de archivos sean claras para futuros desarrolladores.
 - `2026-09-01T09:03:07` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados y detallados en las funciones de escaneo recursivo y validación de seguridad, explicando el propósito de los filtros de control y el manejo de los puntos de reparse, facilitando así la auditoría del código.
 - `2026-09-01T09:02:40` **branding.py** (legibilidad y documentación): Documenté con docstrings detallados los tipos de entrada, valores esperados y comportamientos ante errores en las funciones críticas de renderizado, facilitando el mantenimiento y la comprensión de la lógica geométrica.
-- `2026-09-01T08:53:06` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de evaluación en `assistant.py` al extraer la validación de condiciones de `ProblemCriterion` hacia un método privado más claro, facilitando la auditoría de seguridad del código.
-- `2026-09-01T08:52:46` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `entries_from_folders` mediante un manejo de errores más específico y defensivo, asegurando que el uso de `os.scandir` no falle ante rutas con permisos restringidos o sistemas de archivos inaccesibles, evitando así abortar la recolección completa.
-- `2026-09-01T08:52:18` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `save()` y `load()` añadiendo validaciones de tipo explícitas para `ruta.stat().st_mtime` y evitando el uso de atributos potencialmente inexistentes o inválidos al interactuar con el sistema de archivos, siguiendo el enfoque de prevenir errores de tiempo de ejecución mediante validación preventiva.

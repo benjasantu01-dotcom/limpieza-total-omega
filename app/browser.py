@@ -197,11 +197,7 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño de un directorio mediante escaneo recursivo.
-    
-    Implementa control de profundidad para evitar recursiones infinitas y utiliza
-    un diccionario `memo` para cachear resultados intermedios. Valida mediante
-    `_is_safe_to_traverse` que cada subdirectorio sea seguro y pertenezca a la base.
+    Calcula el tamaño de un directorio mediante escaneo recursivo con memoización.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -210,7 +206,6 @@ def _sum_directory_recursive(
         return memo[root_abs]
 
     root_path = Path(root_abs)
-    # Pre-filtrado preventivo antes de procesar hijos
     if is_protected_path(root_path) or not _is_safe_to_traverse(root_path, base_check_path):
         return 0
 
@@ -223,12 +218,9 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        path_obj = Path(entry.path)
-                        # Validamos seguridad estricta para el subdirectorio hijo
-                        if _is_safe_to_traverse(path_obj, base_check_path):
-                            total += _sum_directory_recursive(
-                                entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
-                            )
+                        total += _sum_directory_recursive(
+                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
+                        )
                     elif entry.is_file(follow_symlinks=False):
                         stats = entry.stat(follow_symlinks=False)
                         total += stats.st_size
@@ -244,7 +236,6 @@ def _sum_directory_recursive(
 def directory_size(path: Union[str, Path, None]) -> int:
     """
     Punto de entrada público para obtener el tamaño (bytes) de una ruta.
-    Valida la seguridad de la ruta antes de iniciar el escaneo recursivo.
     """
     if path is None or not isinstance(path, (str, Path)):
         return 0
@@ -259,11 +250,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Verifica que la ruta candidata a ser caché sea real y no contenga elementos que
-    vulneren la integridad del sistema o violen el encapsulamiento de datos privados.
-    
-    Comprueba existencia física, asegura que no sea un punto de reparse/enlace simbólico
-    y valida contra el listado de exclusión NEVER_TOUCH.
+    Verifica que la ruta candidata sea segura y exista.
     """
     try:
         if not candidate.exists():
@@ -284,8 +271,8 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea las rutas definidas en 'cache_paths' relativas a 'bases'.
-    Retorna una lista de objetos 'BrowserCache' ordenados por peso.
+    Escanea las rutas definidas en 'cache_paths'. Utiliza un caché de memoria 
+    compartido entre navegadores para evitar procesar subdirectorios comunes varias veces.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -294,6 +281,7 @@ def detect_profiles(
         return []
     
     k32 = _get_kernel32()
+    # Cache compartido para evitar recalculos de subdirectorios
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
@@ -308,6 +296,7 @@ def detect_profiles(
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     c_path = candidate.resolve()
+                    # El diccionario perf_cache persiste a lo largo del loop, acelerando subdirectorios compartidos
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))

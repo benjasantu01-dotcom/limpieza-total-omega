@@ -464,3 +464,10 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T09:36:16` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: color
 - `2026-09-01T09:36:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T09:36:16` Corrida terminada. Total usado hoy: 228.
+- `2026-09-01T09:41:50` Arrancando corrida. Quedan hoy ~72 peticiones objetivo.
+- `2026-09-01T09:42:18` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimicé el rendimiento del escaneo recursivo introduciendo un caché local (`perf_cache`) compartido entre todas las rutas de un mismo navegador, evitando re-procesar subdirectorios comunes (ej. `User Data`) que son compartidos por múltiples entradas de caché.
+- `2026-09-01T09:42:45` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé `_collect_summary_data` para evitar el uso de `dict.get` dentro del bucle principal, reemplazándolo por `defaultdict` para reducir la sobrecarga de consultas y mejorar la velocidad de procesamiento en directorios con miles de archivos.
+- `2026-09-01T09:43:10` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé `_collect_candidates` para reducir drásticamente el uso de memoria y las syscalls innecesarias al sustituir `visited_paths` (set de objetos `Path` pesados) por un set de tuplas `(dev, ino)` (st_dev, st_ino) que identifica unívocamente archivos y directorios a nivel de sistema de archivos, mejorando la detección de ciclos y la eficiencia del escaneo.
+- `2026-09-01T09:43:18` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-01T09:43:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T09:43:18` Corrida terminada. Total usado hoy: 232.
