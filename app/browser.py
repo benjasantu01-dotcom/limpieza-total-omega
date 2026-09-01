@@ -179,7 +179,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     y verifica opcionalmente que la ruta sea descendiente del directorio base legítimo.
     """
     try:
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+        if not path_obj.exists() or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return False
         if base_check_path and not _is_path_inside_base(path_obj.resolve(strict=True), base_check_path):
             return False
@@ -202,8 +202,11 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
-    # Validar integridad de la ruta contra la base antes de acceder
-    root_path = Path(root_abs).resolve(strict=True)
+    try:
+        root_path = Path(root_abs).resolve(strict=True)
+    except (OSError, RuntimeError):
+        return 0
+
     if not _is_safe_to_traverse(root_path, base_check_path):
         return 0
 
