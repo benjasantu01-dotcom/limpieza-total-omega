@@ -579,7 +579,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 def _build_payload(question: str, context_text: str) -> bytes:
     """Construye el cuerpo de la solicitud JSON de forma segura."""
     prompt = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {question}"
-    return json.dumps({"contents": [{"parts": [{"text": prompt}]}]}).encode("utf-8")
+    return json.dumps({"contents": [{"parts": [{"text": str(prompt)}]}]}).encode("utf-8")
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Invoca la API de Gemini realizando validaciones de seguridad rigurosas."""
@@ -635,7 +635,9 @@ def ask(question: str, context: Optional[SystemContext] = None,
     if not available(base): return respaldo
     
     try:
-        cfg = _parse_config(settings.load(base))
+        settings_data = settings.load(base)
+        cfg = _parse_config(settings_data)
+        
         texto_contexto = context_as_text(ctx) if cfg.allow_metrics else "El usuario no autorizó enviar métricas."
         remoto = _call_gemini(question, texto_contexto, cfg.api_key, cfg.model)
         

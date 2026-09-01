@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 204
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 36 | 4 | 6 | 4 | 16 |
+| 2026-08-30 | 33 | 4 | 6 | 3 | 16 |
 | 2026-08-31 | 152 | 10 | 27 | 11 | 150 |
-| 2026-09-01 | 38 | 2 | 7 | 3 | 38 |
+| 2026-09-01 | 39 | 2 | 7 | 3 | 41 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **48**
+- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **43**
-- manejo de errores y validación de entradas: **43**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **20**
+- `assistant.py`: **21**
 - `scanner.py`: **20**
 - `settings.py`: **20**
-- `assistant.py`: **20**
 - `browser.py`: **20**
+- `duplicates.py`: **19**
 - `memory.py`: **18**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
 - `organizer.py`: **17**
-- `diskreport.py`: **16**
 - `safety.py`: **16**
+- `healthscore.py`: **16**
+- `diskreport.py`: **15**
 - `branding.py`: **12**
 - `main.py`: **7**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T03:48:15` **assistant.py** (manejo de errores y validación de entradas): Reforcé el manejo de errores en `ask()` para prevenir bloqueos silenciosos ante configuraciones corruptas y añadí validaciones de tipo explícitas en `_parse_config` y `_build_payload`, evitando que valores inesperados rompan el flujo.
 - `2026-09-01T02:33:40` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_resolve_and_cache_path` añadiendo una comprobación explícita para evitar rutas que contienen puntos de reparse (reparse points) mediante la inspección de atributos de archivo antes de cualquier procesamiento adicional, asegurando que la herramienta no siga accidentalmente enlaces o junctions fuera del árbol esperado durante la resolución.
 - `2026-09-01T02:24:40` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que ni siquiera el archivo de configuración pueda ubicarse en una zona crítica del sistema.
 - `2026-09-01T02:24:19` **scanner.py** (seguridad defensiva): Se ha robustecido `_is_safe_entry` y la lógica de escaneo para validar estrictamente que la ruta no sea un enlace simbólico o un junction (punto de reparse) antes de procesar su contenido, previniendo el desbordamiento de límites de seguridad o ciclos infinitos fuera de la jerarquía permitida.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T01:43:53` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `scanner.py` al añadir un chequeo de existencia de archivo dentro de `process_entry` antes de realizar operaciones de metadatos, evitando excepciones `FileNotFoundError` causadas por archivos que se eliminan o desplazan por procesos externos entre la iteración de `os.scandir` y el procesamiento heurístico.
 - `2026-09-01T01:43:42` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante errores de sistema al implementar un manejo más estricto de excepciones `OSError` durante la consulta de atributos de archivos, previniendo que llamadas fallidas a `lstat` o `stat` provoquen estados inconsistentes en la validación de integridad.
 - `2026-09-01T01:42:47` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y permisos en `_safe_unlink` y `purge_all` para prevenir errores durante la limpieza, asegurando que solo se intente eliminar el archivo si es posible acceder a él de forma exclusiva, mejorando la robustez ante bloqueos inesperados del sistema de archivos.
-- `2026-09-01T01:33:55` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` añadiendo una verificación explícita de `PROCESS_QUERY_LIMITED_INFORMATION` y manejando correctamente posibles errores de acceso denegado (Access Denied) al abrir procesos, evitando cierres inesperados de handles.
