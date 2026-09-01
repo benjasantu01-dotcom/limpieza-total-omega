@@ -49,6 +49,7 @@ RESERVED_NAMES_RE: Final[re.Pattern] = re.compile(r"^(CON|PRN|AUX|NUL|COM[1-9]|L
 # Conjuntos de constantes para comparación rápida
 SUSPICIOUS_EXECUTABLE_EXT: Final[frozenset[str]] = frozenset({".exe", ".scr", ".bat", ".cmd", ".js", ".vbs", ".ps1"})
 SUSPICIOUS_CONTENT_EXT: Final[frozenset[str]] = frozenset({".pdf"})
+SUSPICIOUS_ALL_EXTS: Final[frozenset[str]] = SUSPICIOUS_EXECUTABLE_EXT.union(SUSPICIOUS_CONTENT_EXT)
 SYSTEM_LOOKALIKES: Final[frozenset[str]] = frozenset({"svchost.exe", "explorer.exe", "csrss.exe", "winlogon.exe", "lsass.exe"})
 WATCHED_FOLDERS: Final[frozenset[str]] = frozenset({"downloads", "temp", "desktop"})
 
@@ -78,12 +79,10 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     son vectores de entrada comunes. Usa 'now_ts' para evitar llamadas a reloj de sistema.
     """
     if not path: return None
-    path_parts = path.parts
-    # Verificación eficiente: buscamos si alguna parte de la ruta coincide con las carpetas monitoreadas
-    if not any(part.lower() in WATCHED_FOLDERS for part in path_parts):
+    # Verificación eficiente: intersectamos las partes de la ruta con el conjunto pre-cargado
+    if not (WATCHED_FOLDERS & {p.lower() for p in path.parts}):
         return None
     try:
-        # Usa os.DirEntry si está disponible para optimizar el acceso a metadatos
         if entry and entry.is_file():
             stats = entry.stat(follow_symlinks=False)
         else:
@@ -192,12 +191,11 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                file_stat = entry.stat(follow_symlinks=False)
-                if file_stat.st_size == 0: return
-                
                 ext_low = Path(entry.name).suffix.lower()
-                if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low in SUSPICIOUS_CONTENT_EXT:
-                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
+                if ext_low in SUSPICIOUS_ALL_EXTS:
+                    file_stat = entry.stat(follow_symlinks=False)
+                    if file_stat.st_size > 0:
+                        self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError, FileNotFoundError):
             logger.debug(f"Acceso denegado o archivo inaccesible: {entry.path}")
 

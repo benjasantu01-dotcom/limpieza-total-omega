@@ -349,14 +349,15 @@ def get(key: str, custom_base: PathLike | None = None) -> Any:
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
     """Obtiene la clave API, priorizando la variable de entorno sobre el archivo local."""
-    env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
-    return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
+    if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip():
+        return env_key
+    return load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
     """Verifica si el asistente tiene los permisos y la configuración necesaria para operar."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
-    return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", "").strip())
+    return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
     """Genera una representación textual formateada de la configuración para informes."""

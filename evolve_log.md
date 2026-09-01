@@ -478,3 +478,11 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T09:54:48` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de la cuarentena y la gestión del manifiesto convirtiendo `list_items` para que trabaje sobre los datos crudos del caché, evitando así la sobrecarga de instanciar objetos `QuarantineItem` innecesarios para operaciones de solo lectura.
 - `2026-09-01T09:54:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T09:54:48` Corrida terminada. Total usado hoy: 236.
+- `2026-09-01T10:02:16` Arrancando corrida. Quedan hoy ~64 peticiones objetivo.
+- `2026-09-01T10:02:36` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-01T10:03:10` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-01T10:03:39` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-09-01T10:04:04` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la detección de carpetas monitoreadas y la validación de extensiones utilizando `frozenset` y pre-cálculos para evitar iteraciones redundantes y llamadas a métodos `lower()` costosas dentro del bucle principal del escáner.
+- `2026-09-01T10:04:19` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a los datos de configuración transformando `_VALIDATOR_MAP` y las colecciones de validación en constantes más eficientes y reduciendo la redundancia de las llamadas a `load()` en funciones de uso frecuente como `assistant_api_key` y `assistant_enabled`, evitando recrear diccionarios innecesariamente.
+- `2026-09-01T10:04:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T10:04:19` Corrida terminada. Total usado hoy: 240.
