@@ -227,7 +227,7 @@ def _check_file_integrity(path: Path) -> None:
             if rule.predicate(path, file_stat):
                 _INTEGRITY_CACHE[path_key] = (now, False)
                 raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
-        except OSError:
+        except (OSError, AttributeError):
             continue
             
     _INTEGRITY_CACHE[path_key] = (now, True)

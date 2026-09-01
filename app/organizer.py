@@ -248,7 +248,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             if not isinstance(d, (str, Path)):
                 continue
             path_obj: Path = Path(d).expanduser()
-            if path_obj.exists():
+            if path_obj.exists() and path_obj.is_dir():
                 resolved: Path = path_obj.resolve()
                 if not is_protected_path(resolved):
                     _process_directory(resolved, found)

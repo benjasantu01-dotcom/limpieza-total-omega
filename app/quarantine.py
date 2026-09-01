@@ -421,6 +421,8 @@ def quarantine_file(
         
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
+    # Marcador para revertir si la actualización del manifiesto falla
+    operation_succeeded = False
     try:
         base_path = quarantine_dir(base)
         m_path = _manifest_path(base_path)
@@ -448,14 +450,14 @@ def quarantine_file(
             and post_stat.st_size == original_size
             and not _is_file_locked(source_path)):
             source_path.unlink()
+            operation_succeeded = True
         else:
             raise RuntimeError("La integridad falló o el archivo origen fue alterado durante el proceso.")
             
         return quarantine_item
-    except (OSError, RuntimeError) as e:
-        if destination.exists():
+    finally:
+        if not operation_succeeded and destination.exists():
             _safe_unlink(destination)
-        raise RuntimeError(f"Error fatal durante finalización de aislamiento: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
