@@ -471,3 +471,10 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T09:43:18` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
 - `2026-09-01T09:43:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T09:43:18` Corrida terminada. Total usado hoy: 232.
+- `2026-09-01T09:52:03` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-01T09:53:14` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el manejo de la memoria y la capacidad de respuesta de la UI implementando una invalidación de caché más granular para `junk` y `dups` (usando el prefijo del caché para limpiar selectivamente solo lo relevante), evitando así el re-procesamiento innecesario de otras métricas durante análisis parciales.
+- `2026-09-01T09:53:43` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la lógica de filtrado compleja en PowerShell por una cadena de comandos más eficiente y reduciendo la carga de datos innecesarios a través del pipeline, manteniendo el cacheo.
+- `2026-09-01T09:54:08` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-01T09:54:48` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño de la cuarentena y la gestión del manifiesto convirtiendo `list_items` para que trabaje sobre los datos crudos del caché, evitando así la sobrecarga de instanciar objetos `QuarantineItem` innecesarios para operaciones de solo lectura.
+- `2026-09-01T09:54:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T09:54:48` Corrida terminada. Total usado hoy: 236.

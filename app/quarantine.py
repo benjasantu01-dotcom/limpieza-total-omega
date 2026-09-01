@@ -91,7 +91,7 @@ class QuarantineItem:
         return round(self.size_bytes / (1024 * 1024), 2)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convierte los datos del ítem a un diccionario plano para serialización JSON."""
+        """Conviertie los datos del ítem a un diccionario plano para serialización JSON."""
         return asdict(self)
 
     @classmethod
@@ -458,6 +458,7 @@ def quarantine_file(
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
     """Retorna la lista de ítems en cuarentena, ordenados del más reciente al más antiguo."""
+    # Nota: load_manifest ya instancia los objetos, manteniendo eficiencia vía el cache de raw.
     return sorted(load_manifest(base), key=lambda item: item.quarantined_at, reverse=True)
 
 
@@ -570,8 +571,9 @@ def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> 
     """Calcula el espacio total ocupado por los archivos en cuarentena leyendo el manifiesto crudo."""
     base_path = quarantine_dir(base)
     mtime = _manifest_path(base_path).stat().st_mtime if _manifest_path(base_path).exists() else 0.0
+    # Acceso directo al cache, sin instanciar objetos QuarantineItem
     raw_data = _load_manifest_raw(str(base_path), mtime)
-    return sum(d.get("size_bytes", 0) for d in raw_data if isinstance(d, dict))
+    return sum(int(d.get("size_bytes", 0)) for d in raw_data if isinstance(d, dict))
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
