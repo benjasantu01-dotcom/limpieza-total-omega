@@ -305,11 +305,10 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
     
-    MAX_PATH = 4096
-    size = ctypes.c_ulong(MAX_PATH)
-    buf = ctypes.create_unicode_buffer(MAX_PATH)
+    size = ctypes.c_ulong(4096)
+    buf = ctypes.create_unicode_buffer(4096)
     try:
-        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, ctypes.byref(buf), ctypes.byref(size)) > 0:
+        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError, ValueError): pass
     return None

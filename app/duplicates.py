@@ -68,17 +68,12 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de memoria constante.
-    
-    Args:
-        path: Ruta del archivo a procesar.
-        chunk_size: Tamaño del buffer para lectura secuencial.
-    Returns:
-        Hexdigest del archivo o None si no es accesible.
     """
-    path_obj = Path(path)
-    if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
-        return None
     try:
+        path_obj = Path(path)
+        if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
+            return None
+        
         digest = hashlib.sha256()
         with open(path_obj, "rb") as f:
             while True:
@@ -87,7 +82,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -95,15 +90,17 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     Genera una huella dactilar rápida leyendo solo el inicio del archivo.
     """
-    path_obj = Path(path)
-    if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
-        return None
     try:
+        path_obj = Path(path)
+        if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
+            return None
+        
         with open(path_obj, "rb") as f:
             content = f.read(read_bytes)
-            if not content: return None
+            if not content:
+                return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError, ValueError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -216,7 +213,6 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     
-    # Solo procesamos los subgrupos que tienen colisiones de hash parcial
     for subset in partial_results.values():
         full_hash_groups = _group_paths_by_hash(subset, hash_file)
         final_groups.update(full_hash_groups)

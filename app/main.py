@@ -1743,6 +1743,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         try:
             if value is None:
                 return default
+            # Aseguramos que sea string, limpiamos y convertimos
             val = int(str(value).strip())
             return val if val > 0 else default
         except (ValueError, TypeError):

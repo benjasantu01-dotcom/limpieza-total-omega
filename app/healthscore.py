@@ -221,7 +221,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             try:
                 if rule.check(metrics, ratio):
                     recommendations.append(rule.message_factory(metrics))
-            except Exception:
+            except (AttributeError, TypeError, ValueError):
                 continue
     
     final_score = int(_clamp(total_pts, 0.0, 100.0))
