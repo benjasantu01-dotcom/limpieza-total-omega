@@ -228,9 +228,9 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 }
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
+    """Resuelve la ubicación del archivo de configuración, priorizando el directorio base personalizado."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve()
-    # Asegurar que el destino esté bajo el directorio de usuario base o sea seguro
     if _Validators._is_safe_path(str(base)):
         try:
             return base / SETTINGS_FILE
@@ -239,6 +239,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
+    """Valida y normaliza un diccionario crudo contra DEFAULTS, eliminando valores inválidos."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_enum in ConfigKey:
@@ -277,7 +278,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste los ajustes validados de forma atómica usando un archivo temporal."""
+    """Persiste los ajustes validados de forma atómica y actualiza la caché interna."""
     if not _is_dict(values): return None
     cleaned_settings = validate(values)
     
@@ -323,6 +324,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
+    """Aplica cambios parciales y guarda el resultado si hubo modificaciones reales."""
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
@@ -337,22 +339,27 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
+    """Restaura la configuración a los valores definidos en DEFAULTS."""
     save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
+    """Recupera un valor específico de la configuración actual."""
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
+    """Obtiene la clave API, priorizando la variable de entorno sobre el archivo local."""
     env_key = os.environ.get(API_KEY_ENV_VAR, "").strip()
     return env_key if env_key else load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
+    """Verifica si el asistente tiene los permisos y la configuración necesaria para operar."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado", False)) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
+    """Genera una representación textual formateada de la configuración para informes."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = current.get("asistente_clave_api", "").strip()

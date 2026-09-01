@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 15
+- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 39
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 123 | 7 | 20 | 9 | 121 |
-| 2026-09-01 | 112 | 5 | 18 | 6 | 83 |
+| 2026-08-31 | 121 | 6 | 20 | 8 | 121 |
+| 2026-09-01 | 115 | 5 | 19 | 6 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **55**
-- legibilidad y documentación: **55**
 - seguridad defensiva: **52**
-- robustez ante casos límite: **40**
-- rendimiento: **33**
+- robustez ante casos límite: **38**
+- rendimiento: **34**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **23**
+- `assistant.py`: **24**
 - `quarantine.py`: **21**
 - `scanner.py`: **20**
 - `browser.py`: **20**
+- `settings.py`: **20**
 - `duplicates.py`: **19**
-- `settings.py`: **19**
 - `diskreport.py`: **18**
 - `organizer.py`: **18**
-- `memory.py`: **17**
 - `safety.py`: **16**
-- `healthscore.py`: **15**
+- `memory.py`: **16**
+- `healthscore.py`: **14**
 - `branding.py`: **12**
+- `startup.py`: **9**
 - `main.py`: **9**
-- `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T09:35:17` **assistant.py** (rendimiento): Se implementó un `lru_cache` en `context_as_text` para evitar la serialización y formateo repetitivo del contexto en cada interacción, mejorando el rendimiento en el bucle de consultas.
+- `2026-09-01T09:33:36` **startup.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el docstring de la clase `StartupEntry` y se añadieron *type hints* faltantes en los métodos de resolución de rutas para mejorar la claridad sobre las expectativas de datos y la robustez del manejo de errores.
+- `2026-09-01T09:32:23` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings descriptivos en las funciones principales para clarificar las responsabilidades de validación y persistencia, mejorando la legibilidad técnica del módulo sin alterar su lógica.
 - `2026-09-01T09:22:54` **scanner.py** (legibilidad y documentación): Mejoré la documentación de las funciones de chequeo heurístico y añadí type hints explícitos para clarificar el flujo de datos, siguiendo las directrices de legibilidad sin alterar la lógica de escaneo.
 - `2026-09-01T09:21:58` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings de estilo Google Style en las funciones clave para clarificar las precondiciones, excepciones que pueden lanzarse y el propósito del flujo de datos, mejorando la legibilidad técnica sin alterar la lógica.
 - `2026-09-01T09:13:31` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (Google Style) que explicitan las precondiciones, responsabilidades y el "porqué" de las validaciones críticas, facilitando el mantenimiento y la auditoría del flujo de seguridad.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T08:53:06` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de la lógica de evaluación en `assistant.py` al extraer la validación de condiciones de `ProblemCriterion` hacia un método privado más claro, facilitando la auditoría de seguridad del código.
 - `2026-09-01T08:52:46` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `entries_from_folders` mediante un manejo de errores más específico y defensivo, asegurando que el uso de `os.scandir` no falle ante rutas con permisos restringidos o sistemas de archivos inaccesibles, evitando así abortar la recolección completa.
 - `2026-09-01T08:52:18` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de archivos en `save()` y `load()` añadiendo validaciones de tipo explícitas para `ruta.stat().st_mtime` y evitando el uso de atributos potencialmente inexistentes o inválidos al interactuar con el sistema de archivos, siguiendo el enfoque de prevenir errores de tiempo de ejecución mediante validación preventiva.
-- `2026-09-01T08:43:01` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, asegurando que `p.exists()` se gestione con un `try-except` más específico y validando que el objeto sea un archivo o directorio antes de ejecutar los cheques de integridad, evitando errores de `AttributeError` en dispositivos especiales.
-- `2026-09-01T08:42:06` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la lógica de manipulación de archivos en un bloque `try...finally` para asegurar que el archivo original no se elimine si ocurre una excepción inesperada durante la actualización del manifiesto o la verificación final, garantizando la atomicidad de la operación.
-- `2026-09-01T08:40:58` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `scan_for_junk` añadiendo validaciones preventivas sobre los parámetros de entrada y normalizando el manejo de excepciones para evitar la propagación de fallos cuando se intenta acceder a rutas inválidas, asegurando que la función siempre retorne una lista consistente en lugar de abortar silenciosamente o lanzar errores no capturados.

@@ -454,3 +454,13 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T09:22:54` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación de las funciones de chequeo heurístico y añadí type hints explícitos para clarificar el flujo de datos, siguiendo las directrices de legibilidad sin alterar la lógica de escaneo.
 - `2026-09-01T09:22:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T09:22:54` Corrida terminada. Total usado hoy: 224.
+- `2026-09-01T09:31:38` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-09-01T09:32:23` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y docstrings descriptivos en las funciones principales para clarificar las responsabilidades de validación y persistencia, mejorando la legibilidad técnica del módulo sin alterar su lógica.
+- `2026-09-01T09:32:55` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-01T09:33:36` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujo documentación técnica detallada en el docstring de la clase `StartupEntry` y se añadieron *type hints* faltantes en los métodos de resolución de rutas para mejorar la claridad sobre las expectativas de datos y la robustez del manejo de errores.
+- `2026-09-01T09:34:36` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-01T09:35:17` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se implementó un `lru_cache` en `context_as_text` para evitar la serialización y formateo repetitivo del contexto en cada interacción, mejorando el rendimiento en el bucle de consultas.
+- `2026-09-01T09:35:57` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-01T09:36:16` 🛑 Propuesta bloqueada por la guardia en branding.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: color
+- `2026-09-01T09:36:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T09:36:16` Corrida terminada. Total usado hoy: 228.

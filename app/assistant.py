@@ -256,7 +256,7 @@ class SystemContext:
 
     def __hash__(self) -> int:
         """Permite usar el contexto como clave en caches, basándose en su estado actual."""
-        return hash((self.score, self.junk_mb, self.suspicious_count, self.startup_count))
+        return hash((self.score, self.junk_mb, self.suspicious_count, self.startup_count, self.memory_available_percent, self.disk_free_percent))
 
     @property
     def is_valid_structure(self) -> bool:
@@ -386,6 +386,11 @@ def _generate_context_lines(ctx: SystemContext) -> Iterator[str]:
     yield f"Duplicados: {_fmt_metric_sanitized(ctx.duplicate_mb, ' MB')}"
     yield f"Inicio: {_fmt_metric_sanitized(ctx.startup_count)} items"
 
+@lru_cache(maxsize=4)
+def _cached_context_as_text(context: SystemContext) -> str:
+    """Serialización en caché del contexto para mejorar el rendimiento del motor remoto."""
+    return "\n".join(_generate_context_lines(context))
+
 def context_as_text(context: SystemContext) -> str:
     """
     Serializa el estado del sistema en un formato de texto plano y seguro para el consumo
@@ -394,7 +399,7 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
         return "No hay métricas disponibles todavía."
     try:
-        texto_unificado = "\n".join(_generate_context_lines(context))
+        texto_unificado = _cached_context_as_text(context)
         if not _ensure_safe_text(texto_unificado):
             return "Error: el contexto generado no cumple los estándares de seguridad."
         return texto_unificado

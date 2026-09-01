@@ -72,11 +72,18 @@ HOW_TO_DISABLE: str = (
 @dataclass
 class StartupEntry:
     """
-    Representa una entrada de inicio detectada, sea de carpetas o registro.
-    
-    Estrategia 'lazy': la resolución real de la ruta en disco (validación de 
-    existencia, reparse points y normalización) solo ocurre al acceder a 
-    la propiedad .executable, ahorrando ciclos de I/O durante el escaneo inicial.
+    Representa una entrada de inicio (archivo en carpeta o clave de registro).
+
+    Atributos:
+        name: Identificador legible de la entrada.
+        command: String original obtenido del sistema (ruta o línea de ejecución).
+        source: Origen del dato ('registro' o 'carpeta').
+
+    Estrategia de resolución:
+        Se emplea 'lazy evaluation'. La validación de la existencia en disco, 
+        la expansión de rutas relativas y la detección de puntos de reparse (reparse points) 
+        se ejecutan solo cuando se accede a la propiedad `.executable`. Esto 
+        minimiza las llamadas al sistema de archivos durante la fase de recolección.
     """
     name: str
     command: str
@@ -140,7 +147,7 @@ class StartupEntry:
             return ""
         
         try:
-            norm = os.path.normpath(path_string)
+            norm: str = os.path.normpath(path_string)
             if len(norm) > 260 or self._is_reserved_device_name(norm):
                 return ""
         except (ValueError, TypeError):
@@ -150,7 +157,7 @@ class StartupEntry:
             return path_string if _EXISTS_CACHE[path_string] else path_string
         
         try:
-            abs_path = os.path.abspath(norm)
+            abs_path: str = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
             # Validación de reparse points antes de cualquier acceso profundo
@@ -287,21 +294,21 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
-        field_name = reader.fieldnames[0]
-        field_cmd = reader.fieldnames[1]
+        field_name: str = reader.fieldnames[0]
+        field_cmd: str = reader.fieldnames[1]
             
         for row in reader:
             if not isinstance(row, dict):
                 continue
             
-            name_raw = row.get(field_name)
-            cmd_raw = row.get(field_cmd)
+            name_raw: Optional[str] = row.get(field_name)
+            cmd_raw: Optional[str] = row.get(field_cmd)
             
             if name_raw is None or cmd_raw is None:
                 continue
             
-            name = "".join(c for c in str(name_raw) if ord(c) >= 32).strip()
-            cmd = "".join(c for c in str(cmd_raw) if ord(c) >= 32).strip()
+            name: str = "".join(c for c in str(name_raw) if ord(c) >= 32).strip()
+            cmd: str = "".join(c for c in str(cmd_raw) if ord(c) >= 32).strip()
             
             if not name or not cmd or name.upper().startswith("PS"):
                 continue
@@ -338,7 +345,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
             capture_output=True, text=True, timeout=30,
         )
         if result.returncode == 0 and result.stdout:
-            clean_out = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
+            clean_out: str = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
             _REGISTRY_CACHE = parse_registry_csv(clean_out)
             return _REGISTRY_CACHE
     except (OSError, subprocess.SubprocessError):
