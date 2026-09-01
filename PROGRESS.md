@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 16
 - Rechazadas por guardia de seguridad: 41
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 191
+- Sin respuesta de la IA (error o límite): 190
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 48 | 4 | 7 | 5 | 30 |
+| 2026-08-30 | 48 | 4 | 7 | 5 | 26 |
 | 2026-08-31 | 152 | 10 | 27 | 11 | 150 |
-| 2026-09-01 | 37 | 2 | 7 | 3 | 11 |
+| 2026-09-01 | 38 | 2 | 7 | 3 | 14 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **51**
+- seguridad defensiva: **52**
 - robustez ante casos límite: **43**
 - rendimiento: **37**
 
@@ -43,10 +43,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `organizer.py`: **17**
 - `branding.py`: **13**
 - `main.py`: **7**
-- `startup.py`: **4**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T02:33:40` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_resolve_and_cache_path` añadiendo una comprobación explícita para evitar rutas que contienen puntos de reparse (reparse points) mediante la inspección de atributos de archivo antes de cualquier procesamiento adicional, asegurando que la herramienta no siga accidentalmente enlaces o junctions fuera del árbol esperado durante la resolución.
 - `2026-09-01T02:24:40` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que ni siquiera el archivo de configuración pueda ubicarse en una zona crítica del sistema.
 - `2026-09-01T02:24:19` **scanner.py** (seguridad defensiva): Se ha robustecido `_is_safe_entry` y la lógica de escaneo para validar estrictamente que la ruta no sea un enlace simbólico o un junction (punto de reparse) antes de procesar su contenido, previniendo el desbordamiento de límites de seguridad o ciclos infinitos fuera de la jerarquía permitida.
 - `2026-09-01T02:23:49` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `ensure_safe_to_modify` añadiendo una validación explícita mediante `os.access` con `os.W_OK` antes de confirmar la posibilidad de modificar un archivo, asegurando que el sistema operativo realmente permita la operación más allá de los atributos lógicos detectados.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T01:43:42` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante errores de sistema al implementar un manejo más estricto de excepciones `OSError` durante la consulta de atributos de archivos, previniendo que llamadas fallidas a `lstat` o `stat` provoquen estados inconsistentes en la validación de integridad.
 - `2026-09-01T01:42:47` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y permisos en `_safe_unlink` y `purge_all` para prevenir errores durante la limpieza, asegurando que solo se intente eliminar el archivo si es posible acceder a él de forma exclusiva, mejorando la robustez ante bloqueos inesperados del sistema de archivos.
 - `2026-09-01T01:33:55` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` añadiendo una verificación explícita de `PROCESS_QUERY_LIMITED_INFORMATION` y manejando correctamente posibles errores de acceso denegado (Access Denied) al abrir procesos, evitando cierres inesperados de handles.
-- `2026-09-01T01:32:14` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` asegurando que el cálculo de `accumulated_points` sea siempre un entero consistente, y añadí una verificación defensiva en `summarize` para prevenir desbordamientos visuales o errores si el desglose de métricas está incompleto o desalineado.

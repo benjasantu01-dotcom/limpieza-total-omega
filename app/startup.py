@@ -151,11 +151,11 @@ class StartupEntry:
             abs_path = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            # Validación de existencia considerando atributos de sistema
+            # Validación de reparse points antes de cualquier acceso profundo
             if p.exists():
                 try:
                     stat_info = p.lstat()
-                    # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT
+                    # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT en Windows
                     if (stat_info.st_file_attributes & 0x00000400) != 0:
                         _EXISTS_CACHE[path_string] = False
                         return ""
