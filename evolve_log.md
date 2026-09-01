@@ -725,3 +725,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T01:23:59` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-09-01T01:23:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T01:23:59` Corrida terminada. Total usado hoy: 36.
+- `2026-09-01T01:31:48` Arrancando corrida. Quedan hoy ~264 peticiones objetivo.
+- `2026-09-01T01:32:14` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` asegurando que el cálculo de `accumulated_points` sea siempre un entero consistente, y añadí una verificación defensiva en `summarize` para prevenir desbordamientos visuales o errores si el desglose de métricas está incompleto o desalineado.
+- `2026-09-01T01:33:23` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de la aplicación ante cierres inesperados durante la inicialización de pestañas perezosas, añadiendo una verificación de existencia de widget (`winfo_exists`) antes de la ejecución del constructor de cada pestaña para evitar excepciones de `TclError` si el usuario cambia de pestaña rápidamente durante el inicio.
+- `2026-09-01T01:33:55` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Mejoré la robustez de `trim_working_set` añadiendo una verificación explícita de `PROCESS_QUERY_LIMITED_INFORMATION` y manejando correctamente posibles errores de acceso denegado (Access Denied) al abrir procesos, evitando cierres inesperados de handles.
+- `2026-09-01T01:34:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-01T01:34:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T01:34:13` Corrida terminada. Total usado hoy: 40.

@@ -370,9 +370,10 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid): 
         return False, "El proceso está protegido por el sistema."
     
+    # Intentamos abrir con privilegios mínimos necesarios
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
-        return False, "No se pudo abrir el proceso (posible falta de privilegios)."
+        return False, "Acceso denegado o proceso inexistente."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
