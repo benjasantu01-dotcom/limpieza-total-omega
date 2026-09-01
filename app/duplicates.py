@@ -106,7 +106,7 @@ def _is_valid_candidate(path: Path) -> bool:
     Valida si una ruta es un archivo legible que no pertenece a áreas protegidas.
     """
     try:
-        return path.exists() and path.is_file() and not is_protected_path(path) and os.access(path, os.R_OK)
+        return isinstance(path, Path) and path.exists() and path.is_file() and not is_protected_path(path) and os.access(path, os.R_OK)
     except (OSError, ValueError):
         return False
 
@@ -279,7 +279,9 @@ def format_group(group: DuplicateGroup) -> List[str]:
     lines = [f"{group.count} copias de {mb_total} MB (recuperable: {mb_wasted} MB)"]
     
     for path in group.paths:
-        if not isinstance(path, Path) or not path.exists():
+        if not isinstance(path, Path):
+            continue
+        if not path.exists():
             lines.append(f"   [desaparecido] {path}")
             continue
         elif not _is_valid_candidate(path):

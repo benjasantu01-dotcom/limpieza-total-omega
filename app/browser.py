@@ -125,11 +125,12 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     Valida la jerarquía: confirma que 'real_target' se encuentra dentro de 'real_base'.
     Requiere rutas resueltas (absolutas y sin symlinks) para evitar saltos de directorio.
     """
+    if not isinstance(real_target, Path) or not isinstance(real_base, Path):
+        return False
     try:
-        target_str = str(real_target)
-        base_str = str(real_base)
-        return os.path.commonpath([target_str, base_str]) == base_str
-    except (ValueError, Exception):
+        # Asegurar que ambos existan y sean comparables
+        return str(real_target.resolve()).startswith(str(real_base.resolve()))
+    except (OSError, RuntimeError):
         return False
 
 
@@ -180,7 +181,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     try:
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
             return False
-        if base_check_path and not _is_path_inside_base(path_obj.resolve(), base_check_path):
+        if base_check_path and not _is_path_inside_base(path_obj.resolve(strict=True), base_check_path):
             return False
         return True
     except (OSError, RuntimeError):
@@ -215,13 +216,11 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         path_obj = Path(entry.path)
-                        # Re-validar jerarquía por cada subdirectorio para evitar escape fuera de la base
                         if is_safe_to_modify(path_obj) and _is_safe_to_traverse(path_obj, base_check_path):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                             )
                     elif entry.is_file(follow_symlinks=False):
-                        # Se usa stat protegido para evitar errores en archivos en uso
                         stats = entry.stat(follow_symlinks=False)
                         total += stats.st_size
                 except (OSError, PermissionError):
@@ -238,7 +237,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
     Punto de entrada público para obtener el tamaño (bytes) de una ruta.
     Valida la seguridad de la ruta antes de iniciar el escaneo recursivo.
     """
-    if not isinstance(path, (str, Path)):
+    if not path or not isinstance(path, (str, Path)):
         return 0
     try:
         p_res = Path(path).resolve(strict=True)

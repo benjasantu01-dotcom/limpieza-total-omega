@@ -1008,3 +1008,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-01T03:48:15` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Reforcé el manejo de errores en `ask()` para prevenir bloqueos silenciosos ante configuraciones corruptas y añadí validaciones de tipo explícitas en `_parse_config` y `_build_payload`, evitando que valores inesperados rompan el flujo.
 - `2026-09-01T03:48:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T03:48:15` Corrida terminada. Total usado hoy: 92.
+- `2026-09-01T03:54:47` Arrancando corrida. Quedan hoy ~208 peticiones objetivo.
+- `2026-09-01T03:55:27` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-01T03:55:55` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejora la robustez de `_is_path_inside_base` y `_sum_directory_recursive` validando explícitamente la integridad de los parámetros de entrada y normalizando el manejo de excepciones para evitar fallos silenciosos en rutas malformadas o entradas inaccesibles, alineándose con el enfoque de validación defensiva.
+- `2026-09-01T03:56:22` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-01T03:56:31` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `suggest_keeper` y `format_group` mediante validaciones de tipo y estado más estrictas, asegurando que el sistema no intente procesar rutas inválidas o `None` antes de evaluar sus atributos.
+- `2026-09-01T03:56:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T03:56:31` Corrida terminada. Total usado hoy: 96.
