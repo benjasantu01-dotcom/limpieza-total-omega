@@ -1075,6 +1075,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         Asegura que, si se especifica una ruta `target`, se verifique la 
         seguridad de la ruta antes de ejecutar la lógica del usuario.
         """
+        if self._closing: return
         try:
             safety.ensure_safe_to_modify(Path(".").resolve())
             if target and not self._is_safe_path(target):
@@ -1103,6 +1104,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         with self._task_lock:
             if not self._closing and self._executor:
                 self._executor.submit(self._worker_thread_logic, fn, tab, target_path if check_safety else None)
+            else:
+                self._set_busy(False)
 
     def _current_tab(self) -> str:
         """Determina la pestaña activa actualmente mediante el componente tabview."""

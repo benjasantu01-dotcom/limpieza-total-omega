@@ -186,11 +186,13 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     try:
         if not src.exists() or not src.is_file(): return False
         
+        # Validar reparse points (Junctions) en ambas rutas para evitar manipulación externa
+        if _is_junction(src) or _is_junction(dest.parent if dest.is_file() else dest): return False
+        
         # Uso de is_protected_path (lectura) e is_safe_to_modify (escritura)
         if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(src, dest): return False
-        if _is_junction(dest.parent if dest.is_file() else dest): return False
         
         target_dir: Path = dest.parent if dest.is_file() else dest
         if not (os.access(src, os.W_OK) and os.access(target_dir, os.W_OK)): return False

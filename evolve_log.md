@@ -753,3 +753,45 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T02:04:13` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__, SystemMetrics.validate
 - `2026-09-01T02:04:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T02:04:13` Corrida terminada. Total usado hoy: 52.
+- `2026-09-01T02:12:38` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-09-01T02:13:40` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-01T02:14:55` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `main.py` añadiendo un filtro explícito en `run_async` y `_worker_thread_logic` para evitar que se ejecuten tareas asíncronas de E/S cuando la aplicación está en estado de cierre (`_closing`), previniendo condiciones de carrera y accesos a widgets destruidos.
+- `2026-09-01T02:15:26` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva al invocar `is_safe_to_modify` antes de proceder con el manejo de procesos en `trim_working_set`, asegurando una validación centralizada de la ruta del ejecutable contra las políticas del proyecto antes de realizar cualquier operación de bajo nivel mediante Win32 API.
+- `2026-09-01T02:15:58` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_is_safe_for_disk_op` mediante la validación estricta de la propiedad del sistema de archivos, asegurando que `src` y `dest` no sean puntos de reparse (Junctions/Symlinks) antes de realizar cualquier operación, previniendo así posibles fugas de contexto fuera de los directorios permitidos.
+- `2026-09-01T02:16:24` Tests FALLARON:
+```
+[ 72%]
+.......................................................................F [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_purge_item_cannot_delete_outside_the_quarantine _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-4/test_purge_item_cannot_delete_0')
+cuarentena = PosixPath('/tmp/pytest-of-runner/pytest-4/test_purge_item_cannot_delete_0/_Cuarentena')
+
+    def test_purge_item_cannot_delete_outside_the_quarantine(tmp_path, cuarentena):
+        victima = tmp_path / "no-tocar.txt"
+        victima.write_text("importante")
+    
+        origen = tmp_path / "cualquiera.txt"
+        origen.write_text("x")
+        item = quarantine.quarantine_file(origen, base=cuarentena)
+    
+        # Manifiesto manipulado para apuntar afuera de la cuarentena.
+        items = quarantine.load_manifest(cuarentena)
+        items[0].stored_name = "../no-tocar.txt"
+        quarantine.save_manifest(items, cuarentena)
+    
+>       with pytest.raises(safety.UnsafePathError):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE UnsafePathError
+
+evolve/tests/test_safety.py:255: Failed
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - Failed: DID NOT RAISE UnsafePathError
+1 failed, 298 passed in 1.22s
+
+```
+- `2026-09-01T02:16:24` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la seguridad defensiva en `purge_all` y `purge_item` al evitar un posible "time-of-check to time-of-use" (TOCTOU) y garantizar que solo se eliminen archivos cuyas rutas coincidan estrictamente con los nombres almacenados en el manifiesto, evitando que un atacante manipule el sistema de archivos del sandbox para eliminar archivos externos al manifiesto.
+- `2026-09-01T02:16:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T02:16:24` Corrida terminada. Total usado hoy: 56.

@@ -32,7 +32,7 @@ from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar, TypeAlias, Final, Set
-from safety import is_protected_path
+from safety import is_protected_path, is_safe_to_modify
 
 if TYPE_CHECKING:
     from ctypes import wintypes
@@ -249,7 +249,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        # Cachea la consulta solo si ha expirado, minimizando el impacto en el thread principal
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
             f"Get-Process | Where-Object {{$_.Id -notin 0,4}} | Select-Object Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First 50 | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
@@ -319,27 +318,6 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     except (OSError, ctypes.ArgumentError, ValueError): pass
     return None
 
-def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
-    """Verifica que la ruta del proceso no pertenezca a directorios protegidos del sistema."""
-    if not isinstance(path, str) or not os.path.isabs(path):
-        return False, "Ruta inválida."
-    try:
-        p = Path(path).resolve(strict=True)
-        forbidden_base_paths = [
-            Path(os.environ.get("SystemRoot", "C:\\Windows")).resolve(),
-            Path(os.environ.get("ProgramFiles", "C:\\Program Files")).resolve(),
-            Path(os.environ.get("ProgramFiles(x86)", "C:\\Program Files (x86)")).resolve(),
-        ]
-        
-        for forbidden in forbidden_base_paths:
-            if forbidden in p.parents or p == forbidden:
-                return False, "Operación denegada en procesos del sistema."
-                
-        if is_protected_path(str(p)): 
-            return False, "Ruta protegida por configuración."
-    except Exception: return False, "Error en integridad de ruta."
-    return True, None
-
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """Realiza chequeos de seguridad antes de permitir cualquier modificación de memoria."""
     if not proc_handle: return False, "Handle inválido."
@@ -352,7 +330,12 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
             return False, "El proceso no está activo."
         exec_path = _get_process_path(proc_handle)
         if not exec_path: return False, "Ruta del proceso inaccesible."
-        return _validate_path_security(exec_path)
+        
+        # Validamos usando el sistema de seguridad centralizado
+        if not is_safe_to_modify(exec_path):
+            return False, "Operación denegada por política de seguridad."
+            
+        return True, None
     except (OSError, ctypes.ArgumentError):
         return False, "Error interno durante la verificación de integridad."
 
@@ -370,7 +353,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     if _is_system_process(target_pid): 
         return False, "El proceso está protegido por el sistema."
     
-    # Intentamos abrir con privilegios mínimos necesarios
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, "Acceso denegado o proceso inexistente."
