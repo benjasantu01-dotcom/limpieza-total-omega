@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 11
+- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Rechazadas por tests: 10
 - Rechazadas por guardia de seguridad: 40
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 204
+- Sin cambios (nada sustancial que mejorar): 13
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 113 | 6 | 19 | 7 | 119 |
-| 2026-09-01 | 122 | 5 | 21 | 7 | 85 |
+| 2026-08-31 | 112 | 5 | 18 | 6 | 119 |
+| 2026-09-01 | 124 | 5 | 22 | 7 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **47**
+- seguridad defensiva: **46**
 - rendimiento: **41**
-- robustez ante casos límite: **35**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **23**
+- `assistant.py`: **24**
 - `quarantine.py`: **21**
 - `settings.py`: **21**
 - `scanner.py`: **20**
 - `browser.py`: **20**
 - `duplicates.py`: **19**
-- `organizer.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **17**
+- `organizer.py`: **17**
 - `safety.py`: **15**
 - `healthscore.py`: **14**
-- `branding.py`: **11**
+- `branding.py`: **12**
 - `startup.py`: **9**
 - `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T10:14:04` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante posibles errores de resolución de rutas o permisos, asegurando que `ensure_safe_to_modify` se utilice exclusivamente tras validaciones previas para evitar excepciones innecesarias durante operaciones de lectura/escritura.
+- `2026-09-01T10:13:32` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `build_context` y la ingesta de datos en `SystemContext` para manejar con elegancia valores numéricos corruptos (como `float('nan')` o `inf`), listas inesperadas, o tipos malformados que provienen de configuraciones o lecturas de disco, evitando que el asistente falle al procesar datos del sistema.
 - `2026-09-01T10:04:19` **settings.py** (rendimiento): Se optimizó el acceso a los datos de configuración transformando `_VALIDATOR_MAP` y las colecciones de validación en constantes más eficientes y reduciendo la redundancia de las llamadas a `load()` en funciones de uso frecuente como `assistant_api_key` y `assistant_enabled`, evitando recrear diccionarios innecesariamente.
 - `2026-09-01T10:04:04` **scanner.py** (rendimiento): Optimizé la detección de carpetas monitoreadas y la validación de extensiones utilizando `frozenset` y pre-cálculos para evitar iteraciones redundantes y llamadas a métodos `lower()` costosas dentro del bucle principal del escáner.
 - `2026-09-01T09:54:48` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de la cuarentena y la gestión del manifiesto convirtiendo `list_items` para que trabaje sobre los datos crudos del caché, evitando así la sobrecarga de instanciar objetos `QuarantineItem` innecesarios para operaciones de solo lectura.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T09:22:54` **scanner.py** (legibilidad y documentación): Mejoré la documentación de las funciones de chequeo heurístico y añadí type hints explícitos para clarificar el flujo de datos, siguiendo las directrices de legibilidad sin alterar la lógica de escaneo.
 - `2026-09-01T09:21:58` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings de estilo Google Style en las funciones clave para clarificar las precondiciones, excepciones que pueden lanzarse y el propósito del flujo de datos, mejorando la legibilidad técnica sin alterar la lógica.
 - `2026-09-01T09:13:31` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (Google Style) que explicitan las precondiciones, responsabilidades y el "porqué" de las validaciones críticas, facilitando el mantenimiento y la auditoría del flujo de seguridad.
-- `2026-09-01T09:13:20` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel y la adición de Type Hints en parámetros clave para clarificar las expectativas de datos y mejorar la legibilidad del código siguiendo el enfoque actual.
-- `2026-09-01T09:12:52` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` documentando los métodos de la clase `LimpiezaTotalOmegaApp` con docstrings estandarizados que explican su propósito, parámetros y comportamiento, facilitando la navegación del código para futuras iteraciones del bucle.

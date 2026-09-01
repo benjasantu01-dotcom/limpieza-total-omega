@@ -486,3 +486,10 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T10:04:19` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a los datos de configuración transformando `_VALIDATOR_MAP` y las colecciones de validación en constantes más eficientes y reduciendo la redundancia de las llamadas a `load()` en funciones de uso frecuente como `assistant_api_key` y `assistant_enabled`, evitando recrear diccionarios innecesariamente.
 - `2026-09-01T10:04:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T10:04:19` Corrida terminada. Total usado hoy: 240.
+- `2026-09-01T10:12:30` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-09-01T10:12:55` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-01T10:13:32` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `build_context` y la ingesta de datos en `SystemContext` para manejar con elegancia valores numéricos corruptos (como `float('nan')` o `inf`), listas inesperadas, o tipos malformados que provienen de configuraciones o lecturas de disco, evitando que el asistente falle al procesar datos del sistema.
+- `2026-09-01T10:14:04` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `save_logo_svg` ante posibles errores de resolución de rutas o permisos, asegurando que `ensure_safe_to_modify` se utilice exclusivamente tras validaciones previas para evitar excepciones innecesarias durante operaciones de lectura/escritura.
+- `2026-09-01T10:14:13` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-01T10:14:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T10:14:13` Corrida terminada. Total usado hoy: 244.

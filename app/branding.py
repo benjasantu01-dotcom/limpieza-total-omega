@@ -366,16 +366,16 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination or len(str(destination)) > 4096: return None
     try:
         path_obj = Path(destination).resolve()
-        # Verificación de integridad: ni protegida ni en ruta de sistema
+        # Verificación de integridad inicial sin lanzar excepciones
         if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return None
             
+        # Confirmación final de seguridad para escritura
         ensure_safe_to_modify(path_obj)
-        parent = path_obj.parent
-        ensure_safe_to_modify(parent)
+        ensure_safe_to_modify(path_obj.parent)
         
-        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        elif not parent.is_dir(): return None
+        if not path_obj.parent.exists(): path_obj.parent.mkdir(parents=True, exist_ok=True)
+        elif not path_obj.parent.is_dir(): return None
         
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj

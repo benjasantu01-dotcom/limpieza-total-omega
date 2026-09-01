@@ -268,7 +268,7 @@ class SystemContext:
         Intenta extraer y validar métricas desde una fuente externa (dict u objeto).
         Retorna True si al menos una métrica válida fue procesada.
         """
-        if source is None or not isinstance(source, (dict, object)):
+        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str)):
             return False
             
         found_data = False
@@ -358,7 +358,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
-    sources = [s for s in [metrics, health, extra] if s is not None]
+    sources = [s for s in [metrics, health, extra] if s is not None and not isinstance(s, (list, tuple, str))]
     
     for src in sources:
         try:
