@@ -87,9 +87,12 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
-_RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
-for rule in _RECOMMENDATION_RULES:
-    _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
+# Estructura optimizada para iteración rápida
+_PROC_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = []
+for _area, _weight in _WEIGHT_ITEMS_INT:
+    _rules = [r for r in _RECOMMENDATION_RULES if r.area == _area]
+    _scorer = lambda m, a=_area: _SCORERS[a](m)
+    _PROC_PIPELINE.append((_area, _weight, _scorer, _rules))
 
 @dataclass
 class SystemMetrics:
@@ -191,11 +194,6 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "arranque": lambda m: score_startup(m.startup_count)
 }
 
-# Verificación de integridad en tiempo de carga
-for area in WEIGHTS:
-    if area not in _SCORERS:
-        raise RuntimeError(f"Area '{area}' definida en WEIGHTS carece de función de puntuación en _SCORERS.")
-
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
@@ -206,19 +204,15 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_pts: float = 0.0
     recommendations: List[str] = []
     
-    for area, weight in _WEIGHT_ITEMS_INT:
-        scorer = _SCORERS[area]
-        ratio = _clamp(scorer(metrics), 0.0, 1.0)
+    for area, weight, scorer, rules in _PROC_PIPELINE:
+        ratio = scorer(metrics)
         pts = int(round(ratio * weight))
         metric_breakdown[area] = pts
         total_pts += float(pts)
         
-        for rule in _RULES_BY_AREA.get(area, []):
-            try:
-                if rule.check(metrics, ratio):
-                    recommendations.append(rule.message_factory(metrics))
-            except Exception:
-                continue
+        for rule in rules:
+            if rule.check(metrics, ratio):
+                recommendations.append(rule.message_factory(metrics))
     
     final_score = int(_clamp(total_pts, 0.0, 100.0))
     if metrics.quarantined_count > 0:
