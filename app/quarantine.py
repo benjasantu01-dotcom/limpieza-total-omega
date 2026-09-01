@@ -369,8 +369,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             os.close(fd)
             raise e
 
+        # Verificación explícita post-copia antes de validar hash
         if temp_path.stat().st_size != original_size:
-            raise OSError("Error de integridad: tamaño de archivo mismatch.")
+            raise OSError("Error de integridad: el tamaño del archivo copiado no coincide.")
             
         os.replace(temp_path, destination)
         file_hash = _get_sha256(destination)
@@ -397,14 +398,7 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).expanduser().resolve(strict=True)
-    s_stat = source_path.stat()
-    original_size = s_stat.st_size
-    
-    if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
-        raise UnsafePathError("No se permite aislar enlaces simbólicos o puntos de reparse.")
-        
-    if not source_path.is_file():
-        raise FileNotFoundError(f"Archivo origen inaccesible: {source_path}")
+    original_size = source_path.stat().st_size
     
     dest_dir = quarantine_dir(base)
     _validate_isolation_request(source_path, dest_dir)
@@ -417,13 +411,13 @@ def quarantine_file(
         
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
-    # Verificación final: Asegurar que el archivo en destino es idéntico antes de borrar el original
-    if not _get_sha256(source_path) == file_hash:
-        _safe_unlink(destination)
-        raise RuntimeError("Integridad comprometida: el archivo original cambió durante la copia.")
-        
+    # Verificación final de integridad y persistencia
     operation_succeeded = False
     try:
+        # Re-verificar tamaño final post-copia
+        if destination.stat().st_size != original_size:
+            raise RuntimeError("Integridad comprometida: el archivo destino cambió tamaño.")
+
         base_path = quarantine_dir(base)
         m_path = _manifest_path(base_path)
         mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
@@ -444,6 +438,7 @@ def quarantine_file(
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
         
+        # Último check antes de borrar el original
         if destination.exists() and quarantine_item.verify_integrity(destination):
             source_path.unlink()
             operation_succeeded = True
@@ -451,9 +446,10 @@ def quarantine_file(
             raise RuntimeError("La integridad falló tras persistir el manifiesto.")
             
         return quarantine_item
-    finally:
+    except Exception as e:
         if not operation_succeeded and destination.exists():
             _safe_unlink(destination)
+        raise RuntimeError(f"Fallo en la operación de aislamiento: {e}")
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:

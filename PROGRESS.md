@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 10
+- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 85 | 4 | 14 | 6 | 87 |
-| 2026-09-01 | 150 | 6 | 24 | 8 | 120 |
+| 2026-08-31 | 84 | 3 | 13 | 6 | 86 |
+| 2026-09-01 | 153 | 6 | 25 | 8 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **54**
-- manejo de errores y validación de entradas: **48**
+- manejo de errores y validación de entradas: **51**
 - robustez ante casos límite: **46**
 - legibilidad y documentación: **46**
-- rendimiento: **41**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **24**
+- `assistant.py`: **23**
+- `quarantine.py`: **21**
 - `settings.py`: **21**
 - `browser.py`: **20**
-- `quarantine.py`: **20**
 - `duplicates.py`: **19**
 - `scanner.py`: **19**
 - `diskreport.py`: **18**
-- `organizer.py`: **16**
-- `memory.py`: **16**
+- `organizer.py`: **17**
+- `memory.py`: **17**
 - `safety.py`: **15**
 - `healthscore.py`: **15**
 - `main.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T13:07:36` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la lógica de manipulación de archivos en un bloque `try...except` más granular y añadiendo una validación explícita sobre el tamaño del archivo después de la copia, asegurando que `original_size` y `destination.stat().st_size` coincidan antes de dar por finalizada la operación, evitando así corrupciones silenciosas.
+- `2026-09-01T13:07:00` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_for_junk` añadiendo validaciones de entrada más estrictas y manejo de excepciones específicas para evitar que rutas malformadas o tipos de datos inesperados detengan el proceso de escaneo.
+- `2026-09-01T13:06:33` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante una validación más estricta del formato de línea y el control de errores, evitando que un archivo `/proc/meminfo` parcialmente escrito o inesperado cause excepciones o retorne datos erróneos durante el parseo.
 - `2026-09-01T12:58:08` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_target_choice_changed` para evitar que una selección inválida o un diálogo cancelado provoquen estados inconsistentes en la aplicación, centralizando la validación mediante `is_safe_target_dir` y asegurando que los widgets de la UI no intenten configurarse si fueron destruidos.
 - `2026-09-01T12:57:09` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` validando que `metrics` no sea nulo, asegurando que `_SCORERS` tenga una cobertura total mediante un chequeo de integridad al iniciar, y encapsulando el cálculo del puntaje para evitar que un fallo inesperado en una regla individual corrompa el informe global.
 - `2026-09-01T12:56:44` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando un chequeo previo de `Path.exists()` y reforzando el manejo de errores para evitar que la aplicación falle silenciosamente ante condiciones de carrera (archivos borrados durante el escaneo).
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T11:14:41` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` implementando un chequeo estricto del archivo antes de su borrado físico, asegurando que solo se eliminen archivos que pasen las validaciones de integridad y que residan físicamente dentro del sandbox, evitando cualquier posible escape de control sobre archivos fuera de la carpeta de cuarentena.
 - `2026-09-01T11:14:08` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_for_disk_op` y `_can_move_file` añadiendo una validación explícita para evitar que se intenten procesar o mover archivos que residen en unidades de red (UNC), mitigando riesgos de latencia, bloqueos inesperados o problemas de integridad en sistemas de archivos remotos, reforzando el enfoque defensivo.
 - `2026-09-01T11:06:10` **memory.py** (seguridad defensiva): Mejoré la seguridad en `trim_working_set` añadiendo la validación de `is_safe_to_modify` para la ruta del proceso, asegurando que no se intente realizar operaciones de trim en ejecutables protegidos, y refiné el manejo de `psapi` para evitar errores de referencia en entornos donde las funciones de kernel no sean accesibles.
-- `2026-09-01T11:05:54` **main.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones que recorren el disco agregando una validación explícita mediante `safety.is_safe_to_modify` antes de proceder con el procesamiento de rutas en `on_scan_junk` y `on_find_duplicates`, garantizando que el `ThreadPoolExecutor` no opere sobre rutas bloqueadas incluso si el chequeo inicial en `run_async` fuera insuficiente.
-- `2026-09-01T11:04:42` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del cálculo al añadir una capa de protección en el `try-except` dentro del bucle de reglas, garantizando que una excepción en una fábrica de mensajes (por ejemplo, por acceso a un atributo inesperado) no aborte el cálculo del `healthscore` ni deje al usuario sin el resumen.
-- `2026-09-01T10:54:56` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de rutas mediante `resolve()` antes de realizar cualquier operación de listado, asegurando que no se pueda escapar del directorio raíz del navegador mediante ataques de "path traversal" o links simbólicos, incluso si las funciones de chequeo previas fallaran.

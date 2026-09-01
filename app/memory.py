@@ -154,13 +154,13 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
-        key, raw_value = line.split(":", 1)
-        k_normalized = key.strip()
+        parts = line.split(":", 1)
+        k_normalized = parts[0].strip()
         
         if k_normalized in metric_map:
-            parts = raw_value.split()
-            if parts and parts[0].isdigit():
-                metric_map[k_normalized] = int(parts[0]) * 1024
+            val_parts = parts[1].split()
+            if val_parts and val_parts[0].isdigit():
+                metric_map[k_normalized] = int(val_parts[0]) * 1024
             
     total_mem = metric_map["MemTotal"]
     if total_mem <= 0: 

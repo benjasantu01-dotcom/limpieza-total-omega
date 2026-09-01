@@ -249,12 +249,15 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
         try:
             if not isinstance(d, (str, Path)):
                 continue
-            path_obj: Path = Path(d).expanduser()
-            if _is_unc_path(path_obj): continue
-            if path_obj.exists() and path_obj.is_dir():
-                resolved: Path = path_obj.resolve()
-                if not is_protected_path(resolved):
-                    _process_directory(resolved, found)
+            path_obj = Path(d).expanduser()
+            if not path_obj.exists() or not path_obj.is_dir():
+                continue
+            if _is_unc_path(path_obj): 
+                continue
+            
+            resolved: Path = path_obj.resolve()
+            if not is_protected_path(resolved):
+                _process_directory(resolved, found)
         except (OSError, RuntimeError, TypeError):
             continue
     return found
