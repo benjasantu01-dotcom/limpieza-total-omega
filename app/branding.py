@@ -360,14 +360,20 @@ def logo_svg(size: int = 128) -> str:
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     """Guarda el archivo SVG del logo tras validar que la ruta destino sea segura."""
-    if not destination: return None
+    if not destination or len(str(destination)) > 4096: return None
     try:
         path_obj = Path(destination).resolve()
+        # Verificación de integridad: ni protegida ni en ruta de sistema
+        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
+            return None
+            
         ensure_safe_to_modify(path_obj)
         parent = path_obj.parent
         ensure_safe_to_modify(parent)
+        
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        elif not parent.is_dir(): raise RuntimeError("No es un directorio")
+        elif not parent.is_dir(): return None
+        
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError):

@@ -206,8 +206,9 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
+    root_path = Path(root_abs)
     # Pre-filtrado preventivo antes de procesar hijos
-    if is_protected_path(Path(root_abs)):
+    if is_protected_path(root_path) or not _is_safe_to_traverse(root_path, base_check_path):
         return 0
 
     total: int = 0
@@ -220,7 +221,7 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         path_obj = Path(entry.path)
-                        # Validamos seguridad una sola vez por directorio hijo
+                        # Validamos seguridad estricta para el subdirectorio hijo
                         if _is_safe_to_traverse(path_obj, base_check_path):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1

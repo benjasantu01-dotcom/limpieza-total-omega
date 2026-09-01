@@ -248,10 +248,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     if not root_path:
         return
 
-    root_str = str(root_path)
     REPARSE_POINT_ATTR = 0x400
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[str] = [root_str]
+    stack: List[Path] = [root_path]
     
     while stack:
         current_dir = stack.pop()
@@ -270,11 +269,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        child_path = entry.path
-                        if not child_path.startswith(root_str):
+                        child_path = Path(entry.path)
+                        # Validar que no hay escape de directorio
+                        if not child_path.is_relative_to(root_path):
                             continue
                                 
-                        if skip_protected and is_protected_path(Path(child_path)):
+                        if skip_protected and is_protected_path(child_path):
                             continue
                                 
                         inode_key = (st.st_dev, st.st_ino)
@@ -341,19 +341,19 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     if not p_base:
         return []
             
-    sums: Dict[str, int] = defaultdict(int)
-    counts: Dict[str, int] = defaultdict(int)
+    sums: Dict[Path, int] = defaultdict(int)
+    counts: Dict[Path, int] = defaultdict(int)
 
-    base_str = str(p_base)
     for path, size in walk_files(p_base, skip_protected):
         try:
-            rel = os.path.relpath(path, base_str).split(os.sep)
-            if not rel or rel[0] == ".":
-                continue
+            # Obtener el primer nivel debajo de p_base de forma segura
+            if path.parent == p_base:
+                top_folder = path
+            else:
+                top_folder = path.relative_to(p_base).parts[0]
+                top_folder = p_base / top_folder
             
-            top_folder = os.path.join(base_str, rel[0])
-            
-            if skip_protected and is_protected_path(Path(top_folder)):
+            if skip_protected and is_protected_path(top_folder):
                 continue
             
             sums[top_folder] += size
@@ -361,7 +361,7 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
         except (ValueError, OSError, RuntimeError, IndexError):
             continue
 
-    results: List[FolderUsage] = [FolderUsage(Path(p), sums[p], counts[p]) for p in sums]
+    results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
     return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
 
 
