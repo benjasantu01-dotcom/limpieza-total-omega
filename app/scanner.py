@@ -139,13 +139,14 @@ class Scanner:
             return False
         
         try:
+            # Verifica si es punto de reparse antes de cualquier otra lógica
+            if self._is_reparse_point(entry):
+                return False
+
             if entry.name and (RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name)):
                 return False
 
             if not self._is_inside_base_root(entry.path):
-                return False
-            
-            if self._is_reparse_point(entry):
                 return False
             
             return not is_protected_path(Path(entry.path))

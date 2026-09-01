@@ -290,7 +290,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None
-        if not is_safe_to_modify(str(ruta)):
+        if is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta)):
             return None
             
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)

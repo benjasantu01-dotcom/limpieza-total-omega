@@ -363,6 +363,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     if p.exists() or os.path.lexists(p):
         if not (p.is_file() or p.is_dir()):
             raise UnsafePathError("Tipo de archivo no soportado.")
+        # Verificación final de permisos a nivel de sistema operativo
+        if not os.access(p, os.W_OK):
+            raise UnsafePathError("Sin permisos de escritura en la ruta.")
         _check_file_integrity(p)
     else:
         # Validación preventiva para rutas no existentes
