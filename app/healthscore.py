@@ -44,14 +44,16 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos que definen el punto de saturación o riesgo
+# Umbrales críticos que definen el punto de saturación o riesgo.
+# Estos valores se basan en heurísticas estándar para sistemas de escritorio:
+# Junk > 5GB, Duplicados > 2GB, RAM < 35% disponible, Disco < 25% libre.
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización pre-calculados (evitando lógica repetitiva en loops)
+# Factores de normalización pre-calculados (evitando división por cero en el runtime)
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
@@ -119,8 +121,8 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        """Verifica que los valores numéricos sean finitos."""
-        return all(isinstance(getattr(self, f), (int, float)) and math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__)
+        """Verifica que todos los campos sean números finitos y válidos."""
+        return all(isinstance(v, (int, float)) and math.isfinite(v) for v in self.__dict__.values())
 
 @dataclass
 class HealthResult:
@@ -138,20 +140,17 @@ class HealthResult:
 def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
     try:
         val = float(value)
-        if not math.isfinite(val): return low
-        return max(low, min(high, val))
+        return max(low, min(high, val)) if math.isfinite(val) else low
     except (TypeError, ValueError):
         return low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
-    if value is None: return default
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def _to_int(value: Any, default: int = 0) -> int:
-    if value is None: return default
     try:
         val = float(value)
         return int(val) if math.isfinite(val) else default

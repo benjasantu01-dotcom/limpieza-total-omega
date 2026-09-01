@@ -199,7 +199,10 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """Aplica doble filtrado: hash parcial primero, luego hash completo (SHA256) solo para los que coinciden."""
+    """
+    Aplica refinamiento jerárquico: agrupa primero por hash parcial y luego 
+    desambigua los subgrupos utilizando hash completo (SHA256).
+    """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     for subset in partial_results.values():
