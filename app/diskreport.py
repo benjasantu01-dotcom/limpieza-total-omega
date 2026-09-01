@@ -347,8 +347,8 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     base_str = str(p_base)
     for path, size in walk_files(p_base, skip_protected):
         try:
-            rel = str(path)[len(base_str):].lstrip(os.sep).split(os.sep)
-            if not rel or not rel[0]:
+            rel = os.path.relpath(path, base_str).split(os.sep)
+            if not rel or rel[0] == ".":
                 continue
             
             top_folder = os.path.join(base_str, rel[0])

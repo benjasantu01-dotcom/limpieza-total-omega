@@ -1106,3 +1106,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-01T05:38:19` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-09-01T05:38:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T05:38:19` Corrida terminada. Total usado hoy: 136.
+- `2026-09-01T05:47:03` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-09-01T05:47:42` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext.ingest` y `_validate_and_assign` ante valores `None` o maliciosos, asegurando que el asistente no procese métricas corrompidas que pudieran causar errores de ejecución en los motores de respuesta.
+- `2026-09-01T05:48:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-01T05:48:39` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-01T05:48:51` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez de `walk_files` y `largest_folders` ante la imposibilidad de resolver rutas o nombres de archivos excesivamente largos, manejando específicamente el caso donde `os.scandir` devuelve entradas que, al intentar acceder a sus metadatos (stat), arrojan `FileNotFoundError` o `OSError` por permisos denegados o race conditions en el sistema de archivos.
+- `2026-09-01T05:48:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T05:48:51` Corrida terminada. Total usado hoy: 140.

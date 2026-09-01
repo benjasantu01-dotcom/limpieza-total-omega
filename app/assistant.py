@@ -261,14 +261,14 @@ class SystemContext:
     @property
     def is_valid_structure(self) -> bool:
         """Verifica que el estado actual cumple con las garantías de seguridad de texto."""
-        return _ensure_safe_text(self.grade)
+        return _ensure_safe_text(self.grade) if self.grade else True
 
     def ingest(self, source: Any) -> bool:
         """
         Intenta extraer y validar métricas desde una fuente externa (dict u objeto).
         Retorna True si al menos una métrica válida fue procesada.
         """
-        if not isinstance(source, (dict, object)):
+        if source is None or not isinstance(source, (dict, object)):
             return False
             
         found_data = False
@@ -279,7 +279,6 @@ class SystemContext:
             except Exception:
                 continue
         
-        # Procesamiento específico de grado de salud
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
             clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
@@ -307,6 +306,7 @@ def _is_safe_text_structure(text: str) -> bool:
     Verifica que no existan patrones de rutas, inyecciones de comandos,
     ni secuencias de control o caracteres de omisión de derecha a izquierda (RTL).
     """
+    if not text: return True
     if _PATH_INJECTION_REGEX.search(text) or is_protected_path(text):
         return False
     return True
@@ -337,12 +337,11 @@ def _get_source_value(source: Any, key: str) -> Any:
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
     """
     Extrae una métrica de la fuente y aplica un contrato de validación estricto.
-    Asegura que el valor sea numérico, finito y caiga dentro de los límites físicos
-    (min_val/max_val) definidos para cada métrica en MetricSpec.
+    Asegura que el valor sea numérico, finito y caiga dentro de los límites físicos.
     """
     try:
         val = _get_source_value(source, key)
-        if not spec.is_valid_type(val):
+        if val is None or not spec.is_valid_type(val):
             return False
         
         clean_val = _safe_float(val, -1.0)
