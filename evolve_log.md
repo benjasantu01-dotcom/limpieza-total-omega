@@ -746,3 +746,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T01:54:33` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se ha mejorado `save_logo_svg` para prevenir el desbordamiento de rutas (`Path Traversal`) mediante la validación del directorio padre, asegurando que la operación de escritura permanezca confinada estrictamente a la estructura de directorios esperada incluso tras la resolución de enlaces simbólicos.
 - `2026-09-01T01:54:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T01:54:33` Corrida terminada. Total usado hoy: 48.
+- `2026-09-01T02:02:26` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-01T02:02:56` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de la jerarquía de rutas para cada sub-directorio visitado, evitando que el escaneo pueda ser redirigido fuera de la carpeta base autorizada.
+- `2026-09-01T02:03:30` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-01T02:04:00` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-01T02:04:13` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__, SystemMetrics.validate
+- `2026-09-01T02:04:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T02:04:13` Corrida terminada. Total usado hoy: 52.
