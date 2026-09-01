@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 16
 - Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 17 | 3 | 2 | 2 | 10 |
+| 2026-08-30 | 15 | 2 | 2 | 1 | 10 |
 | 2026-08-31 | 152 | 10 | 27 | 11 | 150 |
-| 2026-09-01 | 59 | 3 | 10 | 4 | 44 |
+| 2026-09-01 | 63 | 3 | 10 | 4 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **53**
-- legibilidad y documentación: **53**
 - seguridad defensiva: **52**
-- robustez ante casos límite: **41**
-- rendimiento: **29**
+- robustez ante casos límite: **39**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
+- `browser.py`: **22**
+- `assistant.py`: **22**
 - `scanner.py`: **21**
-- `browser.py`: **21**
-- `assistant.py`: **21**
 - `settings.py`: **20**
 - `quarantine.py`: **19**
 - `duplicates.py`: **19**
-- `organizer.py`: **17**
-- `healthscore.py`: **16**
 - `safety.py`: **16**
 - `diskreport.py`: **16**
 - `memory.py`: **16**
-- `branding.py`: **12**
+- `organizer.py`: **16**
+- `healthscore.py`: **15**
+- `branding.py`: **13**
 - `main.py`: **8**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T05:07:56` **browser.py** (rendimiento): Optimizé la recursión en `_sum_directory_recursive` implementando un pre-filtrado de rutas protegidas mediante `is_protected_path` al inicio de cada nodo, evitando llamadas redundantes a `is_safe_to_modify` y reduciendo la carga de resolución de rutas en el árbol.
+- `2026-09-01T05:07:45` **branding.py** (rendimiento): Se ha optimizado `branding.py` mediante la refactorización de `_get_grouped_segments` para mejorar el rendimiento del renderizado al evitar el reprocesamiento innecesario de secuencias de colores idénticas, y se han ajustado los decoradores `lru_cache` para balancear el uso de memoria frente a la velocidad de acceso en entornos con múltiples cambios de estado de UI.
+- `2026-09-01T05:07:13` **assistant.py** (rendimiento): Optimicé el acceso al contexto mediante el uso de un cache local (`lru_cache`) para las evaluaciones de problemas, evitando recalcular los criterios de salud en cada iteración cuando el estado del sistema no ha cambiado.
+- `2026-09-01T05:06:38` **startup.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `StartupEntry` añadiendo type hints faltantes y documentando el propósito de los atributos internos (`_exec_cache`, `_checked_exists`) para clarificar que el objeto utiliza una estrategia de cacheo de resolución de rutas bajo demanda.
 - `2026-09-01T04:57:18` **scanner.py** (legibilidad y documentación): Mejora de la legibilidad y mantenimiento mediante la adición de docstrings técnicos detallados y la normalización de la estructura de las funciones de chequeo, asegurando que el contrato de `SuspicionCheck` sea consistente en todo el módulo.
 - `2026-09-01T04:56:52` **safety.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `safety.py` mediante la refactorización de `_validate_structural_safety` y `_validate_boundary_conditions` para que devuelvan mensajes de error más granulares y específicos, facilitando el diagnóstico de fallos en el bucle autónomo.
 - `2026-09-01T04:48:11` **quarantine.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad del archivo añadiendo docstrings técnicos detallados en funciones clave que carecían de ellos o cuya lógica era densa, además de unificar los nombres de parámetros de rutas para mayor consistencia interna.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T04:36:19` **browser.py** (legibilidad y documentación): He añadido docstrings detallados a las funciones de filtrado y navegación de disco para aclarar la lógica de seguridad y el manejo de excepciones, mejorando la mantenibilidad sin cambiar el comportamiento.
 - `2026-09-01T04:28:46` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y mantenibilidad de `branding.py` mediante la adición de docstrings estructuradas en las funciones de renderizado y una clarificación explícita de los tipos de retorno, facilitando la comprensión de las operaciones de dibujo vectorial en el lienzo.
 - `2026-09-01T04:27:58` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `ProblemCriterion.format_if_triggered` para extraer la lógica de evaluación en una función interna clara y añadiendo type hints faltantes en el procesamiento de criterios.
-- `2026-09-01T04:26:42` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `entries_from_folders` mediante un manejo explícito de errores y validaciones de tipo, asegurando que la entrada a `StartupEntry` siempre reciba strings válidos incluso ante nombres de archivo o rutas que contengan caracteres no imprimibles o inesperados.
-- `2026-09-01T04:25:56` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` añadiendo verificaciones explícitas de integridad (evitar `None` en claves críticas y asegurar que la configuración devuelta sea siempre un `AppSettings` completo) para evitar comportamientos inesperados ante datos de entrada parcialmente dañados.
-- `2026-09-01T04:16:45` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `check_system_lookalike` y `check_recent_executable_in_downloads` añadiendo validaciones explícitas de tipos y estados, asegurando que ante rutas inexistentes o atributos nulos, las funciones devuelvan `None` de forma segura en lugar de propagar excepciones.
-- `2026-09-01T04:16:33` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación explícita de `p.exists()` frente a `os.access` y mejorando la captura de errores durante la inspección de atributos, evitando que excepciones inesperadas del sistema de archivos interrumpan el flujo de validación.

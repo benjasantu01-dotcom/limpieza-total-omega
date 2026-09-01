@@ -179,7 +179,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     y verifica opcionalmente que la ruta sea descendiente del directorio base legítimo.
     """
     try:
-        if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
+        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return False
         if base_check_path and not _is_path_inside_base(path_obj.resolve(strict=True), base_check_path):
             return False
@@ -206,6 +206,10 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
 
+    # Pre-filtrado preventivo antes de procesar hijos
+    if is_protected_path(Path(root_abs)):
+        return 0
+
     total: int = 0
     try:
         with os.scandir(root_abs) as it:
@@ -216,7 +220,8 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         path_obj = Path(entry.path)
-                        if is_safe_to_modify(path_obj) and _is_safe_to_traverse(path_obj, base_check_path):
+                        # Validamos seguridad una sola vez por directorio hijo
+                        if _is_safe_to_traverse(path_obj, base_check_path):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                             )

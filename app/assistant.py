@@ -45,6 +45,7 @@ import urllib.request
 import re
 import math
 from itertools import islice
+from functools import lru_cache
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, Optional, Union, NamedTuple, Iterator
@@ -253,6 +254,10 @@ class SystemContext:
     browser_cache_mb: float = 0.0
     analyzed: bool = False
 
+    def __hash__(self) -> int:
+        """Permite usar el contexto como clave en caches, basándose en su estado actual."""
+        return hash((self.score, self.junk_mb, self.suspicious_count, self.startup_count))
+
     @property
     def is_valid_structure(self) -> bool:
         """Verifica que el estado actual cumple con las garantías de seguridad de texto."""
@@ -413,17 +418,15 @@ def explain_area(area: Any) -> str:
         return "No tengo una explicación para esa área."
     return _validate_response_length(_EXPLANATION_MAP.get(area.strip().lower(), "No tengo una explicación para esa área."))
 
-def _iter_active_problems(ctx: SystemContext) -> Iterator[str]:
-    """Genera las descripciones de problemas activos de forma eficiente."""
-    for crit in _CRITERIOS_SALUD:
-        match = crit.format_if_triggered(ctx)
-        if match:
-            yield match
+@lru_cache(maxsize=8)
+def _get_active_problems(ctx: SystemContext) -> list[str]:
+    """Evalúa criterios de salud con cache para evitar re-iteraciones costosas."""
+    return [match for crit in _CRITERIOS_SALUD if (match := crit.format_if_triggered(ctx))]
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa el contexto actual contra los criterios de salud limitando la salida."""
     if not ctx.analyzed: return []
-    return list(islice(_iter_active_problems(ctx), 3))
+    return _get_active_problems(ctx)[:3]
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde consultas sobre memoria RAM usando métricas de estado actual."""

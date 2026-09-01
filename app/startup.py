@@ -81,6 +81,8 @@ class StartupEntry:
     name: str
     command: str
     source: str
+    
+    # Atributos internos para la lógica de resolución diferida (lazy evaluation).
     _exec_cache: Optional[str] = field(default=None, init=False)
     _checked_exists: bool = field(default=False, init=False)
 
