@@ -63,8 +63,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
     """
     Evalúa si el nombre del archivo contiene una doble extensión maliciosa.
     
-    Analiza mediante regex si una extensión de documento precede a una ejecutable.
-    Esta técnica es común en ataques de suplantación de tipo de archivo.
+    Técnica: Detecta patrones donde un ejecutable (ej. .exe) aparece después de una 
+    extensión inofensiva (ej. .pdf), engañando al usuario sobre el tipo de archivo.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -74,8 +74,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
     
-    Utiliza un timestamp precalculado (now_ts) para evitar llamadas redundantes a time.now().
-    El chequeo se realiza solo en las carpetas definidas en WATCHED_FOLDERS.
+    Contexto: Los archivos recién bajados o creados en carpetas temporales/descargas
+    son vectores de entrada comunes. Usa 'now_ts' para evitar llamadas a reloj de sistema.
     """
     if not path: return None
     path_parts = path.parts
@@ -99,7 +99,8 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
     """
     Detecta si un ejecutable intenta suplantar procesos críticos del sistema.
     
-    Ignora archivos legítimos localizados dentro de la carpeta System32 o rutas protegidas.
+    Valida que archivos como 'svchost.exe' solo residan en ubicaciones legítimas 
+    protegidas, emitiendo una advertencia si se ejecutan desde el espacio de usuario.
     """
     if not path or not path.name: return None
     name_lower = path.name.lower()
@@ -185,14 +186,12 @@ class Scanner:
         Distribuye la entrada a la cola de directorios o al motor de heurística de archivos.
         """
         try:
-            # Primero verificamos seguridad antes de realizar cualquier syscall
             if not self._is_safe_entry(entry):
                 return
 
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                # Validar estado del archivo antes de procesar
                 file_stat = entry.stat(follow_symlinks=False)
                 if file_stat.st_size == 0: return
                 

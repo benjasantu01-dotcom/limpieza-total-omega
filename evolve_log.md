@@ -447,3 +447,10 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T09:13:31` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (Google Style) que explicitan las precondiciones, responsabilidades y el "porqué" de las validaciones críticas, facilitando el mantenimiento y la auditoría del flujo de seguridad.
 - `2026-09-01T09:13:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T09:13:31` Corrida terminada. Total usado hoy: 220.
+- `2026-09-01T09:21:23` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-09-01T09:21:58` ✅ Mejora aceptada en quarantine.py (enfoque: legibilidad y documentación). Se introdujeron docstrings de estilo Google Style en las funciones clave para clarificar las precondiciones, excepciones que pueden lanzarse y el propósito del flujo de datos, mejorando la legibilidad técnica sin alterar la lógica.
+- `2026-09-01T09:22:16` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-01T09:22:44` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-09-01T09:22:54` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación de las funciones de chequeo heurístico y añadí type hints explícitos para clarificar el flujo de datos, siguiendo las directrices de legibilidad sin alterar la lógica de escaneo.
+- `2026-09-01T09:22:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T09:22:54` Corrida terminada. Total usado hoy: 224.

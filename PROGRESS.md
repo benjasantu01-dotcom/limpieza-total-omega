@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 15
 - Sin respuesta de la IA (error o límite): 204
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 127 | 7 | 20 | 9 | 121 |
-| 2026-09-01 | 110 | 5 | 16 | 6 | 83 |
+| 2026-08-31 | 123 | 7 | 20 | 9 | 121 |
+| 2026-09-01 | 112 | 5 | 18 | 6 | 83 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
-- legibilidad y documentación: **53**
+- legibilidad y documentación: **55**
 - seguridad defensiva: **52**
-- robustez ante casos límite: **44**
+- robustez ante casos límite: **40**
 - rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **24**
-- `browser.py`: **21**
-- `quarantine.py`: **20**
-- `diskreport.py`: **19**
-- `scanner.py`: **19**
+- `assistant.py`: **23**
+- `quarantine.py`: **21**
+- `scanner.py`: **20**
+- `browser.py`: **20**
 - `duplicates.py`: **19**
 - `settings.py`: **19**
+- `diskreport.py`: **18**
 - `organizer.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **16**
 - `healthscore.py`: **15**
-- `branding.py`: **13**
+- `branding.py`: **12**
 - `main.py`: **9**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T09:22:54` **scanner.py** (legibilidad y documentación): Mejoré la documentación de las funciones de chequeo heurístico y añadí type hints explícitos para clarificar el flujo de datos, siguiendo las directrices de legibilidad sin alterar la lógica de escaneo.
+- `2026-09-01T09:21:58` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings de estilo Google Style en las funciones clave para clarificar las precondiciones, excepciones que pueden lanzarse y el propósito del flujo de datos, mejorando la legibilidad técnica sin alterar la lógica.
 - `2026-09-01T09:13:31` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (Google Style) que explicitan las precondiciones, responsabilidades y el "porqué" de las validaciones críticas, facilitando el mantenimiento y la auditoría del flujo de seguridad.
 - `2026-09-01T09:13:20` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel y la adición de Type Hints en parámetros clave para clarificar las expectativas de datos y mejorar la legibilidad del código siguiendo el enfoque actual.
 - `2026-09-01T09:12:52` **main.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `main.py` documentando los métodos de la clase `LimpiezaTotalOmegaApp` con docstrings estandarizados que explican su propósito, parámetros y comportamiento, facilitando la navegación del código para futuras iteraciones del bucle.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T08:43:01` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` ante condiciones de carrera y estados inconsistentes del sistema de archivos, asegurando que `p.exists()` se gestione con un `try-except` más específico y validando que el objeto sea un archivo o directorio antes de ejecutar los cheques de integridad, evitando errores de `AttributeError` en dispositivos especiales.
 - `2026-09-01T08:42:06` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la lógica de manipulación de archivos en un bloque `try...finally` para asegurar que el archivo original no se elimine si ocurre una excepción inesperada durante la actualización del manifiesto o la verificación final, garantizando la atomicidad de la operación.
 - `2026-09-01T08:40:58` **organizer.py** (manejo de errores y validación de entradas): Mejora la robustez de `scan_for_junk` añadiendo validaciones preventivas sobre los parámetros de entrada y normalizando el manejo de excepciones para evitar la propagación de fallos cuando se intenta acceder a rutas inválidas, asegurando que la función siempre retorne una lista consistente en lugar de abortar silenciosamente o lanzar errores no capturados.
-- `2026-09-01T08:34:06` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y `_get_process_path` validando explícitamente los buffers de memoria Win32 antes de usarlos y reforzando el manejo de errores al abrir procesos, evitando excepciones inesperadas y fugas de recursos.
-- `2026-09-01T08:33:50` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de `on_trim_process` al agregar una validación de seguridad explícita (`ensure_safe_to_modify` implícita en `run_async` y chequeo de existencia), y añadí una validación más estricta en el método `_validate_numeric_setting` para asegurar que los valores de configuración no sean silenciosamente corruptos.

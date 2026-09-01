@@ -172,10 +172,7 @@ def _safe_unlink(path: Path) -> bool:
         return False
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
-    """
-    Genera un nombre de archivo para la cuarentena evitando colisiones y caracteres inválidos.
-    El nombre resultante se prefija con el ID del ítem para asegurar unicidad dentro del sandbox.
-    """
+    """Genera un nombre de archivo para la cuarentena evitando colisiones y caracteres inválidos."""
     sanitized = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
     if not sanitized or sanitized in (".", ".."):
         sanitized = "unknown_file"
@@ -421,7 +418,6 @@ def quarantine_file(
         
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
-    # Marcador para revertir si la actualización del manifiesto falla
     operation_succeeded = False
     try:
         base_path = quarantine_dir(base)
@@ -519,7 +515,6 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         
     stored_file = (base_path / quarantine_item.stored_name).resolve()
     if not stored_file.exists():
-        # Sincronizar manifiesto si el archivo físico ya no existe
         save_manifest([i for i in items if i.item_id != item_id], base)
         return False
         
@@ -559,9 +554,8 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     for item in items:
         stored_path = (quarantine_root / item.stored_name).resolve()
-        # Se requiere integridad verificable y acceso exclusivo para la purga
         if not stored_path.exists():
-            continue # Se descarta del manifiesto implícitamente al no agregarlo a kept_items
+            continue 
         if _is_item_purgable(stored_path, item, quarantine_root) and _safe_unlink(stored_path):
             purged_count += 1
             continue
