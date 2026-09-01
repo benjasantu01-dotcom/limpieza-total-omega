@@ -844,3 +844,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-01T14:29:39` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `_is_inside_base_root` reemplazando la resolución costosa de rutas (`resolve`) y el chequeo de `parents` por una comparación de prefijos de cadenas normalizadas, reduciendo drásticamente las syscalls durante la recursión profunda.
 - `2026-09-01T14:29:39` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T14:29:39` Corrida terminada. Total usado hoy: 344.
+- `2026-09-01T14:38:10` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-01T14:38:39` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` y `save()` reemplazando llamadas redundantes a `load()` (que vuelve a leer el disco) por operaciones directas sobre el caché, y reduje las conversiones de tipos en los validadores para mejorar el rendimiento en lecturas repetidas.
+- `2026-09-01T14:39:07` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` eliminando la redundancia en la consulta de PowerShell y centralizando la lógica de caché para evitar múltiples ejecuciones costosas de `subprocess.run` y el procesamiento repetitivo de datos en el ciclo principal.
+- `2026-09-01T14:39:45` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-09-01T14:40:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-01T14:40:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T14:40:03` Corrida terminada. Total usado hoy: 348.

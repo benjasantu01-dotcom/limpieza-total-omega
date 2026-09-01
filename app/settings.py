@@ -179,9 +179,10 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         try:
-            parsed_value: int = int(val)
-            limit = _NUMERIC_LIMITS.get(key, _NumericRange(0, 10**9))
-            return max(limit.min, min(limit.max, parsed_value))
+            parsed_value = int(val)
+            limit = _NUMERIC_LIMITS.get(key)
+            if limit: return max(limit.min, min(limit.max, parsed_value))
+            return parsed_value
         except (TypeError, ValueError, OverflowError): return None
 
     @staticmethod
@@ -233,17 +234,12 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     base = Path(custom_base).expanduser().resolve()
     if _Validators._is_safe_path(str(base)):
-        try:
-            return base / SETTINGS_FILE
-        except (OSError, RuntimeError):
-            pass
+        try: return base / SETTINGS_FILE
+        except (OSError, RuntimeError): pass
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """
-    Valida un objeto arbitrario contra el esquema esperado.
-    Filtra claves inexistentes y aplica validadores específicos por campo.
-    """
+    """Valida un objeto arbitrario contra el esquema esperado."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_enum in ConfigKey:
@@ -256,10 +252,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """
-    Lee y valida la configuración desde disco. Implementa caché basada en mtime
-    para evitar redundancia en operaciones de I/O.
-    """
+    """Lee y valida la configuración desde disco con caché de mtime."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
@@ -267,75 +260,54 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     
     try:
         stats = ruta.stat()
-        mtime = stats.st_mtime
-        if not isinstance(mtime, (int, float)): raise TypeError
-        
-        if stats.st_size <= MAX_SETTINGS_SIZE:
-            if ruta_str in _CACHE:
-                cached_mtime, cached_data = _CACHE[ruta_str]
-                if cached_mtime == mtime:
-                    return cached_data.copy()
+        mtime = float(stats.st_mtime)
+        if ruta_str in _CACHE and _CACHE[ruta_str][0] == mtime:
+            return _CACHE[ruta_str][1].copy()
             
+        if stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 content = json.load(f)
-                if not _is_dict(content): raise ValueError("Formato de JSON inválido")
-                data = validate(content)
-                _CACHE[ruta_str] = (float(mtime), data)
+                data = validate(content) if _is_dict(content) else DEFAULTS.copy()
+                _CACHE[ruta_str] = (mtime, data)
                 return data.copy()
         return DEFAULTS.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, TypeError, ValueError):
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """
-    Escribe la configuración validada en disco de forma atómica.
-    Retorna la ruta del archivo si tuvo éxito, None en caso contrario.
-    """
+    """Escribe la configuración validada en disco de forma atómica."""
     if not _is_dict(values): return None
     cleaned_settings = validate(values)
     
-    api_key_from_env = os.environ.get(API_KEY_ENV_VAR)
-    has_api_key = bool(cleaned_settings.get("asistente_clave_api")) or bool(api_key_from_env)
-    if cleaned_settings.get("asistente_activado") and not has_api_key:
+    if cleaned_settings.get("asistente_activado") and not (
+        cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
+    ):
         cleaned_settings["asistente_activado"] = False
     
     ruta = settings_path(custom_base)
     parent = ruta.parent.resolve()
-    
-    if not _Validators._is_safe_path(str(parent)):
-        return None
+    if not _Validators._is_safe_path(str(parent)): return None
         
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     try:
-        if not parent.exists():
-            parent.mkdir(parents=True, exist_ok=True)
-        
-        data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
-        encoded_data = data.encode("utf-8")
-        if len(encoded_data) > MAX_SETTINGS_SIZE: return None
-        
+        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
+        if len(data) > MAX_SETTINGS_SIZE: return None
         with open(temp_path, "wb") as f:
-            f.write(encoded_data)
+            f.write(data)
             f.flush()
-            try: os.fsync(f.fileno())
-            except (OSError, AttributeError, NotImplementedError): pass
-        
+            os.fsync(f.fileno())
         os.replace(temp_path, ruta)
-        try:
-            mtime = ruta.stat().st_mtime
-            if isinstance(mtime, (int, float)):
-                _CACHE[str(ruta)] = (float(mtime), cleaned_settings)
-        except OSError:
-            pass
+        _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
-    except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
+    except (OSError, IOError, PermissionError, RuntimeError):
         if temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
-    """Aplica cambios parciales y guarda el resultado si hubo modificaciones reales."""
+    """Aplica cambios parciales y guarda el resultado si hubo modificaciones."""
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
@@ -350,33 +322,31 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     return current
 
 def reset(custom_base: PathLike | None = None) -> AppSettings:
-    """Restaura la configuración a los valores definidos en DEFAULTS."""
+    """Restaura la configuración a los valores por defecto."""
     save(DEFAULTS, custom_base)
     return DEFAULTS.copy()
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Recupera un valor específico de la configuración actual."""
+    # Acceder al caché directamente si existe, evitando llamadas recursivas innecesarias
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
-    """Obtiene la clave API, priorizando la variable de entorno sobre el archivo local."""
-    if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip():
-        return env_key
+    """Obtiene la clave API, priorizando la variable de entorno."""
+    if env_key := os.environ.get(API_KEY_ENV_VAR, "").strip(): return env_key
     return load(custom_base).get("asistente_clave_api", "").strip()
 
 def assistant_enabled(custom_base: PathLike | None = None) -> bool:
-    """Verifica si el asistente tiene los permisos y la configuración necesaria para operar."""
+    """Verifica si el asistente puede operar."""
     if os.environ.get(API_KEY_ENV_VAR): return True
     settings = load(custom_base)
     return bool(settings.get("asistente_activado")) and bool(settings.get("asistente_clave_api", "").strip())
 
 def describe(custom_base: PathLike | None = None) -> list[str]:
-    """Genera una representación textual formateada de la configuración para informes."""
+    """Genera una representación textual formateada de la configuración."""
     current = load(custom_base)
     api_key_env = os.environ.get(API_KEY_ENV_VAR)
     api_key_file = current.get("asistente_clave_api", "").strip()
-    api_present = bool(api_key_env) or bool(api_key_file)
-    
     origin = f"variable de entorno {API_KEY_ENV_VAR}" if api_key_env else ("archivo de configuración" if api_key_file else "no configurada")
     return [
         "Configuración actual", "", f"  Archivo: {settings_path(custom_base)}", "",

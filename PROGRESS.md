@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Mejoras aceptadas: **239** (47.4% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 201
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 65 | 2 | 10 | 5 | 78 |
-| 2026-09-01 | 176 | 6 | 27 | 12 | 123 |
+| 2026-08-31 | 61 | 2 | 10 | 5 | 78 |
+| 2026-09-01 | 178 | 6 | 27 | 12 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **50**
-- rendimiento: **42**
+- seguridad defensiva: **46**
+- rendimiento: **44**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
+- `settings.py`: **22**
 - `assistant.py`: **22**
 - `scanner.py`: **21**
-- `settings.py`: **21**
 - `quarantine.py`: **20**
-- `duplicates.py`: **19**
 - `browser.py`: **19**
-- `memory.py`: **18**
 - `diskreport.py`: **18**
-- `healthscore.py`: **17**
+- `duplicates.py`: **18**
 - `organizer.py`: **17**
+- `memory.py`: **17**
+- `healthscore.py`: **16**
 - `safety.py`: **16**
-- `main.py`: **13**
+- `main.py`: **12**
+- `startup.py`: **11**
 - `branding.py`: **10**
-- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T14:39:07` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` eliminando la redundancia en la consulta de PowerShell y centralizando la lógica de caché para evitar múltiples ejecuciones costosas de `subprocess.run` y el procesamiento repetitivo de datos en el ciclo principal.
+- `2026-09-01T14:38:39` **settings.py** (rendimiento): Optimizé `load()` y `save()` reemplazando llamadas redundantes a `load()` (que vuelve a leer el disco) por operaciones directas sobre el caché, y reduje las conversiones de tipos en los validadores para mejorar el rendimiento en lecturas repetidas.
 - `2026-09-01T14:29:39` **scanner.py** (rendimiento): Optimicé el método `_is_inside_base_root` reemplazando la resolución costosa de rutas (`resolve`) y el chequeo de `parents` por una comparación de prefijos de cadenas normalizadas, reduciendo drásticamente las syscalls durante la recursión profunda.
 - `2026-09-01T14:29:27` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la validación redundante `isdisjoint` (que generaba iteradores y creaba conjuntos internos en cada llamada) por un chequeo de intersección más directo utilizando el conjunto de partes de la ruta, reduciendo así la carga de CPU en recorridos masivos de disco.
 - `2026-09-01T14:20:41` **organizer.py** (rendimiento): Optimizé `_process_directory` utilizando un conjunto (`frozenset`) para la validación de extensiones y evitando la creación redundante de objetos `Path` y llamadas a `suffix` dentro del bucle, reduciendo significativamente la carga de I/O en escaneos profundos.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T13:48:36` **safety.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones de validación de seguridad (`_validate_structural_safety` y `_validate_boundary_conditions`) y agregué *type hints* faltantes para mejorar la legibilidad y mantenibilidad del flujo de validación.
 - `2026-09-01T13:48:01` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones "Argumentos" y "Excepciones" en las funciones críticas de validación y aislamiento para mejorar la legibilidad del flujo de seguridad y facilitar el mantenimiento del equipo de desarrollo.
 - `2026-09-01T13:47:26` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de Type Hints en retornos implícitos, la clarificación de docstrings en funciones críticas (como `_is_safe_for_disk_op`) y la estandarización de las comprobaciones de seguridad para cumplir con el rigor exigido.
-- `2026-09-01T13:39:00` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `NewType` y `Final`) para diferenciar unidades de medida y se documentó explícitamente el uso de `ctypes` en las estructuras de datos para clarificar el contrato con la API de Windows.
-- `2026-09-01T13:38:47` **main.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `main.py` mediante la refactorización de `_build_health_metrics_row` y `_build_health_area_bars` para reducir la complejidad cognitiva y facilitar la adición de futuras métricas, además de añadir docstrings detallados en las funciones de creación de widgets para clarificar su propósito funcional.

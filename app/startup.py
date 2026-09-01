@@ -59,8 +59,6 @@ EXECUTABLE_EXTS: Set[str] = {'.exe', '.bat', '.cmd', '.scr', '.lnk'}
 _EXISTS_CACHE: Dict[str, bool] = {}
 # _FULL_SCAN_CACHE: Lista consolidada de entradas recuperadas en el escaneo completo.
 _FULL_SCAN_CACHE: Optional[List[StartupEntry]] = None
-# _REGISTRY_CACHE: Lista de entradas recuperadas específicamente desde el registro.
-_REGISTRY_CACHE: Optional[List[StartupEntry]] = None
 
 # Mensaje estandarizado para deshabilitar programas sin tocar el registro.
 HOW_TO_DISABLE: str = (
@@ -327,10 +325,6 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
 
 def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[StartupEntry]:
     """Ejecuta consulta a PowerShell para extraer programas de las claves Run del Registro."""
-    global _REGISTRY_CACHE
-    if _REGISTRY_CACHE is not None:
-        return _REGISTRY_CACHE
-
     if os.name != "nt":
         return []
     
@@ -344,8 +338,7 @@ def entries_from_registry(keys: Iterable[str] = REGISTRY_RUN_KEYS) -> List[Start
         )
         if result.returncode == 0 and result.stdout:
             clean_out: str = "".join(c for c in result.stdout if ord(c) >= 32 or c in "\r\n")
-            _REGISTRY_CACHE = parse_registry_csv(clean_out)
-            return _REGISTRY_CACHE
+            return parse_registry_csv(clean_out)
     except (OSError, subprocess.SubprocessError):
         pass
     return []
