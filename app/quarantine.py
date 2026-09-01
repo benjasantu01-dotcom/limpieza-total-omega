@@ -531,10 +531,12 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
     """Verifica si un ítem en cuarentena cumple todas las condiciones para ser eliminado (integridad y seguridad)."""
     try:
+        # Validación de sandbox y seguridad estricta
+        if not _is_within_quarantine_sandbox(file_path, base_path):
+            return False
         return (
             file_path.exists() and
             file_path.is_file() and
-            _is_within_quarantine_sandbox(file_path, base_path) and
             item.verify_integrity(file_path) and
             not _is_file_locked(file_path) and
             is_safe_to_modify(file_path)
@@ -555,12 +557,12 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     for item in items:
         stored_path = (quarantine_root / item.stored_name).resolve()
-        if not stored_path.exists():
-            continue 
+        # Chequeo defensivo: el archivo debe existir y pasar todas las validaciones de seguridad
         if _is_item_purgable(stored_path, item, quarantine_root) and _safe_unlink(stored_path):
             purged_count += 1
-            continue
-        kept_items.append(item)
+        elif stored_path.exists():
+            # Si no se purga pero existe (y no es eliminable), se mantiene en el manifiesto
+            kept_items.append(item)
             
     if purged_count > 0:
         save_manifest(kept_items, base)

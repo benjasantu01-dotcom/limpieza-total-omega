@@ -158,10 +158,21 @@ def _is_system_or_hidden(path: Path) -> bool:
 
 
 @lru_cache(maxsize=2048)
-def _is_reparse_point(path: Path) -> bool:
-    """Identifica puntos de reparse usando atributos nativos de stat."""
+def _is_junction(path: Path) -> bool:
+    """Identifica puntos de unión (Junctions) mediante WinAPI para evitar follow-through."""
+    if os.name != 'nt': return False
     try:
-        return bool(path.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
+    except (AttributeError, OSError):
+        return False
+
+
+@lru_cache(maxsize=2048)
+def _is_reparse_point(path: Path) -> bool:
+    """Identifica puntos de reparse usando atributos nativos de stat o WinAPI."""
+    try:
+        return bool(path.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT) or _is_junction(path)
     except (AttributeError, OSError):
         return path.is_symlink()
 

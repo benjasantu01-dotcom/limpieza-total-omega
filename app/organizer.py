@@ -106,6 +106,14 @@ def _is_junk_path(path: Path) -> bool:
     return path.suffix.lower() in JUNK_EXTENSIONS
 
 
+def _is_unc_path(path: Path) -> bool:
+    """Detecta si una ruta corresponde a una ruta UNC de red."""
+    try:
+        return str(path.absolute()).startswith(("\\\\", "//"))
+    except Exception:
+        return True
+
+
 def _generate_unique_target(target: Path) -> Path:
     """Genera una ruta única para evitar sobreescritura, añadiendo sufijo numérico si el archivo existe."""
     if not target.exists():
@@ -165,14 +173,10 @@ def _passes_system_checks(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Validación de seguridad para operaciones de disco (mover/borrar).
-    
-    Verifica:
-    - Integridad de rutas (evitar dispositivos reservados).
-    - Permisos de escritura.
-    - Presencia de reparse points (bloquea junctions).
-    - Validación contra listas protegidas y estado de bloqueo del archivo.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
+    
+    if _is_unc_path(src) or _is_unc_path(dest): return False
     
     path_str = str(src).lower()
     reserved = {"con", "prn", "aux", "nul", "com1", "lpt1"}
@@ -214,10 +218,6 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """
     Recorre recursivamente un directorio buscando archivos basura.
-    
-    Args:
-        current_dir: Directorio a escanear.
-        found: Lista acumulativa de JunkFiles encontrados.
     """
     try:
         with os.scandir(current_dir) as it:
@@ -250,6 +250,7 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
             if not isinstance(d, (str, Path)):
                 continue
             path_obj: Path = Path(d).expanduser()
+            if _is_unc_path(path_obj): continue
             if path_obj.exists() and path_obj.is_dir():
                 resolved: Path = path_obj.resolve()
                 if not is_protected_path(resolved):
@@ -272,11 +273,9 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
     Valida espacio y seguridad antes de proponer una ruta de movimiento.
-    
-    Requiere que la unidad destino tenga al menos 50MB libres extra al tamaño 
-    del archivo para evitar saturar el disco.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
+    if _is_unc_path(dest_base): return None
     try:
         src_path: Path = junk_file.path.resolve()
         if not dest_base.exists() or not dest_base.is_dir(): return None
@@ -303,6 +302,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
     try:
         dest_base: Path = Path(review_dir).expanduser().resolve()
+        if _is_unc_path(dest_base): return None
         if not dest_base.exists(): dest_base.mkdir(parents=True, exist_ok=True)
         if not is_safe_to_modify(dest_base) or is_protected_path(dest_base): return None
     except (OSError, RuntimeError):
@@ -330,7 +330,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if not dest.exists() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
+        if _is_unc_path(dest) or not dest.exists() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
     except (OSError, RuntimeError):
         return 0
 
