@@ -6,47 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 15
 - Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 205
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 48 | 4 | 7 | 5 | 46 |
+| 2026-08-30 | 48 | 4 | 7 | 5 | 42 |
 | 2026-08-31 | 152 | 10 | 27 | 11 | 150 |
-| 2026-09-01 | 27 | 1 | 5 | 2 | 9 |
+| 2026-09-01 | 30 | 1 | 5 | 3 | 9 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
-- robustez ante casos límite: **42**
-- seguridad defensiva: **42**
+- seguridad defensiva: **44**
+- robustez ante casos límite: **43**
 - rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
+- `assistant.py`: **22**
 - `browser.py`: **21**
 - `duplicates.py`: **21**
 - `scanner.py`: **20**
+- `settings.py`: **20**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
 - `memory.py`: **18**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
 - `safety.py`: **16**
 - `organizer.py`: **16**
-- `branding.py`: **12**
+- `branding.py`: **13**
 - `main.py`: **6**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T01:54:33` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para prevenir el desbordamiento de rutas (`Path Traversal`) mediante la validación del directorio padre, asegurando que la operación de escritura permanezca confinada estrictamente a la estructura de directorios esperada incluso tras la resolución de enlaces simbólicos.
+- `2026-09-01T01:54:08` **assistant.py** (seguridad defensiva): Reforcé la integridad del motor de comunicación externa añadiendo una validación explícita para asegurar que el `context_text` enviado a Gemini no sea una cadena de error o un valor nulo, impidiendo que la IA procese metadatos inesperados que podrían interpretarse como instrucciones.
+- `2026-09-01T01:52:48` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y fallos de sistema al agregar un manejo de excepciones específico para `os.replace` (que puede fallar si el archivo de destino está bloqueado por otro proceso) y asegurando la liberación de recursos en el bloque `finally` para evitar archivos temporales huérfanos.
 - `2026-09-01T01:43:53` **scanner.py** (robustez ante casos límite): Se ha mejorado la resiliencia de `scanner.py` al añadir un chequeo de existencia de archivo dentro de `process_entry` antes de realizar operaciones de metadatos, evitando excepciones `FileNotFoundError` causadas por archivos que se eliminan o desplazan por procesos externos entre la iteración de `os.scandir` y el procesamiento heurístico.
 - `2026-09-01T01:43:42` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `safety.py` ante errores de sistema al implementar un manejo más estricto de excepciones `OSError` durante la consulta de atributos de archivos, previniendo que llamadas fallidas a `lstat` o `stat` provoquen estados inconsistentes en la validación de integridad.
 - `2026-09-01T01:42:47` **quarantine.py** (robustez ante casos límite): Se introdujo una validación de concurrencia y permisos en `_safe_unlink` y `purge_all` para prevenir errores durante la limpieza, asegurando que solo se intente eliminar el archivo si es posible acceder a él de forma exclusiva, mejorando la robustez ante bloqueos inesperados del sistema de archivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T01:04:10` **safety.py** (rendimiento): Optimicé el rendimiento de `_is_system_or_hidden` y `_is_reparse_point` eliminando el uso de `ctypes` (llamada costosa) en cada iteración, sustituyéndolo por el chequeo nativo de `os.stat` (cuyo resultado es compatible con las máscaras de Windows) y el uso de `path.lstat()` que ya se invoca en los chequeos principales.
 - `2026-09-01T01:02:46` **quarantine.py** (rendimiento): Optimizé la carga del manifiesto eliminando la reconstrucción innecesaria de objetos `QuarantineItem` en operaciones de lectura masiva (como `summarize` o `total_quarantined_bytes`), utilizando un formato de diccionario serializado que permite acceso directo a los datos sin instanciar la clase completa si solo se requiere el tamaño o información básica.
 - `2026-09-01T00:53:14` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la ejecución costosa de PowerShell por un filtrado de procesos local basado en un caché inteligente, evitando el *fork* de un subproceso pesado que degradaba el rendimiento al actualizar la UI.
-- `2026-09-01T00:51:24` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` utilizando un conjunto (`set`) para almacenar las rutas ya visitadas durante el escaneo, evitando así procesar directorios redundantes cuando existen múltiples puntos de entrada en el árbol de archivos, mejorando significativamente la performance en escaneos profundos.
-- `2026-09-01T00:43:10` **diskreport.py** (rendimiento): Optimizamos `_collect_summary_data` para evitar el uso de `dict.get()` dentro del bucle principal y pre-instanciamos los diccionarios, reduciendo el overhead de llamadas y mejorando el rendimiento en directorios con muchos archivos.
-- `2026-09-01T00:41:29` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens (que generaba listas innecesarias) por una búsqueda directa mediante el primer token relevante, reduciendo drásticamente la carga de procesamiento en cada consulta.

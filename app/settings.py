@@ -281,16 +281,15 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         cleaned_settings["asistente_activado"] = False
     
     ruta = settings_path(custom_base)
+    temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     try:
         parent = ruta.parent
         if not _Validators._is_safe_path(str(parent)):
             return None
-        
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
         elif not parent.is_dir():
             return None
-        
         if not is_safe_to_modify(str(ruta)):
             return None
             
@@ -298,7 +297,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         encoded_data = data.encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
         
-        temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         with open(temp_path, "wb") as f:
             f.write(encoded_data)
             f.flush()
@@ -310,6 +308,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError, json.JSONDecodeError):
         return None
+    finally:
+        if temp_path.exists():
+            try: os.remove(temp_path)
+            except OSError: pass
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     current = load(custom_base)

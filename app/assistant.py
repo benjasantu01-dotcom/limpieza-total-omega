@@ -588,7 +588,10 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     
     safe_q = _sanitize_query(question)
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
-    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_c): return None
+    
+    # Validar que el contexto sea informativo y no un mensaje de error o cadena vacía
+    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_c) or "Error" in safe_c:
+        return None
     
     try:
         payload = _build_payload(safe_q, safe_c)
