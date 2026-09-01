@@ -259,8 +259,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     
     try:
         stats = ruta.stat()
+        mtime = stats.st_mtime
+        if not isinstance(mtime, (int, float)): raise TypeError
+        
         if stats.st_size <= MAX_SETTINGS_SIZE:
-            mtime = stats.st_mtime
             if ruta_str in _CACHE:
                 cached_mtime, cached_data = _CACHE[ruta_str]
                 if cached_mtime == mtime:
@@ -268,10 +270,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
             
             with open(ruta, "r", encoding="utf-8") as f:
                 data = validate(json.load(f))
-                _CACHE[ruta_str] = (mtime, data)
+                _CACHE[ruta_str] = (float(mtime), data)
                 return data.copy()
         return DEFAULTS.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, TypeError):
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
@@ -285,7 +287,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         cleaned_settings["asistente_activado"] = False
     
     ruta = settings_path(custom_base)
-    # Validar integridad contra inyección de rutas en la carpeta base
     parent = ruta.parent.resolve()
     base_target = SETTINGS_DIR.resolve()
     if not (parent == base_target or _Validators._is_safe_path(str(parent))):
@@ -308,7 +309,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         os.replace(temp_path, ruta)
         try:
-            _CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
+            mtime = ruta.stat().st_mtime
+            if isinstance(mtime, (int, float)):
+                _CACHE[str(ruta)] = (float(mtime), cleaned_settings)
         except OSError:
             pass
         return ruta

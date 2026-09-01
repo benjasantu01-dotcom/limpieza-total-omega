@@ -98,23 +98,23 @@ class ProblemCriterion(NamedTuple):
     operator: str  # '<' o '>'
     message_format: str
 
+    def _evaluate_metric(self, val: float) -> bool:
+        """Compara el valor de la métrica contra el umbral según el operador definido."""
+        if self.operator == "<": return val < self.threshold
+        if self.operator == ">": return val > self.threshold
+        return False
+
     def format_if_triggered(self, ctx: SystemContext) -> str | None:
         """
         Evalúa si la métrica contenida en el contexto supera el umbral definido.
         Retorna la cadena formateada si se cumple la condición, o None.
         """
-        def _check_condition(val: float) -> bool:
-            """Evaluador interno de las condiciones del umbral."""
-            if self.operator == "<": return val < self.threshold
-            if self.operator == ">": return val > self.threshold
-            return False
-
         try:
             val = getattr(ctx, self.metric_key, None)
             if val is None: 
                 return None
             f_val = _safe_float(val, -1.0)
-            if f_val < 0 or not _check_condition(f_val):
+            if f_val < 0 or not self._evaluate_metric(f_val):
                 return None
             
             msg: str = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]

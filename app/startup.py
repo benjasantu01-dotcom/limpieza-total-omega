@@ -251,6 +251,8 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
     
     for folder in scan_folders:
         try:
+            if not folder.exists() or not folder.is_dir():
+                continue
             with os.scandir(folder) as it:
                 for entry in it:
                     try:
@@ -264,9 +266,9 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
                                         command=entry.path,
                                         source="carpeta"
                                     ))
-                    except (OSError, PermissionError, AttributeError):
+                    except (OSError, PermissionError):
                         continue
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, ValueError):
             continue
     return found_entries
 
