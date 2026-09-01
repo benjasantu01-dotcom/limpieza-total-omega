@@ -85,8 +85,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Normaliza y valida una ruta raíz antes de iniciar cualquier escaneo.
     
-    Aplica `resolve(strict=True)` para asegurar existencia y `is_protected_path`
-    para impedir el acceso a directorios críticos del sistema.
+    Args:
+        directory: Ruta a validar como directorio raíz.
     
     Returns:
         Path absoluto y validado, o None si la ruta es inaccesible o prohibida.
@@ -178,7 +178,12 @@ class DriveUsage:
 def format_size(num: Union[int, float, None]) -> str:
     """
     Formatea bytes a una representación legible (ej: '1.2 GB').
-    Utiliza base 1024 para las conversiones de unidades.
+    
+    Args:
+        num: Tamaño en bytes a formatear.
+        
+    Returns:
+        String formateado con la unidad correspondiente (B, KB, MB, GB, TB).
     """
     if num is None or not isinstance(num, (int, float)):
         return "0 B"
@@ -197,8 +202,13 @@ def format_size(num: Union[int, float, None]) -> str:
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
-    Consulta el estado de una unidad. Verifica permisos de lectura y excluye rutas UNC
-    por razones de seguridad y estabilidad en la red.
+    Consulta el estado de una unidad. 
+    
+    Args:
+        mount: Ruta del punto de montaje a consultar.
+        
+    Returns:
+        Instancia de DriveUsage o None si la ruta es inaccesible o prohibida.
     """
     if mount is None:
         return None
@@ -224,6 +234,12 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
 def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]:
     """
     Obtiene métricas de todas las unidades locales o de una lista provista.
+    
+    Args:
+        mounts: Opcional, lista de rutas a unidades para analizar.
+        
+    Returns:
+        Lista de objetos DriveUsage con las métricas de las unidades encontradas.
     """
     target_mounts: Iterable[str]
     if mounts is None:
@@ -244,6 +260,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorrido profundo mediante DFS iterativo. 
     Evita ciclos de reparse points (NTFS junctions) y rutas protegidas.
+    
+    Args:
+        directory: Raíz del escaneo.
+        skip_protected: Si es True, ignora rutas marcadas en `safety.is_protected_path`.
+        
+    Yields:
+        Tuplas (Path, tamaño_en_bytes) de cada archivo encontrado.
     """
     root_path = _validate_root(directory)
     if not root_path:
@@ -365,7 +388,12 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 
 
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
-    """Calcula el tamaño total en bytes y el número total de archivos encontrados."""
+    """
+    Calcula el tamaño total en bytes y el número total de archivos encontrados.
+    
+    Returns:
+        Tupla (total_bytes, total_files).
+    """
     total_bytes, file_count = 0, 0
     try:
         for _, size in walk_files(directory, skip_protected):

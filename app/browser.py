@@ -128,7 +128,6 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
-        # Asegurar que ambos existan y sean comparables
         return str(real_target.resolve()).startswith(str(real_base.resolve()))
     except (OSError, RuntimeError):
         return False
@@ -198,6 +197,11 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño de un directorio mediante escaneo recursivo con memoización.
+    
+    Args:
+        root_abs: Ruta absoluta del directorio a escanear.
+        memo: Diccionario para persistir tamaños calculados entre llamadas.
+        base_check_path: Opcional, ruta raíz para validar que no salgamos del árbol permitido.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -240,6 +244,7 @@ def _sum_directory_recursive(
 def directory_size(path: Union[str, Path, None]) -> int:
     """
     Punto de entrada público para obtener el tamaño (bytes) de una ruta.
+    Valida la seguridad de la ruta antes de iniciar el escaneo recursivo.
     """
     if path is None or not isinstance(path, (str, Path)):
         return 0
@@ -254,7 +259,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Verifica que la ruta candidata sea segura y exista.
+    Verifica que la ruta candidata exista, sea un directorio, no sea un symlink/junction,
+    y cumpla con las políticas de seguridad de la aplicación.
     """
     try:
         if not candidate.exists():
@@ -275,8 +281,10 @@ def detect_profiles(
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
     """
-    Escanea las rutas definidas en 'cache_paths'. Utiliza un caché de memoria 
-    compartido entre navegadores para evitar procesar subdirectorios comunes varias veces.
+    Escanea las rutas definidas en 'cache_paths' dentro de los directorios bases.
+    
+    Utiliza un diccionario 'perf_cache' compartido para memoizar resultados de
+    subdirectorios, optimizando el tiempo de ejecución en árboles grandes.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -285,7 +293,6 @@ def detect_profiles(
         return []
     
     k32 = _get_kernel32()
-    # Cache compartido para evitar recalculos de subdirectorios
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     
@@ -300,7 +307,6 @@ def detect_profiles(
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     c_path = candidate.resolve()
-                    # El diccionario perf_cache persiste a lo largo del loop, acelerando subdirectorios compartidos
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))

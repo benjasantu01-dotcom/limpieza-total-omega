@@ -104,6 +104,14 @@ class ProblemCriterion(NamedTuple):
         if self.operator == ">": return val > self.threshold
         return False
 
+    def is_triggered_by(self, ctx: SystemContext) -> bool:
+        """Determina si la métrica en el contexto viola este criterio."""
+        val = getattr(ctx, self.metric_key, None)
+        if val is None:
+            return False
+        f_val = _safe_float(val, -1.0)
+        return f_val >= 0 and self._evaluate_metric(f_val)
+
     def format_if_triggered(self, ctx: SystemContext) -> str | None:
         """
         Evalúa si la métrica contenida en el contexto supera el umbral definido.
@@ -111,12 +119,10 @@ class ProblemCriterion(NamedTuple):
         """
         try:
             val = getattr(ctx, self.metric_key, None)
-            if val is None: 
-                return None
-            f_val = _safe_float(val, -1.0)
-            if f_val < 0 or not self._evaluate_metric(f_val):
+            if not self.is_triggered_by(ctx):
                 return None
             
+            f_val = float(val)
             msg: str = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]
             return msg if _is_safe_text_structure(msg) else None
         except (ValueError, TypeError, AttributeError, KeyError):
@@ -427,7 +433,7 @@ def explain_area(area: Any) -> str:
 @lru_cache(maxsize=8)
 def _get_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa criterios de salud con cache para evitar re-iteraciones costosas."""
-    return [match for crit in _CRITERIOS_SALUD if (match := crit.format_if_triggered(ctx))]
+    return [msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx))]
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa el contexto actual contra los criterios de salud limitando la salida."""
