@@ -76,7 +76,7 @@ TRIM_WARNING: Final[str] = (
 )
 
 class MEMORYSTATUSEX(ctypes.Structure):
-    """Estructura Win32 para GlobalMemoryStatusEx de 64 bits."""
+    """Estructura Win32 para recibir datos de GlobalMemoryStatusEx de 64 bits."""
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
         ("dwMemoryLoad", ctypes.c_ulong),
@@ -98,24 +98,24 @@ class MemorySnapshot:
 
     @property
     def used(self) -> BytesValue:
-        """Calcula memoria ocupada. Garantiza resultado no negativo."""
+        """Calcula memoria ocupada total (física). Garantiza resultado no negativo."""
         return max(0, self.total - self.available)
 
     @property
     def used_percent(self) -> float:
-        """Porcentaje de RAM usada."""
+        """Calcula el porcentaje de RAM física ocupada."""
         if self.total <= 0: return 0.0
         return round((self.used / self.total) * 100, 1)
 
     @property
     def available_percent(self) -> float:
-        """Porcentaje de RAM libre."""
+        """Calcula el porcentaje de RAM física disponible."""
         if self.total <= 0: return 0.0
         return round((self.available / self.total) * 100, 1)
 
 @dataclass
 class ProcessMemory:
-    """Metadatos de consumo de memoria de un proceso."""
+    """Metadatos básicos de consumo de memoria de un proceso individual."""
     name: str
     pid: int
     working_set: BytesValue
@@ -123,11 +123,11 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Conversión explícita del Working Set de bytes a MiB."""
+        """Retorna el Working Set en MiB, útil para visualización humana."""
         return round(self.working_set / BYTES_IN_MB, 1)
 
 def format_bytes(num: Optional[int | float]) -> str:
-    """Convierte bytes a un formato legible por humanos."""
+    """Convierte bytes a un formato legible por humanos usando el sistema binario (1024)."""
     if not isinstance(num, (int, float)) or num <= 0:
         return "0 B"
     idx: int = min(int(math.log(num, 1024)), len(BYTE_UNITS) - 1)
@@ -136,14 +136,14 @@ def format_bytes(num: Optional[int | float]) -> str:
 
 @lru_cache(maxsize=1)
 def _create_mem_status_ex() -> MEMORYSTATUSEX:
-    """Instancia la estructura de estado de memoria Win32."""
+    """Instancia y prepara la estructura Win32 inicializada con su tamaño."""
     stat = MEMORYSTATUSEX()
     stat.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
     return stat
 
 @lru_cache(maxsize=4)
 def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
-    """Parsea /proc/meminfo extrayendo métricas clave."""
+    """Parsea el contenido de /proc/meminfo para extraer métricas de memoria."""
     if not isinstance(meminfo_text, str) or not meminfo_text:
         return MemorySnapshot(0, 0)
     
@@ -171,7 +171,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     return MemorySnapshot(total=total_mem, available=min(available, total_mem), cached=max(0, metric_map["Cached"]))
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Convierte salida CSV de PowerShell en objetos ProcessMemory."""
+    """
+    Convierte la salida CSV de PowerShell en objetos ProcessMemory.
+    Filtra procesos críticos y ordena por uso de memoria descendente.
+    """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
@@ -185,7 +188,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             name_val = str(parts[0])
             pid_val = int(parts[1])
             ws_val = int(parts[2])
-            # Validación estricta para evitar datos corruptos o fuera de rango
+            # Validación estricta para evitar datos corruptos o procesos protegidos
             if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
                 proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=ws_val))
         except (ValueError, TypeError): continue
@@ -194,7 +197,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     return proc_list[:max(0, int(limit))]
 
 def _read_windows_snapshot() -> MemorySnapshot:
-    """Llamada a API Win32 GlobalMemoryStatusEx."""
+    """Invoca la API de Windows GlobalMemoryStatusEx para obtener RAM física."""
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "GlobalMemoryStatusEx"):
         return MemorySnapshot(0, 0)
@@ -211,7 +214,7 @@ _snap_cache_time: float = 0.0
 _snap_cache_data: Optional[MemorySnapshot] = None
 
 def read_snapshot() -> MemorySnapshot:
-    """Lee estado global con caché temporal de 5 segundos."""
+    """Lee el estado actual de la memoria (con caché de 5s para evitar saturar el sistema)."""
     global _snap_cache_time, _snap_cache_data
     now = time.time()
     if (now - _snap_cache_time) < 5 and _snap_cache_data:
@@ -238,7 +241,10 @@ _proc_cache_time: float = 0.0
 _proc_cache_data: str = ""
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
-    """Retorna procesos más pesados mediante PowerShell (caché 60s)."""
+    """
+    Obtiene la lista de procesos más pesados mediante una consulta a PowerShell.
+    La consulta se cachea 60s por ser una operación costosa en recursos.
+    """
     global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
     
@@ -260,7 +266,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=2)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Evalúa nivel de presión: info, ok, warning o danger."""
+    """Clasifica el nivel de presión de la memoria como 'info', 'ok', 'warning' o 'danger'."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0: return "info"
     available = snapshot.available_percent
     if available >= 35: return "ok"
@@ -269,7 +275,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera reporte humano del estado de memoria."""
+    """Genera una lista de cadenas con un reporte legible para el usuario final."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     
@@ -295,11 +301,11 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Indica si el PID es crítico o el proceso actual."""
+    """Verifica si un PID pertenece a tareas críticas del sistema o a la propia app."""
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
-    """Extrae ruta absoluta del ejecutable vía API Win32."""
+    """Extrae la ruta absoluta del ejecutable del proceso usando QueryFullProcessImageNameW."""
     if not proc_handle: return None
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
@@ -314,7 +320,7 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
-    """Verifica que el proceso resida en una ruta segura (no sistema)."""
+    """Verifica que la ruta del proceso no pertenezca a directorios protegidos del sistema."""
     if not isinstance(path, str) or not os.path.isabs(path):
         return False, "Ruta inválida."
     try:
@@ -335,7 +341,7 @@ def _validate_path_security(path: str) -> Tuple[bool, Optional[str]]:
     return True, None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """Valida seguridad antes de modificar working set."""
+    """Realiza chequeos de seguridad antes de permitir cualquier modificación de memoria."""
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
@@ -351,7 +357,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Solicita liberación de working set al S.O."""
+    """Solicita al sistema la liberación de páginas físicas del Working Set de un proceso."""
     if os.name != "nt": return False, "Operación solo soportada en Windows."
     kernel32, psapi = ctypes.windll.kernel32, ctypes.windll.psapi
     if not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs del sistema no disponibles."

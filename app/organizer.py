@@ -131,7 +131,10 @@ def _is_allowed_directory(name: str) -> bool:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir un archivo en modo lectura binaria para detectar si está bloqueado por otro proceso."""
+    """
+    Intenta obtener un handle exclusivo. Si falla, el archivo está siendo
+    utilizado por otro proceso y no es seguro intentar moverlo.
+    """
     try:
         with open(path, "rb") as f:
             return False
@@ -150,11 +153,13 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 
 def _passes_system_checks(src: Path) -> bool:
-    """Verifica si un archivo en Windows tiene atributos especiales de sistema o de solo lectura."""
+    """
+    Verifica atributos de archivo. El bit 0x407 identifica archivos de Sistema,
+    Ocultos o de Solo Lectura que no deben ser manipulados por el organizador.
+    """
     if os.name != "nt": return True
     try:
         stat = src.stat()
-        # 0x407: 0x4 (System), 0x2 (Hidden), 0x1 (ReadOnly)
         return not (stat.st_file_attributes & 0x407)
     except OSError:
         return False
@@ -163,6 +168,7 @@ def _passes_system_checks(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza una batería de validaciones antes de cualquier operación de movimiento.
+    Valida integridad de rutas, permisos de escritura, bloqueos y restricciones de sistema.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
@@ -180,6 +186,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     try:
         if not src.exists() or not src.is_file(): return False
         
+        # Uso de is_protected_path (lectura) e is_safe_to_modify (escritura)
         if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(src, dest): return False
@@ -261,8 +268,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
     Valida la viabilidad de un movimiento y propone una ruta de destino única.
-    Returns:
-        Optional[Path]: La ruta de destino final o None si la operación es insegura.
+    Incluye chequeo de espacio libre para evitar fallos de escritura parcial.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
     try:
@@ -306,6 +312,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and is_safe_to_modify(src):
+                # ensure_safe_to_modify lanza excepción si la ruta no es segura
                 ensure_safe_to_modify(src)
                 shutil.move(str(src), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError) as e:

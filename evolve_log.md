@@ -659,3 +659,22 @@ FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app
 - `2026-09-01T00:12:07` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._get_cached_data, LimpiezaTotalOmegaApp._get_cached_or_run, LimpiezaTotalOmegaApp._is_safe_disk_operation, LimpiezaTotalOmegaApp._is_safe_file_access, LimpiezaTotalOmegaApp._is_safe_target_dir, LimpiezaTotalOmegaApp._is_valid_dir, LimpiezaTotalOmegaApp._update_cards, LimpiezaTotalOmegaApp._validate_numeric_setting, LimpiezaTotalOmegaApp._verify_disk_path
 - `2026-09-01T00:12:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T00:12:07` Corrida terminada. Total usado hoy: 8.
+- `2026-09-01T00:20:23` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-09-01T00:20:53` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y legibilidad de `memory.py` añadiendo type hints faltantes, docstrings detallados en las funciones de bajo nivel y una sección de advertencia clara, manteniendo la integridad del código.
+- `2026-09-01T00:21:18` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad de las funciones de validación crítica en `organizer.py`, añadiendo docstrings que explicitan el "porqué" de las restricciones de seguridad para mejorar la mantenibilidad a largo plazo sin alterar la lógica de ejecución.
+- `2026-09-01T00:22:04` Tests FALLARON:
+```
+or fatal durante finalización de aislamiento: La integridad falló o el archivo origen fue alterado durante el proceso.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - RuntimeError: Error fatal durante finalización de aislamiento: La integridad falló o el archivo origen fue alterado durante el proceso.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - RuntimeError: Error fatal durante finalización de aislamiento: La integridad falló o el archivo origen fue alterado durante el proceso.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - RuntimeError: Error fatal durante finalización de aislamiento: La integridad falló o el archivo origen fue alterado durante el proceso.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - RuntimeError: Error fatal durante finalización de aislamiento: La integridad falló o el archivo origen fue alterado durante el proceso.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - RuntimeError: Error fatal durante finalización de aislamiento: La integridad falló o el archivo origen fue alterado durante el proceso.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - RuntimeError: Error fatal durante finalización de aislamiento: La integridad falló o el archivo origen fue alterado durante el proceso.
+8 failed, 291 passed in 1.12s
+
+```
+- `2026-09-01T00:22:04` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Mejoré la legibilidad y mantenibilidad de `quarantine.py` mediante la refactorización de `quarantine_file` para extraer la lógica compleja de persistencia y verificación final, facilitando la comprensión del flujo crítico de aislamiento.
+- `2026-09-01T00:22:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-01T00:22:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T00:22:07` Corrida terminada. Total usado hoy: 12.
