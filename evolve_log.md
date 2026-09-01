@@ -1120,3 +1120,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-01T05:59:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-09-01T05:59:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T05:59:22` Corrida terminada. Total usado hoy: 144.
+- `2026-09-01T06:07:22` Arrancando corrida. Quedan hoy ~156 peticiones objetivo.
+- `2026-09-01T06:07:51` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita de "path traversal" mediante `path.resolve()` comparado contra sus padres, y protegiendo la lógica ante rutas que contengan caracteres de dispositivo reservado en Windows (`CON`, `NUL`, etc.) mediante una normalización más estricta.
+- `2026-09-01T06:08:25` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine.py` ante errores de acceso a disco durante el ciclo de vida de los archivos, implementando un chequeo previo de permisos de lectura en `quarantine_file` para evitar fallos a mitad de proceso y asegurando que las operaciones de limpieza de manifiesto sean resilientes ante archivos desaparecidos.
+- `2026-09-01T06:08:44` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-09-01T06:08:59` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Mejoré la robustez ante errores de acceso en `is_protected_path` añadiendo un bloque `try-except` que captura errores de sistema al iterar sobre partes de la ruta, previniendo cuelgues ante archivos bloqueados o permisos denegados.
+- `2026-09-01T06:08:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T06:08:59` Corrida terminada. Total usado hoy: 148.

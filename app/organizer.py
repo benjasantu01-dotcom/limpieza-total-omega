@@ -170,35 +170,31 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
-    path_str = str(src)
-    # Evitar inyección de comandos o rutas que emulen dispositivos del sistema (Windows)
-    if "\0" in path_str or any(c in path_str for c in ["<", ">", "|"]): return False
-    if os.name == "nt" and any(path_str.upper().startswith(d) for d in ["CON:", "PRN:", "AUX:", "NUL:"]): return False
-    
-    if src.parent == src or dest.parent == dest: return False
-    if str(src).startswith(r"\\") or str(dest).startswith(r"\\"): return False
-    
-    if len(str(src)) > 240 or len(str(dest)) > 240: return False
-    if not src.is_absolute() or not dest.is_absolute(): return False
+    # Normalización para detección de dispositivos Windows (ej. CON, NUL)
+    path_str = str(src).lower()
+    reserved = {"con", "prn", "aux", "nul", "com1", "lpt1"}
+    if any(path_str.startswith(r) for r in reserved): return False
+    if "\0" in str(src) or any(c in str(src) for c in ["<", ">", "|"]): return False
     
     try:
-        if not src.exists() or not src.is_file(): return False
+        s_res = src.resolve()
+        if s_res.parent == s_res: return False
+        
+        if not s_res.exists() or not s_res.is_file(): return False
         
         # Validar reparse points para evitar escapes del sandbox de trabajo
-        if _is_junction(src) or _is_junction(dest.parent if dest.is_file() else dest): return False
+        if _is_junction(s_res) or _is_junction(dest.parent if dest.is_file() else dest): return False
         
-        # Uso estricto de seguridad: is_protected_path bloquea rutas de sistema; is_safe_to_modify valida permisos
-        if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
-        if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
-        if _is_recursive_violation(src, dest): return False
+        # Uso estricto de seguridad: is_protected_path bloquea rutas de sistema
+        if is_protected_path(s_res) or is_protected_path(dest.resolve()): return False
+        if not is_safe_to_modify(s_res) or not is_safe_to_modify(dest): return False
+        if _is_recursive_violation(s_res, dest): return False
         
         target_dir: Path = dest.parent if dest.is_file() else dest
-        if not (os.access(src, os.W_OK) and os.access(target_dir, os.W_OK)): return False
-        if src.drive != dest.drive: return False
+        if not (os.access(s_res, os.W_OK) and os.access(target_dir, os.W_OK)): return False
         
-        stat = src.stat()
-        if os.name == "nt" and (stat.st_file_attributes & 0x400): return False
-        return stat.st_size > 0 and _passes_system_checks(src) and not _is_file_locked(src)
+        stat = s_res.stat()
+        return stat.st_size > 0 and _passes_system_checks(s_res) and not _is_file_locked(s_res)
     except (OSError, RuntimeError, AttributeError):
         return False
 
@@ -280,7 +276,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
     try:
         src_path: Path = junk_file.path.resolve()
-        if src_path.parent == src_path or dest_base.parent == dest_base: return None
         if not dest_base.exists() or not dest_base.is_dir(): return None
         
         # Validar espacio antes de intentar cualquier operación

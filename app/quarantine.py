@@ -261,6 +261,8 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
     try:
         resolved_source = source_path.resolve()
+        if not os.access(resolved_source, os.R_OK):
+            raise UnsafePathError("Permiso de lectura denegado sobre el archivo origen.")
     except OSError as e:
         raise UnsafePathError(f"Ruta origen inaccesible: {e}")
 
@@ -512,6 +514,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
         
     stored_file = (base_path / quarantine_item.stored_name).resolve()
     if not stored_file.exists():
+        # Sincronizar manifiesto si el archivo físico ya no existe
         save_manifest([i for i in items if i.item_id != item_id], base)
         return False
         
@@ -552,7 +555,9 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     for item in items:
         stored_path = (quarantine_root / item.stored_name).resolve()
         # Se requiere integridad verificable y acceso exclusivo para la purga
-        if not stored_path.exists() or (_is_item_purgable(stored_path, item, quarantine_root) and _safe_unlink(stored_path)):
+        if not stored_path.exists():
+            continue # Se descarta del manifiesto implícitamente al no agregarlo a kept_items
+        if _is_item_purgable(stored_path, item, quarantine_root) and _safe_unlink(stored_path):
             purged_count += 1
             continue
         kept_items.append(item)
