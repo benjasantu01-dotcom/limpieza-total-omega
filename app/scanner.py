@@ -191,15 +191,14 @@ class Scanner:
                 if self._is_safe_entry(entry):
                     self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                if not entry.exists(): return
+                # Validar estado del archivo antes de procesar
+                file_stat = entry.stat(follow_symlinks=False)
+                if file_stat.st_size == 0: return
+                
                 ext_low = Path(entry.name).suffix.lower()
                 if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low in SUSPICIOUS_CONTENT_EXT:
                     if self._is_safe_entry(entry):
-                        try:
-                            if entry.stat().st_size > 0:
-                                self._run_file_heuristics(Path(entry.path), entry, ext_low)
-                        except (OSError, FileNotFoundError):
-                            return
+                        self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError, FileNotFoundError):
             logger.debug(f"Acceso denegado o archivo inaccesible: {entry.path}")
 
@@ -215,7 +214,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     """
     Orquestador de reglas: ejecuta todas las heurísticas configuradas para un archivo.
     """
-    if not path or not path.exists(): return []
+    try:
+        if not path or not path.exists(): return []
+    except (OSError, PermissionError): return []
+    
     findings: ScanResult = []
     
     if (double_ext := check_double_extension(path, entry, now_ts)):

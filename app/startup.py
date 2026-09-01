@@ -135,7 +135,7 @@ class StartupEntry:
         if not isinstance(path_string, str) or not path_string:
             return ""
         
-        # Prevenir rutas UNC (starts with \\) que pueden disparar conexiones de red
+        # Prevenir rutas con caracteres inválidos o UNC (starts with \\)
         if any(c in path_string for c in '<>|?*\0&;') or path_string.startswith(r"\\"):
             return ""
         
@@ -155,6 +155,9 @@ class StartupEntry:
             
             # Validación de reparse points antes de cualquier acceso profundo
             if p.exists():
+                if p.is_dir(): # Ignorar si la ruta resultante apunta a una carpeta
+                    _EXISTS_CACHE[path_string] = False
+                    return ""
                 try:
                     stat_info = p.lstat()
                     # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT en Windows
@@ -180,7 +183,7 @@ class StartupEntry:
 
             real_path: Path = Path(real_path_str)
             
-            if not real_path_str or not real_path.exists() or is_protected_path(real_path):
+            if not real_path_str or not real_path.exists() or real_path.is_dir() or is_protected_path(real_path):
                 _EXISTS_CACHE[path_string] = False
                 return ""
                 

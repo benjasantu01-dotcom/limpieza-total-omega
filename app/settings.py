@@ -287,7 +287,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     try:
         parent = ruta.parent
-        if not _Validators._is_safe_path(str(parent)):
+        # Validar no solo si es segura, sino si es ruta prohibida explícitamente
+        if not _Validators._is_safe_path(str(parent)) or is_protected_path(str(parent)):
             return None
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
@@ -303,7 +304,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             except (OSError, AttributeError, NotImplementedError): pass
         
         os.replace(temp_path, ruta)
-        _CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
+        try:
+            _CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
+        except OSError:
+            pass
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
         return None
