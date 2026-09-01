@@ -1113,3 +1113,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-01T05:48:51` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se mejora la robustez de `walk_files` y `largest_folders` ante la imposibilidad de resolver rutas o nombres de archivos excesivamente largos, manejando específicamente el caso donde `os.scandir` devuelve entradas que, al intentar acceder a sus metadatos (stat), arrojan `FileNotFoundError` o `OSError` por permisos denegados o race conditions en el sistema de archivos.
 - `2026-09-01T05:48:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T05:48:51` Corrida terminada. Total usado hoy: 140.
+- `2026-09-01T05:57:13` Arrancando corrida. Quedan hoy ~160 peticiones objetivo.
+- `2026-09-01T05:57:39` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-01T05:58:03` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-01T05:59:09` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones y validación de estado en `_validate_environment` para evitar que la aplicación intente ejecutarse con una ruta de trabajo inaccesible o en un entorno que pueda causar errores de acceso al disco durante las operaciones de escaneo, mejorando la resiliencia ante condiciones límite del sistema de archivos.
+- `2026-09-01T05:59:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-01T05:59:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T05:59:22` Corrida terminada. Total usado hoy: 144.
