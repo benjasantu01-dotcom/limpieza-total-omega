@@ -732,3 +732,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T01:34:13` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
 - `2026-09-01T01:34:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T01:34:13` Corrida terminada. Total usado hoy: 40.
+- `2026-09-01T01:42:10` Arrancando corrida. Quedan hoy ~260 peticiones objetivo.
+- `2026-09-01T01:42:47` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se introdujo una validación de concurrencia y permisos en `_safe_unlink` y `purge_all` para prevenir errores durante la limpieza, asegurando que solo se intente eliminar el archivo si es posible acceder a él de forma exclusiva, mejorando la robustez ante bloqueos inesperados del sistema de archivos.
+- `2026-09-01T01:43:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-01T01:43:42` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `safety.py` ante errores de sistema al implementar un manejo más estricto de excepciones `OSError` durante la consulta de atributos de archivos, previniendo que llamadas fallidas a `lstat` o `stat` provoquen estados inconsistentes en la validación de integridad.
+- `2026-09-01T01:43:53` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la resiliencia de `scanner.py` al añadir un chequeo de existencia de archivo dentro de `process_entry` antes de realizar operaciones de metadatos, evitando excepciones `FileNotFoundError` causadas por archivos que se eliminan o desplazan por procesos externos entre la iteración de `os.scandir` y el procesamiento heurístico.
+- `2026-09-01T01:43:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T01:43:53` Corrida terminada. Total usado hoy: 44.

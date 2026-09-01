@@ -158,10 +158,10 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _safe_unlink(path: Path) -> bool:
-    """Elimina un archivo tras validar que no es un enlace y se encuentra en una ruta permitida."""
+    """Elimina un archivo tras validar que no es un enlace, está libre y en una ruta permitida."""
     try:
         if path.exists() and path.is_file() and not path.is_symlink():
-            if is_safe_to_modify(path):
+            if is_safe_to_modify(path) and not _is_file_locked(path):
                 path.unlink()
                 return True
         return False
@@ -528,6 +528,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     for item in items:
         stored_path = (quarantine_root / item.stored_name).resolve()
+        # Se requiere tanto integridad verificable como acceso exclusivo para la purga
         if not stored_path.exists() or (_is_item_purgable(stored_path, item, quarantine_root) and _safe_unlink(stored_path)):
             purged_count += 1
             continue

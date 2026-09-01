@@ -151,7 +151,6 @@ def _has_alternate_data_stream(path: Path) -> bool:
 def _is_system_or_hidden(path: Path) -> bool:
     """Verifica si el archivo tiene atributos de sistema u oculto mediante stat."""
     try:
-        # st_file_attributes es específico de Windows en os.stat_result
         attrs = path.stat().st_file_attributes
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
     except (AttributeError, OSError):
@@ -224,9 +223,12 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError(f"Error de acceso: {e.strerror}")
 
     for rule in _VALIDATORS:
-        if rule.predicate(path, file_stat):
-            _INTEGRITY_CACHE[path_key] = (now, False)
-            raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
+        try:
+            if rule.predicate(path, file_stat):
+                _INTEGRITY_CACHE[path_key] = (now, False)
+                raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
+        except OSError:
+            continue
             
     _INTEGRITY_CACHE[path_key] = (now, True)
 
