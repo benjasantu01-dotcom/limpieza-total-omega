@@ -685,3 +685,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T00:32:33` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) en las funciones críticas de resolución de rutas para clarificar la lógica de seguridad y el manejo de excepciones, facilitando el mantenimiento futuro.
 - `2026-09-01T00:32:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T00:32:33` Corrida terminada. Total usado hoy: 16.
+- `2026-09-01T00:40:45` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-01T00:41:29` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens (que generaba listas innecesarias) por una búsqueda directa mediante el primer token relevante, reduciendo drásticamente la carga de procesamiento en cada consulta.
+- `2026-09-01T00:42:07` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-01T00:42:35` ➖ Sin cambios en browser.py (enfoque: rendimiento). Motivo: Se optimizó la recursión en `_sum_directory_recursive` implementando una memoización efectiva que reutiliza resultados de subcarpetas, evitando cálculos redundantes en estructuras de caché compartidas entre navegadores.
+- `2026-09-01T00:43:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos `_collect_summary_data` para evitar el uso de `dict.get()` dentro del bucle principal y pre-instanciamos los diccionarios, reduciendo el overhead de llamadas y mejorando el rendimiento en directorios con muchos archivos.
+- `2026-09-01T00:43:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T00:43:10` Corrida terminada. Total usado hoy: 20.

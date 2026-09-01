@@ -462,8 +462,13 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         total_files += 1
         
         ext = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[ext] = ext_sizes.get(ext, 0) + size
-        ext_counts[ext] = ext_counts.get(ext, 0) + 1
+        # Optimización: evitar .get()
+        if ext in ext_sizes:
+            ext_sizes[ext] += size
+            ext_counts[ext] += 1
+        else:
+            ext_sizes[ext] = size
+            ext_counts[ext] = 1
         
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (size, path))

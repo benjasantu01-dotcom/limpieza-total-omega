@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **225** (44.6% de aceptación)
+- Mejoras aceptadas: **224** (44.4% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 17
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 61 | 7 | 9 | 6 | 55 |
+| 2026-08-30 | 58 | 7 | 9 | 6 | 54 |
 | 2026-08-31 | 152 | 10 | 27 | 11 | 150 |
-| 2026-09-01 | 12 | 1 | 2 | 0 | 1 |
+| 2026-09-01 | 14 | 1 | 2 | 1 | 2 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **41**
-- rendimiento: **29**
+- robustez ante casos límite: **38**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `scanner.py`: **20**
 - `settings.py`: **20**
+- `assistant.py`: **20**
 - `browser.py`: **20**
 - `duplicates.py`: **20**
-- `assistant.py`: **19**
-- `organizer.py`: **18**
-- `quarantine.py`: **18**
-- `memory.py`: **17**
-- `diskreport.py`: **17**
+- `diskreport.py`: **18**
 - `healthscore.py`: **17**
+- `organizer.py`: **17**
+- `quarantine.py`: **17**
+- `memory.py`: **16**
 - `safety.py`: **14**
 - `branding.py`: **12**
 - `main.py`: **7**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T00:43:10` **diskreport.py** (rendimiento): Optimizamos `_collect_summary_data` para evitar el uso de `dict.get()` dentro del bucle principal y pre-instanciamos los diccionarios, reduciendo el overhead de llamadas y mejorando el rendimiento en directorios con muchos archivos.
+- `2026-09-01T00:41:29` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens (que generaba listas innecesarias) por una búsqueda directa mediante el primer token relevante, reduciendo drásticamente la carga de procesamiento en cada consulta.
 - `2026-09-01T00:32:33` **startup.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) en las funciones críticas de resolución de rutas para clarificar la lógica de seguridad y el manejo de excepciones, facilitando el mantenimiento futuro.
 - `2026-09-01T00:32:18` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints refinados en `save` y `load` para clarificar la lógica de persistencia, facilitando la comprensión del flujo de datos y la seguridad de las rutas.
 - `2026-09-01T00:31:50` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `stack` y `ScanResult`), se añadieron docstrings explicativos en funciones críticas para aclarar el flujo de control y se refinó la nomenclatura de parámetros en el registro de escaneo para mejorar la mantenibilidad y claridad del código.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T00:02:28` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `branding.py` mediante la adición de docstrings técnicos en las funciones de dibujo y la especificación de tipos en las funciones auxiliares de color, facilitando la comprensión del motor gráfico a otros desarrolladores.
 - `2026-09-01T00:01:35` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` hacia un diseño de "early return" y la extracción de la lógica de construcción del payload JSON a una función dedicada, reduciendo el anidamiento y clarificando el flujo de seguridad.
 - `2026-08-31T15:19:41` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_inside_base_root` y `scan_directory` validando entradas nulas o rutas inválidas de forma temprana para evitar excepciones de `Path.resolve()` en entornos con permisos restringidos.
-- `2026-08-31T15:09:58` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `quarantine_file` para asegurar que el sistema no se detenga ante fallos de I/O parciales al iterar o procesar archivos, reemplazando excepciones genéricas por capturas controladas que mantienen la integridad del manifiesto.
-- `2026-08-31T15:09:24` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo validaciones explícitas de entrada, manejo de excepciones más fino en el cálculo de espacio en disco y validación de integridad de rutas para evitar errores en tiempo de ejecución al manipular archivos bloqueados o inexistentes.
