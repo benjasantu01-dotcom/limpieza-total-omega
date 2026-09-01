@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Mejoras aceptadas: **248** (49.2% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 193
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 109 | 4 | 17 | 6 | 108 |
-| 2026-09-01 | 136 | 5 | 23 | 8 | 88 |
+| 2026-08-31 | 109 | 4 | 17 | 6 | 104 |
+| 2026-09-01 | 139 | 5 | 23 | 8 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **55**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **46**
-- seguridad defensiva: **46**
 - rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
@@ -36,16 +36,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **20**
 - `scanner.py`: **20**
 - `diskreport.py`: **19**
-- `memory.py`: **17**
+- `memory.py`: **18**
 - `organizer.py`: **17**
+- `healthscore.py`: **16**
 - `safety.py`: **16**
-- `healthscore.py`: **15**
 - `branding.py`: **13**
+- `main.py`: **11**
 - `startup.py`: **10**
-- `main.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T11:06:10` **memory.py** (seguridad defensiva): Mejoré la seguridad en `trim_working_set` añadiendo la validación de `is_safe_to_modify` para la ruta del proceso, asegurando que no se intente realizar operaciones de trim en ejecutables protegidos, y refiné el manejo de `psapi` para evitar errores de referencia en entornos donde las funciones de kernel no sean accesibles.
+- `2026-09-01T11:05:54` **main.py** (seguridad defensiva): Se ha mejorado la robustez de las operaciones que recorren el disco agregando una validación explícita mediante `safety.is_safe_to_modify` antes de proceder con el procesamiento de rutas en `on_scan_junk` y `on_find_duplicates`, garantizando que el `ThreadPoolExecutor` no opere sobre rutas bloqueadas incluso si el chequeo inicial en `run_async` fuera insuficiente.
+- `2026-09-01T11:04:42` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del cálculo al añadir una capa de protección en el `try-except` dentro del bucle de reglas, garantizando que una excepción en una fábrica de mensajes (por ejemplo, por acceso a un atributo inesperado) no aborte el cálculo del `healthscore` ni deje al usuario sin el resumen.
 - `2026-09-01T10:54:56` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante una validación estricta de rutas mediante `resolve()` antes de realizar cualquier operación de listado, asegurando que no se pueda escapar del directorio raíz del navegador mediante ataques de "path traversal" o links simbólicos, incluso si las funciones de chequeo previas fallaran.
 - `2026-09-01T10:54:29` **branding.py** (seguridad defensiva): Se ha mejorado `save_logo_svg` para asegurar que la validación de la ruta sea robusta ante intentos de inyección o rutas inválidas, utilizando `path_obj.parent.resolve()` para prevenir condiciones de carrera y validaciones redundantes que bloqueen el acceso a directorios de solo lectura del sistema.
 - `2026-09-01T10:53:57` **assistant.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_call_gemini` añadiendo una validación explícita para asegurar que la API key no contenga caracteres de control o inyección, reforzando el cumplimiento de `is_protected_path` sobre la respuesta final para prevenir cualquier retorno malicioso.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T10:24:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas que podrían estar vacías o contener valores mal formados, asegurando que las reglas de recomendación no fallen si los datos son inesperados mediante un manejo de excepciones más granular y un filtrado de tipos defensivo.
 - `2026-09-01T10:23:51` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `format_group` ante archivos que se eliminan o bloquean durante la ejecución, integrando validaciones de estado más estrictas y manejando la posibilidad de que un grupo quede huérfano de candidatos válidos.
 - `2026-09-01T10:23:09` **diskreport.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores y validación de tipos en el cálculo de `total_size` y `walk_files`, asegurando que archivos bloqueados por el sistema operativo o con metadatos corruptos no interrumpan el escaneo ni propaguen excepciones inesperadas.
-- `2026-09-01T10:14:04` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante posibles errores de resolución de rutas o permisos, asegurando que `ensure_safe_to_modify` se utilice exclusivamente tras validaciones previas para evitar excepciones innecesarias durante operaciones de lectura/escritura.
-- `2026-09-01T10:13:32` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `build_context` y la ingesta de datos en `SystemContext` para manejar con elegancia valores numéricos corruptos (como `float('nan')` o `inf`), listas inesperadas, o tipos malformados que provienen de configuraciones o lecturas de disco, evitando que el asistente falle al procesar datos del sistema.
-- `2026-09-01T10:04:19` **settings.py** (rendimiento): Se optimizó el acceso a los datos de configuración transformando `_VALIDATOR_MAP` y las colecciones de validación en constantes más eficientes y reduciendo la redundancia de las llamadas a `load()` en funciones de uso frecuente como `assistant_api_key` y `assistant_enabled`, evitando recrear diccionarios innecesariamente.

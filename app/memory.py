@@ -251,7 +251,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        # Optimizamos el comando: filtrado en pipeline temprano y reducción de overhead
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
             "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 60 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
@@ -353,8 +352,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     Solo disponible en Windows y sujeto a validación de seguridad estricta.
     """
     if os.name != "nt": return False, "Operación solo soportada en Windows."
-    kernel32, psapi = ctypes.windll.kernel32, ctypes.windll.psapi
-    if not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs del sistema no disponibles."
+    kernel32 = ctypes.windll.kernel32
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs del sistema no disponibles."
     
     try:
         target_pid = int(pid)

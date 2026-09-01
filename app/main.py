@@ -1224,6 +1224,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Busca archivos basura según la configuración actual."""
         def task() -> None:
             destino = self.scan_target or "carpetas por defecto"
+            
+            # Validación adicional antes de proceder con el escaneo
+            if self.scan_target and not self._is_safe_path(self.scan_target):
+                self.log(f"Error: La ruta {self.scan_target} no es segura para escanear.", "Limpieza")
+                return
+
             self.set_status(f"Buscando basura en {destino}...")
             self.clear("Limpieza")
             self.log(f"Buscando basura en: {destino}...", "Limpieza")
@@ -1563,6 +1569,11 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Validación adicional antes de proceder con el escaneo
+            if not self._is_safe_path(folder):
+                self.log(f"Error: La ruta {folder} no es segura para escanear.", "Duplicados")
+                return
+
             self.set_status(f"Buscando duplicados en {folder}...")
             self.clear("Duplicados")
             self.log(f"Buscando duplicados en {folder} (solo lectura, puede tardar)...",

@@ -522,3 +522,10 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T10:55:06` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
 - `2026-09-01T10:55:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T10:55:06` Corrida terminada. Total usado hoy: 260.
+- `2026-09-01T11:03:28` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-01T11:04:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-01T11:04:42` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez del cálculo al añadir una capa de protección en el `try-except` dentro del bucle de reglas, garantizando que una excepción en una fábrica de mensajes (por ejemplo, por acceso a un atributo inesperado) no aborte el cálculo del `healthscore` ni deje al usuario sin el resumen.
+- `2026-09-01T11:05:54` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de las operaciones que recorren el disco agregando una validación explícita mediante `safety.is_safe_to_modify` antes de proceder con el procesamiento de rutas en `on_scan_junk` y `on_find_duplicates`, garantizando que el `ThreadPoolExecutor` no opere sobre rutas bloqueadas incluso si el chequeo inicial en `run_async` fuera insuficiente.
+- `2026-09-01T11:06:10` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad en `trim_working_set` añadiendo la validación de `is_safe_to_modify` para la ruta del proceso, asegurando que no se intente realizar operaciones de trim en ejecutables protegidos, y refiné el manejo de `psapi` para evitar errores de referencia en entornos donde las funciones de kernel no sean accesibles.
+- `2026-09-01T11:06:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T11:06:10` Corrida terminada. Total usado hoy: 264.
