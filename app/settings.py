@@ -229,12 +229,13 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 
 def settings_path(custom_base: PathLike | None = None) -> Path:
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
-    try:
-        base_str = str(custom_base)
-        if _Validators._is_safe_path(base_str):
-            return Path(base_str).expanduser() / SETTINGS_FILE
-    except (OSError, RuntimeError):
-        pass
+    base = Path(custom_base).expanduser().resolve()
+    # Asegurar que el destino esté bajo el directorio de usuario base o sea seguro
+    if _Validators._is_safe_path(str(base)):
+        try:
+            return base / SETTINGS_FILE
+        except (OSError, RuntimeError):
+            pass
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
@@ -284,12 +285,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         cleaned_settings["asistente_activado"] = False
     
     ruta = settings_path(custom_base)
+    # Validar integridad contra inyección de rutas en la carpeta base
+    parent = ruta.parent.resolve()
+    base_target = SETTINGS_DIR.resolve()
+    if not (parent == base_target or _Validators._is_safe_path(str(parent))):
+        return None
+        
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     try:
-        parent = ruta.parent
-        # Validar no solo si es segura, sino si es ruta prohibida explícitamente
-        if not _Validators._is_safe_path(str(parent)) or is_protected_path(str(parent)):
-            return None
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
         
