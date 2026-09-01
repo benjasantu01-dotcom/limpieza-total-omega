@@ -68,6 +68,7 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de memoria constante.
+    Retorna el hexdigest si es legible, caso contrario None.
     """
     try:
         path_obj = Path(path)
@@ -89,6 +90,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
     Genera una huella dactilar rápida leyendo solo el inicio del archivo.
+    Retorna el hexdigest si es legible, caso contrario None.
     """
     try:
         path_obj = Path(path)
@@ -107,9 +109,16 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 def _is_valid_candidate(path: Path) -> bool:
     """
     Valida si una ruta es un archivo legible que no pertenece a áreas protegidas.
+    Cumple con el criterio de exclusión de seguridad del proyecto.
     """
     try:
-        return isinstance(path, Path) and path.exists() and path.is_file() and not is_protected_path(path) and os.access(path, os.R_OK)
+        # Validación de existencia, tipo, permisos y exclusión de rutas críticas.
+        return (
+            isinstance(path, Path) and 
+            path.is_file() and 
+            not is_protected_path(path) and 
+            os.access(path, os.R_OK)
+        )
     except (OSError, ValueError):
         return False
 
@@ -117,6 +126,7 @@ def _is_valid_candidate(path: Path) -> bool:
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Agrupa una lista de rutas de archivo según su tamaño en bytes.
+    Solo incluye archivos mayores a 0 bytes.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups
@@ -172,6 +182,7 @@ def _collect_candidates(
 
                         stat = entry.stat(follow_symlinks=False)
                         
+                        # Evitar seguir symlinks o puntos de reparse (Junctions)
                         if entry.is_symlink() or (os.name == 'nt' and (stat.st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT)):
                             continue
                         
@@ -197,7 +208,7 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa una lista de rutas basándose en el digest generado por hash_func."""
+    """Agrupa rutas basándose en el digest generado por la función provista."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -207,7 +218,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
-    Refinamiento jerárquico optimizado: solo calcula el hash completo para
+    Refinamiento jerárquico optimizado: calcula hashes completos solo para 
     archivos que ya colisionaron en su hash parcial.
     """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
@@ -221,7 +232,10 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """Pipeline de hashing: decide la profundidad del análisis según el tamaño del archivo."""
+    """
+    Pipeline de hashing: decide la profundidad del análisis según el tamaño.
+    Si el archivo es muy pequeño, solo se confía en el hash parcial.
+    """
     if len(paths) < 2: 
         return []
     
@@ -236,6 +250,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """
     Punto de entrada: identifica y ordena grupos de duplicados por impacto (wasted_bytes).
+    Retorna una lista de DuplicateGroup ordenados de mayor a menor ahorro.
     """
     if directories is None or not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []
@@ -265,6 +280,7 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path): continue
         try:
             stat_info = p.stat()
+            # Prioridad: fecha de modificación más antigua, luego longitud de ruta.
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
             continue

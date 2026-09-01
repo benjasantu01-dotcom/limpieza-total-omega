@@ -275,7 +275,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
 @lru_cache(maxsize=32)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
     """
-    Interpola linealmente entre dos colores en el espacio RGB.
+    Interpola linealmente entre dos colores en el espacio RGB basándose en un ratio 0.0-1.0.
     """
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
@@ -289,7 +289,10 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
-    """Genera una secuencia de colores interpolados aritméticamente."""
+    """
+    Genera una secuencia de colores interpolados aritméticamente entre los puntos definidos en stops.
+    steps: Cantidad total de pasos de color deseados.
+    """
     n = max(1, int(steps))
     if not stops: return (C_GLOW,) * n
     if len(stops) < 2: return (stops[0],) * n
@@ -312,7 +315,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=16)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
-    """Optimiza secuencias de colores agrupando segmentos adyacentes idénticos."""
+    """Optimiza secuencias de colores agrupando segmentos adyacentes idénticos para dibujo eficiente."""
     if not colors: return ()
     segments = []
     current_color = colors[0]
@@ -390,7 +393,7 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas del escudo."""
+    """Renderiza las franjas degradadas internas del escudo usando coordenadas calculadas."""
     try:
         scale_f: float = float(scale)
         franjas_count: int = max(6, int(28 * scale_f))
@@ -411,7 +414,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Dibuja elementos decorativos internos del escudo."""
+    """Dibuja elementos decorativos (Omega y trazos internos) del escudo según escala."""
     canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, 
                        fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
     canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, 
@@ -420,7 +423,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
                        fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo corporativo escalado."""
+    """Dibuja el escudo corporativo completo, escalado a la posición (x, y) indicada."""
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128.0))
         coords = _get_shield_coords(scale)
@@ -438,7 +441,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza línea decorativa degradada usando segmentos agrupados."""
+    """Renderiza línea decorativa horizontal degradada para separación de secciones."""
     try:
         w_int = max(1, int(width))
         for color_hex, start, end in _get_grouped_segments(gradient_colors(w_int, stops)):
@@ -448,7 +451,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3,
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150,
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular de progreso (donut)."""
+    """Dibuja un indicador circular de progreso (donut) basado en un porcentaje 0.0-100.0."""
     try:
         if percent is None: return
         valor = max(0.0, min(100.0, float(percent)))

@@ -197,8 +197,11 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Realiza un escaneo recursivo limitado por profundidad para calcular el peso en bytes.
-    Utiliza memoización para evitar ciclos o re-cálculos en estructuras de directorios.
+    Calcula el tamaño de un directorio mediante escaneo recursivo.
+    
+    Implementa control de profundidad para evitar recursiones infinitas y utiliza
+    un diccionario `memo` para cachear resultados intermedios. Valida mediante
+    `_is_safe_to_traverse` que cada subdirectorio sea seguro y pertenezca a la base.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -258,6 +261,9 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     """
     Verifica que la ruta candidata a ser caché sea real y no contenga elementos que
     vulneren la integridad del sistema o violen el encapsulamiento de datos privados.
+    
+    Comprueba existencia física, asegura que no sea un punto de reparse/enlace simbólico
+    y valida contra el listado de exclusión NEVER_TOUCH.
     """
     try:
         if not candidate.exists():

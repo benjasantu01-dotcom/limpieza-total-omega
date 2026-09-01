@@ -242,7 +242,8 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorrido profundo del sistema de archivos mediante DFS iterativo.
+    Recorrido profundo mediante DFS iterativo. 
+    Evita ciclos de reparse points (NTFS junctions) y rutas protegidas.
     """
     root_path = _validate_root(directory)
     if not root_path:
@@ -262,18 +263,18 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     except (PermissionError, OSError, FileNotFoundError):
                         continue
 
+                    # Validación básica de nombre de entrada
                     if not entry.name or any(c < ' ' for c in entry.name):
                         continue
                     
+                    # Ignorar enlaces simbólicos y puntos de reparse (Junctions) para evitar recursión infinita
                     if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
                         child_path = Path(entry.path)
-                        try:
-                            if not child_path.is_relative_to(root_path):
-                                continue
-                        except ValueError:
+                        # Verificar que el hijo realmente pertenezca a la raíz para evitar escapes de ruta
+                        if not child_path.is_relative_to(root_path):
                             continue
                                 
                         if skip_protected and is_protected_path(child_path):
@@ -334,7 +335,7 @@ def usage_by_extension(directory: Union[str, os.PathLike, None], limit: int = 15
 
 def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, skip_protected: bool = True) -> List[FolderUsage]:
     """
-    Identifica las subcarpetas de primer nivel que ocupan más espacio en disco.
+    Agrupa el uso de disco por carpeta de primer nivel respecto al directorio base.
     """
     if not isinstance(limit, int) or limit <= 0:
         return []
@@ -347,21 +348,20 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     counts: Dict[Path, int] = defaultdict(int)
 
     for path, size in walk_files(p_base, skip_protected):
+        # Determinar a qué subcarpeta principal pertenece el archivo encontrado
         try:
-            # Obtener el primer nivel debajo de p_base de forma segura
-            if path.parent == p_base:
-                top_folder = path
-            else:
-                top_folder = path.relative_to(p_base).parts[0]
-                top_folder = p_base / top_folder
+            rel = path.relative_to(p_base)
+            top_folder = p_base / rel.parts[0]
             
             if skip_protected and is_protected_path(top_folder):
                 continue
             
             sums[top_folder] += size
             counts[top_folder] += 1
-        except (ValueError, OSError, RuntimeError, IndexError):
-            continue
+        except (ValueError, IndexError):
+            # Si el archivo está en la raíz, se agrupa directamente
+            sums[p_base] += size
+            counts[p_base] += 1
 
     results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
     return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
