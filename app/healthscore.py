@@ -150,24 +150,31 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
+    """Calcula salud inversa a la cantidad de archivos basura detectados."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
+    """Evalúa seguridad basándose en conteo de amenazas y advertencias."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
+    """Calcula salud basada en el porcentaje de RAM libre disponible."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
+    """Calcula salud basada en el porcentaje de espacio libre en disco."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
+    """Calcula salud inversamente proporcional al espacio ocupado por duplicados."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
+    """Calcula salud inversamente proporcional al número de apps en el inicio."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
+    """Convierte un puntaje numérico a una calificación de letra."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -196,7 +203,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     metrics.validate()
     
     metric_breakdown: Dict[MetricKey, int] = {}
-    total_pts: int = 0
+    total_pts: float = 0.0
     recommendations: List[str] = []
     
     for area, weight in _WEIGHT_ITEMS_INT:
@@ -204,7 +211,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         ratio = _clamp(scorer(metrics), 0.0, 1.0)
         pts = int(round(ratio * weight))
         metric_breakdown[area] = pts
-        total_pts += pts
+        total_pts += float(pts)
         
         for rule in _RULES_BY_AREA.get(area, []):
             try:

@@ -35,7 +35,8 @@ __all__ = [
 ]
 
 # Cuántos bytes leer para el hash parcial. 64 KB alcanza para descartar
-# archivos distintos y es una lectura despreciable incluso en discos lentos.
+# archivos distintos con alta probabilidad estadística y es una lectura 
+# despreciable incluso en discos mecánicos lentos.
 PARTIAL_READ_BYTES: int = 64 * 1024
 
 # Constante para identificar puntos de reparse (Junctions/Symlinks) en Windows.
@@ -68,7 +69,9 @@ class DuplicateGroup:
 def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional[str]:
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de memoria constante.
-    Retorna el hexdigest si es legible, caso contrario None.
+    
+    Usa bloques de 1MB para equilibrar el uso de memoria RAM frente a la 
+    velocidad de lectura. Retorna el hexdigest si es legible, caso contrario None.
     """
     try:
         path_obj = Path(path)
@@ -89,7 +92,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Genera una huella dactilar rápida leyendo solo el inicio del archivo.
+    Genera una huella dactilar rápida leyendo solo el inicio del archivo (PARTIAL_READ_BYTES).
+    
+    Utilizado para descartar candidatos rápidamente sin leer el archivo completo.
     Retorna el hexdigest si es legible, caso contrario None.
     """
     try:
@@ -159,8 +164,10 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo del sistema utilizando os.scandir, filtrando por tamaño mínimo
-    y evitando la recursión infinita en puntos de reparse mediante identificadores de sistema (dev, ino).
+    Escaneo recursivo utilizando os.scandir.
+    
+    Evita la recursión infinita en puntos de reparse mediante el seguimiento
+    de inodos (st_dev, st_ino) ya visitados.
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Set[Tuple[int, int]] = set()
@@ -210,8 +217,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
-    Refinamiento jerárquico optimizado: calcula hashes completos solo para 
-    archivos que ya colisionaron en su hash parcial.
+    Refinamiento jerárquico: calcula hashes completos solo para archivos que 
+    ya colisionaron en su hash parcial.
     """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
@@ -226,7 +233,9 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Pipeline de hashing: decide la profundidad del análisis según el tamaño.
-    Si el archivo es muy pequeño, solo se confía en el hash parcial.
+    
+    Si el archivo es menor o igual a PARTIAL_READ_BYTES, el hash parcial 
+    es suficiente; de lo contrario, se requiere un análisis profundo.
     """
     if len(paths) < 2: 
         return []
@@ -263,7 +272,10 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
-    """Heurística para sugerir el original: prioriza mtime antiguo y ruta más corta."""
+    """
+    Heurística para sugerir el archivo original: prioriza el más antiguo (mtime)
+    y, ante igualdad, la ruta más corta (simplificando la estructura).
+    """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         

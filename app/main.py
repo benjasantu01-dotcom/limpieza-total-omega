@@ -504,15 +504,15 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._make_output("Salud", tab)
 
     def _build_health_metrics_row(self, container: ctk.CTkFrame) -> None:
-        """Crea la fila de tarjetas con métricas rápidas."""
-        metrics = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
-                   ("ram", "RAM libre"), ("disco", "Disco libre"))
-        for i, (clave, titulo) in enumerate(metrics):
+        """Crea la fila de tarjetas superiores con métricas resumidas de salud."""
+        metrics_meta = (("basura", "Basura"), ("sospechosos", "Sospechosos"),
+                        ("ram", "RAM libre"), ("disco", "Disco libre"))
+        for i, (clave, titulo) in enumerate(metrics_meta):
             container.grid_columnconfigure(i, weight=1)
             self.cards[clave] = self._metric_card(container, titulo, i)
 
     def _metric_card(self, parent: ctk.CTk, title: str, column_idx: int) -> ctk.CTkLabel:
-        """Crea una tarjeta individual de métrica."""
+        """Crea y estiliza una tarjeta de métrica individual."""
         tarjeta = ctk.CTkFrame(
             parent, fg_color=branding.color("card"), corner_radius=12,
             border_width=1, border_color=branding.color("border"),
@@ -525,7 +525,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         return valor_label
 
     def _build_health_area_bars(self, parent: ctk.CTk) -> None:
-        """Crea el contenedor con las barras de progreso para las áreas de salud."""
+        """Crea el contenedor central con barras de progreso detalladas por área."""
         area_container = ctk.CTkFrame(parent, fg_color="transparent")
         area_container.grid(row=0, column=1, sticky="ew")
         area_container.grid_columnconfigure(1, weight=1)
@@ -533,7 +533,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._build_single_health_bar(area_container, clave, etiqueta, row_idx)
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, row_idx: int) -> None:
-        """Crea una barra de progreso individual dentro del desglose."""
+        """Crea una barra de progreso individual con su etiqueta descriptiva."""
         self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=row_idx, column=0, sticky="w", pady=4)
         
         barra = ctk.CTkProgressBar(
