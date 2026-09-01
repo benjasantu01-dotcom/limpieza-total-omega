@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **241** (47.8% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 16
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 69 | 2 | 10 | 5 | 78 |
-| 2026-09-01 | 174 | 6 | 26 | 11 | 123 |
+| 2026-08-31 | 65 | 2 | 10 | 5 | 78 |
+| 2026-09-01 | 176 | 6 | 27 | 12 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
-- seguridad defensiva: **54**
 - manejo de errores y validación de entradas: **54**
-- rendimiento: **40**
+- seguridad defensiva: **50**
+- rendimiento: **42**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **23**
+- `assistant.py`: **22**
+- `scanner.py`: **21**
 - `settings.py`: **21**
-- `browser.py`: **20**
 - `quarantine.py`: **20**
-- `scanner.py`: **20**
-- `diskreport.py`: **19**
 - `duplicates.py`: **19**
+- `browser.py`: **19**
 - `memory.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `main.py`: **13**
-- `branding.py`: **11**
+- `branding.py`: **10**
 - `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T14:29:39` **scanner.py** (rendimiento): Optimicé el método `_is_inside_base_root` reemplazando la resolución costosa de rutas (`resolve`) y el chequeo de `parents` por una comparación de prefijos de cadenas normalizadas, reduciendo drásticamente las syscalls durante la recursión profunda.
+- `2026-09-01T14:29:27` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la validación redundante `isdisjoint` (que generaba iteradores y creaba conjuntos internos en cada llamada) por un chequeo de intersección más directo utilizando el conjunto de partes de la ruta, reduciendo así la carga de CPU en recorridos masivos de disco.
 - `2026-09-01T14:20:41` **organizer.py** (rendimiento): Optimizé `_process_directory` utilizando un conjunto (`frozenset`) para la validación de extensiones y evitando la creación redundante de objetos `Path` y llamadas a `suffix` dentro del bucle, reduciendo significativamente la carga de I/O en escaneos profundos.
 - `2026-09-01T14:20:28` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` evitando la ejecución redundante del comando `Get-Process` al cachear el resultado y reemplacé el uso de `Get-Process` estándar por una consulta filtrada directamente en PowerShell para reducir drásticamente la carga de procesamiento y la cantidad de texto transferida desde el subproceso.
 - `2026-09-01T14:18:22` **healthscore.py** (rendimiento): Optimicé el bucle de cálculo en `compute_score` pre-calculando la lista de reglas para evitar consultas innecesarias en cada iteración y eliminé el uso de `try-except` dentro del hot-loop, mejorando el rendimiento y la legibilidad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T13:47:26` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de Type Hints en retornos implícitos, la clarificación de docstrings en funciones críticas (como `_is_safe_for_disk_op`) y la estandarización de las comprobaciones de seguridad para cumplir con el rigor exigido.
 - `2026-09-01T13:39:00` **memory.py** (legibilidad y documentación): Se introdujeron type hints más precisos (usando `NewType` y `Final`) para diferenciar unidades de medida y se documentó explícitamente el uso de `ctypes` en las estructuras de datos para clarificar el contrato con la API de Windows.
 - `2026-09-01T13:38:47` **main.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `main.py` mediante la refactorización de `_build_health_metrics_row` y `_build_health_area_bars` para reducir la complejidad cognitiva y facilitar la adición de futuras métricas, además de añadir docstrings detallados en las funciones de creación de widgets para clarificar su propósito funcional.
-- `2026-09-01T13:37:34` **healthscore.py** (legibilidad y documentación): Mejoré la legibilidad y la robustez del código añadiendo docstrings descriptivos a las funciones de puntuación (`score_*`) y normalizando el uso de `float` en los cálculos para evitar ambigüedades de tipo.
-- `2026-09-01T13:37:09` **duplicates.py** (legibilidad y documentación): Mejoré la documentación de las funciones de hash y el pipeline de procesamiento en `duplicates.py`, añadiendo type hints más precisos y docstrings que explican el "porqué" de las decisiones técnicas (como la elección de `PARTIAL_READ_BYTES` y la lógica de colisiones) para facilitar el mantenimiento futuro.

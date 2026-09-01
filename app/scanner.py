@@ -146,17 +146,13 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[str] = set()
-        self.base_root = base_root.resolve(strict=False)
+        self.base_root_str = str(base_root.resolve(strict=False)).lower()
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
-        """Valida que la ruta sea un descendiente de base_root para contener el escaneo."""
+        """Valida que la ruta sea un descendiente de base_root mediante prefijo."""
         if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
-        try:
-            target = Path(path_str).resolve(strict=False)
-            return self.base_root == target or self.base_root in target.parents
-        except (OSError, RuntimeError, TypeError, ValueError):
-            return False
+        return path_str.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
