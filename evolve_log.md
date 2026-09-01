@@ -692,3 +692,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T00:43:10` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizamos `_collect_summary_data` para evitar el uso de `dict.get()` dentro del bucle principal y pre-instanciamos los diccionarios, reduciendo el overhead de llamadas y mejorando el rendimiento en directorios con muchos archivos.
 - `2026-09-01T00:43:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T00:43:10` Corrida terminada. Total usado hoy: 20.
+- `2026-09-01T00:50:56` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-01T00:51:24` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el método `_collect_candidates` utilizando un conjunto (`set`) para almacenar las rutas ya visitadas durante el escaneo, evitando así procesar directorios redundantes cuando existen múltiples puntos de entrada en el árbol de archivos, mejorando significativamente la performance en escaneos profundos.
+- `2026-09-01T00:51:48` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-01T00:52:59` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-09-01T00:53:14` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé `top_memory_processes` reemplazando la ejecución costosa de PowerShell por un filtrado de procesos local basado en un caché inteligente, evitando el *fork* de un subproceso pesado que degradaba el rendimiento al actualizar la UI.
+- `2026-09-01T00:53:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T00:53:14` Corrida terminada. Total usado hoy: 24.

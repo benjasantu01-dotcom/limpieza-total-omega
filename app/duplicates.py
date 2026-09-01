@@ -152,8 +152,13 @@ def _collect_candidates(
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: Set[Tuple[int, int]] = set()
+    visited_paths: Set[Path] = set()
 
     def _scan_recursive(current_dir: Path) -> None:
+        if current_dir in visited_paths:
+            return
+        visited_paths.add(current_dir)
+
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:

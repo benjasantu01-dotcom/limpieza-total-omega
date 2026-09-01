@@ -16,30 +16,30 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 58 | 7 | 9 | 6 | 54 |
+| 2026-08-30 | 56 | 7 | 8 | 6 | 53 |
 | 2026-08-31 | 152 | 10 | 27 | 11 | 150 |
-| 2026-09-01 | 14 | 1 | 2 | 1 | 2 |
+| 2026-09-01 | 16 | 1 | 3 | 1 | 3 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **38**
-- rendimiento: **31**
+- robustez ante casos límite: **36**
+- rendimiento: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **20**
-- `settings.py`: **20**
+- `duplicates.py`: **21**
 - `assistant.py`: **20**
 - `browser.py`: **20**
-- `duplicates.py`: **20**
+- `scanner.py`: **19**
+- `settings.py`: **19**
 - `diskreport.py`: **18**
 - `healthscore.py`: **17**
 - `organizer.py`: **17**
+- `memory.py`: **17**
 - `quarantine.py`: **17**
-- `memory.py`: **16**
 - `safety.py`: **14**
 - `branding.py`: **12**
 - `main.py`: **7**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T00:53:14` **memory.py** (rendimiento): Optimizé `top_memory_processes` reemplazando la ejecución costosa de PowerShell por un filtrado de procesos local basado en un caché inteligente, evitando el *fork* de un subproceso pesado que degradaba el rendimiento al actualizar la UI.
+- `2026-09-01T00:51:24` **duplicates.py** (rendimiento): Optimicé el método `_collect_candidates` utilizando un conjunto (`set`) para almacenar las rutas ya visitadas durante el escaneo, evitando así procesar directorios redundantes cuando existen múltiples puntos de entrada en el árbol de archivos, mejorando significativamente la performance en escaneos profundos.
 - `2026-09-01T00:43:10` **diskreport.py** (rendimiento): Optimizamos `_collect_summary_data` para evitar el uso de `dict.get()` dentro del bucle principal y pre-instanciamos los diccionarios, reduciendo el overhead de llamadas y mejorando el rendimiento en directorios con muchos archivos.
 - `2026-09-01T00:41:29` **assistant.py** (rendimiento): Optimicé el rendimiento de `local_answer` reemplazando la lógica de búsqueda por tokens (que generaba listas innecesarias) por una búsqueda directa mediante el primer token relevante, reduciendo drásticamente la carga de procesamiento en cada consulta.
 - `2026-09-01T00:32:33` **startup.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) en las funciones críticas de resolución de rutas para clarificar la lógica de seguridad y el manejo de excepciones, facilitando el mantenimiento futuro.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T00:10:39` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato Google Style) en las funciones internas, clarificando la lógica de las colas de prioridad y el filtrado de archivos para que el código sea más legible y mantenible para futuros colaboradores.
 - `2026-09-01T00:02:43` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de type hints precisos, la estandarización de docstrings y la clarificación de la responsabilidad de cada función helper para facilitar el mantenimiento y la auditoría.
 - `2026-09-01T00:02:28` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y el tipado de `branding.py` mediante la adición de docstrings técnicos en las funciones de dibujo y la especificación de tipos en las funciones auxiliares de color, facilitando la comprensión del motor gráfico a otros desarrolladores.
-- `2026-09-01T00:01:35` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` hacia un diseño de "early return" y la extracción de la lógica de construcción del payload JSON a una función dedicada, reduciendo el anidamiento y clarificando el flujo de seguridad.
-- `2026-08-31T15:19:41` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_inside_base_root` y `scan_directory` validando entradas nulas o rutas inválidas de forma temprana para evitar excepciones de `Path.resolve()` en entornos con permisos restringidos.

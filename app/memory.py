@@ -188,7 +188,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             name_val = str(parts[0])
             pid_val = int(parts[1])
             ws_val = int(parts[2])
-            # Validación estricta para evitar datos corruptos o procesos protegidos
             if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
                 proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=ws_val))
         except (ValueError, TypeError): continue
@@ -243,16 +242,17 @@ _proc_cache_data: str = ""
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """
     Obtiene la lista de procesos más pesados mediante una consulta a PowerShell.
-    La consulta se cachea 60s por ser una operación costosa en recursos.
+    Se utiliza caché de 60s para evitar el costo de ejecución repetida del subproceso.
     """
     global _proc_cache_time, _proc_cache_data
     if os.name != "nt": return []
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
+        # Cachea la consulta solo si ha expirado, minimizando el impacto en el thread principal
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            f"Get-Process | Where-Object {{$_.Id -notin 0,4}} | Select-Object Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First {max(1, limit)} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
+            f"Get-Process | Where-Object {{$_.Id -notin 0,4}} | Select-Object Name, Id, WorkingSet | Sort-Object WorkingSet -Descending | Select-Object -First 50 | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
         ]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
