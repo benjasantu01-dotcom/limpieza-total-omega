@@ -160,9 +160,9 @@ class StartupEntry:
             abs_path: str = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            # Validación de reparse points antes de cualquier acceso profundo
+            # Validación de existencia y reparse points
             if p.exists():
-                if p.is_dir(): # Ignorar si la ruta resultante apunta a una carpeta
+                if p.is_dir(): 
                     _EXISTS_CACHE[path_string] = False
                     return ""
                 try:
@@ -172,6 +172,7 @@ class StartupEntry:
                         _EXISTS_CACHE[path_string] = False
                         return ""
                 except (OSError, PermissionError):
+                    # Si no podemos acceder a lstat, asumimos seguridad preventiva
                     pass
 
             if not p.is_absolute() or is_protected_path(p) or p.is_symlink():

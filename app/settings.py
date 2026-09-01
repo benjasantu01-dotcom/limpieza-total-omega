@@ -149,9 +149,10 @@ class _Validators:
     @staticmethod
     def _run_safety_checks(path_obj: Path) -> bool:
         try:
-            if path_obj.is_symlink(): return False
-            if hasattr(path_obj, 'is_junction') and path_obj.is_junction(): return False
-            return not is_protected_path(str(path_obj)) and is_safe_to_modify(str(path_obj))
+            resolved = path_obj.resolve()
+            if resolved.is_symlink(): return False
+            if hasattr(resolved, 'is_junction') and resolved.is_junction(): return False
+            return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
         except (OSError, PermissionError):
             return False
 

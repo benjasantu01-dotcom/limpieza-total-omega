@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **242** (48.0% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 40
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 109 | 4 | 17 | 6 | 116 |
-| 2026-09-01 | 129 | 5 | 23 | 8 | 87 |
+| 2026-08-31 | 109 | 4 | 17 | 6 | 112 |
+| 2026-09-01 | 133 | 5 | 23 | 8 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **55**
+- robustez ante casos límite: **46**
 - seguridad defensiva: **43**
-- robustez ante casos límite: **42**
 - rendimiento: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
 - `quarantine.py`: **21**
+- `settings.py`: **21**
 - `browser.py`: **20**
 - `duplicates.py`: **20**
-- `settings.py`: **20**
+- `scanner.py`: **20**
 - `diskreport.py`: **19**
-- `scanner.py`: **19**
 - `memory.py`: **17**
 - `organizer.py`: **17**
+- `safety.py`: **16**
 - `healthscore.py`: **15**
-- `safety.py`: **15**
 - `branding.py`: **12**
+- `startup.py`: **10**
 - `main.py`: **10**
-- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T10:44:43` **startup.py** (robustez ante casos límite): Se mejoró la robustez ante errores de acceso a archivos durante la resolución de rutas en `_resolve_and_cache_path`, envolviendo la lectura de atributos de archivo en un bloque `try-except` más amplio para manejar situaciones donde el sistema deniega el acceso a metadatos de archivos del sistema sin necesidad de abortar la operación.
+- `2026-09-01T10:44:30` **settings.py** (robustez ante casos límite): Se reforzó la robustez ante errores en el sistema de archivos integrando `Path.resolve()` en las verificaciones de seguridad de `_Validators`, previniendo que rutas relativas o "traversal attacks" (ej. `../../`) eludan el chequeo `is_safe_to_modify`.
+- `2026-09-01T10:44:02` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez de `scanner.py` ante archivos corruptos o bloqueados al refactorizar `_run_file_heuristics` y `scan_file` para encapsular las llamadas a `path.exists()` y `entry.stat()` en bloques `try-except` más granulares, garantizando que un archivo que desaparece o se bloquea durante el escaneo no detenga el proceso completo.
+- `2026-09-01T10:43:37` **safety.py** (robustez ante casos límite): Se ha mejorado `ensure_safe_to_modify` para detectar y bloquear de manera preventiva las rutas que utilizan nombres de dispositivo reservados (ej: `aux.txt` o `con`) en sus subdirectorios, previniendo errores de sistema al intentar operar sobre componentes de ruta inválidos o bloqueantes en Windows.
 - `2026-09-01T10:34:20` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante errores de escritura en disco al validar el éxito del copiado mediante una comprobación explícita del hash del archivo en destino antes de proceder con el borrado del original, asegurando que la operación de aislamiento sea atómica y reversible.
 - `2026-09-01T10:26:14` **main.py** (robustez ante casos límite): Se implementó un control de robustez en `_validate_environment` para evitar que la aplicación intente ejecutarse con permisos de usuario restringidos o en entornos donde la ruta base es inaccesible, previniendo fallos en tiempo de ejecución al manipular archivos del sistema.
 - `2026-09-01T10:24:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas que podrían estar vacías o contener valores mal formados, asegurando que las reglas de recomendación no fallen si los datos son inesperados mediante un manejo de excepciones más granular y un filtrado de tipos defensivo.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T10:04:04` **scanner.py** (rendimiento): Optimizé la detección de carpetas monitoreadas y la validación de extensiones utilizando `frozenset` y pre-cálculos para evitar iteraciones redundantes y llamadas a métodos `lower()` costosas dentro del bucle principal del escáner.
 - `2026-09-01T09:54:48` **quarantine.py** (rendimiento): Optimicé el cálculo del tamaño de la cuarentena y la gestión del manifiesto convirtiendo `list_items` para que trabaje sobre los datos crudos del caché, evitando así la sobrecarga de instanciar objetos `QuarantineItem` innecesarios para operaciones de solo lectura.
 - `2026-09-01T09:53:43` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la lógica de filtrado compleja en PowerShell por una cadena de comandos más eficiente y reduciendo la carga de datos innecesarios a través del pipeline, manteniendo el cacheo.
-- `2026-09-01T09:43:10` **duplicates.py** (rendimiento): Optimizé `_collect_candidates` para reducir drásticamente el uso de memoria y las syscalls innecesarias al sustituir `visited_paths` (set de objetos `Path` pesados) por un set de tuplas `(dev, ino)` (st_dev, st_ino) que identifica unívocamente archivos y directorios a nivel de sistema de archivos, mejorando la detección de ciclos y la eficiencia del escaneo.
-- `2026-09-01T09:42:45` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` para evitar el uso de `dict.get` dentro del bucle principal, reemplazándolo por `defaultdict` para reducir la sobrecarga de consultas y mejorar la velocidad de procesamiento en directorios con miles de archivos.
-- `2026-09-01T09:42:18` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo introduciendo un caché local (`perf_cache`) compartido entre todas las rutas de un mismo navegador, evitando re-procesar subdirectorios comunes (ej. `User Data`) que son compartidos por múltiples entradas de caché.
-- `2026-09-01T09:35:17` **assistant.py** (rendimiento): Se implementó un `lru_cache` en `context_as_text` para evitar la serialización y formateo repetitivo del contexto en cada interacción, mejorando el rendimiento en el bucle de consultas.

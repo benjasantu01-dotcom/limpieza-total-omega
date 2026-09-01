@@ -203,9 +203,12 @@ class Scanner:
         """
         Ejecuta las reglas registradas y los controles de integridad críticos por nombre.
         """
-        if path.name and RTL_CHAR_RE.search(path.name):
-            self.results.append(Suspicion(path, "Nombre contiene caracteres de ofuscación (RTL)", "critical"))
-        self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
+        try:
+            if path.name and RTL_CHAR_RE.search(path.name):
+                self.results.append(Suspicion(path, "Nombre contiene caracteres de ofuscación (RTL)", "critical"))
+            self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
+        except (OSError, PermissionError):
+            pass
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """

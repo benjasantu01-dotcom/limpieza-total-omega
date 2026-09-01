@@ -327,8 +327,12 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
     if _has_invalid_chars(path_string):
         raise UnsafePathError("La ruta contiene caracteres inválidos o no soportados.")
-    if _is_reserved_device_name(target_path.name):
-        raise UnsafePathError(f"El nombre '{target_path.name}' es un dispositivo reservado por el sistema.")
+    
+    # Validación recursiva de nombres reservados en los componentes de la ruta
+    for part in target_path.parts:
+        if _is_reserved_device_name(part):
+            raise UnsafePathError(f"El nombre '{part}' es un dispositivo reservado por el sistema.")
+
     if path_string.startswith(("\\\\", "//")):
         raise UnsafePathError("Operación en rutas de red (UNC) bloqueada por seguridad.")
     if len(str(target_path)) >= MAX_PATH_LENGTH:
