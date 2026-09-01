@@ -350,6 +350,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     Aísla un archivo copiándolo primero a un archivo temporal y verificando su integridad final.
     El uso de os.replace asegura que la operación sea atómica a nivel de sistema de archivos.
     """
+    if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
+        raise UnsafePathError("Operación denegada: intento de escritura fuera del sandbox.")
+    
     _ensure_disk_space(destination.parent, original_size)
     
     if len(str(destination)) >= 250:

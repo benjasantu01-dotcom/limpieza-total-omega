@@ -170,9 +170,7 @@ class Scanner:
         Detecta puntos de reparse (junctions, enlaces simbólicos) para prevenir bucles.
         """
         try:
-            if entry.is_symlink():
-                return True
-            return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
+            return entry.is_symlink() or bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError):
             return True 
 
@@ -187,9 +185,12 @@ class Scanner:
         Distribuye la entrada a la cola de directorios o al motor de heurística de archivos.
         """
         try:
+            # Primero verificamos seguridad antes de realizar cualquier syscall
+            if not self._is_safe_entry(entry):
+                return
+
             if entry.is_dir(follow_symlinks=False):
-                if self._is_safe_entry(entry):
-                    self._handle_directory(entry, stack)
+                self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
                 # Validar estado del archivo antes de procesar
                 file_stat = entry.stat(follow_symlinks=False)
@@ -197,8 +198,7 @@ class Scanner:
                 
                 ext_low = Path(entry.name).suffix.lower()
                 if ext_low in SUSPICIOUS_EXECUTABLE_EXT or ext_low in SUSPICIOUS_CONTENT_EXT:
-                    if self._is_safe_entry(entry):
-                        self._run_file_heuristics(Path(entry.path), entry, ext_low)
+                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError, FileNotFoundError):
             logger.debug(f"Acceso denegado o archivo inaccesible: {entry.path}")
 

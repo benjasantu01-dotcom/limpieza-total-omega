@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **241** (47.8% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 41
+- Rechazadas por guardia de seguridad: 42
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 195
+- Sin respuesta de la IA (error o límite): 191
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 152 | 10 | 27 | 11 | 144 |
-| 2026-09-01 | 86 | 3 | 14 | 6 | 51 |
+| 2026-08-31 | 152 | 10 | 27 | 11 | 140 |
+| 2026-09-01 | 89 | 3 | 15 | 6 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **53**
-- seguridad defensiva: **48**
+- seguridad defensiva: **51**
 - robustez ante casos límite: **44**
 - rendimiento: **39**
 
@@ -31,21 +31,24 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **24**
 - `browser.py`: **22**
-- `scanner.py`: **21**
+- `scanner.py`: **22**
 - `settings.py`: **20**
+- `quarantine.py`: **20**
 - `duplicates.py`: **19**
-- `quarantine.py`: **19**
 - `organizer.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
-- `safety.py`: **15**
+- `safety.py`: **16**
 - `branding.py`: **13**
 - `main.py`: **8**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T06:49:42` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `Scanner._is_safe_entry` y `process_entry` al verificar explícitamente que la ruta resuelta no sea un vínculo simbólico o un punto de reparse antes de realizar cualquier operación sobre los metadatos o el contenido, evitando así que el escáner sea engañado para salir del `base_root` o acceder a recursos prohibidos fuera del alcance definido.
+- `2026-09-01T06:49:32` **safety.py** (seguridad defensiva): Se ha añadido una verificación de "puntos de reparse" en los niveles superiores de `ensure_safe_to_modify` para asegurar que las rutas no solo sean verificadas en su destino final, sino que sus componentes de ruta no atraviesen junctions o symlinks inesperados durante la resolución, mejorando la robustez defensiva ante ataques de *path traversal* a través de enlaces.
+- `2026-09-01T06:48:44` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_atomic_isolate_file` añadiendo una validación explícita para asegurar que la ruta destino resida dentro del directorio de cuarentena, previniendo posibles ataques de *path traversal* en caso de que `item_id` o el nombre del archivo fueran manipulados o inesperados.
 - `2026-09-01T06:40:12` **organizer.py** (seguridad defensiva): Se reforzó la seguridad defensiva al sustituir `shutil.move` por una validación estricta que utiliza `ensure_safe_to_modify` como filtro previo de integridad de ruta, evitando que operaciones de movimiento se realicen sobre archivos que podrían haber sido reemplazados o modificados por un proceso externo entre la validación y la ejecución.
 - `2026-09-01T06:40:02` **memory.py** (seguridad defensiva): Se reforzó la seguridad de `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta del ejecutable para evitar cualquier manipulación de procesos localizados en directorios protegidos por el sistema, garantizando que incluso si el proceso no es crítico (PID 0 o 4), su ubicación sea segura antes de intentar interactuar con su memoria.
 - `2026-09-01T06:38:28` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `SystemMetrics` mediante la implementación de un chequeo de integridad previo al cálculo (`is_finite` y validación) y se aseguró que el procesamiento de reglas no propague errores si los datos de entrada son inesperados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T06:18:03` **scanner.py** (robustez ante casos límite): Se ha robustecido el manejo de archivos en `scanner.py` implementando una validación de estado mediante `entry.stat()` más exhaustiva antes de procesar, evitando errores por archivos bloqueados o en uso (casos límite comunes) y unificando el control de integridad para prevenir excepciones durante el recorrido.
 - `2026-09-01T06:08:59` **safety.py** (robustez ante casos límite): Mejoré la robustez ante errores de acceso en `is_protected_path` añadiendo un bloque `try-except` que captura errores de sistema al iterar sobre partes de la ruta, previniendo cuelgues ante archivos bloqueados o permisos denegados.
 - `2026-09-01T06:08:25` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de acceso a disco durante el ciclo de vida de los archivos, implementando un chequeo previo de permisos de lectura en `quarantine_file` para evitar fallos a mitad de proceso y asegurando que las operaciones de limpieza de manifiesto sean resilientes ante archivos desaparecidos.
-- `2026-09-01T06:07:51` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` añadiendo una validación explícita de "path traversal" mediante `path.resolve()` comparado contra sus padres, y protegiendo la lógica ante rutas que contengan caracteres de dispositivo reservado en Windows (`CON`, `NUL`, etc.) mediante una normalización más estricta.
-- `2026-09-01T05:59:09` **main.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de estado en `_validate_environment` para evitar que la aplicación intente ejecutarse con una ruta de trabajo inaccesible o en un entorno que pueda causar errores de acceso al disco durante las operaciones de escaneo, mejorando la resiliencia ante condiciones límite del sistema de archivos.
-- `2026-09-01T05:48:51` **diskreport.py** (robustez ante casos límite): Se mejora la robustez de `walk_files` y `largest_folders` ante la imposibilidad de resolver rutas o nombres de archivos excesivamente largos, manejando específicamente el caso donde `os.scandir` devuelve entradas que, al intentar acceder a sus metadatos (stat), arrojan `FileNotFoundError` o `OSError` por permisos denegados o race conditions en el sistema de archivos.

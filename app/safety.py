@@ -256,8 +256,14 @@ def normalize(path: PathLike) -> Path:
         p = Path(path_str)
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
         resolved = p.resolve()
-        if _is_reparse_point(p) and not str(resolved).startswith(str(p.parent.absolute())):
-            raise ValueError("Acceso restringido: reparse point con destino externo.")
+        
+        # Validación de seguridad: Verificar que ninguno de los padres sea un enlace
+        current = p
+        while current != current.parent:
+            if _is_reparse_point(current):
+                raise ValueError(f"Acceso restringido: componente {current} es un punto de reparse.")
+            current = current.parent
+            
         return resolved
     except (OSError, RuntimeError, TypeError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
