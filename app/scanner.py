@@ -176,7 +176,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Agrega un directorio al stack de procesamiento si aún no fue visitado."""
-        if entry.path and entry.path not in self.seen:
+        if entry.path and entry.path not in self.seen and not is_protected_path(Path(entry.path)):
             self.seen.add(entry.path)
             stack.append(entry.path)
 

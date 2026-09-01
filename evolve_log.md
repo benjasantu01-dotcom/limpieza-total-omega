@@ -536,3 +536,39 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T11:15:17` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `safety.py` añadiendo `_is_junction` mediante `GetFileAttributesW` para detectar con mayor precisión puntos de reparse (junctions) que `os.path.islink` o `st_file_attributes` simples a veces omiten en Windows, bloqueando el acceso a estas estructuras críticas de forma más robusta.
 - `2026-09-01T11:15:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T11:15:17` Corrida terminada. Total usado hoy: 268.
+- `2026-09-01T11:23:51` Arrancando corrida. Quedan hoy ~32 peticiones objetivo.
+- `2026-09-01T11:24:19` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita de `is_protected_path` para evitar que el escáner se aventure en directorios prohibidos por sistema, garantizando que el escaneo solo se procese en rutas validadas.
+- `2026-09-01T11:24:47` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` aplicando `is_safe_to_modify` sobre el directorio padre antes de realizar cualquier escritura, asegurando que la configuración nunca se persista en ubicaciones bloqueadas o sensibles, incluso si el usuario provee un `custom_base` malicioso.
+- `2026-09-01T11:25:14` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.38s
+
+```
+- `2026-09-01T11:25:14` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad defensiva en `_resolve_and_cache_path` implementando un chequeo estricto de rutas absolutas y evitando la resolución mediante `realpath` si el archivo reside en directorios protegidos o contiene secuencias prohibidas, previniendo posibles ataques de *path traversal* o resolución de accesos directos fuera del alcance permitido.
+- `2026-09-01T11:25:15` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-01T11:25:15` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-01T11:25:35` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-01T11:25:35` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-01T11:26:05` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-01T11:26:05` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-01T11:26:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T11:26:05` Corrida terminada. Total usado hoy: 272.

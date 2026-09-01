@@ -290,8 +290,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     ruta = settings_path(custom_base)
     parent = ruta.parent.resolve()
-    base_target = SETTINGS_DIR.resolve()
-    if not (parent == base_target or _Validators._is_safe_path(str(parent))):
+    
+    if not _Validators._is_safe_path(str(parent)):
         return None
         
     temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
