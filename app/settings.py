@@ -240,7 +240,10 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
-    """Valida y normaliza un diccionario crudo contra DEFAULTS, eliminando valores inválidos."""
+    """
+    Valida un objeto arbitrario contra el esquema esperado.
+    Filtra claves inexistentes y aplica validadores específicos por campo.
+    """
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_enum in ConfigKey:
@@ -253,7 +256,10 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
-    """Lee y valida el JSON de configuración desde disco, usando caché para minimizar I/O."""
+    """
+    Lee y valida la configuración desde disco. Implementa caché basada en mtime
+    para evitar redundancia en operaciones de I/O.
+    """
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
@@ -281,7 +287,10 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
-    """Persiste los ajustes validados de forma atómica y actualiza la caché interna."""
+    """
+    Escribe la configuración validada en disco de forma atómica.
+    Retorna la ruta del archivo si tuvo éxito, None en caso contrario.
+    """
     if not _is_dict(values): return None
     cleaned_settings = validate(values)
     

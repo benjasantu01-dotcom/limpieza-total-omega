@@ -55,8 +55,11 @@ REGISTRY_RUN_KEYS: Tuple[str, ...] = (
 EXECUTABLE_EXTS: Set[str] = {'.exe', '.bat', '.cmd', '.scr', '.lnk'}
 
 # Caché global para evitar operaciones de I/O redundantes durante la sesión.
+# _EXISTS_CACHE: Mapeo de rutas (str) a su validez como ejecutable (bool).
 _EXISTS_CACHE: Dict[str, bool] = {}
+# _FULL_SCAN_CACHE: Lista consolidada de entradas recuperadas en el escaneo completo.
 _FULL_SCAN_CACHE: Optional[List[StartupEntry]] = None
+# _REGISTRY_CACHE: Lista de entradas recuperadas específicamente desde el registro.
 _REGISTRY_CACHE: Optional[List[StartupEntry]] = None
 
 # Mensaje estandarizado para deshabilitar programas sin tocar el registro.
@@ -75,15 +78,9 @@ class StartupEntry:
     Representa una entrada de inicio (archivo en carpeta o clave de registro).
 
     Atributos:
-        name: Identificador legible de la entrada.
-        command: String original obtenido del sistema (ruta o línea de ejecución).
-        source: Origen del dato ('registro' o 'carpeta').
-
-    Estrategia de resolución:
-        Se emplea 'lazy evaluation'. La validación de la existencia en disco, 
-        la expansión de rutas relativas y la detección de puntos de reparse (reparse points) 
-        se ejecutan solo cuando se accede a la propiedad `.executable`. Esto 
-        minimiza las llamadas al sistema de archivos durante la fase de recolección.
+        name (str): Identificador legible de la entrada.
+        command (str): String original obtenido del sistema (ruta o línea de ejecución).
+        source (str): Origen del dato ('registro' o 'carpeta').
     """
     name: str
     command: str
@@ -172,7 +169,6 @@ class StartupEntry:
                         _EXISTS_CACHE[path_string] = False
                         return ""
                 except (OSError, PermissionError):
-                    # Si no podemos acceder a lstat, asumimos seguridad preventiva
                     pass
 
             if not p.is_absolute() or is_protected_path(p) or p.is_symlink():
