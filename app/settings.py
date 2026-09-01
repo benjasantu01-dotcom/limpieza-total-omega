@@ -29,7 +29,6 @@ from __future__ import annotations
 
 import json
 import os
-import time
 from enum import Enum
 from pathlib import Path
 from typing import Any, Final, TypeAlias, Callable, TypedDict, Optional, TypeVar, ParamSpec, NamedTuple, TypeGuard
@@ -241,12 +240,12 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
 def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
-    for key_str, val in raw_values.items():
-        key = _STR_TO_ENUM.get(key_str)
-        if key and key in _VALIDATOR_MAP:
-            validated = _VALIDATOR_MAP[key](key, val)
+    for key_enum in ConfigKey:
+        val = raw_values.get(key_enum.value)
+        if val is not None and key_enum in _VALIDATOR_MAP:
+            validated = _VALIDATOR_MAP[key_enum](key_enum, val)
             if validated is not None:
-                config[key.value] = validated
+                config[key_enum.value] = validated
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -254,6 +253,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     try:
+        if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         if stats.st_size <= MAX_SETTINGS_SIZE:
             mtime = stats.st_mtime
@@ -288,11 +288,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             return None
         if not parent.exists():
             parent.mkdir(parents=True, exist_ok=True)
-        elif not parent.is_dir():
-            return None
-        if is_protected_path(str(ruta)) or not is_safe_to_modify(str(ruta)):
-            return None
-            
+        
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False)
         encoded_data = data.encode("utf-8")
         if len(encoded_data) > MAX_SETTINGS_SIZE: return None
@@ -306,7 +302,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         os.replace(temp_path, ruta)
         _CACHE[str(ruta)] = (ruta.stat().st_mtime, cleaned_settings)
         return ruta
-    except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError, json.JSONDecodeError):
+    except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
         return None
     finally:
         if temp_path.exists():

@@ -395,7 +395,10 @@ def logo_ascii() -> str:
 """
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Renderiza las franjas degradadas internas del escudo en el canvas proporcionado."""
+    """
+    Renderiza las franjas degradadas internas del escudo usando operaciones de lienzo.
+    Calcula dinámicamente las dimensiones de las franjas basado en la escala provista.
+    """
     try:
         scale_f: float = float(scale)
         franjas_count: int = max(6, int(28 * scale_f))
@@ -416,7 +419,7 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
 def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Dibuja los elementos decorativos internos del escudo (líneas y símbolo omega)."""
+    """Dibuja los elementos decorativos internos del escudo (líneas y símbolo omega) como formas vectoriales."""
     canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, 
                        fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
     canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, 
@@ -425,7 +428,10 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
                        fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo corporativo escalado en un elemento canvas con efectos de luz."""
+    """
+    Dibuja el escudo corporativo escalado en un elemento canvas con efectos de luz radial.
+    Calcula polígonos de contorno y capas de iluminación degradadas.
+    """
     try:
         scale: float = max(0.1, min(10.0, float(size) / 128.0))
         coords: Tuple[float, ...] = _get_shield_coords(scale)
@@ -446,7 +452,10 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3,
                       canvas_x: float = 0.0, canvas_y: float = 0.0,
                       stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Renderiza una línea horizontal decorativa con degradado en el canvas."""
+    """
+    Renderiza una línea horizontal decorativa con degradado en el canvas.
+    Utiliza segmentos agrupados para mejorar la eficiencia del renderizado.
+    """
     try:
         w_int: int = max(1, int(width))
         colores: Tuple[HexColor, ...] = gradient_colors(w_int, stops)
@@ -458,7 +467,9 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
               canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14,
               track: Optional[HexColor] = None,
               fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular (donut) de progreso en el canvas."""
+    """
+    Dibuja un indicador circular de progreso (donut) utilizando arcos vectoriales en el lienzo.
+    """
     try:
         if percent is None: return
         valor: float = max(0.0, min(100.0, float(percent)))

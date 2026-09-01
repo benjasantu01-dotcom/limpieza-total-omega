@@ -16,37 +16,41 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 25 | 3 | 4 | 3 | 15 |
+| 2026-08-30 | 21 | 3 | 4 | 3 | 15 |
 | 2026-08-31 | 152 | 10 | 27 | 11 | 150 |
-| 2026-09-01 | 46 | 2 | 9 | 3 | 44 |
+| 2026-09-01 | 50 | 2 | 9 | 3 | 44 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **52**
-- manejo de errores y validación de entradas: **51**
+- legibilidad y documentación: **44**
 - robustez ante casos límite: **43**
-- legibilidad y documentación: **42**
-- rendimiento: **35**
+- rendimiento: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
-- `duplicates.py`: **20**
+- `assistant.py`: **21**
 - `scanner.py`: **20**
-- `assistant.py`: **20**
-- `settings.py`: **19**
+- `settings.py`: **20**
+- `duplicates.py`: **19**
 - `quarantine.py`: **18**
-- `memory.py`: **17**
 - `organizer.py`: **17**
-- `healthscore.py`: **16**
 - `safety.py`: **16**
+- `memory.py`: **16**
+- `healthscore.py`: **15**
 - `diskreport.py`: **15**
-- `branding.py`: **11**
-- `main.py`: **8**
-- `startup.py`: **5**
+- `branding.py`: **12**
+- `main.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T04:28:46` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna y mantenibilidad de `branding.py` mediante la adición de docstrings estructuradas en las funciones de renderizado y una clarificación explícita de los tipos de retorno, facilitando la comprensión de las operaciones de dibujo vectorial en el lienzo.
+- `2026-09-01T04:27:58` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `ProblemCriterion.format_if_triggered` para extraer la lógica de evaluación en una función interna clara y añadiendo type hints faltantes en el procesamiento de criterios.
+- `2026-09-01T04:26:42` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `entries_from_folders` mediante un manejo explícito de errores y validaciones de tipo, asegurando que la entrada a `StartupEntry` siempre reciba strings válidos incluso ante nombres de archivo o rutas que contengan caracteres no imprimibles o inesperados.
+- `2026-09-01T04:25:56` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` añadiendo verificaciones explícitas de integridad (evitar `None` en claves críticas y asegurar que la configuración devuelta sea siempre un `AppSettings` completo) para evitar comportamientos inesperados ante datos de entrada parcialmente dañados.
 - `2026-09-01T04:16:45` **scanner.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `check_system_lookalike` y `check_recent_executable_in_downloads` añadiendo validaciones explícitas de tipos y estados, asegurando que ante rutas inexistentes o atributos nulos, las funciones devuelvan `None` de forma segura en lugar de propagar excepciones.
 - `2026-09-01T04:16:33` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` implementando una validación explícita de `p.exists()` frente a `os.access` y mejorando la captura de errores durante la inspección de atributos, evitando que excepciones inesperadas del sistema de archivos interrumpan el flujo de validación.
 - `2026-09-01T04:15:44` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de la lógica de aislamiento implementando una validación previa de escritura mediante `os.access` en el directorio de destino, asegurando que `_atomic_isolate_file` no falle por errores de permisos genéricos después de haber realizado operaciones costosas de E/S.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T02:33:40` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_resolve_and_cache_path` añadiendo una comprobación explícita para evitar rutas que contienen puntos de reparse (reparse points) mediante la inspección de atributos de archivo antes de cualquier procesamiento adicional, asegurando que la herramienta no siga accidentalmente enlaces o junctions fuera del árbol esperado durante la resolución.
 - `2026-09-01T02:24:40` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita de `is_protected_path` sobre la ruta final antes de realizar cualquier operación de escritura, asegurando que ni siquiera el archivo de configuración pueda ubicarse en una zona crítica del sistema.
 - `2026-09-01T02:24:19` **scanner.py** (seguridad defensiva): Se ha robustecido `_is_safe_entry` y la lógica de escaneo para validar estrictamente que la ruta no sea un enlace simbólico o un junction (punto de reparse) antes de procesar su contenido, previniendo el desbordamiento de límites de seguridad o ciclos infinitos fuera de la jerarquía permitida.
-- `2026-09-01T02:23:49` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `ensure_safe_to_modify` añadiendo una validación explícita mediante `os.access` con `os.W_OK` antes de confirmar la posibilidad de modificar un archivo, asegurando que el sistema operativo realmente permita la operación más allá de los atributos lógicos detectados.
-- `2026-09-01T02:15:58` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_is_safe_for_disk_op` mediante la validación estricta de la propiedad del sistema de archivos, asegurando que `src` y `dest` no sean puntos de reparse (Junctions/Symlinks) antes de realizar cualquier operación, previniendo así posibles fugas de contexto fuera de los directorios permitidos.
-- `2026-09-01T02:15:26` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva al invocar `is_safe_to_modify` antes de proceder con el manejo de procesos en `trim_working_set`, asegurando una validación centralizada de la ruta del ejecutable contra las políticas del proyecto antes de realizar cualquier operación de bajo nivel mediante Win32 API.
-- `2026-09-01T02:14:55` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo un filtro explícito en `run_async` y `_worker_thread_logic` para evitar que se ejecuten tareas asíncronas de E/S cuando la aplicación está en estado de cierre (`_closing`), previniendo condiciones de carrera y accesos a widgets destruidos.

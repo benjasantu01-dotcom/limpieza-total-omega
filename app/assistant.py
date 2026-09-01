@@ -102,21 +102,22 @@ class ProblemCriterion(NamedTuple):
         Evalúa si la métrica contenida en el contexto supera el umbral definido.
         Retorna la cadena formateada si se cumple la condición, o None.
         """
+        def _check_condition(val: float) -> bool:
+            """Evaluador interno de las condiciones del umbral."""
+            if self.operator == "<": return val < self.threshold
+            if self.operator == ">": return val > self.threshold
+            return False
+
         try:
-            if not hasattr(ctx, self.metric_key):
-                return None
-            val = getattr(ctx, self.metric_key)
+            val = getattr(ctx, self.metric_key, None)
             if val is None: 
                 return None
             f_val = _safe_float(val, -1.0)
-            if f_val < 0:
+            if f_val < 0 or not _check_condition(f_val):
                 return None
             
-            is_triggered = (self.operator == "<" and f_val < self.threshold) or \
-                           (self.operator == ">" and f_val > self.threshold)
-            
-            msg = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]
-            return msg if (is_triggered and _is_safe_text_structure(msg)) else None
+            msg: str = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]
+            return msg if _is_safe_text_structure(msg) else None
         except (ValueError, TypeError, AttributeError, KeyError):
             return None
 

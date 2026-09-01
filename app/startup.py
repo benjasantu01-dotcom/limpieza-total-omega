@@ -249,16 +249,17 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
             with os.scandir(folder) as it:
                 for entry in it:
                     try:
-                        # Verificar existencia y tipo antes de procesar
                         if entry.is_file(follow_symlinks=False):
                             _, ext = os.path.splitext(entry.name)
-                            if ext.lower() in EXECUTABLE_EXTS and not is_protected_path(Path(entry.path)):
-                                found_entries.append(StartupEntry(
-                                    name=os.path.splitext(entry.name)[0],
-                                    command=entry.path,
-                                    source="carpeta"
-                                ))
-                    except (OSError, PermissionError):
+                            if ext.lower() in EXECUTABLE_EXTS:
+                                p_entry = Path(entry.path)
+                                if not is_protected_path(p_entry):
+                                    found_entries.append(StartupEntry(
+                                        name="".join(c for c in os.path.splitext(entry.name)[0] if ord(c) >= 32),
+                                        command=entry.path,
+                                        source="carpeta"
+                                    ))
+                    except (OSError, PermissionError, AttributeError):
                         continue
         except (OSError, PermissionError):
             continue
