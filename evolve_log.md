@@ -493,3 +493,11 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T10:14:13` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
 - `2026-09-01T10:14:13` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T10:14:13` Corrida terminada. Total usado hoy: 244.
+- `2026-09-01T10:22:40` Arrancando corrida. Quedan hoy ~56 peticiones objetivo.
+- `2026-09-01T10:23:09` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se introdujo una gestión robusta de errores y validación de tipos en el cálculo de `total_size` y `walk_files`, asegurando que archivos bloqueados por el sistema operativo o con metadatos corruptos no interrumpan el escaneo ni propaguen excepciones inesperadas.
+- `2026-09-01T10:23:51` ✅ Mejora aceptada en duplicates.py (enfoque: robustez ante casos límite). Mejoré la robustez de `suggest_keeper` y `format_group` ante archivos que se eliminan o bloquean durante la ejecución, integrando validaciones de estado más estrictas y manejando la posibilidad de que un grupo quede huérfano de candidatos válidos.
+- `2026-09-01T10:24:16` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `compute_score` frente a configuraciones externas que podrían estar vacías o contener valores mal formados, asegurando que las reglas de recomendación no fallen si los datos son inesperados mediante un manejo de excepciones más granular y un filtrado de tipos defensivo.
+- `2026-09-01T10:25:17` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-01T10:26:14` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un control de robustez en `_validate_environment` para evitar que la aplicación intente ejecutarse con permisos de usuario restringidos o en entornos donde la ruta base es inaccesible, previniendo fallos en tiempo de ejecución al manipular archivos del sistema.
+- `2026-09-01T10:26:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T10:26:14` Corrida terminada. Total usado hoy: 248.

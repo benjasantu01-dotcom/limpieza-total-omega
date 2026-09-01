@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 40
+- Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 112 | 5 | 18 | 6 | 119 |
-| 2026-09-01 | 124 | 5 | 22 | 7 | 86 |
+| 2026-08-31 | 110 | 5 | 17 | 6 | 118 |
+| 2026-09-01 | 128 | 5 | 22 | 7 | 86 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **46**
+- seguridad defensiva: **44**
 - rendimiento: **41**
-- robustez ante casos límite: **37**
+- robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
-- `quarantine.py`: **21**
 - `settings.py`: **21**
-- `scanner.py`: **20**
 - `browser.py`: **20**
-- `duplicates.py`: **19**
-- `diskreport.py`: **18**
+- `duplicates.py`: **20**
+- `quarantine.py`: **20**
+- `diskreport.py`: **19**
+- `scanner.py`: **19**
 - `memory.py`: **17**
 - `organizer.py`: **17**
+- `healthscore.py`: **15**
 - `safety.py`: **15**
-- `healthscore.py`: **14**
 - `branding.py`: **12**
+- `main.py`: **10**
 - `startup.py`: **9**
-- `main.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T10:26:14` **main.py** (robustez ante casos límite): Se implementó un control de robustez en `_validate_environment` para evitar que la aplicación intente ejecutarse con permisos de usuario restringidos o en entornos donde la ruta base es inaccesible, previniendo fallos en tiempo de ejecución al manipular archivos del sistema.
+- `2026-09-01T10:24:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas que podrían estar vacías o contener valores mal formados, asegurando que las reglas de recomendación no fallen si los datos son inesperados mediante un manejo de excepciones más granular y un filtrado de tipos defensivo.
+- `2026-09-01T10:23:51` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `format_group` ante archivos que se eliminan o bloquean durante la ejecución, integrando validaciones de estado más estrictas y manejando la posibilidad de que un grupo quede huérfano de candidatos válidos.
+- `2026-09-01T10:23:09` **diskreport.py** (robustez ante casos límite): Se introdujo una gestión robusta de errores y validación de tipos en el cálculo de `total_size` y `walk_files`, asegurando que archivos bloqueados por el sistema operativo o con metadatos corruptos no interrumpan el escaneo ni propaguen excepciones inesperadas.
 - `2026-09-01T10:14:04` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante posibles errores de resolución de rutas o permisos, asegurando que `ensure_safe_to_modify` se utilice exclusivamente tras validaciones previas para evitar excepciones innecesarias durante operaciones de lectura/escritura.
 - `2026-09-01T10:13:32` **assistant.py** (robustez ante casos límite): Se ha mejorado la robustez de `build_context` y la ingesta de datos en `SystemContext` para manejar con elegancia valores numéricos corruptos (como `float('nan')` o `inf`), listas inesperadas, o tipos malformados que provienen de configuraciones o lecturas de disco, evitando que el asistente falle al procesar datos del sistema.
 - `2026-09-01T10:04:19` **settings.py** (rendimiento): Se optimizó el acceso a los datos de configuración transformando `_VALIDATOR_MAP` y las colecciones de validación en constantes más eficientes y reduciendo la redundancia de las llamadas a `load()` en funciones de uso frecuente como `assistant_api_key` y `assistant_enabled`, evitando recrear diccionarios innecesariamente.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T09:42:18` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo introduciendo un caché local (`perf_cache`) compartido entre todas las rutas de un mismo navegador, evitando re-procesar subdirectorios comunes (ej. `User Data`) que son compartidos por múltiples entradas de caché.
 - `2026-09-01T09:35:17` **assistant.py** (rendimiento): Se implementó un `lru_cache` en `context_as_text` para evitar la serialización y formateo repetitivo del contexto en cada interacción, mejorando el rendimiento en el bucle de consultas.
 - `2026-09-01T09:33:36` **startup.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el docstring de la clase `StartupEntry` y se añadieron *type hints* faltantes en los métodos de resolución de rutas para mejorar la claridad sobre las expectativas de datos y la robustez del manejo de errores.
-- `2026-09-01T09:32:23` **settings.py** (legibilidad y documentación): Se introdujeron type hints más precisos y docstrings descriptivos en las funciones principales para clarificar las responsabilidades de validación y persistencia, mejorando la legibilidad técnica del módulo sin alterar su lógica.
-- `2026-09-01T09:22:54` **scanner.py** (legibilidad y documentación): Mejoré la documentación de las funciones de chequeo heurístico y añadí type hints explícitos para clarificar el flujo de datos, siguiendo las directrices de legibilidad sin alterar la lógica de escaneo.
-- `2026-09-01T09:21:58` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings de estilo Google Style en las funciones clave para clarificar las precondiciones, excepciones que pueden lanzarse y el propósito del flujo de datos, mejorando la legibilidad técnica sin alterar la lógica.
-- `2026-09-01T09:13:31` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (Google Style) que explicitan las precondiciones, responsabilidades y el "porqué" de las validaciones críticas, facilitando el mantenimiento y la auditoría del flujo de seguridad.

@@ -215,8 +215,8 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 raise RuntimeError("El directorio home del usuario no es accesible.")
             
             home_resolved = home.resolve(strict=True)
-            if not os.access(home_resolved, os.R_OK):
-                raise PermissionError(f"Sin permisos de lectura en home: {home_resolved}")
+            if not os.access(home_resolved, os.R_OK | os.W_OK):
+                raise PermissionError(f"Sin permisos suficientes en home: {home_resolved}")
                 
         except Exception as e:
             if isinstance(e, (safety.UnsafePathError, PermissionError, RuntimeError)):

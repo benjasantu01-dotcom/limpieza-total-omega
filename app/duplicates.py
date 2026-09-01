@@ -112,7 +112,6 @@ def _is_valid_candidate(path: Path) -> bool:
     Cumple con el criterio de exclusión de seguridad del proyecto.
     """
     try:
-        # Validación de existencia, tipo, permisos y exclusión de rutas críticas.
         return (
             isinstance(path, Path) and 
             path.is_file() and 
@@ -177,15 +176,16 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        if is_protected_path(Path(entry.path)):
+                        p_entry = Path(entry.path)
+                        if is_protected_path(p_entry):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
-                            _scan_recursive(Path(entry.path))
+                            _scan_recursive(p_entry)
                         elif entry.is_file(follow_symlinks=False):
                             stat = entry.stat()
                             if stat.st_size >= min_size:
-                                temp_map[int(stat.st_size)].append(Path(entry.path))
+                                temp_map[int(stat.st_size)].append(p_entry)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -271,8 +271,8 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         if not isinstance(p, Path): continue
         try:
+            if not p.exists(): continue
             stat_info = p.stat()
-            # Prioridad: fecha de modificación más antigua, luego longitud de ruta.
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
             continue
@@ -299,6 +299,7 @@ def format_group(group: DuplicateGroup) -> List[str]:
         elif not _is_valid_candidate(path):
             lines.append(f"   [inaccesible] {path}")
             continue
+        
         label = 'conservar' if keeper is not None and path == keeper else 'duplicado'
         lines.append(f"   [{label}] {path}")
     return lines

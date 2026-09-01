@@ -219,9 +219,10 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         
         for rule in _RULES_BY_AREA.get(area, []):
             try:
+                # Validar ejecución de reglas ante datos potencialmente corruptos
                 if rule.check(metrics, ratio):
                     recommendations.append(rule.message_factory(metrics))
-            except (AttributeError, TypeError, ValueError):
+            except Exception:
                 continue
     
     final_score = int(_clamp(total_pts, 0.0, 100.0))

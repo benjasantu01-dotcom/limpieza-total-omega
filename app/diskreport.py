@@ -273,7 +273,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     
                     if entry.is_dir(follow_symlinks=False):
                         child_path = Path(entry.path)
-                        # Verificar que el hijo realmente pertenezca a la raíz para evitar escapes de ruta
                         if not child_path.is_relative_to(root_path):
                             continue
                                 
@@ -286,7 +285,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(child_path)
                                 
                     elif entry.is_file(follow_symlinks=False):
-                        yield Path(entry.path), max(0, st.st_size)
+                        yield Path(entry.path), max(0, int(st.st_size))
         except (PermissionError, OSError, FileNotFoundError):
             continue
 
@@ -348,7 +347,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     counts: Dict[Path, int] = defaultdict(int)
 
     for path, size in walk_files(p_base, skip_protected):
-        # Determinar a qué subcarpeta principal pertenece el archivo encontrado
         try:
             rel = path.relative_to(p_base)
             top_folder = p_base / rel.parts[0]
@@ -359,7 +357,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
             sums[top_folder] += size
             counts[top_folder] += 1
         except (ValueError, IndexError):
-            # Si el archivo está en la raíz, se agrupa directamente
             sums[p_base] += size
             counts[p_base] += 1
 
@@ -370,9 +367,12 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
 def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Tuple[int, int]:
     """Calcula el tamaño total en bytes y el número total de archivos encontrados."""
     total_bytes, file_count = 0, 0
-    for _, size in walk_files(directory, skip_protected):
-        total_bytes += size
-        file_count += 1
+    try:
+        for _, size in walk_files(directory, skip_protected):
+            total_bytes += size
+            file_count += 1
+    except Exception:
+        pass
     return total_bytes, file_count
 
 
