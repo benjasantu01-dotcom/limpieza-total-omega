@@ -106,7 +106,7 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extracts and validates a path if it is enclosed in double quotes."""
+        """Extrae la ruta de un comando entrecomillado, validando contra caracteres prohibidos."""
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
         end_quote: int = raw_command.find('"', 1)
@@ -126,7 +126,10 @@ class StartupEntry:
             return ""
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
-        """Normaliza, valida existencia y descarta rutas UNC y peligrosas usando caché."""
+        """
+        Normaliza una ruta, verifica su existencia en disco y valida que no sea
+        peligrosa, un enlace simbólico o un reparse point, usando caché para eficiencia.
+        """
         if not isinstance(path_string, str) or not path_string:
             return ""
         
@@ -148,10 +151,11 @@ class StartupEntry:
             abs_path = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            # Comprobación de existencia protegida por errores de permiso
+            # Validación de existencia considerando atributos de sistema
             if p.exists():
                 try:
                     stat_info = p.lstat()
+                    # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT
                     if (stat_info.st_file_attributes & 0x00000400) != 0:
                         _EXISTS_CACHE[path_string] = False
                         return ""
@@ -185,7 +189,7 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Descompone la línea de comandos cruda para aislar el ejecutable principal."""
+        """Descompone una línea de comando compleja para aislar y validar el ejecutable principal."""
         if not command_line or not isinstance(command_line, str):
             return ""
         if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):

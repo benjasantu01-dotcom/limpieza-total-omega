@@ -34,11 +34,11 @@ class Suspicion:
     severity: str
 
 # Alias para funciones de chequeo heurístico.
-# Reciben la ruta del archivo, una entrada de directorio opcional (para rendimiento)
-# y el timestamp de inicio global para asegurar coherencia en comparaciones temporales.
+# now_ts: Timestamp (float) obtenido al inicio del escaneo para consistencia.
+# entry: Objeto os.DirEntry opcional para evitar syscalls innecesarias.
 SuspicionCheck: TypeAlias = Callable[[Path, Optional[os.DirEntry], float], Optional[Suspicion]]
 
-# Alias para representar una colección de hallazgos durante un proceso de escaneo.
+# Representa una lista acumulativa de hallazgos durante el proceso de escaneo.
 ScanResult: TypeAlias = List[Suspicion]
 
 # Expresiones regulares para detección de ofuscación
@@ -62,7 +62,7 @@ WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Evalúa si el nombre del archivo contiene una doble extensión maliciosa.
-    Detecta patrones donde un archivo ejecutable intenta enmascararse como un documento (ej. .pdf.exe).
+    Detecta patrones donde un archivo ejecutable intenta enmascararse como un documento.
     """
     if path and path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
@@ -71,8 +71,7 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
     Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas.
-    La heurística prioriza la eficiencia usando el timestamp de inicio global (now_ts) 
-    para evitar llamadas recurrentes al sistema de archivos.
+    Utiliza el timestamp de inicio (now_ts) para una comparación temporal eficiente.
     """
     if not path: return None
     parts = path.parts
@@ -88,8 +87,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """
-    Verifica si un ejecutable utiliza nombres de procesos críticos del sistema (ej. svchost.exe)
-    cuando se encuentra ubicado fuera de directorios de sistema protegidos.
+    Verifica si un ejecutable utiliza nombres de procesos críticos del sistema fuera
+    de los directorios protegidos.
     """
     if not path or not path.name: return None
     name_lower = path.name.lower()
@@ -100,7 +99,7 @@ def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
     return None
 
-# Registro de reglas heurísticas para ejecutables
+# Registro de reglas heurísticas para ejecutables: se procesan en orden de importancia.
 EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
     check_system_lookalike,
     check_recent_executable_in_downloads
@@ -109,8 +108,7 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo del sistema de archivos.
-    Mantiene el contexto, el registro de resultados y las rutas visitadas
-    para prevenir el procesamiento redundante y bucles infinitos.
+    Mantiene el contexto, el registro de resultados y las rutas visitadas.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -121,8 +119,7 @@ class Scanner:
 
     def _is_inside_base_root(self, path_str: Optional[str]) -> bool:
         """
-        Valida que el archivo esté contenido estrictamente dentro del árbol del directorio 
-        base, previniendo el escape de la jerarquía de escaneo definida por el usuario.
+        Valida que la ruta esté dentro del árbol base, evitando escape de jerarquía.
         """
         if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
         try:
@@ -133,8 +130,8 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """
-        Valida la integridad y seguridad de una entrada. Aplica filtros de longitud,
-        nombres reservados, caracteres de ofuscación y chequeos de rutas protegidas.
+        Valida integridad de la entrada: longitud, nombres reservados, 
+        caracteres ofuscados, puntos de reparse y restricciones de seguridad.
         """
         if not entry or not entry.path:
             return False
@@ -158,8 +155,7 @@ class Scanner:
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """
-        Detecta puntos de reparse (junctions, enlaces simbólicos) mediante consulta de
-        atributos de bajo nivel para prevenir recursión infinita.
+        Detecta puntos de reparse (junctions, enlaces simbólicos) para prevenir bucles.
         """
         try:
             if entry.is_symlink():
@@ -169,15 +165,14 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Gestiona la cola de recursión añadiendo directorios validados al stack."""
+        """Agrega un directorio al stack de procesamiento si aún no fue visitado."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """
-        Clasifica una entrada de sistema: si es un directorio, lo añade a la pila;
-        si es un archivo, determina si requiere inspección heurística.
+        Distribuye la entrada a la cola de directorios o al motor de heurística de archivos.
         """
         try:
             if entry.is_dir(follow_symlinks=False):
@@ -196,22 +191,19 @@ class Scanner:
                     if self._is_safe_entry(entry):
                         self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError, FileNotFoundError):
-            logger.debug(f"Acceso denegado o archivo inaccesible durante escaneo: {entry.path}")
+            logger.debug(f"Acceso denegado o archivo inaccesible: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
         """
-        Dispara el motor de reglas para un archivo específico y agrega las posibles
-        sospechas encontradas al reporte global del escáner.
+        Ejecuta las reglas registradas y los controles de integridad críticos por nombre.
         """
         if path.name and RTL_CHAR_RE.search(path.name):
-            self.results.append(Suspicion(path, "Nombre de archivo contiene caracteres de control de ofuscación (RTL)", "critical"))
+            self.results.append(Suspicion(path, "Nombre contiene caracteres de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """
-    Ejecuta todas las reglas heurísticas registradas sobre un archivo individual.
-    Recibe la ruta, el timestamp de referencia y los datos opcionales de la entrada
-    para evitar re-lecturas innecesarias de metadatos.
+    Orquestador de reglas: ejecuta todas las heurísticas configuradas para un archivo.
     """
     if not path or not path.exists(): return []
     findings: ScanResult = []
@@ -221,18 +213,17 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     
     file_ext = ext or path.suffix.lower()
     if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
-        for check in EXECUTABLE_CHECK_REGISTRY:
+        for check_fn in EXECUTABLE_CHECK_REGISTRY:
             try:
-                if (result := check(path, entry, now_ts)):
+                if (result := check_fn(path, entry, now_ts)):
                     findings.append(result)
             except Exception as e:
-                logger.debug(f"Fallo no crítico en regla {check.__name__} para {path}: {e}")
+                logger.debug(f"Fallo en regla {check_fn.__name__} para {path}: {e}")
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     """
-    Punto de entrada principal. Inicia un escaneo recursivo mediante una pila (Stack)
-    para procesar el sistema de archivos de forma eficiente y segura.
+    Punto de entrada principal: escaneo recursivo mediante pila (Stack) del sistema.
     """
     if not directory:
         return []
@@ -260,7 +251,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     return scanner.results
 
 def run_windows_defender_quick_scan() -> str:
-    """Invoca la API de PowerShell para verificar el estado de Defender y ejecutar un escaneo rápido."""
+    """Invoca PowerShell para verificar y ejecutar un QuickScan de Windows Defender."""
     try:
         status = subprocess.run(
             ["powershell", "-Command", "Get-MpComputerStatus | Select-Object -ExpandProperty RealTimeProtectionEnabled"],

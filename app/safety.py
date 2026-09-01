@@ -286,7 +286,6 @@ def is_protected_path(path: PathLike) -> bool:
         norm_case = os.path.normcase(str(p))
         if any(norm_case.startswith(root) for root in _SYSTEM_ROOT_PATHS):
             return True
-        # Optimización: uso de intersección de sets para verificar inclusión de partes protegidas
         if not PROTECTED_DIR_NAMES.isdisjoint(part.lower() for part in p.parts):
             return True
         return p == Path(p.anchor)
@@ -320,8 +319,8 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
-    Valida la integridad estructural de la ruta.
-    Detecta nombres reservados, caracteres ilegales y rutas de red UNC.
+    Realiza validaciones de bajo nivel: nombres reservados, caracteres ilegales,
+    conexiones de red (UNC) y límites de longitud definidos por Windows.
     """
     if _has_invalid_chars(path_string) or _is_reserved_device_name(target_path.name):
         raise UnsafePathError("Nombre de ruta o dispositivo inválido.")
@@ -333,8 +332,8 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
     """
-    Verifica que la operación se mantenga dentro de los límites geográficos permitidos.
-    Asegura que no se acceda a rutas de sistema o al directorio de ejecución.
+    Aplica filtros de contención lógica: impide salir del directorio de trabajo,
+    acceder a la raíz de la unidad o interactuar con nodos de reparse.
     """
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("Operación fuera del directorio base permitido.")

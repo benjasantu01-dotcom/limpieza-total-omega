@@ -6,47 +6,51 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
+- Mejoras aceptadas: **225** (44.6% de aceptación)
 - Rechazadas por tests: 18
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-30 | 62 | 7 | 9 | 6 | 58 |
+| 2026-08-30 | 61 | 7 | 9 | 6 | 55 |
 | 2026-08-31 | 152 | 10 | 27 | 11 | 150 |
-| 2026-09-01 | 8 | 1 | 2 | 0 | 1 |
+| 2026-09-01 | 12 | 1 | 2 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
-- legibilidad y documentación: **50**
 - seguridad defensiva: **49**
-- robustez ante casos límite: **42**
+- robustez ante casos límite: **41**
 - rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
-- `duplicates.py`: **21**
+- `scanner.py`: **20**
+- `settings.py`: **20**
 - `browser.py`: **20**
-- `scanner.py`: **19**
-- `settings.py`: **19**
+- `duplicates.py`: **20**
 - `assistant.py`: **19**
 - `organizer.py`: **18**
 - `quarantine.py`: **18**
 - `memory.py`: **17**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `safety.py`: **13**
+- `safety.py`: **14**
 - `branding.py`: **12**
 - `main.py`: **7**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T00:32:33` **startup.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) en las funciones críticas de resolución de rutas para clarificar la lógica de seguridad y el manejo de excepciones, facilitando el mantenimiento futuro.
+- `2026-09-01T00:32:18` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints refinados en `save` y `load` para clarificar la lógica de persistencia, facilitando la comprensión del flujo de datos y la seguridad de las rutas.
+- `2026-09-01T00:31:50` **scanner.py** (legibilidad y documentación): Se introdujeron type hints más precisos (especialmente en `stack` y `ScanResult`), se añadieron docstrings explicativos en funciones críticas para aclarar el flujo de control y se refinó la nomenclatura de parámetros en el registro de escaneo para mejorar la mantenibilidad y claridad del código.
+- `2026-09-01T00:31:21` **safety.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los chequeos internos en `_validate_structural_safety` y `_validate_boundary_conditions` para clarificar la lógica de seguridad y evitar ambigüedades en futuras auditorías de código.
 - `2026-09-01T00:21:18` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad de las funciones de validación crítica en `organizer.py`, añadiendo docstrings que explicitan el "porqué" de las restricciones de seguridad para mejorar la mantenibilidad a largo plazo sin alterar la lógica de ejecución.
 - `2026-09-01T00:20:53` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `memory.py` añadiendo type hints faltantes, docstrings detallados en las funciones de bajo nivel y una sección de advertencia clara, manteniendo la integridad del código.
 - `2026-09-01T00:11:27` **healthscore.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de puntuación mediante la documentación explicativa de los umbrales críticos y la simplificación de la validación de `SystemMetrics` utilizando `math.isfinite` para garantizar integridad sin redundancia.
@@ -58,7 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-08-31T15:19:41` **scanner.py** (manejo de errores y validación de entradas): Mejora la robustez de `_is_inside_base_root` y `scan_directory` validando entradas nulas o rutas inválidas de forma temprana para evitar excepciones de `Path.resolve()` en entornos con permisos restringidos.
 - `2026-08-31T15:09:58` **quarantine.py** (manejo de errores y validación de entradas): Mejoré el manejo de errores en `purge_all` y `quarantine_file` para asegurar que el sistema no se detenga ante fallos de I/O parciales al iterar o procesar archivos, reemplazando excepciones genéricas por capturas controladas que mantienen la integridad del manifiesto.
 - `2026-08-31T15:09:24` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo validaciones explícitas de entrada, manejo de excepciones más fino en el cálculo de espacio en disco y validación de integridad de rutas para evitar errores en tiempo de ejecución al manipular archivos bloqueados o inexistentes.
-- `2026-08-31T15:03:54` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` y `read_snapshot` integrando validaciones de tipo y estructura más estrictas para prevenir fallos silenciosos ante entradas inesperadas o corrupción de datos.
-- `2026-08-31T14:59:45` **healthscore.py** (manejo de errores y validación de entradas): Mejora la robustez del manejo de datos al agregar una validación de `math.isfinite` en la inicialización y una verificación explícita de `isinstance` en las funciones de conversión, evitando que valores `None` o tipos inesperados propaguen errores silenciosos durante el cálculo del puntaje.
-- `2026-08-31T14:59:18` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones `hash_file` y `partial_hash` implementando un chequeo previo de `os.access(path, os.R_OK)` y validación de tipo, evitando excepciones innecesarias durante la lectura de archivos bloqueados por el sistema operativo o con permisos restringidos.
-- `2026-08-31T14:50:25` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `largest_folders` añadiendo validaciones específicas para rutas relativas y capturando posibles excepciones durante la resolución de rutas, evitando que archivos bloqueados o con caracteres inválidos interrumpan el recorrido.

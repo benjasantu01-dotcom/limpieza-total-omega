@@ -250,6 +250,7 @@ def validate(raw_values: Any) -> AppSettings:
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
+    """Lee y valida el JSON de configuración desde disco, usando caché para minimizar I/O."""
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     try:
@@ -269,7 +270,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError):
         return DEFAULTS.copy()
 
-def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
+def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
+    """Persiste los ajustes validados de forma atómica usando un archivo temporal."""
     if not _is_dict(values): return None
     cleaned_settings = validate(values)
     
@@ -281,7 +283,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Path | None:
     ruta = settings_path(custom_base)
     try:
         parent = ruta.parent
-        # Validar de forma preventiva el directorio base antes de cualquier operación
         if not _Validators._is_safe_path(str(parent)):
             return None
         

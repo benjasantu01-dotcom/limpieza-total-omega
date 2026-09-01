@@ -678,3 +678,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-01T00:22:07` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-01T00:22:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T00:22:07` Corrida terminada. Total usado hoy: 12.
+- `2026-09-01T00:30:35` Arrancando corrida. Quedan hoy ~288 peticiones objetivo.
+- `2026-09-01T00:31:21` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Documenté con docstrings claros y tipado los chequeos internos en `_validate_structural_safety` y `_validate_boundary_conditions` para clarificar la lógica de seguridad y evitar ambigüedades en futuras auditorías de código.
+- `2026-09-01T00:31:50` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos (especialmente en `stack` y `ScanResult`), se añadieron docstrings explicativos en funciones críticas para aclarar el flujo de control y se refinó la nomenclatura de parámetros en el registro de escaneo para mejorar la mantenibilidad y claridad del código.
+- `2026-09-01T00:32:18` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints refinados en `save` y `load` para clarificar la lógica de persistencia, facilitando la comprensión del flujo de datos y la seguridad de las rutas.
+- `2026-09-01T00:32:33` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se introdujeron type hints más precisos y se mejoró la documentación técnica (docstrings) en las funciones críticas de resolución de rutas para clarificar la lógica de seguridad y el manejo de excepciones, facilitando el mantenimiento futuro.
+- `2026-09-01T00:32:33` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T00:32:33` Corrida terminada. Total usado hoy: 16.
