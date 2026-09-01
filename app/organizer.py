@@ -168,12 +168,13 @@ def _passes_system_checks(src: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza una batería de validaciones antes de cualquier operación de movimiento.
-    Valida integridad de rutas, permisos de escritura, bloqueos y restricciones de sistema.
+    Razonamiento: Filtra entradas inválidas, rutas con caracteres peligrosos para shell, 
+    y verifica que tanto origen como destino residan en volúmenes permitidos y no críticos.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
-    # Validaciones preventivas de seguridad de rutas
     path_str = str(src)
+    # Evitar inyección de comandos o rutas que emulen dispositivos del sistema (Windows)
     if "\0" in path_str or any(c in path_str for c in ["<", ">", "|"]): return False
     if os.name == "nt" and any(path_str.upper().startswith(d) for d in ["CON:", "PRN:", "AUX:", "NUL:"]): return False
     
@@ -186,10 +187,10 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     try:
         if not src.exists() or not src.is_file(): return False
         
-        # Validar reparse points (Junctions) en ambas rutas para evitar manipulación externa
+        # Validar reparse points para evitar escapes del sandbox de trabajo
         if _is_junction(src) or _is_junction(dest.parent if dest.is_file() else dest): return False
         
-        # Uso de is_protected_path (lectura) e is_safe_to_modify (escritura)
+        # Uso estricto de seguridad: is_protected_path bloquea rutas de sistema; is_safe_to_modify valida permisos
         if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
         if not is_safe_to_modify(src) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(src, dest): return False
@@ -275,7 +276,8 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """
     Valida la viabilidad de un movimiento y propone una ruta de destino única.
-    Incluye chequeo de espacio libre para evitar fallos de escritura parcial.
+    Razonamiento: Calcula el espacio libre necesario (buffer de 50MB) antes de intentar 
+    la operación, evitando abortos en medio del proceso por falta de espacio en disco.
     """
     if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
     try:
@@ -319,7 +321,6 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and is_safe_to_modify(src):
-                # ensure_safe_to_modify lanza excepción si la ruta no es segura
                 ensure_safe_to_modify(src)
                 shutil.move(str(src), str(target))
         except (OSError, PermissionError, shutil.Error, RuntimeError) as e:

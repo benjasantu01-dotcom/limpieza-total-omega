@@ -792,18 +792,22 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         ia_container.pack(fill="x", padx=12, pady=(6, 0))
 
         self.setting_vars["asistente_activado"] = ctk.BooleanVar(value=bool(self.settings.get("asistente_activado")))
-        ctk.CTkSwitch(
-            ia_container, text="Activar asistente en línea",
-            variable=self.setting_vars["asistente_activado"],
-            progress_color=branding.color("accent2"),
-            button_color=branding.color("text"),
-            text_color=branding.color("text"),
-        ).grid(row=0, column=0, sticky="w", padx=(0, 20), pady=6)
+        self._add_ia_switch(ia_container, "Activar asistente en línea", "asistente_activado")
 
         self._create_styled_label(ia_container, "Clave de API:", "body").grid(row=0, column=1, padx=(0, 8))
         self.api_key_entry = self._entry(ia_container, f"vacío = usar {settings_mod.API_KEY_ENV_VAR}", 260)
         self.api_key_entry.configure(show="*")
         self.api_key_entry.grid(row=0, column=2, sticky="w")
+
+    def _add_ia_switch(self, parent: ctk.CTk, texto: str, var_key: str) -> None:
+        """Crea un switch para ajustes de IA."""
+        ctk.CTkSwitch(
+            parent, text=texto,
+            variable=self.setting_vars[var_key],
+            progress_color=branding.color("accent2"),
+            button_color=branding.color("text"),
+            text_color=branding.color("text"),
+        ).grid(row=0, column=0, sticky="w", padx=(0, 20), pady=6)
 
     def _add_setting_label(self, parent: ctk.CTkFrame, text: str, row: int, column: int = 0) -> None:
         """Agrega etiqueta descriptiva para un control en el formulario de ajustes."""
