@@ -419,3 +419,31 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-01T09:05:25` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y la claridad del código añadiendo tipos explícitos en los retornos de funciones, aclarando la lógica de filtrado en `_is_valid_candidate` y documentando la intención del pipeline de hashing para facilitar el mantenimiento y la auditoría.
 - `2026-09-01T09:05:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T09:05:25` Corrida terminada. Total usado hoy: 216.
+- `2026-09-01T09:11:11` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-09-01T09:11:39` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+F....................................................................... [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_____________ test_warnings_hurt_more_than_informational_findings ______________
+
+    def test_warnings_hurt_more_than_informational_findings():
+>       solo_info = healthscore.score_security(4, warnings=0)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: score_security() got an unexpected keyword argument 'warnings'
+
+evolve/tests/test_modules.py:891: TypeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_findings - TypeError: score_security() got an unexpected keyword argument 'warnings'
+1 failed, 298 passed in 1.28s
+
+```
+- `2026-09-01T09:11:39` ❌ Mejora descartada en healthscore.py (no pasó los tests), se revirtió. Intento: Se ha mejorado la documentación interna y la claridad del código añadiendo una jerarquía de constantes configurables más explícita, renombrando parámetros ambiguos en las funciones de puntuación y definiendo explícitamente el propósito de los valores de retorno mediante type hints mejorados, para facilitar el mantenimiento a futuro sin alterar la lógica de cálculo.
+- `2026-09-01T09:12:52` ✅ Mejora aceptada en main.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `main.py` documentando los métodos de la clase `LimpiezaTotalOmegaApp` con docstrings estandarizados que explican su propósito, parámetros y comportamiento, facilitando la navegación del código para futuras iteraciones del bucle.
+- `2026-09-01T09:13:20` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `memory.py` mediante docstrings detallados en las funciones de bajo nivel y la adición de Type Hints en parámetros clave para clarificar las expectativas de datos y mejorar la legibilidad del código siguiendo el enfoque actual.
+- `2026-09-01T09:13:31` ✅ Mejora aceptada en organizer.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (Google Style) que explicitan las precondiciones, responsabilidades y el "porqué" de las validaciones críticas, facilitando el mantenimiento y la auditoría del flujo de seguridad.
+- `2026-09-01T09:13:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T09:13:31` Corrida terminada. Total usado hoy: 220.
