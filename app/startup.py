@@ -305,11 +305,12 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             name_raw: Optional[str] = row.get(field_name)
             cmd_raw: Optional[str] = row.get(field_cmd)
             
-            if name_raw is None or cmd_raw is None:
+            # Validación explícita de entradas None o tipo inesperado
+            if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
                 continue
             
-            name: str = "".join(c for c in str(name_raw) if ord(c) >= 32).strip()
-            cmd: str = "".join(c for c in str(cmd_raw) if ord(c) >= 32).strip()
+            name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
+            cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
             
             if not name or not cmd or name.upper().startswith("PS"):
                 continue

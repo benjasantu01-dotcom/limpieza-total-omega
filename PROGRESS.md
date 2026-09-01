@@ -6,35 +6,35 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 38
-- Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 206
+- Sin cambios (nada sustancial que mejorar): 15
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 84 | 3 | 13 | 6 | 86 |
-| 2026-09-01 | 153 | 6 | 25 | 8 | 120 |
+| 2026-08-31 | 82 | 3 | 13 | 6 | 84 |
+| 2026-09-01 | 156 | 6 | 25 | 9 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **54**
-- manejo de errores y validación de entradas: **51**
+- manejo de errores y validación de entradas: **54**
 - robustez ante casos límite: **46**
 - legibilidad y documentación: **46**
-- rendimiento: **40**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
+- `settings.py`: **22**
 - `quarantine.py`: **21**
-- `settings.py`: **21**
-- `browser.py`: **20**
-- `duplicates.py`: **19**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
+- `browser.py`: **19**
+- `duplicates.py`: **18**
 - `diskreport.py`: **18**
 - `organizer.py`: **17**
 - `memory.py`: **17**
@@ -42,10 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `healthscore.py`: **15**
 - `main.py`: **12**
 - `branding.py`: **11**
-- `startup.py`: **9**
+- `startup.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T13:17:51` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones explícitas contra valores `None` y tipos inesperados en las columnas del CSV, evitando así posibles errores de ejecución si PowerShell retorna una estructura inesperada.
+- `2026-09-01T13:17:40` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `load` y `save` mediante la validación explícita de tipos en los datos leídos del JSON y la limpieza de estados en caso de fallos inesperados, asegurando que `validate` reciba siempre datos sanos.
+- `2026-09-01T13:17:11` **scanner.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_is_inside_base_root` y `scan_directory` añadiendo validaciones de tipo y estructura frente a entradas mal formadas o rutas relativas, evitando excepciones no capturadas al manipular `path.parts` o tipos inesperados.
 - `2026-09-01T13:07:36` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` envolviendo la lógica de manipulación de archivos en un bloque `try...except` más granular y añadiendo una validación explícita sobre el tamaño del archivo después de la copia, asegurando que `original_size` y `destination.stat().st_size` coincidan antes de dar por finalizada la operación, evitando así corrupciones silenciosas.
 - `2026-09-01T13:07:00` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scan_for_junk` añadiendo validaciones de entrada más estrictas y manejo de excepciones específicas para evitar que rutas malformadas o tipos de datos inesperados detengan el proceso de escaneo.
 - `2026-09-01T13:06:33` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_linux_meminfo` mediante una validación más estricta del formato de línea y el control de errores, evitando que un archivo `/proc/meminfo` parcialmente escrito o inesperado cause excepciones o retorne datos erróneos durante el parseo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T11:24:47` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` aplicando `is_safe_to_modify` sobre el directorio padre antes de realizar cualquier escritura, asegurando que la configuración nunca se persista en ubicaciones bloqueadas o sensibles, incluso si el usuario provee un `custom_base` malicioso.
 - `2026-09-01T11:24:19` **scanner.py** (seguridad defensiva): Reforcé la seguridad defensiva en `_is_safe_entry` y `scan_directory` añadiendo una validación explícita de `is_protected_path` para evitar que el escáner se aventure en directorios prohibidos por sistema, garantizando que el escaneo solo se procese en rutas validadas.
 - `2026-09-01T11:15:17` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` añadiendo `_is_junction` mediante `GetFileAttributesW` para detectar con mayor precisión puntos de reparse (junctions) que `os.path.islink` o `st_file_attributes` simples a veces omiten en Windows, bloqueando el acceso a estas estructuras críticas de forma más robusta.
-- `2026-09-01T11:14:41` **quarantine.py** (seguridad defensiva): Mejoré la seguridad defensiva en `purge_all` implementando un chequeo estricto del archivo antes de su borrado físico, asegurando que solo se eliminen archivos que pasen las validaciones de integridad y que residan físicamente dentro del sandbox, evitando cualquier posible escape de control sobre archivos fuera de la carpeta de cuarentena.
-- `2026-09-01T11:14:08` **organizer.py** (seguridad defensiva): Mejoré la seguridad en `_is_safe_for_disk_op` y `_can_move_file` añadiendo una validación explícita para evitar que se intenten procesar o mover archivos que residen en unidades de red (UNC), mitigando riesgos de latencia, bloqueos inesperados o problemas de integridad en sistemas de archivos remotos, reforzando el enfoque defensivo.
-- `2026-09-01T11:06:10` **memory.py** (seguridad defensiva): Mejoré la seguridad en `trim_working_set` añadiendo la validación de `is_safe_to_modify` para la ruta del proceso, asegurando que no se intente realizar operaciones de trim en ejecutables protegidos, y refiné el manejo de `psapi` para evitar errores de referencia en entornos donde las funciones de kernel no sean accesibles.

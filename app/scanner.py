@@ -79,9 +79,14 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     son vectores de entrada comunes. Usa 'now_ts' para evitar llamadas a reloj de sistema.
     """
     if not path: return None
-    # Verificación eficiente: intersectamos las partes de la ruta con el conjunto pre-cargado
-    if not (WATCHED_FOLDERS & {p.lower() for p in path.parts}):
+    # Verificación segura: cast a conjunto solo si path.parts es accesible
+    try:
+        path_parts = {p.lower() for p in path.parts}
+        if not (WATCHED_FOLDERS & path_parts):
+            return None
+    except Exception:
         return None
+    
     try:
         if entry and entry.is_file():
             stats = entry.stat(follow_symlinks=False)
@@ -134,7 +139,7 @@ class Scanner:
         """
         Valida que la ruta sea un descendiente de base_root para contener el escaneo.
         """
-        if not path_str or "\0" in path_str: return False
+        if not path_str or not isinstance(path_str, str) or "\0" in path_str: return False
         try:
             target = Path(path_str).resolve(strict=False)
             return self.base_root == target or self.base_root in target.parents
@@ -146,7 +151,7 @@ class Scanner:
         Valida integridad de la entrada: longitud, nombres reservados, 
         caracteres ofuscados, puntos de reparse y restricciones de seguridad.
         """
-        if not entry or not entry.path:
+        if not entry or not hasattr(entry, 'path') or not entry.path:
             return False
         if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
@@ -214,8 +219,9 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     """
     Orquestador de reglas: ejecuta todas las heurísticas configuradas para un archivo.
     """
+    if not isinstance(path, Path): return []
     try:
-        if not path or not path.exists(): return []
+        if not path.exists(): return []
     except (OSError, PermissionError): return []
     
     findings: ScanResult = []
@@ -242,7 +248,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve(strict=False)
-        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
+        if not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError):
         return []

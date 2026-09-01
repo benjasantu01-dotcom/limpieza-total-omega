@@ -271,11 +271,13 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                     return cached_data.copy()
             
             with open(ruta, "r", encoding="utf-8") as f:
-                data = validate(json.load(f))
+                content = json.load(f)
+                if not _is_dict(content): raise ValueError("Formato de JSON inválido")
+                data = validate(content)
                 _CACHE[ruta_str] = (float(mtime), data)
                 return data.copy()
         return DEFAULTS.copy()
-    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, TypeError):
+    except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, TypeError, ValueError):
         return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
@@ -318,11 +320,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             pass
         return ruta
     except (TypeError, ValueError, OSError, IOError, PermissionError, RuntimeError):
-        return None
-    finally:
         if temp_path.exists():
             try: os.remove(temp_path)
             except OSError: pass
+        return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
     """Aplica cambios parciales y guarda el resultado si hubo modificaciones reales."""
