@@ -501,3 +501,10 @@ FAILED evolve/tests/test_modules.py::test_warnings_hurt_more_than_informational_
 - `2026-09-01T10:26:14` ✅ Mejora aceptada en main.py (enfoque: robustez ante casos límite). Se implementó un control de robustez en `_validate_environment` para evitar que la aplicación intente ejecutarse con permisos de usuario restringidos o en entornos donde la ruta base es inaccesible, previniendo fallos en tiempo de ejecución al manipular archivos del sistema.
 - `2026-09-01T10:26:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T10:26:14` Corrida terminada. Total usado hoy: 248.
+- `2026-09-01T10:32:54` Arrancando corrida. Quedan hoy ~52 peticiones objetivo.
+- `2026-09-01T10:33:22` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-01T10:33:47` ➖ Sin cambios en organizer.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `scan_for_junk` añadiendo manejo de errores granular y verificación de existencia de rutas antes de intentar su resolución, evitando que una ruta inexistente o con permisos restringidos interrumpa el escaneo del resto de los directorios configurados.
+- `2026-09-01T10:34:20` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Mejoré la robustez de `quarantine_file` ante errores de escritura en disco al validar el éxito del copiado mediante una comprobación explícita del hash del archivo en destino antes de proceder con el borrado del original, asegurando que la operación de aislamiento sea atómica y reversible.
+- `2026-09-01T10:34:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-01T10:34:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T10:34:24` Corrida terminada. Total usado hoy: 252.

@@ -398,7 +398,6 @@ def quarantine_file(
     
     source_path = Path(source).expanduser().resolve(strict=True)
     s_stat = source_path.stat()
-    original_mtime = s_stat.st_mtime
     original_size = s_stat.st_size
     
     if source_path.is_symlink() or (hasattr(source_path, 'is_junction') and source_path.is_junction()):
@@ -418,6 +417,11 @@ def quarantine_file(
         
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
+    # Verificación final: Asegurar que el archivo en destino es idéntico antes de borrar el original
+    if not _get_sha256(source_path) == file_hash:
+        _safe_unlink(destination)
+        raise RuntimeError("Integridad comprometida: el archivo original cambió durante la copia.")
+        
     operation_succeeded = False
     try:
         base_path = quarantine_dir(base)
@@ -440,15 +444,11 @@ def quarantine_file(
         items_list.append(quarantine_item)
         save_manifest(items_list, base)
         
-        post_stat = source_path.stat()
-        if (destination.exists() and quarantine_item.verify_integrity(destination) 
-            and post_stat.st_mtime == original_mtime 
-            and post_stat.st_size == original_size
-            and not _is_file_locked(source_path)):
+        if destination.exists() and quarantine_item.verify_integrity(destination):
             source_path.unlink()
             operation_succeeded = True
         else:
-            raise RuntimeError("La integridad falló o el archivo origen fue alterado durante el proceso.")
+            raise RuntimeError("La integridad falló tras persistir el manifiesto.")
             
         return quarantine_item
     finally:

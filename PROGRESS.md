@@ -7,33 +7,33 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **238** (47.2% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 39
-- Sin cambios (nada sustancial que mejorar): 13
-- Sin respuesta de la IA (error o límite): 204
+- Rechazadas por tests: 9
+- Rechazadas por guardia de seguridad: 40
+- Sin cambios (nada sustancial que mejorar): 14
+- Sin respuesta de la IA (error o límite): 203
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 110 | 5 | 17 | 6 | 118 |
-| 2026-09-01 | 128 | 5 | 22 | 7 | 86 |
+| 2026-08-31 | 109 | 4 | 17 | 6 | 116 |
+| 2026-09-01 | 129 | 5 | 23 | 8 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **55**
-- seguridad defensiva: **44**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **42**
 - rendimiento: **41**
-- robustez ante casos límite: **41**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **24**
-- `settings.py`: **21**
+- `quarantine.py`: **21**
 - `browser.py`: **20**
 - `duplicates.py`: **20**
-- `quarantine.py`: **20**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
 - `scanner.py`: **19**
 - `memory.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T10:34:20` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine_file` ante errores de escritura en disco al validar el éxito del copiado mediante una comprobación explícita del hash del archivo en destino antes de proceder con el borrado del original, asegurando que la operación de aislamiento sea atómica y reversible.
 - `2026-09-01T10:26:14` **main.py** (robustez ante casos límite): Se implementó un control de robustez en `_validate_environment` para evitar que la aplicación intente ejecutarse con permisos de usuario restringidos o en entornos donde la ruta base es inaccesible, previniendo fallos en tiempo de ejecución al manipular archivos del sistema.
 - `2026-09-01T10:24:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` frente a configuraciones externas que podrían estar vacías o contener valores mal formados, asegurando que las reglas de recomendación no fallen si los datos son inesperados mediante un manejo de excepciones más granular y un filtrado de tipos defensivo.
 - `2026-09-01T10:23:51` **duplicates.py** (robustez ante casos límite): Mejoré la robustez de `suggest_keeper` y `format_group` ante archivos que se eliminan o bloquean durante la ejecución, integrando validaciones de estado más estrictas y manejando la posibilidad de que un grupo quede huérfano de candidatos válidos.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T09:42:45` **diskreport.py** (rendimiento): Optimicé `_collect_summary_data` para evitar el uso de `dict.get` dentro del bucle principal, reemplazándolo por `defaultdict` para reducir la sobrecarga de consultas y mejorar la velocidad de procesamiento en directorios con miles de archivos.
 - `2026-09-01T09:42:18` **browser.py** (rendimiento): Optimicé el rendimiento del escaneo recursivo introduciendo un caché local (`perf_cache`) compartido entre todas las rutas de un mismo navegador, evitando re-procesar subdirectorios comunes (ej. `User Data`) que son compartidos por múltiples entradas de caché.
 - `2026-09-01T09:35:17` **assistant.py** (rendimiento): Se implementó un `lru_cache` en `context_as_text` para evitar la serialización y formateo repetitivo del contexto en cada interacción, mejorando el rendimiento en el bucle de consultas.
-- `2026-09-01T09:33:36` **startup.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el docstring de la clase `StartupEntry` y se añadieron *type hints* faltantes en los métodos de resolución de rutas para mejorar la claridad sobre las expectativas de datos y la robustez del manejo de errores.
