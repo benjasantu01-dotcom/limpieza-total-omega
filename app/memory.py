@@ -327,8 +327,8 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         exec_path = _get_process_path(proc_handle)
         if not exec_path: return False, "Ruta del proceso inaccesible."
         
-        # Validamos usando el sistema de seguridad centralizado
-        if not is_safe_to_modify(exec_path):
+        # Validación de seguridad: no tocar procesos del sistema o protegidos
+        if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
             
         return True, None

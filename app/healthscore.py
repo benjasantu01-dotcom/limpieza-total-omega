@@ -218,8 +218,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         total_pts += pts
         
         for rule in _RULES_BY_AREA.get(area, []):
-            if rule.check(metrics, ratio):
-                recommendations.append(rule.message_factory(metrics))
+            try:
+                if rule.check(metrics, ratio):
+                    recommendations.append(rule.message_factory(metrics))
+            except Exception:
+                continue
     
     final_score = int(_clamp(total_pts, 0.0, 100.0))
     if metrics.quarantined_count > 0:
