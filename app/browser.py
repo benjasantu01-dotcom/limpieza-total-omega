@@ -202,16 +202,17 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
+    # Validar integridad de la ruta contra la base antes de acceder
+    root_path = Path(root_abs).resolve(strict=True)
+    if not _is_safe_to_traverse(root_path, base_check_path):
+        return 0
+
     if root_abs in memo:
         return memo[root_abs]
 
-    root_path = Path(root_abs)
-    if is_protected_path(root_path) or not _is_safe_to_traverse(root_path, base_check_path):
-        return 0
-
     total: int = 0
     try:
-        with os.scandir(root_abs) as it:
+        with os.scandir(str(root_path)) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue

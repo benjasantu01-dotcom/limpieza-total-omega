@@ -594,6 +594,9 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     
+    # Validar que los datos de entrada están limpios de caracteres de control
+    if _CONTROL_CHARS_REGEX.search(api_key): return None
+    
     safe_q = _sanitize_query(question)
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
     
@@ -644,7 +647,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
-            # Barrera de seguridad final: rechazar cualquier texto que contenga rutas sospechosas
+            # Barrera de seguridad final: rechazar cualquier texto que contenga rutas sospechosas o inyecciones
             if not _ensure_safe_text(final) or is_protected_path(final):
                 return None
             return final
