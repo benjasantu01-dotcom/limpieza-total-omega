@@ -157,27 +157,27 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud inversa: 0 MB = 1.0, >= 5000 MB = 0.0."""
+    """Calcula salud de almacenamiento: decrece linealmente a medida que aumentan los temporales (0MB=1.0, 5000MB=0.0)."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa seguridad castigando hallazgos (5%) y advertencias (25%) por unidad."""
+    """Calcula salud de seguridad penalizando hallazgos (5% c/u) y advertencias (25% c/u)."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Normaliza disponibilidad RAM respecto a umbral crítico de saturación."""
+    """Calcula salud de RAM normalizando el porcentaje disponible respecto al límite crítico definido."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Normaliza espacio en disco respecto al umbral de riesgo."""
+    """Calcula salud de disco normalizando el espacio libre respecto al umbral de riesgo de llenado."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud inversa: 0 MB duplicados = 1.0, >= 2000 MB = 0.0."""
+    """Calcula salud de duplicados: penaliza el exceso de archivos redundantemente ocupando espacio (0MB=1.0, 2000MB=0.0)."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula salud inversa: 0 programas de inicio = 1.0, >= 20 = 0.0."""
+    """Calcula salud de inicio: penaliza la carga excesiva en el arranque del sistema (0 programas=1.0, 20=0.0)."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:

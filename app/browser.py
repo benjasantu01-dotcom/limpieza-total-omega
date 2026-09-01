@@ -157,8 +157,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Filtro de exclusión para el escaneo recursivo: identifica si una entrada debe ser ignorada
-    por restricciones de seguridad, tipo de enlace o metadatos de sistema.
+    Determina si ignorar una entrada durante el escaneo para prevenir riesgos de seguridad
+    (puntos de reparse) o procesar archivos protegidos por la configuración NEVER_TOUCH.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -175,8 +175,8 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
     """
-    Valida si el acceso a la ruta es seguro: verifica permisos, inexistencia
-    de protecciones y, si se provee, que esté dentro del 'base_check_path' resuelto.
+    Valida la integridad de la ruta: asegura que no sea una ruta protegida o sistema,
+    y verifica opcionalmente que la ruta sea descendiente del directorio base legítimo.
     """
     try:
         if not is_safe_to_modify(path_obj) or is_protected_path(path_obj):
@@ -197,8 +197,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Acumulador recursivo de tamaño en bytes. Utiliza memoización para evitar
-    re-procesamiento y `os.scandir` para eficiencia en el I/O.
+    Realiza un escaneo recursivo limitado por profundidad para calcular el peso en bytes.
+    Utiliza memoización para evitar ciclos o re-cálculos en estructuras de directorios.
     """
     if not isinstance(root_abs, str) or depth > MAX_SCAN_DEPTH:
         return 0
@@ -250,8 +250,8 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Verifica si una ruta es un directorio de caché válido, asegurando que no escape
-    del entorno base permitido mediante chequeos de resolución de rutas.
+    Verifica que la ruta candidata a ser caché sea real y no contenga elementos que
+    vulneren la integridad del sistema o violen el encapsulamiento de datos privados.
     """
     try:
         if not candidate.exists():
