@@ -5,10 +5,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **504**
-- Mejoras aceptadas: **239** (47.4% de aceptación)
+- Iteraciones totales: **502**
+- Mejoras aceptadas: **238** (47.4% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 203
 
@@ -16,36 +16,37 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 61 | 2 | 10 | 5 | 78 |
-| 2026-09-01 | 178 | 6 | 27 | 12 | 125 |
+| 2026-08-31 | 59 | 2 | 9 | 5 | 77 |
+| 2026-09-01 | 179 | 6 | 27 | 12 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **46**
+- seguridad defensiva: **44**
 - rendimiento: **44**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **22**
 - `assistant.py`: **22**
 - `scanner.py`: **21**
-- `quarantine.py`: **20**
 - `browser.py`: **19**
-- `diskreport.py`: **18**
+- `diskreport.py`: **19**
+- `quarantine.py`: **19**
 - `duplicates.py`: **18**
-- `organizer.py`: **17**
 - `memory.py`: **17**
 - `healthscore.py`: **16**
 - `safety.py`: **16**
+- `organizer.py`: **16**
 - `main.py`: **12**
 - `startup.py`: **11**
 - `branding.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T14:49:27` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `drive_usage` ante rutas UNC o mal formadas mediante el uso de `pathlib` de forma más defensiva y validaciones adicionales en `walk_files` para manejar archivos cuyo estado cambia (se borran o bloquean) durante la iteración, previniendo excepciones no controladas.
 - `2026-09-01T14:39:07` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` eliminando la redundancia en la consulta de PowerShell y centralizando la lógica de caché para evitar múltiples ejecuciones costosas de `subprocess.run` y el procesamiento repetitivo de datos en el ciclo principal.
 - `2026-09-01T14:38:39` **settings.py** (rendimiento): Optimizé `load()` y `save()` reemplazando llamadas redundantes a `load()` (que vuelve a leer el disco) por operaciones directas sobre el caché, y reduje las conversiones de tipos en los validadores para mejorar el rendimiento en lecturas repetidas.
 - `2026-09-01T14:29:39` **scanner.py** (rendimiento): Optimicé el método `_is_inside_base_root` reemplazando la resolución costosa de rutas (`resolve`) y el chequeo de `parents` por una comparación de prefijos de cadenas normalizadas, reduciendo drásticamente las syscalls durante la recursión profunda.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T13:57:38` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de heurística y se ha refinado la estructura de tipos para clarificar que `now_ts` y `entry` son parámetros opcionales pero críticos para el rendimiento, facilitando la legibilidad para futuros colaboradores.
 - `2026-09-01T13:48:36` **safety.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones de validación de seguridad (`_validate_structural_safety` y `_validate_boundary_conditions`) y agregué *type hints* faltantes para mejorar la legibilidad y mantenibilidad del flujo de validación.
 - `2026-09-01T13:48:01` **quarantine.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las secciones "Argumentos" y "Excepciones" en las funciones críticas de validación y aislamiento para mejorar la legibilidad del flujo de seguridad y facilitar el mantenimiento del equipo de desarrollo.
-- `2026-09-01T13:47:26` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de Type Hints en retornos implícitos, la clarificación de docstrings en funciones críticas (como `_is_safe_for_disk_op`) y la estandarización de las comprobaciones de seguridad para cumplir con el rigor exigido.

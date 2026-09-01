@@ -851,3 +851,9 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-01T14:40:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
 - `2026-09-01T14:40:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T14:40:03` Corrida terminada. Total usado hoy: 348.
+- `2026-09-01T14:48:29` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-01T14:48:57` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: robustez ante casos límite).
+- `2026-09-01T14:49:27` ✅ Mejora aceptada en diskreport.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `drive_usage` ante rutas UNC o mal formadas mediante el uso de `pathlib` de forma más defensiva y validaciones adicionales en `walk_files` para manejar archivos cuyo estado cambia (se borran o bloquean) durante la iteración, previniendo excepciones no controladas.
+- `2026-09-01T14:49:27` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-01T14:49:27` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T14:49:27` Corrida terminada. Total usado hoy: 350.

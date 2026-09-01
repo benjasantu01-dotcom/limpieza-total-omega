@@ -215,18 +215,15 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        if not p.exists() or not p.is_dir():
+        # Verificar que la ruta no sea UNC y sea una carpeta válida en disco local
+        if not p.exists() or not p.is_dir() or p.parts[0].startswith(("\\\\", "//")):
             return None
         
-        str_mount = str(p)
-        if str_mount.startswith(("\\\\", "//")):
-            return None
-            
         if is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
         usage = shutil.disk_usage(p)
-        return DriveUsage(mount=str_mount, total=usage.total, used=usage.used, free=usage.free)
+        return DriveUsage(mount=str(p), total=usage.total, used=usage.used, free=usage.free)
     except (OSError, PermissionError, ValueError, RuntimeError, TypeError):
         return None
 
@@ -286,19 +283,14 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     except (PermissionError, OSError, FileNotFoundError):
                         continue
 
-                    # Validación básica de nombre de entrada
                     if not entry.name or any(c < ' ' for c in entry.name):
                         continue
                     
-                    # Ignorar enlaces simbólicos y puntos de reparse (Junctions) para evitar recursión infinita
                     if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
                         child_path = Path(entry.path)
-                        if not child_path.is_relative_to(root_path):
-                            continue
-                                
                         if skip_protected and is_protected_path(child_path):
                             continue
                                 
@@ -308,7 +300,12 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(child_path)
                                 
                     elif entry.is_file(follow_symlinks=False):
-                        yield Path(entry.path), max(0, int(st.st_size))
+                        # Se vuelve a verificar stat aquí por si el archivo fue eliminado al instante
+                        try:
+                            file_size = int(entry.stat().st_size)
+                            yield Path(entry.path), max(0, file_size)
+                        except (PermissionError, OSError, FileNotFoundError):
+                            continue
         except (PermissionError, OSError, FileNotFoundError):
             continue
 
