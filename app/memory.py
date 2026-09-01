@@ -148,7 +148,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         return MemorySnapshot(0, 0)
     
     metric_map: Dict[str, int] = {"MemTotal": 0, "MemAvailable": 0, "MemFree": 0, "Cached": 0}
-    keys_found = 0
     
     for line in meminfo_text.splitlines():
         if ":" not in line: continue
@@ -156,15 +155,12 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
         k_normalized = key.strip()
         
         if k_normalized in metric_map:
-            parts = raw_value.strip().split()
-            try:
-                if parts and parts[0].isdigit():
-                    metric_map[k_normalized] = int(parts[0]) * 1024
-                    keys_found += 1
-            except (ValueError, TypeError): continue
+            parts = raw_value.split()
+            if parts and parts[0].isdigit():
+                metric_map[k_normalized] = int(parts[0]) * 1024
             
     total_mem = metric_map["MemTotal"]
-    if total_mem <= 0 or keys_found == 0: 
+    if total_mem <= 0: 
         return MemorySnapshot(0, 0)
     
     available = metric_map["MemAvailable"] if metric_map["MemAvailable"] > 0 else metric_map["MemFree"]

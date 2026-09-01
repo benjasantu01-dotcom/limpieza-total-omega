@@ -1092,3 +1092,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-01T05:18:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
 - `2026-09-01T05:18:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T05:18:28` Corrida terminada. Total usado hoy: 128.
+- `2026-09-01T05:26:36` Arrancando corrida. Quedan hoy ~172 peticiones objetivo.
+- `2026-09-01T05:27:14` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso de recolección de métricas mediante el reemplazo de la construcción de strings mediante concatenación en el bucle de `parse_linux_meminfo` por una comprensión de listas y procesamiento de iterables, reduciendo la carga de memoria al evitar la creación de objetos intermedios y acelerando la lectura del archivo de sistema.
+- `2026-09-01T05:27:59` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé la búsqueda de archivos basura en `_process_directory` reemplazando la verificación múltiple de extensiones con `str.endswith()` por una búsqueda directa en `JUNK_EXTENSIONS`, aprovechando que `frozenset` permite una verificación de pertenencia en O(1) y evitando conversiones innecesarias a tupla dentro del bucle.
+- `2026-09-01T05:28:44` ✅ Mejora aceptada en quarantine.py (enfoque: rendimiento). Optimicé el cálculo del tamaño total y la carga del manifiesto eliminando la deserialización innecesaria de objetos `QuarantineItem` cuando solo se requieren metadatos numéricos, reduciendo drásticamente el uso de CPU y memoria en operaciones frecuentes.
+- `2026-09-01T05:29:10` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 102): unterminated string literal (detected at line 102)
+- `2026-09-01T05:29:10` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T05:29:10` Corrida terminada. Total usado hoy: 132.

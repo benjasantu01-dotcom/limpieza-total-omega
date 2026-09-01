@@ -563,10 +563,11 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el espacio total ocupado por los archivos en cuarentena basado en el manifiesto."""
+    """Calcula el espacio total ocupado por los archivos en cuarentena leyendo el manifiesto crudo."""
     base_path = quarantine_dir(base)
-    raw_data = _load_manifest_raw(str(base_path))
-    return sum(d.get("size_bytes", 0) for d in raw_data)
+    mtime = _manifest_path(base_path).stat().st_mtime if _manifest_path(base_path).exists() else 0.0
+    raw_data = _load_manifest_raw(str(base_path), mtime)
+    return sum(d.get("size_bytes", 0) for d in raw_data if isinstance(d, dict))
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
