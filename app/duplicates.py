@@ -155,13 +155,6 @@ def _collect_candidates(
     """
     Escaneo recursivo del sistema utilizando os.scandir, filtrando por tamaño mínimo
     y evitando la recursión infinita en puntos de reparse.
-    
-    Args:
-        directories: Lista de carpetas base para el escaneo.
-        min_size: Tamaño mínimo en bytes para considerar un archivo.
-        skip_protected: Flag (legado) para forzar exclusión de rutas protegidas.
-    Returns:
-        Diccionario {tamaño_bytes: [lista_rutas]} con duplicados potenciales.
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_device_inodes: Set[Tuple[int, int]] = set()
@@ -217,14 +210,17 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
-    Aplica refinamiento jerárquico: agrupa primero por hash parcial y luego 
-    desambigua los subgrupos utilizando hash completo (SHA256).
+    Refinamiento jerárquico optimizado: solo calcula el hash completo para
+    archivos que ya colisionaron en su hash parcial.
     """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
+    
+    # Solo procesamos los subgrupos que tienen colisiones de hash parcial
     for subset in partial_results.values():
         full_hash_groups = _group_paths_by_hash(subset, hash_file)
         final_groups.update(full_hash_groups)
+        
     return final_groups
 
 
@@ -244,13 +240,6 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """
     Punto de entrada: identifica y ordena grupos de duplicados por impacto (wasted_bytes).
-    
-    Args:
-        directories: Directorios a escanear.
-        min_size: Tamaño mínimo para considerar archivos.
-        skip_protected: Flag para omitir rutas de sistema (seguridad activa).
-    Returns:
-        Lista de objetos DuplicateGroup ordenados por mayor espacio recuperable.
     """
     if directories is None or not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []

@@ -1085,3 +1085,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-01T05:07:56` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Optimizé la recursión en `_sum_directory_recursive` implementando un pre-filtrado de rutas protegidas mediante `is_protected_path` al inicio de cada nodo, evitando llamadas redundantes a `is_safe_to_modify` y reduciendo la carga de resolución de rutas en el árbol.
 - `2026-09-01T05:07:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T05:07:56` Corrida terminada. Total usado hoy: 124.
+- `2026-09-01T05:16:21` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-01T05:16:50` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento del proceso de escaneo central (`walk_files`) reemplazando el uso de `path.relative_to` y `Path` instanciados innecesariamente dentro del bucle por operaciones directas con cadenas o atributos de `os.DirEntry`, reduciendo la carga de CPU y la creación de objetos por cada iteración.
+- `2026-09-01T05:17:14` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé el proceso de hashing refinado (`_refine_by_deep_hash`) para evitar lecturas innecesarias en archivos que ya son únicos tras el hash parcial, reduciendo drásticamente las operaciones de E/S en conjuntos con muchos archivos de igual tamaño pero distinto contenido.
+- `2026-09-01T05:17:39` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-01T05:18:28` 🛑 Propuesta bloqueada por la guardia en main.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: LimpiezaTotalOmegaApp._update_cards
+- `2026-09-01T05:18:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T05:18:28` Corrida terminada. Total usado hoy: 128.

@@ -243,19 +243,15 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
     Recorrido profundo del sistema de archivos mediante DFS iterativo.
-    
-    Esta función es el núcleo de lectura:
-    - Evita recursión infinita mediante `visited_inodes` (deduplicación de nodos).
-    - Ignora puntos de reparse (symlinks/junctions) que podrían salir del scope.
-    - Utiliza `os.scandir` para maximizar rendimiento.
     """
     root_path = _validate_root(directory)
     if not root_path:
         return
 
+    root_str = str(root_path)
     REPARSE_POINT_ATTR = 0x400
     visited_inodes: set[Tuple[int, int]] = set()
-    stack: List[Path] = [root_path]
+    stack: List[str] = [root_str]
     
     while stack:
         current_dir = stack.pop()
@@ -274,14 +270,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         continue
                     
                     if entry.is_dir(follow_symlinks=False):
-                        try:
-                            child_path = Path(entry.path).resolve(strict=True)
-                            if not str(child_path).startswith(str(root_path)):
-                                continue
-                        except (OSError, RuntimeError):
+                        child_path = entry.path
+                        if not child_path.startswith(root_str):
                             continue
                                 
-                        if skip_protected and is_protected_path(child_path):
+                        if skip_protected and is_protected_path(Path(child_path)):
                             continue
                                 
                         inode_key = (st.st_dev, st.st_ino)
@@ -290,8 +283,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(child_path)
                                 
                     elif entry.is_file(follow_symlinks=False):
-                        file_size = max(0, st.st_size)
-                        yield Path(entry.path), file_size
+                        yield Path(entry.path), max(0, st.st_size)
         except (PermissionError, OSError, FileNotFoundError):
             continue
 
@@ -352,21 +344,21 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     sums: Dict[str, int] = defaultdict(int)
     counts: Dict[str, int] = defaultdict(int)
 
+    base_str = str(p_base)
     for path, size in walk_files(p_base, skip_protected):
         try:
-            relative = path.relative_to(p_base)
-            if not relative.parts:
+            rel = str(path)[len(base_str):].lstrip(os.sep).split(os.sep)
+            if not rel or not rel[0]:
                 continue
             
-            top_folder = p_base / relative.parts[0]
+            top_folder = os.path.join(base_str, rel[0])
             
-            if skip_protected and is_protected_path(top_folder):
+            if skip_protected and is_protected_path(Path(top_folder)):
                 continue
             
-            str_path = str(top_folder)
-            sums[str_path] += size
-            counts[str_path] += 1
-        except (ValueError, OSError, RuntimeError):
+            sums[top_folder] += size
+            counts[top_folder] += 1
+        except (ValueError, OSError, RuntimeError, IndexError):
             continue
 
     results: List[FolderUsage] = [FolderUsage(Path(p), sums[p], counts[p]) for p in sums]
