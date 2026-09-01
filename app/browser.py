@@ -206,6 +206,9 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
+    if root_abs in memo:
+        return memo[root_abs]
+
     try:
         root_path = Path(root_abs).resolve(strict=True)
     except (OSError, RuntimeError):
@@ -213,9 +216,6 @@ def _sum_directory_recursive(
 
     if not _is_safe_to_traverse(root_path, base_check_path):
         return 0
-
-    if root_abs in memo:
-        return memo[root_abs]
 
     total: int = 0
     try:

@@ -6,46 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **245** (48.6% de aceptación)
+- Mejoras aceptadas: **244** (48.4% de aceptación)
 - Rechazadas por tests: 8
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 76 | 2 | 11 | 5 | 78 |
-| 2026-09-01 | 169 | 6 | 26 | 10 | 121 |
+| 2026-08-31 | 73 | 2 | 10 | 5 | 78 |
+| 2026-09-01 | 171 | 6 | 26 | 10 | 123 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - seguridad defensiva: **54**
 - manejo de errores y validación de entradas: **54**
-- robustez ante casos límite: **43**
-- rendimiento: **35**
+- robustez ante casos límite: **40**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **23**
 - `settings.py`: **22**
-- `quarantine.py`: **21**
 - `scanner.py`: **21**
-- `browser.py`: **19**
+- `browser.py`: **20**
+- `quarantine.py`: **20**
 - `diskreport.py`: **19**
-- `memory.py`: **18**
-- `duplicates.py`: **18**
-- `organizer.py`: **17**
+- `duplicates.py`: **19**
+- `memory.py`: **17**
 - `safety.py`: **16**
 - `healthscore.py`: **16**
+- `organizer.py`: **16**
 - `main.py`: **13**
 - `startup.py`: **11**
 - `branding.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-01T14:09:05` **duplicates.py** (rendimiento): Optimizé la fase de recolección de archivos (`_collect_candidates`) utilizando `os.scandir` para obtener el tamaño (`st_size`) directamente de la entrada del sistema de archivos, evitando una llamada `path.stat()` adicional por cada archivo y mejorando significativamente el rendimiento en discos mecánicos y directorios grandes.
+- `2026-09-01T14:08:29` **browser.py** (rendimiento): Se introdujo un diccionario de memoización global en `detect_profiles` para compartir resultados de tamaños calculados entre navegadores que comparten rutas raíz, evitando escaneos redundantes en carpetas comunes (como las del mismo perfil de usuario).
 - `2026-09-01T13:58:36` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` añadiendo tipos explícitos en los docstrings y documentando el propósito de las variables de caché y constantes para facilitar el mantenimiento a largo plazo.
 - `2026-09-01T13:58:07` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones clave como `validate`, `load` y `save` para mejorar la mantenibilidad y claridad del flujo de datos, siguiendo las reglas de documentación exigidas.
 - `2026-09-01T13:57:38` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de heurística y se ha refinado la estructura de tipos para clarificar que `now_ts` y `entry` son parámetros opcionales pero críticos para el rendimiento, facilitando la legibilidad para futuros colaboradores.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T13:28:18` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados (con secciones `Args` y `Returns`) en funciones críticas de recolección y análisis para facilitar la mantenibilidad y auditoría del código.
 - `2026-09-01T13:28:06` **browser.py** (legibilidad y documentación): Documenté con docstrings detallados la estructura de los parámetros, el propósito de las funciones internas y las garantías de seguridad de las rutas, mejorando la legibilidad técnica del módulo sin alterar su comportamiento ni dependencias.
 - `2026-09-01T13:27:09` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` al extraer la lógica de validación de los criterios de salud a un método dedicado en `ProblemCriterion`, reduciendo el acoplamiento y facilitando la comprensión del flujo de evaluación en `_get_active_problems`.
-- `2026-09-01T13:17:51` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones explícitas contra valores `None` y tipos inesperados en las columnas del CSV, evitando así posibles errores de ejecución si PowerShell retorna una estructura inesperada.
-- `2026-09-01T13:17:40` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del manejo de errores en `load` y `save` mediante la validación explícita de tipos en los datos leídos del JSON y la limpieza de estados en caso de fallos inesperados, asegurando que `validate` reciba siempre datos sanos.

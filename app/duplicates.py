@@ -164,7 +164,7 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo utilizando os.scandir.
+    Escaneo recursivo utilizando os.scandir con optimización de metadata (stat).
     
     Evita la recursión infinita en puntos de reparse mediante el seguimiento
     de inodos (st_dev, st_ino) ya visitados.
@@ -183,16 +183,18 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        p_entry = Path(entry.path)
-                        if is_protected_path(p_entry):
+                        # is_protected_path recibe Path, es seguro usar entry.path
+                        if is_protected_path(Path(entry.path)):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
-                            _scan_recursive(p_entry)
+                            _scan_recursive(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            stat = entry.stat()
-                            if stat.st_size >= min_size:
-                                temp_map[int(stat.st_size)].append(p_entry)
+                            # Obtenemos el tamaño directamente del resultado de la entrada
+                            # evitando una llamada extra a stat()
+                            file_stat = entry.stat()
+                            if file_stat.st_size >= min_size:
+                                temp_map[int(file_stat.st_size)].append(Path(entry.path))
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

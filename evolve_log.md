@@ -823,3 +823,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-01T13:59:25` ➖ Sin cambios en assistant.py (enfoque: rendimiento). Motivo: Se implementó un cache de tipo `lru_cache` para la función `_identify_active_problems` para evitar el cálculo repetitivo de las listas de problemas en cada iteración del bucle, mejorando significativamente el rendimiento en las respuestas del asistente.
 - `2026-09-01T13:59:25` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-01T13:59:25` Corrida terminada. Total usado hoy: 332.
+- `2026-09-01T14:07:28` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-01T14:08:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-01T14:08:29` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se introdujo un diccionario de memoización global en `detect_profiles` para compartir resultados de tamaños calculados entre navegadores que comparten rutas raíz, evitando escaneos redundantes en carpetas comunes (como las del mismo perfil de usuario).
+- `2026-09-01T14:08:55` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-01T14:09:05` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizé la fase de recolección de archivos (`_collect_candidates`) utilizando `os.scandir` para obtener el tamaño (`st_size`) directamente de la entrada del sistema de archivos, evitando una llamada `path.stat()` adicional por cada archivo y mejorando significativamente el rendimiento en discos mecánicos y directorios grandes.
+- `2026-09-01T14:09:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-01T14:09:05` Corrida terminada. Total usado hoy: 336.
