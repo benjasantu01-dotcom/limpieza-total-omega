@@ -110,6 +110,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
+        # Asegura integridad numérica contra NaNs o inf que arruinarían cálculos
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))

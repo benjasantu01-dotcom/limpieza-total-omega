@@ -911,3 +911,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-01T23:39:14` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-01T23:49:26` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-01T23:59:38` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-02T00:09:51` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-02T00:10:16` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-02T00:10:41` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Introduje una verificación de integridad de datos en el `__post_init__` de `SystemMetrics` para asegurar que los valores, aunque técnicamente sean del tipo correcto, no contengan valores `NaN` o `inf` que romperían el cálculo del puntaje, garantizando robustez ante datos de entrada provenientes de módulos externos que pudieran fallar.
+- `2026-09-02T00:11:45` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `on_scan_junk` y `on_find_duplicates` añadiendo validaciones preventivas mediante `_is_safe_path` y `_is_safe_target_dir` antes de invocar tareas pesadas en el pool de hilos, asegurando que las rutas de escaneo sean consistentes con las restricciones de seguridad incluso si se modifican rápidamente desde la UI.
+- `2026-09-02T00:11:56` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-02T00:11:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T00:11:56` Corrida terminada. Total usado hoy: 4.
