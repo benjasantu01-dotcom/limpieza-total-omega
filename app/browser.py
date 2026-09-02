@@ -211,6 +211,10 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
+    # Defensa extra: validar seguridad de la ruta actual antes de procesar
+    if not is_safe_to_modify(Path(root_abs)):
+        return 0
+    
     if root_abs in memo:
         return memo[root_abs]
     

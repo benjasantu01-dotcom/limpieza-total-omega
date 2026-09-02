@@ -1151,3 +1151,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T13:58:40` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` validando la existencia de la ruta de destino antes de intentar crear directorios o escribir, evitando así posibles errores de acceso en rutas protegidas o mal formadas.
 - `2026-09-02T13:58:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T13:58:40` Corrida terminada. Total usado hoy: 328.
+- `2026-09-02T14:06:50` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-02T14:07:19` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_sum_directory_recursive` mediante la verificación explícita de `is_safe_to_modify` en cada nivel de la recursión, garantizando que el escaneo no se desvíe a rutas fuera del alcance permitido incluso si la estructura de directorios contiene enlaces o accesos inesperados.
+- `2026-09-02T14:07:49` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `walk_files` implementando una validación explícita mediante `is_protected_path` sobre `current_dir` antes de intentar iterar, evitando intentos de acceso a directorios bloqueados que podrían causar excepciones de permisos o recorridos no deseados en estructuras profundas.
+- `2026-09-02T14:08:17` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_collect_candidates` agregando una verificación explícita de `is_protected_path` sobre los directorios antes de ingresar a ellos, evitando así el procesamiento de subárboles restringidos (como puntos de reparse o rutas protegidas a nivel de carpeta) mediante un filtrado preventivo.
+- `2026-09-02T14:08:28` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
+- `2026-09-02T14:08:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T14:08:28` Corrida terminada. Total usado hoy: 332.

@@ -263,6 +263,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     
     while stack:
         current_dir = stack.pop()
+        
+        if skip_protected and is_protected_path(current_dir):
+            continue
+
         try:
             with os.scandir(current_dir) as iterator:
                 while True:
@@ -296,9 +300,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             continue
                         
                         if entry.is_dir():
-                            if skip_protected and is_protected_path(entry_path):
-                                continue
-                                    
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)

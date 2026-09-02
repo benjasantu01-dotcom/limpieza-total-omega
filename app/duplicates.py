@@ -193,7 +193,9 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            _scan_recursive(Path(entry.path))
+                            entry_path = Path(entry.path)
+                            if not is_protected_path(entry_path):
+                                _scan_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             info = entry.stat()
                             if info.st_size >= min_size:
