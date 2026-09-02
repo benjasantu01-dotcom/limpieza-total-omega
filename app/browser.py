@@ -298,8 +298,12 @@ def detect_profiles(
             for browser_name, rel_str in browser_map.items():
                 if not isinstance(rel_str, str) or not rel_str:
                     continue
-                # Asegurar que el join no cree rutas inválidas
                 candidate = real_base.joinpath(*rel_str.split("\\"))
+                
+                # Check previo: si la ruta no existe, saltar inmediatamente
+                if not candidate.exists():
+                    continue
+                    
                 if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     c_path = candidate.resolve(strict=True)
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)

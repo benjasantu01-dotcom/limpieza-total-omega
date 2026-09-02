@@ -302,14 +302,20 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination or len(str(destination)) > 4096: return None
     try:
         path_obj = Path(destination).resolve()
+        # Verificar parent antes de intentar escritura para evitar race conditions básicas
         parent_dir = path_obj.parent
         ensure_safe_to_modify(path_obj)
         ensure_safe_to_modify(parent_dir)
-        if not parent_dir.exists(): parent_dir.mkdir(parents=True, exist_ok=True)
-        elif not parent_dir.is_dir(): return None
+        
+        if not parent_dir.exists():
+            parent_dir.mkdir(parents=True, exist_ok=True)
+        elif not parent_dir.is_dir():
+            return None
+            
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj
-    except (OSError, PermissionError, TypeError, ValueError, RuntimeError): return None
+    except (OSError, PermissionError, TypeError, ValueError, RuntimeError):
+        return None
 
 def logo_ascii() -> str:
     """Retorna el logo en formato de texto ASCII para logs de consola."""

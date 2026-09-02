@@ -272,17 +272,24 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         break
                         
                     try:
-                        # La validación de entrada debe ser defensiva ante paths malformados
                         if not entry.path:
                             continue
-                            
-                        entry_path = Path(entry.path).resolve()
                         
+                        # Capturar error de resolución de ruta en archivos inaccesibles
+                        try:
+                            entry_path = Path(entry.path).resolve()
+                        except (OSError, PermissionError):
+                            continue
+                            
                         # Impedir escape de ruta (Path Traversal)
                         if not str(entry_path).startswith(str(root_path)):
                             continue
 
-                        st = entry.stat(follow_symlinks=False)
+                        # Leer atributos del archivo: es un punto crítico de error
+                        try:
+                            st = entry.stat(follow_symlinks=False)
+                        except (PermissionError, OSError):
+                            continue
                         
                         # Ignorar puntos de reparse (Junctions, Symlinks, etc)
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
@@ -298,7 +305,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(entry_path)
                                     
                         elif entry.is_file():
-                            # Validar tamaño no negativo
                             size = max(0, st.st_size)
                             yield entry_path, size
                     except (PermissionError, OSError, FileNotFoundError):
@@ -366,7 +372,6 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(p_base, skip_protected):
         try:
             rel = path.relative_to(p_base)
-            # Evitar error si el archivo está en la misma base
             top_part = rel.parts[0] if rel.parts else None
             if not top_part:
                 sums[p_base] += size
@@ -414,7 +419,6 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        # Validador contra datos corrompidos en el stream
         if not path or not isinstance(size, (int, float)):
             continue
         total_bytes += int(size)
@@ -442,7 +446,6 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     try:
         data: SummaryData = _collect_summary_data(p_input, skip_protected)
     except Exception as e:
-        # Registro explícito de excepción para debug, sin exponer detalles a usuario final
         return [f"Error: Fallo inesperado durante el análisis ({type(e).__name__})."]
     
     if data.total_files == 0:

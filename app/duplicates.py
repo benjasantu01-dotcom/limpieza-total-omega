@@ -146,13 +146,14 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None or not isinstance(paths, Iterable): return groups
     
     for p in paths:
-        if isinstance(p, (Path, str)) and _is_valid_candidate(Path(p)):
-            try:
-                size = Path(p).stat().st_size
+        try:
+            path_obj = Path(p)
+            if _is_valid_candidate(path_obj):
+                size = path_obj.stat().st_size
                 if size > 0:
-                    groups[size].append(Path(p))
-            except (OSError, PermissionError):
-                continue
+                    groups[size].append(path_obj)
+        except (OSError, PermissionError, TypeError, ValueError):
+            continue
     return groups
 
 
@@ -161,7 +162,7 @@ def _resolve_and_verify_root(item: Union[str, Path]) -> Optional[Path]:
     try:
         if not item: return None
         root = Path(item).resolve(strict=False)
-        if root.is_dir() and not is_protected_path(root):
+        if root.exists() and root.is_dir() and not is_protected_path(root):
             return root
     except (OSError, ValueError, RuntimeError):
         pass
@@ -259,7 +260,7 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
     """
     Punto de entrada: identifica y ordena grupos de duplicados por impacto (wasted_bytes).
     """
-    if not directories or not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
+    if not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []
     if not isinstance(min_size, int) or min_size < 0: 
         return []
