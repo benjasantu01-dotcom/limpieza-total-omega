@@ -203,23 +203,17 @@ def format_size(num: Union[int, float, None]) -> str:
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de una unidad. 
-    
-    Args:
-        mount: Ruta del punto de montaje a consultar.
-        
-    Returns:
-        Instancia de DriveUsage o None si la ruta es inaccesible o prohibida.
     """
     if mount is None:
         return None
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        # Verificar que la ruta no sea UNC y sea una carpeta válida en disco local
-        if not p.exists() or not p.is_dir() or p.parts[0].startswith(("\\\\", "//")):
+        # Rechazar explícitamente rutas UNC o de red
+        if not p.is_absolute() or p.parts[0].startswith(("\\\\", "//")):
             return None
         
-        if is_protected_path(p) or not os.access(p, os.R_OK):
+        if not p.exists() or not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
         usage = shutil.disk_usage(p)
@@ -257,15 +251,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorrido profundo (DFS iterativo) del sistema de archivos.
 
-    Implementa medidas de seguridad para evitar:
-    1. Escapes de ruta mediante resolución absoluta.
-    2. Seguimiento de reparse points (junctions/symlinks) en Windows.
-    3. Bucles infinitos mediante tracking de inodos visitados.
-    4. Entrada en directorios protegidos definidos en safety.py.
-
-    Args:
-        directory: Directorio base de inicio.
-        skip_protected: Bandera para omitir carpetas de sistema.
+    Implementa medidas de seguridad para evitar escapes de ruta y reparse points.
     """
     root_path = _validate_root(directory)
     if not root_path:
@@ -281,36 +267,31 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        resolved_path = Path(entry.path).resolve()
-                        if not str(resolved_path).startswith(str(root_path)):
+                        # Seguridad: Verificar que el entry sea un objeto local y resuelva a subruta
+                        entry_path = Path(entry.path)
+                        resolved = entry_path.resolve()
+                        if not str(resolved).startswith(str(root_path)):
                             continue
 
                         st = entry.stat(follow_symlinks=False)
                     except (PermissionError, OSError, FileNotFoundError):
                         continue
-
-                    if not entry.name or any(c < ' ' for c in entry.name):
-                        continue
                     
+                    # Ignorar puntos de reparse (Junctions, Symlinks, etc)
                     if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                         continue
                     
-                    if entry.is_dir(follow_symlinks=False):
-                        child_path = Path(entry.path)
-                        if skip_protected and is_protected_path(child_path):
+                    if entry.is_dir():
+                        if skip_protected and is_protected_path(entry_path):
                             continue
                                 
                         inode_key = (st.st_dev, st.st_ino)
                         if inode_key not in visited_inodes:
                             visited_inodes.add(inode_key)
-                            stack.append(child_path)
+                            stack.append(entry_path)
                                 
-                    elif entry.is_file(follow_symlinks=False):
-                        try:
-                            # st.st_size ya es int desde os.scandir
-                            yield Path(entry.path), max(0, st.st_size)
-                        except (PermissionError, OSError, FileNotFoundError):
-                            continue
+                    elif entry.is_file():
+                        yield entry_path, max(0, st.st_size)
         except (PermissionError, OSError, FileNotFoundError):
             continue
 

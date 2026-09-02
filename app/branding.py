@@ -280,9 +280,8 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     if not destination or len(str(destination)) > 4096: return None
     try:
         path_obj = Path(destination).resolve()
-        if ".." in str(destination) or path_obj.parts[0] != Path.cwd().parts[0]: return None
-        parent_dir = path_obj.parent.resolve()
-        if is_protected_path(path_obj) or not is_safe_to_modify(path_obj): return None
+        parent_dir = path_obj.parent
+        # Usamos las funciones de seguridad para validar la integridad de la ruta
         ensure_safe_to_modify(path_obj)
         ensure_safe_to_modify(parent_dir)
         if not parent_dir.exists(): parent_dir.mkdir(parents=True, exist_ok=True)

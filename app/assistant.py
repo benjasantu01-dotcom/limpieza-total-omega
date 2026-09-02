@@ -607,16 +607,21 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
         allow_metrics=bool(raw_cfg.get("asistente_enviar_metricas", True))
     )
 
-def _build_payload(question: str, context_text: str) -> bytes:
-    """Construye el cuerpo de la solicitud JSON de forma segura."""
-    prompt = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {question}"
-    return json.dumps({"contents": [{"parts": [{"text": str(prompt)}]}]}).encode("utf-8")
+def _build_payload(question: str, context_text: str) -> Optional[bytes]:
+    """Construye el cuerpo de la solicitud JSON validando su integridad estructural."""
+    try:
+        data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {question}"}]}]}
+        encoded = json.dumps(data).encode("utf-8")
+        if len(encoded) > _MAX_PROMPT_LIMIT * 2:
+            return None
+        return encoded
+    except (TypeError, ValueError):
+        return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     """Invoca la API de Gemini realizando validaciones de seguridad rigurosas."""
     if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
-    
     if _CONTROL_CHARS_REGEX.search(api_key) or is_protected_path(api_key): return None
     
     safe_q = _sanitize_query(question)
@@ -625,10 +630,10 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_c) or "Error" in safe_c:
         return None
     
+    payload = _build_payload(safe_q, safe_c)
+    if not payload: return None
+    
     try:
-        payload = _build_payload(safe_q, safe_c)
-        if len(payload) > _MAX_PROMPT_LIMIT * 2: return None
-        
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
             data=payload, 
