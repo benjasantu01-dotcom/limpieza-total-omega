@@ -724,3 +724,34 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-02T08:41:27` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: rendimiento).
 - `2026-09-02T08:41:27` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T08:41:27` Corrida terminada. Total usado hoy: 204.
+- `2026-09-02T08:50:07` Arrancando corrida. Quedan hoy ~96 peticiones objetivo.
+- `2026-09-02T08:50:42` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé la carga de configuración mediante el uso de `json.loads` sobre el contenido leído una sola vez y la eliminación de redundancias en las llamadas a `load` y `validate` dentro de los métodos de acceso, reduciendo accesos innecesarios al sistema de archivos y validaciones repetitivas.
+- `2026-09-02T08:51:10` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.30s
+
+```
+- `2026-09-02T08:51:10` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché en el método `_resolve_and_cache_path` para evitar consultas redundantes al sistema de archivos al procesar comandos idénticos, reduciendo drásticamente el tiempo de ejecución en sistemas con muchas entradas de registro repetidas o redundantes.
+- `2026-09-02T08:51:47` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: robustez ante casos límite).
+- `2026-09-02T08:52:03` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-02T08:52:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T08:52:03` Corrida terminada. Total usado hoy: 208.

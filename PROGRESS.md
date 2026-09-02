@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 35
+- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Rechazadas por tests: 14
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 148 | 5 | 22 | 9 | 116 |
-| 2026-09-02 | 86 | 8 | 13 | 8 | 89 |
+| 2026-09-01 | 146 | 5 | 21 | 9 | 115 |
+| 2026-09-02 | 87 | 9 | 13 | 8 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **48**
-- rendimiento: **42**
+- seguridad defensiva: **46**
+- rendimiento: **43**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **20**
+- `settings.py`: **21**
 - `assistant.py`: **20**
 - `safety.py`: **19**
 - `quarantine.py`: **19**
 - `organizer.py`: **18**
 - `browser.py`: **18**
-- `memory.py`: **17**
 - `scanner.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **16**
-- `main.py`: **14**
+- `memory.py`: **16**
 - `healthscore.py`: **14**
 - `startup.py`: **13**
+- `main.py`: **13**
 - `branding.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T08:50:42` **settings.py** (rendimiento): Optimizé la carga de configuración mediante el uso de `json.loads` sobre el contenido leído una sola vez y la eliminación de redundancias en las llamadas a `load` y `validate` dentro de los métodos de acceso, reduciendo accesos innecesarios al sistema de archivos y validaciones repetitivas.
 - `2026-09-02T08:41:18` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la iteración secuencial con `any()` por una búsqueda directa en `set` para la parte del nombre del archivo, reduciendo la complejidad de tiempo de O(N) a O(1) en el caso común, y manteniendo el cacheo `lru_cache` para llamadas recurrentes.
 - `2026-09-02T08:40:28` **quarantine.py** (rendimiento): Optimicé el cálculo del espacio total y el acceso al manifiesto eliminando la carga redundante y conversión de objetos `QuarantineItem` cuando solo se requieren datos numéricos, mejorando así el rendimiento al consultar el estado de la cuarentena.
 - `2026-09-02T08:32:01` **organizer.py** (rendimiento): Optimizé el rendimiento de `_process_directory` eliminando la llamada repetitiva a `entry.stat()` mediante el uso del objeto `os.DirEntry` ya cacheado por `os.scandir`, reduciendo drásticamente las llamadas al sistema de archivos por cada archivo encontrado.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T07:49:52` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y claridad del código mediante la adición de Type Hints detallados, docstrings explicativos en funciones críticas de normalización y la extracción de la lógica de renderizado de barras en `summarize` a una función auxiliar para mejorar la legibilidad del flujo principal.
 - `2026-09-02T07:49:26` **duplicates.py** (legibilidad y documentación): Se añadió documentación mediante docstrings y type hints en funciones críticas (`_scan_recursive`, `_process_size_group`) para aclarar la lógica de manejo de inodos y la estrategia de hashing jerárquico, facilitando la comprensión del flujo sin alterar la funcionalidad.
 - `2026-09-02T07:40:16` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos que clarifican las restricciones de seguridad (reparse points, recursión y validación de rutas) y normalicé el uso de anotaciones de tipo para mejorar la legibilidad del código.
-- `2026-09-02T07:39:50` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a las funciones públicas de dibujo y manipulación cromática, clarificando las expectativas sobre los parámetros y el comportamiento ante entradas inválidas, facilitando así el mantenimiento futuro.

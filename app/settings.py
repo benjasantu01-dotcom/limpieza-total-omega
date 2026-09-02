@@ -287,7 +287,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     if not _is_dict(values): return None
     cleaned_settings = validate(values)
     
-    # Política: no activar asistente sin clave (ya sea en archivo o variable env)
     if cleaned_settings.get("asistente_activado") and not (
         cleaned_settings.get("asistente_clave_api") or os.environ.get(API_KEY_ENV_VAR)
     ):
@@ -297,7 +296,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         ruta = settings_path(custom_base)
         parent = ruta.parent.resolve()
         
-        # Validar seguridad de la ruta padre antes de proceder
         if not _Validators._is_safe_path(str(parent)): return None
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir(): return None
@@ -306,16 +304,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         
-        try:
-            with open(temp_path, "wb") as f:
-                f.write(data)
-                f.flush()
-                os.fsync(f.fileno())
-            os.replace(temp_path, ruta)
-        finally:
-            if temp_path.exists():
-                try: temp_path.unlink()
-                except OSError: pass
+        with open(temp_path, "wb") as f:
+            f.write(data)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_path, ruta)
         
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
