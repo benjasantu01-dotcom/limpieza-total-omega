@@ -298,7 +298,7 @@ def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> List[Dict[str, Any
         return []
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga, deserializa y valida el manifiesto de cuarentena a objetos QuarantineItem."""
+    """Carga, deserializa y valida el manifiesto de cuarentena a objetos QuarantineItem, limpiando referencias huérfanas."""
     base_path = quarantine_dir(base)
     m_path = _manifest_path(base_path)
     mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
@@ -307,7 +307,22 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
         _load_manifest_raw.cache_clear()
         
     raw_data = _load_manifest_raw(str(base_path), mtime)
-    return [item for d in raw_data if (item := QuarantineItem.from_dict(d))]
+    
+    validated = []
+    dirty = False
+    for d in raw_data:
+        item = QuarantineItem.from_dict(d)
+        if item:
+            # Si el archivo fue borrado manualmente, no debe aparecer en el manifiesto
+            if (base_path / item.stored_name).exists():
+                validated.append(item)
+            else:
+                dirty = True
+    
+    if dirty:
+        save_manifest(validated, base_path)
+        
+    return validated
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:

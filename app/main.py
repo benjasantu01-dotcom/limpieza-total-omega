@@ -1030,6 +1030,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if self._closing: return
         
         target_path = target
+        if check_safety and target_path and not self._is_safe_path(target_path):
+             self.log(f"Operación cancelada: destino inseguro ({target_path})", self._current_tab())
+             return
+
         self._set_busy(True)
         tab = self._current_tab()
         

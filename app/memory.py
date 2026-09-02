@@ -193,16 +193,16 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
         if len(parts) != 3: continue
         
-        # Validar campos antes de convertir tipos
-        if not all(parts): continue
-        
         try:
             name_val = str(parts[0])
             pid_val = int(parts[1])
             ws_val = int(parts[2])
+            # Validar integridad: PIDs válidos, memoria no negativa y evitar sistemas críticos
             if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
                 proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=BytesValue(ws_val)))
-        except (ValueError, TypeError): continue
+        except (ValueError, TypeError):
+            # Ignorar malformaciones en la salida de consola de PowerShell
+            continue
     
     proc_list.sort(key=lambda p: p.working_set, reverse=True)
     return proc_list[:max(0, int(limit))]
@@ -261,7 +261,6 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        # Optimización: limitamos la recolección en PS a 20 procesos para reducir carga
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
             "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
@@ -332,7 +331,6 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     size = ctypes.c_ulong(MAX_PATH)
     
     try:
-        # 0 indica Win32 path format (normalizado)
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError, ValueError): pass
@@ -357,7 +355,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         exec_path = _get_process_path(proc_handle)
         if not exec_path: return False, "Ruta del proceso inaccesible."
         
-        # Validar ruta contra políticas de seguridad antes de realizar cualquier acción
         if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
             

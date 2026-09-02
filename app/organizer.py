@@ -306,7 +306,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
         try:
             if not isinstance(junk_file, JunkFile) or junk_file.path is None: continue
             src: Path = junk_file.path.resolve()
-            if src.is_relative_to(dest_base): continue
+            if not src.exists() or src.is_relative_to(dest_base): continue
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
             if target and is_safe_to_modify(src) and is_safe_to_modify(target):
@@ -331,7 +331,7 @@ def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> i
     count: int = 0
     for item in dest.iterdir():
         try:
-            if item.is_file() and is_safe_to_modify(item) and not is_protected_path(item):
+            if item.is_file() and item.exists() and is_safe_to_modify(item) and not is_protected_path(item):
                 if _passes_system_checks(item) and not _is_file_locked(item):
                     ensure_safe_to_modify(item)
                     item.unlink()

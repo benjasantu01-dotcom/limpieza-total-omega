@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 144 | 4 | 20 | 9 | 115 |
-| 2026-09-02 | 91 | 9 | 13 | 8 | 91 |
+| 2026-09-01 | 141 | 4 | 20 | 9 | 114 |
+| 2026-09-02 | 95 | 9 | 13 | 8 | 91 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **44**
 - rendimiento: **43**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
 - `assistant.py`: **20**
+- `quarantine.py`: **20**
+- `settings.py`: **20**
 - `browser.py`: **19**
-- `quarantine.py`: **19**
+- `organizer.py`: **18**
 - `safety.py`: **18**
 - `diskreport.py`: **18**
-- `scanner.py`: **17**
 - `duplicates.py`: **17**
-- `organizer.py`: **17**
-- `memory.py`: **16**
+- `memory.py`: **17**
+- `scanner.py`: **16**
 - `healthscore.py`: **15**
-- `startup.py`: **13**
-- `main.py`: **13**
+- `main.py`: **14**
+- `startup.py`: **12**
 - `branding.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T09:12:57` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante casos límite de E/S mediante la implementación de una validación de existencia en el manifiesto durante la carga, previniendo errores de referencia a archivos borrados manualmente del disco pero presentes en el JSON.
+- `2026-09-02T09:12:38` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de las operaciones de disco añadiendo un chequeo explícito de disponibilidad de la unidad de destino y validación de la existencia del archivo origen antes de cada operación en `stage_for_review` y `delete_reviewed`, previniendo excepciones innecesarias ante cambios de estado de archivos durante la ejecución (condiciones de carrera).
+- `2026-09-02T09:12:12` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos en `parse_windows_process_csv` para prevenir que procesos con datos malformados, valores de memoria negativos (frecuentes en errores de lectura de API) o PIDs inalcanzables interrumpan el flujo de diagnóstico, garantizando la resiliencia ante datos de sistema inesperados.
+- `2026-09-02T09:11:44` **main.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `run_async` y `_worker_thread_logic` para evitar que la aplicación intente realizar operaciones de disco en rutas que se volvieron inválidas o inaccesibles entre el inicio de la tarea y su ejecución en el hilo de trabajo, fortaleciendo la robustez ante estados cambiantes del sistema de archivos.
 - `2026-09-02T09:02:43` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` y `summarize` añadiendo validaciones proactivas contra estados inconsistentes o nulos, evitando errores de ejecución durante la serialización o renderizado.
 - `2026-09-02T09:02:33` **duplicates.py** (robustez ante casos límite): Se reforzó la robustez de `_collect_candidates` ante errores de entrada y archivos bloqueados al añadir validaciones de estado y manejo de excepciones granulares al iterar el sistema de archivos, evitando paradas prematuras.
 - `2026-09-02T09:02:09` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `walk_files` ante archivos bloqueados durante el recorrido, añadiendo un manejo de excepciones más granular para evitar que el iterador falle ante cambios de estado (archivos eliminados o bloqueados por otros procesos) mientras se procesa el directorio.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T08:31:50` **memory.py** (rendimiento): Se optimizó el proceso `top_memory_processes` reemplazando la lógica de selección de procesos en PowerShell por una más eficiente (`Select-Object -First 20` en lugar de 40) y consolidando la consulta en un solo pipe, lo que reduce la carga de CPU y la memoria utilizada por la instancia de PowerShell.
 - `2026-09-02T08:31:22` **main.py** (rendimiento): Se optimizó el acceso a los datos de métricas de salud consolidando las llamadas al caché y evitando la regeneración innecesaria de objetos `SystemMetrics` durante la actualización de la UI, lo cual reduce la latencia en el dashboard de salud.
 - `2026-09-02T08:21:07` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` sustituyendo las llamadas múltiples a `stat()` por una sola llamada a `os.scandir` (que ya provee los atributos de archivo de manera eficiente en la mayoría de los sistemas de archivos) y eliminando la redundancia de `is_protected_path(p)` al delegar el filtrado a la etapa inicial de escaneo.
-- `2026-09-02T08:20:31` **browser.py** (rendimiento): Se optimizó la recursión en `_sum_directory_recursive` para evitar la creación innecesaria de nuevos `set` (copy) en cada llamada, reemplazando el seguimiento de `parents` por una lógica de profundidad validada y mejorando la eficiencia del escaneo al evitar re-traversals en directorios ya visitados dentro del `memo` global.
-- `2026-09-02T08:11:07` **assistant.py** (rendimiento): Se implementó un decorador de caché `@lru_cache` para `_generate_context_lines` y se optimizó `context_as_text` para evitar llamadas redundantes a métodos de formateo costosos durante la construcción del contexto, mejorando el rendimiento en iteraciones frecuentes.
-- `2026-09-02T08:00:45` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados con tipado y descripciones detalladas de los parámetros y comportamientos en las funciones de validación de integridad (`_check_file_integrity` y `_validate_boundary_conditions`), facilitando el mantenimiento futuro y la comprensión de las restricciones de seguridad.
-- `2026-09-02T07:59:39` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas (`_is_safe_for_disk_op`, `stage_for_review`), clarificando las precondiciones de seguridad y el flujo de los chequeos para facilitar el mantenimiento y la auditoría.
