@@ -202,9 +202,14 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 ext_low = Path(entry.name).suffix.lower()
                 if ext_low in SUSPICIOUS_ALL_EXTS:
-                    file_stat = entry.stat(follow_symlinks=False)
-                    if file_stat.st_size > 0:
-                        self._run_file_heuristics(Path(entry.path), entry, ext_low)
+                    try:
+                        file_stat = entry.stat(follow_symlinks=False)
+                        if file_stat.st_size == 0:
+                            self.results.append(Suspicion(Path(entry.path), "Archivo vacío sospechoso", "warning"))
+                        else:
+                            self._run_file_heuristics(Path(entry.path), entry, ext_low)
+                    except (OSError, PermissionError):
+                        return
         except (OSError, PermissionError, TypeError, FileNotFoundError):
             logger.debug(f"Acceso denegado o archivo inaccesible: {entry.path}")
 

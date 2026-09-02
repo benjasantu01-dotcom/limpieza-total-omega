@@ -264,7 +264,7 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
         if ruta_str in _CACHE and _CACHE[ruta_str][0] == mtime:
             return _CACHE[ruta_str][1].copy()
             
-        if stats.st_size <= MAX_SETTINGS_SIZE:
+        if 0 < stats.st_size <= MAX_SETTINGS_SIZE:
             with open(ruta, "r", encoding="utf-8") as f:
                 content = json.load(f)
                 data = validate(content) if _is_dict(content) else DEFAULTS.copy()

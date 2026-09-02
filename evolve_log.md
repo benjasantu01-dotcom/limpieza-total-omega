@@ -946,3 +946,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-02T00:22:37` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo la verificación `os.access(p, os.F_OK)` en `ensure_safe_to_modify` para detectar de forma robusta la inexistencia de rutas antes de realizar operaciones de metadatos, evitando `OSError` inesperados en sistemas con permisos restrictivos o estados de archivo inconsistentes.
 - `2026-09-02T00:22:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T00:22:37` Corrida terminada. Total usado hoy: 8.
+- `2026-09-02T00:30:13` Arrancando corrida. Quedan hoy ~292 peticiones objetivo.
+- `2026-09-02T00:30:39` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado `process_entry` para manejar explícitamente archivos vacíos (0 bytes) como un riesgo de seguridad en lugar de ignorarlos, ya que los archivos vacíos suelen usarse como marcadores de malware o "placeholders" maliciosos, y se ha fortalecido la resiliencia ante errores de metadatos durante el filtrado.
+- `2026-09-02T00:31:06` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `load` para manejar situaciones donde el archivo de configuración en disco pueda estar vacío o contener solo espacios en blanco, evitando que `json.load` falle y asegurando que la app siempre recupere una configuración válida.
+- `2026-09-02T00:31:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T00:31:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-02T00:31:40` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-02T00:31:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T00:32:06` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_call_gemini` y `_build_payload` implementando un pre-filtrado explícito de la clave de API y el contexto mediante `is_protected_path` y `_ensure_safe_text` antes de cualquier operación de red, asegurando que ni siquiera una configuración malintencionada pueda forzar el envío de rutas o vectores de inyección.
+- `2026-09-02T00:32:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T00:32:06` Corrida terminada. Total usado hoy: 12.

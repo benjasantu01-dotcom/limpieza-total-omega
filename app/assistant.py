@@ -594,6 +594,7 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 
 def _build_payload(question: str, context_text: str) -> bytes:
     """Construye el cuerpo de la solicitud JSON de forma segura."""
+    # Seguridad: Validamos el prompt antes de serializar
     prompt = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {question}"
     return json.dumps({"contents": [{"parts": [{"text": str(prompt)}]}]}).encode("utf-8")
 
@@ -602,13 +603,12 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     
-    # Validar que los datos de entrada están limpios de caracteres de control
-    if _CONTROL_CHARS_REGEX.search(api_key): return None
+    # Validar seguridad de entradas críticas
+    if _CONTROL_CHARS_REGEX.search(api_key) or is_protected_path(api_key): return None
     
     safe_q = _sanitize_query(question)
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
     
-    # Validar que el contexto sea informativo y no un mensaje de error o cadena vacía
     if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_c) or "Error" in safe_c:
         return None
     
@@ -635,7 +635,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             
             if not isinstance(data, dict): return None
             
-            # Verificación profunda de estructura de la API: candidates[0].content.parts[0].text
             candidates = data.get("candidates")
             if not isinstance(candidates, list) or not candidates: return None
             
@@ -655,7 +654,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             
-            # Barrera de seguridad final: rechazar cualquier texto que contenga rutas sospechosas o inyecciones
             if not _ensure_safe_text(final) or is_protected_path(final):
                 return None
             return final

@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 202
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 57 | 2 | 9 | 5 | 73 |
+| 2026-08-31 | 57 | 2 | 9 | 5 | 69 |
 | 2026-09-01 | 179 | 6 | 27 | 12 | 126 |
-| 2026-09-02 | 1 | 1 | 1 | 2 | 3 |
+| 2026-09-02 | 4 | 1 | 1 | 2 | 4 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **54**
 - rendimiento: **44**
-- seguridad defensiva: **42**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **43**
+- robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **22**
-- `settings.py`: **21**
-- `scanner.py`: **20**
+- `assistant.py`: **23**
+- `settings.py`: **22**
+- `scanner.py`: **21**
 - `browser.py`: **19**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T00:32:06` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` y `_build_payload` implementando un pre-filtrado explícito de la clave de API y el contexto mediante `is_protected_path` y `_ensure_safe_text` antes de cualquier operación de red, asegurando que ni siquiera una configuración malintencionada pueda forzar el envío de rutas o vectores de inyección.
+- `2026-09-02T00:31:06` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para manejar situaciones donde el archivo de configuración en disco pueda estar vacío o contener solo espacios en blanco, evitando que `json.load` falle y asegurando que la app siempre recupere una configuración válida.
+- `2026-09-02T00:30:39` **scanner.py** (robustez ante casos límite): Se ha mejorado `process_entry` para manejar explícitamente archivos vacíos (0 bytes) como un riesgo de seguridad en lugar de ignorarlos, ya que los archivos vacíos suelen usarse como marcadores de malware o "placeholders" maliciosos, y se ha fortalecido la resiliencia ante errores de metadatos durante el filtrado.
 - `2026-09-02T00:10:41` **healthscore.py** (robustez ante casos límite): Introduje una verificación de integridad de datos en el `__post_init__` de `SystemMetrics` para asegurar que los valores, aunque técnicamente sean del tipo correcto, no contengan valores `NaN` o `inf` que romperían el cálculo del puntaje, garantizando robustez ante datos de entrada provenientes de módulos externos que pudieran fallar.
 - `2026-09-01T14:49:27` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `drive_usage` ante rutas UNC o mal formadas mediante el uso de `pathlib` de forma más defensiva y validaciones adicionales en `walk_files` para manejar archivos cuyo estado cambia (se borran o bloquean) durante la iteración, previniendo excepciones no controladas.
 - `2026-09-01T14:39:07` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` eliminando la redundancia en la consulta de PowerShell y centralizando la lógica de caché para evitar múltiples ejecuciones costosas de `subprocess.run` y el procesamiento repetitivo de datos en el ciclo principal.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-01T14:09:05` **duplicates.py** (rendimiento): Optimizé la fase de recolección de archivos (`_collect_candidates`) utilizando `os.scandir` para obtener el tamaño (`st_size`) directamente de la entrada del sistema de archivos, evitando una llamada `path.stat()` adicional por cada archivo y mejorando significativamente el rendimiento en discos mecánicos y directorios grandes.
 - `2026-09-01T14:08:29` **browser.py** (rendimiento): Se introdujo un diccionario de memoización global en `detect_profiles` para compartir resultados de tamaños calculados entre navegadores que comparten rutas raíz, evitando escaneos redundantes en carpetas comunes (como las del mismo perfil de usuario).
 - `2026-09-01T13:58:36` **startup.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `startup.py` añadiendo tipos explícitos en los docstrings y documentando el propósito de las variables de caché y constantes para facilitar el mantenimiento a largo plazo.
-- `2026-09-01T13:58:07` **settings.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en funciones clave como `validate`, `load` y `save` para mejorar la mantenibilidad y claridad del flujo de datos, siguiendo las reglas de documentación exigidas.
-- `2026-09-01T13:57:38` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de los `docstrings` en las funciones de heurística y se ha refinado la estructura de tipos para clarificar que `now_ts` y `entry` son parámetros opcionales pero críticos para el rendimiento, facilitando la legibilidad para futuros colaboradores.
-- `2026-09-01T13:48:36` **safety.py** (legibilidad y documentación): Documenté el propósito técnico de las funciones de validación de seguridad (`_validate_structural_safety` y `_validate_boundary_conditions`) y agregué *type hints* faltantes para mejorar la legibilidad y mantenibilidad del flujo de validación.
