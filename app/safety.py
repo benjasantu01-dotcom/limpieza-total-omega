@@ -210,7 +210,6 @@ def _is_file_in_use(path_str: str) -> bool:
     if os.name != 'nt' or not isinstance(path_str, str):
         return False
     try:
-        # GENERIC_READ = 0x80000000, FILE_SHARE_READ = 0x00000001
         kernel32 = ctypes.windll.kernel32
         handle = kernel32.CreateFileW(
             path_str, 0x80000000, 0x00000001, None, 3, 0x00000080, None
@@ -266,7 +265,6 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError("La ruta no existe.")
 
     try:
-        # Usamos lstat para evitar seguir enlaces simbólicos durante el chequeo
         file_stat = path.lstat()
     except (PermissionError, OSError):
         raise UnsafePathError("Error al acceder a los metadatos del archivo.")
@@ -306,7 +304,6 @@ def normalize(path: PathLike) -> Path:
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
         resolved = p.resolve()
         
-        # Validación de seguridad: Verificar que ninguno de los padres sea un enlace
         current = p
         while current != current.parent:
             if _is_reparse_point(current):
@@ -328,14 +325,18 @@ def is_drive_root(path: PathLike) -> bool:
 
 @lru_cache(maxsize=2048)
 def is_protected_path(path: PathLike) -> bool:
-    """Verifica si la ruta reside dentro de directorios de sistema protegidos."""
+    """
+    Verifica si la ruta reside dentro de directorios de sistema protegidos.
+    
+    Utiliza una comprobación eficiente sobre los componentes de la ruta normalizada
+    contra el conjunto de nombres protegidos.
+    """
     if not path: return True
     try:
         p = normalize(path)
         norm_case = os.path.normcase(str(p))
         if any(norm_case.startswith(root) for root in _SYSTEM_ROOT_PATHS):
             return True
-        # Búsqueda O(1) usando el set existente en lugar de iterar sobre el set
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
         return p == Path(p.anchor)
@@ -381,7 +382,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     if _has_invalid_chars(path_string):
         raise UnsafePathError("La ruta contiene caracteres inválidos o no soportados.")
     
-    # Validación recursiva de nombres reservados en los componentes de la ruta
     for part in target_path.parts:
         if _is_reserved_device_name(part):
             raise UnsafePathError(f"El nombre '{part}' es un dispositivo reservado por el sistema.")
@@ -426,6 +426,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     en el sistema de archivos (borrar o mover). Implementa validación estructural,
     geográfica y de integridad.
     
+    Args:
+        path: La ruta del archivo o directorio a manipular.
+        allow_sensitive: Si es True, permite modificar archivos con extensiones sensibles.
+        base_dir: Directorio raíz opcional para validar el alcance (sandbox).
+    
     Raises:
         UnsafePathError: Si la ruta no es segura, está protegida o viola restricciones.
     """
@@ -442,13 +447,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    # lexists evita seguir symlinks/junctions al validar existencia
     if os.path.lexists(p):
         try:
             if not p.is_file() and not p.is_dir():
                 raise UnsafePathError("Tipo de objeto no soportado para modificación.")
             
-            # Verificación explícita de acceso de escritura
             if not os.access(p, os.W_OK):
                 raise UnsafePathError("No se dispone de permisos de escritura sobre el archivo.")
                 
@@ -456,7 +459,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         except OSError:
             raise UnsafePathError("Error de sistema al verificar permisos o integridad.")
     else:
-        # Validación preventiva para rutas no existentes
         try:
             if is_protected_path(p.parent):
                 raise UnsafePathError("Escritura bloqueada: el directorio contenedor está protegido.")

@@ -1056,3 +1056,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T12:26:24` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 113): unterminated string literal (detected at line 113)
 - `2026-09-02T12:26:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T12:26:24` Corrida terminada. Total usado hoy: 292.
+- `2026-09-02T12:34:54` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-02T12:35:27` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando el formato Google Style para mayor claridad) y se reemplazó la lógica de iteración manual en `is_protected_path` por un método `any` más idiomático sobre los componentes de la ruta, reduciendo la ambigüedad en la validación.
+- `2026-09-02T12:35:53` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la inclusión de type hints precisos, docstrings detallados en métodos críticos, y se ha refinado el manejo de excepciones en `_is_safe_entry` para mejorar la legibilidad del flujo de control.
+- `2026-09-02T12:36:20` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators, _Validators._is_safe_path, _Validators._run_safety_checks, _Validators._validate_enum_str, _Validators.bool, _Validators.int, _Validators.path, _Validators.str, type_check
+- `2026-09-02T12:36:31` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
+- `2026-09-02T12:36:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T12:36:31` Corrida terminada. Total usado hoy: 296.

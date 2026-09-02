@@ -116,7 +116,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path: Path) -> bool:
-        """Valida que la ruta sea un descendiente de la base_root original."""
+        """Valida si la ruta está contenida dentro del directorio base definido."""
         if not path: return False
         try:
             return str(path.resolve(strict=False)).lower().startswith(self.base_root_str)
@@ -124,9 +124,11 @@ class Scanner:
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que la entrada no infrinja restricciones de seguridad ni reglas de ofuscación."""
+        """Valida que una entrada de directorio no viole políticas de seguridad o rutas bloqueadas."""
         if not entry or not entry.path:
             return False
+        
+        # Filtros de longitud de ruta y rutas UNC
         if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
@@ -146,7 +148,7 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Detecta puntos de reparse (junctions, enlaces simbólicos) mediante flags de sistema."""
+        """Detecta puntos de reparse (junctions, enlaces simbólicos) mediante atributos de archivo."""
         try:
             if entry.is_symlink():
                 return True
@@ -155,7 +157,7 @@ class Scanner:
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[Path]) -> None:
-        """Agrega un directorio al stack si cumple las condiciones de seguridad."""
+        """Agrega un directorio al stack si no ha sido visitado previamente y es seguro."""
         try:
             path = Path(entry.path)
             if path not in self.seen and not is_protected_path(path):
@@ -187,7 +189,7 @@ class Scanner:
             logger.debug(f"Acceso denegado o archivo inaccesible: {entry.path}")
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta las heurísticas registradas sobre un archivo detectado como potencialmente sospechoso."""
+        """Ejecuta las heurísticas registradas sobre un archivo identificado como sospechoso."""
         try:
             if path.name and RTL_CHAR_RE.search(path.name):
                 self.results.append(Suspicion(path, "Nombre contiene caracteres de ofuscación (RTL)", "critical"))
