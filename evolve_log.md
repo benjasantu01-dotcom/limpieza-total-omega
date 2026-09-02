@@ -1193,3 +1193,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-02T02:26:40` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-02T02:26:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T02:26:40` Corrida terminada. Total usado hoy: 56.
+- `2026-09-02T02:32:42` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-09-02T02:33:21` Gemini no devolvió un bloque de archivo válido para assistant.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-02T02:33:54` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-02T02:34:21` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `_get_kernel32` y `base_directories` mediante una validación de tipos más estricta y el uso de `try-except` específicos, evitando comportamientos inesperados ante entornos con variables de entorno mal formadas o permisos restringidos.
+- `2026-09-02T02:34:35` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `total_size` agregando validaciones de entrada (`isinstance` y chequeos de `None`) y capturas de excepciones más específicas, evitando que errores imprevistos en el sistema de archivos interrumpan prematuramente los análisis.
+- `2026-09-02T02:34:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T02:34:35` Corrida terminada. Total usado hoy: 60.

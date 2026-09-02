@@ -97,8 +97,10 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt':
         return None
     try:
+        if not hasattr(ctypes, 'windll'):
+            return None
         return ctypes.windll.kernel32
-    except Exception:
+    except (AttributeError, OSError, RuntimeError):
         return None
 
 
@@ -108,7 +110,7 @@ def base_directories() -> List[Path]:
     Verifica la existencia y los permisos mediante `safety.py` antes de retornar.
     """
     local_env = os.environ.get("LOCALAPPDATA")
-    if not local_env:
+    if not isinstance(local_env, str) or not local_env:
         return []
     
     try:

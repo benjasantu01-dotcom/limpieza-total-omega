@@ -389,10 +389,15 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         Tupla (total_bytes, total_files).
     """
     total_bytes, file_count = 0, 0
+    # Validación de entrada
+    if directory is None:
+        return (0, 0)
+        
     try:
         for _, size in walk_files(directory, skip_protected):
-            total_bytes += size
-            file_count += 1
+            if isinstance(size, int):
+                total_bytes += size
+                file_count += 1
     except (OSError, PermissionError, TypeError):
         pass
     return total_bytes, file_count
@@ -414,17 +419,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         if not path or not isinstance(size, (int, float)):
             continue
             
-        total_bytes += size
+        total_bytes += int(size)
         total_files += 1
         
         ext = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[ext] += size
+        ext_sizes[ext] += int(size)
         ext_counts[ext] += 1
         
         if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, path))
+            heapq.heappush(top_files_heap, (int(size), path))
         else:
-            heapq.heappushpop(top_files_heap, (size, path))
+            heapq.heappushpop(top_files_heap, (int(size), path))
             
     top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
     return SummaryData(total_bytes, total_files, dict(ext_sizes), dict(ext_counts), top_files)

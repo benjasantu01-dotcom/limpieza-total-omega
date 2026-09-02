@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 42 | 2 | 8 | 4 | 42 |
+| 2026-08-31 | 39 | 2 | 8 | 3 | 42 |
 | 2026-09-01 | 179 | 6 | 27 | 12 | 126 |
-| 2026-09-02 | 13 | 1 | 2 | 2 | 38 |
+| 2026-09-02 | 15 | 1 | 2 | 2 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
 - seguridad defensiva: **52**
+- legibilidad y documentación: **51**
+- manejo de errores y validación de entradas: **46**
 - rendimiento: **44**
-- manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
@@ -33,20 +33,22 @@ Este archivo se regenera solo en cada corrida a partir de
 - `settings.py`: **21**
 - `assistant.py`: **21**
 - `scanner.py`: **20**
-- `quarantine.py`: **19**
-- `memory.py`: **18**
-- `diskreport.py`: **18**
-- `browser.py`: **18**
+- `diskreport.py`: **19**
+- `browser.py`: **19**
+- `quarantine.py`: **18**
 - `duplicates.py`: **17**
-- `organizer.py`: **16**
+- `memory.py`: **17**
 - `healthscore.py`: **16**
 - `safety.py`: **16**
+- `organizer.py`: **15**
 - `main.py`: **12**
 - `branding.py`: **11**
 - `startup.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T02:34:35` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `total_size` agregando validaciones de entrada (`isinstance` y chequeos de `None`) y capturas de excepciones más específicas, evitando que errores imprevistos en el sistema de archivos interrumpan prematuramente los análisis.
+- `2026-09-02T02:34:21` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_get_kernel32` y `base_directories` mediante una validación de tipos más estricta y el uso de `try-except` específicos, evitando comportamientos inesperados ante entornos con variables de entorno mal formadas o permisos restringidos.
 - `2026-09-02T01:02:17` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la manipulación de archivos que excedan el límite de tamaño de 2GB en `ensure_safe_to_modify`, mitigando riesgos de errores de gestión de memoria o bloqueos prolongados en I/O durante el procesamiento de archivos masivos.
 - `2026-09-02T01:01:25` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_isolation_request` al implementar una validación estricta del espacio en disco ANTES de iniciar cualquier operación de copia, además de reforzar la validación de la existencia y el tipo del archivo origen mediante una resolución de ruta explícita y segura para evitar race conditions.
 - `2026-09-02T00:53:24` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `_is_safe_to_trim` para asegurar que el proceso objetivo, al ser consultado mediante `QueryFullProcessImageNameW`, no se resuelva como un archivo ubicado en directorios críticos bloqueados (`SYSTEM_FOLDER_BLOCKLIST` indirectamente vía `is_protected_path`), mejorando el control sobre qué procesos pueden ser objeto de `EmptyWorkingSet`.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T00:31:06` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para manejar situaciones donde el archivo de configuración en disco pueda estar vacío o contener solo espacios en blanco, evitando que `json.load` falle y asegurando que la app siempre recupere una configuración válida.
 - `2026-09-02T00:30:39` **scanner.py** (robustez ante casos límite): Se ha mejorado `process_entry` para manejar explícitamente archivos vacíos (0 bytes) como un riesgo de seguridad en lugar de ignorarlos, ya que los archivos vacíos suelen usarse como marcadores de malware o "placeholders" maliciosos, y se ha fortalecido la resiliencia ante errores de metadatos durante el filtrado.
 - `2026-09-02T00:10:41` **healthscore.py** (robustez ante casos límite): Introduje una verificación de integridad de datos en el `__post_init__` de `SystemMetrics` para asegurar que los valores, aunque técnicamente sean del tipo correcto, no contengan valores `NaN` o `inf` que romperían el cálculo del puntaje, garantizando robustez ante datos de entrada provenientes de módulos externos que pudieran fallar.
-- `2026-09-01T14:49:27` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `drive_usage` ante rutas UNC o mal formadas mediante el uso de `pathlib` de forma más defensiva y validaciones adicionales en `walk_files` para manejar archivos cuyo estado cambia (se borran o bloquean) durante la iteración, previniendo excepciones no controladas.
-- `2026-09-01T14:39:07` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` eliminando la redundancia en la consulta de PowerShell y centralizando la lógica de caché para evitar múltiples ejecuciones costosas de `subprocess.run` y el procesamiento repetitivo de datos en el ciclo principal.
