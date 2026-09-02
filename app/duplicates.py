@@ -91,7 +91,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError, ValueError):
+    except (OSError, PermissionError, IOError, ValueError, TypeError):
         return None
 
 
@@ -116,7 +116,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             if not content:
                 return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError, ValueError):
+    except (OSError, PermissionError, IOError, ValueError, TypeError):
         return None
 
 
@@ -130,30 +130,28 @@ def _is_valid_candidate(path: Path) -> bool:
     try:
         return (
             isinstance(path, Path) and 
+            path.exists() and
             path.is_file() and 
             not is_protected_path(path) and 
             os.access(path, os.R_OK)
         )
-    except (OSError, ValueError):
+    except (OSError, ValueError, TypeError):
         return False
 
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Agrupa una lista de rutas de archivo según su tamaño en bytes.
-    
-    Ignora archivos de 0 bytes, ya que no consumen espacio real ni son candidatos
-    reales para liberación de espacio en disco.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
-    if paths is None: return groups
+    if paths is None or not isinstance(paths, Iterable): return groups
     
     for p in paths:
-        if isinstance(p, Path) and _is_valid_candidate(p):
+        if isinstance(p, (Path, str)) and _is_valid_candidate(Path(p)):
             try:
-                size = p.stat().st_size
+                size = Path(p).stat().st_size
                 if size > 0:
-                    groups[size].append(p)
+                    groups[size].append(Path(p))
             except (OSError, PermissionError):
                 continue
     return groups
@@ -258,7 +256,7 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
     """
     Punto de entrada: identifica y ordena grupos de duplicados por impacto (wasted_bytes).
     """
-    if directories is None or not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
+    if not directories or not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []
     if not isinstance(min_size, int) or min_size < 0: 
         return []

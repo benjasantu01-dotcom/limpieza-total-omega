@@ -238,7 +238,6 @@ def _sum_directory_recursive(
                         stats = entry.stat(follow_symlinks=False)
                         total += stats.st_size
                 except (OSError, PermissionError):
-                    # Ignorar archivos bloqueados por el sistema, continuar el conteo
                     continue
     except (PermissionError, OSError):
         return 0
@@ -288,9 +287,6 @@ def detect_profiles(
 ) -> List[BrowserCache]:
     """
     Escanea las rutas definidas en 'cache_paths' dentro de los directorios bases.
-    
-    Utiliza un diccionario 'perf_cache' compartido para memoizar resultados de
-    subdirectorios, optimizando el tiempo de ejecución en árboles grandes.
     """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
@@ -308,15 +304,16 @@ def detect_profiles(
         try:
             real_base = base.resolve(strict=True)
             for browser_name, rel_str in browser_map.items():
-                if not isinstance(rel_str, str):
+                if not isinstance(rel_str, str) or not rel_str:
                     continue
+                # Asegurar que el join no cree rutas inválidas
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     c_path = candidate.resolve(strict=True)
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
-        except (OSError, PermissionError, TypeError): 
+        except (OSError, PermissionError, TypeError, ValueError): 
             continue
                 
     found.sort(key=lambda c: c.size_bytes, reverse=True)

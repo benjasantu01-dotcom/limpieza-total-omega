@@ -272,7 +272,10 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         break
                         
                     try:
-                        # Asegurar que resolvemos cada entrada antes de procesar
+                        # La validación de entrada debe ser defensiva ante paths malformados
+                        if not entry.path:
+                            continue
+                            
                         entry_path = Path(entry.path).resolve()
                         
                         # Impedir escape de ruta (Path Traversal)
@@ -411,19 +414,20 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not path:
+        # Validador contra datos corrompidos en el stream
+        if not path or not isinstance(size, (int, float)):
             continue
-        total_bytes += size
+        total_bytes += int(size)
         total_files += 1
         
         ext = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[ext] += size
+        ext_sizes[ext] += int(size)
         ext_counts[ext] += 1
         
         if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (size, path))
-        elif size > top_files_heap[0][0]:
-            heapq.heapreplace(top_files_heap, (size, path))
+            heapq.heappush(top_files_heap, (int(size), path))
+        elif int(size) > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (int(size), path))
             
     top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
     return SummaryData(total_bytes, total_files, dict(ext_sizes), dict(ext_counts), top_files)
@@ -437,8 +441,9 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
             
     try:
         data: SummaryData = _collect_summary_data(p_input, skip_protected)
-    except Exception:
-        return ["Error: Fallo inesperado durante el análisis del disco."]
+    except Exception as e:
+        # Registro explícito de excepción para debug, sin exponer detalles a usuario final
+        return [f"Error: Fallo inesperado durante el análisis ({type(e).__name__})."]
     
     if data.total_files == 0:
         return ["Aviso: No se encontraron archivos accesibles."]

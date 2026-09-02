@@ -205,7 +205,7 @@ _PROC_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], Norma
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Agrega las métricas individuales según los pesos definidos para obtener un resultado final."""
-    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
+    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
     metrics.validate()
@@ -242,8 +242,8 @@ def _render_bar(pts: int, maximo: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una representación visual y textual del informe de salud para la interfaz."""
-    if not isinstance(result, HealthResult) or not hasattr(result, 'breakdown'): 
-        return ["Error: Informe no disponible."]
+    if not isinstance(result, HealthResult):
+        return ["Error: Informe no disponible o formato inválido."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
