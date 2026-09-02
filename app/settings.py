@@ -294,11 +294,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         ruta = settings_path(custom_base)
         parent = ruta.parent.resolve()
+        
+        # Validar seguridad de la ruta padre antes de proceder
         if not _Validators._is_safe_path(str(parent)): return None
+        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        if not parent.is_dir(): return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
-        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         

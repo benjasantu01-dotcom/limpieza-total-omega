@@ -6,32 +6,32 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **246** (48.8% de aceptación)
+- Mejoras aceptadas: **247** (49.0% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 190
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 10 | 0 | 1 | 1 | 14 |
+| 2026-08-31 | 10 | 0 | 1 | 1 | 10 |
 | 2026-09-01 | 179 | 6 | 27 | 12 | 126 |
-| 2026-09-02 | 57 | 7 | 8 | 6 | 50 |
+| 2026-09-02 | 58 | 7 | 8 | 6 | 53 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **50**
+- seguridad defensiva: **51**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **22**
-- `settings.py`: **21**
+- `settings.py`: **22**
 - `quarantine.py`: **20**
 - `scanner.py`: **20**
 - `browser.py`: **19**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T05:37:07` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita de `parent.exists()` y `parent.is_dir()` antes de intentar escribir, además de asegurar que la operación `os.fsync` ocurra dentro de un bloque `try` robusto para evitar estados parciales en disco.
 - `2026-09-02T05:29:03` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo preventivo de la existencia de componentes de la ruta antes de la normalización, evitando así que una ruta con componentes inexistentes o nombres mal formados interrumpa el flujo del programa debido a excepciones inesperadas de `Path.resolve()`.
 - `2026-09-02T05:27:43` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_atomic_isolate_file` implementando una validación explícita de `is_safe_to_modify` sobre el archivo recién copiado antes de confirmar la operación, mitigando riesgos de manipulación de archivos en el área temporal.
 - `2026-09-02T05:26:48` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `organizer.py` añadiendo `is_protected_path` al validar el destino en `_can_move_file` y `stage_for_review`, asegurando que el directorio de revisión no sea una ruta crítica, además de unificar la validación de `Path.is_relative_to` para prevenir cualquier intento de escape de directorio o recursión peligrosa.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T04:55:56` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez ante condiciones de carrera y denegación de acceso en `_check_file_integrity` y `_is_file_in_use`, añadiendo un manejo de excepciones más granular para evitar que operaciones concurrentes (como el escaneo de archivos bloqueados por el sistema) resulten en errores no capturados.
 - `2026-09-02T04:46:59` **quarantine.py** (robustez ante casos límite): Se ha añadido un chequeo de existencia previo en `_atomic_isolate_file` para evitar la creación de archivos temporales huérfanos en caso de que el origen se vuelva inaccesible durante el proceso, incrementando la robustez ante condiciones de carrera (concurrencia).
 - `2026-09-02T04:46:21` **organizer.py** (robustez ante casos límite): Se añadió una validación en `_process_directory` para verificar si un archivo está bloqueado por el sistema antes de incluirlo en la lista de escaneo, evitando errores de metadatos (como tamaño cero) y procesamientos fallidos en archivos ocupados por otros procesos.
-- `2026-09-02T04:26:35` **browser.py** (robustez ante casos límite): Se implementó un control de robustez ante archivos bloqueados por el sistema durante el cálculo recursivo de tamaño, capturando `OSError` específicamente al realizar `entry.stat()` para evitar abortar el escaneo completo cuando un proceso externo tiene un archivo de caché bloqueado.
