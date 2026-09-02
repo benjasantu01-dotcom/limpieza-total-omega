@@ -1279,3 +1279,14 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-02T03:37:02` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Mejoré la documentación de `Scanner` y sus métodos mediante la estandarización de docstrings (especificando tipos y comportamiento ante fallos) y reemplacé el uso de `str` en la pila por `Path` para garantizar coherencia con los métodos de `pathlib` y mejorar la claridad del flujo de trabajo, además de asegurar que la exclusión de `is_protected_path` sea explícita en el bucle principal.
 - `2026-09-02T03:37:02` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T03:37:02` Corrida terminada. Total usado hoy: 84.
+- `2026-09-02T03:44:01` Arrancando corrida. Quedan hoy ~216 peticiones objetivo.
+- `2026-09-02T03:44:06` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T03:44:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-02T03:44:17` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-02T03:44:57` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). Se ha mejorado significativamente la legibilidad y mantenibilidad del módulo documentando mediante *type hints* avanzados y docstrings de estilo Google el comportamiento de las funciones clave y la lógica de validación, facilitando la comprensión de las restricciones de seguridad sin alterar la funcionalidad.
+- `2026-09-02T03:45:05` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T03:45:36` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación y la tipificación de los métodos en la clase `StartupEntry`, clarificando el propósito de la lógica interna de validación y garantizando que el estado interno sea más transparente para futuros desarrolladores.
+- `2026-09-02T03:46:16` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el método `ingest` de `SystemContext` para evitar iterar sobre todos los validadores en cada llamada, reemplazando la lógica de búsqueda activa por una asignación directa eficiente y reduciendo llamadas redundantes a métodos de validación.
+- `2026-09-02T03:46:31` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el sistema de caché y las estructuras de datos de `PALETTE` y `ICONS` para evitar accesos repetidos a diccionarios y conversiones innecesarias, convirtiéndolas en `MappingProxyType` desde el inicio para mayor seguridad y rendimiento.
+- `2026-09-02T03:46:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T03:46:31` Corrida terminada. Total usado hoy: 88.

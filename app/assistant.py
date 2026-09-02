@@ -285,12 +285,11 @@ class SystemContext:
             return False
             
         found_data = False
-        for key, spec in _VALIDATORS.items():
-            try:
-                if _validate_and_assign(self, source, key, spec):
-                    found_data = True
-            except Exception:
-                continue
+        # Ingesta dirigida: evita iterar globalmente sobre claves inexistentes en la fuente
+        keys_to_check = _VALIDATORS.keys() & (source.keys() if isinstance(source, dict) else dir(source))
+        for key in keys_to_check:
+            if _validate_and_assign(self, source, key, _VALIDATORS[key]):
+                found_data = True
         
         grade_val = _get_source_value(source, "grade")
         if isinstance(grade_val, str):
