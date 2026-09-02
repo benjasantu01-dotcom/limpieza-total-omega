@@ -65,7 +65,18 @@ WINDOWS_RESERVED_NAMES: set[str] = {
 
 @dataclass
 class QuarantineItem:
-    """Representa un archivo aislado con metadatos para asegurar la trazabilidad y reversibilidad."""
+    """
+    Modelo de datos para archivos aislados.
+    
+    Attributes:
+        item_id: Identificador único generado al momento del aislamiento.
+        original_path: Ruta original absoluta del archivo.
+        stored_name: Nombre del archivo dentro del directorio de cuarentena.
+        size_bytes: Tamaño exacto del archivo original para validación de integridad.
+        reason: Justificación técnica del motivo del aislamiento.
+        quarantined_at: Marca temporal ISO 8601 del aislamiento.
+        sha256: Hash de validación para asegurar que el archivo en disco no fue alterado.
+    """
     item_id: str
     original_path: str
     stored_name: str
@@ -75,7 +86,7 @@ class QuarantineItem:
     sha256: str = ""
 
     def __post_init__(self) -> None:
-        """Normaliza tipos y asegura integridad mínima de los metadatos tras la inicialización."""
+        """Asegura la normalización y limpieza de los atributos post-instanciación."""
         try:
             self.size_bytes = int(self.size_bytes)
         except (ValueError, TypeError):
@@ -87,16 +98,19 @@ class QuarantineItem:
 
     @property
     def size_mb(self) -> float:
-        """Calcula el tamaño del archivo en MB para informes de usuario."""
+        """Calcula el tamaño en Megabytes con precisión de dos decimales."""
         return round(self.size_bytes / (1024 * 1024), 2)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Conviertie los datos del ítem a un diccionario plano para serialización JSON."""
+        """Serializa el objeto a un diccionario plano para su almacenamiento JSON."""
         return asdict(self)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> Optional[QuarantineItem]:
-        """Reconstruye una instancia de QuarantineItem desde un diccionario, validando esquemas obligatorios."""
+        """
+        Factory method: reconstruye la instancia desde un diccionario.
+        Valida que existan todas las claves obligatorias para evitar corrupción del manifiesto.
+        """
         if not isinstance(data, dict):
             return None
         required = {"item_id", "original_path", "stored_name", "size_bytes", "reason", "quarantined_at"}
@@ -116,14 +130,14 @@ class QuarantineItem:
             return None
 
     def _validate_integrity(self, stored_path: Path) -> bool:
-        """Valida que el archivo en disco exista, no sea un enlace y coincida con el tamaño registrado."""
+        """Comprueba que el archivo en disco exista y su tamaño coincida con el registro original."""
         try:
             return stored_path.is_file() and not stored_path.is_symlink() and stored_path.stat().st_size == self.size_bytes
         except (OSError, PermissionError):
             return False
 
     def verify_integrity(self, stored_path: Path) -> bool:
-        """Verifica la autenticidad del archivo mediante comparación del hash SHA-256."""
+        """Verifica la autenticidad comparando el hash SHA-256 almacenado con el del archivo actual."""
         if not stored_path or not self._validate_integrity(stored_path):
             return False
         try:
@@ -133,7 +147,7 @@ class QuarantineItem:
 
 
 def _get_sha256(path: Path) -> str:
-    """Calcula el hash SHA-256 del archivo mediante lectura en bloques para evitar saturación de memoria."""
+    """Calcula el hash SHA-256 mediante buffers (chunking) para gestionar archivos grandes sin saturar RAM."""
     sha256_hash = hashlib.sha256()
     try:
         with open(path, "rb") as handle:
@@ -145,7 +159,7 @@ def _get_sha256(path: Path) -> str:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Verifica si un archivo está en uso exclusivo intentando abrirlo en modo lectura binaria."""
+    """Intenta abrir un archivo en modo lectura binaria exclusiva; si falla, el archivo está bloqueado."""
     if not isinstance(path, Path) or not path.exists() or not path.is_file():
         return False
     try:
@@ -159,8 +173,8 @@ def _is_file_locked(path: Path) -> bool:
 
 def _safe_unlink(path: Path) -> bool:
     """
-    Intenta borrar un archivo de forma segura.
-    Verifica que el archivo no sea un enlace, que no esté bloqueado y que resida en una ruta permitida.
+    Realiza un borrado seguro tras verificar que el archivo es un archivo regular,
+    no está bloqueado y reside dentro de una zona permitida por `safety.py`.
     """
     if not path.exists() or not path.is_file():
         return False
@@ -173,7 +187,10 @@ def _safe_unlink(path: Path) -> bool:
         return False
 
 def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
-    """Genera un nombre de archivo para la cuarentena evitando colisiones y caracteres inválidos."""
+    """
+    Crea un nombre de archivo seguro para la cuarentena: elimina caracteres especiales,
+    previene el uso de nombres reservados de Windows y añade prefijos de ID para unicidad.
+    """
     sanitized = "".join(c for c in original_path.name if c.isalnum() or c in "._-")
     if not sanitized or sanitized in (".", ".."):
         sanitized = "unknown_file"
@@ -189,8 +206,8 @@ def _generate_safe_stored_name(original_path: Path, item_id: str) -> str:
 
 def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
     """
-    Resuelve la ruta absoluta del directorio de cuarentena.
-    Aplica filtros de seguridad contra rutas de sistema y valida permisos de escritura.
+    Resuelve el directorio de cuarentena asegurando que no se encuentre en zonas protegidas.
+    Crea la estructura de carpetas si es necesario.
     """
     if not base:
         raise ValueError("El directorio base no puede estar vacío.")
@@ -209,17 +226,20 @@ def quarantine_dir(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
 
 
 def _manifest_path(base_dir: Path) -> Path:
-    """Retorna la ruta absoluta del archivo de manifiesto JSON en el directorio de cuarentena."""
+    """Retorna la ruta absoluta del archivo `manifest.json` dentro del sandbox."""
     return (base_dir / MANIFEST_NAME).resolve()
 
 
 def _is_within_quarantine_sandbox(path: Path, root: Path) -> bool:
-    """Verifica que la ruta resida estrictamente dentro del árbol de directorios de cuarentena."""
+    """Verifica jerarquía: la ruta debe ser subdirectorio directo o indirecto del root de cuarentena."""
     return is_within_directory(path, root)
 
 
 def _check_windows_file_attributes(path_str: str) -> None:
-    """Verifica atributos de sistema/ocultos en Windows y longitud de la ruta antes de procesar."""
+    """
+    En Windows, valida atributos de sistema/ocultos y longitud de ruta máxima para
+    evitar problemas con las limitaciones del API de Win32.
+    """
     if os.name != 'nt':
         return
     path_obj = Path(path_str)
@@ -235,7 +255,10 @@ def _check_windows_file_attributes(path_str: str) -> None:
 
 
 def _check_path_syntax_integrity(path: Path) -> None:
-    """Valida la estructura sintáctica de la ruta para prevenir ataques de Path Traversal."""
+    """
+    Filtro de seguridad contra ataques de Path Traversal y caracteres maliciosos.
+    Bloquea rutas que contengan caracteres no permitidos, profundidad excesiva o flujos alternos.
+    """
     path_str = str(path)
     if any(ord(c) < 32 for c in path_str) or "\0" in path_str:
         raise UnsafePathError("Ruta con caracteres de control prohibida.")
@@ -251,8 +274,8 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
-    Realiza una validación exhaustiva de seguridad antes de aislar un archivo.
-    Verifica integridad de la ruta, atributos del sistema y asegura que la operación no sea circular o prohibida.
+    Pre-validación crítica: antes de aislar, verifica que origen y destino no estén
+    en conflicto y respete las restricciones de seguridad y dispositivos de disco.
     """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
@@ -286,7 +309,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
 
 @lru_cache(maxsize=4)
 def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> List[Dict[str, Any]]:
-    """Carga cruda y cacheada del archivo de manifiesto JSON para eficiencia de lectura."""
+    """Carga de bajo nivel (cacheada) del JSON, utilizando mtime para invalidación automática."""
     path = _manifest_path(Path(base_str))
     if not path.is_file():
         return []
@@ -298,7 +321,10 @@ def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> List[Dict[str, Any
         return []
 
 def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload: bool = False) -> List[QuarantineItem]:
-    """Carga, deserializa y valida el manifiesto de cuarentena a objetos QuarantineItem, limpiando referencias huérfanas."""
+    """
+    Carga el manifiesto y sincroniza el estado: si un archivo fue borrado manualmente
+    fuera de la app, limpia la referencia del manifiesto de forma coherente.
+    """
     base_path = quarantine_dir(base)
     m_path = _manifest_path(base_path)
     mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
@@ -313,7 +339,6 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
     for d in raw_data:
         item = QuarantineItem.from_dict(d)
         if item:
-            # Si el archivo fue borrado manualmente, no debe aparecer en el manifiesto
             if (base_path / item.stored_name).exists():
                 validated.append(item)
             else:
@@ -326,7 +351,7 @@ def load_manifest(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR, force_reload:
 
 
 def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """Persiste el manifiesto de forma atómica usando un archivo temporal y os.replace."""
+    """Persistencia atómica: escribe en un temporal y reemplaza el manifiesto original."""
     if not isinstance(items, list):
         raise ValueError("El manifiesto debe ser una lista de ítems.")
     
@@ -353,7 +378,7 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
-    """Verifica que el destino tenga suficiente espacio libre antes de realizar operaciones de copia."""
+    """Verifica que el sistema destino tenga espacio libre más un margen de seguridad."""
     if not os.access(dest_dir, os.W_OK):
         raise PermissionError(f"Directorio sin permisos de escritura: {dest_dir}")
     usage = shutil.disk_usage(dest_dir)
@@ -363,9 +388,7 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
-    """
-    Aísla un archivo copiándolo a un sandbox de forma atómica para evitar corrupción.
-    """
+    """Realiza la copia física del archivo de manera atómica con verificación post-copia."""
     if not source.exists():
         raise FileNotFoundError("El archivo de origen no existe.")
 
@@ -389,7 +412,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             os.close(fd)
             raise e
 
-        # Verificación post-copia estricta
         if temp_path.stat().st_size != original_size:
             raise OSError("Error de integridad: el tamaño del archivo copiado no coincide.")
             
@@ -414,8 +436,8 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """
-    Ejecuta el flujo completo de aislamiento: validación, copia atómica, 
-    registro en manifiesto y eliminación del archivo original tras confirmar integridad.
+    Ejecuta el ciclo de vida completo: validación, copia, registro e intento de borrado 
+    original solo si la integridad post-copia es confirmada.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -468,15 +490,12 @@ def quarantine_file(
 
 
 def list_items(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[QuarantineItem]:
-    """Retorna la lista de ítems en cuarentena, ordenados del más reciente al más antiguo."""
+    """Retorna lista de ítems, cronológicamente invertida (recientes primero)."""
     return sorted(load_manifest(base), key=lambda item: item.quarantined_at, reverse=True)
 
 
 def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> Path:
-    """
-    Restaura un archivo desde el sandbox a su ubicación original tras verificar
-    integridad, permisos de destino y ausencia de colisiones.
-    """
+    """Restaura un archivo verificando integridad, permisos y existencia previa."""
     if not item_id or not isinstance(item_id, str):
         raise ValueError("ID de ítem inválido o vacío.")
     base_path = quarantine_dir(base)
@@ -496,7 +515,6 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
     if destination.exists():
         raise FileExistsError(f"Error: el destino {destination} ya existe.")
     
-    # Validar que restauramos al mismo dispositivo (st_dev)
     if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
         raise UnsafePathError("Restauración denegada: destino en dispositivo diferente al original.")
     
@@ -516,9 +534,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
-    """
-    Elimina físicamente un ítem de la cuarentena tras verificar su integridad y seguridad.
-    """
+    """Borra un ítem específico de la cuarentena tras validación exhaustiva."""
     if not isinstance(item_id, str) or not item_id.strip():
         return False
     base_path = quarantine_dir(base)
@@ -542,7 +558,7 @@ def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) ->
 
 
 def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) -> bool:
-    """Verifica si un ítem en cuarentena cumple todas las condiciones para ser eliminado (integridad y seguridad)."""
+    """Helper interno: comprueba si un ítem puede ser eliminado legalmente del sandbox."""
     try:
         if not _is_within_quarantine_sandbox(file_path, base_path):
             return False
@@ -558,7 +574,7 @@ def _is_item_purgable(file_path: Path, item: QuarantineItem, base_path: Path) ->
 
 
 def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Elimina permanentemente todos los archivos verificados de la cuarentena."""
+    """Limpia el sandbox: elimina todos los archivos verificables."""
     quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
     if not items:
@@ -584,16 +600,15 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 
 
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
-    """Calcula el espacio total ocupado por los archivos en cuarentena leyendo el manifiesto crudo."""
+    """Retorna bytes ocupados por la cuarentena mediante lectura directa del manifiesto."""
     base_path = quarantine_dir(base)
     mtime = _manifest_path(base_path).stat().st_mtime if _manifest_path(base_path).exists() else 0.0
-    # Acceso directo a datos crudos del cache para evitar instanciar todos los objetos QuarantineItem
     raw_data = _load_manifest_raw(str(base_path), mtime)
     return sum(int(d.get("size_bytes", 0)) for d in raw_data if isinstance(d, dict))
 
 
 def summarize(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> List[str]:
-    """Genera un reporte textual de resumen sobre el estado actual de la cuarentena."""
+    """Genera reporte amigable del estado de la cuarentena."""
     items = list_items(base)
     if not items:
         return ["La cuarentena está vacía."]

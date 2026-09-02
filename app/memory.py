@@ -31,7 +31,7 @@ import time
 from pathlib import Path
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, TypeVar, TypeAlias, Final, Set, NewType
+from typing import List, Tuple, Optional, Dict, TYPE_CHECKING, Final, Set, NewType
 from safety import is_protected_path, is_safe_to_modify
 
 if TYPE_CHECKING:
@@ -182,7 +182,10 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
     )
 
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
-    """Convierte salida CSV de PowerShell en objetos ProcessMemory."""
+    """
+    Convierte salida CSV de PowerShell en objetos ProcessMemory.
+    Espera formato 'Nombre,PID,WorkingSet' por línea.
+    """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
     
@@ -191,7 +194,6 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         line = line.strip()
         if not line: continue
         
-        # Split estricto en 3 partes
         parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
         if len(parts) < 3: continue
         
@@ -200,11 +202,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             pid_val = int(parts[1])
             ws_val = int(parts[2])
             
-            # Validar integridad: PIDs válidos, memoria no negativa y evitar sistemas críticos
             if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
                 proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=BytesValue(ws_val)))
         except (ValueError, TypeError):
-            # Ignorar malformaciones en la salida de consola de PowerShell
             continue
     
     proc_list.sort(key=lambda p: p.working_set, reverse=True)
@@ -280,7 +280,7 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
 
 @lru_cache(maxsize=2)
 def pressure_level(snapshot: MemorySnapshot) -> str:
-    """Clasifica nivel de presión (ok/info/warning/danger)."""
+    """Clasifica nivel de presión (ok/info/warning/danger) basado en RAM disponible."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0: return "info"
     available = snapshot.available_percent
     if available >= 35: return "ok"
@@ -289,7 +289,7 @@ def pressure_level(snapshot: MemorySnapshot) -> str:
     return "danger"
 
 def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] = None) -> List[str]:
-    """Genera reporte textual descriptivo."""
+    """Genera reporte textual descriptivo de la salud de memoria."""
     if not isinstance(snapshot, MemorySnapshot) or snapshot.total <= 0:
         return ["No se pudo leer el estado de la memoria en este sistema."]
     
@@ -315,15 +315,15 @@ def diagnose(snapshot: MemorySnapshot, processes: Optional[List[ProcessMemory]] 
     return report
 
 def _is_system_process(pid: int) -> bool:
-    """Verifica si un PID es crítico o es el proceso actual."""
+    """Verifica si un PID es crítico o es el proceso actual (la propia app)."""
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     """
-    Obtiene la ruta completa del ejecutable del proceso.
+    Obtiene la ruta completa del ejecutable del proceso dado su handle.
     
-    Utiliza QueryFullProcessImageNameW (WinAPI) para evitar problemas de permisos
-    y resolver rutas normalizadas, ignorando cualquier proceso sin handle válido.
+    Utiliza la WinAPI 'QueryFullProcessImageNameW' para asegurar compatibilidad
+    con rutas largas y procesos elevados.
     """
     if not proc_handle: return None
     kernel32 = ctypes.windll.kernel32
@@ -341,11 +341,12 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
-    Valida si un proceso puede ser sometido a una operación de 'trim'.
+    Valida si un proceso puede ser sometido a una operación de 'trim' de memoria.
     
-    Realiza una verificación de tres niveles: integridad del PID, estado de ejecución
-    (evitando procesos zombis) y cumplimiento de políticas de seguridad locales
-    (verificando que la ruta del ejecutable no pertenezca a zonas protegidas).
+    Verificaciones:
+        - Integridad del handle y PID.
+        - Estado 'activo' del proceso (evita procesar tareas terminadas).
+        - Validación de seguridad contra rutas protegidas (safety.py).
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -358,7 +359,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         exec_path = _get_process_path(proc_handle)
         if not exec_path: return False, "Ruta del proceso inaccesible."
         
-        # Verificación estricta: si la ruta está protegida por sistema, se deniega.
         if is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
             
@@ -367,7 +367,10 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """Libera el Working Set de un proceso. Solo Windows, sujeto a seguridad."""
+    """
+    Libera el Working Set de un proceso. 
+    Solo disponible en Windows. Sujeto a validaciones de seguridad estrictas.
+    """
     if os.name != "nt": return False, "Operación solo soportada en Windows."
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)

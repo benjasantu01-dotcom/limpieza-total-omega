@@ -95,7 +95,11 @@ class JunkFile:
 
 
 def _is_junction(entry: os.DirEntry | Path) -> bool:
-    """Verifica si la entrada es un punto de reparse (Junction/Symlink) para evitar bucles infinitos."""
+    """
+    Verifica si la entrada es un punto de reparse (Junction/Symlink).
+    Impide que el escaneo siga recursivamente enlaces que podrían llevar a 
+    bucles infinitos o fuera de las zonas permitidas.
+    """
     try:
         if isinstance(entry, os.DirEntry):
             return entry.is_symlink() or (os.name == "nt" and bool(entry.stat().st_file_attributes & 0x400))
@@ -139,7 +143,10 @@ def _is_allowed_directory(name: str) -> bool:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """Intenta abrir el archivo en modo lectura binaria; si falla, el archivo está bloqueado por el SO."""
+    """
+    Intenta abrir el archivo en modo lectura binaria exclusiva.
+    Si falla, indica que el archivo está en uso por otro proceso y no es seguro moverlo.
+    """
     try:
         with open(path, "rb"):
             return False
@@ -148,7 +155,10 @@ def _is_file_locked(path: Path) -> bool:
 
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Previene que el destino sea una ruta que contenga a la fuente, evitando ciclos destructivos."""
+    """
+    Previene que el destino sea una ruta que contenga a la fuente, evitando
+    errores donde la herramienta intente mover una carpeta dentro de sí misma.
+    """
     try:
         s: Path = src.resolve()
         d: Path = dest.resolve()
@@ -162,7 +172,10 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 
 def _passes_system_checks(src: Path) -> bool:
-    """Verifica atributos de sistema/oculto/solo lectura que impiden manipulación estándar."""
+    """
+    Verifica atributos de archivo (System, Hidden, ReadOnly) mediante banderas de Windows.
+    Retorna False si el archivo posee atributos que lo protegen contra manipulación estándar.
+    """
     if os.name != "nt": return True
     try:
         stat = src.stat()
