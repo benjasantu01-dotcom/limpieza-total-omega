@@ -770,3 +770,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T09:12:57` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `quarantine.py` ante casos límite de E/S mediante la implementación de una validación de existencia en el manifiesto durante la carga, previniendo errores de referencia a archivos borrados manualmente del disco pero presentes en el JSON.
 - `2026-09-02T09:12:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T09:12:57` Corrida terminada. Total usado hoy: 216.
+- `2026-09-02T09:20:45` Arrancando corrida. Quedan hoy ~84 peticiones objetivo.
+- `2026-09-02T09:21:15` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-02T09:21:46` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se mejora la robustez de `is_running_as_admin` y `_is_file_in_use` añadiendo un manejo de excepciones más granular para evitar fallos inesperados en entornos donde las APIs de Windows (`kernel32`/`shell32`) puedan comportarse de forma errática ante estados de bloqueo extremos.
+- `2026-09-02T09:22:23` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Mejoré la robustez de `scanner.py` ante archivos bloqueados o inaccesibles añadiendo manejo explícito de errores en `check_recent_executable_in_downloads` y `check_system_lookalike`, y consolidando la validación del estado del archivo en `process_entry` para evitar operaciones redundantes sobre rutas inválidas.
+- `2026-09-02T09:22:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T09:23:15` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante casos límite en la escritura de archivos al añadir una verificación explícita de `os.fsync` y un manejo de errores más específico, asegurando que si el sistema de archivos falla durante la persistencia, la configuración original no se corrompa.
+- `2026-09-02T09:23:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T09:23:15` Corrida terminada. Total usado hoy: 220.

@@ -73,30 +73,30 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         path_parts = {p.lower() for p in path.parts}
         if not (WATCHED_FOLDERS & path_parts):
             return None
-    except Exception:
-        return None
-    
-    try:
-        if entry and entry.is_file():
-            stats = entry.stat(follow_symlinks=False)
-        else:
-            stats = path.stat()
+        
+        # Validar existencia antes de stats
+        if not path.exists():
+            return None
+
+        stats = entry.stat(follow_symlinks=False) if entry and entry.is_file() else path.stat()
             
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, AttributeError, ValueError, FileNotFoundError, PermissionError):
+    except (OSError, AttributeError, ValueError, PermissionError):
         return None
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Valida si un ejecutable con nombre crítico del sistema reside fuera de directorios protegidos."""
     if not path or not path.name: return None
-    name_lower = path.name.lower()
-    if name_lower in SYSTEM_LOOKALIKES:
-        if is_protected_path(path):
-            return None
-        if SYSTEM32_LOWER not in str(path).lower():
-            return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    try:
+        if path.name.lower() in SYSTEM_LOOKALIKES:
+            if is_protected_path(path):
+                return None
+            if SYSTEM32_LOWER not in str(path).lower():
+                return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
+    except Exception:
+        return None
     return None
 
 # Registro de reglas heurísticas para ejecutables
@@ -155,7 +155,6 @@ class Scanner:
                 return True
             return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
-            # Si no podemos consultar atributos, asumimos seguridad por precaución
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[Path]) -> None:
@@ -179,6 +178,9 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 ext_low = Path(entry.name).suffix.lower()
                 if ext_low in SUSPICIOUS_ALL_EXTS:
+                    # Validar existencia antes de cualquier procesamiento pesado
+                    if not Path(entry.path).exists():
+                        return
                     try:
                         file_stat = entry.stat(follow_symlinks=False)
                         if file_stat.st_size == 0:

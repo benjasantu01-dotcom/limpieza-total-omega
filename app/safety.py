@@ -132,8 +132,9 @@ def is_running_as_admin() -> bool:
         except (AttributeError, OSError):
             return False
     try:
-        return bool(ctypes.windll.shell32.IsUserAnAdmin())
-    except Exception:
+        shell32 = ctypes.windll.shell32
+        return bool(shell32.IsUserAnAdmin())
+    except (AttributeError, OSError, ctypes.ArgumentError):
         return False
 
 
@@ -210,13 +211,14 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     try:
         # GENERIC_READ = 0x80000000, FILE_SHARE_READ = 0x00000001
-        handle = ctypes.windll.kernel32.CreateFileW(
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.CreateFileW(
             path_str, 0x80000000, 0x00000001, None, 3, 0x00000080, None
         )
         if handle == -1 or handle == 0xFFFFFFFF: return True
-        ctypes.windll.kernel32.CloseHandle(handle)
+        kernel32.CloseHandle(handle)
         return False
-    except (AttributeError, OSError, PermissionError, TypeError):
+    except (AttributeError, OSError, PermissionError, TypeError, ctypes.ArgumentError):
         return True
 
 
