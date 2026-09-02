@@ -42,6 +42,7 @@ FILE_ATTRIBUTE_SYSTEM: Final[int] = 0x04
 FILE_ATTRIBUTE_OFFLINE: Final[int] = 0x1000
 FILE_ATTRIBUTE_REPARSE_POINT: Final[int] = 0x400
 MAX_PATH_LENGTH: Final[int] = 260
+MAX_FILE_SIZE: Final[int] = 2 * 1024 * 1024 * 1024  # 2GB límite de seguridad
 
 class UnsafePathError(Exception):
     """Lanzada cuando una operación intenta manipular rutas protegidas."""
@@ -60,6 +61,7 @@ class ProtectionReason(Enum):
     EMPTY_FILE = "archivo vacío"
     EXCESSIVE_DEPTH = "profundidad excesiva"
     MOUNT_POINT = "punto de montaje detectado"
+    EXCESSIVE_SIZE = "tamaño de archivo excedido"
 
 
 class ValidationContext(Enum):
@@ -206,6 +208,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
     _IntegrityCheck(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p)),
     _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
+    _IntegrityCheck(ProtectionReason.EXCESSIVE_SIZE, lambda p, st: p.is_file() and st.st_size > MAX_FILE_SIZE),
     _IntegrityCheck(ProtectionReason.MOUNT_POINT, lambda p, _: os.path.ismount(p)),
 ]
 
@@ -464,6 +467,7 @@ def describe_protection(path: PathLike) -> str:
             if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema/offline."
             if _has_alternate_data_stream(p): return f"'{p}' contiene ADS."
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' es un archivo vacío."
+            if p.is_file() and p.stat().st_size > MAX_FILE_SIZE: return f"'{p}' tamaño excesivo."
     except OSError:
         pass
     if _is_sensitive_extension(p): return f"'{p.name}' extensión sensible."

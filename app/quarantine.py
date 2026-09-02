@@ -251,14 +251,6 @@ def _check_path_syntax_integrity(path: Path) -> None:
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
     Valida la viabilidad de aislar un archivo realizando chequeos de seguridad.
-    
-    Argumentos:
-        source_path: Path al archivo que se pretende poner en cuarentena.
-        dest_dir: Path donde reside el sandbox de cuarentena.
-    
-    Excepciones:
-        UnsafePathError: Si la ruta no es segura, está protegida o es un enlace.
-        IOError: Si el archivo está siendo usado por otro proceso.
     """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
@@ -267,14 +259,16 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("No se permite aislar enlaces simbólicos o puntos de reparse.")
 
     try:
-        resolved_source = source_path.resolve()
-        if not os.access(resolved_source, os.R_OK):
-            raise UnsafePathError("Permiso de lectura denegado sobre el archivo origen.")
-    except OSError as e:
+        resolved_source = source_path.resolve(strict=True)
+    except (OSError, RuntimeError) as e:
         raise UnsafePathError(f"Ruta origen inaccesible: {e}")
 
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")
+    
+    # Verificación de espacio antes de proceder
+    _ensure_disk_space(dest_dir, resolved_source.stat().st_size)
+    
     if resolved_source.parent == dest_dir.resolve():
         raise UnsafePathError("Operación circular: origen y destino en la misma carpeta.")
     if is_protected_path(resolved_source):
@@ -355,20 +349,9 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """
     Aísla un archivo copiándolo a un sandbox de forma atómica.
-    
-    Argumentos:
-        source: Path al archivo original a aislar.
-        destination: Path objetivo dentro del directorio de cuarentena.
-        original_size: Tamaño esperado para validación de integridad.
-        
-    Excepciones:
-        UnsafePathError: Si el destino intenta escapar del sandbox.
-        OSError: Si el tamaño post-copia no coincide o falta espacio.
     """
     if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
         raise UnsafePathError("Operación denegada: intento de escritura fuera del sandbox.")
-    
-    _ensure_disk_space(destination.parent, original_size)
     
     if len(str(destination)) >= 250:
         raise OSError("Ruta de destino demasiado larga.")

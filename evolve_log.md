@@ -974,3 +974,10 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-02T00:53:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
 - `2026-09-02T00:53:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T00:53:42` Corrida terminada. Total usado hoy: 20.
+- `2026-09-02T01:00:46` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-02T01:01:25` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha mejorado la seguridad defensiva en `_validate_isolation_request` al implementar una validación estricta del espacio en disco ANTES de iniciar cualquier operación de copia, además de reforzar la validación de la existencia y el tipo del archivo origen mediante una resolución de ruta explícita y segura para evitar race conditions.
+- `2026-09-02T01:01:47` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-02T01:02:17` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha añadido una validación explícita para prevenir la manipulación de archivos que excedan el límite de tamaño de 2GB en `ensure_safe_to_modify`, mitigando riesgos de errores de gestión de memoria o bloqueos prolongados en I/O durante el procesamiento de archivos masivos.
+- `2026-09-02T01:02:26` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-02T01:02:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T01:02:26` Corrida terminada. Total usado hoy: 24.

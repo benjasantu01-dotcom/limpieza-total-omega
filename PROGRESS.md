@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **247** (49.0% de aceptación)
+- Mejoras aceptadas: **249** (49.4% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 37
+- Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 192
+- Sin respuesta de la IA (error o límite): 189
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 57 | 2 | 9 | 5 | 61 |
+| 2026-08-31 | 57 | 2 | 9 | 5 | 57 |
 | 2026-09-01 | 179 | 6 | 27 | 12 | 126 |
-| 2026-09-02 | 11 | 1 | 1 | 2 | 5 |
+| 2026-09-02 | 13 | 1 | 2 | 2 | 6 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **59**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **50**
+- seguridad defensiva: **52**
 - rendimiento: **44**
 - robustez ante casos límite: **40**
 
@@ -35,11 +35,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - `scanner.py`: **21**
 - `browser.py`: **20**
 - `diskreport.py`: **20**
+- `quarantine.py`: **20**
 - `duplicates.py`: **19**
-- `quarantine.py`: **19**
 - `healthscore.py`: **18**
 - `memory.py`: **18**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `organizer.py`: **16**
 - `main.py`: **13**
 - `branding.py`: **11**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T01:02:17` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la manipulación de archivos que excedan el límite de tamaño de 2GB en `ensure_safe_to_modify`, mitigando riesgos de errores de gestión de memoria o bloqueos prolongados en I/O durante el procesamiento de archivos masivos.
+- `2026-09-02T01:01:25` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_validate_isolation_request` al implementar una validación estricta del espacio en disco ANTES de iniciar cualquier operación de copia, además de reforzar la validación de la existencia y el tipo del archivo origen mediante una resolución de ruta explícita y segura para evitar race conditions.
 - `2026-09-02T00:53:24` **memory.py** (seguridad defensiva): Se introdujo una validación defensiva en `_is_safe_to_trim` para asegurar que el proceso objetivo, al ser consultado mediante `QueryFullProcessImageNameW`, no se resuelva como un archivo ubicado en directorios críticos bloqueados (`SYSTEM_FOLDER_BLOCKLIST` indirectamente vía `is_protected_path`), mejorando el control sobre qué procesos pueden ser objeto de `EmptyWorkingSet`.
 - `2026-09-02T00:52:22` **main.py** (seguridad defensiva): Se ha implementado un filtrado de seguridad en la entrada de datos del usuario en los campos de `PID` y `duplicados` dentro de `main.py`, utilizando la técnica de validación defensiva para evitar que datos malformados o inyectados se propaguen hacia los módulos de lógica, reforzando la integridad de los parámetros antes de que sean procesados por las funciones de backend.
 - `2026-09-02T00:51:07` **healthscore.py** (seguridad defensiva): Se reforzó la robustez de `SystemMetrics` evitando el uso de acceso directo al diccionario `__dict__` en `is_finite`, lo cual es una práctica insegura que puede exponer atributos internos o fallar si la estructura de la clase cambia, reemplazándolo por una verificación explícita de los campos definidos en la dataclass.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T00:10:41` **healthscore.py** (robustez ante casos límite): Introduje una verificación de integridad de datos en el `__post_init__` de `SystemMetrics` para asegurar que los valores, aunque técnicamente sean del tipo correcto, no contengan valores `NaN` o `inf` que romperían el cálculo del puntaje, garantizando robustez ante datos de entrada provenientes de módulos externos que pudieran fallar.
 - `2026-09-01T14:49:27` **diskreport.py** (robustez ante casos límite): Se ha mejorado la robustez de `drive_usage` ante rutas UNC o mal formadas mediante el uso de `pathlib` de forma más defensiva y validaciones adicionales en `walk_files` para manejar archivos cuyo estado cambia (se borran o bloquean) durante la iteración, previniendo excepciones no controladas.
 - `2026-09-01T14:39:07` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` eliminando la redundancia en la consulta de PowerShell y centralizando la lógica de caché para evitar múltiples ejecuciones costosas de `subprocess.run` y el procesamiento repetitivo de datos en el ciclo principal.
-- `2026-09-01T14:38:39` **settings.py** (rendimiento): Optimizé `load()` y `save()` reemplazando llamadas redundantes a `load()` (que vuelve a leer el disco) por operaciones directas sobre el caché, y reduje las conversiones de tipos en los validadores para mejorar el rendimiento en lecturas repetidas.
-- `2026-09-01T14:29:39` **scanner.py** (rendimiento): Optimicé el método `_is_inside_base_root` reemplazando la resolución costosa de rutas (`resolve`) y el chequeo de `parents` por una comparación de prefijos de cadenas normalizadas, reduciendo drásticamente las syscalls durante la recursión profunda.
