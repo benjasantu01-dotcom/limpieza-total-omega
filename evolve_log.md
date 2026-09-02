@@ -918,3 +918,31 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T00:11:56` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
 - `2026-09-02T00:11:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T00:11:56` Corrida terminada. Total usado hoy: 4.
+- `2026-09-02T00:20:01` Arrancando corrida. Quedan hoy ~296 peticiones objetivo.
+- `2026-09-02T00:20:30` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-02T00:21:02` ➖ Sin cambios en quarantine.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `quarantine_file` ante fallos de escritura en disco añadiendo una limpieza de estado (rollback) en el bloque `except` que asegura que no queden archivos temporales huérfanos ni entradas corruptas si el proceso falla antes de completar la operación.
+- `2026-09-02T00:22:02` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-02T00:22:23` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-02T00:22:37` Tests FALLARON:
+```
+ 
+  Full diff:
+  + set()
+  - {
+  -     'ok.tmp',
+  -     'otro.log',
+  - }
+FAILED evolve/tests/test_safety.py::test_quarantine_moves_the_file_without_deleting_it - safety.UnsafePathError: Directorio de cuarentena no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_quarantine_records_the_original_path_for_restoring - safety.UnsafePathError: Directorio de cuarentena no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_restore_puts_the_file_back_exactly_where_it_was - safety.UnsafePathError: Directorio de cuarentena no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked - safety.UnsafePathError: Directorio de cuarentena no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_quarantine - safety.UnsafePathError: Directorio de cuarentena no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_purge_all_only_deletes_inside_the_quarantine - safety.UnsafePathError: Directorio de cuarentena no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_quarantine_two_files_with_the_same_name_do_not_collide - safety.UnsafePathError: Directorio de cuarentena no cumple políticas de seguridad.
+FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_origin - safety.UnsafePathError: Directorio de cuarentena no cumple políticas de seguridad.
+17 failed, 282 passed, 5 warnings in 1.47s
+
+```
+- `2026-09-02T00:22:37` ❌ Mejora descartada en safety.py (no pasó los tests), se revirtió. Intento: Se introdujo la verificación `os.access(p, os.F_OK)` en `ensure_safe_to_modify` para detectar de forma robusta la inexistencia de rutas antes de realizar operaciones de metadatos, evitando `OSError` inesperados en sistemas con permisos restrictivos o estados de archivo inconsistentes.
+- `2026-09-02T00:22:37` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T00:22:37` Corrida terminada. Total usado hoy: 8.
