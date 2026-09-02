@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 205
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 101 | 3 | 13 | 7 | 76 |
-| 2026-09-02 | 135 | 9 | 20 | 11 | 129 |
+| 2026-09-01 | 97 | 3 | 13 | 7 | 76 |
+| 2026-09-02 | 138 | 9 | 21 | 11 | 129 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - manejo de errores y validación de entradas: **56**
-- seguridad defensiva: **50**
-- rendimiento: **39**
-- robustez ante casos límite: **34**
+- seguridad defensiva: **47**
+- rendimiento: **42**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
-- `browser.py`: **20**
 - `memory.py`: **20**
-- `quarantine.py`: **19**
-- `safety.py`: **19**
+- `quarantine.py`: **20**
+- `safety.py`: **20**
 - `settings.py`: **19**
+- `assistant.py`: **19**
+- `browser.py`: **19**
+- `organizer.py`: **18**
 - `diskreport.py`: **17**
 - `healthscore.py`: **17**
-- `organizer.py`: **17**
 - `scanner.py`: **16**
 - `duplicates.py`: **16**
 - `main.py`: **14**
-- `branding.py`: **12**
-- `startup.py`: **10**
+- `branding.py`: **11**
+- `startup.py`: **9**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T13:07:17` **safety.py** (rendimiento): Se optimizó el rendimiento del módulo `safety.py` mediante la implementación de `functools.lru_cache` en `_is_reserved_device_name` y `_has_alternate_data_stream` (funciones frecuentemente llamadas en bucles de escaneo masivo) y consolidando la lógica de validación de extensiones para evitar llamadas redundantes a `Path.suffix` dentro de los predicados.
+- `2026-09-02T13:06:38` **quarantine.py** (rendimiento): Optimicé el cálculo de bytes en cuarentena evitando la deserialización completa de objetos `QuarantineItem` y reduciendo el uso de memoria mediante el filtrado directo sobre los datos crudos del manifiesto.
+- `2026-09-02T13:06:04` **organizer.py** (rendimiento): Optimizamos `_process_directory` utilizando un conjunto (`set`) para la búsqueda de extensiones de archivos basura y pre-calculando el conjunto de extensiones minúsculas, evitando llamadas repetidas a `lower()` y búsquedas lineales en listas durante el escaneo del sistema de archivos.
 - `2026-09-02T12:58:42` **memory.py** (rendimiento): Optimizé la obtención de datos de procesos en `top_memory_processes` eliminando la llamada innecesaria a `Select-Object -First 20` en PowerShell, moviendo el filtrado y ordenamiento de la lista a Python; esto reduce la sobrecarga de la llamada externa y aprovecha la velocidad de procesamiento nativo para manejar el límite de 10 elementos.
 - `2026-09-02T12:58:26` **main.py** (rendimiento): Se implementó un mecanismo de inicialización perezosa de los widgets de salud (`_health_bars_initialized`) para evitar que el bucle de construcción recree y redibuje los elementos de la interfaz en cada análisis, mejorando la eficiencia del hilo principal y reduciendo el flickering visual.
 - `2026-09-02T12:56:23` **healthscore.py** (rendimiento): Optimicé el bucle de procesamiento en `compute_score` reemplazando la creación de la lista de reglas por área en cada iteración por un diccionario pre-calculado, eliminando así una búsqueda lineal ineficiente dentro del bucle principal.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T12:25:42` **organizer.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings descriptivos que explican la lógica de seguridad y los criterios de exclusión en funciones críticas, y añadí anotaciones de tipo faltantes para mejorar la claridad del contrato de las funciones.
 - `2026-09-02T12:25:15` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y enriqueciendo los docstrings para clarificar el propósito y las precondiciones de las operaciones con memoria y procesos, siguiendo estrictamente el enfoque de legibilidad.
 - `2026-09-02T12:16:44` **main.py** (legibilidad y documentación): Se introdujo un docstring descriptivo y tipado en el método `_build_single_health_bar` y se mejoró la documentación de los métodos de gestión de hilos `_worker_thread_logic` y `run_async`, aclarando su rol en la seguridad y el ciclo de vida de las tareas.
-- `2026-09-02T12:15:52` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad del código mediante la adición de docstrings técnicos y la normalización de la validación de `SystemMetrics` para asegurar que el comportamiento de `validate` sea consistente con el diseño de objeto inmutable.
-- `2026-09-02T12:15:27` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings detallados en funciones internas y se ha clarificado la intención del pipeline de hashing mediante type hints más precisos y comentarios explicativos.
-- `2026-09-02T12:06:24` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo Type Hints faltantes (especialmente en `total_cache_bytes`), normalizando los docstrings siguiendo el estándar de la aplicación y clarificando la jerarquía de llamadas mediante comentarios que explican por qué se separan las responsabilidades de validación (seguridad vs. existencia).

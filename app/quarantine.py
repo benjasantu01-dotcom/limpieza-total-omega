@@ -602,7 +602,9 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
 def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Retorna bytes ocupados por la cuarentena mediante lectura directa del manifiesto."""
     base_path = quarantine_dir(base)
-    mtime = _manifest_path(base_path).stat().st_mtime if _manifest_path(base_path).exists() else 0.0
+    m_path = _manifest_path(base_path)
+    mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
+    # Acceso a los datos crudos evitando la deserialización completa a objetos QuarantineItem
     raw_data = _load_manifest_raw(str(base_path), mtime)
     return sum(int(d.get("size_bytes", 0)) for d in raw_data if isinstance(d, dict))
 

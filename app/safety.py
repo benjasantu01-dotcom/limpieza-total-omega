@@ -153,14 +153,16 @@ def _has_invalid_chars(path_str: str | None) -> bool:
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str))
 
 
+@lru_cache(maxsize=128)
 def _is_reserved_device_name(name: str) -> bool:
     """Comprueba si el nombre del archivo colisiona con dispositivos reservados de Windows."""
     return bool(_RESERVED_NAMES_PATTERN.fullmatch(name))
 
 
-def _has_alternate_data_stream(path: Path) -> bool:
+@lru_cache(maxsize=512)
+def _has_alternate_data_stream(path_name: str) -> bool:
     """Detecta flujos de datos alternativos (ADS) mediante la presencia de ':' adicional."""
-    return ":" in path.name and len(path.name.split(":")) > 2
+    return ":" in path_name and len(path_name.split(":")) > 2
 
 
 @lru_cache(maxsize=2048)
@@ -232,7 +234,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
     _IntegrityCheck(ProtectionReason.IN_USE, lambda p, _: _is_file_in_use(str(p))),
     _IntegrityCheck(ProtectionReason.SYSTEM_HIDDEN, lambda p, _: _is_system_or_hidden(p)),
     _IntegrityCheck(ProtectionReason.HARD_LINK, lambda p, st: p.is_file() and st.st_nlink > 1),
-    _IntegrityCheck(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p)),
+    _IntegrityCheck(ProtectionReason.ADS, lambda p, _: _has_alternate_data_stream(p.name)),
     _IntegrityCheck(ProtectionReason.EMPTY_FILE, lambda p, st: p.is_file() and st.st_size == 0),
     _IntegrityCheck(ProtectionReason.EXCESSIVE_SIZE, lambda p, st: p.is_file() and st.st_size > MAX_FILE_SIZE),
     _IntegrityCheck(ProtectionReason.MOUNT_POINT, lambda p, _: os.path.ismount(p)),
@@ -515,7 +517,7 @@ def describe_protection(path: PathLike) -> str:
             if _is_readonly(p): return f"'{p}' es solo lectura."
             if _is_file_in_use(str(p)): return f"'{p}' en uso por otro proceso."
             if _is_system_or_hidden(p): return f"'{p}' atributo oculto/sistema/offline."
-            if _has_alternate_data_stream(p): return f"'{p}' contiene ADS."
+            if _has_alternate_data_stream(p.name): return f"'{p}' contiene ADS."
             if p.is_file() and p.stat().st_size == 0: return f"'{p}' es un archivo vacío."
             if p.is_file() and p.stat().st_size > MAX_FILE_SIZE: return f"'{p}' tamaño excesivo."
     except OSError:
