@@ -1211,3 +1211,13 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-02T02:47:16` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de entrada en la función `trim_working_set` para asegurar que el `pid` sea un entero positivo y se mejoró el manejo de errores en `read_snapshot` capturando excepciones específicas al leer el archivo `/proc/meminfo` para evitar lecturas parciales o corrompidas.
 - `2026-09-02T02:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T02:47:16` Corrida terminada. Total usado hoy: 64.
+- `2026-09-02T02:53:06` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-02T02:53:26` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T02:53:29` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-02T02:54:01` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-02T02:54:34` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para asegurar que la ruta origen no sea el mismo directorio de destino, previniendo errores lógicos de recursión o estados inconsistentes antes de intentar cualquier operación de archivo.
+- `2026-09-02T02:54:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-02T02:55:37` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T02:55:57` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema de archivos al capturar excepciones `OSError` específicas durante las llamadas a `p.exists()` y `p.is_file()`, evitando así que la app colapse ante estados transitorios del sistema de archivos durante el escaneo.
+- `2026-09-02T02:55:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T02:55:57` Corrida terminada. Total usado hoy: 68.

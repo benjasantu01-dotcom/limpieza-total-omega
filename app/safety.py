@@ -402,7 +402,12 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
         raise UnsafePathError("Error al verificar existencia de ruta.")
 
     if exists:
-        if not (p.is_file() or p.is_dir()):
+        try:
+            is_file_or_dir = p.is_file() or p.is_dir()
+        except OSError:
+            raise UnsafePathError("Error al validar el tipo de objeto en la ruta.")
+            
+        if not is_file_or_dir:
             raise UnsafePathError("Tipo de objeto no soportado para modificación.")
         try:
             if not os.access(p, os.W_OK):

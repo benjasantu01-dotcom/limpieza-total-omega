@@ -269,6 +269,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     # Verificación de espacio antes de proceder
     _ensure_disk_space(dest_dir, resolved_source.stat().st_size)
     
+    # Nueva validación de circularidad lógica
     if resolved_source.parent == dest_dir.resolve():
         raise UnsafePathError("Operación circular: origen y destino en la misma carpeta.")
     if is_protected_path(resolved_source):
