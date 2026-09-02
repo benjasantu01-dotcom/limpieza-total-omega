@@ -231,7 +231,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def summarize(result: HealthResult | None) -> List[str]:
-    if not isinstance(result, HealthResult): 
+    if not isinstance(result, HealthResult) or not isinstance(getattr(result, 'breakdown', None), dict): 
         return ["Error: Informe no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]

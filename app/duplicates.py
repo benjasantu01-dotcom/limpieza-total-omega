@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import os
 from collections import defaultdict
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Set
@@ -174,7 +175,6 @@ def _collect_candidates(
 
     def _scan_recursive(current_dir: Path) -> None:
         try:
-            # Validación defensiva extra antes de procesar el directorio
             if is_protected_path(current_dir):
                 return
                 
@@ -237,9 +237,6 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Pipeline de hashing: decide la profundidad del análisis según el tamaño.
-    
-    Si el archivo es menor o igual a PARTIAL_READ_BYTES, el hash parcial 
-    es suficiente; de lo contrario, se requiere un análisis profundo.
     """
     if len(paths) < 2: 
         return []
@@ -255,7 +252,6 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """
     Punto de entrada: identifica y ordena grupos de duplicados por impacto (wasted_bytes).
-    Retorna una lista de DuplicateGroup ordenados de mayor a menor ahorro.
     """
     if directories is None or not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []

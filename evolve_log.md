@@ -1200,3 +1200,14 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-02T02:34:35` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `walk_files` y `total_size` agregando validaciones de entrada (`isinstance` y chequeos de `None`) y capturas de excepciones más específicas, evitando que errores imprevistos en el sistema de archivos interrumpan prematuramente los análisis.
 - `2026-09-02T02:34:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T02:34:35` Corrida terminada. Total usado hoy: 60.
+- `2026-09-02T02:42:58` Arrancando corrida. Quedan hoy ~240 peticiones objetivo.
+- `2026-09-02T02:43:23` ✅ Mejora aceptada en duplicates.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `suggest_keeper` y `format_group` mediante la validación estricta de tipos y estados, garantizando que el acceso a atributos no falle ante objetos `Path` inválidos o borrados, cumpliendo así con el enfoque de manejo de errores y validación de entradas.
+- `2026-09-02T02:43:56` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T02:44:10` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-02T02:44:40` ✅ Mejora aceptada en healthscore.py (enfoque: manejo de errores y validación de entradas). Mejora el manejo de errores en `summarize` y `compute_score` validando explícitamente el contenido del objeto `HealthResult` para prevenir fallos al acceder a sus atributos si el objeto fue instanciado incorrectamente.
+- `2026-09-02T02:45:03` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T02:46:09` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré el manejo de errores en `on_trim_process` y `on_restore_quarantine` mediante la validación proactiva de la existencia de widgets y estados de la aplicación, evitando excepciones silenciosas o intentos de UI sobre pestañas no inicializadas o ventanas cerradas.
+- `2026-09-02T02:47:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T02:47:16` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Se reforzó la validación de entrada en la función `trim_working_set` para asegurar que el `pid` sea un entero positivo y se mejoró el manejo de errores en `read_snapshot` capturando excepciones específicas al leer el archivo `/proc/meminfo` para evitar lecturas parciales o corrompidas.
+- `2026-09-02T02:47:16` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T02:47:16` Corrida terminada. Total usado hoy: 64.

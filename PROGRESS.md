@@ -6,39 +6,39 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por guardia de seguridad: 35
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 39 | 2 | 8 | 3 | 42 |
+| 2026-08-31 | 37 | 2 | 6 | 3 | 42 |
 | 2026-09-01 | 179 | 6 | 27 | 12 | 126 |
-| 2026-09-02 | 15 | 1 | 2 | 2 | 40 |
+| 2026-09-02 | 18 | 1 | 2 | 3 | 40 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **52**
-- legibilidad y documentación: **51**
-- manejo de errores y validación de entradas: **46**
+- manejo de errores y validación de entradas: **49**
+- legibilidad y documentación: **49**
 - rendimiento: **44**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
 - `assistant.py`: **21**
-- `scanner.py`: **20**
+- `settings.py`: **20**
 - `diskreport.py`: **19**
+- `scanner.py`: **19**
 - `browser.py`: **19**
+- `duplicates.py`: **18**
 - `quarantine.py`: **18**
-- `duplicates.py`: **17**
-- `memory.py`: **17**
-- `healthscore.py`: **16**
+- `memory.py`: **18**
+- `healthscore.py`: **17**
 - `safety.py`: **16**
 - `organizer.py`: **15**
 - `main.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T02:47:16` **memory.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en la función `trim_working_set` para asegurar que el `pid` sea un entero positivo y se mejoró el manejo de errores en `read_snapshot` capturando excepciones específicas al leer el archivo `/proc/meminfo` para evitar lecturas parciales o corrompidas.
+- `2026-09-02T02:44:40` **healthscore.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `summarize` y `compute_score` validando explícitamente el contenido del objeto `HealthResult` para prevenir fallos al acceder a sus atributos si el objeto fue instanciado incorrectamente.
+- `2026-09-02T02:43:23` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `format_group` mediante la validación estricta de tipos y estados, garantizando que el acceso a atributos no falle ante objetos `Path` inválidos o borrados, cumpliendo así con el enfoque de manejo de errores y validación de entradas.
 - `2026-09-02T02:34:35` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `total_size` agregando validaciones de entrada (`isinstance` y chequeos de `None`) y capturas de excepciones más específicas, evitando que errores imprevistos en el sistema de archivos interrumpan prematuramente los análisis.
 - `2026-09-02T02:34:21` **browser.py** (manejo de errores y validación de entradas): Reforcé la robustez de `_get_kernel32` y `base_directories` mediante una validación de tipos más estricta y el uso de `try-except` específicos, evitando comportamientos inesperados ante entornos con variables de entorno mal formadas o permisos restringidos.
 - `2026-09-02T01:02:17` **safety.py** (seguridad defensiva): Se ha añadido una validación explícita para prevenir la manipulación de archivos que excedan el límite de tamaño de 2GB en `ensure_safe_to_modify`, mitigando riesgos de errores de gestión de memoria o bloqueos prolongados en I/O durante el procesamiento de archivos masivos.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T00:41:30` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva al robustecer `_sum_directory_recursive` mediante el uso de `follow_symlinks=False` en las llamadas a `stat` y `scandir`, además de implementar una verificación explícita para evitar ciclos de recursión mediante el seguimiento de padres (`parents`) en el camino actual.
 - `2026-09-02T00:41:06` **branding.py** (seguridad defensiva): Se ha endurecido la seguridad en `save_logo_svg` añadiendo un filtro explícito contra rutas que intenten escapar del directorio de trabajo actual (o rutas relativas con `..`), mitigando el riesgo de escritura fuera de los directorios permitidos antes de invocar las funciones de seguridad.
 - `2026-09-02T00:32:06` **assistant.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_call_gemini` y `_build_payload` implementando un pre-filtrado explícito de la clave de API y el contexto mediante `is_protected_path` y `_ensure_safe_text` antes de cualquier operación de red, asegurando que ni siquiera una configuración malintencionada pueda forzar el envío de rutas o vectores de inyección.
-- `2026-09-02T00:31:06` **settings.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `load` para manejar situaciones donde el archivo de configuración en disco pueda estar vacío o contener solo espacios en blanco, evitando que `json.load` falle y asegurando que la app siempre recupere una configuración válida.
-- `2026-09-02T00:30:39` **scanner.py** (robustez ante casos límite): Se ha mejorado `process_entry` para manejar explícitamente archivos vacíos (0 bytes) como un riesgo de seguridad en lugar de ignorarlos, ya que los archivos vacíos suelen usarse como marcadores de malware o "placeholders" maliciosos, y se ha fortalecido la resiliencia ante errores de metadatos durante el filtrado.
-- `2026-09-02T00:10:41` **healthscore.py** (robustez ante casos límite): Introduje una verificación de integridad de datos en el `__post_init__` de `SystemMetrics` para asegurar que los valores, aunque técnicamente sean del tipo correcto, no contengan valores `NaN` o `inf` que romperían el cálculo del puntaje, garantizando robustez ante datos de entrada provenientes de módulos externos que pudieran fallar.

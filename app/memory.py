@@ -225,12 +225,11 @@ def read_snapshot() -> MemorySnapshot:
         try:
             mem_path = Path("/proc/meminfo")
             if mem_path.exists():
-                with open(mem_path, "r", buffering=1024, encoding="utf-8") as f:
-                    content = f.read(4096)
-                    _snap_cache_data = parse_linux_meminfo(content) if content else MemorySnapshot(BytesValue(0), BytesValue(0))
+                content = mem_path.read_text(encoding="utf-8")
+                _snap_cache_data = parse_linux_meminfo(content) if content else MemorySnapshot(BytesValue(0), BytesValue(0))
             else:
                 _snap_cache_data = MemorySnapshot(BytesValue(0), BytesValue(0))
-        except (OSError, PermissionError, IOError):
+        except (OSError, UnicodeDecodeError, RuntimeError):
             _snap_cache_data = MemorySnapshot(BytesValue(0), BytesValue(0))
     
     _snap_cache_time = now
@@ -347,6 +346,9 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "PID proporcionado no es un número válido."
         
+    if target_pid <= 0:
+        return False, "PID debe ser un número positivo."
+
     if _is_system_process(target_pid): 
         return False, "El proceso está protegido por el sistema."
     
