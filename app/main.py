@@ -818,8 +818,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 return default
             val = entry_widget.get().strip()
             if not val: return default
-            return int(val) if numeric else val
-        except Exception:
+            
+            # Validación defensiva de tipos
+            if numeric:
+                val_int = int(val)
+                return val_int if val_int >= 0 else default
+            return "".join(c for c in val if c.isprintable())
+        except (ValueError, TypeError):
             return default
 
     def _is_safe_disk_operation(self, path: Union[str, Path]) -> bool:
@@ -1732,10 +1737,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         
         try:
             valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-                self._safe_get_entry_value(getattr(self, 'min_dup_entry', None), 64), 64
+                self._safe_get_entry_value(getattr(self, 'min_dup_entry', None), 64, numeric=True), 64
             )
             valores["top_archivos"] = self._validate_numeric_setting(
-                self._safe_get_entry_value(getattr(self, 'top_files_entry', None), 15), 15
+                self._safe_get_entry_value(getattr(self, 'top_files_entry', None), 15, numeric=True), 15
             )
                 
             clave_raw = self._safe_get_entry_value(getattr(self, 'api_key_entry', None), "")

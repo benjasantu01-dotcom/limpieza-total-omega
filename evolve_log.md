@@ -965,3 +965,12 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-02T00:42:09` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` añadiendo una validación explícita mediante `is_protected_path` sobre la ruta resuelta antes de entrar en la recursión, evitando que el escáner siga punteros de reparse o rutas sensibles incluso si la entrada inicial parece inofensiva.
 - `2026-09-02T00:42:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T00:42:09` Corrida terminada. Total usado hoy: 16.
+- `2026-09-02T00:50:35` Arrancando corrida. Quedan hoy ~284 peticiones objetivo.
+- `2026-09-02T00:51:07` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Se reforzó la robustez de `SystemMetrics` evitando el uso de acceso directo al diccionario `__dict__` en `is_finite`, lo cual es una práctica insegura que puede exponer atributos internos o fallar si la estructura de la clase cambia, reemplazándolo por una verificación explícita de los campos definidos en la dataclass.
+- `2026-09-02T00:51:07` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T00:52:22` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se ha implementado un filtrado de seguridad en la entrada de datos del usuario en los campos de `PID` y `duplicados` dentro de `main.py`, utilizando la técnica de validación defensiva para evitar que datos malformados o inyectados se propaguen hacia los módulos de lógica, reforzando la integridad de los parámetros antes de que sean procesados por las funciones de backend.
+- `2026-09-02T00:52:50` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T00:53:24` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Se introdujo una validación defensiva en `_is_safe_to_trim` para asegurar que el proceso objetivo, al ser consultado mediante `QueryFullProcessImageNameW`, no se resuelva como un archivo ubicado en directorios críticos bloqueados (`SYSTEM_FOLDER_BLOCKLIST` indirectamente vía `is_protected_path`), mejorando el control sobre qué procesos pueden ser objeto de `EmptyWorkingSet`.
+- `2026-09-02T00:53:42` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: seguridad defensiva).
+- `2026-09-02T00:53:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T00:53:42` Corrida terminada. Total usado hoy: 20.

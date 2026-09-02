@@ -13,7 +13,7 @@ vive en los otros módulos; acá solo se puntúa.
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields
 from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple, Annotated, Callable
 import math
 
@@ -121,7 +121,11 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
-        return all(isinstance(v, (int, float)) and math.isfinite(v) for v in self.__dict__.values())
+        for f in fields(self):
+            val = getattr(self, f.name)
+            if not isinstance(val, (int, float)) or not math.isfinite(val):
+                return False
+        return True
 
 @dataclass
 class HealthResult:
