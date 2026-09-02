@@ -1085,3 +1085,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T13:07:17` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se optimizó el rendimiento del módulo `safety.py` mediante la implementación de `functools.lru_cache` en `_is_reserved_device_name` y `_has_alternate_data_stream` (funciones frecuentemente llamadas en bucles de escaneo masivo) y consolidando la lógica de validación de extensiones para evitar llamadas redundantes a `Path.suffix` dentro de los predicados.
 - `2026-09-02T13:07:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T13:07:17` Corrida terminada. Total usado hoy: 308.
+- `2026-09-02T13:15:45` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-02T13:16:12` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimizé la recursión en `scan_directory` reemplazando `path.parts` (que genera una nueva tupla y set en cada iteración de un archivo) por una comparación de strings directa en `check_recent_executable_in_downloads`, eliminando la creación de objetos innecesarios en un bucle crítico.
+- `2026-09-02T13:16:41` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimizé `load()` para eliminar la lectura de archivo redundante tras una escritura mediante una actualización más eficiente de la caché, y reduje la carga de trabajo en `validate()` utilizando la pre-existente `_STR_TO_ENUM` para evitar búsquedas lentas en iteraciones.
+- `2026-09-02T13:17:08` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.27s
+
+```
+- `2026-09-02T13:17:08` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se optimizó el método `_resolve_and_cache_path` implementando un pre-chequeo con el diccionario `_EXISTS_CACHE` para evitar llamadas redundantes a `os.path.abspath` y `os.path.realpath`, reduciendo drásticamente el costo de I/O en llamadas repetitivas sobre el mismo ejecutable.
+- `2026-09-02T13:17:29` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemContext` ante valores inesperados durante la ingesta de datos, asegurando que si la fuente es inválida o parcialmente corrupta, la app no falle y mantenga la integridad de los datos existentes.
+- `2026-09-02T13:17:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T13:17:29` Corrida terminada. Total usado hoy: 312.

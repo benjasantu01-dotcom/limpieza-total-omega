@@ -70,8 +70,8 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     """Verifica si un ejecutable ha sido modificado en las últimas horas en carpetas monitoreadas."""
     if not path: return None
     try:
-        path_parts = {p.lower() for p in path.parts}
-        if not (WATCHED_FOLDERS & path_parts):
+        path_str = str(path).lower()
+        if not any(f"\\{folder}\\" in path_str for folder in WATCHED_FOLDERS):
             return None
         
         stats = entry.stat(follow_symlinks=False) if entry and entry.is_file() else path.stat()

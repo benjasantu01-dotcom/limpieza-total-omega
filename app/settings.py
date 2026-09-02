@@ -253,11 +253,10 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
-        key_enum = _STR_TO_ENUM.get(key_str)
-        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
+        if (key_enum := _STR_TO_ENUM.get(key_str)) and (validator := _VALIDATOR_MAP.get(key_enum)):
             validated = validator(key_enum, val)
             if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
-                config[key_enum.value] = validated if validated is not None else (config[key_enum.value] if validated is not None else "")
+                config[key_enum.value] = validated if validated is not None else ""
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -302,7 +301,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent_resolved.exists(): parent_resolved.mkdir(parents=True, exist_ok=True)
         if not parent_resolved.is_dir(): return None
         
-        # Validación defensiva extra: no permitir escritura sobre nodos especiales
         if ruta.exists() and (ruta.is_symlink() or not ruta.is_file()):
             return None
         
@@ -326,8 +324,7 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     current = load(custom_base)
     modified = False
     for k, v in changes.items():
-        key_enum = _STR_TO_ENUM.get(k)
-        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
+        if (key_enum := _STR_TO_ENUM.get(k)) and (validator := _VALIDATOR_MAP.get(key_enum)):
             val = validator(key_enum, v)
             if val is not None and val != current.get(k):
                 current[k] = val

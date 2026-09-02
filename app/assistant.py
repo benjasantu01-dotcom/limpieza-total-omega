@@ -297,7 +297,7 @@ class SystemContext:
         Intenta extraer y validar métricas desde una fuente externa (dict u objeto).
         Retorna True si al menos una métrica válida fue procesada.
         """
-        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str)):
+        if not isinstance(source, (dict, object)) or isinstance(source, (list, tuple, str, int, float, bool)):
             return False
             
         found_data = False
@@ -312,7 +312,7 @@ class SystemContext:
                 if _is_safe_text_structure(clean_grade):
                     self.grade = clean_grade
         except Exception:
-            return found_data
+            pass
         
         return found_data
 
