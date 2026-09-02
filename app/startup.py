@@ -155,9 +155,9 @@ class StartupEntry:
             abs_path: str = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            # Validación de existencia y detección de reparse points (0x400)
+            # Validación de existencia, permisos y detección de reparse points (0x400)
             if p.exists():
-                if p.is_dir(): 
+                if p.is_dir() or not os.access(p, os.R_OK):
                     _EXISTS_CACHE[path_string] = False
                     return ""
                 try:
@@ -183,7 +183,7 @@ class StartupEntry:
                 return ""
 
             real_path: Path = Path(real_path_str)
-            if not real_path_str or not real_path.exists() or real_path.is_dir() or is_protected_path(real_path):
+            if not real_path_str or not real_path.exists() or real_path.is_dir() or not os.access(real_path, os.R_OK) or is_protected_path(real_path):
                 _EXISTS_CACHE[path_string] = False
                 return ""
                 

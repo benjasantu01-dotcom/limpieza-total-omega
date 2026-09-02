@@ -185,7 +185,7 @@ def _is_junction(path: Path) -> bool:
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
         return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
-    except (AttributeError, OSError):
+    except (AttributeError, OSError, TypeError):
         return False
 
 
@@ -205,13 +205,14 @@ def _is_reparse_point(path: Path) -> bool:
 def _is_file_in_use(path_str: str) -> bool:
     """
     Verifica si un archivo está bloqueado por otro proceso.
-    Intenta abrir el archivo con acceso exclusivo de escritura.
+    Intenta abrir el archivo con acceso exclusivo de lectura/escritura controlado.
     """
     if os.name != 'nt' or not isinstance(path_str, str):
         return False
     try:
+        # GENERIC_READ = 0x80000000, FILE_SHARE_READ = 0x00000001
         handle = ctypes.windll.kernel32.CreateFileW(
-            path_str, 0x40000000, 0x00000007, None, 3, 0x00000080, None
+            path_str, 0x80000000, 0x00000001, None, 3, 0x00000080, None
         )
         if handle == -1 or handle == 0xFFFFFFFF: return True
         ctypes.windll.kernel32.CloseHandle(handle)
@@ -257,16 +258,17 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError("La ruta no existe.")
 
     try:
+        # Usamos lstat para evitar seguir enlaces simbólicos durante el chequeo
         file_stat = path.lstat()
-    except (PermissionError, OSError) as e:
-        raise UnsafePathError(f"Error de acceso: {e.strerror}")
+    except (PermissionError, OSError):
+        raise UnsafePathError("Error al acceder a los metadatos del archivo.")
 
     for rule in _VALIDATORS:
         try:
             if rule.predicate(path, file_stat):
                 _INTEGRITY_CACHE[path_key] = (now, False)
                 raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
-        except (OSError, AttributeError):
+        except (OSError, AttributeError, TypeError):
             continue
             
     _INTEGRITY_CACHE[path_key] = (now, True)

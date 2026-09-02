@@ -84,7 +84,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
             
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
-    except (OSError, AttributeError, ValueError, FileNotFoundError):
+    except (OSError, AttributeError, ValueError, FileNotFoundError, PermissionError):
         return None
     return None
 
@@ -123,7 +123,7 @@ class Scanner:
         """Valida que la ruta sea un descendiente de la base_root original."""
         try:
             return str(path.resolve(strict=False)).lower().startswith(self.base_root_str)
-        except Exception:
+        except (OSError, PermissionError):
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -145,22 +145,25 @@ class Scanner:
                 return False
             
             return not is_protected_path(path_obj)
-        except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError):
+        except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError, PermissionError):
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta puntos de reparse (junctions, enlaces simbólicos) mediante flags de sistema."""
         try:
             return entry.is_symlink() or bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
-        except (OSError, AttributeError, TypeError, FileNotFoundError):
+        except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[Path]) -> None:
         """Agrega un directorio al stack si cumple las condiciones de seguridad."""
-        path = Path(entry.path)
-        if path not in self.seen and not is_protected_path(path):
-            self.seen.add(path)
-            stack.append(path)
+        try:
+            path = Path(entry.path)
+            if path not in self.seen and not is_protected_path(path):
+                self.seen.add(path)
+                stack.append(path)
+        except (OSError, PermissionError):
+            pass
 
     def process_entry(self, entry: os.DirEntry, stack: List[Path]) -> None:
         """Determina si la entrada es un directorio a recorrer o un archivo a analizar."""
@@ -224,7 +227,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         path_input = Path(directory).resolve(strict=False)
         if not path_input.is_dir() or is_protected_path(path_input):
             return []
-    except (OSError, TypeError, ValueError, RuntimeError):
+    except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
         return []
 
     scanner = Scanner(base_root=path_input)
