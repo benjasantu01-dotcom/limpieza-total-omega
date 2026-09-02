@@ -73,6 +73,7 @@ SAFETY_NOTE: str = (
 )
 
 MAX_SCAN_DEPTH: int = 15
+MAX_PATH_LEN: int = 260
 # Atributos: FILE_ATTRIBUTE_HIDDEN (0x01) | FILE_ATTRIBUTE_SYSTEM (0x02) | FILE_ATTRIBUTE_REPARSE_POINT (0x400)
 SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x400
 
@@ -168,7 +169,7 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         
     try:
         path = entry.path
-        if not path:
+        if not path or len(path) >= MAX_PATH_LEN:
             return True
         # Las junctions (reparse points) no se siguen para evitar bucles infinitos
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
@@ -207,7 +208,7 @@ def _sum_directory_recursive(
     Calcula el tamaño acumulado de un directorio de forma recursiva con memoización.
     Usa 'MAX_SCAN_DEPTH' para proteger la pila y evitar el re-procesamiento de subárboles.
     """
-    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
+    if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
     if root_abs in memo:
@@ -268,7 +269,7 @@ def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: Junct
     y cumpla con las políticas de seguridad de la aplicación.
     """
     try:
-        if not candidate.exists():
+        if not candidate.exists() or len(str(candidate)) >= MAX_PATH_LEN:
             return False
         real_candidate = candidate.resolve(strict=True)
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 

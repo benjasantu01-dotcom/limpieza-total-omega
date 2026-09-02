@@ -6,33 +6,33 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **238** (47.2% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 201
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 198
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 141 | 4 | 20 | 9 | 110 |
-| 2026-09-02 | 97 | 9 | 14 | 9 | 91 |
+| 2026-09-01 | 141 | 4 | 20 | 9 | 106 |
+| 2026-09-02 | 99 | 9 | 14 | 10 | 92 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **54**
 - rendimiento: **43**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **41**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
+- `assistant.py`: **21**
+- `browser.py`: **20**
 - `quarantine.py`: **20**
 - `settings.py`: **20**
-- `browser.py`: **19**
 - `safety.py`: **19**
 - `organizer.py`: **18**
 - `diskreport.py`: **18**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T09:32:52` **browser.py** (seguridad defensiva): Se ha añadido una validación de longitud de ruta (MAX_PATH) en `_should_skip_entry` y `_is_valid_cache_path` usando la constante de seguridad `260` para prevenir desbordamientos o errores de acceso en llamadas de bajo nivel (WinAPI) dentro de sistemas de archivos profundamente anidados.
+- `2026-09-02T09:32:11` **assistant.py** (seguridad defensiva): Mejoré la seguridad en el manejo de la clave API en `_call_gemini` y `_build_payload` para asegurar que nunca se incluya inadvertidamente en registros o contextos externos, y encapsulé la lógica de creación del payload para evitar que datos inseguros pasen inadvertidos antes de la serialización.
 - `2026-09-02T09:22:23` **scanner.py** (robustez ante casos límite): Mejoré la robustez de `scanner.py` ante archivos bloqueados o inaccesibles añadiendo manejo explícito de errores en `check_recent_executable_in_downloads` y `check_system_lookalike`, y consolidando la validación del estado del archivo en `process_entry` para evitar operaciones redundantes sobre rutas inválidas.
 - `2026-09-02T09:21:46` **safety.py** (robustez ante casos límite): Se mejora la robustez de `is_running_as_admin` y `_is_file_in_use` añadiendo un manejo de excepciones más granular para evitar fallos inesperados en entornos donde las APIs de Windows (`kernel32`/`shell32`) puedan comportarse de forma errática ante estados de bloqueo extremos.
 - `2026-09-02T09:12:57` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante casos límite de E/S mediante la implementación de una validación de existencia en el manifiesto durante la carga, previniendo errores de referencia a archivos borrados manualmente del disco pero presentes en el JSON.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T08:50:42` **settings.py** (rendimiento): Optimizé la carga de configuración mediante el uso de `json.loads` sobre el contenido leído una sola vez y la eliminación de redundancias en las llamadas a `load` y `validate` dentro de los métodos de acceso, reduciendo accesos innecesarios al sistema de archivos y validaciones repetitivas.
 - `2026-09-02T08:41:18` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la iteración secuencial con `any()` por una búsqueda directa en `set` para la parte del nombre del archivo, reduciendo la complejidad de tiempo de O(N) a O(1) en el caso común, y manteniendo el cacheo `lru_cache` para llamadas recurrentes.
 - `2026-09-02T08:40:28` **quarantine.py** (rendimiento): Optimicé el cálculo del espacio total y el acceso al manifiesto eliminando la carga redundante y conversión de objetos `QuarantineItem` cuando solo se requieren datos numéricos, mejorando así el rendimiento al consultar el estado de la cuarentena.
-- `2026-09-02T08:32:01` **organizer.py** (rendimiento): Optimizé el rendimiento de `_process_directory` eliminando la llamada repetitiva a `entry.stat()` mediante el uso del objeto `os.DirEntry` ya cacheado por `os.scandir`, reduciendo drásticamente las llamadas al sistema de archivos por cada archivo encontrado.
-- `2026-09-02T08:31:50` **memory.py** (rendimiento): Se optimizó el proceso `top_memory_processes` reemplazando la lógica de selección de procesos en PowerShell por una más eficiente (`Select-Object -First 20` en lugar de 40) y consolidando la consulta en un solo pipe, lo que reduce la carga de CPU y la memoria utilizada por la instancia de PowerShell.

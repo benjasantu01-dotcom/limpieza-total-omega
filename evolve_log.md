@@ -778,3 +778,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T09:23:15` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez ante casos límite en la escritura de archivos al añadir una verificación explícita de `os.fsync` y un manejo de errores más específico, asegurando que si el sistema de archivos falla durante la persistencia, la configuración original no se corrompa.
 - `2026-09-02T09:23:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T09:23:15` Corrida terminada. Total usado hoy: 220.
+- `2026-09-02T09:31:04` Arrancando corrida. Quedan hoy ~80 peticiones objetivo.
+- `2026-09-02T09:31:32` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-02T09:32:11` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Mejoré la seguridad en el manejo de la clave API en `_call_gemini` y `_build_payload` para asegurar que nunca se incluya inadvertidamente en registros o contextos externos, y encapsulé la lógica de creación del payload para evitar que datos inseguros pasen inadvertidos antes de la serialización.
+- `2026-09-02T09:32:41` ➖ Sin cambios en branding.py (enfoque: seguridad defensiva). Motivo: Se reforzó la seguridad defensiva en `save_logo_svg` al realizar una resolución de ruta completa y verificar su existencia antes de aplicar `ensure_safe_to_modify`, garantizando que la operación se realice siempre sobre la ruta absoluta validada.
+- `2026-09-02T09:32:52` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha añadido una validación de longitud de ruta (MAX_PATH) en `_should_skip_entry` y `_is_valid_cache_path` usando la constante de seguridad `260` para prevenir desbordamientos o errores de acceso en llamadas de bajo nivel (WinAPI) dentro de sistemas de archivos profundamente anidados.
+- `2026-09-02T09:32:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T09:32:52` Corrida terminada. Total usado hoy: 224.

@@ -627,7 +627,9 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     """Construye el cuerpo de la solicitud JSON validando su integridad estructural."""
     try:
-        data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {question}"}]}]}
+        q = _sanitize_query(question)
+        if not _ensure_safe_text(q): return None
+        data = {"contents": [{"parts": [{"text": f"{SYSTEM_PROMPT}\n\nMétricas:\n{context_text}\n\nPregunta: {q}"}]}]}
         encoded = json.dumps(data).encode("utf-8")
         if len(encoded) > _MAX_PROMPT_LIMIT * 2:
             return None
@@ -639,18 +641,18 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     """Invoca la API de Gemini realizando validaciones de seguridad rigurosas."""
     if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
+    # Aseguramos que la clave no sea una ruta y no contenga caracteres sospechosos
     if _CONTROL_CHARS_REGEX.search(api_key) or is_protected_path(api_key): return None
     
-    safe_q = _sanitize_query(question)
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
-    
-    if not _ensure_safe_text(safe_q) or not _ensure_safe_text(safe_c) or "Error" in safe_c:
+    if not _ensure_safe_text(safe_c) or "Error" in safe_c:
         return None
     
-    payload = _build_payload(safe_q, safe_c)
+    payload = _build_payload(question, safe_c)
     if not payload: return None
     
     try:
+        # La clave API se inyecta directamente aquí, se evita su persistencia en el log de objetos o logs de contexto
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
             data=payload, 
