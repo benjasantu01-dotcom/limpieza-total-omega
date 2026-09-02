@@ -431,7 +431,6 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
-    # Validación previa antes de invocar Path.resolve() para prevenir fallos de sistema
     if not isinstance(path, (str, Path)) or str(path).strip() == "":
         raise UnsafePathError("Ruta vacía o tipo no soportado.")
 
@@ -443,29 +442,26 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_structural_safety(p, str(p))
     _validate_boundary_conditions(p, base_dir)
     
-    try:
-        exists = p.exists() or os.path.lexists(p)
-    except OSError:
-        raise UnsafePathError("Error al verificar existencia de ruta.")
-
-    if exists:
+    # lexists evita seguir symlinks/junctions al validar existencia
+    if os.path.lexists(p):
         try:
-            is_file_or_dir = p.is_file() or p.is_dir()
-        except OSError:
-            raise UnsafePathError("Error al validar el tipo de objeto en la ruta.")
+            if not p.is_file() and not p.is_dir():
+                raise UnsafePathError("Tipo de objeto no soportado para modificación.")
             
-        if not is_file_or_dir:
-            raise UnsafePathError("Tipo de objeto no soportado para modificación.")
-        try:
+            # Verificación explícita de acceso de escritura
             if not os.access(p, os.W_OK):
                 raise UnsafePathError("No se dispone de permisos de escritura sobre el archivo.")
+                
+            _check_file_integrity(p)
         except OSError:
-            raise UnsafePathError("Error de sistema al verificar permisos de acceso.")
-        _check_file_integrity(p)
+            raise UnsafePathError("Error de sistema al verificar permisos o integridad.")
     else:
         # Validación preventiva para rutas no existentes
-        if is_protected_path(p.parent):
-            raise UnsafePathError("Escritura bloqueada: el directorio contenedor está protegido.")
+        try:
+            if is_protected_path(p.parent):
+                raise UnsafePathError("Escritura bloqueada: el directorio contenedor está protegido.")
+        except (OSError, AttributeError):
+            raise UnsafePathError("Error al validar directorio contenedor.")
     
     if not allow_sensitive and _is_sensitive_extension(p):
         raise UnsafePathError(f"La extensión '{p.suffix}' está marcada como sensible.")
@@ -509,7 +505,7 @@ def describe_protection(path: PathLike) -> str:
     if is_drive_root(p): return f"'{p}' es raíz de unidad."
     if is_protected_path(p): return f"'{p}' protegida por sistema."
     try:
-        if p.exists():
+        if os.path.lexists(p):
             if len(str(p)) >= MAX_PATH_LENGTH: return f"'{p}' longitud excesiva."
             if not os.access(p, os.W_OK): return f"'{p}' sin permisos de escritura."
             if os.path.islink(p): return f"'{p}' es un enlace simbólico."

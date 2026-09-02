@@ -257,7 +257,7 @@ def validate(raw_values: Any) -> AppSettings:
         if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
             validated = validator(key_enum, val)
             if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
-                config[key_enum.value] = validated if validated is not None else ""
+                config[key_enum.value] = validated if validated is not None else (config[key_enum.value] if validated is not None else "")
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -294,11 +294,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     try:
         ruta = settings_path(custom_base)
-        parent = ruta.parent.resolve()
+        parent = ruta.parent
+        if parent is None: return None
         
-        if not _Validators._is_safe_path(str(parent)): return None
-        if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
-        if not parent.is_dir(): return None
+        parent_resolved = parent.resolve()
+        if not _Validators._is_safe_path(str(parent_resolved)): return None
+        if not parent_resolved.exists(): parent_resolved.mkdir(parents=True, exist_ok=True)
+        if not parent_resolved.is_dir(): return None
         
         # Validación defensiva extra: no permitir escritura sobre nodos especiales
         if ruta.exists() and (ruta.is_symlink() or not ruta.is_file()):

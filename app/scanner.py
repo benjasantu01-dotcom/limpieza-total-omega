@@ -117,9 +117,10 @@ class Scanner:
 
     def _is_inside_base_root(self, path: Path) -> bool:
         """Valida que la ruta sea un descendiente de la base_root original."""
+        if not path: return False
         try:
             return str(path.resolve(strict=False)).lower().startswith(self.base_root_str)
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, RuntimeError):
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
@@ -220,7 +221,7 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         
     try:
         path_input = Path(directory).resolve(strict=False)
-        if not path_input.is_dir() or is_protected_path(path_input):
+        if not path_input.exists() or not path_input.is_dir() or is_protected_path(path_input):
             return []
     except (OSError, TypeError, ValueError, RuntimeError, PermissionError):
         return []
@@ -235,8 +236,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
             with os.scandir(current_dir) as it:
                 for entry in it:
                     scanner.process_entry(entry, stack)
-        except (PermissionError, OSError):
-            logger.debug(f"Acceso denegado al directorio {current_dir}")
+        except (PermissionError, OSError, FileNotFoundError):
+            logger.debug(f"Acceso denegado o error en el directorio {current_dir}")
             continue
     return scanner.results
 
