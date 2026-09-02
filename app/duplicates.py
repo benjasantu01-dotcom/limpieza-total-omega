@@ -71,8 +71,12 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     Calcula el hash SHA256 completo del archivo mediante bloques de memoria constante.
     
-    Usa bloques de 1MB para equilibrar el uso de memoria RAM frente a la 
-    velocidad de lectura. Retorna el hexdigest si es legible, caso contrario None.
+    Args:
+        path: Ruta al archivo objetivo.
+        chunk_size: Tamaño de buffer para lectura incremental (default 1MB).
+    
+    Returns:
+        String hexadecimal del hash o None si el acceso al archivo falla.
     """
     try:
         path_obj = Path(path)
@@ -93,10 +97,14 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Genera una huella dactilar rápida leyendo solo el inicio del archivo (PARTIAL_READ_BYTES).
+    Genera una huella dactilar rápida leyendo solo el inicio del archivo.
     
-    Utilizado para descartar candidatos rápidamente sin leer el archivo completo.
-    Retorna el hexdigest si es legible, caso contrario None.
+    Args:
+        path: Ruta al archivo.
+        read_bytes: Cantidad de bytes a leer (definido por PARTIAL_READ_BYTES).
+        
+    Returns:
+        String hexadecimal del hash calculado sobre el fragmento o None si falla.
     """
     try:
         path_obj = Path(path)
@@ -114,8 +122,10 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def _is_valid_candidate(path: Path) -> bool:
     """
-    Valida si una ruta es un archivo legible que no pertenece a áreas protegidas.
-    Cumple con el criterio de exclusión de seguridad del proyecto.
+    Verifica si una ruta es un archivo candidato válido.
+    
+    Considera: existencia, si es un archivo, si es accesible para lectura
+    y si no está en la lista de rutas bloqueadas (safety.py).
     """
     try:
         return (
@@ -131,7 +141,9 @@ def _is_valid_candidate(path: Path) -> bool:
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
     Agrupa una lista de rutas de archivo según su tamaño en bytes.
-    Solo incluye archivos mayores a 0 bytes.
+    
+    Ignora archivos de 0 bytes, ya que no consumen espacio real ni son candidatos
+    reales para liberación de espacio en disco.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None: return groups
@@ -165,7 +177,7 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo utilizando os.scandir con optimización de metadata (stat).
+    Escaneo recursivo optimizado utilizando os.scandir y stat para metadatos.
     
     Evita la recursión infinita en puntos de reparse mediante el seguimiento
     de inodos (st_dev, st_ino) ya visitados.
@@ -237,6 +249,9 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Pipeline de hashing: decide la profundidad del análisis según el tamaño.
+    
+    Si el archivo es menor a PARTIAL_READ_BYTES, el hash parcial es suficiente
+    para confirmar identidad con alta precisión.
     """
     if len(paths) < 2: 
         return []
@@ -252,6 +267,14 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """
     Punto de entrada: identifica y ordena grupos de duplicados por impacto (wasted_bytes).
+    
+    Args:
+        directories: Lista de rutas a escanear.
+        min_size: Tamaño mínimo para considerar un archivo como duplicable.
+        skip_protected: Flag para omitir rutas de sistema.
+        
+    Returns:
+        Lista de objetos DuplicateGroup ordenados de mayor a menor ahorro posible.
     """
     if directories is None or not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []
@@ -273,8 +296,11 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Heurística para sugerir el archivo original: prioriza el más antiguo (mtime)
-    y, ante igualdad, la ruta más corta (simplificando la estructura).
+    Heurística para sugerir el archivo original.
+    
+    Criterios:
+    1. Preferencia por el archivo más antiguo (mtime).
+    2. Ante igualdad de antigüedad, se elige la ruta con menor longitud (lexicográficamente).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

@@ -12,7 +12,7 @@ GLOSARIO VISUAL:
 
 from __future__ import annotations
 from pathlib import Path
-from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict, Protocol
+from typing import Any, Final, TypeAlias, Literal, Mapping, Tuple, List, Optional, Union, TypedDict, Protocol, NamedTuple
 from types import MappingProxyType
 from functools import lru_cache
 from safety import is_safe_to_modify, ensure_safe_to_modify, is_protected_path
@@ -25,6 +25,12 @@ class CanvasElement(Protocol):
     def create_line(self, *args: float, **kwargs: Any) -> int: ...
     def create_text(self, *args: float, **kwargs: Any) -> int: ...
     def create_arc(self, *args: float, **kwargs: Any) -> int: ...
+
+class ColorSegment(NamedTuple):
+    """Representa un bloque contiguo de un mismo color en una serie degradada."""
+    hex_color: HexColor
+    start_index: int
+    end_index: int
 
 # Type Aliases semánticos para el sistema de diseño
 HexColor: TypeAlias = str  # Formato: "#RRGGBB"
@@ -314,18 +320,18 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     return tuple(get_color(i) for i in range(n))
 
 @lru_cache(maxsize=16)
-def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[Tuple[HexColor, int, int], ...]:
+def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
     """Optimiza secuencias de colores agrupando segmentos adyacentes idénticos para dibujo eficiente."""
     if not colors: return ()
-    segments = []
+    segments: List[ColorSegment] = []
     current_color = colors[0]
     start = 0
     for i in range(1, len(colors)):
         if colors[i] != current_color:
-            segments.append((current_color, start, i))
+            segments.append(ColorSegment(current_color, start, i))
             current_color = colors[i]
             start = i
-    segments.append((current_color, start, len(colors)))
+    segments.append(ColorSegment(current_color, start, len(colors)))
     return tuple(segments)
 
 @lru_cache(maxsize=8)
@@ -408,14 +414,14 @@ def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float
         factor_y: float = 92 * scale_f / franjas_count
         center_x: float = canvas_x + 64 * scale_f
         
-        for color_hex, start, end in _get_grouped_segments(colores):
-            mid = (start + end) / 2
+        for segment in _get_grouped_segments(colores):
+            mid = (segment.start_index + segment.end_index) / 2
             progreso = mid / max(1.0, float(franjas_count - 1))
             w = 36 * scale_f * (1.0 if progreso < 0.55 else 1.0 - (progreso - 0.55) * 1.9)
             canvas.create_rectangle(
-                center_x - w, base_y + start * factor_y, 
-                center_x + w, base_y + end * factor_y + 1, 
-                fill=color_hex, outline=""
+                center_x - w, base_y + segment.start_index * factor_y, 
+                center_x + w, base_y + segment.end_index * factor_y + 1, 
+                fill=segment.hex_color, outline=""
             )
     except (AttributeError, TypeError, ValueError, ZeroDivisionError): pass
 
@@ -450,8 +456,10 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3,
     """Renderiza línea decorativa horizontal degradada para separación de secciones."""
     try:
         w_int = max(1, int(width))
-        for color_hex, start, end in _get_grouped_segments(gradient_colors(w_int, stops)):
-            canvas.create_line(canvas_x + start, canvas_y, canvas_x + end, canvas_y, fill=color_hex, width=max(1, int(height)))
+        for segment in _get_grouped_segments(gradient_colors(w_int, stops)):
+            canvas.create_line(canvas_x + segment.start_index, canvas_y, 
+                               canvas_x + segment.end_index, canvas_y, 
+                               fill=segment.hex_color, width=max(1, int(height)))
     except (ValueError, TypeError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150,

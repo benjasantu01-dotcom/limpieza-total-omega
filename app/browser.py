@@ -158,8 +158,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Determina si ignorar una entrada durante el escaneo para prevenir riesgos de seguridad
-    (puntos de reparse) o procesar archivos protegidos por la configuración NEVER_TOUCH.
+    Determina si ignorar una entrada para prevenir riesgos (reparse points, archivos protegidos
+    o atributos de sistema) que podrían causar bucles infinitos o daños operativos.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -199,7 +199,9 @@ def _sum_directory_recursive(
     parents: Optional[Set[str]] = None
 ) -> int:
     """
-    Calcula el tamaño de un directorio mediante escaneo recursivo con memoización y detección de ciclos.
+    Calcula el tamaño acumulado de un directorio de forma recursiva. 
+    Usa 'memo' para evitar re-cálculos y un set 'parents' para detectar ciclos 
+    en la estructura de directorios, limitando la profundidad con 'MAX_SCAN_DEPTH'.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -297,7 +299,7 @@ def detect_profiles(
     if not raw_bases or not isinstance(browser_map, dict):
         return []
     
-    k32 = _get_kernel32()
+    k32: Optional[ctypes.WinDLL] = _get_kernel32()
     perf_cache: Dict[str, int] = {}
     found: List[BrowserCache] = []
     

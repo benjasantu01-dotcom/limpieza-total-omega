@@ -255,8 +255,17 @@ def all_drives_usage(mounts: Optional[Iterable[str]] = None) -> List[DriveUsage]
 
 def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> Generator[Tuple[Path, int], None, None]:
     """
-    Recorrido profundo mediante DFS iterativo. 
-    Evita ciclos de reparse points (NTFS junctions) y rutas protegidas.
+    Recorrido profundo (DFS iterativo) del sistema de archivos.
+
+    Implementa medidas de seguridad para evitar:
+    1. Escapes de ruta mediante resolución absoluta.
+    2. Seguimiento de reparse points (junctions/symlinks) en Windows.
+    3. Bucles infinitos mediante tracking de inodos visitados.
+    4. Entrada en directorios protegidos definidos en safety.py.
+
+    Args:
+        directory: Directorio base de inicio.
+        skip_protected: Bandera para omitir carpetas de sistema.
     """
     root_path = _validate_root(directory)
     if not root_path:
@@ -272,7 +281,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
-                        # Prevenir escape de directorio mediante validación de resolución
                         resolved_path = Path(entry.path).resolve()
                         if not str(resolved_path).startswith(str(root_path)):
                             continue
@@ -405,8 +413,17 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
-    Recolección interna de métricas en una única pasada (O(n)).
-    Usa un heap de tamaño 8 para mantener el top de archivos de forma eficiente.
+    Realiza una pasada única (O(n)) sobre el directorio para calcular estadísticas agregadas.
+
+    Utiliza `heapq` para mantener un "Top N" de archivos más pesados en memoria constante, 
+    minimizando el impacto en RAM durante el escaneo.
+
+    Args:
+        directory: Path base a escanear.
+        skip_protected: Si se omiten las rutas restringidas.
+
+    Returns:
+        Objeto SummaryData conteniendo conteos, totales y los 8 archivos más pesados.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -426,6 +443,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += int(size)
         ext_counts[ext] += 1
         
+        # Mantener un heap de tamaño 8 para eficiencia
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (int(size), path))
         else:
