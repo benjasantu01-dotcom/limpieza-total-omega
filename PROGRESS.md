@@ -8,44 +8,47 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **232** (46.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 169 | 5 | 25 | 12 | 125 |
-| 2026-09-02 | 63 | 7 | 8 | 6 | 84 |
+| 2026-09-01 | 166 | 5 | 25 | 12 | 124 |
+| 2026-09-02 | 66 | 7 | 9 | 6 | 84 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
 - seguridad defensiva: **51**
-- manejo de errores y validación de entradas: **47**
-- rendimiento: **42**
+- manejo de errores y validación de entradas: **50**
+- legibilidad y documentación: **50**
+- rendimiento: **41**
 - robustez ante casos límite: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **22**
-- `assistant.py`: **21**
-- `quarantine.py`: **19**
+- `settings.py`: **21**
+- `quarantine.py`: **20**
+- `assistant.py`: **20**
 - `diskreport.py`: **18**
 - `safety.py`: **18**
 - `scanner.py`: **18**
 - `browser.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
+- `organizer.py`: **16**
 - `duplicates.py`: **15**
-- `organizer.py`: **15**
 - `healthscore.py`: **14**
-- `startup.py`: **13**
 - `main.py`: **13**
 - `branding.py`: **12**
+- `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T07:19:43` **quarantine.py** (manejo de errores y validación de entradas): He mejorado la robustez de `_safe_unlink` y `purge_all` implementando una validación previa estricta basada en el estado real del archivo, asegurando que la operación de borrado sea consistente con la integridad del sistema y las reglas de seguridad.
+- `2026-09-02T07:19:10` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_for_junk` y `_process_directory` implementando validaciones de entrada más estrictas y manejos de excepciones específicos, asegurando que solo se procesen tipos `Path` válidos y evitando que errores en archivos individuales detengan el escaneo de directorios completos.
+- `2026-09-02T07:18:44` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita para evitar errores al procesar líneas CSV malformadas, garantizando que los datos no numéricos o campos vacíos sean descartados silenciosamente sin interrumpir el flujo.
 - `2026-09-02T07:12:29` **main.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta y defensiva en `_safe_get_entry_value` para manejar entradas vacías, tipos incorrectos o caracteres no imprimibles, evitando que valores malintencionados o inesperados se propaguen a la lógica de negocio; además, se centralizó el manejo de los parámetros de configuración en `on_save_settings` para garantizar que toda entrada numérica pase por un filtro estricto, protegiendo al sistema de posibles desbordamientos o excepciones en los módulos de procesamiento.
 - `2026-09-02T07:08:32` **diskreport.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `summarize` y `_collect_summary_data` validando que los datos procesados durante el escaneo no introduzcan inconsistencias (archivos de tamaño negativo o rutas vacías) y se encapsuló la lógica de reporte para manejar fallos de forma más informativa.
 - `2026-09-02T07:01:26` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_path_inside_base` y `_should_skip_entry` añadiendo validaciones explícitas de tipos y manejo defensivo de errores ante entradas `None` o corruptas, previniendo excepciones no capturadas durante la recursión.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T05:17:58` **memory.py** (seguridad defensiva): Mejoré `_get_process_path` para prevenir desbordamientos y asegurar que la ruta extraída sea normalizada y validada, integrando `is_safe_to_modify` antes de cualquier interacción potencial con el ejecutable, siguiendo estrictamente el enfoque de seguridad defensiva.
 - `2026-09-02T05:17:46` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `main.py` eliminando el uso del decorador `@ensure_safety` en métodos que solo realizan lectura de información (tales como `_build_tab_salud`, `_build_tab_limpieza` y otros constructores de pestañas), ya que aplicar chequeos de escritura en operaciones de solo lectura es una mala práctica que puede causar abortos innecesarios; asimismo, se mantuvo la protección explícita en `run_async` y los métodos de acción de disco.
 - `2026-09-02T05:07:41` **diskreport.py** (seguridad defensiva): Se reforzó la validación de seguridad en `walk_files` y `drive_usage` asegurando que ninguna ruta procesada sea un punto de reparse o enlace simbólico incluso antes de resolver la jerarquía, evitando así el acceso a volúmenes montados fuera de la raíz raíz objetivo o fuera de las restricciones impuestas por el usuario.
-- `2026-09-02T05:06:47` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` eliminando la validación manual de rutas `..` y el uso de `Path.cwd()`, delegando la seguridad de forma centralizada y robusta exclusivamente a `ensure_safe_to_modify`, garantizando que la operación de escritura sea segura según los estándares definidos.
-- `2026-09-02T05:06:16` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al validar estrictamente el `payload` antes de la ejecución de la solicitud HTTP, asegurando que no se construyan peticiones maliciosas ni se filtren rutas de sistema accidentalmente mediante una validación explícita del tamaño y estructura del JSON final.
-- `2026-09-02T04:56:59` **startup.py** (robustez ante casos límite): Se añadió una verificación de `os.access(p, os.R_OK)` en `_resolve_and_cache_path` para evitar errores de permisos denegados (como archivos protegidos por el sistema o procesos en ejecución bloqueados) al intentar obtener la ruta real, robusteciendo el escaneo frente a denegaciones de acceso.

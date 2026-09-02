@@ -162,11 +162,12 @@ def _safe_unlink(path: Path) -> bool:
     Intenta borrar un archivo de forma segura.
     Verifica que el archivo no sea un enlace, que no esté bloqueado y que resida en una ruta permitida.
     """
+    if not path.exists() or not path.is_file():
+        return False
     try:
-        if path.exists() and path.is_file() and not path.is_symlink():
-            if is_safe_to_modify(path) and not _is_file_locked(path):
-                path.unlink()
-                return True
+        if not path.is_symlink() and is_safe_to_modify(path) and not _is_file_locked(path):
+            path.unlink()
+            return True
         return False
     except (OSError, PermissionError):
         return False
@@ -554,10 +555,14 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     
     for item in items:
         stored_path = (quarantine_root / item.stored_name).resolve()
-        if _is_item_purgable(stored_path, item, quarantine_root) and _safe_unlink(stored_path):
-            purged_count += 1
-        elif stored_path.exists():
-            kept_items.append(item)
+        if _is_item_purgable(stored_path, item, quarantine_root):
+            if _safe_unlink(stored_path):
+                purged_count += 1
+            else:
+                kept_items.append(item)
+        else:
+            if stored_path.exists():
+                kept_items.append(item)
             
     if purged_count > 0:
         save_manifest(kept_items, base)

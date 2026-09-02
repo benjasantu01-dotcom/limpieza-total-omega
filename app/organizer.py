@@ -77,7 +77,7 @@ class JunkFile:
     modified: datetime
 
     def __post_init__(self) -> None:
-        if self.path:
+        if isinstance(self.path, Path):
             self.path = self.path.resolve()
 
     @property
@@ -210,6 +210,8 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """Recorre recursivamente un directorio buscando archivos basura."""
+    if not isinstance(current_dir, Path) or not current_dir.exists():
+        return
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
@@ -240,7 +242,8 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     
     for d in search_dirs:
         try:
-            path_obj = Path(d).expanduser()
+            if not isinstance(d, Path): continue
+            path_obj = d.expanduser()
             if path_obj.exists() and path_obj.is_dir() and not _is_unc_path(path_obj):
                 resolved = path_obj.resolve()
                 if not is_protected_path(resolved):

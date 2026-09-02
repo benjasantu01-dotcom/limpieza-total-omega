@@ -192,6 +192,10 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
         if not line: continue
         parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
         if len(parts) != 3: continue
+        
+        # Validar campos antes de convertir tipos
+        if not all(parts): continue
+        
         try:
             name_val = str(parts[0])
             pid_val = int(parts[1])
