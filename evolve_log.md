@@ -631,3 +631,12 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-09-02T07:01:26` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_path_inside_base` y `_should_skip_entry` añadiendo validaciones explícitas de tipos y manejo defensivo de errores ante entradas `None` o corruptas, previniendo excepciones no capturadas durante la recursión.
 - `2026-09-02T07:01:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T07:01:26` Corrida terminada. Total usado hoy: 164.
+- `2026-09-02T07:08:04` Arrancando corrida. Quedan hoy ~136 peticiones objetivo.
+- `2026-09-02T07:08:32` ✅ Mejora aceptada en diskreport.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `summarize` y `_collect_summary_data` validando que los datos procesados durante el escaneo no introduzcan inconsistencias (archivos de tamaño negativo o rutas vacías) y se encapsuló la lógica de reporte para manejar fallos de forma más informativa.
+- `2026-09-02T07:08:56` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-02T07:09:20` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-02T07:10:20` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-02T07:11:23` Problema de red hablando con Gemini (intento 2/3). Esperando 6s...
+- `2026-09-02T07:12:29` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta y defensiva en `_safe_get_entry_value` para manejar entradas vacías, tipos incorrectos o caracteres no imprimibles, evitando que valores malintencionados o inesperados se propaguen a la lógica de negocio; además, se centralizó el manejo de los parámetros de configuración en `on_save_settings` para garantizar que toda entrada numérica pase por un filtro estricto, protegiendo al sistema de posibles desbordamientos o excepciones en los módulos de procesamiento.
+- `2026-09-02T07:12:29` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T07:12:29` Corrida terminada. Total usado hoy: 168.

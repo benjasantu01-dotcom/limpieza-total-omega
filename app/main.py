@@ -806,11 +806,13 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             val = entry_widget.get().strip()
             if not val: return default
             
-            # Validación defensiva de tipos
+            # Limpieza de caracteres no imprimibles y validación
+            val = "".join(c for c in val if c.isprintable())
+            
             if numeric:
                 val_int = int(val)
                 return val_int if val_int >= 0 else default
-            return "".join(c for c in val if c.isprintable())
+            return val
         except (ValueError, TypeError):
             return default
 
@@ -1722,21 +1724,17 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             except (tk.TclError, Exception):
                 continue
         
-        try:
-            valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-                self._safe_get_entry_value(getattr(self, 'min_dup_entry', None), 64, numeric=True), 64
-            )
-            valores["top_archivos"] = self._validate_numeric_setting(
-                self._safe_get_entry_value(getattr(self, 'top_files_entry', None), 15, numeric=True), 15
-            )
-                
-            clave_raw = self._safe_get_entry_value(getattr(self, 'api_key_entry', None), "")
-            if clave_raw:
-                clave_api = "".join(c for c in clave_raw if c.isprintable())
-                if clave_api:
-                    valores["asistente_clave_api"] = clave_api
-        except Exception as e:
-            logging.error("Error al recopilar ajustes de la UI: %s", e)
+        valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
+            self._safe_get_entry_value(getattr(self, 'min_dup_entry', None), 64, numeric=True), 64
+        )
+        valores["top_archivos"] = self._validate_numeric_setting(
+            self._safe_get_entry_value(getattr(self, 'top_files_entry', None), 15, numeric=True), 15
+        )
+            
+        clave_raw = self._safe_get_entry_value(getattr(self, 'api_key_entry', None), "")
+        if clave_raw:
+            valores["asistente_clave_api"] = clave_raw
+            
         return valores
 
     def on_save_settings(self) -> None:

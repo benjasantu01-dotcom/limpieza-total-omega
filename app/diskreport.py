@@ -291,7 +291,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(entry_path)
                                 
                     elif entry.is_file():
-                        yield entry_path, max(0, st.st_size)
+                        # Validar tamaño no negativo
+                        size = max(0, st.st_size)
+                        yield entry_path, size
         except (PermissionError, OSError, FileNotFoundError):
             continue
 
@@ -355,16 +357,21 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(p_base, skip_protected):
         try:
             rel = path.relative_to(p_base)
-            top_folder = p_base / rel.parts[0]
-            
+            # Evitar error si el archivo está en la misma base
+            top_part = rel.parts[0] if rel.parts else None
+            if not top_part:
+                sums[p_base] += size
+                counts[p_base] += 1
+                continue
+                
+            top_folder = p_base / top_part
             if skip_protected and is_protected_path(top_folder):
                 continue
             
             sums[top_folder] += size
             counts[top_folder] += 1
         except (ValueError, IndexError):
-            sums[p_base] += size
-            counts[p_base] += 1
+            continue
 
     results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]
     return heapq.nlargest(limit, results, key=lambda f: f.size_bytes)
@@ -390,25 +397,16 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Realiza una pasada única (O(n)) sobre el directorio para calcular estadísticas agregadas.
-
-    Utiliza `heapq` para mantener un "Top N" de archivos más pesados en memoria constante, 
-    minimizando el impacto en RAM durante el escaneo.
-
-    Args:
-        directory: Path base a escanear.
-        skip_protected: Si se omiten las rutas restringidas.
-
-    Returns:
-        Objeto SummaryData conteniendo conteos, totales y los 8 archivos más pesados.
     """
     total_bytes: int = 0
     total_files: int = 0
     ext_sizes: Dict[str, int] = defaultdict(int)
     ext_counts: Dict[str, int] = defaultdict(int)
-    
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
+        if not path:
+            continue
         total_bytes += size
         total_files += 1
         
@@ -429,15 +427,15 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
     """Genera un informe textual resumen con las métricas principales."""
     p_input = _validate_root(directory)
     if not p_input:
-        return ["Error: Ruta no proporcionada, inexistente o formato inválido."]
+        return ["Error: Ruta inaccesible o prohibida."]
             
     try:
         data: SummaryData = _collect_summary_data(p_input, skip_protected)
-    except (OSError, PermissionError, RuntimeError):
+    except Exception:
         return ["Error: Fallo inesperado durante el análisis del disco."]
     
     if data.total_files == 0:
-        return ["Aviso: No se encontraron archivos accesibles en la ruta especificada."]
+        return ["Aviso: No se encontraron archivos accesibles."]
 
     lines = [
         f"Carpeta analizada: {p_input}", 
