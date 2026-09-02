@@ -169,8 +169,7 @@ def _is_system_or_hidden(path: Path) -> bool:
     Usa el campo `st_file_attributes` disponible en Windows.
     """
     try:
-        attrs = path.stat().st_file_attributes
-        return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
+        return bool(path.lstat().st_file_attributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
     except (AttributeError, OSError):
         return False 
 
@@ -196,7 +195,7 @@ def _is_reparse_point(path: Path) -> bool:
     Combina atributos nativos y validación por `pathlib`.
     """
     try:
-        return bool(path.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT) or _is_junction(path)
+        return bool(path.lstat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT) or _is_junction(path)
     except (AttributeError, OSError):
         return path.is_symlink()
 

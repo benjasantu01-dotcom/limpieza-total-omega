@@ -151,8 +151,11 @@ class Scanner:
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
         """Detecta puntos de reparse (junctions, enlaces simbólicos) mediante flags de sistema."""
         try:
-            return entry.is_symlink() or bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
+            if entry.is_symlink():
+                return True
+            return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
+            # Si no podemos consultar atributos, asumimos seguridad por precaución
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[Path]) -> None:

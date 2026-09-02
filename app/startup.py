@@ -274,7 +274,7 @@ def entries_from_folders(folders: Optional[Sequence[Path]] = None) -> List[Start
 
 
 def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupEntry]:
-    """Convierte el CSV de salida de PowerShell en objetos StartupEntry."""
+    """Convierte el CSV de salida de PowerShell en objetos StartupEntry, validando datos."""
     if not isinstance(csv_text, str) or not csv_text.strip():
         return []
         
@@ -286,25 +286,23 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         if not reader.fieldnames or len(reader.fieldnames) < 2:
             return []
             
-        field_name: str = reader.fieldnames[0]
-        field_cmd: str = reader.fieldnames[1]
+        f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
             if not isinstance(row, dict):
                 continue
             
-            name_raw: Optional[str] = row.get(field_name)
-            cmd_raw: Optional[str] = row.get(field_cmd)
-            
-            if not isinstance(name_raw, str) or not isinstance(cmd_raw, str):
+            raw_n, raw_c = row.get(f_name), row.get(f_cmd)
+            if not isinstance(raw_n, str) or not isinstance(raw_c, str):
                 continue
             
-            name: str = "".join(c for c in name_raw if ord(c) >= 32).strip()
-            cmd: str = "".join(c for c in cmd_raw if ord(c) >= 32).strip()
+            name = "".join(c for c in raw_n if ord(c) >= 32).strip()
+            cmd = "".join(c for c in raw_c if ord(c) >= 32).strip()
             
-            if not name or not cmd or name.upper().startswith("PS"):
+            # Validación de integridad de entrada
+            if not name or not cmd:
                 continue
-            if any(c in cmd for c in '<>|?*'):
+            if name.upper().startswith("PS") or any(c in cmd for c in '<>|?*'):
                 continue
             
             try:

@@ -192,6 +192,7 @@ class _Validators:
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
         """Valida que el valor sea una ruta absoluta, segura y no nula."""
+        if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
         if not path_string or len(path_string) > 4096 or "\0" in path_string: 
@@ -254,8 +255,9 @@ def validate(raw_values: Any) -> AppSettings:
     for key_str, val in raw_values.items():
         key_enum = _STR_TO_ENUM.get(key_str)
         if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
-            if (validated := validator(key_enum, val)) is not None:
-                config[key_enum.value] = validated
+            validated = validator(key_enum, val)
+            if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):
+                config[key_enum.value] = validated if validated is not None else ""
     return config
 
 def load(custom_base: PathLike | None = None) -> AppSettings:
@@ -327,7 +329,8 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)
         if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
-            if (val := validator(key_enum, v)) is not None and val != current.get(k):
+            val = validator(key_enum, v)
+            if val is not None and val != current.get(k):
                 current[k] = val
                 modified = True
     if modified: save(current, custom_base)
