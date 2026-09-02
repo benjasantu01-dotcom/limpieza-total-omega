@@ -122,10 +122,8 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 def _is_valid_candidate(path: Path) -> bool:
     """
-    Verifica si una ruta es un archivo candidato válido.
-    
-    Considera: existencia, si es un archivo, si es accesible para lectura
-    y si no está en la lista de rutas bloqueadas (safety.py).
+    Verifica si una ruta es un archivo candidato válido para ser procesado.
+    Realiza chequeos básicos de seguridad y accesibilidad.
     """
     try:
         return (
@@ -141,7 +139,8 @@ def _is_valid_candidate(path: Path) -> bool:
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     """
-    Agrupa una lista de rutas de archivo según su tamaño en bytes.
+    Agrupa una lista de rutas de archivo según su tamaño en bytes,
+    descartando archivos vacíos o inaccesibles.
     """
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None or not isinstance(paths, Iterable): return groups
@@ -158,7 +157,7 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
 
 
 def _resolve_and_verify_root(item: Union[str, Path]) -> Optional[Path]:
-    """Normaliza una ruta y verifica que sea un directorio no protegido."""
+    """Normaliza una ruta de usuario y verifica que sea un directorio no protegido."""
     try:
         if not item: return None
         root = Path(item).resolve(strict=False)
@@ -175,8 +174,8 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo optimizado utilizando os.scandir para acceder a metadatos 
-    de forma eficiente sin llamadas adicionales a stat().
+    Escaneo recursivo optimizado utilizando os.scandir. 
+    Evita ciclos de enlaces simbólicos mediante el rastreo de inodos visitados.
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Set[Tuple[int, int]] = set()
@@ -214,7 +213,10 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """Agrupa rutas basándose en el digest generado por la función provista."""
+    """
+    Aplica una función de hash a una lista de rutas y agrupa los resultados 
+    por el digest calculado.
+    """
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -224,8 +226,8 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
     """
-    Refinamiento jerárquico: calcula hashes completos solo para archivos que 
-    ya colisionaron en su hash parcial.
+    Realiza una reducción de candidatos mediante hashing completo. 
+    Es invocado solo si el hash parcial inicial no fue suficiente para distinguir archivos.
     """
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
@@ -239,7 +241,8 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
-    Pipeline de hashing: decide la profundidad del análisis según el tamaño.
+    Determina la estrategia de comparación según el tamaño del archivo:
+    los archivos pequeños usan solo hash parcial, los grandes se refinan con hash completo.
     """
     if len(paths) < 2: 
         return []
@@ -276,7 +279,8 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Heurística para sugerir el archivo original.
+    Heurística para sugerir el archivo original. 
+    Prioriza el archivo con la fecha de modificación más antigua como 'master'.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

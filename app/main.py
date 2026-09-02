@@ -531,7 +531,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self._build_single_health_bar(area_container, clave, etiqueta, row_idx)
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, row_idx: int) -> None:
-        """Crea una barra de progreso individual con su etiqueta descriptiva."""
+        """
+        Renderiza una barra de progreso individual para un área de salud específica,
+        ajustando el color según el puntaje obtenido en `healthscore`.
+        """
         self._create_styled_label(container, etiqueta, "body", anchor="w", width=150).grid(row=row_idx, column=0, sticky="w", pady=4)
         
         barra = ctk.CTkProgressBar(
@@ -1009,7 +1012,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._validate_and_log_error(e, tab)
 
     def _worker_thread_logic(self, fn: Callable[[], Any], tab: str, target: Optional[str]) -> None:
-        """Lógica de ejecución para hilos de trabajo asíncronos."""
+        """
+        Lógica ejecutada en un hilo de trabajo (worker): asegura un entorno de seguridad 
+        antes de procesar cualquier tarea delegada para evitar mutaciones prohibidas.
+        """
         if self._closing: return
         try:
             safety.ensure_safe_to_modify(Path(".").resolve())
@@ -1026,7 +1032,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 self._safe_run_ui_callback(lambda: (self._set_busy(False), self.set_status("Listo.")))
 
     def run_async(self, fn: Callable[[], Any], check_safety: bool = False, target: Optional[str] = None) -> None:
-        """Envía tareas al pool de hilos de forma no bloqueante."""
+        """
+        Envía tareas al pool de hilos de forma no bloqueante. Si `check_safety` es True, 
+        valida la integridad de la ruta destino antes de poner la tarea en la cola del ejecutor.
+        """
         if self._closing: return
         
         target_path = target
