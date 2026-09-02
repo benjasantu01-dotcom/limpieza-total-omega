@@ -70,8 +70,12 @@ __all__ = [
 
 class AssistantConfig(NamedTuple):
     """
-    Representa la configuración de conexión externa recuperada de ajustes.
-    Incluye la clave de API, el modelo de Gemini y el permiso de telemetría.
+    Configuración persistida del asistente.
+    
+    Attributes:
+        api_key: Credencial para la API de Google Gemini.
+        model: Identificador del modelo (ej. 'gemini-3.1-flash-lite').
+        allow_metrics: Booleano que autoriza el envío de datos agregados.
     """
     api_key: str
     model: str
@@ -245,6 +249,9 @@ def _validate_response_length(text: str) -> str:
 class SystemContext:
     """
     Contenedor de estado del sistema. Mantiene únicamente métricas agregadas.
+    
+    Attributes:
+        analyzed: Indica si se ha realizado al menos un ciclo de recolección.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -295,7 +302,15 @@ class SystemContext:
 
 @dataclass
 class Answer:
-    """Respuesta generada por el asistente con metadatos de fuente y sugerencias."""
+    """
+    Respuesta generada por el asistente.
+    
+    Attributes:
+        text: Contenido de la respuesta del asistente.
+        source: Origen de la respuesta ('local' o 'gemini').
+        notice: Aviso de privacidad o fuente para el usuario.
+        suggestions: Lista de preguntas sugeridas para seguimiento.
+    """
     text: str
     source: str = "local"
     notice: str = ""

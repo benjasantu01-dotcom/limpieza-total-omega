@@ -1221,3 +1221,38 @@ FAILED evolve/tests/test_safety.py::test_quarantine_summary_reports_size_and_ori
 - `2026-09-02T02:55:57` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema de archivos al capturar excepciones `OSError` específicas durante las llamadas a `p.exists()` y `p.is_file()`, evitando así que la app colapse ante estados transitorios del sistema de archivos durante el escaneo.
 - `2026-09-02T02:55:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T02:55:57` Corrida terminada. Total usado hoy: 68.
+- `2026-09-02T03:03:21` Arrancando corrida. Quedan hoy ~232 peticiones objetivo.
+- `2026-09-02T03:03:46` Tests FALLARON:
+```
+onError
+________________ test_scanner_lookalike_logic_is_os_independent ________________
+
+    def test_scanner_lookalike_logic_is_os_independent():
+        # La misma heurística tiene que valer con rutas estilo POSIX, para que el
+        # resultado no dependa de en qué sistema corran los tests.
+        flagged = scanner.check_system_lookalike(PurePosixPath("/home/user/Downloads/svchost.exe"))
+>       assert flagged is not None and flagged.severity == "warning"
+E       assert (None is not None)
+
+evolve/tests/test_basic.py:213: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:362: SyntaxWarning: invalid escape sequence '\)'
+    - Bloquea acceso a raíces de unidad (C:\).
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_basic.py::test_scanner_flags_system_lookalike_outside_system32 - assert None is not None
+FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independent - assert (None is not None)
+2 failed, 297 passed, 4 warnings in 0.99s
+
+```
+- `2026-09-02T03:03:46` ❌ Mejora descartada en scanner.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez del módulo `scanner.py` mediante la validación proactiva de tipos y estados (`is_protected_path`, `path.exists()`, validación de `entry`) en los puntos de entrada, previniendo excepciones innecesarias y asegurando que las funciones de heurística reciban datos íntegros.
+- `2026-09-02T03:04:14` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del manejo de archivos en `save()` y `load()` capturando posibles errores de E/S al interactuar con `Path` y el sistema de archivos, asegurando que cualquier fallo inesperado devuelva siempre un estado seguro (defaults) en lugar de propagar excepciones.
+- `2026-09-02T03:04:39` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-02T03:05:01` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo mediante la adición de Type Hints detallados en las funciones de manejo de respuestas y la clarificación de los contratos de las clases de datos (`AssistantConfig`, `SystemContext`), asegurando que las intenciones del diseño sean explícitas para futuros desarrolladores sin alterar el comportamiento.
+- `2026-09-02T03:05:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T03:05:01` Corrida terminada. Total usado hoy: 72.

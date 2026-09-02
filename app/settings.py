@@ -232,10 +232,12 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ubicación del archivo de configuración, priorizando el directorio base personalizado."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
-    base = Path(custom_base).expanduser().resolve()
-    if _Validators._is_safe_path(str(base)):
-        try: return base / SETTINGS_FILE
-        except (OSError, RuntimeError): pass
+    try:
+        base = Path(custom_base).expanduser().resolve()
+        if _Validators._is_safe_path(str(base)):
+            return base / SETTINGS_FILE
+    except (OSError, RuntimeError):
+        pass
     return SETTINGS_DIR / SETTINGS_FILE
 
 def validate(raw_values: Any) -> AppSettings:
@@ -256,9 +258,8 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
     ruta = settings_path(custom_base)
     ruta_str = str(ruta)
     
-    if not ruta.exists(): return DEFAULTS.copy()
-    
     try:
+        if not ruta.exists(): return DEFAULTS.copy()
         stats = ruta.stat()
         mtime = float(stats.st_mtime)
         if ruta_str in _CACHE and _CACHE[ruta_str][0] == mtime:
@@ -270,9 +271,9 @@ def load(custom_base: PathLike | None = None) -> AppSettings:
                 data = validate(content) if _is_dict(content) else DEFAULTS.copy()
                 _CACHE[ruta_str] = (mtime, data)
                 return data.copy()
-        return DEFAULTS.copy()
     except (OSError, PermissionError, json.JSONDecodeError, UnicodeDecodeError, ValueError):
-        return DEFAULTS.copy()
+        pass
+    return DEFAULTS.copy()
 
 def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     """Escribe la configuración validada en disco de forma atómica."""
@@ -284,15 +285,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     ):
         cleaned_settings["asistente_activado"] = False
     
-    ruta = settings_path(custom_base)
-    parent = ruta.parent.resolve()
-    if not _Validators._is_safe_path(str(parent)): return None
-        
-    temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
     try:
+        ruta = settings_path(custom_base)
+        parent = ruta.parent.resolve()
+        if not _Validators._is_safe_path(str(parent)): return None
+        
+        temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
+        
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
+        
         with open(temp_path, "wb") as f:
             f.write(data)
             f.flush()
@@ -301,9 +304,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta
     except (OSError, IOError, PermissionError, RuntimeError):
-        if temp_path.exists():
-            try: os.remove(temp_path)
-            except OSError: pass
         return None
 
 def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppSettings:
@@ -328,7 +328,6 @@ def reset(custom_base: PathLike | None = None) -> AppSettings:
 
 def get(key: str, custom_base: PathLike | None = None) -> Any:
     """Recupera un valor específico de la configuración actual."""
-    # Acceder al caché directamente si existe, evitando llamadas recursivas innecesarias
     return load(custom_base).get(key, DEFAULTS.get(key))
 
 def assistant_api_key(custom_base: PathLike | None = None) -> str:
