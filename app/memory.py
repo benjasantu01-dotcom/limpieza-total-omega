@@ -118,7 +118,15 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Metadatos básicos de consumo de memoria de un proceso individual."""
+    """
+    Metadatos básicos de consumo de memoria de un proceso.
+    
+    Attributes:
+        name: Nombre ejecutable del proceso.
+        pid: Identificador único del sistema.
+        working_set: Memoria física actualmente reservada en bytes.
+        extra: Diccionario para almacenar métricas adicionales opcionales.
+    """
     name: str
     pid: int
     working_set: BytesValue
@@ -126,7 +134,7 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Retorna el Working Set en MiB, útil para visualización humana."""
+        """Calcula la conversión de bytes a MiB para reportes de usuario."""
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
 def format_bytes(num: Optional[int | float]) -> str:
@@ -213,7 +221,11 @@ _snap_cache_time: float = 0.0
 _snap_cache_data: Optional[MemorySnapshot] = None
 
 def read_snapshot() -> MemorySnapshot:
-    """Lee el estado actual con caché de 5 segundos."""
+    """
+    Obtiene un snapshot global de la memoria. 
+    Implementa una caché de 5 segundos para evitar llamadas costosas al kernel 
+    o lecturas de archivo redundantes durante la actualización de la UI.
+    """
     global _snap_cache_time, _snap_cache_data
     now = time.time()
     if (now - _snap_cache_time) < 5 and _snap_cache_data:

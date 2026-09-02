@@ -110,7 +110,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        # Asegura integridad numérica contra NaNs o inf que arruinarían cálculos
+        """Asegura integridad numérica contra NaNs o inf que arruinarían cálculos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb))
         self.suspicious_count = max(0, _to_int(self.suspicious_count))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
@@ -121,6 +121,7 @@ class SystemMetrics:
         self.quarantined_count = max(0, _to_int(self.quarantined_count))
 
     def is_finite(self) -> bool:
+        """Verifica que todos los campos sean números finitos válidos."""
         for f in fields(self):
             val = getattr(self, f.name)
             if not isinstance(val, (int, float)) or not math.isfinite(val):
@@ -129,6 +130,7 @@ class SystemMetrics:
 
 @dataclass
 class HealthResult:
+    """Resultado final del análisis de salud, incluyendo desglose y recomendaciones."""
     score: int
     grade: str
     breakdown: Dict[MetricKey, int] = field(default_factory=dict)
@@ -136,9 +138,11 @@ class HealthResult:
 
     @property
     def is_healthy(self) -> bool:
+        """Define el estado de salud como saludable entre 80 y 100 puntos."""
         return 80 <= self.score <= 100
 
 def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
+    """Asegura que un valor numérico esté dentro de los límites establecidos."""
     try:
         val = float(value)
         return max(low, min(high, val)) if math.isfinite(val) else low
@@ -146,35 +150,37 @@ def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
         return low
 
 def _to_float(value: Any, default: float = 0.0) -> float:
+    """Convierte entrada a float seguro; retorna default ante error."""
     try:
         val = float(value)
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def _to_int(value: Any, default: int = 0) -> int:
+    """Convierte entrada a int seguro; retorna default ante error."""
     try:
         val = float(value)
         return int(val) if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud inversa a la cantidad de archivos basura detectados."""
+    """Normaliza el impacto de la basura (MB) a una escala de salud inversa."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Evalúa seguridad basándose en conteo de amenazas y advertencias."""
+    """Puntúa seguridad con penalizaciones ponderadas por amenazas detectadas."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Calcula salud basada en el porcentaje de RAM libre disponible."""
+    """Puntúa salud basándose en la disponibilidad de RAM relativa al umbral óptimo."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Calcula salud basada en el porcentaje de espacio libre en disco."""
+    """Puntúa salud basándose en el espacio libre disponible."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud inversamente proporcional al espacio ocupado por duplicados."""
+    """Calcula salud inversamente proporcional al espacio malgastado en archivos duplicados."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
@@ -182,7 +188,7 @@ def score_startup(startup_count: int) -> NormalizedRatio:
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Convierte un puntaje numérico a una calificación de letra."""
+    """Mapea una calificación numérica (0-100) a una escala de letras (A-F)."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -200,6 +206,7 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 }
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
+    """Agrega las métricas individuales según los pesos definidos para obtener un resultado final."""
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
@@ -231,6 +238,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     )
 
 def summarize(result: HealthResult | None) -> List[str]:
+    """Genera una representación visual y textual del informe de salud para la interfaz."""
     if not isinstance(result, HealthResult) or not isinstance(getattr(result, 'breakdown', None), dict): 
         return ["Error: Informe no disponible."]
     

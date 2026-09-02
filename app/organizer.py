@@ -136,19 +136,16 @@ def _is_allowed_directory(name: str) -> bool:
 
 
 def _is_file_locked(path: Path) -> bool:
-    """
-    Intenta abrir el archivo en modo lectura binaria.
-    Si falla, el archivo está bloqueado por otro proceso del SO.
-    """
+    """Intenta abrir el archivo en modo lectura binaria; si falla, el archivo está bloqueado por el SO."""
     try:
-        with open(path, "rb") as f:
+        with open(path, "rb"):
             return False
     except (OSError, PermissionError, IOError):
         return True
 
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
-    """Previene que el destino sea una ruta que contenga o sea igual a la fuente para evitar recursión."""
+    """Previene que el destino sea una ruta que contenga a la fuente, evitando ciclos destructivos."""
     try:
         s: Path = src.resolve()
         d: Path = dest.resolve()
@@ -158,48 +155,41 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
 
 
 def _passes_system_checks(src: Path) -> bool:
-    """
-    Verifica atributos de archivo (sistema/oculto/solo lectura).
-    Retorna True solo si el archivo es manipulable por el usuario estándar.
-    """
+    """Verifica atributos de sistema/oculto/solo lectura que impiden manipulación estándar."""
     if os.name != "nt": return True
     try:
         stat = src.stat()
-        # 0x407 bitmask: 0x4 (SYSTEM), 0x2 (HIDDEN), 0x1 (READONLY)
+        # Máscara: 0x4 (SYSTEM), 0x2 (HIDDEN), 0x1 (READONLY)
         return not (stat.st_file_attributes & 0x407)
     except OSError:
         return False
 
 
-def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """
-    Realiza una validación exhaustiva de seguridad antes de mover o borrar un archivo.
-    Considera rutas UNC, nombres reservados, protecciones de SO y bloqueos de proceso.
-    """
-    if not isinstance(src, Path) or not isinstance(dest, Path): return False
-    
-    if _is_unc_path(src) or _is_unc_path(dest): return False
-    
-    # Bloqueo de nombres de dispositivos reservados en Windows
-    path_str = str(src).lower()
+def _has_forbidden_chars(path: Path) -> bool:
+    """Valida la ausencia de caracteres reservados de Windows en la ruta."""
+    path_str = str(path).lower()
     reserved = {"con", "prn", "aux", "nul", "com1", "lpt1"}
-    if any(path_str.startswith(r) for r in reserved): return False
-    if "\0" in str(src) or any(c in str(src) for c in ["<", ">", "|"]): return False
+    if any(path_str.startswith(r) for r in reserved): return True
+    return any(c in str(path) for c in ["<", ">", "|", "\0"])
+
+
+def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
+    """Realiza una validación exhaustiva de seguridad antes de mover o borrar un archivo."""
+    if not isinstance(src, Path) or not isinstance(dest, Path): return False
+    if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     
     try:
         s_res = src.resolve()
-        if s_res.parent == s_res: return False
+        if not s_res.exists() or not s_res.is_file() or s_res.parent == s_res: return False
         
-        if not s_res.exists() or not s_res.is_file(): return False
-        
+        # Chequeos de integridad estructural y seguridad
         if _is_junction(s_res) or _is_junction(dest.parent if dest.is_file() else dest): return False
-        
-        # Integración con el módulo de seguridad central (safety.py)
         if is_protected_path(s_res) or is_protected_path(dest.resolve()): return False
         if not is_safe_to_modify(s_res) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(s_res, dest): return False
         
-        target_dir: Path = dest.parent if dest.is_file() else dest
+        # Verificación de permisos de escritura y estado de bloqueo
+        target_dir = dest.parent if dest.is_file() else dest
         if not (os.access(s_res, os.W_OK) and os.access(target_dir, os.W_OK)): return False
         
         stat = s_res.stat()
@@ -210,8 +200,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Verifica si un objeto JunkFile es seguro para la operación de movimiento."""
-    if not isinstance(junk_file, JunkFile) or not isinstance(junk_file.path, Path): return False
-    return junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
+    return isinstance(junk_file, JunkFile) and junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 
 def _should_scan_directory(entry: os.DirEntry) -> bool:
@@ -220,9 +209,7 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
-    """
-    Recorre recursivamente un directorio buscando archivos basura.
-    """
+    """Recorre recursivamente un directorio buscando archivos basura."""
     try:
         with os.scandir(current_dir) as it:
             for entry in it:
@@ -231,9 +218,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                         if _should_scan_directory(entry):
                             _process_directory(Path(entry.path), found)
                     elif entry.is_file(follow_symlinks=False):
-                        # Optimizacion: acceso directo a extension y comparacion con set
-                        name_lower = entry.name.lower()
-                        if any(name_lower.endswith(ext) for ext in JUNK_EXTENSIONS):
+                        if _is_junk_path(Path(entry.name)):
                             stats = entry.stat()
                             if stats.st_size > 0:
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
@@ -253,17 +238,11 @@ def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     
     for d in search_dirs:
         try:
-            if not isinstance(d, (str, Path)):
-                continue
             path_obj = Path(d).expanduser()
-            if not path_obj.exists() or not path_obj.is_dir():
-                continue
-            if _is_unc_path(path_obj): 
-                continue
-            
-            resolved: Path = path_obj.resolve()
-            if not is_protected_path(resolved):
-                _process_directory(resolved, found)
+            if path_obj.exists() and path_obj.is_dir() and not _is_unc_path(path_obj):
+                resolved = path_obj.resolve()
+                if not is_protected_path(resolved):
+                    _process_directory(resolved, found)
         except (OSError, RuntimeError, TypeError):
             continue
     return found
@@ -280,27 +259,20 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """
-    Valida el espacio disponible en disco y la seguridad de la ruta antes de proponer una ruta de movimiento.
-    Retorna la ruta destino completa o None si la operación no es viable.
-    """
+    """Valida espacio en disco y seguridad de ruta antes de proponer una ruta de movimiento."""
     if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
     if _is_unc_path(dest_base): return None
     try:
-        src_path: Path = junk_file.path.resolve()
         if not dest_base.exists() or not dest_base.is_dir(): return None
         
         # Validar espacio (al menos 50MB libres extra)
-        try:
-            if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
-                return None
-        except OSError:
+        if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
             return None
             
         if not _is_safe_to_move(junk_file, dest_base): return None
-        if src_path.is_relative_to(dest_base) or dest_base.is_relative_to(src_path.parent): return None
+        if junk_file.path.resolve().is_relative_to(dest_base): return None
         
-        safe_name: str = f"{src_path.stem}_{int(junk_file.modified.timestamp())}{src_path.suffix}"
+        safe_name: str = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target: Path = (_generate_unique_target(dest_base / safe_name)).resolve()
         return target if target.is_relative_to(dest_base) else None
     except (OSError, ValueError, AttributeError):
