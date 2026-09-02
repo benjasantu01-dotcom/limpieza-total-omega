@@ -250,7 +250,8 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     """
-    Valida la viabilidad de aislar un archivo realizando chequeos de seguridad.
+    Realiza una validación exhaustiva de seguridad antes de aislar un archivo.
+    Verifica integridad de la ruta, atributos del sistema y asegura que la operación no sea circular o prohibida.
     """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
@@ -266,10 +267,8 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")
     
-    # Verificación de espacio antes de proceder
     _ensure_disk_space(dest_dir, resolved_source.stat().st_size)
     
-    # Nueva validación de circularidad lógica
     if resolved_source.parent == dest_dir.resolve():
         raise UnsafePathError("Operación circular: origen y destino en la misma carpeta.")
     if is_protected_path(resolved_source):
@@ -349,7 +348,7 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
     """
-    Aísla un archivo copiándolo a un sandbox de forma atómica.
+    Aísla un archivo copiándolo a un sandbox de forma atómica para evitar corrupción.
     """
     if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
         raise UnsafePathError("Operación denegada: intento de escritura fuera del sandbox.")
@@ -496,8 +495,7 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
 
 def purge_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> bool:
     """
-    Elimina físicamente un ítem de la cuarentena.
-    Requiere validación previa de integridad física y que el archivo no esté bloqueado.
+    Elimina físicamente un ítem de la cuarentena tras verificar su integridad y seguridad.
     """
     if not isinstance(item_id, str) or not item_id.strip():
         return False

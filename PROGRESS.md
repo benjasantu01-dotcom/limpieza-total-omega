@@ -8,38 +8,38 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 28 | 1 | 4 | 3 | 38 |
+| 2026-08-31 | 25 | 1 | 4 | 3 | 37 |
 | 2026-09-01 | 179 | 6 | 27 | 12 | 126 |
-| 2026-09-02 | 29 | 2 | 4 | 3 | 42 |
+| 2026-09-02 | 32 | 2 | 5 | 3 | 42 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **57**
+- legibilidad y documentación: **60**
 - seguridad defensiva: **52**
 - manejo de errores y validación de entradas: **52**
-- robustez ante casos límite: **40**
+- robustez ante casos límite: **37**
 - rendimiento: **35**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
-- `browser.py`: **20**
 - `settings.py`: **20**
-- `diskreport.py`: **19**
+- `assistant.py`: **20**
 - `memory.py`: **19**
+- `browser.py`: **19**
+- `quarantine.py`: **19**
+- `scanner.py`: **19**
 - `duplicates.py`: **18**
-- `quarantine.py`: **18**
-- `scanner.py`: **18**
+- `diskreport.py`: **18**
 - `healthscore.py`: **17**
-- `safety.py`: **16**
+- `safety.py`: **17**
 - `organizer.py`: **16**
 - `branding.py`: **12**
 - `startup.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T03:37:02` **scanner.py** (legibilidad y documentación): Mejoré la documentación de `Scanner` y sus métodos mediante la estandarización de docstrings (especificando tipos y comportamiento ante fallos) y reemplacé el uso de `str` en la pila por `Path` para garantizar coherencia con los métodos de `pathlib` y mejorar la claridad del flujo de trabajo, además de asegurar que la exclusión de `is_protected_path` sea explícita en el bucle principal.
+- `2026-09-02T03:36:38` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de docstrings estructuradas (siguiendo estándares de la industria) en las funciones auxiliares de validación, además de clarificar mediante comentarios el flujo de las comprobaciones críticas para evitar ambigüedades en auditorías futuras.
+- `2026-09-02T03:35:48` **quarantine.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas y se han añadido anotaciones de tipo (type hints) explícitas, facilitando la comprensión del flujo de seguridad y la mantenibilidad del código sin alterar la lógica.
 - `2026-09-02T03:25:44` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (dividiéndola en subtareas lógicas para reducir la carga cognitiva), la adición de docstrings técnicos explicativos y la corrección de una inconsistencia en `_is_junk_path`.
 - `2026-09-02T03:25:33` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en la clase `ProcessMemory` y la función `read_snapshot`, explicando las decisiones técnicas detrás de la gestión de caché y la estructura de datos, además de añadir type hints faltantes para aumentar la claridad y robustez del código.
 - `2026-09-02T03:24:04` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings estructurados que explican claramente la lógica de normalización y el propósito de cada método, facilitando el mantenimiento y la comprensión de las fórmulas de puntaje para futuros desarrolladores.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T02:55:57` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` ante errores de sistema de archivos al capturar excepciones `OSError` específicas durante las llamadas a `p.exists()` y `p.is_file()`, evitando así que la app colapse ante estados transitorios del sistema de archivos durante el escaneo.
 - `2026-09-02T02:54:34` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para asegurar que la ruta origen no sea el mismo directorio de destino, previniendo errores lógicos de recursión o estados inconsistentes antes de intentar cualquier operación de archivo.
 - `2026-09-02T02:47:16` **memory.py** (manejo de errores y validación de entradas): Se reforzó la validación de entrada en la función `trim_working_set` para asegurar que el `pid` sea un entero positivo y se mejoró el manejo de errores en `read_snapshot` capturando excepciones específicas al leer el archivo `/proc/meminfo` para evitar lecturas parciales o corrompidas.
-- `2026-09-02T02:44:40` **healthscore.py** (manejo de errores y validación de entradas): Mejora el manejo de errores en `summarize` y `compute_score` validando explícitamente el contenido del objeto `HealthResult` para prevenir fallos al acceder a sus atributos si el objeto fue instanciado incorrectamente.
-- `2026-09-02T02:43:23` **duplicates.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `suggest_keeper` y `format_group` mediante la validación estricta de tipos y estados, garantizando que el acceso a atributos no falle ante objetos `Path` inválidos o borrados, cumpliendo así con el enfoque de manejo de errores y validación de entradas.
-- `2026-09-02T02:34:35` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `total_size` agregando validaciones de entrada (`isinstance` y chequeos de `None`) y capturas de excepciones más específicas, evitando que errores imprevistos en el sistema de archivos interrumpan prematuramente los análisis.

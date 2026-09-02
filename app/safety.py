@@ -120,7 +120,12 @@ class _CheckResult(NamedTuple):
 
 
 def is_running_as_admin() -> bool:
-    """Verifica si el proceso actual tiene privilegios elevados (Administrador)."""
+    """
+    Verifica si el proceso actual tiene privilegios de administrador.
+    
+    Returns:
+        bool: True si el proceso tiene privilegios elevados, False en caso contrario.
+    """
     if os.name != 'nt':
         try:
             return os.geteuid() == 0
@@ -133,7 +138,15 @@ def is_running_as_admin() -> bool:
 
 
 def _has_invalid_chars(path_str: str | None) -> bool:
-    """Valida la ausencia de caracteres de control o marcas RTL en la ruta."""
+    """
+    Valida la ausencia de caracteres de control o marcas RTL en la ruta.
+    
+    Args:
+        path_str: Cadena de la ruta a validar.
+        
+    Returns:
+        bool: True si detecta caracteres de riesgo (RTL, control, etc).
+    """
     if not isinstance(path_str, str) or not path_str: 
         return True
     return bool(re.search(r'[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E]', path_str))
@@ -151,7 +164,10 @@ def _has_alternate_data_stream(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_system_or_hidden(path: Path) -> bool:
-    """Verifica si el archivo tiene atributos de sistema u oculto mediante stat."""
+    """
+    Verifica si el archivo tiene atributos de sistema u oculto.
+    Usa el campo `st_file_attributes` disponible en Windows.
+    """
     try:
         attrs = path.stat().st_file_attributes
         return bool(attrs & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
@@ -161,7 +177,10 @@ def _is_system_or_hidden(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_junction(path: Path) -> bool:
-    """Identifica puntos de unión (Junctions) mediante WinAPI para evitar follow-through."""
+    """
+    Identifica puntos de unión (Junctions) mediante llamada a WinAPI kernel32.
+    Evita la recursión en rutas que apuntan fuera del directorio actual.
+    """
     if os.name != 'nt': return False
     try:
         attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
@@ -172,7 +191,10 @@ def _is_junction(path: Path) -> bool:
 
 @lru_cache(maxsize=2048)
 def _is_reparse_point(path: Path) -> bool:
-    """Identifica puntos de reparse usando atributos nativos de stat o WinAPI."""
+    """
+    Determina si la ruta es un punto de reparse (Junction o Symlink).
+    Combina atributos nativos y validación por `pathlib`.
+    """
     try:
         return bool(path.stat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT) or _is_junction(path)
     except (AttributeError, OSError):
@@ -181,7 +203,10 @@ def _is_reparse_point(path: Path) -> bool:
 
 @lru_cache(maxsize=1024)
 def _is_file_in_use(path_str: str) -> bool:
-    """Verifica exclusividad de archivo intentando abrirlo con acceso de escritura mediante WinAPI."""
+    """
+    Verifica si un archivo está bloqueado por otro proceso.
+    Intenta abrir el archivo con acceso exclusivo de escritura.
+    """
     if os.name != 'nt' or not isinstance(path_str, str):
         return False
     try:
