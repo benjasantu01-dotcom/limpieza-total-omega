@@ -1454,3 +1454,26 @@ FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - Attrib
 - `2026-09-02T04:26:35` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se implementó un control de robustez ante archivos bloqueados por el sistema durante el cálculo recursivo de tamaño, capturando `OSError` específicamente al realizar `entry.stat()` para evitar abortar el escaneo completo cuando un proceso externo tiene un archivo de caché bloqueado.
 - `2026-09-02T04:26:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T04:26:35` Corrida terminada. Total usado hoy: 104.
+- `2026-09-02T04:35:01` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-09-02T04:35:30` Tests FALLARON:
+```
+docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_largest_files_sorted_descending - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_largest_files_respects_the_limit - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_groups_and_counts - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_usage_by_extension_labels_files_without_extension - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_total_size_counts_bytes_and_files - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_totals - AttributeError: 'posix.DirEntry' object has no attribute 'exists'
+9 failed, 290 passed, 4 warnings in 1.30s
+
+```
+- `2026-09-02T04:35:30` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Se ha añadido un chequeo de existencia de archivos dentro del generador de `walk_files` para manejar de forma robusta condiciones de carrera donde archivos temporales son eliminados por otros procesos entre la iteración y el acceso a sus metadatos.
+- `2026-09-02T04:35:53` ➖ Sin cambios en duplicates.py (enfoque: robustez ante casos límite). Motivo: Mejoré la robustez de `_collect_candidates` ante errores de acceso a disco durante el escaneo, asegurando que las excepciones en `stat()` o `scandir()` no detengan el proceso completo ni dejen el estado interno en inconsistencia, además de mejorar la resiliencia al iterar sobre rutas inexistentes o inaccesibles.
+- `2026-09-02T04:36:16` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: robustez ante casos límite).
+- `2026-09-02T04:37:01` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `_safe_run` para evitar que excepciones no controladas durante la inicialización de hilos o tareas bloqueen indefinidamente el contador `_tasks_running` y mantengan la UI deshabilitada permanentemente en caso de error.
+- `2026-09-02T04:37:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T04:37:01` Corrida terminada. Total usado hoy: 108.
