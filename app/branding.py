@@ -281,7 +281,6 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     try:
         path_obj = Path(destination).resolve()
         parent_dir = path_obj.parent
-        # Usamos las funciones de seguridad para validar la integridad de la ruta
         ensure_safe_to_modify(path_obj)
         ensure_safe_to_modify(parent_dir)
         if not parent_dir.exists(): parent_dir.mkdir(parents=True, exist_ok=True)
@@ -336,7 +335,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
     try:
         if percent is None: return
-        valor = max(0.0, min(100.0, float(percent)))
+        valor = float(percent)
         diametro = max(20, int(size))
         grosor = max(2, min(int(thickness), (diametro // 2) - 1))
         color_fondo = track if isinstance(track, str) else C_SURFACE_ALT
@@ -344,5 +343,5 @@ def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int
         borde = grosor / 2.0
         caja = (canvas_x + borde, canvas_y + borde, canvas_x + diametro - borde, canvas_y + diametro - borde)
         canvas.create_arc(*caja, start=0, extent=359.9, style="arc", outline=color_fondo, width=grosor)
-        if valor > 0: canvas.create_arc(*caja, start=90, extent=-(valor / 100 * 359.9), style="arc", outline=color_avance, width=grosor)
+        if valor > 0: canvas.create_arc(*caja, start=90, extent=-(max(0.0, min(100.0, valor)) / 100 * 359.9), style="arc", outline=color_avance, width=grosor)
     except (TypeError, ValueError, AttributeError): return

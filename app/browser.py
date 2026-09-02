@@ -130,14 +130,16 @@ def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
     if not isinstance(real_target, Path) or not isinstance(real_base, Path):
         return False
     try:
-        return str(real_target.resolve()).startswith(str(real_base.resolve()))
+        target_resolved = real_target.resolve(strict=True)
+        base_resolved = real_base.resolve(strict=True)
+        return str(target_resolved).startswith(str(base_resolved))
     except (OSError, RuntimeError):
         return False
 
 
-def _is_excluded_file(name: str) -> bool:
+def _is_excluded_file(name: Optional[str]) -> bool:
     """Verifica si un nombre de archivo está en la lista de bloqueo permanente (NEVER_TOUCH)."""
-    return name.lower() in NEVER_TOUCH
+    return name is not None and name.lower() in NEVER_TOUCH
 
 
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
@@ -165,9 +167,13 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
         
     try:
-        if entry.is_symlink() or is_junction_fn(entry.path) or os.path.ismount(entry.path):
+        # Check path for safety before checking file attributes
+        path = entry.path
+        if not path:
             return True
-        if __is_system_hidden(entry.path, kernel32):
+        if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
+            return True
+        if __is_system_hidden(path, kernel32):
             return True
     except (OSError, PermissionError, FileNotFoundError):
         return True
@@ -182,7 +188,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> boo
     try:
         if not path_obj.exists() or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return False
-        if base_check_path and not _is_path_inside_base(path_obj.resolve(strict=True), base_check_path):
+        if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
             return False
         return True
     except (OSError, RuntimeError):

@@ -618,3 +618,16 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-09-02T06:51:46` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-02T06:51:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T06:51:46` Corrida terminada. Total usado hoy: 160.
+- `2026-09-02T06:57:51` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-02T06:57:53` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-02T06:57:53` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-02T06:58:13` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-02T06:58:13` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-02T06:58:43` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-02T06:58:43` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-02T06:59:58` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-02T07:00:40` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `build_context` añadiendo validaciones específicas para detectar si los diccionarios de entrada contienen tipos de datos inesperados (listas/strings) que podrían causar errores durante la ingesta, asegurando además que `ctx.analyzed` solo se marque tras una validación exitosa de los datos.
+- `2026-09-02T07:01:13` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `save_logo_svg` y `draw_ring` validando explícitamente las entradas críticas antes de realizar operaciones, asegurando que valores `None` o tipos inesperados no silencien errores o causen comportamientos impredecibles, alineado con las buenas prácticas de manejo de errores.
+- `2026-09-02T07:01:26` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_path_inside_base` y `_should_skip_entry` añadiendo validaciones explícitas de tipos y manejo defensivo de errores ante entradas `None` o corruptas, previniendo excepciones no capturadas durante la recursión.
+- `2026-09-02T07:01:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T07:01:26` Corrida terminada. Total usado hoy: 164.

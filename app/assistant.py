@@ -381,8 +381,10 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
+    # Filtramos para asegurar que solo procesamos tipos contenedores válidos
     sources = [s for s in [metrics, health, extra] 
-               if s is not None and isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str))]
+               if s is not None and isinstance(s, (dict, object)) 
+               and not isinstance(s, (list, tuple, str, int, float, bool))]
     
     for src in sources:
         try:
