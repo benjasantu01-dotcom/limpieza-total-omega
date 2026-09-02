@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
+- Mejoras aceptadas: **234** (46.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 17
 - Sin respuesta de la IA (error o límite): 205
 
@@ -16,36 +16,38 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 151 | 5 | 22 | 9 | 117 |
-| 2026-09-02 | 84 | 8 | 12 | 8 | 88 |
+| 2026-09-01 | 148 | 5 | 22 | 9 | 116 |
+| 2026-09-02 | 86 | 8 | 13 | 8 | 89 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **54**
-- seguridad defensiva: **51**
-- rendimiento: **40**
+- seguridad defensiva: **48**
+- rendimiento: **42**
 - robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **21**
 - `settings.py`: **20**
-- `browser.py`: **19**
+- `assistant.py`: **20**
+- `safety.py`: **19**
+- `quarantine.py`: **19**
 - `organizer.py`: **18**
-- `safety.py`: **18**
-- `quarantine.py`: **18**
+- `browser.py`: **18**
 - `memory.py`: **17**
 - `scanner.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **16**
 - `main.py`: **14**
 - `healthscore.py`: **14**
-- `branding.py`: **13**
 - `startup.py`: **13**
+- `branding.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T08:41:18` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` reemplazando la iteración secuencial con `any()` por una búsqueda directa en `set` para la parte del nombre del archivo, reduciendo la complejidad de tiempo de O(N) a O(1) en el caso común, y manteniendo el cacheo `lru_cache` para llamadas recurrentes.
+- `2026-09-02T08:40:28` **quarantine.py** (rendimiento): Optimicé el cálculo del espacio total y el acceso al manifiesto eliminando la carga redundante y conversión de objetos `QuarantineItem` cuando solo se requieren datos numéricos, mejorando así el rendimiento al consultar el estado de la cuarentena.
 - `2026-09-02T08:32:01` **organizer.py** (rendimiento): Optimizé el rendimiento de `_process_directory` eliminando la llamada repetitiva a `entry.stat()` mediante el uso del objeto `os.DirEntry` ya cacheado por `os.scandir`, reduciendo drásticamente las llamadas al sistema de archivos por cada archivo encontrado.
 - `2026-09-02T08:31:50` **memory.py** (rendimiento): Se optimizó el proceso `top_memory_processes` reemplazando la lógica de selección de procesos en PowerShell por una más eficiente (`Select-Object -First 20` en lugar de 40) y consolidando la consulta en un solo pipe, lo que reduce la carga de CPU y la memoria utilizada por la instancia de PowerShell.
 - `2026-09-02T08:31:22` **main.py** (rendimiento): Se optimizó el acceso a los datos de métricas de salud consolidando las llamadas al caché y evitando la regeneración innecesaria de objetos `SystemMetrics` durante la actualización de la UI, lo cual reduce la latencia en el dashboard de salud.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T07:49:26` **duplicates.py** (legibilidad y documentación): Se añadió documentación mediante docstrings y type hints en funciones críticas (`_scan_recursive`, `_process_size_group`) para aclarar la lógica de manejo de inodos y la estrategia de hashing jerárquico, facilitando la comprensión del flujo sin alterar la funcionalidad.
 - `2026-09-02T07:40:16` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings específicos que clarifican las restricciones de seguridad (reparse points, recursión y validación de rutas) y normalicé el uso de anotaciones de tipo para mejorar la legibilidad del código.
 - `2026-09-02T07:39:50` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a las funciones públicas de dibujo y manipulación cromática, clarificando las expectativas sobre los parámetros y el comportamiento ante entradas inválidas, facilitando así el mantenimiento futuro.
-- `2026-09-02T07:39:18` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los contratos de las clases de apoyo (`ProblemCriterion` y `AssistantConfig`) y unificando el estilo de los docstrings para facilitar la comprensión de las reglas de negocio, manteniendo intacta la lógica de seguridad.
-- `2026-09-02T07:30:08` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones granulares para detectar entradas de registro corruptas o mal formadas (como registros sin nombre o rutas de comando vacías), evitando que una sola entrada maliciosa o mal reportada por el sistema bloquee el parseo de toda la lista.

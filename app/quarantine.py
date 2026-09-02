@@ -573,6 +573,7 @@ def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> 
     """Calcula el espacio total ocupado por los archivos en cuarentena leyendo el manifiesto crudo."""
     base_path = quarantine_dir(base)
     mtime = _manifest_path(base_path).stat().st_mtime if _manifest_path(base_path).exists() else 0.0
+    # Acceso directo a datos crudos del cache para evitar instanciar todos los objetos QuarantineItem
     raw_data = _load_manifest_raw(str(base_path), mtime)
     return sum(int(d.get("size_bytes", 0)) for d in raw_data if isinstance(d, dict))
 

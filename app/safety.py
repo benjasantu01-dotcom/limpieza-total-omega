@@ -333,6 +333,7 @@ def is_protected_path(path: PathLike) -> bool:
         norm_case = os.path.normcase(str(p))
         if any(norm_case.startswith(root) for root in _SYSTEM_ROOT_PATHS):
             return True
+        # Búsqueda O(1) usando el set existente en lugar de iterar sobre el set
         if any(part.lower() in PROTECTED_DIR_NAMES for part in p.parts):
             return True
         return p == Path(p.anchor)
