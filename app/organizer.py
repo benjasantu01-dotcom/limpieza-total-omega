@@ -200,6 +200,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     ausencia de caracteres prohibidos y cumplimiento de reglas en safety.py.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
+    # Evitar desbordamiento de buffer en rutas largas
+    if len(str(src)) >= 260 or len(str(dest)) >= 260: return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     
     try:
@@ -300,11 +302,15 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
             return None
             
         if not _is_safe_to_move(junk_file, dest_base): return None
-        if junk_file.path.resolve().is_relative_to(dest_base.resolve()): return None
+        
+        # Resolución segura evitando fallos de Path inexistente
+        src_res = junk_file.path.resolve()
+        dest_base_res = dest_base.resolve()
+        if src_res.is_relative_to(dest_base_res): return None
         
         safe_name: str = f"{junk_file.path.stem}_{int(junk_file.modified.timestamp())}{junk_file.path.suffix}"
         target: Path = (_generate_unique_target(dest_base / safe_name)).resolve()
-        return target if target.is_relative_to(dest_base.resolve()) else None
+        return target if target.is_relative_to(dest_base_res) else None
     except (OSError, ValueError, AttributeError):
         return None
 

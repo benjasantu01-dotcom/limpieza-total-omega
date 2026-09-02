@@ -202,6 +202,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             pid_val = int(parts[1])
             ws_val = int(parts[2])
             
+            # Sanitización de seguridad: no procesar nombres o rutas protegidas
+            if is_protected_path(name_val): continue
+            
             if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
                 proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=BytesValue(ws_val)))
         except (ValueError, TypeError):
