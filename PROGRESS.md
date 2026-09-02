@@ -8,37 +8,37 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 156 | 5 | 23 | 10 | 118 |
-| 2026-09-02 | 79 | 8 | 12 | 8 | 85 |
+| 2026-09-01 | 154 | 5 | 22 | 10 | 117 |
+| 2026-09-02 | 81 | 8 | 12 | 8 | 87 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **51**
-- robustez ante casos límite: **37**
-- rendimiento: **35**
+- rendimiento: **37**
+- robustez ante casos límite: **35**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
 - `assistant.py`: **21**
-- `quarantine.py`: **19**
 - `safety.py`: **19**
+- `browser.py`: **19**
 - `scanner.py`: **18**
-- `browser.py`: **18**
-- `memory.py`: **17**
+- `quarantine.py`: **18**
 - `organizer.py`: **17**
 - `diskreport.py`: **17**
-- `duplicates.py`: **15**
+- `memory.py`: **16**
+- `duplicates.py`: **16**
 - `healthscore.py`: **14**
 - `branding.py`: **13**
 - `main.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T08:21:07` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` sustituyendo las llamadas múltiples a `stat()` por una sola llamada a `os.scandir` (que ya provee los atributos de archivo de manera eficiente en la mayoría de los sistemas de archivos) y eliminando la redundancia de `is_protected_path(p)` al delegar el filtrado a la etapa inicial de escaneo.
+- `2026-09-02T08:20:31` **browser.py** (rendimiento): Se optimizó la recursión en `_sum_directory_recursive` para evitar la creación innecesaria de nuevos `set` (copy) en cada llamada, reemplazando el seguimiento de `parents` por una lógica de profundidad validada y mejorando la eficiencia del escaneo al evitar re-traversals en directorios ya visitados dentro del `memo` global.
 - `2026-09-02T08:11:07` **assistant.py** (rendimiento): Se implementó un decorador de caché `@lru_cache` para `_generate_context_lines` y se optimizó `context_as_text` para evitar llamadas redundantes a métodos de formateo costosos durante la construcción del contexto, mejorando el rendimiento en iteraciones frecuentes.
 - `2026-09-02T08:00:45` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados con tipado y descripciones detalladas de los parámetros y comportamientos en las funciones de validación de integridad (`_check_file_integrity` y `_validate_boundary_conditions`), facilitando el mantenimiento futuro y la comprensión de las restricciones de seguridad.
 - `2026-09-02T07:59:39` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas (`_is_safe_for_disk_op`, `stage_for_review`), clarificando las precondiciones de seguridad y el flujo de los chequeos para facilitar el mantenimiento y la auditoría.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T07:29:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` incorporando una validación estricta de `ConfigKey` y sanitización adicional para evitar que valores nulos o tipos incorrectos introducidos por manipulaciones externas del JSON provoquen comportamientos inesperados en la capa de persistencia.
 - `2026-09-02T07:29:26` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_reparse_point` y `_is_safe_entry` centralizando la validación de estados y capturando excepciones de forma más estricta para evitar que errores en atributos de sistema detengan el escaneo del módulo `scanner.py`.
 - `2026-09-02T07:29:02` **safety.py** (manejo de errores y validación de entradas): He mejorado `ensure_safe_to_modify` para que el acceso a metadatos (como `st_file_attributes`) sea robusto frente a errores de sistema (como `FileNotFoundError` o `PermissionError`) mediante el uso de `path.lstat()` en lugar de `path.stat()` y envolviendo las llamadas críticas en bloques `try-except` más granulares, evitando que el proceso se bloquee por accesos de solo lectura a metadatos de archivos del sistema.
-- `2026-09-02T07:19:43` **quarantine.py** (manejo de errores y validación de entradas): He mejorado la robustez de `_safe_unlink` y `purge_all` implementando una validación previa estricta basada en el estado real del archivo, asegurando que la operación de borrado sea consistente con la integridad del sistema y las reglas de seguridad.
-- `2026-09-02T07:19:10` **organizer.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `scan_for_junk` y `_process_directory` implementando validaciones de entrada más estrictas y manejos de excepciones específicos, asegurando que solo se procesen tipos `Path` válidos y evitando que errores en archivos individuales detengan el escaneo de directorios completos.

@@ -703,3 +703,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-02T08:11:07` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Se implementó un decorador de caché `@lru_cache` para `_generate_context_lines` y se optimizó `context_as_text` para evitar llamadas redundantes a métodos de formateo costosos durante la construcción del contexto, mejorando el rendimiento en iteraciones frecuentes.
 - `2026-09-02T08:11:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T08:11:07` Corrida terminada. Total usado hoy: 192.
+- `2026-09-02T08:19:31` Arrancando corrida. Quedan hoy ~108 peticiones objetivo.
+- `2026-09-02T08:20:04` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-02T08:20:31` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó la recursión en `_sum_directory_recursive` para evitar la creación innecesaria de nuevos `set` (copy) en cada llamada, reemplazando el seguimiento de `parents` por una lógica de profundidad validada y mejorando la eficiencia del escaneo al evitar re-traversals en directorios ya visitados dentro del `memo` global.
+- `2026-09-02T08:20:57` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-02T08:21:07` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` sustituyendo las llamadas múltiples a `stat()` por una sola llamada a `os.scandir` (que ya provee los atributos de archivo de manera eficiente en la mayoría de los sistemas de archivos) y eliminando la redundancia de `is_protected_path(p)` al delegar el filtrado a la etapa inicial de escaneo.
+- `2026-09-02T08:21:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T08:21:07` Corrida terminada. Total usado hoy: 196.

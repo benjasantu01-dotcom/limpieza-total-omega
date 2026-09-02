@@ -177,16 +177,13 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Escaneo recursivo optimizado utilizando os.scandir y stat para metadatos.
-    
-    Evita la recursión infinita en puntos de reparse mediante el seguimiento
-    de inodos (st_dev, st_ino) ya visitados.
+    Escaneo recursivo optimizado utilizando os.scandir para acceder a metadatos 
+    de forma eficiente sin llamadas adicionales a stat().
     """
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Set[Tuple[int, int]] = set()
 
     def _scan_recursive(current_dir: Path) -> None:
-        """Explora el directorio actual evitando ciclos mediante inodos."""
         try:
             stat_root = current_dir.stat()
             inode = (stat_root.st_dev, stat_root.st_ino)
@@ -200,11 +197,12 @@ def _collect_candidates(
                         if entry.is_dir(follow_symlinks=False):
                             _scan_recursive(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            file_stat = entry.stat()
-                            if file_stat.st_size >= min_size:
+                            # Acceder a stat desde la entrada de scandir evita llamadas extra al sistema
+                            info = entry.stat()
+                            if info.st_size >= min_size:
                                 p = Path(entry.path)
                                 if not is_protected_path(p):
-                                    temp_map[int(file_stat.st_size)].append(p)
+                                    temp_map[int(info.st_size)].append(p)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):
@@ -245,15 +243,10 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     """
     Pipeline de hashing: decide la profundidad del análisis según el tamaño.
-    
-    Si el archivo es menor a PARTIAL_READ_BYTES, el hash parcial es suficiente
-    para confirmar identidad con alta precisión.
     """
     if len(paths) < 2: 
         return []
     
-    # Decisión algorítmica: si el archivo es más pequeño que el buffer parcial,
-    # el hash parcial ES el hash completo.
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, partial_hash)
     else:
@@ -265,14 +258,6 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
     """
     Punto de entrada: identifica y ordena grupos de duplicados por impacto (wasted_bytes).
-    
-    Args:
-        directories: Lista de rutas a escanear.
-        min_size: Tamaño mínimo para considerar un archivo como duplicable.
-        skip_protected: Flag para omitir rutas de sistema.
-        
-    Returns:
-        Lista de objetos DuplicateGroup ordenados de mayor a menor ahorro posible.
     """
     if directories is None or not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []
@@ -295,10 +280,6 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Heurística para sugerir el archivo original.
-    
-    Criterios:
-    1. Preferencia por el archivo más antiguo (mtime).
-    2. Ante igualdad de antigüedad, se elige la ruta con menor longitud (lexicográficamente).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None

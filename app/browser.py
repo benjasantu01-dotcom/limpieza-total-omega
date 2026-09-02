@@ -201,13 +201,11 @@ def _sum_directory_recursive(
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
     base_check_path: Optional[Path] = None,
-    depth: int = 0,
-    parents: Optional[Set[str]] = None
+    depth: int = 0
 ) -> int:
     """
-    Calcula el tamaño acumulado de un directorio de forma recursiva. 
-    Usa 'memo' para evitar re-cálculos, un set 'parents' para detectar ciclos 
-    y 'MAX_SCAN_DEPTH' para proteger la pila de ejecución.
+    Calcula el tamaño acumulado de un directorio de forma recursiva con memoización.
+    Usa 'MAX_SCAN_DEPTH' para proteger la pila y evitar el re-procesamiento de subárboles.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -215,13 +213,6 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
     
-    if parents is None:
-        parents = set()
-    
-    if root_abs in parents:
-        return 0
-    parents.add(root_abs)
-
     try:
         root_path = Path(root_abs).resolve(strict=True)
     except (OSError, RuntimeError):
@@ -238,17 +229,13 @@ def _sum_directory_recursive(
                     continue
                 
                 try:
-                    # Recursión controlada: no seguimos symlinks (follow_symlinks=False)
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(
-                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1, parents.copy()
+                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
-                        try:
-                            stats = entry.stat(follow_symlinks=False)
-                            total += stats.st_size
-                        except OSError:
-                            continue
+                        stats = entry.stat(follow_symlinks=False)
+                        total += stats.st_size
                 except (OSError, PermissionError):
                     continue
     except (PermissionError, OSError):
