@@ -338,7 +338,7 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
             if not src.exists() or src.is_relative_to(dest_base): continue
             
             target: Optional[Path] = _can_move_file(junk_file, dest_base)
-            if target and is_safe_to_modify(src) and is_safe_to_modify(target):
+            if target and is_safe_to_modify(src) and is_safe_to_modify(target) and not is_protected_path(target):
                 ensure_safe_to_modify(src)
                 ensure_safe_to_modify(target)
                 shutil.move(str(src), str(target))

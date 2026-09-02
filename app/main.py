@@ -1286,9 +1286,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Validar de nuevo dentro del thread
             movidos = [jf for jf in aptos if self._is_safe_path(jf.path)]
             if not movidos:
-                self.log("Error: Los archivos ya no son seguros para mover.", "Limpieza")
+                self.log("Error: Los archivos seleccionados ya no son seguros para mover.", "Limpieza")
                 return
             self.set_status("Moviendo a revisión...")
             dest = stage_for_review(movidos)
@@ -1307,6 +1308,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             return
 
         def task() -> None:
+            # Validar seguridad antes de realizar borrado
+            if not self._is_safe_path("."):
+                self.log("Error: La carpeta de revisión no es segura para operar.", "Limpieza")
+                return
             try:
                 self.set_status("Vaciando la carpeta de revisión...")
                 n = delete_reviewed()

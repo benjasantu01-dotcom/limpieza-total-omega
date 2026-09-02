@@ -1158,3 +1158,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T14:08:28` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-09-02T14:08:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T14:08:28` Corrida terminada. Total usado hoy: 332.
+- `2026-09-02T14:17:06` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-02T14:17:11` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T14:18:27` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `on_stage` y `on_delete_reviewed` al centralizar la validación de seguridad de la ruta mediante el método `_is_safe_path` antes de ejecutar las operaciones de disco, evitando así posibles errores de lógica si el estado de la carpeta de revisión cambiara inesperadamente durante la ejecución asíncrona.
+- `2026-09-02T14:18:57` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré la seguridad de `_get_process_path` y `_is_safe_to_trim` para evitar el manejo inseguro de handles y asegurar que la ruta del ejecutable se valide con `is_safe_to_modify` antes de cualquier operación, aplicando el principio de mínima exposición a procesos del sistema.
+- `2026-09-02T14:19:25` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Se endureció la validación de seguridad en `stage_for_review` y `delete_reviewed` para asegurar que las operaciones de disco no se ejecuten si la ruta de destino reside accidentalmente dentro de una estructura jerárquica no permitida o si las restricciones de `is_protected_path` fallan en tiempo de ejecución.
+- `2026-09-02T14:19:47` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_atomic_isolate_file` implementando una validación estricta de permisos de escritura y atributos de sistema en el archivo temporal antes de consolidar el movimiento, previniendo posibles ataques de *Time-of-Check to Time-of-Use* (TOCTOU).
+- `2026-09-02T14:19:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T14:19:47` Corrida terminada. Total usado hoy: 336.
