@@ -1477,3 +1477,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-09-02T04:37:01` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Se ha mejorado la robustez de `_safe_run` para evitar que excepciones no controladas durante la inicialización de hilos o tareas bloqueen indefinidamente el contador `_tasks_running` y mantengan la UI deshabilitada permanentemente en caso de error.
 - `2026-09-02T04:37:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T04:37:01` Corrida terminada. Total usado hoy: 108.
+- `2026-09-02T04:45:12` Arrancando corrida. Quedan hoy ~192 peticiones objetivo.
+- `2026-09-02T04:45:40` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-02T04:45:41` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T04:46:21` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se añadió una validación en `_process_directory` para verificar si un archivo está bloqueado por el sistema antes de incluirlo en la lista de escaneo, evitando errores de metadatos (como tamaño cero) y procesamientos fallidos en archivos ocupados por otros procesos.
+- `2026-09-02T04:46:59` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de existencia previo en `_atomic_isolate_file` para evitar la creación de archivos temporales huérfanos en caso de que el origen se vuelva inaccesible durante el proceso, incrementando la robustez ante condiciones de carrera (concurrencia).
+- `2026-09-02T04:47:22` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-02T04:47:22` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T04:47:22` Corrida terminada. Total usado hoy: 112.

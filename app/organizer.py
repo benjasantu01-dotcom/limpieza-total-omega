@@ -219,9 +219,11 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                             _process_directory(Path(entry.path), found)
                     elif entry.is_file(follow_symlinks=False):
                         if _is_junk_path(Path(entry.name)):
-                            stats = entry.stat()
-                            if stats.st_size > 0:
-                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                            path_obj = Path(entry.path)
+                            if not _is_file_locked(path_obj):
+                                stats = entry.stat()
+                                if stats.st_size > 0:
+                                    found.append(JunkFile(path_obj, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError, RuntimeError):

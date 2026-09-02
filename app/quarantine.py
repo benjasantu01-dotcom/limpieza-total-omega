@@ -350,6 +350,9 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     """
     Aísla un archivo copiándolo a un sandbox de forma atómica para evitar corrupción.
     """
+    if not source.exists():
+        raise FileNotFoundError("El archivo de origen no existe.")
+
     if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
         raise UnsafePathError("Operación denegada: intento de escritura fuera del sandbox.")
     
