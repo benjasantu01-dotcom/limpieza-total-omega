@@ -251,12 +251,10 @@ def validate(raw_values: Any) -> AppSettings:
     """Valida un objeto arbitrario contra `AppSettings`, rellenando faltantes con `DEFAULTS`."""
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
-    for key_enum in ConfigKey:
-        val = raw_values.get(key_enum.value)
-        validator = _VALIDATOR_MAP.get(key_enum)
-        if val is not None and validator:
-            validated = validator(key_enum, val)
-            if validated is not None:
+    for key_str, val in raw_values.items():
+        key_enum = _STR_TO_ENUM.get(key_str)
+        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
+            if (validated := validator(key_enum, val)) is not None:
                 config[key_enum.value] = validated
     return config
 
@@ -320,10 +318,8 @@ def update(changes: dict[str, Any], custom_base: PathLike | None = None) -> AppS
     modified = False
     for k, v in changes.items():
         key_enum = _STR_TO_ENUM.get(k)
-        validator = _VALIDATOR_MAP.get(key_enum) if key_enum else None
-        if validator:
-            val = validator(key_enum, v)
-            if val is not None and val != current.get(k):
+        if key_enum and (validator := _VALIDATOR_MAP.get(key_enum)):
+            if (val := validator(key_enum, v)) is not None and val != current.get(k):
                 current[k] = val
                 modified = True
     if modified: save(current, custom_base)
