@@ -174,7 +174,11 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
-    """Realiza una validación exhaustiva de seguridad antes de mover o borrar un archivo."""
+    """
+    Realiza una validación exhaustiva de seguridad antes de mover o borrar un archivo.
+    Verifica: integridad de rutas, permisos de escritura, estado de bloqueo, 
+    ausencia de caracteres prohibidos y cumplimiento de reglas en safety.py.
+    """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     
@@ -285,7 +289,11 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """Traslada archivos basura a un área de cuarentena para revisión humana."""
+    """
+    Traslada archivos basura a un área de cuarentena para revisión humana.
+    Realiza chequeos preventivos antes de cada operación individual de 'shutil.move' 
+    utilizando 'ensure_safe_to_modify' para garantizar la integridad.
+    """
     if not files or not isinstance(review_dir, str): return None
 
     try:

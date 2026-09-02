@@ -241,8 +241,15 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity(path: Path) -> None:
     """
     Realiza un chequeo exhaustivo de integridad.
-    Si se detecta una violación, levanta UnsafePathError. 
+    
+    Verifica el estado del archivo mediante una serie de predicados de seguridad. 
     Usa caché con TTL para optimizar el rendimiento en iteraciones de bucle frecuentes.
+    
+    Args:
+        path: Ruta a verificar.
+        
+    Raises:
+        UnsafePathError: Si el archivo incumple cualquier regla de seguridad.
     """
     path_key = str(path)
     now = time.monotonic()
@@ -381,12 +388,17 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
     """
-    Valida las restricciones lógicas y de alcance (scope) del sistema:
-    - Impide escape fuera del directorio raíz definido (sandbox).
-    - Previene modificación del directorio de trabajo actual (root).
-    - Bloquea acceso a raíces de unidad (C:\).
-    - Protege directorios definidos en PROTECTED_DIR_NAMES.
-    - Rechaza nodos de reparse (Junctions/Symlinks) para evitar saltos.
+    Valida las restricciones lógicas y de alcance (scope) del sistema.
+    
+    Verifica que la ruta esté dentro del sandbox definido, no sea una raíz de
+    unidad, no esté protegida por sistema y no sea un nodo de reparse.
+    
+    Args:
+        target_path: Ruta a validar.
+        root_directory: Directorio base permitido para el alcance.
+        
+    Raises:
+        UnsafePathError: Si la ruta infringe los límites definidos.
     """
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("La ruta objetivo está fuera del alcance definido por el usuario.")
