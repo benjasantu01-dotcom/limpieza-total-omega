@@ -312,14 +312,17 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
-    """Extrae la ruta del ejecutable usando QueryFullProcessImageNameW."""
+    """Extrae la ruta del ejecutable usando QueryFullProcessImageNameW y normaliza."""
     if not proc_handle: return None
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
     
-    size = ctypes.c_ulong(4096)
-    buf = ctypes.create_unicode_buffer(4096)
+    MAX_PATH = 4096
+    buf = ctypes.create_unicode_buffer(MAX_PATH)
+    size = ctypes.c_ulong(MAX_PATH)
+    
     try:
+        # 0 indica Win32 path format (normalizado)
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError, ValueError): pass

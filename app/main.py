@@ -375,7 +375,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._build_tabs_container()
         self._build_footer()
 
-    @ensure_safety
     def _tab_factory(self, name: str) -> None:
         """Carga el contenido de una pestaña bajo demanda si no está inicializada."""
         if self._initialized_tabs.get(name):
@@ -473,7 +472,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.activity.pack(side="right")
         self.activity.pack_forget()
 
-    @ensure_safety
     def _build_tab_salud(self) -> None:
         """Construye la interfaz de la pestaña Salud."""
         tab = self.tabs["Salud"]
@@ -567,7 +565,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.gauge.create_text(88, 116, text=f"nota {grade}", fill=color_nota,
                                 font=("Segoe UI", branding.font_size("body"), "bold"))
 
-    @ensure_safety
     def _build_tab_limpieza(self) -> None:
         """Construye los controles y visualización de la pestaña Limpieza."""
         tab = self.tabs["Limpieza"]
@@ -598,7 +595,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._menu(options_container, ["size", "date"], self.sort_by,
                    lambda _: self.refresh_list(), width=110).grid(row=0, column=4, padx=4)
 
-    @ensure_safety
     def _build_tab_seguridad(self) -> None:
         """Construye los controles y visualización de la pestaña Seguridad."""
         tab = self.tabs["Seguridad"]
@@ -612,7 +608,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=3)
         self._make_output("Seguridad", tab)
 
-    @ensure_safety
     def _build_tab_cuarentena(self) -> None:
         """Construye los controles y visualización de la pestaña Cuarentena."""
         tab = self.tabs["Cuarentena"]
@@ -630,7 +625,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.quarantine_id.grid(row=0, column=1, padx=4)
         self._make_output("Cuarentena", tab)
 
-    @ensure_safety
     def _build_tab_memoria(self) -> None:
         """Construye la interfaz de la pestaña Memoria."""
         tab = self.tabs["Memoria"]
@@ -648,7 +642,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self.pid_entry.grid(row=0, column=1, padx=4)
         self._make_output("Memoria", tab)
 
-    @ensure_safety
     def _build_tab_disco(self) -> None:
         """Construye la interfaz de la pestaña Disco."""
         tab = self.tabs["Disco"]
@@ -658,7 +651,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=1)
         self._make_output("Disco", tab)
 
-    @ensure_safety
     def _build_tab_duplicados(self) -> None:
         """Construye la interfaz de la pestaña Duplicados."""
         tab = self.tabs["Duplicados"]
@@ -668,7 +660,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      danger=True, column=1)
         self._make_output("Duplicados", tab)
 
-    @ensure_safety
     def _build_tab_navegadores(self) -> None:
         """Construye la interfaz de la pestaña Navegadores."""
         tab = self.tabs["Navegadores"]
@@ -676,7 +667,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._action(row, "Detectar caché", self.on_browser_report, column=0)
         self._make_output("Navegadores", tab)
 
-    @ensure_safety
     def _build_tab_inicio(self) -> None:
         """Construye la interfaz de la pestaña Inicio."""
         tab = self.tabs["Inicio"]
@@ -684,7 +674,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._action(row, "Ver programas de inicio", self.on_startup_report, column=0)
         self._make_output("Inicio", tab)
 
-    @ensure_safety
     def _build_tab_informe(self) -> None:
         """Construye la interfaz de la pestaña Informe."""
         tab = self.tabs["Informe"]
@@ -696,7 +685,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                      secondary=True, column=2)
         self._make_output("Informe", tab)
 
-    @ensure_safety
     def _build_tab_asistente(self) -> None:
         """Construye la interfaz del Asistente IA."""
         tab = self.tabs["Asistente"]
@@ -728,7 +716,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             ).grid(row=i // 3, column=i % 3, padx=4, pady=4, sticky="w")
         self._make_output("Asistente", tab)
 
-    @ensure_safety
     def _build_tab_ajustes(self) -> None:
         """Construye la interfaz de la pestaña Ajustes."""
         tab = self.tabs["Ajustes"]

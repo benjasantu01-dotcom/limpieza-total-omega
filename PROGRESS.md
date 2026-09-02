@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **241** (47.8% de aceptación)
+- Mejoras aceptadas: **243** (48.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 197
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-08-31 | 10 | 0 | 1 | 1 | 22 |
+| 2026-08-31 | 10 | 0 | 1 | 1 | 18 |
 | 2026-09-01 | 179 | 6 | 27 | 12 | 126 |
-| 2026-09-02 | 52 | 7 | 7 | 5 | 49 |
+| 2026-09-02 | 54 | 7 | 7 | 6 | 50 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **62**
 - manejo de errores y validación de entradas: **52**
-- seguridad defensiva: **45**
+- seguridad defensiva: **47**
 - rendimiento: **42**
 - robustez ante casos límite: **40**
 
@@ -36,17 +36,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `browser.py`: **19**
 - `diskreport.py`: **19**
 - `quarantine.py`: **19**
+- `memory.py`: **18**
 - `safety.py`: **18**
 - `duplicates.py`: **17**
-- `memory.py`: **17**
 - `healthscore.py`: **16**
 - `organizer.py`: **16**
 - `branding.py`: **13**
 - `startup.py`: **13**
-- `main.py`: **11**
+- `main.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T05:17:58` **memory.py** (seguridad defensiva): Mejoré `_get_process_path` para prevenir desbordamientos y asegurar que la ruta extraída sea normalizada y validada, integrando `is_safe_to_modify` antes de cualquier interacción potencial con el ejecutable, siguiendo estrictamente el enfoque de seguridad defensiva.
+- `2026-09-02T05:17:46` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `main.py` eliminando el uso del decorador `@ensure_safety` en métodos que solo realizan lectura de información (tales como `_build_tab_salud`, `_build_tab_limpieza` y otros constructores de pestañas), ya que aplicar chequeos de escritura en operaciones de solo lectura es una mala práctica que puede causar abortos innecesarios; asimismo, se mantuvo la protección explícita en `run_async` y los métodos de acción de disco.
 - `2026-09-02T05:07:41` **diskreport.py** (seguridad defensiva): Se reforzó la validación de seguridad en `walk_files` y `drive_usage` asegurando que ninguna ruta procesada sea un punto de reparse o enlace simbólico incluso antes de resolver la jerarquía, evitando así el acceso a volúmenes montados fuera de la raíz raíz objetivo o fuera de las restricciones impuestas por el usuario.
 - `2026-09-02T05:06:47` **branding.py** (seguridad defensiva): Se reforzó `save_logo_svg` eliminando la validación manual de rutas `..` y el uso de `Path.cwd()`, delegando la seguridad de forma centralizada y robusta exclusivamente a `ensure_safe_to_modify`, garantizando que la operación de escritura sea segura según los estándares definidos.
 - `2026-09-02T05:06:16` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al validar estrictamente el `payload` antes de la ejecución de la solicitud HTTP, asegurando que no se construyan peticiones maliciosas ni se filtren rutas de sistema accidentalmente mediante una validación explícita del tamaño y estructura del JSON final.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T04:25:55` **assistant.py** (robustez ante casos límite): Se reforzó la robustez del sistema ante valores inesperados en las métricas mediante la implementación de `math.isnan` y `math.isinf` en `_safe_float` para prevenir comportamientos no definidos, y se añadieron chequeos de tipo explícitos en `ingest` para evitar que diccionarios anidados o tipos complejos corrompan el contexto.
 - `2026-09-02T04:16:59` **settings.py** (rendimiento): Se optimizó el acceso a la configuración implementando una validación previa de la clave en el diccionario `_STR_TO_ENUM` para evitar recorridos redundantes y mejorando la eficiencia de `update` y `validate` al utilizar operaciones de diccionario directas en lugar de iteraciones innecesarias sobre el Enum.
 - `2026-09-02T04:16:23` **safety.py** (rendimiento): Optimicé el rendimiento de `is_protected_path` al reemplazar la creación dinámica de una `frozenset` con comprensión de listas en cada llamada por una comprobación directa mediante `any` sobre los componentes de la ruta, evitando la asignación de memoria innecesaria y el procesamiento de strings redundantes.
-- `2026-09-02T03:55:41` **healthscore.py** (rendimiento): Se optimizó el rendimiento del bucle principal de `compute_score` eliminando la creación repetitiva de lambdas y el filtrado por lista dentro del ciclo `for`, pre-calculando la lógica necesaria en el pipeline de procesamiento.
-- `2026-09-02T03:55:31` **duplicates.py** (rendimiento): Optimizamos `_collect_candidates` utilizando un conjunto de nombres de archivos visitados dentro de cada directorio (`Set[Path]`) para evitar el uso excesivo de `Path.stat()` y `Path.resolve()` dentro del bucle, reduciendo significativamente las llamadas al sistema en sistemas de archivos grandes.
