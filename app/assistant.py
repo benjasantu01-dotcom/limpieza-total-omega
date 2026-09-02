@@ -652,7 +652,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
         return None
     
     payload = _build_payload(question, safe_c)
-    if not payload: return None
+    if not payload or len(payload) > _MAX_PROMPT_LIMIT: return None
     
     try:
         # La clave API se inyecta directamente aquí, se evita su persistencia en el log de objetos o logs de contexto

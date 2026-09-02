@@ -298,7 +298,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         
         parent_resolved = parent.resolve()
         if not _Validators._is_safe_path(str(parent_resolved)): return None
-        if not parent_resolved.exists(): parent_resolved.mkdir(parents=True, exist_ok=True)
+        if not parent_resolved.exists(): 
+            parent_resolved.mkdir(parents=True, exist_ok=True)
         if not parent_resolved.is_dir(): return None
         
         if ruta.exists() and (ruta.is_symlink() or not ruta.is_file()):

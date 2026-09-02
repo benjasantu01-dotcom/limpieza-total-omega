@@ -1144,3 +1144,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T13:48:05` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha añadido un robusto manejo de excepciones de lectura en `process_entry` y `scan_file`, asegurando que archivos bloqueados, con metadatos corruptos o nombres que exceden el buffer del sistema no interrumpan el flujo de escaneo, mejorando la resiliencia ante el entorno volátil del disco.
 - `2026-09-02T13:48:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T13:48:05` Corrida terminada. Total usado hoy: 324.
+- `2026-09-02T13:56:40` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-02T13:57:16` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` ante condiciones de carrera y fallos de sistema al asegurar que la carpeta de destino sea un directorio real antes de proceder y verificando la atomicidad de la operación en entornos donde el sistema de archivos pueda estar bloqueado o inaccesible temporalmente.
+- `2026-09-02T13:57:43` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-02T13:58:22` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad en `_call_gemini` añadiendo un chequeo explícito de la longitud del `payload` y validando que el `api_key` sea una cadena limpia antes de usarlo para construir la URL, evitando posibles errores de inyección o desbordamiento en la solicitud.
+- `2026-09-02T13:58:40` ✅ Mejora aceptada en branding.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save_logo_svg` validando la existencia de la ruta de destino antes de intentar crear directorios o escribir, evitando así posibles errores de acceso en rutas protegidas o mal formadas.
+- `2026-09-02T13:58:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T13:58:40` Corrida terminada. Total usado hoy: 328.
