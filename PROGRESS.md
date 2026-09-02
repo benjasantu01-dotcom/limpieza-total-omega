@@ -9,43 +9,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 204
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 154 | 5 | 22 | 10 | 117 |
-| 2026-09-02 | 81 | 8 | 12 | 8 | 87 |
+| 2026-09-01 | 151 | 5 | 22 | 9 | 117 |
+| 2026-09-02 | 84 | 8 | 12 | 8 | 88 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **58**
 - manejo de errores y validación de entradas: **54**
 - seguridad defensiva: **51**
-- rendimiento: **37**
-- robustez ante casos límite: **35**
+- rendimiento: **40**
+- robustez ante casos límite: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **21**
 - `assistant.py`: **21**
-- `safety.py`: **19**
+- `settings.py`: **20**
 - `browser.py`: **19**
-- `scanner.py`: **18**
+- `organizer.py`: **18**
+- `safety.py`: **18**
 - `quarantine.py`: **18**
-- `organizer.py`: **17**
+- `memory.py`: **17**
+- `scanner.py`: **17**
 - `diskreport.py`: **17**
-- `memory.py`: **16**
 - `duplicates.py`: **16**
+- `main.py`: **14**
 - `healthscore.py`: **14**
 - `branding.py`: **13**
-- `main.py`: **13**
 - `startup.py`: **13**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T08:32:01` **organizer.py** (rendimiento): Optimizé el rendimiento de `_process_directory` eliminando la llamada repetitiva a `entry.stat()` mediante el uso del objeto `os.DirEntry` ya cacheado por `os.scandir`, reduciendo drásticamente las llamadas al sistema de archivos por cada archivo encontrado.
+- `2026-09-02T08:31:50` **memory.py** (rendimiento): Se optimizó el proceso `top_memory_processes` reemplazando la lógica de selección de procesos en PowerShell por una más eficiente (`Select-Object -First 20` en lugar de 40) y consolidando la consulta en un solo pipe, lo que reduce la carga de CPU y la memoria utilizada por la instancia de PowerShell.
+- `2026-09-02T08:31:22` **main.py** (rendimiento): Se optimizó el acceso a los datos de métricas de salud consolidando las llamadas al caché y evitando la regeneración innecesaria de objetos `SystemMetrics` durante la actualización de la UI, lo cual reduce la latencia en el dashboard de salud.
 - `2026-09-02T08:21:07` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` sustituyendo las llamadas múltiples a `stat()` por una sola llamada a `os.scandir` (que ya provee los atributos de archivo de manera eficiente en la mayoría de los sistemas de archivos) y eliminando la redundancia de `is_protected_path(p)` al delegar el filtrado a la etapa inicial de escaneo.
 - `2026-09-02T08:20:31` **browser.py** (rendimiento): Se optimizó la recursión en `_sum_directory_recursive` para evitar la creación innecesaria de nuevos `set` (copy) en cada llamada, reemplazando el seguimiento de `parents` por una lógica de profundidad validada y mejorando la eficiencia del escaneo al evitar re-traversals en directorios ya visitados dentro del `memo` global.
 - `2026-09-02T08:11:07` **assistant.py** (rendimiento): Se implementó un decorador de caché `@lru_cache` para `_generate_context_lines` y se optimizó `context_as_text` para evitar llamadas redundantes a métodos de formateo costosos durante la construcción del contexto, mejorando el rendimiento en iteraciones frecuentes.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T07:39:50` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a las funciones públicas de dibujo y manipulación cromática, clarificando las expectativas sobre los parámetros y el comportamiento ante entradas inválidas, facilitando así el mantenimiento futuro.
 - `2026-09-02T07:39:18` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` documentando los contratos de las clases de apoyo (`ProblemCriterion` y `AssistantConfig`) y unificando el estilo de los docstrings para facilitar la comprensión de las reglas de negocio, manteniendo intacta la lógica de seguridad.
 - `2026-09-02T07:30:08` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones granulares para detectar entradas de registro corruptas o mal formadas (como registros sin nombre o rutas de comando vacías), evitando que una sola entrada maliciosa o mal reportada por el sistema bloquee el parseo de toda la lista.
-- `2026-09-02T07:29:55` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save()` y `validate()` incorporando una validación estricta de `ConfigKey` y sanitización adicional para evitar que valores nulos o tipos incorrectos introducidos por manipulaciones externas del JSON provoquen comportamientos inesperados en la capa de persistencia.
-- `2026-09-02T07:29:26` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_reparse_point` y `_is_safe_entry` centralizando la validación de estados y capturando excepciones de forma más estricta para evitar que errores en atributos de sistema detengan el escaneo del módulo `scanner.py`.
-- `2026-09-02T07:29:02` **safety.py** (manejo de errores y validación de entradas): He mejorado `ensure_safe_to_modify` para que el acceso a metadatos (como `st_file_attributes`) sea robusto frente a errores de sistema (como `FileNotFoundError` o `PermissionError`) mediante el uso de `path.lstat()` en lugar de `path.stat()` y envolviendo las llamadas críticas en bloques `try-except` más granulares, evitando que el proceso se bloquee por accesos de solo lectura a metadatos de archivos del sistema.

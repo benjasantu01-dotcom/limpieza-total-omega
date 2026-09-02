@@ -213,7 +213,7 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 
 
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
-    """Recorre recursivamente un directorio buscando archivos basura."""
+    """Recorre recursivamente un directorio buscando archivos basura usando cache de DirEntry."""
     if not isinstance(current_dir, Path) or not current_dir.exists():
         return
     try:
@@ -225,11 +225,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                             _process_directory(Path(entry.path), found)
                     elif entry.is_file(follow_symlinks=False):
                         if _is_junk_path(Path(entry.name)):
-                            path_obj = Path(entry.path)
-                            if not _is_file_locked(path_obj):
-                                stats = entry.stat()
-                                if stats.st_size > 0:
-                                    found.append(JunkFile(path_obj, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                            stats = entry.stat()
+                            if stats.st_size > 0:
+                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError, RuntimeError):

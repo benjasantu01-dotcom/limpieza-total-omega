@@ -261,9 +261,10 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
+        # Optimización: limitamos la recolección en PS a 20 procesos para reducir carga
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 40 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
+            "Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First 20 | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
         ]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)

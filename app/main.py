@@ -1079,11 +1079,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Consolida las métricas del sistema para el cálculo del score de salud."""
-        hallazgos = self._get_cached("suspicions") or []
-        arranque = self._get_cached("startup") or []
+        # Se obtienen referencias directas para evitar recreación innecesaria en el scope
         junk = self._get_cached("junk") or []
+        hallazgos = self._get_cached("suspicions") or []
         dups = self._get_cached("dups") or []
-
         snapshot = self._get_cached("memory_snapshot") or memory_mod.read_snapshot()
         disk_info = self._get_home_disk_info()
             
@@ -1094,7 +1093,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             memory_available_percent=snapshot.available_percent if snapshot else 100.0,
             disk_free_percent=(disk_info.free / disk_info.total * 100) if (disk_info and disk_info.total > 0) else 100.0,
             duplicate_mb=(duplicates_mod.reclaimable_bytes(dups) / 1048576) if dups else 0.0,
-            startup_count=len(arranque),
+            startup_count=len(self._get_cached("startup") or []),
             quarantined_count=len(quarantine.list_items()),
         )
         return metrics, snapshot, disk_info or diskreport.DriveInfo(0, 0, 0, "")
@@ -1106,7 +1105,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.clear("Salud")
             self.log("Analizando... esto no modifica nada.", "Salud")
 
-            metrics, snapshot, unidad = self._compile_metrics()
+            metrics, snapshot, _ = self._compile_metrics()
             resultado = healthscore.compute_score(metrics)
 
             self.assistant_context = assistant.build_context(

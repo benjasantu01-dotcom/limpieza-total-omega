@@ -710,3 +710,10 @@ FAILED evolve/tests/test_assistant.py::test_describe_never_prints_the_key - KeyE
 - `2026-09-02T08:21:07` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` sustituyendo las llamadas múltiples a `stat()` por una sola llamada a `os.scandir` (que ya provee los atributos de archivo de manera eficiente en la mayoría de los sistemas de archivos) y eliminando la redundancia de `is_protected_path(p)` al delegar el filtrado a la etapa inicial de escaneo.
 - `2026-09-02T08:21:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T08:21:07` Corrida terminada. Total usado hoy: 196.
+- `2026-09-02T08:29:43` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-02T08:30:12` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-02T08:31:22` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se optimizó el acceso a los datos de métricas de salud consolidando las llamadas al caché y evitando la regeneración innecesaria de objetos `SystemMetrics` durante la actualización de la UI, lo cual reduce la latencia en el dashboard de salud.
+- `2026-09-02T08:31:50` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el proceso `top_memory_processes` reemplazando la lógica de selección de procesos en PowerShell por una más eficiente (`Select-Object -First 20` en lugar de 40) y consolidando la consulta en un solo pipe, lo que reduce la carga de CPU y la memoria utilizada por la instancia de PowerShell.
+- `2026-09-02T08:32:01` ✅ Mejora aceptada en organizer.py (enfoque: rendimiento). Optimizé el rendimiento de `_process_directory` eliminando la llamada repetitiva a `entry.stat()` mediante el uso del objeto `os.DirEntry` ya cacheado por `os.scandir`, reduciendo drásticamente las llamadas al sistema de archivos por cada archivo encontrado.
+- `2026-09-02T08:32:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T08:32:01` Corrida terminada. Total usado hoy: 200.
