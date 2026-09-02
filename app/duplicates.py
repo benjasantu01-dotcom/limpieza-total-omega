@@ -186,6 +186,7 @@ def _collect_candidates(
     visited_inodes: Set[Tuple[int, int]] = set()
 
     def _scan_recursive(current_dir: Path) -> None:
+        """Explora el directorio actual evitando ciclos mediante inodos."""
         try:
             stat_root = current_dir.stat()
             inode = (stat_root.st_dev, stat_root.st_ino)
@@ -251,6 +252,8 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     if len(paths) < 2: 
         return []
     
+    # Decisión algorítmica: si el archivo es más pequeño que el buffer parcial,
+    # el hash parcial ES el hash completo.
     if size <= PARTIAL_READ_BYTES:
         results = _group_paths_by_hash(paths, partial_hash)
     else:

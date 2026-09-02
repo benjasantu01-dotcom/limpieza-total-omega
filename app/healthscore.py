@@ -51,19 +51,19 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización pre-calculados
+# Factores de normalización pre-calculados (inversos para evitar divisiones en tiempo de ejecución)
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
 _INV_RAM: Final[float] = 1.0 / _LIMIT_RAM_PERCENT
 _INV_DISK: Final[float] = 1.0 / _LIMIT_DISK_PERCENT
 
-# Niveles de severidad
+# Niveles de severidad definidos como rangos de normalización
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
-# Pesos de importancia relativa
+# Pesos de importancia relativa para el cálculo del score final
 WEIGHTS: Final[Dict[MetricKey, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -157,27 +157,27 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Normaliza el impacto de la basura (MB) a una escala de salud inversa."""
+    """Normaliza cantidad de basura: menor cantidad implica mayor salud."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa seguridad con penalizaciones ponderadas por amenazas detectadas."""
+    """Puntúa seguridad con penalizaciones ponderadas: 5% por amenaza, 25% por advertencia."""
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Puntúa salud basándose en la disponibilidad de RAM relativa al umbral óptimo."""
+    """Puntúa salud según disponibilidad de RAM: mayor disponibilidad es mejor."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Puntúa salud basándose en el espacio libre disponible."""
+    """Puntúa salud según espacio libre: mayor espacio es mejor."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Calcula salud inversamente proporcional al espacio malgastado en archivos duplicados."""
+    """Puntúa duplicados: menor espacio ocupado implica mayor salud."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Calcula salud inversamente proporcional al número de apps en el inicio."""
+    """Puntúa arranque: menor número de programas en inicio implica mayor salud."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
@@ -235,6 +235,11 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
     )
 
+def _render_bar(pts: int, maximo: int) -> str:
+    """Genera una representación visual de barra para el resumen de salud."""
+    puntos = max(0, min(pts, maximo))
+    return ('#' * puntos) + ('.' * (maximo - puntos))
+
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una representación visual y textual del informe de salud para la interfaz."""
     if not isinstance(result, HealthResult) or not isinstance(getattr(result, 'breakdown', None), dict): 
@@ -243,8 +248,7 @@ def summarize(result: HealthResult | None) -> List[str]:
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
     for area, maximo in _WEIGHT_ITEMS_INT:
         puntos = result.breakdown.get(area, 0)
-        puntos = max(0, min(puntos, maximo))
-        bar = ('#' * puntos) + ('.' * (maximo - puntos))
+        bar = _render_bar(puntos, maximo)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
     
     recs = result.recommendations if result.recommendations else ["El sistema está en buen estado."]

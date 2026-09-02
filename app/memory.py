@@ -316,7 +316,12 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
-    """Extrae la ruta del ejecutable usando QueryFullProcessImageNameW y normaliza."""
+    """
+    Obtiene la ruta completa del ejecutable del proceso.
+    
+    Utiliza QueryFullProcessImageNameW (WinAPI) para evitar problemas de permisos
+    y resolver rutas normalizadas, ignorando cualquier proceso sin handle válido.
+    """
     if not proc_handle: return None
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
@@ -333,7 +338,13 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """Validación de seguridad antes de modificar un proceso."""
+    """
+    Valida si un proceso puede ser sometido a una operación de 'trim'.
+    
+    Realiza una verificación de tres niveles: integridad del PID, estado de ejecución
+    (evitando procesos zombis) y cumplimiento de políticas de seguridad locales
+    (verificando que la ruta del ejecutable no pertenezca a zonas protegidas).
+    """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     

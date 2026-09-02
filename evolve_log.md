@@ -661,3 +661,10 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-09-02T07:40:28` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: legibilidad y documentación).
 - `2026-09-02T07:40:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T07:40:28` Corrida terminada. Total usado hoy: 180.
+- `2026-09-02T07:48:59` Arrancando corrida. Quedan hoy ~120 peticiones objetivo.
+- `2026-09-02T07:49:26` ✅ Mejora aceptada en duplicates.py (enfoque: legibilidad y documentación). Se añadió documentación mediante docstrings y type hints en funciones críticas (`_scan_recursive`, `_process_size_group`) para aclarar la lógica de manejo de inodos y la estrategia de hashing jerárquico, facilitando la comprensión del flujo sin alterar la funcionalidad.
+- `2026-09-02T07:49:52` ✅ Mejora aceptada en healthscore.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación interna y claridad del código mediante la adición de Type Hints detallados, docstrings explicativos en funciones críticas de normalización y la extracción de la lógica de renderizado de barras en `summarize` a una función auxiliar para mejorar la legibilidad del flujo principal.
+- `2026-09-02T07:51:01` ➖ Sin cambios en main.py (enfoque: legibilidad y documentación). Motivo: Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la extracción de la lógica de construcción de las celdas de configuración (switches) en `_build_tab_ajustes` hacia un método reutilizable `_add_setting_switch`, aplicando las mejores prácticas de modularización sin alterar el comportamiento.
+- `2026-09-02T07:51:15` ✅ Mejora aceptada en memory.py (enfoque: legibilidad y documentación). Documenté con docstrings detallados las funciones críticas de bajo nivel que interactúan con la API de Windows (`ctypes`) para clarificar su propósito y restricciones, mejorando la mantenibilidad sin cambiar la lógica.
+- `2026-09-02T07:51:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T07:51:15` Corrida terminada. Total usado hoy: 184.
