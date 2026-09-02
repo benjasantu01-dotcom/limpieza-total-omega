@@ -301,18 +301,21 @@ class SystemContext:
             return False
             
         found_data = False
-        source_keys = source.keys() if isinstance(source, dict) else dir(source)
-        keys_to_check = _VALIDATORS.keys() & set(source_keys)
-        
-        for key in keys_to_check:
-            if _validate_and_assign(self, source, key, _VALIDATORS[key]):
-                found_data = True
-        
-        grade_val = _get_source_value(source, "grade")
-        if isinstance(grade_val, str):
-            clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
-            if _is_safe_text_structure(clean_grade):
-                self.grade = clean_grade
+        try:
+            source_keys = source.keys() if isinstance(source, dict) else dir(source)
+            keys_to_check = _VALIDATORS.keys() & set(source_keys)
+            
+            for key in keys_to_check:
+                if _validate_and_assign(self, source, key, _VALIDATORS[key]):
+                    found_data = True
+            
+            grade_val = _get_source_value(source, "grade")
+            if isinstance(grade_val, str):
+                clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
+                if _is_safe_text_structure(clean_grade):
+                    self.grade = clean_grade
+        except Exception:
+            return found_data
         
         return found_data
 
@@ -382,6 +385,7 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
             return False
         
         clean_val = _safe_float(val, -1.0)
+        # Validar rangos definidos en spec
         if clean_val < spec.min_val or clean_val > spec.max_val:
             return False
         

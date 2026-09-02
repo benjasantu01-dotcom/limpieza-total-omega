@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 204
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 207
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 127 | 4 | 18 | 9 | 82 |
-| 2026-09-02 | 106 | 9 | 16 | 11 | 122 |
+| 2026-09-01 | 124 | 4 | 18 | 8 | 82 |
+| 2026-09-02 | 107 | 9 | 16 | 11 | 125 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **54**
+- legibilidad y documentación: **51**
 - seguridad defensiva: **50**
-- manejo de errores y validación de entradas: **44**
+- manejo de errores y validación de entradas: **45**
 - rendimiento: **43**
 - robustez ante casos límite: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `quarantine.py`: **20**
+- `assistant.py`: **20**
 - `settings.py`: **20**
 - `safety.py`: **19**
-- `assistant.py`: **19**
 - `organizer.py`: **18**
 - `browser.py`: **18**
 - `diskreport.py`: **18**
 - `memory.py`: **18**
 - `scanner.py`: **17**
-- `duplicates.py`: **16**
-- `healthscore.py`: **15**
-- `main.py`: **13**
+- `duplicates.py`: **15**
+- `healthscore.py`: **14**
+- `main.py`: **12**
 - `startup.py`: **11**
 - `branding.py`: **11**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T11:26:26` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez de `build_context` y las funciones de ingestión de métricas para garantizar que los errores en fuentes de datos externas no propaguen excepciones inesperadas y para validar que los valores numéricos no solo sean del tipo correcto, sino que estén dentro de rangos lógicos antes de ser procesados por el resto de la aplicación.
 - `2026-09-02T10:03:40` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita para evitar escrituras en rutas que, aunque residan en directorios seguros, podrían haber sido alteradas a enlaces simbólicos o puntos de reparse antes de la escritura, asegurando que `ruta` sea un archivo regular o inexistente antes de proceder.
 - `2026-09-02T10:02:41` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al reforzar la validación de rutas y prevenir condiciones de carrera, utilizando `is_protected_path` como barrera lógica y evitando el uso de `path.exists()` cuando `entry.is_file()` ya garantiza la existencia del objeto en el sistema de archivos durante la iteración.
 - `2026-09-02T10:02:16` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` extendiendo `_validate_structural_safety` para prevenir ataques de inyección de rutas mediante el uso de caracteres nulos (`\0`), una técnica común para evadir filtros de seguridad en APIs de Windows.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T09:12:57` **quarantine.py** (robustez ante casos límite): Se ha mejorado la robustez de `quarantine.py` ante casos límite de E/S mediante la implementación de una validación de existencia en el manifiesto durante la carga, previniendo errores de referencia a archivos borrados manualmente del disco pero presentes en el JSON.
 - `2026-09-02T09:12:38` **organizer.py** (robustez ante casos límite): Se ha mejorado la robustez de las operaciones de disco añadiendo un chequeo explícito de disponibilidad de la unidad de destino y validación de la existencia del archivo origen antes de cada operación en `stage_for_review` y `delete_reviewed`, previniendo excepciones innecesarias ante cambios de estado de archivos durante la ejecución (condiciones de carrera).
 - `2026-09-02T09:12:12` **memory.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones y validación de tipos en `parse_windows_process_csv` para prevenir que procesos con datos malformados, valores de memoria negativos (frecuentes en errores de lectura de API) o PIDs inalcanzables interrumpan el flujo de diagnóstico, garantizando la resiliencia ante datos de sistema inesperados.
-- `2026-09-02T09:11:44` **main.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `run_async` y `_worker_thread_logic` para evitar que la aplicación intente realizar operaciones de disco en rutas que se volvieron inválidas o inaccesibles entre el inicio de la tarea y su ejecución en el hilo de trabajo, fortaleciendo la robustez ante estados cambiantes del sistema de archivos.
