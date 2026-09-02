@@ -472,6 +472,12 @@ def _get_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa criterios de salud con cache para evitar re-iteraciones costosas."""
     return [msg for crit in _CRITERIOS_SALUD if (msg := crit.format_if_triggered(ctx))]
 
+def _format_problem_message(problems: list[str], score: int | str) -> str:
+    """Construye el mensaje de estado del sistema basado en problemas detectados."""
+    if not problems:
+        return f"Tu sistema está en buen estado ({score}/100). No hay nada urgente."
+    return f"Con un puntaje de {score}/100, por orden de prioridad: {', '.join(problems)}."
+
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     """Evalúa el contexto actual contra los criterios de salud limitando la salida."""
     if not ctx.analyzed: return []
@@ -602,13 +608,10 @@ def local_answer(question: str, context: SystemContext) -> Answer:
         if token in _KEYWORD_TO_HANDLER:
             return _KEYWORD_TO_HANDLER[token](context, question)
 
-    problemas = _identify_active_problems(context)
-    puntaje_str = str(context.score) if context.score is not None else "N/A"
-    if problemas:
-        cuerpo = (f"Con un puntaje de {puntaje_str}/100, por orden de prioridad: "
-                  f"{', '.join(problemas)}.")
-    else:
-        cuerpo = f"Tu sistema está en buen estado ({puntaje_str}/100). No hay nada urgente."
+    cuerpo = _format_problem_message(
+        _identify_active_problems(context), 
+        str(context.score) if context.score is not None else "N/A"
+    )
     return Answer(_validate_response_length(cuerpo), notice=OFFLINE_NOTICE, suggestions=SUGGESTED_QUESTIONS_SHORT)
 
 def available(base: Union[str, Path, None] = None) -> bool:

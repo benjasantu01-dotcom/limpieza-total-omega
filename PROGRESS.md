@@ -6,9 +6,9 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **232** (46.0% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 207
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 114 | 3 | 17 | 8 | 82 |
-| 2026-09-02 | 118 | 9 | 17 | 11 | 125 |
+| 2026-09-01 | 112 | 3 | 16 | 8 | 81 |
+| 2026-09-02 | 121 | 9 | 17 | 11 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **56**
 - seguridad defensiva: **50**
-- legibilidad y documentación: **46**
+- legibilidad y documentación: **49**
 - robustez ante casos límite: **42**
-- rendimiento: **38**
+- rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `settings.py`: **21**
 - `quarantine.py`: **20**
-- `memory.py`: **19**
-- `assistant.py`: **19**
+- `assistant.py`: **20**
 - `safety.py`: **19**
-- `organizer.py`: **18**
+- `browser.py`: **19**
 - `diskreport.py`: **18**
-- `browser.py`: **18**
+- `memory.py`: **18**
 - `scanner.py`: **17**
+- `organizer.py`: **17**
 - `healthscore.py`: **15**
 - `duplicates.py`: **15**
 - `main.py`: **13**
+- `branding.py`: **11**
 - `startup.py`: **10**
-- `branding.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-02T12:06:24` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `browser.py` añadiendo Type Hints faltantes (especialmente en `total_cache_bytes`), normalizando los docstrings siguiendo el estándar de la aplicación y clarificando la jerarquía de llamadas mediante comentarios que explican por qué se separan las responsabilidades de validación (seguridad vs. existencia).
+- `2026-09-02T12:06:08` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la inclusión de type hints precisos en los alias de color y una estandarización de los docstrings en las funciones auxiliares de dibujo, facilitando la comprensión del flujo de datos visuales.
+- `2026-09-02T12:05:32` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad del motor de reglas local extrayendo la lógica de construcción de mensajes de error a una función dedicada (`_format_problem_message`), reduciendo la complejidad ciclomática de `local_answer` y mejorando la mantenibilidad de los criterios.
 - `2026-09-02T11:55:43` **settings.py** (manejo de errores y validación de entradas): Se mejoró la robustez de `save` mediante una validación explícita de `ruta.parent` antes de intentar operaciones de escritura y se añadieron chequeos de `None` en `validate` para evitar corrupciones silenciosas si los datos de entrada contienen claves malformadas.
 - `2026-09-02T11:55:28` **scanner.py** (manejo de errores y validación de entradas): Se ha robustecido el manejo de errores en `Scanner._is_inside_base_root` y `scan_directory` validando explícitamente tipos `None` y capturando excepciones de forma granular para evitar rupturas del bucle ante rutas malformadas o inaccesibles.
 - `2026-09-02T11:55:01` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo de existencia más resiliente mediante `os.path.lexists` en lugar de `p.exists()` (que sigue enlaces simbólicos, contraviniendo el principio de seguridad), y se han consolidado las validaciones de acceso para evitar que errores silenciosos de sistema (como bloqueos de lectura en metadatos) permitan el paso de archivos inseguros.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T11:34:43` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `summarize` capturando fallos específicos durante la iteración (como cambios en el sistema de archivos durante el escaneo) y validando la integridad de las rutas procesadas antes de operar, evitando que excepciones volátiles interrumpan el reporte.
 - `2026-09-02T11:34:13` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `detect_profiles` y las funciones auxiliares capturando errores de resolución de rutas específicos y asegurando que las entradas del `browser_map` no causen desbordamientos por rutas mal formadas, fortaleciendo la validación de parámetros de entrada.
 - `2026-09-02T11:26:26` **assistant.py** (manejo de errores y validación de entradas): Reforcé la robustez de `build_context` y las funciones de ingestión de métricas para garantizar que los errores en fuentes de datos externas no propaguen excepciones inesperadas y para validar que los valores numéricos no solo sean del tipo correcto, sino que estén dentro de rangos lógicos antes de ser procesados por el resto de la aplicación.
-- `2026-09-02T10:03:40` **settings.py** (seguridad defensiva): Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita para evitar escrituras en rutas que, aunque residan en directorios seguros, podrían haber sido alteradas a enlaces simbólicos o puntos de reparse antes de la escritura, asegurando que `ruta` sea un archivo regular o inexistente antes de proceder.
-- `2026-09-02T10:02:41` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al reforzar la validación de rutas y prevenir condiciones de carrera, utilizando `is_protected_path` como barrera lógica y evitando el uso de `path.exists()` cuando `entry.is_file()` ya garantiza la existencia del objeto en el sistema de archivos durante la iteración.
-- `2026-09-02T10:02:16` **safety.py** (seguridad defensiva): Mejoré la seguridad defensiva en `safety.py` extendiendo `_validate_structural_safety` para prevenir ataques de inyección de rutas mediante el uso de caracteres nulos (`\0`), una técnica común para evadir filtros de seguridad en APIs de Windows.
