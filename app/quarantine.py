@@ -434,11 +434,7 @@ def quarantine_file(
         
     file_hash = _atomic_isolate_file(source_path, destination, original_size)
     
-    operation_succeeded = False
     try:
-        if destination.stat().st_size != original_size:
-            raise RuntimeError("Integridad comprometida: el archivo destino cambió tamaño.")
-
         base_path = quarantine_dir(base)
         m_path = _manifest_path(base_path)
         mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
@@ -461,13 +457,12 @@ def quarantine_file(
         
         if destination.exists() and quarantine_item.verify_integrity(destination):
             source_path.unlink()
-            operation_succeeded = True
+            return quarantine_item
         else:
             raise RuntimeError("La integridad falló tras persistir el manifiesto.")
             
-        return quarantine_item
     except Exception as e:
-        if not operation_succeeded and destination.exists():
+        if destination.exists():
             _safe_unlink(destination)
         raise RuntimeError(f"Fallo en la operación de aislamiento: {e}")
 

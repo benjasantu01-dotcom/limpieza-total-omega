@@ -78,7 +78,10 @@ class JunkFile:
 
     def __post_init__(self) -> None:
         if isinstance(self.path, Path):
-            self.path = self.path.resolve()
+            try:
+                self.path = self.path.resolve()
+            except OSError:
+                pass
 
     @property
     def size_mb(self) -> float:

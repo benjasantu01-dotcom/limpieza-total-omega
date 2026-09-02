@@ -190,13 +190,16 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
     for line in raw_csv_text.splitlines():
         line = line.strip()
         if not line: continue
+        
+        # Split estricto en 3 partes
         parts = [p.strip().strip("'\"") for p in line.split(",", 2)]
-        if len(parts) != 3: continue
+        if len(parts) < 3: continue
         
         try:
             name_val = str(parts[0])
             pid_val = int(parts[1])
             ws_val = int(parts[2])
+            
             # Validar integridad: PIDs válidos, memoria no negativa y evitar sistemas críticos
             if pid_val > 0 and ws_val >= 0 and pid_val not in SYSTEM_CRITICAL_PIDS:
                 proc_list.append(ProcessMemory(name=name_val, pid=pid_val, working_set=BytesValue(ws_val)))

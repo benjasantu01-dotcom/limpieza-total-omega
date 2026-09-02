@@ -1189,7 +1189,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     @safe_ui_operation
     def on_target_choice_changed(self, choice: str) -> None:
-        """Callback al cambiar el objetivo de escaneo."""
+        """Callback al cambiar el objetivo de escaneo con validación de seguridad."""
         def update_label(txt: str) -> None:
             if hasattr(self, 'target_label') and self.target_label.winfo_exists():
                 self.target_label.configure(text=txt)
