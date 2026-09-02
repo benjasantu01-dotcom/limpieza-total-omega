@@ -214,17 +214,9 @@ def _sum_directory_recursive(
     if root_abs in memo:
         return memo[root_abs]
     
-    try:
-        root_path = Path(root_abs).resolve(strict=True)
-    except (OSError, RuntimeError):
-        return 0
-
-    if not _is_safe_to_traverse(root_path, base_check_path):
-        return 0
-
     total: int = 0
     try:
-        with os.scandir(str(root_path)) as it:
+        with os.scandir(root_abs) as it:
             for entry in it:
                 if _should_skip_entry(entry, kernel32, is_junction_fn):
                     continue

@@ -1063,3 +1063,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T12:36:31` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable
 - `2026-09-02T12:36:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T12:36:31` Corrida terminada. Total usado hoy: 296.
+- `2026-09-02T12:45:10` Arrancando corrida. Quedan hoy ~4 peticiones objetivo.
+- `2026-09-02T12:45:52` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimicé el rendimiento de `SystemContext.ingest` reemplazando la creación de sets dinámicos y búsquedas constantes mediante el uso de un diccionario de acceso directo `_VALIDATORS`, eliminando iteraciones innecesarias sobre todos los atributos del objeto.
+- `2026-09-02T12:46:25` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el cálculo de colores en `gradient_colors` eliminando la creación de objetos intermedios y pre-calculando los pasos de color para evitar el overhead de recálculo en cada llamado, mejorando el rendimiento de renderizado en el Canvas.
+- `2026-09-02T12:46:55` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Se optimizó la recursión de `_sum_directory_recursive` implementando un diccionario de `memo` persistente para evitar recalculos redundantes en subcarpetas compartidas y reduciendo llamadas innecesarias a `Path.resolve(strict=True)` durante el recorrido.
+- `2026-09-02T12:47:07` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
+- `2026-09-02T12:47:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T12:47:07` Corrida terminada. Total usado hoy: 300.

@@ -302,11 +302,8 @@ class SystemContext:
             
         found_data = False
         try:
-            source_keys = source.keys() if isinstance(source, dict) else dir(source)
-            keys_to_check = _VALIDATORS.keys() & set(source_keys)
-            
-            for key in keys_to_check:
-                if _validate_and_assign(self, source, key, _VALIDATORS[key]):
+            for key, spec in _VALIDATORS.items():
+                if _validate_and_assign(self, source, key, spec):
                     found_data = True
             
             grade_val = _get_source_value(source, "grade")
@@ -385,7 +382,6 @@ def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: Metric
             return False
         
         clean_val = _safe_float(val, -1.0)
-        # Validar rangos definidos en spec
         if clean_val < spec.min_val or clean_val > spec.max_val:
             return False
         

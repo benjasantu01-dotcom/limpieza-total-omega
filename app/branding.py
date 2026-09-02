@@ -238,17 +238,19 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
     if len(stops) < 2: return (stops[0],) * n
     rgb_stops = [_hex_to_rgb(s) for s in stops]
     tramos = len(stops) - 1
-    def get_color(i: int) -> HexColor:
+    
+    out = []
+    for i in range(n):
         pos = (i / (n - 1) * tramos) if n > 1 else 0
         idx = min(int(pos), tramos - 1)
-        r_delta = pos - idx
+        delta = pos - idx
         s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-        return _rgb_to_hex((
-            int(s1[0] + (s2[0] - s1[0]) * r_delta),
-            int(s1[1] + (s2[1] - s1[1]) * r_delta),
-            int(s1[2] + (s2[2] - s1[2]) * r_delta)
-        ))
-    return tuple(get_color(i) for i in range(n))
+        out.append(_rgb_to_hex((
+            int(s1[0] + (s2[0] - s1[0]) * delta),
+            int(s1[1] + (s2[1] - s1[1]) * delta),
+            int(s1[2] + (s2[2] - s1[2]) * delta)
+        )))
+    return tuple(out)
 
 @lru_cache(maxsize=16)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
