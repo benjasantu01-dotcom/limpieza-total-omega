@@ -297,7 +297,9 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if parent is None: return None
         
         parent_resolved = parent.resolve()
-        if not _Validators._is_safe_path(str(parent_resolved)): return None
+        # Seguridad: Solo crear si la carpeta padre no está en la lista de bloqueados y es segura
+        if is_protected_path(str(parent_resolved)) or not _Validators._is_safe_path(str(parent_resolved)):
+            return None
         if not parent_resolved.exists(): 
             parent_resolved.mkdir(parents=True, exist_ok=True)
         if not parent_resolved.is_dir(): return None

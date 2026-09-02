@@ -1166,3 +1166,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T14:19:47` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `_atomic_isolate_file` implementando una validación estricta de permisos de escritura y atributos de sistema en el archivo temporal antes de consolidar el movimiento, previniendo posibles ataques de *Time-of-Check to Time-of-Use* (TOCTOU).
 - `2026-09-02T14:19:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T14:19:47` Corrida terminada. Total usado hoy: 336.
+- `2026-09-02T14:27:15` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-02T14:27:37` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-02T14:28:09` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-02T14:28:34` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_inside_base_root` convirtiendo la ruta a absoluta antes de compararla, previniendo riesgos de "path traversal" donde rutas relativas maliciosas podrían eludir la validación al compararse con una base absoluta.
+- `2026-09-02T14:28:48` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save()` al reemplazar la creación condicional de carpetas por una verificación estricta contra `is_protected_path` antes de cualquier llamada a `mkdir`, previniendo la creación de configuraciones en directorios críticos incluso si el usuario intenta una ruta maliciosa.
+- `2026-09-02T14:28:48` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T14:28:48` Corrida terminada. Total usado hoy: 340.

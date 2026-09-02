@@ -119,7 +119,9 @@ class Scanner:
         """Valida si la ruta está contenida dentro del directorio base definido."""
         if not path: return False
         try:
-            return str(path.resolve(strict=False)).lower().startswith(self.base_root_str)
+            # Asegurar resolución absoluta antes de comparar para evitar path traversal
+            absolute_path = path.resolve(strict=False)
+            return str(absolute_path).lower().startswith(self.base_root_str)
         except (OSError, PermissionError, RuntimeError):
             return False
 
