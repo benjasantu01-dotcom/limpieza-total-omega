@@ -237,7 +237,9 @@ def _safe_float(val: Any, default: float = 0.0) -> float:
         if isinstance(val, bool) or not isinstance(val, (int, float, str)):
             return default
         f = float(val)
-        return f if math.isfinite(f) else default
+        if math.isnan(f) or math.isinf(f):
+            return default
+        return f
     except (TypeError, ValueError):
         return default
 
@@ -285,8 +287,9 @@ class SystemContext:
             return False
             
         found_data = False
-        # Ingesta dirigida: evita iterar globalmente sobre claves inexistentes en la fuente
-        keys_to_check = _VALIDATORS.keys() & (source.keys() if isinstance(source, dict) else dir(source))
+        source_keys = source.keys() if isinstance(source, dict) else dir(source)
+        keys_to_check = _VALIDATORS.keys() & set(source_keys)
+        
         for key in keys_to_check:
             if _validate_and_assign(self, source, key, _VALIDATORS[key]):
                 found_data = True
@@ -378,7 +381,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
-    # Filtro estricto: solo procesar fuentes que sean mapeos o instancias de clases, nunca contenedores secuenciales
     sources = [s for s in [metrics, health, extra] 
                if s is not None and isinstance(s, (dict, object)) and not isinstance(s, (list, tuple, str))]
     
@@ -575,7 +577,6 @@ def local_answer(question: str, context: SystemContext) -> Answer:
             suggestions=SUGGESTED_QUESTIONS_SHORT,
         )
 
-    # Rendimiento: Buscamos solo el primer token relevante para evitar iteraciones innecesarias.
     for token in _TOKEN_REGEX.findall(q_sanitized):
         if token in _KEYWORD_TO_HANDLER:
             return _KEYWORD_TO_HANDLER[token](context, question)
@@ -608,7 +609,6 @@ def _parse_config(raw_cfg: Any) -> AssistantConfig:
 
 def _build_payload(question: str, context_text: str) -> bytes:
     """Construye el cuerpo de la solicitud JSON de forma segura."""
-    # Seguridad: Validamos el prompt antes de serializar
     prompt = f"{SYSTEM_PROMPT}\n\nMétricas del sistema:\n{context_text}\n\nPregunta del usuario: {question}"
     return json.dumps({"contents": [{"parts": [{"text": str(prompt)}]}]}).encode("utf-8")
 
@@ -617,7 +617,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
     
-    # Validar seguridad de entradas críticas
     if _CONTROL_CHARS_REGEX.search(api_key) or is_protected_path(api_key): return None
     
     safe_q = _sanitize_query(question)

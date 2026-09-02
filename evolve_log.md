@@ -1387,3 +1387,70 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-02T04:16:59` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a la configuración implementando una validación previa de la clave en el diccionario `_STR_TO_ENUM` para evitar recorridos redundantes y mejorando la eficiencia de `update` y `validate` al utilizar operaciones de diccionario directas en lugar de iteraciones innecesarias sobre el Enum.
 - `2026-09-02T04:16:59` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T04:16:59` Corrida terminada. Total usado hoy: 100.
+- `2026-09-02T04:24:49` Arrancando corrida. Quedan hoy ~200 peticiones objetivo.
+- `2026-09-02T04:25:18` Tests FALLARON:
+```
+
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:386: SyntaxWarning: invalid escape sequence '\)'
+    - Bloquea acceso a raíces de unidad (C:\).
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed, 4 warnings in 1.08s
+
+```
+- `2026-09-02T04:25:18` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché en el método `_resolve_and_cache_path` para evitar consultas redundantes y costosas al sistema de archivos mediante `os.path.realpath` y `exists()` cuando una ruta ya ha sido procesada anteriormente.
+- `2026-09-02T04:25:55` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Se reforzó la robustez del sistema ante valores inesperados en las métricas mediante la implementación de `math.isnan` y `math.isinf` en `_safe_float` para prevenir comportamientos no definidos, y se añadieron chequeos de tipo explícitos en `ingest` para evitar que diccionarios anidados o tipos complejos corrompan el contexto.
+- `2026-09-02T04:26:26` Tests FALLARON:
+```
+......                                                              [100%]
+=================================== FAILURES ===================================
+______________________ test_save_logo_svg_writes_the_file ______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-3/test_save_logo_svg_writes_the_0')
+
+    def test_save_logo_svg_writes_the_file(tmp_path):
+        destino = branding.save_logo_svg(tmp_path / "iconos" / "logo.svg")
+>       assert destino.is_file()
+               ^^^^^^^^^^^^^^^
+E       AttributeError: 'NoneType' object has no attribute 'is_file'
+
+evolve/tests/test_modules.py:92: AttributeError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:386: SyntaxWarning: invalid escape sequence '\)'
+    - Bloquea acceso a raíces de unidad (C:\).
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_save_logo_svg_writes_the_file - AttributeError: 'NoneType' object has no attribute 'is_file'
+1 failed, 298 passed, 4 warnings in 0.98s
+
+```
+- `2026-09-02T04:26:26` ❌ Mejora descartada en branding.py (no pasó los tests), se revirtió. Intento: Se reforzó la robustez de `save_logo_svg` ante rutas maliciosas o inexistentes mediante la validación del path absoluto contra el directorio de trabajo actual y un manejo más estricto de los permisos antes de la operación de escritura.
+- `2026-09-02T04:26:35` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se implementó un control de robustez ante archivos bloqueados por el sistema durante el cálculo recursivo de tamaño, capturando `OSError` específicamente al realizar `entry.stat()` para evitar abortar el escaneo completo cuando un proceso externo tiene un archivo de caché bloqueado.
+- `2026-09-02T04:26:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T04:26:35` Corrida terminada. Total usado hoy: 104.
