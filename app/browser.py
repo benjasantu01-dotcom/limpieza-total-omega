@@ -193,21 +193,24 @@ def _sum_directory_recursive(
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
     base_check_path: Optional[Path] = None,
-    depth: int = 0
+    depth: int = 0,
+    parents: Optional[Set[str]] = None
 ) -> int:
     """
-    Calcula el tamaño de un directorio mediante escaneo recursivo con memoización.
-    
-    Args:
-        root_abs: Ruta absoluta del directorio a escanear.
-        memo: Diccionario para persistir tamaños calculados entre llamadas.
-        base_check_path: Opcional, ruta raíz para validar que no salgamos del árbol permitido.
+    Calcula el tamaño de un directorio mediante escaneo recursivo con memoización y detección de ciclos.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
     
     if root_abs in memo:
         return memo[root_abs]
+    
+    if parents is None:
+        parents = set()
+    
+    if root_abs in parents:
+        return 0
+    parents.add(root_abs)
 
     try:
         root_path = Path(root_abs).resolve(strict=True)
@@ -227,7 +230,7 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(
-                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
+                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1, parents.copy()
                         )
                     elif entry.is_file(follow_symlinks=False):
                         stats = entry.stat(follow_symlinks=False)

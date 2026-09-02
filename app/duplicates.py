@@ -18,7 +18,7 @@ import os
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Sequence, Set
+from typing import Iterable, Callable, Dict, List, Optional, Union, Tuple, Set
 
 from safety import is_protected_path
 
@@ -174,6 +174,10 @@ def _collect_candidates(
 
     def _scan_recursive(current_dir: Path) -> None:
         try:
+            # Validación defensiva extra antes de procesar el directorio
+            if is_protected_path(current_dir):
+                return
+                
             stat_root = current_dir.stat()
             inode = (stat_root.st_dev, stat_root.st_ino)
             if inode in visited_inodes:
@@ -183,18 +187,16 @@ def _collect_candidates(
             with os.scandir(current_dir) as it:
                 for entry in it:
                     try:
-                        # is_protected_path recibe Path, es seguro usar entry.path
-                        if is_protected_path(Path(entry.path)):
+                        p = Path(entry.path)
+                        if is_protected_path(p):
                             continue
 
                         if entry.is_dir(follow_symlinks=False):
-                            _scan_recursive(Path(entry.path))
+                            _scan_recursive(p)
                         elif entry.is_file(follow_symlinks=False):
-                            # Obtenemos el tamaño directamente del resultado de la entrada
-                            # evitando una llamada extra a stat()
                             file_stat = entry.stat()
                             if file_stat.st_size >= min_size:
-                                temp_map[int(file_stat.st_size)].append(Path(entry.path))
+                                temp_map[int(file_stat.st_size)].append(p)
                     except (OSError, PermissionError):
                         continue
         except (OSError, PermissionError):

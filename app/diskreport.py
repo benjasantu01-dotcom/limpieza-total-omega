@@ -257,13 +257,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorrido profundo mediante DFS iterativo. 
     Evita ciclos de reparse points (NTFS junctions) y rutas protegidas.
-    
-    Args:
-        directory: Raíz del escaneo.
-        skip_protected: Si es True, ignora rutas marcadas en `safety.is_protected_path`.
-        
-    Yields:
-        Tuplas (Path, tamaño_en_bytes) de cada archivo encontrado.
     """
     root_path = _validate_root(directory)
     if not root_path:
@@ -279,6 +272,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Prevenir escape de directorio mediante validación de resolución
+                        resolved_path = Path(entry.path).resolve()
+                        if not str(resolved_path).startswith(str(root_path)):
+                            continue
+
                         st = entry.stat(follow_symlinks=False)
                     except (PermissionError, OSError, FileNotFoundError):
                         continue
@@ -300,7 +298,6 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             stack.append(child_path)
                                 
                     elif entry.is_file(follow_symlinks=False):
-                        # Se vuelve a verificar stat aquí por si el archivo fue eliminado al instante
                         try:
                             file_size = int(entry.stat().st_size)
                             yield Path(entry.path), max(0, file_size)
