@@ -376,6 +376,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if temp_path.stat().st_size != original_size:
             raise OSError("Error de integridad: el tamaño del archivo copiado no coincide.")
             
+        # Validación defensiva extra tras la copia
+        if not is_safe_to_modify(temp_path):
+            raise UnsafePathError("Integridad comprometida: el archivo en área temporal no es seguro.")
+
         os.replace(temp_path, destination)
         file_hash = _get_sha256(destination)
         if not file_hash:

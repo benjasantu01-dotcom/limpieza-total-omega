@@ -409,3 +409,11 @@ FAILED evolve/tests/test_modules.py::test_summarize_mentions_the_folder_and_tota
 - `2026-09-02T05:17:58` ✅ Mejora aceptada en memory.py (enfoque: seguridad defensiva). Mejoré `_get_process_path` para prevenir desbordamientos y asegurar que la ruta extraída sea normalizada y validada, integrando `is_safe_to_modify` antes de cualquier interacción potencial con el ejecutable, siguiendo estrictamente el enfoque de seguridad defensiva.
 - `2026-09-02T05:17:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T05:17:58` Corrida terminada. Total usado hoy: 124.
+- `2026-09-02T05:25:58` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-02T05:26:48` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `organizer.py` añadiendo `is_protected_path` al validar el destino en `_can_move_file` y `stage_for_review`, asegurando que el directorio de revisión no sea una ruta crítica, además de unificar la validación de `Path.is_relative_to` para prevenir cualquier intento de escape de directorio o recursión peligrosa.
+- `2026-09-02T05:27:43` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_atomic_isolate_file` implementando una validación explícita de `is_safe_to_modify` sobre el archivo recién copiado antes de confirmar la operación, mitigando riesgos de manipulación de archivos en el área temporal.
+- `2026-09-02T05:28:02` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-02T05:28:02` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T05:29:03` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `ensure_safe_to_modify` implementando un chequeo preventivo de la existencia de componentes de la ruta antes de la normalización, evitando así que una ruta con componentes inexistentes o nombres mal formados interrumpa el flujo del programa debido a excepciones inesperadas de `Path.resolve()`.
+- `2026-09-02T05:29:03` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T05:29:03` Corrida terminada. Total usado hoy: 128.

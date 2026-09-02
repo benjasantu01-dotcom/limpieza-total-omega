@@ -414,6 +414,10 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
+    # Validación previa antes de invocar Path.resolve() para prevenir fallos de sistema
+    if not isinstance(path, (str, Path)) or str(path).strip() == "":
+        raise UnsafePathError("Ruta vacía o tipo no soportado.")
+
     try:
         p = normalize(path)
     except ValueError as e:
