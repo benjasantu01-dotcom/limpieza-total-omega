@@ -272,9 +272,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         break
                         
                     try:
-                        entry_path = Path(entry.path)
-                        resolved = entry_path.resolve()
-                        if not str(resolved).startswith(str(root_path)):
+                        # Asegurar que resolvemos cada entrada antes de procesar
+                        entry_path = Path(entry.path).resolve()
+                        
+                        # Impedir escape de ruta (Path Traversal)
+                        if not str(entry_path).startswith(str(root_path)):
                             continue
 
                         st = entry.stat(follow_symlinks=False)

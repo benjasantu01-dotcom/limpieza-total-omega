@@ -785,3 +785,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T09:32:52` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se ha añadido una validación de longitud de ruta (MAX_PATH) en `_should_skip_entry` y `_is_valid_cache_path` usando la constante de seguridad `260` para prevenir desbordamientos o errores de acceso en llamadas de bajo nivel (WinAPI) dentro de sistemas de archivos profundamente anidados.
 - `2026-09-02T09:32:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T09:32:52` Corrida terminada. Total usado hoy: 224.
+- `2026-09-02T09:41:17` Arrancando corrida. Quedan hoy ~76 peticiones objetivo.
+- `2026-09-02T09:41:47` ✅ Mejora aceptada en diskreport.py (enfoque: seguridad defensiva). Se ha mejorado la robustez de `walk_files` implementando una validación estricta de rutas mediante `path.resolve()` antes de realizar cualquier operación de acceso, asegurando que el proceso no sea desviado fuera del árbol solicitado incluso en presencia de enlaces simbólicos o inconsistencias del sistema de archivos.
+- `2026-09-02T09:42:11` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: seguridad defensiva).
+- `2026-09-02T09:42:50` 🛑 Propuesta bloqueada por la guardia en healthscore.py (enfoque: seguridad defensiva): desaparecieron símbolos que existían antes: SystemMetrics.__post_init__
+- `2026-09-02T09:43:46` ➖ Sin cambios en main.py (enfoque: seguridad defensiva). Motivo: Mejoré la seguridad defensiva en `main.py` al implementar un chequeo de integridad en el bucle de trabajo asíncrono, asegurando que cualquier destino de operación de disco sea verificado mediante `safety.ensure_safe_to_modify` dentro del hilo ejecutor antes de realizar cualquier acción, previniendo así condiciones de carrera o inyecciones de rutas tras la validación inicial de la interfaz.
+- `2026-09-02T09:43:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T09:43:46` Corrida terminada. Total usado hoy: 228.
