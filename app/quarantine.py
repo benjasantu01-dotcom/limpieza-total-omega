@@ -278,7 +278,7 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("Destino inválido: directorio de cuarentena en ruta protegida.")
     if _is_within_quarantine_sandbox(resolved_source, dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
-    if resolved_source.drive.lower() != dest_dir.drive.lower():
+    if resolved_source.stat().st_dev != dest_dir.resolve().stat().st_dev:
         raise UnsafePathError("Operación prohibida: origen y destino en dispositivos diferentes.")
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if _is_file_locked(resolved_source):
@@ -389,10 +389,10 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
             os.close(fd)
             raise e
 
+        # Verificación post-copia estricta
         if temp_path.stat().st_size != original_size:
             raise OSError("Error de integridad: el tamaño del archivo copiado no coincide.")
             
-        # Validación defensiva extra tras la copia
         if not is_safe_to_modify(temp_path):
             raise UnsafePathError("Integridad comprometida: el archivo en área temporal no es seguro.")
 
@@ -500,6 +500,10 @@ def restore_item(item_id: str, base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) 
         raise UnsafePathError("Restauración denegada: destino protegido.")
     if destination.exists():
         raise FileExistsError(f"Error: el destino {destination} ya existe.")
+    
+    # Validar que restauramos al mismo dispositivo (st_dev)
+    if stored_file.stat().st_dev != destination.parent.resolve().stat().st_dev:
+        raise UnsafePathError("Restauración denegada: destino en dispositivo diferente al original.")
     
     parent = destination.parent
     if not parent.exists():

@@ -149,7 +149,11 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     try:
         s: Path = src.resolve()
         d: Path = dest.resolve()
-        return s == d or d.is_relative_to(s)
+        if s == d: return True
+        try:
+            return d.is_relative_to(s) or os.path.samefile(s, d)
+        except OSError:
+            return False
     except (OSError, RuntimeError, ValueError):
         return True
 
@@ -187,7 +191,9 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if not s_res.exists() or not s_res.is_file() or s_res.parent == s_res: return False
         
         # Chequeos de integridad estructural y seguridad
-        if _is_junction(s_res) or _is_junction(dest.parent if dest.is_file() else dest): return False
+        if _is_junction(s_res) or s_res.is_symlink(): return False
+        if dest.exists() and (_is_junction(dest) or dest.is_symlink()): return False
+        
         if is_protected_path(s_res) or is_protected_path(dest.resolve()): return False
         if not is_safe_to_modify(s_res) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(s_res, dest): return False
