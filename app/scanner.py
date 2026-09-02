@@ -203,17 +203,21 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     
     findings: ScanResult = []
     
-    if (double_ext := check_double_extension(path, entry, now_ts)):
-        findings.append(double_ext)
-    
-    file_ext = ext or path.suffix.lower()
-    if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
-        for check_fn in EXECUTABLE_CHECK_REGISTRY:
-            try:
-                if (result := check_fn(path, entry, now_ts)):
-                    findings.append(result)
-            except Exception as e:
-                logger.debug(f"Fallo en regla {check_fn.__name__} para {path}: {e}")
+    try:
+        if (double_ext := check_double_extension(path, entry, now_ts)):
+            findings.append(double_ext)
+        
+        file_ext = ext or path.suffix.lower()
+        if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
+            for check_fn in EXECUTABLE_CHECK_REGISTRY:
+                try:
+                    if (result := check_fn(path, entry, now_ts)):
+                        findings.append(result)
+                except Exception as e:
+                    logger.debug(f"Fallo en regla {check_fn.__name__} para {path}: {e}")
+    except (OSError, PermissionError):
+        pass
+        
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:

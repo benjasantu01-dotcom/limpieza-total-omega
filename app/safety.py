@@ -172,7 +172,9 @@ def _is_system_or_hidden(path: Path) -> bool:
     Usa el campo `st_file_attributes` disponible en Windows.
     """
     try:
-        return bool(path.lstat().st_file_attributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
+        # Usamos lstat para no seguir enlaces simbólicos durante la verificación
+        st = path.lstat()
+        return bool(getattr(st, 'st_file_attributes', 0) & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
     except (AttributeError, OSError):
         return False 
 
@@ -198,7 +200,8 @@ def _is_reparse_point(path: Path) -> bool:
     Combina atributos nativos y validación por `pathlib`.
     """
     try:
-        return bool(path.lstat().st_file_attributes & FILE_ATTRIBUTE_REPARSE_POINT) or _is_junction(path)
+        st = path.lstat()
+        return bool(getattr(st, 'st_file_attributes', 0) & FILE_ATTRIBUTE_REPARSE_POINT) or _is_junction(path)
     except (AttributeError, OSError):
         return path.is_symlink()
 
@@ -213,10 +216,12 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     try:
         kernel32 = ctypes.windll.kernel32
+        # GENERIC_READ (0x80000000), FILE_SHARE_READ (0x00000001), OPEN_EXISTING (3)
         handle = kernel32.CreateFileW(
             path_str, 0x80000000, 0x00000001, None, 3, 0x00000080, None
         )
-        if handle == -1 or handle == 0xFFFFFFFF: return True
+        if handle == -1 or handle == 0xFFFFFFFF: 
+            return True
         kernel32.CloseHandle(handle)
         return False
     except (AttributeError, OSError, PermissionError, TypeError, ctypes.ArgumentError):
