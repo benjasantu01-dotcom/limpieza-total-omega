@@ -151,6 +151,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         super().__init__()
         self.tabs: Dict[str, ctk.CTkFrame] = {}
         self._initialized_tabs: Dict[str, bool] = {name: False for name in TABS}
+        self._health_bars_initialized = False
         self._executor: Optional[concurrent.futures.ThreadPoolExecutor] = None
         self._log_queue: List[Tuple[str, str]] = []
         self._log_lock = threading.Lock()
@@ -529,6 +530,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         area_container.grid_columnconfigure(1, weight=1)
         for row_idx, (clave, etiqueta) in enumerate(HEALTH_AREAS):
             self._build_single_health_bar(area_container, clave, etiqueta, row_idx)
+        self._health_bars_initialized = True
 
     def _build_single_health_bar(self, container: ctk.CTkFrame, clave: str, etiqueta: str, row_idx: int) -> None:
         """

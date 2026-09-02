@@ -1070,3 +1070,11 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T12:47:07` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: rendimiento).
 - `2026-09-02T12:47:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T12:47:07` Corrida terminada. Total usado hoy: 300.
+- `2026-09-02T12:55:27` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-02T12:55:55` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: rendimiento).
+- `2026-09-02T12:56:23` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el bucle de procesamiento en `compute_score` reemplazando la creación de la lista de reglas por área en cada iteración por un diccionario pre-calculado, eliminando así una búsqueda lineal ineficiente dentro del bucle principal.
+- `2026-09-02T12:57:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-02T12:58:26` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Se implementó un mecanismo de inicialización perezosa de los widgets de salud (`_health_bars_initialized`) para evitar que el bucle de construcción recree y redibuje los elementos de la interfaz en cada análisis, mejorando la eficiencia del hilo principal y reduciendo el flickering visual.
+- `2026-09-02T12:58:42` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimizé la obtención de datos de procesos en `top_memory_processes` eliminando la llamada innecesaria a `Select-Object -First 20` en PowerShell, moviendo el filtrado y ordenamiento de la lista a Python; esto reduce la sobrecarga de la llamada externa y aprovecha la velocidad de procesamiento nativo para manejar el límite de 10 elementos.
+- `2026-09-02T12:58:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T12:58:42` Corrida terminada. Total usado hoy: 304.

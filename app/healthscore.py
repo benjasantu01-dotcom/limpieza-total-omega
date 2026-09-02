@@ -87,6 +87,11 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
+# Diccionario pre-indexado para acceso O(1) a reglas por área
+_RULES_BY_AREA: Final[Dict[MetricKey, List[RecommendationRule]]] = {}
+for rule in _RECOMMENDATION_RULES:
+    _RULES_BY_AREA.setdefault(rule.area, []).append(rule)
+
 @dataclass
 class SystemMetrics:
     """
@@ -197,11 +202,6 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "arranque": lambda m: score_startup(m.startup_count)
 }
 
-_PROC_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
-    (area, weight, _SCORERS[area], [r for r in _RECOMMENDATION_RULES if r.area == area])
-    for area, weight in _WEIGHT_ITEMS_INT
-]
-
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Procesa métricas mediante la pipeline definida para generar un HealthResult final."""
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
@@ -213,13 +213,14 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     total_pts: float = 0.0
     recommendations: List[str] = []
     
-    for area, weight, scorer, rules in _PROC_PIPELINE:
+    for area, weight in _WEIGHT_ITEMS_INT:
+        scorer = _SCORERS[area]
         ratio = scorer(metrics)
         pts = int(round(ratio * weight))
         metric_breakdown[area] = pts
         total_pts += float(pts)
         
-        for rule in rules:
+        for rule in _RULES_BY_AREA.get(area, []):
             if rule.check(metrics, ratio):
                 recommendations.append(rule.message_factory(metrics))
     
