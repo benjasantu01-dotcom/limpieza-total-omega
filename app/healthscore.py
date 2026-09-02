@@ -87,13 +87,6 @@ _RECOMMENDATION_RULES: Final[Tuple[RecommendationRule, ...]] = (
     RecommendationRule("arranque", WARN_THRESHOLD_LOW, lambda m: f"{m.startup_count} programas arrancan con Windows.", lambda m, r: r < WARN_THRESHOLD_LOW),
 )
 
-# Estructura optimizada para iteración rápida
-_PROC_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = []
-for _area, _weight in _WEIGHT_ITEMS_INT:
-    _rules = [r for r in _RECOMMENDATION_RULES if r.area == _area]
-    _scorer = lambda m, a=_area: _SCORERS[a](m)
-    _PROC_PIPELINE.append((_area, _weight, _scorer, _rules))
-
 @dataclass
 class SystemMetrics:
     """Contenedor de datos inmutable para el estado del sistema, con validación de tipo."""
@@ -204,6 +197,11 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
     "duplicados": lambda m: score_duplicates(m.duplicate_mb),
     "arranque": lambda m: score_startup(m.startup_count)
 }
+
+_PROC_PIPELINE: Final[List[Tuple[MetricKey, int, Callable[[SystemMetrics], NormalizedRatio], List[RecommendationRule]]]] = [
+    (area, weight, _SCORERS[area], [r for r in _RECOMMENDATION_RULES if r.area == area])
+    for area, weight in _WEIGHT_ITEMS_INT
+]
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Agrega las métricas individuales según los pesos definidos para obtener un resultado final."""

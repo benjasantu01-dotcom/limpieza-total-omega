@@ -307,8 +307,8 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 
                     elif entry.is_file(follow_symlinks=False):
                         try:
-                            file_size = int(entry.stat().st_size)
-                            yield Path(entry.path), max(0, file_size)
+                            # st.st_size ya es int desde os.scandir
+                            yield Path(entry.path), max(0, st.st_size)
                         except (PermissionError, OSError, FileNotFoundError):
                             continue
         except (PermissionError, OSError, FileNotFoundError):
@@ -397,17 +397,12 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         Tupla (total_bytes, total_files).
     """
     total_bytes, file_count = 0, 0
-    # Validación de entrada
     if directory is None:
         return (0, 0)
         
-    try:
-        for _, size in walk_files(directory, skip_protected):
-            if isinstance(size, int):
-                total_bytes += size
-                file_count += 1
-    except (OSError, PermissionError, TypeError):
-        pass
+    for _, size in walk_files(directory, skip_protected):
+        total_bytes += size
+        file_count += 1
     return total_bytes, file_count
 
 
@@ -433,21 +428,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not path or not isinstance(size, (int, float)):
-            continue
-            
-        total_bytes += int(size)
+        total_bytes += size
         total_files += 1
         
         ext = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[ext] += int(size)
+        ext_sizes[ext] += size
         ext_counts[ext] += 1
         
-        # Mantener un heap de tamaño 8 para eficiencia
         if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (int(size), path))
-        else:
-            heapq.heappushpop(top_files_heap, (int(size), path))
+            heapq.heappush(top_files_heap, (size, path))
+        elif size > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (size, path))
             
     top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
     return SummaryData(total_bytes, total_files, dict(ext_sizes), dict(ext_counts), top_files)

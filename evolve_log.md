@@ -1290,3 +1290,41 @@ FAILED evolve/tests/test_basic.py::test_scanner_lookalike_logic_is_os_independen
 - `2026-09-02T03:46:31` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Optimicé el sistema de caché y las estructuras de datos de `PALETTE` y `ICONS` para evitar accesos repetidos a diccionarios y conversiones innecesarias, convirtiéndolas en `MappingProxyType` desde el inicio para mayor seguridad y rendimiento.
 - `2026-09-02T03:46:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T03:46:31` Corrida terminada. Total usado hoy: 88.
+- `2026-09-02T03:54:13` Arrancando corrida. Quedan hoy ~212 peticiones objetivo.
+- `2026-09-02T03:54:40` Tests FALLARON:
+```
+, "move", "remove", "rename", "replace"}
+        for nombre in READ_ONLY_MODULES:
+            archivo = APP_DIR / nombre
+            if not archivo.exists():
+                continue
+            usados = calls_and_imports(parse(archivo)) & destructivos
+>           assert not usados, (
+                f"{nombre} debería ser de solo lectura pero llama a "
+                f"{', '.join(sorted(usados))}"
+            )
+E           AssertionError: browser.py debería ser de solo lectura pero llama a remove
+E           assert not {'remove'}
+
+evolve/tests/test_integrity.py:294: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/safety.py:387: SyntaxWarning: invalid escape sequence '\)'
+    - Bloquea acceso a raíces de unidad (C:\).
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move - AssertionError: browser.py debería ser de solo lectura pero llama a remove
+assert not {'remove'}
+1 failed, 298 passed, 4 warnings in 1.26s
+
+```
+- `2026-09-02T03:54:40` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Optimicé el cálculo recursivo de `_sum_directory_recursive` evitando copias innecesarias del set `parents` mediante la gestión de estado de entrada/salida (backtracking), lo cual reduce drásticamente el uso de memoria y la sobrecarga de CPU en escaneos profundos.
+- `2026-09-02T03:55:06` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `_collect_summary_data` para evitar llamadas redundantes a `int()` y `isinstance()` dentro del bucle, y simplifiqué la lógica del heap para reducir la sobrecarga de procesamiento en cada iteración del escaneo.
+- `2026-09-02T03:55:31` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimizamos `_collect_candidates` utilizando un conjunto de nombres de archivos visitados dentro de cada directorio (`Set[Path]`) para evitar el uso excesivo de `Path.stat()` y `Path.resolve()` dentro del bucle, reduciendo significativamente las llamadas al sistema en sistemas de archivos grandes.
+- `2026-09-02T03:55:41` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Se optimizó el rendimiento del bucle principal de `compute_score` eliminando la creación repetitiva de lambdas y el filtrado por lista dentro del ciclo `for`, pre-calculando la lógica necesaria en el pipeline de procesamiento.
+- `2026-09-02T03:55:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T03:55:41` Corrida terminada. Total usado hoy: 92.
