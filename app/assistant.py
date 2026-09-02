@@ -413,22 +413,20 @@ def _fmt_metric_sanitized(val: Any, unit: str = "", decimal: int = 0) -> str:
     raw = _fmt_metric(val, unit, decimal)
     return _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw))
 
-def _generate_context_lines(ctx: SystemContext) -> Iterator[str]:
-    """Generador eficiente de líneas para el contexto del sistema."""
-    score_val = _fmt_metric_sanitized(ctx.score) if ctx.score is not None else "N/A"
-    grade_val = str(ctx.grade)[:5] if isinstance(ctx.grade, str) else ""
-    yield f"Puntaje de salud: {score_val}{f' nota {grade_val}' if grade_val else ''}"
-    yield f"Basura: {_fmt_metric_sanitized(ctx.junk_mb, ' MB')}"
-    yield f"Sospechosos: {_fmt_metric_sanitized(ctx.suspicious_count)}"
-    yield f"RAM disponible: {_fmt_metric_sanitized(ctx.memory_available_percent, ' percent')}"
-    yield f"Disco libre: {_fmt_metric_sanitized(ctx.disk_free_percent, ' percent')}"
-    yield f"Duplicados: {_fmt_metric_sanitized(ctx.duplicate_mb, ' MB')}"
-    yield f"Inicio: {_fmt_metric_sanitized(ctx.startup_count)} items"
-
-@lru_cache(maxsize=4)
-def _cached_context_as_text(context: SystemContext) -> str:
-    """Serialización en caché del contexto para mejorar el rendimiento del motor remoto."""
-    return "\n".join(_generate_context_lines(context))
+@lru_cache(maxsize=16)
+def _generate_context_lines_cached(score: Optional[int], grade: str, junk: float, susp: int, ram: float, disk: float, dup: float, start: int) -> tuple[str, ...]:
+    """Generador eficiente de líneas para el contexto del sistema, cacheado por valores."""
+    score_val = _fmt_metric_sanitized(score) if score is not None else "N/A"
+    grade_val = str(grade)[:5] if grade else ""
+    return (
+        f"Puntaje de salud: {score_val}{f' nota {grade_val}' if grade_val else ''}",
+        f"Basura: {_fmt_metric_sanitized(junk, ' MB')}",
+        f"Sospechosos: {_fmt_metric_sanitized(susp)}",
+        f"RAM disponible: {_fmt_metric_sanitized(ram, ' percent')}",
+        f"Disco libre: {_fmt_metric_sanitized(disk, ' percent')}",
+        f"Duplicados: {_fmt_metric_sanitized(dup, ' MB')}",
+        f"Inicio: {_fmt_metric_sanitized(start)} items"
+    )
 
 def context_as_text(context: SystemContext) -> str:
     """
@@ -438,7 +436,11 @@ def context_as_text(context: SystemContext) -> str:
     if not isinstance(context, SystemContext) or not context.analyzed or not context.is_valid_structure:
         return "No hay métricas disponibles todavía."
     try:
-        texto_unificado = _cached_context_as_text(context)
+        lines = _generate_context_lines_cached(
+            context.score, context.grade, context.junk_mb, context.suspicious_count,
+            context.memory_available_percent, context.disk_free_percent, context.duplicate_mb, context.startup_count
+        )
+        texto_unificado = "\n".join(lines)
         if not _ensure_safe_text(texto_unificado):
             return "Error: el contexto generado no cumple los estándares de seguridad."
         return texto_unificado
