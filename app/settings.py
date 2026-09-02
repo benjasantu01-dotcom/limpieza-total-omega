@@ -300,6 +300,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir(): return None
         
+        # Validación defensiva extra: no permitir escritura sobre nodos especiales
+        if ruta.exists() and (ruta.is_symlink() or not ruta.is_file()):
+            return None
+        
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None

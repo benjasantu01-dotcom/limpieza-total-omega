@@ -374,7 +374,10 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     - Nombres reservados de dispositivos Windows (CON, PRN, etc).
     - Rutas de red UNC (seguridad contra ejecución remota).
     - Límites de longitud MAX_PATH de Windows.
+    - Ataques de inyección de carácter nulo (\0).
     """
+    if "\0" in path_string:
+        raise UnsafePathError("Inyección de carácter nulo detectada.")
     if _has_invalid_chars(path_string):
         raise UnsafePathError("La ruta contiene caracteres inválidos o no soportados.")
     

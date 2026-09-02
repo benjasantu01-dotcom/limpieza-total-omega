@@ -799,3 +799,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-02T09:53:06` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
 - `2026-09-02T09:53:06` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-02T09:53:06` Corrida terminada. Total usado hoy: 232.
+- `2026-09-02T10:01:43` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-02T10:02:16` ✅ Mejora aceptada en safety.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `safety.py` extendiendo `_validate_structural_safety` para prevenir ataques de inyección de rutas mediante el uso de caracteres nulos (`\0`), una técnica común para evadir filtros de seguridad en APIs de Windows.
+- `2026-09-02T10:02:41` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se ha mejorado la robustez defensiva en `_is_safe_entry` y `process_entry` al reforzar la validación de rutas y prevenir condiciones de carrera, utilizando `is_protected_path` como barrera lógica y evitando el uso de `path.exists()` cuando `entry.is_file()` ya garantiza la existencia del objeto en el sistema de archivos durante la iteración.
+- `2026-09-02T10:03:40` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `save()` añadiendo una validación explícita para evitar escrituras en rutas que, aunque residan en directorios seguros, podrían haber sido alteradas a enlaces simbólicos o puntos de reparse antes de la escritura, asegurando que `ruta` sea un archivo regular o inexistente antes de proceder.
+- `2026-09-02T10:03:50` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: seguridad defensiva).
+- `2026-09-02T10:03:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-02T10:03:50` Corrida terminada. Total usado hoy: 236.

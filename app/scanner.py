@@ -74,10 +74,6 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         if not (WATCHED_FOLDERS & path_parts):
             return None
         
-        # Validar existencia antes de stats
-        if not path.exists():
-            return None
-
         stats = entry.stat(follow_symlinks=False) if entry and entry.is_file() else path.stat()
             
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
@@ -178,9 +174,6 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 ext_low = Path(entry.name).suffix.lower()
                 if ext_low in SUSPICIOUS_ALL_EXTS:
-                    # Validar existencia antes de cualquier procesamiento pesado
-                    if not Path(entry.path).exists():
-                        return
                     try:
                         file_stat = entry.stat(follow_symlinks=False)
                         if file_stat.st_size == 0:
@@ -204,9 +197,6 @@ class Scanner:
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """Orquestador de reglas: ejecuta todas las heurísticas configuradas para un archivo."""
     if not isinstance(path, Path): return []
-    try:
-        if not path.exists(): return []
-    except (OSError, PermissionError): return []
     
     findings: ScanResult = []
     
