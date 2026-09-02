@@ -167,10 +167,10 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         return True
         
     try:
-        # Check path for safety before checking file attributes
         path = entry.path
         if not path:
             return True
+        # Las junctions (reparse points) no se siguen para evitar bucles infinitos
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
         if __is_system_hidden(path, kernel32):
@@ -206,8 +206,8 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula el tamaño acumulado de un directorio de forma recursiva. 
-    Usa 'memo' para evitar re-cálculos y un set 'parents' para detectar ciclos 
-    en la estructura de directorios, limitando la profundidad con 'MAX_SCAN_DEPTH'.
+    Usa 'memo' para evitar re-cálculos, un set 'parents' para detectar ciclos 
+    y 'MAX_SCAN_DEPTH' para proteger la pila de ejecución.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH:
         return 0
@@ -238,6 +238,7 @@ def _sum_directory_recursive(
                     continue
                 
                 try:
+                    # Recursión controlada: no seguimos symlinks (follow_symlinks=False)
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(
                             entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1, parents.copy()

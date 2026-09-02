@@ -70,12 +70,12 @@ __all__ = [
 
 class AssistantConfig(NamedTuple):
     """
-    Configuración persistida del asistente.
+    Configuración persistida del asistente cargada desde settings.
     
     Attributes:
-        api_key: Credencial para la API de Google Gemini.
+        api_key: String de la clave API de Google Gemini (validada via Regex).
         model: Identificador del modelo (ej. 'gemini-3.1-flash-lite').
-        allow_metrics: Booleano que autoriza el envío de datos agregados.
+        allow_metrics: Bandera booleana para autorizar el envío de datos agregados al endpoint.
     """
     api_key: str
     model: str
@@ -84,22 +84,34 @@ class AssistantConfig(NamedTuple):
 @dataclass(frozen=True)
 class MetricSpec:
     """
-    Define un contrato para validar métricas numéricas, incluyendo una función
-    de casteo y los límites permitidos para evitar valores fuera de rango o maliciosos.
+    Define el contrato de validación para métricas numéricas entrantes.
+    
+    Attributes:
+        cast_func: Función para convertir el valor (ej. float o int).
+        min_val: Límite inferior físico aceptable.
+        max_val: Límite superior físico aceptable.
     """
     cast_func: Callable[[Any], Any]
     min_val: float
     max_val: float
 
     def is_valid_type(self, val: Any) -> bool:
-        """Verifica que el valor sea numérico y no una colección o booleano."""
+        """Verifica que el valor sea un número real (no booleano ni contenedor)."""
         return isinstance(val, (int, float)) and not isinstance(val, bool)
 
 class ProblemCriterion(NamedTuple):
-    """Define una regla de salud lógica para la evaluación de métricas."""
+    """
+    Regla heurística que define cuándo una métrica se considera un 'problema'.
+    
+    Attributes:
+        metric_key: Nombre del atributo en SystemContext a evaluar.
+        threshold: Valor límite para comparar.
+        operator: Comparador lógico ('<' o '>').
+        message_format: Template de string para el mensaje al usuario.
+    """
     metric_key: str
     threshold: float
-    operator: str  # '<' o '>'
+    operator: str
     message_format: str
 
     def _evaluate_metric(self, val: float) -> bool:
@@ -109,7 +121,7 @@ class ProblemCriterion(NamedTuple):
         return False
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
-        """Determina si la métrica en el contexto viola este criterio."""
+        """Determina si la métrica actual en el contexto viola este criterio."""
         val = getattr(ctx, self.metric_key, None)
         if val is None:
             return False
@@ -118,8 +130,8 @@ class ProblemCriterion(NamedTuple):
 
     def format_if_triggered(self, ctx: SystemContext) -> str | None:
         """
-        Evalúa si la métrica contenida en el contexto supera el umbral definido.
-        Retorna la cadena formateada si se cumple la condición, o None.
+        Retorna una cadena descriptiva si el criterio se cumple, de lo contrario None.
+        Aplica límites de longitud de seguridad para prevenir desbordamientos.
         """
         try:
             val = getattr(ctx, self.metric_key, None)
@@ -133,7 +145,7 @@ class ProblemCriterion(NamedTuple):
             return None
 
 class AreaExplanation(NamedTuple):
-    """Documentación pedagógica de las áreas de la aplicación."""
+    """Mapeo para descripciones pedagógicas de cada área de la aplicación."""
     key: str
     description: str
 
@@ -253,7 +265,9 @@ class SystemContext:
     Contenedor de estado del sistema. Mantiene únicamente métricas agregadas.
     
     Attributes:
-        analyzed: Indica si se ha realizado al menos un ciclo de recolección.
+        score: Puntaje global de salud (0-100).
+        grade: Calificación cualitativa (letra o estado corto).
+        analyzed: Indica si se ha realizado al menos un ciclo de recolección exitoso.
     """
     score: Optional[int] = None
     grade: str = ""
@@ -338,7 +352,7 @@ def _ensure_safe_text(text: Any) -> bool:
     """
     Filtro de seguridad de alto nivel para todo texto procesado.
     Garantiza que la entrada es una cadena no vacía, dentro del límite de tamaño,
-    limpia de caracteres de control (que podrían romper la UI) y estructuralmente segura.
+    limpia de caracteres de control y estructuralmente segura.
     """
     if not isinstance(text, str) or not text:
         return False
@@ -381,7 +395,6 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
     Construye el objeto SystemContext validando datos contra los validadores registrados.
     """
     ctx = SystemContext()
-    # Filtramos para asegurar que solo procesamos tipos contenedores válidos
     sources = [s for s in [metrics, health, extra] 
                if s is not None and isinstance(s, (dict, object)) 
                and not isinstance(s, (list, tuple, str, int, float, bool))]

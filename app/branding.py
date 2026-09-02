@@ -170,6 +170,7 @@ def grade_color(grade: Optional[str]) -> HexColor:
 
 @lru_cache(maxsize=64)
 def score_color(score: Union[float, int, None]) -> HexColor:
+    """Retorna el color asociado a un puntaje numérico basado en umbrales de severidad."""
     if score is None: return C_TEXT_MUTED
     try:
         valor = float(score)
@@ -182,6 +183,7 @@ def score_color(score: Union[float, int, None]) -> HexColor:
 @lru_cache(maxsize=32)
 def bar(percent: Union[float, int, None], width: int = 24,
         filled: str = "\u2588", empty: str = "\u2591") -> str:
+    """Genera una representación visual en texto de una barra de progreso."""
     try:
         valor = float(percent) if percent is not None else 0.0
         ancho = max(1, int(width))
@@ -205,6 +207,7 @@ def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
 
 @lru_cache(maxsize=32)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
+    """Mezcla dos colores hexadecimales linealmente según un ratio entre 0.0 y 1.0."""
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -217,6 +220,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
+    """Genera una tupla de colores interpolados para formar un gradiente."""
     n = max(1, int(steps))
     if not stops: return (C_GLOW,) * n
     if len(stops) < 2: return (stops[0],) * n
@@ -255,6 +259,7 @@ def _get_shield_coords(s: float) -> Tuple[float, ...]:
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
+    """Genera el código fuente SVG del logotipo principal de la aplicación."""
     s = max(1, min(4096, int(size)))
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
@@ -277,6 +282,7 @@ def logo_svg(size: int = 128) -> str:
 </svg>"""
 
 def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
+    """Persiste el SVG del logo en el sistema de archivos tras verificar seguridad."""
     if not destination or len(str(destination)) > 4096: return None
     try:
         path_obj = Path(destination).resolve()
@@ -290,6 +296,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
     except (OSError, PermissionError, TypeError, ValueError, RuntimeError): return None
 
 def logo_ascii() -> str:
+    """Retorna el logo en formato de texto ASCII simple."""
     return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
@@ -313,6 +320,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
+    """Dibuja el escudo del logo en un componente Canvas dado, manejando la escala y capas."""
     try:
         scale = max(0.1, min(10.0, float(size) / 128.0))
         coords = _get_shield_coords(scale)
@@ -326,6 +334,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
+    """Dibuja una línea de ancho y altura especificada aplicando un degradado de color."""
     try:
         w_int = max(1, int(width))
         for segment in _get_grouped_segments(gradient_colors(w_int, stops)):
@@ -333,6 +342,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (ValueError, TypeError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
+    """Dibuja un anillo circular indicando un porcentaje de progreso con colores dinámicos."""
     try:
         if percent is None: return
         valor = float(percent)
