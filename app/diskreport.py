@@ -265,35 +265,39 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
         current_dir = stack.pop()
         try:
             with os.scandir(current_dir) as iterator:
-                for entry in iterator:
+                while True:
                     try:
-                        # Seguridad: Verificar que el entry sea un objeto local y resuelva a subruta
+                        entry = next(iterator)
+                    except (StopIteration, PermissionError, OSError):
+                        break
+                        
+                    try:
                         entry_path = Path(entry.path)
                         resolved = entry_path.resolve()
                         if not str(resolved).startswith(str(root_path)):
                             continue
 
                         st = entry.stat(follow_symlinks=False)
+                        
+                        # Ignorar puntos de reparse (Junctions, Symlinks, etc)
+                        if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
+                            continue
+                        
+                        if entry.is_dir():
+                            if skip_protected and is_protected_path(entry_path):
+                                continue
+                                    
+                            inode_key = (st.st_dev, st.st_ino)
+                            if inode_key not in visited_inodes:
+                                visited_inodes.add(inode_key)
+                                stack.append(entry_path)
+                                    
+                        elif entry.is_file():
+                            # Validar tamaño no negativo
+                            size = max(0, st.st_size)
+                            yield entry_path, size
                     except (PermissionError, OSError, FileNotFoundError):
                         continue
-                    
-                    # Ignorar puntos de reparse (Junctions, Symlinks, etc)
-                    if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
-                        continue
-                    
-                    if entry.is_dir():
-                        if skip_protected and is_protected_path(entry_path):
-                            continue
-                                
-                        inode_key = (st.st_dev, st.st_ino)
-                        if inode_key not in visited_inodes:
-                            visited_inodes.add(inode_key)
-                            stack.append(entry_path)
-                                
-                    elif entry.is_file():
-                        # Validar tamaño no negativo
-                        size = max(0, st.st_size)
-                        yield entry_path, size
         except (PermissionError, OSError, FileNotFoundError):
             continue
 

@@ -237,6 +237,7 @@ def _sum_directory_recursive(
                         stats = entry.stat(follow_symlinks=False)
                         total += stats.st_size
                 except (OSError, PermissionError):
+                    # Ignorar archivos bloqueados por el sistema, continuar el conteo
                     continue
     except (PermissionError, OSError):
         return 0
@@ -310,7 +311,7 @@ def detect_profiles(
                     continue
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
-                    c_path = candidate.resolve()
+                    c_path = candidate.resolve(strict=True)
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))

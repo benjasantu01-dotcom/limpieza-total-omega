@@ -197,11 +197,10 @@ def _collect_candidates(
                         if entry.is_dir(follow_symlinks=False):
                             _scan_recursive(Path(entry.path))
                         elif entry.is_file(follow_symlinks=False):
-                            # Acceder a stat desde la entrada de scandir evita llamadas extra al sistema
                             info = entry.stat()
                             if info.st_size >= min_size:
                                 p = Path(entry.path)
-                                if not is_protected_path(p):
+                                if not is_protected_path(p) and os.access(p, os.R_OK):
                                     temp_map[int(info.st_size)].append(p)
                     except (OSError, PermissionError):
                         continue

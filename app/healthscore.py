@@ -242,7 +242,7 @@ def _render_bar(pts: int, maximo: int) -> str:
 
 def summarize(result: HealthResult | None) -> List[str]:
     """Genera una representación visual y textual del informe de salud para la interfaz."""
-    if not isinstance(result, HealthResult) or not isinstance(getattr(result, 'breakdown', None), dict): 
+    if not isinstance(result, HealthResult) or not hasattr(result, 'breakdown'): 
         return ["Error: Informe no disponible."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
@@ -251,6 +251,6 @@ def summarize(result: HealthResult | None) -> List[str]:
         bar = _render_bar(puntos, maximo)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
     
-    recs = result.recommendations if result.recommendations else ["El sistema está en buen estado."]
-    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in recs]])
+    recs = result.recommendations if isinstance(result.recommendations, list) else []
+    lines.extend(["", "Recomendaciones:", *[f"  - {r}" for r in (recs or ["El sistema está en buen estado."])]])
     return lines
