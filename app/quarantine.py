@@ -378,7 +378,14 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 
 
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
-    """Verifica que el sistema destino tenga espacio libre más un margen de seguridad."""
+    """
+    Verifica que el sistema destino tenga espacio libre suficiente (margen del 5% o 5MB).
+    
+    Raises:
+        FileNotFoundError: Si el directorio no existe.
+        PermissionError: Si no se puede escribir.
+        OSError: Si el espacio libre es insuficiente.
+    """
     if not dest_dir.exists():
         raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
     if not os.access(dest_dir, os.W_OK):
