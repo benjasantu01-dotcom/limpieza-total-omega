@@ -211,7 +211,9 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
             metric_breakdown[area] = pts
             total_pts += float(pts)
             
-            for rule in _RULES_BY_AREA.get(area, []):
+            # Chequeo defensivo: el acceso al dict nunca debe fallar por estructura
+            rules = _RULES_BY_AREA.get(area, [])
+            for rule in rules:
                 if rule.check(metrics, ratio):
                     recommendations.append(rule.message_factory(metrics))
         

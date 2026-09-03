@@ -211,7 +211,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Centraliza comprobaciones de integridad, bloqueos y atributos de sistema.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
-    # Prevención contra rutas que excedan el límite MAX_PATH del sistema
     if len(str(src)) >= 260 or len(str(dest)) >= 260: return False
     if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
     
@@ -219,15 +218,12 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         s_res = src.resolve()
         if not s_res.exists() or not s_res.is_file() or s_res.parent == s_res: return False
         
-        # Integridad estructural
         if _is_junction(s_res) or s_res.is_symlink(): return False
         if dest.exists() and (_is_junction(dest) or dest.is_symlink()): return False
         
-        # Validaciones de protección de rutas (safety.py)
         if is_protected_path(s_res) or is_protected_path(dest.resolve()): return False
         if _is_recursive_violation(s_res, dest): return False
         
-        # Permisos de escritura y estado
         target_dir = dest.parent if dest.is_file() else dest
         if target_dir is None or not (os.access(s_res, os.W_OK) and os.access(target_dir, os.W_OK)): return False
         
@@ -250,8 +246,6 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0) -> None:
     """
     Recorre recursivamente un directorio buscando archivos basura.
-    Utiliza `os.scandir` para maximizar el rendimiento mediante el uso del 
-    caché de metadatos de las entradas del sistema de archivos.
     """
     if not isinstance(current_dir, Path) or not current_dir.exists() or depth > 50:
         return
@@ -275,10 +269,9 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
     """
-    Escanea directorios en busca de archivos que coincidan con los criterios de basura.
-    Si no se provee una lista, utiliza los directorios temporales estándar del SO.
+    Escanea directorios en busca de archivos basura. Valida que cada entrada sea una lista de strings.
     """
-    if directories is not None and not isinstance(directories, list):
+    if directories is not None and (not isinstance(directories, list) or not all(isinstance(d, str) for d in directories)):
         return []
     
     search_dirs: List[Path] = [Path(d) for d in directories] if directories else DEFAULT_SCAN_DIRS
@@ -308,17 +301,12 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
-    """
-    Valida espacio en disco y seguridad antes de proponer una ruta de movimiento.
-    Retorna la ruta destino si es segura, de lo contrario, None.
-    """
-    if not isinstance(junk_file, JunkFile) or junk_file.path is None: return None
-    if not isinstance(dest_base, Path): return None
+    """Valida espacio en disco y seguridad antes de proponer una ruta de movimiento."""
+    if not isinstance(junk_file, JunkFile) or junk_file.path is None or not isinstance(dest_base, Path): return None
     if _is_unc_path(dest_base) or is_protected_path(dest_base): return None
     try:
         if not dest_base.exists() or not dest_base.is_dir(): return None
         
-        # Validar espacio (reserva de 50MB para seguridad operativa)
         if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
             return None
             
@@ -336,10 +324,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 
 
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
-    """
-    Traslada archivos basura a un área de cuarentena para revisión humana.
-    Ningún archivo es eliminado en este proceso, solo reubicado.
-    """
+    """Traslada archivos basura a un área de cuarentena para revisión humana."""
     if not files or not isinstance(review_dir, str): return None
 
     try:
@@ -367,15 +352,13 @@ def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOm
 
 
 def delete_reviewed(review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> int:
-    """
-    Elimina permanentemente archivos en el directorio de revisión.
-    Requiere validaciones explícitas de seguridad y ausencia de bloqueos.
-    """
+    """Elimina permanentemente archivos en el directorio de revisión con validación estricta de tipo."""
     if not isinstance(review_dir, str): return 0
 
     try:
         dest: Path = Path(review_dir).expanduser().resolve()
-        if _is_unc_path(dest) or not dest.exists() or not is_safe_to_modify(dest) or is_protected_path(dest): return 0
+        if not dest.exists() or _is_unc_path(dest) or not is_safe_to_modify(dest) or is_protected_path(dest): 
+            return 0
     except (OSError, RuntimeError):
         return 0
 
