@@ -822,3 +822,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T05:49:17` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-03T05:49:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T05:49:17` Corrida terminada. Total usado hoy: 136.
+- `2026-09-03T05:56:54` Arrancando corrida. Quedan hoy ~164 peticiones objetivo.
+- `2026-09-03T05:57:18` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 110): unterminated string literal (detected at line 110)
+- `2026-09-03T05:57:52` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado `_check_file_integrity` para capturar excepciones de forma más granular durante la iteración de reglas y se han robustecido las validaciones en `ensure_safe_to_modify` para evitar comportamientos inesperados ante errores de sistema de archivos, siguiendo las directrices de manejo de errores y validación.
+- `2026-09-03T05:58:18` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `scan_file` y las funciones de chequeo mediante la validación proactiva de `entry.stat()` y la captura explícita de `AttributeError` ante objetos `None` o incompletos, evitando que errores de acceso a metadatos interrumpan el bucle de escaneo.
+- `2026-09-03T05:58:36` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_Validators.path` y `_Validators.str` implementando una validación estricta de rutas mediante `pathlib.Path.resolve()` dentro de un bloque de seguridad, y refinando los chequeos de caracteres nulos y longitudes para prevenir inyecciones o desbordamientos en la configuración.
+- `2026-09-03T05:58:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T05:58:36` Corrida terminada. Total usado hoy: 140.

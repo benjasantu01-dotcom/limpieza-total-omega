@@ -150,7 +150,7 @@ class _Validators:
     def _run_safety_checks(path_obj: Path) -> bool:
         """Verifica recursivamente si una ruta está protegida o es insegura."""
         try:
-            resolved = path_obj.resolve()
+            resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink(): return False
             if hasattr(resolved, 'is_junction') and resolved.is_junction(): return False
             return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
@@ -160,7 +160,7 @@ class _Validators:
     @staticmethod
     def _is_safe_path(path_str: str) -> bool:
         """Valida que la cadena de ruta sea absoluta y supere las pruebas de `safety.py`."""
-        if not path_str: return False
+        if not path_str or len(path_str) > 2048: return False
         try:
             p = Path(path_str).expanduser()
             if not p.is_absolute(): return False
@@ -195,8 +195,7 @@ class _Validators:
         if val == "": return ""
         if not isinstance(val, (str, Path)): return None
         path_string = str(val).strip()
-        if not path_string or len(path_string) > 4096 or "\0" in path_string: 
-            return None
+        if not path_string or "\0" in path_string: return None
         if not _Validators._is_safe_path(path_string):
             return None
         return path_string
@@ -241,7 +240,7 @@ def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ruta completa del archivo de configuración, validando el directorio base."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
     try:
-        base = Path(custom_base).expanduser().resolve()
+        base = Path(custom_base).expanduser().resolve(strict=False)
         if _Validators._is_safe_path(str(base)):
             return base / SETTINGS_FILE
     except (OSError, RuntimeError):

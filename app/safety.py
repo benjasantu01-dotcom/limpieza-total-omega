@@ -250,10 +250,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 def _check_file_integrity(path: Path) -> None:
     """
-    Realiza un chequeo exhaustivo de integridad.
-    
-    Verifica el estado del archivo mediante una serie de predicados de seguridad. 
-    Usa caché con TTL para optimizar el rendimiento en iteraciones de bucle frecuentes.
+    Realiza un chequeo exhaustivo de integridad usando una lista de predicados.
     
     Args:
         path: Ruta a verificar.
@@ -270,20 +267,19 @@ def _check_file_integrity(path: Path) -> None:
             if not is_safe: raise UnsafePathError("Operación denegada (cache hit).")
             return
 
-    if not path.exists():
-        raise UnsafePathError("La ruta no existe.")
-
     try:
         file_stat = path.lstat()
-    except (PermissionError, OSError):
-        raise UnsafePathError("Error al acceder a los metadatos del archivo.")
+    except (PermissionError, OSError) as e:
+        raise UnsafePathError(f"Error de acceso: {e}")
 
     for rule in _VALIDATORS:
         try:
             if rule.predicate(path, file_stat):
                 _INTEGRITY_CACHE[path_key] = (now, False)
                 raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
-        except (OSError, AttributeError, TypeError):
+        except (OSError, AttributeError, TypeError, UnsafePathError):
+            raise
+        except Exception:
             continue
             
     _INTEGRITY_CACHE[path_key] = (now, True)
@@ -336,9 +332,6 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Verifica si la ruta reside dentro de directorios de sistema protegidos.
-    
-    Utiliza una comprobación eficiente sobre los componentes de la ruta normalizada
-    contra el conjunto de nombres protegidos.
     """
     if not path: return True
     try:
@@ -404,16 +397,6 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
     """
     Valida las restricciones lógicas y de alcance (scope) del sistema.
-    
-    Verifica que la ruta esté dentro del sandbox definido, no sea una raíz de
-    unidad, no esté protegida por sistema y no sea un nodo de reparse.
-    
-    Args:
-        target_path: Ruta a validar.
-        root_directory: Directorio base permitido para el alcance.
-        
-    Raises:
-        UnsafePathError: Si la ruta infringe los límites definidos.
     """
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("La ruta objetivo está fuera del alcance definido por el usuario.")
@@ -430,18 +413,6 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
     Valida si una ruta puede ser modificada, levantando excepciones ante riesgos.
-    
-    Esta función es el punto de entrada crítico antes de realizar cualquier cambio
-    en el sistema de archivos (borrar o mover). Implementa validación estructural,
-    geográfica y de integridad.
-    
-    Args:
-        path: La ruta del archivo o directorio a manipular.
-        allow_sensitive: Si es True, permite modificar archivos con extensiones sensibles.
-        base_dir: Directorio raíz opcional para validar el alcance (sandbox).
-    
-    Raises:
-        UnsafePathError: Si la ruta no es segura, está protegida o viola restricciones.
     """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
@@ -457,22 +428,17 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_boundary_conditions(p, base_dir)
     
     if os.path.lexists(p):
-        try:
-            if not p.is_file() and not p.is_dir():
-                raise UnsafePathError("Tipo de objeto no soportado para modificación.")
+        if not p.is_file() and not p.is_dir():
+            raise UnsafePathError("Tipo de objeto no soportado para modificación.")
+        
+        if not os.access(p, os.W_OK):
+            raise UnsafePathError("No se dispone de permisos de escritura sobre el archivo.")
             
-            if not os.access(p, os.W_OK):
-                raise UnsafePathError("No se dispone de permisos de escritura sobre el archivo.")
-                
-            _check_file_integrity(p)
-        except OSError:
-            raise UnsafePathError("Error de sistema al verificar permisos o integridad.")
+        _check_file_integrity(p)
     else:
-        try:
-            if is_protected_path(p.parent):
-                raise UnsafePathError("Escritura bloqueada: el directorio contenedor está protegido.")
-        except (OSError, AttributeError):
-            raise UnsafePathError("Error al validar directorio contenedor.")
+        # Validar si el contenedor está protegido incluso si el archivo no existe
+        if p.parent and is_protected_path(p.parent):
+            raise UnsafePathError("Escritura bloqueada: el directorio contenedor está protegido.")
     
     if not allow_sensitive and _is_sensitive_extension(p):
         raise UnsafePathError(f"La extensión '{p.suffix}' está marcada como sensible.")
@@ -494,7 +460,6 @@ def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeG
 def filter_safe_paths(paths: Iterable[PathLike], *, allow_sensitive: bool = False) -> list[Path]:
     """
     Filtra una colección de rutas reteniendo solo aquellas que superan el control de seguridad.
-    Resulta ideal para pre-procesar listas de archivos antes de su manipulación masiva.
     """
     results = []
     for p in paths:

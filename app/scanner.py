@@ -74,7 +74,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         if not any(f"\\{folder}\\" in path_str for folder in WATCHED_FOLDERS):
             return None
         
-        stats = entry.stat(follow_symlinks=False) if entry and entry.is_file() else path.stat()
+        stats = entry.stat(follow_symlinks=False) if entry and hasattr(entry, 'stat') else path.stat()
             
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
@@ -104,12 +104,6 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo del sistema de archivos.
-    
-    Gestiona la pila (stack) de directorios pendientes, mantiene un set 'seen' 
-    para evitar ciclos infinitos en enlaces o estructuras profundas, y 
-    centraliza la recolección de hallazgos. El proceso es de naturaleza iterativa 
-    (no recursivo) para prevenir desbordamientos de pila ante sistemas de 
-    archivos masivos.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -196,10 +190,6 @@ class Scanner:
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
     """
     Orquestador central para la evaluación heurística de archivos.
-    
-    Aplica una secuencia de validaciones: primero chequeos atómicos (extensiones, 
-    archivo vacío) y luego itera sobre el registro 'EXECUTABLE_CHECK_REGISTRY' 
-    para ejecutar reglas de análisis estático más complejas.
     """
     if not isinstance(path, Path): return []
     
@@ -212,10 +202,10 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
         if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
             # Check empty file status specifically
             try:
-                size = entry.stat(follow_symlinks=False).st_size if entry else path.stat().st_size
-                if size == 0:
+                stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'stat')) else path.stat()
+                if stats.st_size == 0:
                     findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
-            except (OSError, PermissionError):
+            except (OSError, PermissionError, AttributeError):
                 pass
 
             for check_fn in EXECUTABLE_CHECK_REGISTRY:
