@@ -592,20 +592,22 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     if not items:
         return 0
     
+    # Pre-indexación para eficiencia en la validación masiva
+    item_map = {item.stored_name: item for item in items}
     purged_count = 0
     kept_items = []
     
-    for item in items:
-        stored_path = (quarantine_root / item.stored_name).resolve()
-        if _is_item_purgable(stored_path, item, quarantine_root):
-            if _safe_unlink(stored_path):
-                purged_count += 1
+    for stored_path in quarantine_root.iterdir():
+        if stored_path.name in item_map:
+            item = item_map[stored_path.name]
+            if _is_item_purgable(stored_path, item, quarantine_root):
+                if _safe_unlink(stored_path):
+                    purged_count += 1
+                else:
+                    kept_items.append(item)
             else:
                 kept_items.append(item)
-        else:
-            if stored_path.exists():
-                kept_items.append(item)
-            
+                
     if purged_count > 0:
         save_manifest(kept_items, base)
     return purged_count
@@ -616,8 +618,8 @@ def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> 
     base_path = quarantine_dir(base)
     m_path = _manifest_path(base_path)
     mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
-    # Acceso a los datos crudos evitando la deserialización completa a objetos QuarantineItem
     raw_data = _load_manifest_raw(str(base_path), mtime)
+    # Suma directa sin instanciar objetos, reduce uso de memoria y CPU
     return sum(int(d.get("size_bytes", 0)) for d in raw_data if isinstance(d, dict))
 
 

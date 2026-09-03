@@ -115,17 +115,12 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[Path] = set()
-        self.base_root_str = str(base_root.resolve(strict=False)).lower()
+        self.base_root_str = str(base_root.resolve(strict=False)).lower() + os.sep
         self.now_ts: float = datetime.now().timestamp()
 
-    def _is_inside_base_root(self, path: Path) -> bool:
+    def _is_inside_base_root(self, path_str: str) -> bool:
         """Valida si la ruta está contenida dentro del directorio base definido."""
-        if not path: return False
-        try:
-            absolute_path = path.resolve(strict=False)
-            return str(absolute_path).lower().startswith(self.base_root_str)
-        except (OSError, PermissionError, RuntimeError):
-            return False
+        return path_str.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida que una entrada de directorio no viole políticas de seguridad o rutas bloqueadas."""
@@ -142,11 +137,10 @@ class Scanner:
             if entry.name and (RTL_CHAR_RE.search(entry.name) or RESERVED_NAMES_RE.match(entry.name)):
                 return False
 
-            path_obj = Path(entry.path)
-            if not self._is_inside_base_root(path_obj):
+            if not self._is_inside_base_root(entry.path):
                 return False
             
-            return not is_protected_path(path_obj)
+            return not is_protected_path(Path(entry.path))
         except (ValueError, RuntimeError, OSError, TypeError, FileNotFoundError, PermissionError):
             return False
 
