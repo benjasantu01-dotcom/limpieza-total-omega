@@ -815,3 +815,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T05:38:11` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: manejo de errores y validación de entradas).
 - `2026-09-03T05:38:11` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T05:38:11` Corrida terminada. Total usado hoy: 132.
+- `2026-09-03T05:46:42` Arrancando corrida. Quedan hoy ~168 peticiones objetivo.
+- `2026-09-03T05:47:58` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Se reforzó el manejo de errores en `_safe_run_ui_callback` y `_flush_logs` para evitar que fallos de UI (como widgets destruidos durante procesos asíncronos) detengan la ejecución del hilo principal, garantizando robustez ante cierres inesperados.
+- `2026-09-03T05:48:29` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente la apertura de handles y asegurando que las excepciones de bajo nivel no interrumpan el flujo de control, garantizando que `kernel32.CloseHandle` siempre se ejecute mediante un bloque `finally` robusto.
+- `2026-09-03T05:48:57` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-03T05:49:17` Gemini no devolvió un bloque de archivo válido para quarantine.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-03T05:49:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T05:49:17` Corrida terminada. Total usado hoy: 136.

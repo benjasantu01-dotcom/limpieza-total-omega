@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 14
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 216
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 218
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 13 | 0 | 1 | 3 | 5 |
+| 2026-09-01 | 10 | 0 | 1 | 2 | 5 |
 | 2026-09-02 | 163 | 10 | 23 | 11 | 143 |
-| 2026-09-03 | 47 | 4 | 7 | 6 | 68 |
+| 2026-09-03 | 49 | 4 | 7 | 6 | 70 |
 
 ## Mejoras aceptadas por enfoque
 
+- manejo de errores y validación de entradas: **48**
 - seguridad defensiva: **46**
-- manejo de errores y validación de entradas: **46**
-- legibilidad y documentación: **45**
 - rendimiento: **44**
 - robustez ante casos límite: **42**
+- legibilidad y documentación: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
-- `memory.py`: **20**
-- `settings.py`: **19**
+- `memory.py`: **21**
 - `safety.py`: **18**
+- `settings.py`: **18**
 - `quarantine.py`: **18**
-- `scanner.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **17**
 - `assistant.py`: **17**
 - `organizer.py`: **16**
+- `scanner.py`: **16**
 - `diskreport.py`: **15**
 - `branding.py`: **13**
-- `main.py`: **10**
-- `startup.py`: **5**
+- `main.py`: **11**
+- `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T05:48:29` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes validando explícitamente la apertura de handles y asegurando que las excepciones de bajo nivel no interrumpan el flujo de control, garantizando que `kernel32.CloseHandle` siempre se ejecute mediante un bloque `finally` robusto.
+- `2026-09-03T05:47:58` **main.py** (manejo de errores y validación de entradas): Se reforzó el manejo de errores en `_safe_run_ui_callback` y `_flush_logs` para evitar que fallos de UI (como widgets destruidos durante procesos asíncronos) detengan la ejecución del hilo principal, garantizando robustez ante cierres inesperados.
 - `2026-09-03T05:37:59` **duplicates.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de las funciones `hash_file` y `partial_hash` añadiendo validaciones preventivas sobre los parámetros de entrada y una gestión de errores más granular, asegurando que los manejadores de archivos se cierren correctamente ante excepciones inesperadas de E/S.
 - `2026-09-03T05:37:01` **browser.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `detect_profiles` y `_sum_directory_recursive` mediante la validación estricta de tipos y valores, evitando procesar rutas malformadas o tipos de datos inesperados que podrían disparar excepciones innecesarias durante la ejecución.
 - `2026-09-03T05:29:58` **branding.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita mediante `ensure_safe_to_modify` para cumplir con las reglas de seguridad de escritura, al tiempo que se centralizó el manejo de excepciones para evitar fallos silenciosos en la creación de directorios o escritura de archivos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T03:25:31` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save` frente a errores de concurrencia y fallos parciales de escritura mediante el uso de una verificación explícita de `temp_path` y un manejo de excepciones más granular que evita dejar archivos corruptos en disco si ocurre un fallo durante la escritura o sincronización.
 - `2026-09-03T03:24:53` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` agregando un manejo explícito de archivos inexistentes y una verificación de `PermissionError` más granular, evitando falsos negativos en el chequeo de integridad cuando el archivo ha desaparecido entre la validación inicial y el acceso a disco.
 - `2026-09-03T03:18:42` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante archivos inesperados en la carpeta de cuarentena y posibles inconsistencias del sistema de archivos, asegurando que el proceso de purgado solo afecte archivos registrados en el manifiesto y que existan físicamente.
-- `2026-09-03T03:17:43` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `trim_working_set` y sus funciones auxiliares para evitar fugas de recursos (handles de procesos abiertos) ante excepciones inesperadas durante las verificaciones de seguridad.
-- `2026-09-03T03:05:05` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante valores `NaN` (Not a Number) o inconsistentes que podrían evadir `math.isfinite` en arquitecturas específicas, asegurando que `validate` realmente normalice cualquier entrada inesperada antes de que el cálculo de `compute_score` se vea afectado.

@@ -98,8 +98,9 @@ def safe_ui_operation(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except (tk.TclError, RuntimeError) as e:
+        except (tk.TclError, RuntimeError, AttributeError) as e:
             logging.debug("Ignorando error de UI en %s: %s", func.__name__, e)
+            return None
     return wrapper
 
 # Validación de seguridad defensiva en el inicio

@@ -354,13 +354,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         return False, "Proceso protegido o inválido."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
-    if not proc_handle: return False, "Acceso denegado."
+    if not proc_handle: 
+        return False, "Acceso denegado."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
-        if not is_safe: return False, error_reason
+        if not is_safe: 
+            return False, error_reason or "Verificación de seguridad fallida."
         if not psapi.EmptyWorkingSet(proc_handle): 
-            return False, "El sistema denegó la operación."
+            return False, "El sistema denegó la operación (EmptyWorkingSet falló)."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (OSError, ctypes.ArgumentError) as e:
         return False, f"Error del sistema: {e}"
