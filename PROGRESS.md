@@ -6,34 +6,34 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 213
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 153 | 9 | 22 | 9 | 139 |
-| 2026-09-03 | 74 | 4 | 12 | 8 | 74 |
+| 2026-09-02 | 151 | 9 | 21 | 9 | 138 |
+| 2026-09-03 | 75 | 4 | 12 | 9 | 76 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
 - rendimiento: **43**
-- seguridad defensiva: **39**
-- robustez ante casos límite: **39**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **22**
+- `browser.py`: **21**
+- `memory.py`: **21**
 - `safety.py`: **20**
-- `browser.py`: **20**
-- `quarantine.py`: **19**
 - `assistant.py`: **19**
+- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `duplicates.py`: **17**
 - `organizer.py`: **17**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T07:31:08` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos de rutas no existentes o con permisos restringidos al añadir validaciones adicionales y manejo de excepciones en `_is_valid_cache_path` y `_sum_directory_recursive`, evitando que errores transitorios en el sistema de archivos interrumpan el escaneo de otras cachés válidas.
 - `2026-09-03T07:21:28` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de datos al agregar validación de estado en `ProblemCriterion.format_if_triggered`, evitando que métricas ausentes o corruptas (que devuelven -1.0) disparen mensajes de error o descripciones confusas al usuario.
 - `2026-09-03T07:20:33` **settings.py** (rendimiento): Se implementó un mecanismo de caché preventiva para la ruta de configuración en `settings_path` para evitar llamadas redundantes a `expanduser()` y `resolve()` en cada acceso, optimizando el rendimiento de las operaciones de E/S.
 - `2026-09-03T07:20:03` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` en lugar de llamadas repetidas a `Path.resolve()` y `Path.stat()`, aprovechando que `os.DirEntry` ya contiene la información de tipos y atributos, evitando syscalls redundantes y mejorando la velocidad en directorios grandes.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T06:30:24` **quarantine.py** (legibilidad y documentación): He refactorizado la validación de seguridad de `quarantine_file` extrayendo la lógica a un nuevo método privado `_check_isolation_safety` para mejorar la legibilidad y asegurar que el flujo crítico de validación sea auditable y cumpla con las reglas de seguridad.
 - `2026-09-03T06:29:41` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `organizer.py` mediante la adición de Type Hints detallados en las funciones de escaneo y el uso de docstrings estandarizados que explican el propósito de cada ayudante de bajo nivel, facilitando el mantenimiento y la auditoría de seguridad.
 - `2026-09-03T06:29:12` **memory.py** (legibilidad y documentación): Se ha mejorado la documentación interna y la claridad semántica mediante la adición de docstrings técnicos detallados en las funciones de bajo nivel y la normalización de type hints, facilitando la comprensión del flujo de datos en operaciones críticas de memoria y la interacción con Win32.
-- `2026-09-03T06:20:47` **main.py** (legibilidad y documentación): Se ha mejorado la documentación y la legibilidad de la clase `LimpiezaTotalOmegaApp` mediante la inclusión de type hints precisos en los métodos de callback y la estandarización de los docstrings, facilitando la comprensión del flujo de trabajo de la aplicación.

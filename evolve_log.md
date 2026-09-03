@@ -885,3 +885,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T07:21:28` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de datos al agregar validación de estado en `ProblemCriterion.format_if_triggered`, evitando que métricas ausentes o corruptas (que devuelven -1.0) disparen mensajes de error o descripciones confusas al usuario.
 - `2026-09-03T07:21:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T07:21:28` Corrida terminada. Total usado hoy: 172.
+- `2026-09-03T07:30:06` Arrancando corrida. Quedan hoy ~128 peticiones objetivo.
+- `2026-09-03T07:30:42` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-03T07:31:08` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se reforzó la robustez ante casos de rutas no existentes o con permisos restringidos al añadir validaciones adicionales y manejo de excepciones en `_is_valid_cache_path` y `_sum_directory_recursive`, evitando que errores transitorios en el sistema de archivos interrumpan el escaneo de otras cachés válidas.
+- `2026-09-03T07:31:35` ➖ Sin cambios en diskreport.py (enfoque: robustez ante casos límite). Motivo: Se mejora la robustez de `walk_files` ante archivos bloqueados o inaccesibles añadiendo un manejo de excepciones más granular que impide que una falla de `stat()` en un archivo puntual interrumpa el escaneo del directorio completo.
+- `2026-09-03T07:31:44` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-03T07:31:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T07:31:44` Corrida terminada. Total usado hoy: 176.

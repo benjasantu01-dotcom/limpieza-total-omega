@@ -193,7 +193,10 @@ def _sum_directory_recursive(
     
     # Validar entrada antes de operar
     p_obj = Path(root_abs)
-    if not p_obj.exists() or not is_safe_to_modify(p_obj):
+    try:
+        if not p_obj.exists() or not is_safe_to_modify(p_obj):
+            return 0
+    except (OSError, PermissionError):
         return 0
     
     if root_abs in memo:
