@@ -1065,9 +1065,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         if self._closing: return
         
         target_path = target
-        if check_safety and target_path and not self._is_safe_path(target_path):
-             self.log(f"Operación cancelada: destino inseguro ({target_path})", self._current_tab())
-             return
+        if check_safety and target_path:
+            try:
+                safety.ensure_safe_to_modify(Path(target_path).resolve(strict=True))
+            except Exception:
+                self.log(f"Operación cancelada: destino inseguro ({target_path})", self._current_tab())
+                return
 
         self._set_busy(True)
         tab = self._current_tab()
@@ -1256,11 +1259,6 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         """Busca archivos basura según la configuración actual."""
         def task() -> None:
             destino = self.scan_target or "carpetas por defecto"
-            
-            if self.scan_target and not self._is_safe_path(self.scan_target):
-                self.log(f"Error: La ruta {self.scan_target} no es segura para escanear.", "Limpieza")
-                return
-
             self.set_status(f"Buscando basura en {destino}...")
             self.clear("Limpieza")
             self.log(f"Buscando basura en: {destino}...", "Limpieza")

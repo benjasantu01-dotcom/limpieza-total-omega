@@ -268,14 +268,17 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
         with os.scandir(current_dir) as it:
             for entry in it:
                 try:
+                    entry_path = Path(entry.path)
+                    if is_protected_path(entry_path.resolve()):
+                        continue
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry):
-                            _process_directory(Path(entry.path), found, depth + 1)
+                            _process_directory(entry_path, found, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
                             stats = entry.stat()
                             if stats.st_size > 0:
-                                found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
+                                found.append(JunkFile(entry_path, stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
                 except (OSError, PermissionError):
                     continue
     except (OSError, PermissionError, RuntimeError):
