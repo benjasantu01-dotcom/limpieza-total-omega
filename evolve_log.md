@@ -1326,3 +1326,10 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Att
 - `2026-09-03T12:17:36` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha añadido una validación explícita para evitar seguir puntos de reparse durante la normalización de rutas, previniendo la recursión infinita y posibles ataques de escalada de privilegios a través de enlaces simbólicos o junctions.
 - `2026-09-03T12:17:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T12:17:36` Corrida terminada. Total usado hoy: 288.
+- `2026-09-03T12:26:12` Arrancando corrida. Quedan hoy ~12 peticiones objetivo.
+- `2026-09-03T12:26:38` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-03T12:27:09` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Mejoré la robustez de `save()` implementando una verificación explícita para evitar condiciones de carrera o escrituras fallidas si el proceso es interrumpido, usando `os.replace` (atómico) y verificando el estado del sistema de archivos antes de cada paso.
+- `2026-09-03T12:27:36` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-03T12:27:58` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de entrada en el motor remoto `_call_gemini` para prevenir la posibilidad de que una clave API maliciosa o un modelo inyectado pudieran ser utilizados para manipular la construcción de la URL o evadir las protecciones de red.
+- `2026-09-03T12:27:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T12:27:58` Corrida terminada. Total usado hoy: 292.

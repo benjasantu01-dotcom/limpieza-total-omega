@@ -206,8 +206,8 @@ _TIMEOUT_SECONDS: Final[int] = 30
 _PATH_INJECTION_REGEX: Final[re.Pattern] = re.compile(r"([a-zA-Z]:[\\/]|/|\\|\.\.|\0|[\u202e\u202d])")
 _CONTROL_CHARS_REGEX: Final[re.Pattern] = re.compile(r"[\x00-\x1f\x7f\u0080-\u009f\u202b-\u202f]")
 _TOKEN_REGEX: Final[re.Pattern] = re.compile(r"\w+")
-_MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]+$")
-_API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]+$")
+_MODEL_NAME_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9\.\-_]{1,64}$")
+_API_KEY_REGEX: Final[re.Pattern] = re.compile(r"^[a-zA-Z0-9_\-\.]{1,128}$")
 
 _CRITERIOS_SALUD: Final[tuple[ProblemCriterion, ...]] = (
     ProblemCriterion("disk_free_percent", 10.0, "<", "{:.0f}% de disco libre"),
@@ -570,21 +570,20 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    # Validación defensiva extra sobre la clave de API antes de usarla en la URL
-    if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
-    if is_protected_path(api_key): return None
-    
+    if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key): return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
-    if _CONTROL_CHARS_REGEX.search(api_key): return None
     
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
     if not _ensure_safe_text(safe_c) or "Error" in safe_c:
         return None
+    
     payload = _build_payload(question, safe_c)
     if not payload or len(payload) > _MAX_PROMPT_LIMIT: return None
+    
     try:
+        url = _ENDPOINT.format(model=model) + f"?key={api_key}"
         req = urllib.request.Request(
-            _ENDPOINT.format(model=model) + f"?key={api_key}", 
+            url, 
             data=payload, 
             headers={"Content-Type": "application/json; charset=utf-8"}, 
             method="POST"

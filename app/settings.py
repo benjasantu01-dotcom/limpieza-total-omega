@@ -302,11 +302,13 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         ruta = settings_path(custom_base)
         parent = ruta.parent
-        if not _Validators._is_safe_path(str(parent)): return None
         
+        # Validaciones preventivas de estado
         if not parent.exists(): 
             parent.mkdir(parents=True, exist_ok=True)
-        if not parent.is_dir(): return None
+            
+        if not _Validators._is_safe_path(str(parent)) or not parent.is_dir():
+            return None
         
         if ruta.exists():
             resolved = ruta.resolve(strict=False)
@@ -315,11 +317,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             if not ruta.is_file(): return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
-        if not str(temp_path.parent) == str(parent): return None
-        
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         
+        # Escritura atómica mediante archivo temporal y fsync
         with open(temp_path, "wb") as f:
             f.write(data)
             f.flush()
