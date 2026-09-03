@@ -252,7 +252,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     evita ciclos infinitos ante enlaces simbólicos.
     """
     root_path = _validate_root(directory)
-    if not root_path:
+    if root_path is None or not root_path.exists():
         return
 
     REPARSE_POINT_ATTR = 0x400
@@ -409,13 +409,13 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         List[str]: Informe formateado como lista de líneas de texto.
     """
     p_input = _validate_root(directory)
-    if not p_input:
-        return ["Error: Ruta inaccesible o prohibida."]
+    if p_input is None or not p_input.exists():
+        return ["Error: Ruta inaccesible, inexistente o prohibida."]
             
     try:
         data = _collect_summary_data(p_input, skip_protected)
-    except Exception:
-        return ["Error: El análisis se interrumpió inesperadamente."]
+    except (OSError, PermissionError):
+        return ["Error: El análisis se interrumpió por falta de permisos."]
     
     if data.total_files == 0:
         return ["Aviso: No se encontraron archivos accesibles."]
