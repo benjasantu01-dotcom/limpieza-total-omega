@@ -104,7 +104,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
 
 def _get_local_windows_drives() -> List[str]:
     """
-    Detecta unidades físicas/lógicas disponibles en Windows mediante el sistema de archivos.
+    Detecta unidades físicas/lógicas disponibles en Windows mediante la inspección
+    de letras de unidad estándar (A-Z).
     """
     import string
     return [f"{letter}:\\" for letter in string.ascii_uppercase
@@ -202,7 +203,9 @@ def format_size(num: Union[int, float, None]) -> str:
 
 def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
-    Consulta el estado de una unidad. 
+    Consulta el estado de una unidad de disco mediante `shutil.disk_usage`.
+    
+    Rechaza explícitamente rutas UNC, rutas relativas o directorios protegidos por seguridad.
     """
     if mount is None:
         return None
@@ -251,7 +254,11 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorrido profundo (DFS iterativo) del sistema de archivos.
 
-    Implementa medidas de seguridad para evitar escapes de ruta y reparse points.
+    Implementa medidas de seguridad:
+    - Uso de `os.scandir` para mayor rendimiento.
+    - Detección de reparse points (Windows) y enlaces simbólicos para evitar bucles.
+    - Registro de inodos visitados para evitar duplicación en sistemas complejos.
+    - Validación de rutas prohibidas mediante `is_protected_path`.
     """
     root_path = _validate_root(directory)
     if not root_path:
@@ -407,6 +414,10 @@ def total_size(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     """
     Realiza una pasada única (O(n)) sobre el directorio para calcular estadísticas agregadas.
+    
+    Esta función utiliza una estructura de heap local para mantener un seguimiento 
+    eficiente de los archivos más grandes encontrados durante el escaneo sin 
+    necesidad de almacenar toda la lista de archivos en memoria.
     """
     total_bytes: int = 0
     total_files: int = 0
@@ -424,6 +435,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
         ext_sizes[ext] += int(size)
         ext_counts[ext] += 1
         
+        # Mantenimiento del heap para los 8 archivos más grandes
         if len(top_files_heap) < 8:
             heapq.heappush(top_files_heap, (int(size), path))
         elif int(size) > top_files_heap[0][0]:
@@ -434,7 +446,16 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
 
 
 def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = True) -> List[str]:
-    """Genera un informe textual resumen con las métricas principales."""
+    """
+    Genera un informe textual resumen con las métricas principales.
+    
+    Args:
+        directory: Directorio raíz a analizar.
+        skip_protected: Si es True, ignora rutas de sistema.
+        
+    Returns:
+        Lista de strings, cada uno representando una línea del informe.
+    """
     p_input = _validate_root(directory)
     if not p_input:
         return ["Error: Ruta inaccesible o prohibida."]

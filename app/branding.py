@@ -78,6 +78,10 @@ APP_VERSION: Final[str] = "2.1.0"
 UI_FONT_FAMILY: Final[str] = "Segoe UI"
 UI_FONT_BOLD: Final[str] = "bold"
 
+# Referencias tipográficas constantes para mejorar legibilidad
+UI_FONT_HEADER_SIZE: Final[int] = 23
+UI_FONT_BODY_SIZE: Final[int] = 12
+
 PALETTE: Final[Mapping[str, HexColor]] = MappingProxyType({
     "background": "#0a0e17", "surface": "#141b2d", "surface_alt": "#1e2740",
     "surface_hover": "#28324f", "card": "#182135", "accent": "#00f0c0",
@@ -100,7 +104,7 @@ C_SURFACE_ALT: Final[HexColor] = PALETTE["surface_alt"]
 
 FONT_SIZES: Final[Mapping[str, int]] = MappingProxyType({
     "display": 46, "title": 26, "subtitle": 13, "heading": 16,
-    "body": 12, "mono": 11, "caption": 10,
+    "body": UI_FONT_BODY_SIZE, "mono": 11, "caption": 10,
 })
 
 SEVERITY_STYLES: Final[Mapping[SeverityLevel, SeverityStyle]] = MappingProxyType({
@@ -139,7 +143,7 @@ def color(name: str) -> HexColor:
 @lru_cache(maxsize=8)
 def font_size(name: str) -> int:
     """Retorna el tamaño en puntos para una categoría tipográfica."""
-    return FONT_SIZES.get(name, 12)
+    return FONT_SIZES.get(name, UI_FONT_BODY_SIZE)
 
 @lru_cache(maxsize=16)
 def icon(section: Optional[str]) -> str:
@@ -340,7 +344,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     """Dibuja la simbología interna (línea y Omega) del escudo."""
     canvas.create_line(canvas_x + 41 * scale, canvas_y + 75 * scale, canvas_x + 75 * scale, canvas_y + 41 * scale, fill=C_BACKGROUND, width=max(2, int(8 * scale)), capstyle="round")
     canvas.create_polygon(canvas_x + 75 * scale, canvas_y + 41 * scale, canvas_x + 89 * scale, canvas_y + 38 * scale, canvas_x + 92 * scale, canvas_y + 52 * scale, fill=C_BACKGROUND, outline="")
-    canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(23 * scale)), UI_FONT_BOLD))
+    canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
     """Dibuja el escudo del logo en un componente Canvas dado, manejando la escala y capas de brillo."""

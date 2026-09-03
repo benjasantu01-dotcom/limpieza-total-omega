@@ -122,11 +122,8 @@ class ProblemCriterion(NamedTuple):
 
     def is_triggered_by(self, ctx: SystemContext) -> bool:
         """Determina si la métrica actual en el contexto viola este criterio."""
-        val = getattr(ctx, self.metric_key, None)
-        if val is None:
-            return False
-        f_val = _safe_float(val, -1.0)
-        return f_val >= 0 and self._evaluate_metric(f_val)
+        val = ctx.get_metric(self.metric_key, -1.0)
+        return val >= 0 and self._evaluate_metric(val)
 
     def format_if_triggered(self, ctx: SystemContext) -> str | None:
         """
@@ -134,11 +131,10 @@ class ProblemCriterion(NamedTuple):
         Aplica límites de longitud de seguridad para prevenir desbordamientos.
         """
         try:
-            val = getattr(ctx, self.metric_key, None)
             if not self.is_triggered_by(ctx):
                 return None
             
-            f_val = float(val)
+            f_val = ctx.get_metric(self.metric_key, 0.0)
             msg: str = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]
             return msg if _is_safe_text_structure(msg) else None
         except (ValueError, TypeError, AttributeError, KeyError):
@@ -282,6 +278,11 @@ class SystemContext:
     quarantined_count: int = 0
     browser_cache_mb: float = 0.0
     analyzed: bool = False
+
+    def get_metric(self, key: str, default: float) -> float:
+        """Acceso seguro a métricas numéricas del sistema con fallback."""
+        val = getattr(self, key, default)
+        return _safe_float(val, default)
 
     def __hash__(self) -> int:
         """Permite usar el contexto como clave en caches, basándose en su estado actual."""
@@ -483,9 +484,9 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     """Responde consultas sobre memoria RAM usando métricas de estado actual."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     
-    mem_pct = _safe_float(getattr(ctx, "memory_available_percent", 50.0), 50.0)
-    total_gb = _safe_float(getattr(ctx, "memory_total_gb", 0.0), 0.0)
-    startup_count = int(getattr(ctx, "startup_count", 0))
+    mem_pct = ctx.get_metric("memory_available_percent", 50.0)
+    total_gb = ctx.get_metric("memory_total_gb", 0.0)
+    startup_count = int(ctx.get_metric("startup_count", 0.0))
     
     status_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     performance_tip = (
@@ -509,68 +510,59 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     """Proporciona diagnóstico de espacio en disco y posibles acciones de recuperación."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
     
-    try:
-        junk = _safe_float(getattr(ctx, "junk_mb", 0.0))
-        dup = _safe_float(getattr(ctx, "duplicate_mb", 0.0))
-        cache = _safe_float(getattr(ctx, "browser_cache_mb", 0.0))
-        free = _safe_float(getattr(ctx, "disk_free_percent", 100.0))
-        
-        recuperable = junk + dup + cache
-        diagnostico = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
-        detalle = f"Esto incluye: {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f' y {cache:.0f} MB de caché' if cache > 0 else ''}."
-        advertencia = " Estás por debajo del 10%: esto afecta la estabilidad. Es urgente." if free < 10 else ""
-        accion = " Empezá por Limpieza: mueve los candidatos a revisión."
-        
-        full_text = f"{diagnostico} {detalle}{advertencia}{accion}"
-        return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE)
-    except (AttributeError, TypeError, ValueError):
-        return Answer("Hubo un error al procesar el estado de tu disco.")
+    junk = ctx.get_metric("junk_mb", 0.0)
+    dup = ctx.get_metric("duplicate_mb", 0.0)
+    cache = ctx.get_metric("browser_cache_mb", 0.0)
+    free = ctx.get_metric("disk_free_percent", 100.0)
+    
+    recuperable = junk + dup + cache
+    diagnostico = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
+    detalle = f"Esto incluye: {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f' y {cache:.0f} MB de caché' if cache > 0 else ''}."
+    advertencia = " Estás por debajo del 10%: esto afecta la estabilidad. Es urgente." if free < 10 else ""
+    accion = " Empezá por Limpieza: mueve los candidatos a revisión."
+    
+    full_text = f"{diagnostico} {detalle}{advertencia}{accion}"
+    return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     """Evalúa hallaggos de seguridad y explica los procedimientos de aislamiento."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    try:
-        count = int(getattr(ctx, "suspicious_count", 0))
-        warn = int(getattr(ctx, "suspicious_warnings", 0))
-        
-        if count == 0:
-            texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola, todo va a revisión."
-        else:
-            info = f"Hay {count} archivo(s) marcados, {warn} con advertencia."
-            sugerencia = "Son señales, no una condena: si no reconocés alguno, usá 'Aislar hallazgos'."
-            texto = f"{info} {sugerencia} La limpieza solo mueve a cuarentena."
-        
-        return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
-    except (AttributeError, TypeError, ValueError):
-        return Answer("Hubo un error al procesar los hallazgos de seguridad.")
+    
+    count = int(ctx.get_metric("suspicious_count", 0.0))
+    warn = int(ctx.get_metric("suspicious_warnings", 0.0))
+    
+    if count == 0:
+        texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola, todo va a revisión."
+    else:
+        info = f"Hay {count} archivo(s) marcados, {warn} con advertencia."
+        sugerencia = "Son señales, no una condena: si no reconocés alguno, usá 'Aislar hallazgos'."
+        texto = f"{info} {sugerencia} La limpieza solo mueve a cuarentena."
+    
+    return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     """Explica el cálculo y significado del puntaje de salud del sistema."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    try:
-        score_val = str(ctx.score) if ctx.score is not None else "N/A"
-        grade = str(ctx.grade) if ctx.grade else ""
-        score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade})' if grade else ''}."
-        problemas = _identify_active_problems(ctx)
-        resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente."
-        explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
-        
-        return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
-    except (AttributeError, TypeError, ValueError):
-        return Answer("Hubo un error al leer tu puntaje de salud.")
+    
+    score_val = str(ctx.score) if ctx.score is not None else "N/A"
+    grade = str(ctx.grade) if ctx.grade else ""
+    score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade})' if grade else ''}."
+    problemas = _identify_active_problems(ctx)
+    resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente."
+    explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
+    
+    return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
     """Analiza programas en el inicio y su impacto sugerido."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    try:
-        count = int(getattr(ctx, "startup_count", 0))
-        estado = f"Tenés {count} programas que arrancan con Windows."
-        valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
-        cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
-        
-        return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
-    except (AttributeError, TypeError, ValueError):
-        return Answer("Hubo un error al analizar tus programas de inicio.")
+    
+    count = int(ctx.get_metric("startup_count", 0.0))
+    estado = f"Tenés {count} programas que arrancan con Windows."
+    valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
+    cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."
+    
+    return Answer(_validate_response_length(f"{estado} {valoracion}{cierre}"), notice=OFFLINE_NOTICE)
 
 _KEYWORD_TO_HANDLER: Final[dict[str, Callable[[SystemContext, str], Answer]]] = {
     "ram": handle_ram, "memoria": handle_ram, "lenta": handle_ram, "lento": handle_ram, "acelerar": handle_ram,
