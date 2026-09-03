@@ -1258,12 +1258,18 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def on_scan_junk(self) -> None:
         """Busca archivos basura según la configuración actual."""
         def task() -> None:
-            destino = self.scan_target or "carpetas por defecto"
+            # Validar objetivo actual antes de proceder
+            target = self.scan_target
+            if target and not self._is_safe_target_dir(target):
+                self.log("Error: Objetivo configurado inválido o no seguro.", "Limpieza")
+                return
+
+            destino = target or "carpetas por defecto"
             self.set_status(f"Buscando basura en {destino}...")
             self.clear("Limpieza")
             self.log(f"Buscando basura en: {destino}...", "Limpieza")
             
-            raw_scan = scan_for_junk([self.scan_target] if self.scan_target else None)
+            raw_scan = scan_for_junk([target] if target else None)
             junk = [item for item in raw_scan if item.size_bytes > 0]
             
             self._invalidate_cache("junk")
@@ -1273,7 +1279,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             self.log(f"Encontrados {len(junk)} candidatos ({total_mb} MB).", "Limpieza")
             self._safe_run_ui_callback(self.refresh_list)
 
-        self.run_async(task, check_safety=True, target=self.scan_target)
+        self.run_async(task, check_safety=True, target=self.scan_target or ".")
 
     @safe_ui_operation
     def refresh_list(self) -> None:

@@ -53,9 +53,9 @@ _LIMIT_DISK_PERCENT: Final[float] = 25.0
 
 # Factores de normalización: inversos de los límites para transformar valores 
 # brutos (MB, conteos, %) al rango [0.0, 1.0].
-_INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
-_INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
-_INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
+_INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB if _LIMIT_JUNK_MB > 0 else 0.0
+_INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB if _LIMIT_DUPLICATE_MB > 0 else 0.0
+_INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT) if _LIMIT_STARTUP_COUNT > 0 else 0.0
 
 # Niveles de severidad para activar reglas de recomendación (heurística).
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
@@ -240,6 +240,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
 
 def _render_bar(pts: int, maximo: int) -> str:
     """Genera una barra visual (strings) representando el puntaje obtenido sobre el máximo."""
+    if maximo <= 0: return ""
     puntos = max(0, min(pts, maximo))
     return ('#' * puntos) + ('.' * (maximo - puntos))
 

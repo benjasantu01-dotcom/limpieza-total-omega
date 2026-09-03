@@ -203,7 +203,6 @@ def _collect_candidates(
                             if not is_protected_path(p_dir) and not is_junction(p_dir):
                                 _scan_recursive(p_dir)
                         elif entry.is_file(follow_symlinks=False):
-                            # Verificación extra: no seguir reparse points detectados como archivos
                             if is_junction(Path(entry.path)):
                                 continue
                             info = entry.stat(follow_symlinks=False)
@@ -292,15 +291,13 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         if not isinstance(p, Path): continue
         try:
-            if not p.exists(): continue
+            if not p.is_file(): continue
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
             continue
     
-    # Criterio: (antigüedad, longitud_path)
-    primary_criteria: Callable[[Tuple[float, int, Path]], Tuple[float, int]] = lambda x: (x[0], x[1])
-    return min(candidates, key=primary_criteria)[2] if candidates else None
+    return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:

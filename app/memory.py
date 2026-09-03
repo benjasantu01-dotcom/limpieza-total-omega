@@ -361,14 +361,15 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     Requiere permisos de administrador y validaciones de seguridad previas.
     """
     if os.name != "nt": return False, "Operación solo soportada en Windows."
-    kernel32 = ctypes.windll.kernel32
-    psapi = getattr(ctypes.windll, "psapi", None)
-    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
     try:
         target_pid = int(pid)
     except (ValueError, TypeError):
         return False, "PID no válido."
+
+    kernel32 = ctypes.windll.kernel32
+    psapi = getattr(ctypes.windll, "psapi", None)
+    if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
         
     if _is_system_process(target_pid) or not is_safe_to_modify(str(target_pid)): 
         return False, "Proceso protegido o inválido."
