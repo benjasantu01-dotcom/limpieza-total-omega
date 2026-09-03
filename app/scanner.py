@@ -105,8 +105,11 @@ class Scanner:
     """
     Controlador de estado para el escaneo del sistema de archivos.
     
-    Gestiona la pila de directorios pendientes, mantiene un registro de rutas 
-    visitadas para evitar bucles recursivos y centraliza los hallazgos.
+    Gestiona la pila (stack) de directorios pendientes, mantiene un set 'seen' 
+    para evitar ciclos infinitos en enlaces o estructuras profundas, y 
+    centraliza la recolección de hallazgos. El proceso es de naturaleza iterativa 
+    (no recursivo) para prevenir desbordamientos de pila ante sistemas de 
+    archivos masivos.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -192,7 +195,13 @@ class Scanner:
             pass
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
-    """Orquestador de reglas: ejecuta todas las heurísticas configuradas para un archivo."""
+    """
+    Orquestador central para la evaluación heurística de archivos.
+    
+    Aplica una secuencia de validaciones: primero chequeos atómicos (extensiones, 
+    archivo vacío) y luego itera sobre el registro 'EXECUTABLE_CHECK_REGISTRY' 
+    para ejecutar reglas de análisis estático más complejas.
+    """
     if not isinstance(path, Path): return []
     
     findings: ScanResult = []

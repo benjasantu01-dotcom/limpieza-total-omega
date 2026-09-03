@@ -409,3 +409,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T02:03:19` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _CheckResult
 - `2026-09-03T02:03:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T02:03:19` Corrida terminada. Total usado hoy: 48.
+- `2026-09-03T02:11:51` Arrancando corrida. Quedan hoy ~252 peticiones objetivo.
+- `2026-09-03T02:12:20` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se introdujo documentación técnica detallada en el `Scanner` para aclarar el flujo de recursión (evitando confusiones sobre el uso del `stack`) y se añadió un `docstring` explicativo en `scan_file` para clarificar la distinción entre heurísticas de archivo único y reglas registradas, facilitando el mantenimiento a futuro.
+- `2026-09-03T02:12:52` Gemini no devolvió un bloque de archivo válido para settings.py (enfoque: legibilidad y documentación).
+- `2026-09-03T02:13:19` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: StartupEntry._is_valid_executable, StartupEntry._sanitize_command
+- `2026-09-03T02:13:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-03T02:14:01` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-03T02:14:30` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-03T02:15:42` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-03T02:15:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T02:15:42` Corrida terminada. Total usado hoy: 52.
