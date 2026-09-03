@@ -134,7 +134,9 @@ class ProblemCriterion(NamedTuple):
             if not self.is_triggered_by(ctx):
                 return None
             
-            f_val = ctx.get_metric(self.metric_key, 0.0)
+            f_val = ctx.get_metric(self.metric_key, -1.0)
+            if f_val < 0: return None
+            
             msg: str = self.message_format.format(f_val)[:_MAX_MSG_CHUNK]
             return msg if _is_safe_text_structure(msg) else None
         except (ValueError, TypeError, AttributeError, KeyError):

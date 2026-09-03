@@ -878,3 +878,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T07:11:17` ✅ Mejora aceptada en safety.py (enfoque: rendimiento). Se implementó un mecanismo de caché local más eficiente en `_check_file_integrity` usando el hash de la ruta y un `lru_cache` para el resultado del chequeo, reduciendo la cantidad de llamadas repetitivas al sistema de archivos para archivos que no han cambiado durante la sesión de análisis.
 - `2026-09-03T07:11:17` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T07:11:17` Corrida terminada. Total usado hoy: 168.
+- `2026-09-03T07:19:35` Arrancando corrida. Quedan hoy ~132 peticiones objetivo.
+- `2026-09-03T07:20:03` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` en lugar de llamadas repetidas a `Path.resolve()` y `Path.stat()`, aprovechando que `os.DirEntry` ya contiene la información de tipos y atributos, evitando syscalls redundantes y mejorando la velocidad en directorios grandes.
+- `2026-09-03T07:20:33` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se implementó un mecanismo de caché preventiva para la ruta de configuración en `settings_path` para evitar llamadas redundantes a `expanduser()` y `resolve()` en cada acceso, optimizando el rendimiento de las operaciones de E/S.
+- `2026-09-03T07:21:00` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: rendimiento).
+- `2026-09-03T07:21:28` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejora la robustez del manejo de datos al agregar validación de estado en `ProblemCriterion.format_if_triggered`, evitando que métricas ausentes o corruptas (que devuelven -1.0) disparen mensajes de error o descripciones confusas al usuario.
+- `2026-09-03T07:21:28` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T07:21:28` Corrida terminada. Total usado hoy: 172.

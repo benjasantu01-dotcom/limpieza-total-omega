@@ -73,7 +73,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
         return None
     
     try:
-        stats = entry.stat(follow_symlinks=False) if entry and hasattr(entry, 'stat') else path.stat()
+        stats = entry.stat(follow_symlinks=False) if entry else path.stat()
         if (now_ts - stats.st_mtime) < (RECENT_FILE_THRESHOLD_HOURS * 3600):
             return Suspicion(path, f"Ejecutable reciente detectado (<{RECENT_FILE_THRESHOLD_HOURS}h)", "info")
     except (OSError, AttributeError, ValueError, PermissionError):
@@ -100,22 +100,18 @@ class Scanner:
     
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
-        self.seen: set[Path] = set()
+        self.seen: set[str] = set()
         self.base_root = base_root.resolve(strict=False)
         self.base_root_str = str(self.base_root).lower() + os.sep
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que la ruta resuelta pertenezca al árbol de directorios raíz."""
-        try:
-            target = Path(path_str).resolve(strict=False)
-            return str(target).lower().startswith(self.base_root_str)
-        except (OSError, RuntimeError):
-            return False
+        return path_str.lower().startswith(self.base_root_str)
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida que una entrada cumpla con las políticas de seguridad y restricciones de ruta."""
-        if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+        if not entry or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
         try:
@@ -138,17 +134,13 @@ class Scanner:
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
             return True 
 
-    def _handle_directory(self, entry: os.DirEntry, stack: List[Path]) -> None:
-        """Agrega un directorio al stack de procesamiento si es nuevo y seguro."""
-        try:
-            path = Path(entry.path).resolve(strict=False)
-            if path not in self.seen and not is_protected_path(path):
-                self.seen.add(path)
-                stack.append(path)
-        except (OSError, PermissionError):
-            pass
+    def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
+        """Agrega un directorio al stack de procesamiento si es nuevo."""
+        if entry.path not in self.seen:
+            self.seen.add(entry.path)
+            stack.append(entry.path)
 
-    def process_entry(self, entry: os.DirEntry, stack: List[Path]) -> None:
+    def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Distribuye la entrada a la lógica de carpetas o al motor de análisis de archivos."""
         try:
             if not self._is_safe_entry(entry):
@@ -181,7 +173,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     file_ext = (ext or path.suffix.lower())
     if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
         try:
-            stats = entry.stat(follow_symlinks=False) if (entry and hasattr(entry, 'stat')) else path.stat()
+            stats = entry.stat(follow_symlinks=False) if entry else path.stat()
             if stats.st_size == 0:
                 findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
         except (OSError, PermissionError, AttributeError):
@@ -206,8 +198,8 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
         return []
 
     scanner = Scanner(base_root=path_input)
-    stack: List[Path] = [path_input]
-    scanner.seen.add(path_input)
+    stack: List[str] = [str(path_input)]
+    scanner.seen.add(str(path_input))
     
     while stack:
         current_dir = stack.pop()

@@ -99,6 +99,7 @@ MAX_SETTINGS_SIZE: Final = 1024 * 64
 API_KEY_ENV_VAR: Final = "OMEGA_GEMINI_KEY"
 
 _CACHE: dict[str, tuple[float, AppSettings]] = {}
+_PATH_CACHE: dict[str, Path] = {}
 
 VALID_THEMES: Final[frozenset[str]] = frozenset(("oscuro", "claro", "sistema"))
 VALID_ACCENTS: Final[frozenset[str]] = frozenset(("menta", "violeta", "magenta", "cian", "ambar"))
@@ -239,10 +240,17 @@ _VALIDATOR_MAP: Final[dict[ConfigKey, Callable[[ConfigKey, Any], Any]]] = {
 def settings_path(custom_base: PathLike | None = None) -> Path:
     """Resuelve la ruta completa del archivo de configuración, validando el directorio base."""
     if custom_base is None: return SETTINGS_DIR / SETTINGS_FILE
+    
+    cache_key = str(custom_base)
+    if cache_key in _PATH_CACHE:
+        return _PATH_CACHE[cache_key]
+        
     try:
         base = Path(custom_base).expanduser().resolve(strict=False)
         if _Validators._is_safe_path(str(base)):
-            return base / SETTINGS_FILE
+            res = base / SETTINGS_FILE
+            _PATH_CACHE[cache_key] = res
+            return res
     except (OSError, RuntimeError):
         pass
     return SETTINGS_DIR / SETTINGS_FILE
