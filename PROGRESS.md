@@ -8,24 +8,24 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 37
-- Sin cambios (nada sustancial que mejorar): 17
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 18
 - Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 107 | 3 | 16 | 5 | 93 |
-| 2026-09-03 | 122 | 6 | 21 | 12 | 119 |
+| 2026-09-02 | 105 | 3 | 15 | 5 | 92 |
+| 2026-09-03 | 124 | 6 | 21 | 13 | 120 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **53**
 - rendimiento: **44**
-- robustez ante casos límite: **40**
-- seguridad defensiva: **39**
+- robustez ante casos límite: **42**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
@@ -35,10 +35,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `assistant.py`: **19**
 - `organizer.py`: **19**
 - `quarantine.py`: **18**
-- `safety.py`: **17**
-- `settings.py`: **17**
-- `duplicates.py`: **17**
-- `healthscore.py`: **16**
+- `duplicates.py`: **18**
+- `healthscore.py`: **17**
+- `safety.py`: **16**
+- `settings.py`: **16**
 - `diskreport.py`: **13**
 - `main.py`: **13**
 - `branding.py`: **12**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T12:06:30` **healthscore.py** (robustez ante casos límite): Se mejoró la robustez de `score_disk` y `score_memory` ante divisiones por cero o valores de entrada que, aunque numéricos, podrían resultar en comportamientos inesperados (por ejemplo, límites definidos como 0 en futuras configuraciones de usuario), asegurando que el ratio retorne siempre un valor válido [0, 1].
+- `2026-09-03T12:06:05` **duplicates.py** (robustez ante casos límite): Se introdujo una validación robusta de existencia y acceso en `suggest_keeper` y `format_group` para evitar fallos cuando los archivos son eliminados o bloqueados por otros procesos entre el análisis y la visualización.
 - `2026-09-03T12:00:00` **diskreport.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `walk_files` y `summarize` para evitar que el escaneo se interrumpa prematuramente ante archivos con rutas extremadamente largas (sobrepasando `MAX_PATH` en Windows) o problemas de acceso durante la recolección, asegurando que el análisis sea resiliente a fallos de sistema de archivos.
 - `2026-09-03T11:59:45` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_path_inside_base` y `_should_skip_entry` para manejar correctamente rutas con caracteres Unicode, nombres de dispositivos inválidos o errores de resolución de nombres largos, evitando que una excepción en un nodo del sistema de archivos detenga todo el escaneo del perfil de caché.
 - `2026-09-03T11:59:18` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera, garantizando que si la operación falla (por ejemplo, disco bloqueado o ruta inválida), no se propague ninguna excepción al resto de la aplicación y se manejen correctamente los tipos de entrada.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T11:16:26` **browser.py** (rendimiento): Mejoré el rendimiento del escaneo de directorios mediante la implementación de una caché de resolución de rutas (`Path.resolve()`) y evitando la inicialización redundante de recursos (kernel32.dll y funciones) dentro de la recursión profunda.
 - `2026-09-03T11:15:41` **assistant.py** (rendimiento): Optimizé `_identify_active_problems` eliminando la recreación de listas y búsquedas repetitivas mediante la creación de una propiedad `@cached_property` o, en este caso (respetando la limitación de no importar `functools.cached_property` si no estuviera ya, aunque `lru_cache` ya está importado), ajustando la lógica para evitar regenerar la lista de problemas cada vez que se accede, aprovechando que el estado del sistema es inmutable (`frozen=False` pero con lógica de evaluación determinista).
 - `2026-09-03T11:15:03` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `StartupEntry._resolve_and_cache_path` mediante la extracción de la lógica de validación de archivos en un método privado auxiliar, reduciendo la complejidad ciclomática del bloque principal.
-- `2026-09-03T11:06:53` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings precisos en los métodos del `Scanner` y los checks heurísticos, clarificando el propósito, las dependencias de estado (como `now_ts`) y las limitaciones operativas para facilitar el mantenimiento.
-- `2026-09-03T11:05:22` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en los validadores, aclarando el contexto de las verificaciones de integridad y siguiendo el estándar solicitado para facilitar el mantenimiento del proyecto.
