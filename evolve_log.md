@@ -767,3 +767,44 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T05:20:15` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-03T05:20:15` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T05:20:15` Corrida terminada. Total usado hoy: 124.
+- `2026-09-03T05:26:18` Arrancando corrida. Quedan hoy ~176 peticiones objetivo.
+- `2026-09-03T05:26:21` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-03T05:26:21` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-03T05:26:41` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-03T05:26:41` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-03T05:27:11` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-03T05:27:11` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-03T05:27:26` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-03T05:27:26` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-03T05:27:46` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-03T05:27:46` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-03T05:28:16` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-03T05:28:16` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-03T05:29:18` Tests FALLARON:
+```
+.........                                                              [100%]
+=================================== FAILURES ===================================
+________________ test_build_context_ignores_non_numeric_extras _________________
+
+    def test_build_context_ignores_non_numeric_extras():
+        """Un extra con una ruta no puede colarse en el contexto."""
+        contexto = assistant.build_context(
+            ruta_secreta="C:/Users/benja/Documentos/secreto.txt",
+            memory_total_gb=8.0,
+        )
+        assert not hasattr(contexto, "ruta_secreta")
+>       assert contexto.memory_total_gb == 8.0
+E       AssertionError: assert 0.0 == 8.0
+E        +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+
+evolve/tests/test_assistant.py:217: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_extras - AssertionError: assert 0.0 == 8.0
+ +  where 0.0 = SystemContext(score=None, grade='', junk_mb=0.0, suspicious_count=0, suspicious_warnings=0, memory_available_percent=0...0, disk_free_percent=0.0, duplicate_mb=0.0, startup_count=0, quarantined_count=0, browser_cache_mb=0.0, analyzed=False).memory_total_gb
+1 failed, 298 passed in 1.35s
+
+```
+- `2026-09-03T05:29:18` ❌ Mejora descartada en assistant.py (no pasó los tests), se revirtió. Intento: Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante una validación explícita de sus parámetros y un manejo de errores más específico, evitando que un parámetro inválido propague excepciones silenciosas durante la ingesta de datos del sistema.
+- `2026-09-03T05:29:58` ✅ Mejora aceptada en branding.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `save_logo_svg` añadiendo una validación explícita mediante `ensure_safe_to_modify` para cumplir con las reglas de seguridad de escritura, al tiempo que se centralizó el manejo de excepciones para evitar fallos silenciosos en la creación de directorios o escritura de archivos.
+- `2026-09-03T05:29:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T05:29:58` Corrida terminada. Total usado hoy: 128.
