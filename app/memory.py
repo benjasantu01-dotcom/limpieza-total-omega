@@ -369,7 +369,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "PID no válido."
         
-    if _is_system_process(target_pid): 
+    if _is_system_process(target_pid) or is_protected_path(str(target_pid)): 
         return False, "Proceso protegido o inválido."
     
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)

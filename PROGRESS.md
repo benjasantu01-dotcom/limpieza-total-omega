@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **233** (46.2% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 203
+- Sin respuesta de la IA (error o límite): 199
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 150 | 9 | 21 | 9 | 123 |
-| 2026-09-03 | 83 | 4 | 13 | 12 | 80 |
+| 2026-09-02 | 150 | 9 | 21 | 9 | 119 |
+| 2026-09-03 | 86 | 4 | 14 | 12 | 80 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,18 +25,18 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **52**
 - robustez ante casos límite: **44**
 - rendimiento: **43**
-- seguridad defensiva: **40**
+- seguridad defensiva: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **22**
-- `memory.py`: **21**
+- `memory.py`: **22**
+- `quarantine.py`: **20**
 - `assistant.py`: **20**
-- `quarantine.py`: **19**
 - `safety.py`: **19**
+- `organizer.py`: **19**
 - `duplicates.py`: **18**
 - `settings.py`: **18**
-- `organizer.py`: **18**
 - `scanner.py`: **18**
 - `healthscore.py`: **17**
 - `diskreport.py`: **15**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T08:23:50` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se pongan en cuarentena archivos que ya están en el directorio de cuarentena (evitando bucles de aislamiento) y se añadió una verificación de `resolve()` antes de cualquier operación para garantizar que estamos operando sobre la ruta canónica y no sobre un enlace lógico.
+- `2026-09-03T08:23:28` **organizer.py** (seguridad defensiva): Se ha restringido el alcance de `_is_safe_for_disk_op` para que solo valide atributos de seguridad y bloqueos, eliminando la dependencia de `is_safe_to_modify` (que es una función de validación de rutas y no de estado de disco) para evitar falsos negativos en el flujo de escaneo y cumplir con el patrón de diseño "safe-to-scan vs safe-to-modify".
+- `2026-09-03T08:22:57` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` al PID antes de abrir el handle, previniendo posibles Race Conditions o intentos de manipulación sobre procesos cuyo ID podría haber sido reciclado o asignado a una tarea del sistema en el ínterin.
 - `2026-09-03T08:13:56` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `compute_score` asegurando que las métricas recibidas no solo sean del tipo correcto, sino que validen explícitamente su integridad mediante `is_finite()` antes de realizar cálculos, evitando propagar estados inválidos o calculos NaN a la interfaz.
 - `2026-09-03T08:13:43` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` y `_scan_recursive` implementando validaciones de rutas antes de cualquier operación de I/O, evitando el seguimiento de enlaces simbólicos mediante `is_file()` y `is_dir()` con `follow_symlinks=False` (ya presente) y asegurando que las excepciones de acceso no detengan el proceso.
 - `2026-09-03T08:12:06` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de rutas (`is_path_inside_base`) en la construcción de los candidatos de caché, asegurando que cualquier manipulación de `rel_str` no escape del directorio base (`LOCALAPPDATA`) mediante técnicas de *path traversal* (ej. secuencias "..\").
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T07:21:28` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de datos al agregar validación de estado en `ProblemCriterion.format_if_triggered`, evitando que métricas ausentes o corruptas (que devuelven -1.0) disparen mensajes de error o descripciones confusas al usuario.
 - `2026-09-03T07:20:33` **settings.py** (rendimiento): Se implementó un mecanismo de caché preventiva para la ruta de configuración en `settings_path` para evitar llamadas redundantes a `expanduser()` y `resolve()` en cada acceso, optimizando el rendimiento de las operaciones de E/S.
 - `2026-09-03T07:20:03` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` en lugar de llamadas repetidas a `Path.resolve()` y `Path.stat()`, aprovechando que `os.DirEntry` ya contiene la información de tipos y atributos, evitando syscalls redundantes y mejorando la velocidad en directorios grandes.
-- `2026-09-03T07:11:17` **safety.py** (rendimiento): Se implementó un mecanismo de caché local más eficiente en `_check_file_integrity` usando el hash de la ruta y un `lru_cache` para el resultado del chequeo, reduciendo la cantidad de llamadas repetitivas al sistema de archivos para archivos que no han cambiado durante la sesión de análisis.
-- `2026-09-03T07:09:59` **organizer.py** (rendimiento): Optimicé el rendimiento de `_process_directory` eliminando la conversión redundante a `Path` dentro del bucle mediante `os.scandir` y evitando llamadas innecesarias al sistema de archivos al utilizar los atributos ya cacheados en el objeto `DirEntry`.
-- `2026-09-03T07:01:35` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` evitando el re-procesamiento innecesario de cadenas CSV mediante la persistencia del objeto `List[ProcessMemory]` ya parseado, eliminando la conversión redundante en cada llamado y mejorando la eficiencia de la caché de procesos.

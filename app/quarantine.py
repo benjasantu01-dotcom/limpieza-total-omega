@@ -275,20 +275,21 @@ def _check_path_syntax_integrity(path: Path) -> None:
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     """Validación exhaustiva de las condiciones de seguridad antes de aislar un archivo."""
     resolved_source = source_path.resolve(strict=True)
+    resolved_dest_dir = dest_dir.resolve()
     
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")
     if resolved_source.stat().st_size == 0:
         raise UnsafePathError("Operación denegada: archivos vacíos no permitidos.")
-    if resolved_source.parent == dest_dir.resolve():
+    if resolved_source.parent == resolved_dest_dir:
         raise UnsafePathError("Operación circular: origen y destino en la misma carpeta.")
     if is_protected_path(resolved_source):
         raise UnsafePathError("Operación prohibida: la ruta origen está protegida.")
-    if is_protected_path(dest_dir) or is_protected_path(dest_dir.parent):
+    if is_protected_path(resolved_dest_dir) or is_protected_path(resolved_dest_dir.parent):
         raise UnsafePathError("Destino inválido: directorio de cuarentena en ruta protegida.")
-    if _is_within_quarantine_sandbox(resolved_source, dest_dir):
+    if _is_within_quarantine_sandbox(resolved_source, resolved_dest_dir):
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
-    if resolved_source.stat().st_dev != dest_dir.resolve().stat().st_dev:
+    if resolved_source.stat().st_dev != resolved_dest_dir.stat().st_dev:
         raise UnsafePathError("Operación prohibida: origen y destino en dispositivos diferentes.")
     
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
@@ -406,6 +407,7 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
     if not source.exists():
         raise FileNotFoundError("El archivo de origen no existe.")
 
+    # Verificación estricta de que el destino esté bajo control
     if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
         raise UnsafePathError("Operación denegada: intento de escritura fuera del sandbox.")
     
@@ -468,6 +470,11 @@ def quarantine_file(
     original_size = source_path.stat().st_size
     
     dest_dir = quarantine_dir(base)
+    
+    # Prevenir que el archivo origen ya esté dentro del directorio de cuarentena
+    if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
+        raise UnsafePathError("Operación denegada: el archivo ya está en el sandbox.")
+
     _validate_isolation_request(source_path, dest_dir)
     
     item_id = uuid.uuid4().hex[:12]

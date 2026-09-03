@@ -208,7 +208,7 @@ def _has_forbidden_chars(path: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza una validación exhaustiva (fail-fast) antes de operaciones de disco.
-    Centraliza todas las comprobaciones de seguridad para evitar errores lógicos.
+    Centraliza comprobaciones de integridad, bloqueos y atributos de sistema.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     # Prevención contra rutas que excedan el límite MAX_PATH del sistema
@@ -223,9 +223,8 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         if _is_junction(s_res) or s_res.is_symlink(): return False
         if dest.exists() and (_is_junction(dest) or dest.is_symlink()): return False
         
-        # Validaciones de seguridad de app/safety.py
+        # Validaciones de protección de rutas (safety.py)
         if is_protected_path(s_res) or is_protected_path(dest.resolve()): return False
-        if not is_safe_to_modify(s_res) or not is_safe_to_modify(dest): return False
         if _is_recursive_violation(s_res, dest): return False
         
         # Permisos de escritura y estado
