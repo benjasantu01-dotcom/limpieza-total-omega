@@ -931,3 +931,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T08:23:50` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se pongan en cuarentena archivos que ya están en el directorio de cuarentena (evitando bucles de aislamiento) y se añadió una verificación de `resolve()` antes de cualquier operación para garantizar que estamos operando sobre la ruta canónica y no sobre un enlace lógico.
 - `2026-09-03T08:23:50` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T08:23:50` Corrida terminada. Total usado hoy: 196.
+- `2026-09-03T08:31:32` Arrancando corrida. Quedan hoy ~104 peticiones objetivo.
+- `2026-09-03T08:31:53` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-03T08:32:23` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-03T08:32:48` ✅ Mejora aceptada en scanner.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_safe_entry` y `_is_reparse_point` para garantizar que la resolución de rutas no sea manipulable mediante enlaces simbólicos o inconsistencias en los atributos de archivo, manteniendo el aislamiento estricto dentro de `base_root`.
+- `2026-09-03T08:33:04` ✅ Mejora aceptada en settings.py (enfoque: seguridad defensiva). Se reforzó la seguridad de `save()` añadiendo una validación explícita para asegurar que el archivo de configuración (`config.json`) no sea un enlace simbólico ni un punto de reparse antes de realizar la escritura, evitando así inyecciones de rutas o redirecciones maliciosas.
+- `2026-09-03T08:33:04` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T08:33:04` Corrida terminada. Total usado hoy: 200.

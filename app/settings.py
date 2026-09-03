@@ -307,8 +307,11 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
             parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir(): return None
         
-        if ruta.exists() and (ruta.is_symlink() or not ruta.is_file()):
-            return None
+        if ruta.exists():
+            resolved = ruta.resolve(strict=False)
+            if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
+                return None
+            if not ruta.is_file(): return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         if not str(temp_path.parent) == str(parent): return None

@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 21
-- Sin respuesta de la IA (error o límite): 199
+- Sin respuesta de la IA (error o límite): 196
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 150 | 9 | 21 | 9 | 119 |
-| 2026-09-03 | 86 | 4 | 14 | 12 | 80 |
+| 2026-09-02 | 150 | 9 | 21 | 9 | 115 |
+| 2026-09-03 | 88 | 4 | 15 | 12 | 81 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
+- seguridad defensiva: **45**
 - robustez ante casos límite: **44**
 - rendimiento: **43**
-- seguridad defensiva: **43**
 
 ## Mejoras aceptadas por archivo
 
@@ -34,10 +34,10 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `assistant.py`: **20**
 - `safety.py`: **19**
+- `settings.py`: **19**
 - `organizer.py`: **19**
+- `scanner.py`: **19**
 - `duplicates.py`: **18**
-- `settings.py`: **18**
-- `scanner.py`: **18**
 - `healthscore.py`: **17**
 - `diskreport.py`: **15**
 - `branding.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T08:33:04` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita para asegurar que el archivo de configuración (`config.json`) no sea un enlace simbólico ni un punto de reparse antes de realizar la escritura, evitando así inyecciones de rutas o redirecciones maliciosas.
+- `2026-09-03T08:32:48` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `_is_reparse_point` para garantizar que la resolución de rutas no sea manipulable mediante enlaces simbólicos o inconsistencias en los atributos de archivo, manteniendo el aislamiento estricto dentro de `base_root`.
 - `2026-09-03T08:23:50` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se pongan en cuarentena archivos que ya están en el directorio de cuarentena (evitando bucles de aislamiento) y se añadió una verificación de `resolve()` antes de cualquier operación para garantizar que estamos operando sobre la ruta canónica y no sobre un enlace lógico.
 - `2026-09-03T08:23:28` **organizer.py** (seguridad defensiva): Se ha restringido el alcance de `_is_safe_for_disk_op` para que solo valide atributos de seguridad y bloqueos, eliminando la dependencia de `is_safe_to_modify` (que es una función de validación de rutas y no de estado de disco) para evitar falsos negativos en el flujo de escaneo y cumplir con el patrón de diseño "safe-to-scan vs safe-to-modify".
 - `2026-09-03T08:22:57` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` al PID antes de abrir el handle, previniendo posibles Race Conditions o intentos de manipulación sobre procesos cuyo ID podría haber sido reciclado o asignado a una tarea del sistema en el ínterin.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T07:41:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `score_memory` y `score_disk` añadiendo un cálculo de ratio más seguro ante límites donde el divisor podría ser un valor configurado erróneamente, y consolidé la lógica de conversión `_clamp` dentro de `SystemMetrics` para asegurar que ningún campo numérico dependa de una llamada externa que pueda fallar.
 - `2026-09-03T07:31:08` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos de rutas no existentes o con permisos restringidos al añadir validaciones adicionales y manejo de excepciones en `_is_valid_cache_path` y `_sum_directory_recursive`, evitando que errores transitorios en el sistema de archivos interrumpan el escaneo de otras cachés válidas.
 - `2026-09-03T07:21:28` **assistant.py** (robustez ante casos límite): Mejora la robustez del manejo de datos al agregar validación de estado en `ProblemCriterion.format_if_triggered`, evitando que métricas ausentes o corruptas (que devuelven -1.0) disparen mensajes de error o descripciones confusas al usuario.
-- `2026-09-03T07:20:33` **settings.py** (rendimiento): Se implementó un mecanismo de caché preventiva para la ruta de configuración en `settings_path` para evitar llamadas redundantes a `expanduser()` y `resolve()` en cada acceso, optimizando el rendimiento de las operaciones de E/S.
-- `2026-09-03T07:20:03` **scanner.py** (rendimiento): Se optimizó el rendimiento del escaneo recursivo mediante el uso de `os.scandir` en lugar de llamadas repetidas a `Path.resolve()` y `Path.stat()`, aprovechando que `os.DirEntry` ya contiene la información de tipos y atributos, evitando syscalls redundantes y mejorando la velocidad en directorios grandes.

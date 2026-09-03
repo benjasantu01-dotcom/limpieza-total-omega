@@ -107,7 +107,11 @@ class Scanner:
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que la ruta resuelta pertenezca al árbol de directorios raíz."""
-        return path_str.lower().startswith(self.base_root_str)
+        try:
+            target = Path(path_str).resolve(strict=False)
+            return str(target).lower().startswith(self.base_root_str)
+        except (OSError, RuntimeError):
+            return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida que una entrada cumpla con las políticas de seguridad y restricciones de ruta."""
@@ -130,7 +134,7 @@ class Scanner:
         try:
             if entry.is_symlink():
                 return True
-            # Intentamos acceder al estado del archivo con seguridad, devolviendo True en caso de duda/error.
+            # Usar lstat para evitar seguir enlaces durante la verificación
             stats = entry.stat(follow_symlinks=False)
             return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
