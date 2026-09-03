@@ -7,8 +7,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 33
+- Rechazadas por tests: 12
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 20
 - Sin respuesta de la IA (error o límite): 216
 
@@ -16,36 +16,39 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 129 | 8 | 18 | 8 | 101 |
-| 2026-09-03 | 93 | 5 | 15 | 12 | 115 |
+| 2026-09-02 | 126 | 7 | 18 | 8 | 101 |
+| 2026-09-03 | 96 | 5 | 16 | 12 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **48**
+- manejo de errores y validación de entradas: **51**
 - seguridad defensiva: **46**
 - robustez ante casos límite: **44**
-- rendimiento: **43**
 - legibilidad y documentación: **41**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `assistant.py`: **20**
 - `browser.py`: **20**
 - `memory.py`: **20**
+- `assistant.py`: **19**
 - `organizer.py`: **19**
-- `quarantine.py`: **18**
-- `scanner.py`: **18**
-- `safety.py`: **17**
+- `quarantine.py`: **19**
+- `scanner.py`: **19**
+- `safety.py`: **18**
 - `settings.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
-- `diskreport.py`: **13**
-- `branding.py`: **12**
+- `diskreport.py`: **12**
 - `main.py`: **12**
+- `branding.py`: **11**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T10:27:32` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `Scanner.process_entry` y `scan_directory` validando explícitamente parámetros críticos (`entry.path`, `entry.name`) y manejando posibles valores `None` o rutas vacías que podrían causar errores durante la iteración en sistemas con permisos restrictivos.
+- `2026-09-03T10:26:51` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` capturando explícitamente posibles errores durante `p.is_file()` y `p.is_dir()` para evitar excepciones inesperadas al interactuar con el sistema de archivos, garantizando que el `UnsafePathError` sea la única interfaz de fallo esperada.
+- `2026-09-03T10:25:14` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de `None` y tipos en `_is_file_locked` y `_safe_unlink` para evitar excepciones imprevistas durante el chequeo de bloqueos o el borrado, asegurando que las operaciones sobre `Path` solo ocurran si el objeto es válido.
 - `2026-09-03T10:15:47` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez en la validación de parámetros de entrada en `scan_for_junk` y `delete_reviewed`, reemplazando chequeos laxos por validaciones de tipo explícitas y manejo defensivo de errores, evitando que valores inesperados causen excepciones no controladas.
 - `2026-09-03T10:15:03` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la clase `LimpiezaTotalOmegaApp` implementando un decorador centralizado `validated_ui_operation` para capturar errores en todas las llamadas a métodos que interactúan con la interfaz (eventos), evitando que excepciones de widgets o de lógica de UI propaguen silencios o cuelguen el hilo principal, cumpliendo estrictamente con el enfoque de manejo de errores y validación.
 - `2026-09-03T10:13:50` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `compute_score` validando explícitamente la integridad de los resultados intermedios y asegurando que `_RULES_BY_AREA` no devuelva None, protegiendo al motor de inferencia de posibles fallos ante datos de entrada malformados.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T08:22:57` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` al PID antes de abrir el handle, previniendo posibles Race Conditions o intentos de manipulación sobre procesos cuyo ID podría haber sido reciclado o asignado a una tarea del sistema en el ínterin.
 - `2026-09-03T08:13:56` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `compute_score` asegurando que las métricas recibidas no solo sean del tipo correcto, sino que validen explícitamente su integridad mediante `is_finite()` antes de realizar cálculos, evitando propagar estados inválidos o calculos NaN a la interfaz.
 - `2026-09-03T08:13:43` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` y `_scan_recursive` implementando validaciones de rutas antes de cualquier operación de I/O, evitando el seguimiento de enlaces simbólicos mediante `is_file()` y `is_dir()` con `follow_symlinks=False` (ya presente) y asegurando que las excepciones de acceso no detengan el proceso.
-- `2026-09-03T08:12:06` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva mediante la validación estricta de rutas (`is_path_inside_base`) en la construcción de los candidatos de caché, asegurando que cualquier manipulación de `rel_str` no escape del directorio base (`LOCALAPPDATA`) mediante técnicas de *path traversal* (ej. secuencias "..\").
-- `2026-09-03T08:02:37` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al validar estrictamente que la clave de API (proveniente de un archivo de configuración externo) no sea una ruta de sistema, evitando una posible inyección de archivos mediante `is_protected_path` antes de usarla en la construcción de la URL.
-- `2026-09-03T07:53:57` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco en `Scanner._is_reparse_point` y `Scanner._is_safe_entry` centralizando la validación de estados de archivo para evitar excepciones no capturadas durante la recursión en sistemas con permisos restrictivos o entradas de sistema inconsistentes.

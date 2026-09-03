@@ -420,8 +420,11 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     _validate_boundary_conditions(p, base_dir)
     
     if os.path.lexists(p):
-        if not p.is_file() and not p.is_dir():
-            raise UnsafePathError("Tipo de objeto no soportado para modificación.")
+        try:
+            if not (p.is_file() or p.is_dir()):
+                raise UnsafePathError("Tipo de objeto no soportado para modificación.")
+        except OSError:
+            raise UnsafePathError("Error al verificar tipo de objeto.")
         
         if not os.access(p, os.W_OK):
             raise UnsafePathError("No se dispone de permisos de escritura sobre el archivo.")

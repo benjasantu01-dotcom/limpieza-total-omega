@@ -1205,3 +1205,12 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-03T10:15:47` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez en la validación de parámetros de entrada en `scan_for_junk` y `delete_reviewed`, reemplazando chequeos laxos por validaciones de tipo explícitas y manejo defensivo de errores, evitando que valores inesperados causen excepciones no controladas.
 - `2026-09-03T10:15:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T10:15:47` Corrida terminada. Total usado hoy: 240.
+- `2026-09-03T10:23:34` Arrancando corrida. Quedan hoy ~60 peticiones objetivo.
+- `2026-09-03T10:24:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-03T10:25:14` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Se introdujo una validación robusta de `None` y tipos en `_is_file_locked` y `_safe_unlink` para evitar excepciones imprevistas durante el chequeo de bloqueos o el borrado, asegurando que las operaciones sobre `Path` solo ocurran si el objeto es válido.
+- `2026-09-03T10:25:58` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-03T10:26:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 111): unterminated string literal (detected at line 111)
+- `2026-09-03T10:26:51` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `ensure_safe_to_modify` capturando explícitamente posibles errores durante `p.is_file()` y `p.is_dir()` para evitar excepciones inesperadas al interactuar con el sistema de archivos, garantizando que el `UnsafePathError` sea la única interfaz de fallo esperada.
+- `2026-09-03T10:27:32` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez de `Scanner.process_entry` y `scan_directory` validando explícitamente parámetros críticos (`entry.path`, `entry.name`) y manejando posibles valores `None` o rutas vacías que podrían causar errores durante la iteración en sistemas con permisos restrictivos.
+- `2026-09-03T10:27:32` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T10:27:32` Corrida terminada. Total usado hoy: 244.

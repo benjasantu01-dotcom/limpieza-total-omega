@@ -107,6 +107,8 @@ class Scanner:
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que la ruta resuelta pertenezca al árbol de directorios raíz."""
+        if not path_str:
+            return False
         try:
             target = Path(path_str).resolve(strict=False)
             return str(target).lower().startswith(self.base_root_str)
@@ -115,7 +117,7 @@ class Scanner:
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida que una entrada cumpla con las políticas de seguridad y restricciones de ruta."""
-        if not entry or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
+        if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
         try:
@@ -142,7 +144,7 @@ class Scanner:
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
         """Agrega un directorio al stack de procesamiento si es nuevo."""
-        if entry.path not in self.seen:
+        if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
@@ -155,7 +157,7 @@ class Scanner:
             if entry.is_dir(follow_symlinks=False):
                 self._handle_directory(entry, stack)
             elif entry.is_file(follow_symlinks=False):
-                ext_low = Path(entry.name).suffix.lower()
+                ext_low = Path(entry.name).suffix.lower() if entry.name else ""
                 if ext_low in SUSPICIOUS_ALL_EXTS:
                     self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError, FileNotFoundError):
@@ -209,10 +211,13 @@ def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
     
     while stack:
         current_dir = stack.pop()
+        if not current_dir:
+            continue
         try:
             with os.scandir(current_dir) as it:
                 for entry in it:
-                    scanner.process_entry(entry, stack)
+                    if entry:
+                        scanner.process_entry(entry, stack)
         except (PermissionError, OSError, FileNotFoundError):
             continue
     return scanner.results

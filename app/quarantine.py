@@ -160,7 +160,9 @@ def _get_sha256(path: Path) -> str:
 
 def _is_file_locked(path: Path) -> bool:
     """Intenta abrir un archivo en modo lectura binaria exclusiva; si falla, el archivo está bloqueado."""
-    if not isinstance(path, Path) or not path.exists() or not path.is_file():
+    if not isinstance(path, Path) or path is None:
+        return True
+    if not path.exists() or not path.is_file():
         return False
     try:
         with open(path, "rb") as f:
@@ -176,7 +178,7 @@ def _safe_unlink(path: Path) -> bool:
     Realiza un borrado seguro tras verificar que el archivo es un archivo regular,
     no está bloqueado y reside dentro de una zona permitida por `safety.py`.
     """
-    if not path.exists() or not path.is_file():
+    if not isinstance(path, Path) or path is None or not path.exists() or not path.is_file():
         return False
     try:
         if not path.is_symlink() and is_safe_to_modify(path) and not _is_file_locked(path):
