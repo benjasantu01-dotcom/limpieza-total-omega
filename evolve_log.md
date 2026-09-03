@@ -1295,3 +1295,10 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Att
 - `2026-09-03T11:36:41` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: rendimiento): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-09-03T11:36:41` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T11:36:41` Corrida terminada. Total usado hoy: 272.
+- `2026-09-03T11:45:13` Arrancando corrida. Quedan hoy ~28 peticiones objetivo.
+- `2026-09-03T11:45:43` 🛑 Propuesta bloqueada por la guardia en safety.py (enfoque: rendimiento): desaparecieron símbolos que existían antes: _CheckResult
+- `2026-09-03T11:46:10` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el rendimiento del escáner reemplazando la lógica de búsqueda en `WATCHED_FOLDERS` de una operación lineal O(N) dentro de un `any()` a una verificación de pertenencia O(1) basada en el conjunto de padres inmediatos, evitando además la conversión costosa de cada ruta a string inferior para cada archivo encontrado.
+- `2026-09-03T11:46:39` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Optimicé el rendimiento de `load()` evitando copias redundantes mediante la desestructuración de `DEFAULTS` y reduciendo el número de llamadas a `stat()` mediante una lógica de caché más estricta.
+- `2026-09-03T11:46:52` ✅ Mejora aceptada en startup.py (enfoque: rendimiento). Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una técnica de filtrado previo de comandos mediante `set` y evitando consultas innecesarias al sistema de archivos al detectar entradas duplicadas por comando, reduciendo el I/O en escenarios con múltiples claves de registro redundantes.
+- `2026-09-03T11:46:52` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T11:46:52` Corrida terminada. Total usado hoy: 276.

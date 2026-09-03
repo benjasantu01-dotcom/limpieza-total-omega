@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 214
+- Rechazadas por guardia de seguridad: 37
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 112 | 3 | 16 | 6 | 95 |
-| 2026-09-03 | 115 | 6 | 20 | 12 | 119 |
+| 2026-09-02 | 111 | 3 | 16 | 5 | 93 |
+| 2026-09-03 | 118 | 6 | 21 | 12 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **53**
-- seguridad defensiva: **44**
-- rendimiento: **41**
+- rendimiento: **44**
+- seguridad defensiva: **43**
 - robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
@@ -32,20 +32,23 @@ Este archivo se regenera solo en cada corrida a partir de
 - `memory.py`: **21**
 - `browser.py`: **21**
 - `organizer.py`: **20**
+- `scanner.py`: **20**
 - `quarantine.py`: **19**
-- `scanner.py`: **19**
 - `assistant.py`: **18**
 - `safety.py`: **17**
+- `settings.py`: **17**
 - `duplicates.py`: **17**
-- `settings.py`: **16**
 - `healthscore.py`: **16**
 - `main.py`: **14**
-- `diskreport.py`: **13**
+- `diskreport.py`: **12**
 - `branding.py`: **11**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T11:46:52` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una técnica de filtrado previo de comandos mediante `set` y evitando consultas innecesarias al sistema de archivos al detectar entradas duplicadas por comando, reduciendo el I/O en escenarios con múltiples claves de registro redundantes.
+- `2026-09-03T11:46:39` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando copias redundantes mediante la desestructuración de `DEFAULTS` y reduciendo el número de llamadas a `stat()` mediante una lógica de caché más estricta.
+- `2026-09-03T11:46:10` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando la lógica de búsqueda en `WATCHED_FOLDERS` de una operación lineal O(N) dentro de un `any()` a una verificación de pertenencia O(1) basada en el conjunto de padres inmediatos, evitando además la conversión costosa de cada ruta a string inferior para cada archivo encontrado.
 - `2026-09-03T11:36:00` **organizer.py** (rendimiento): Optimizamos `_process_directory` reemplazando la verificación repetida `entry.name.lower().endswith(tuple(JUNK_EXTENSIONS))` por una búsqueda constante en un `set`, y movimos la conversión de extensiones fuera del bucle para evitar la creación redundante de tuplas en cada iteración.
 - `2026-09-03T11:27:09` **main.py** (rendimiento): Optimicé el método `_compile_metrics` reemplazando llamadas múltiples a `self._get_cached` por un acceso directo y eficiente, y reduciendo la redundancia en los cálculos de los componentes del score de salud al evitar procesar listas vacías repetidamente.
 - `2026-09-03T11:25:47` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un solo `os.stat()` por archivo para extraer tanto el tamaño como la identidad (inode) en una única llamada al sistema, reduciendo el overhead de I/O durante el escaneo recursivo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T10:56:22` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (dividiéndola en subtareas lógicas) y la inclusión de type hints y docstrings enriquecidos en funciones críticas, facilitando la comprensión del flujo de seguridad para futuros desarrollos.
 - `2026-09-03T10:55:54` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la aplicación de type hints faltantes en funciones internas, la estandarización de las excepciones para mejorar la robustez, y la documentación con docstrings explicativos para los helper de bajo nivel.
 - `2026-09-03T10:55:26` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la implementación de `TypeDict` para definir explícitamente el esquema de configuración, reemplazando el uso ambiguo de diccionarios planos `Dict[str, Any]` y facilitando la documentación del contrato de los ajustes del sistema.
-- `2026-09-03T10:45:38` **healthscore.py** (legibilidad y documentación): Mejora la documentación técnica mediante la inclusión de type hints precisos, la adición de un docstring explicativo en la función `compute_score` sobre su lógica de ponderación, y el uso de `Final` para definir constantes de configuración que antes estaban implícitas.
-- `2026-09-03T10:45:26` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la clarificación de tipos, asegurando que las funciones complejas de búsqueda sean más mantenibles sin alterar el comportamiento funcional.
-- `2026-09-03T10:45:01` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de alta fidelidad, corrigiendo la precisión técnica sobre el manejo de rutas UNC en `drive_usage` y aclarando las asunciones de seguridad en `walk_files`, asegurando que el código sea explicativo tanto para el dueño del proyecto como para el equipo.

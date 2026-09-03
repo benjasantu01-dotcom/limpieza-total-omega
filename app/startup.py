@@ -275,6 +275,9 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         return []
         
     parsed_entries: List[StartupEntry] = []
+    # Usar set para filtrar comandos duplicados antes de instanciar objetos
+    seen_commands: Set[str] = set()
+    
     try:
         f = io.StringIO(csv_text.strip())
         reader: csv.DictReader = csv.DictReader(f)
@@ -295,17 +298,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             name = "".join(c for c in raw_n if ord(c) >= 32).strip()
             cmd = "".join(c for c in raw_c if ord(c) >= 32).strip()
             
-            # Validación estricta: evitar rutas vacías, UNC, o caracteres de shell maliciosos
-            if not name or not cmd or cmd.startswith(r"\\"):
+            if not name or not cmd or cmd.startswith(r"\\") or cmd in seen_commands:
                 continue
             if name.upper().startswith("PS") or any(c in cmd for c in '<>|?*&;'):
                 continue
             
             try:
-                # Asegurar que sea una ruta potencialmente local válida antes de procesar
                 p_cmd = Path(cmd)
                 if is_protected_path(p_cmd):
                     continue
+                seen_commands.add(cmd)
             except (ValueError, TypeError, OSError):
                 continue
                 
@@ -342,13 +344,13 @@ def list_startup_entries() -> List[StartupEntry]:
     if _FULL_SCAN_CACHE is not None:
         return _FULL_SCAN_CACHE
 
-    seen_names: Set[str] = set()
+    seen_items: Set[Tuple[str, str]] = set()
     unique_entries: List[StartupEntry] = []
     
     for entry in itertools.chain(entries_from_folders(), entries_from_registry()):
-        name_n: str = entry.name.lower()
-        if name_n not in seen_names:
-            seen_names.add(name_n)
+        key = (entry.name.lower(), entry.command.lower())
+        if key not in seen_items:
+            seen_items.add(key)
             unique_entries.append(entry)
             
     _FULL_SCAN_CACHE = unique_entries

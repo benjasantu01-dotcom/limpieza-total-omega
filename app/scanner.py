@@ -68,8 +68,8 @@ def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
     """Evalúa si un ejecutable ha sido modificado recientemente en directorios de usuario de alto riesgo."""
-    path_str = str(path).lower()
-    if not any(f"\\{folder}\\" in path_str for folder in WATCHED_FOLDERS):
+    # O(1) Check: Verificar si el nombre del padre está en el set de carpetas observadas
+    if path.parent.name.lower() not in WATCHED_FOLDERS:
         return None
     
     try:
