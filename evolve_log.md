@@ -426,3 +426,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T02:23:58` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.exists()` y `is_protected_path` al consolidar las verificaciones dentro del mismo flujo de `os.scandir`, evitando múltiples accesos a disco por archivo.
 - `2026-09-03T02:23:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T02:23:58` Corrida terminada. Total usado hoy: 56.
+- `2026-09-03T02:32:54` Arrancando corrida. Quedan hoy ~244 peticiones objetivo.
+- `2026-09-03T02:33:25` ✅ Mejora aceptada en healthscore.py (enfoque: rendimiento). Optimicé el cálculo del score final reemplazando la validación recursiva de campos con `fields(self)` en `is_finite` por una verificación directa sobre los atributos, eliminando la sobrecarga de instanciar metadatos en cada iteración y reduciendo las llamadas a `getattr`.
+- `2026-09-03T02:34:37` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Se implementó un mecanismo de caché con invalidación selectiva en `_invalidate_cache` y `_get_cached` para las métricas de salud, evitando recalcular los totales de basura, duplicados y sospechosos (operaciones costosas en I/O) cada vez que el usuario navega a la pestaña de Salud, optimizando el rendimiento de la interfaz.
+- `2026-09-03T02:35:32` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Optimicé el rendimiento de `top_memory_processes` reemplazando la serialización manual a CSV por una consulta de PowerShell que devuelve objetos estructurados, reduciendo drásticamente la carga de procesamiento de strings y el uso de memoria en el parseo.
+- `2026-09-03T02:35:44` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: rendimiento).
+- `2026-09-03T02:35:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T02:35:44` Corrida terminada. Total usado hoy: 60.

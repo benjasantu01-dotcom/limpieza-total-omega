@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **235** (46.6% de aceptación)
 - Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 31
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 209
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 50 | 1 | 4 | 4 | 39 |
+| 2026-09-01 | 46 | 1 | 4 | 4 | 39 |
 | 2026-09-02 | 163 | 10 | 23 | 11 | 143 |
-| 2026-09-03 | 24 | 0 | 4 | 1 | 27 |
+| 2026-09-03 | 26 | 0 | 4 | 2 | 28 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **55**
 - seguridad defensiva: **50**
-- rendimiento: **39**
-- robustez ante casos límite: **38**
+- rendimiento: **41**
+- robustez ante casos límite: **34**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
-- `safety.py`: **20**
-- `memory.py`: **20**
-- `settings.py`: **19**
+- `memory.py`: **21**
 - `assistant.py`: **19**
 - `organizer.py`: **19**
-- `scanner.py`: **18**
+- `safety.py`: **19**
+- `healthscore.py`: **18**
 - `quarantine.py`: **18**
-- `healthscore.py`: **17**
+- `settings.py`: **18**
+- `scanner.py`: **17**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
 - `main.py`: **13**
 - `branding.py`: **12**
-- `startup.py`: **7**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T02:35:32` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la serialización manual a CSV por una consulta de PowerShell que devuelve objetos estructurados, reduciendo drásticamente la carga de procesamiento de strings y el uso de memoria en el parseo.
+- `2026-09-03T02:33:25` **healthscore.py** (rendimiento): Optimicé el cálculo del score final reemplazando la validación recursiva de campos con `fields(self)` en `is_finite` por una verificación directa sobre los atributos, eliminando la sobrecarga de instanciar metadatos en cada iteración y reduciendo las llamadas a `getattr`.
 - `2026-09-03T02:23:58` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.exists()` y `is_protected_path` al consolidar las verificaciones dentro del mismo flujo de `os.scandir`, evitando múltiples accesos a disco por archivo.
 - `2026-09-03T02:23:47` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la sobrecarga de crear un objeto `Path` completo por cada archivo procesado al verificar la pertenencia a subcarpetas, usando la comparación de cadenas o partes relativas de forma más directa y eliminando el `try-except` innecesario dentro del loop crítico.
 - `2026-09-03T02:23:15` **browser.py** (rendimiento): Implementé la persistencia del diccionario `memo` en `detect_profiles` para evitar el recálculo redundante de tamaños en subdirectorios compartidos (como `User Data` en múltiples navegadores), mejorando drásticamente el rendimiento en escaneos profundos.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T01:43:13` **browser.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la adición de Type Hints explícitos, la clarificación de docstrings en las funciones internas (`_sum_directory_recursive` y `_is_valid_cache_path`) y la reestructuración de las constantes críticas para facilitar su lectura y mantenimiento sin alterar la lógica de escaneo.
 - `2026-09-03T01:42:47` **branding.py** (legibilidad y documentación): Se introdujeron constantes tipográficas semánticas y se refactorizó el manejo de los colores del escudo para mejorar la legibilidad del código y facilitar su mantenimiento, eliminando números "mágicos" en los cálculos de dibujo.
 - `2026-09-03T01:42:06` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de la lógica de negocio al reemplazar las consultas manuales de `getattr` en los manejadores (`handle_...`) por una propiedad `get_metric` en `SystemContext`, centralizando el manejo de valores por defecto y evitando la repetición de lógica defensiva.
-- `2026-09-03T01:32:28` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del método `validate` para evitar errores de tipo al iterar sobre valores inesperados en el diccionario de entrada, asegurando que `AppSettings` siempre sea consistente incluso si el JSON contiene tipos de datos maliciosos o malformados.
-- `2026-09-03T01:32:00` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` implementando validaciones defensivas de entrada y manejo de excepciones más preciso en `scan_file` y `process_entry`, asegurando que el flujo de escaneo no se interrumpa ante datos inesperados o estados de archivo volátiles.

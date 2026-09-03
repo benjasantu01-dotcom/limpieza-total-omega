@@ -13,7 +13,7 @@ vive en los otros módulos; acá solo se puntúa.
 """
 
 from __future__ import annotations
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from typing import Dict, List, Any, Final, Tuple, TypeAlias, NamedTuple, Annotated, Callable
 import math
 
@@ -124,7 +124,10 @@ class SystemMetrics:
 
     def is_finite(self) -> bool:
         """Retorna True si todos los campos de datos contienen valores numéricos finitos."""
-        return all(math.isfinite(getattr(self, f.name)) for f in fields(self) if isinstance(getattr(self, f.name), (int, float)))
+        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
+                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and 
+                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and 
+                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
 
 @dataclass
 class HealthResult:
