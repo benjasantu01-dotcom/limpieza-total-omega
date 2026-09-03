@@ -915,3 +915,12 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T08:02:57` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
 - `2026-09-03T08:02:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T08:02:57` Corrida terminada. Total usado hoy: 188.
+- `2026-09-03T08:11:09` Arrancando corrida. Quedan hoy ~112 peticiones objetivo.
+- `2026-09-03T08:12:06` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva mediante la validación estricta de rutas (`is_path_inside_base`) en la construcción de los candidatos de caché, asegurando que cualquier manipulación de `rel_str` no escape del directorio base (`LOCALAPPDATA`) mediante técnicas de *path traversal* (ej. secuencias "..\").
+- `2026-09-03T08:12:23` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-03T08:12:34` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-03T08:13:17` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-03T08:13:43` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_collect_candidates` y `_scan_recursive` implementando validaciones de rutas antes de cualquier operación de I/O, evitando el seguimiento de enlaces simbólicos mediante `is_file()` y `is_dir()` con `follow_symlinks=False` (ya presente) y asegurando que las excepciones de acceso no detengan el proceso.
+- `2026-09-03T08:13:56` ✅ Mejora aceptada en healthscore.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva de `compute_score` asegurando que las métricas recibidas no solo sean del tipo correcto, sino que validen explícitamente su integridad mediante `is_finite()` antes de realizar cálculos, evitando propagar estados inválidos o calculos NaN a la interfaz.
+- `2026-09-03T08:13:56` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T08:13:56` Corrida terminada. Total usado hoy: 192.

@@ -282,9 +282,8 @@ def detect_profiles(
                 if not isinstance(rel_str, str) or not rel_str:
                     continue
                 
-                # Validar la construcción del path antes de intentar acceder
-                parts = rel_str.split("\\")
-                candidate = real_base.joinpath(*parts)
+                # Construcción segura y validada contra path traversal
+                candidate = real_base.joinpath(*rel_str.split("\\"))
                 
                 if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     continue

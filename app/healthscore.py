@@ -195,11 +195,10 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     """Procesa métricas mediante la pipeline definida para generar un HealthResult final."""
-    if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
+    if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
     try:
-        metrics.validate()
         metric_breakdown: Dict[MetricKey, int] = {}
         total_pts: float = 0.0
         recommendations: List[str] = []

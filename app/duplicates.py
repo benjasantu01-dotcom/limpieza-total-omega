@@ -93,7 +93,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
         
     try:
         path_obj = Path(path)
-        if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
+        if not path_obj.is_file() or is_protected_path(path_obj) or not os.access(path_obj, os.R_OK):
             return None
         
         digest = hashlib.sha256()
@@ -124,7 +124,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
     try:
         path_obj = Path(path)
-        if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
+        if not path_obj.is_file() or is_protected_path(path_obj) or not os.access(path_obj, os.R_OK):
             return None
         
         with open(path_obj, "rb") as f:
@@ -203,10 +203,10 @@ def _collect_candidates(
                             if not is_protected_path(p_dir) and not is_junction(p_dir):
                                 _scan_recursive(p_dir)
                         elif entry.is_file(follow_symlinks=False):
-                            info = entry.stat()
-                            if info.st_size >= min_size:
-                                p = Path(entry.path)
-                                if not is_protected_path(p):
+                            p = Path(entry.path)
+                            if not is_protected_path(p):
+                                info = p.stat()
+                                if info.st_size >= min_size:
                                     temp_map[int(info.st_size)].append(p)
                     except (OSError, PermissionError):
                         continue
