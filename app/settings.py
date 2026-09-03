@@ -139,11 +139,14 @@ _ENUM_VALS: Final[dict[ConfigKey, frozenset[str]]] = {
 }
 
 def type_check(func: Callable[P, T | None]) -> Callable[P, T | None]:
-    """Decorador: Filtra llamadas donde el argumento de valor es None."""
+    """Decorador: Filtra llamadas y captura excepciones en la validación."""
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> T | None:
         val = args[1] if len(args) > 1 else kwargs.get("val")
         if val is None: return None
-        return func(*args, **kwargs)
+        try:
+            return func(*args, **kwargs)
+        except (ValueError, TypeError, AttributeError, OverflowError):
+            return None
     return wrapper
 
 class _Validators:
@@ -183,12 +186,10 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         """Convierte y acota valores numéricos según los límites de `_NUMERIC_LIMITS`."""
-        try:
-            parsed_value = int(val)
-            limit = _NUMERIC_LIMITS.get(key)
-            if limit: return max(limit.min, min(limit.max, parsed_value))
-            return parsed_value
-        except (TypeError, ValueError, OverflowError): return None
+        parsed_value = int(val)
+        limit = _NUMERIC_LIMITS.get(key)
+        if limit: return max(limit.min, min(limit.max, parsed_value))
+        return parsed_value
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:

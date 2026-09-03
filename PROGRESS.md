@@ -6,26 +6,26 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **222** (44.0% de aceptación)
-- Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 34
+- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Rechazadas por tests: 11
+- Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 216
+- Sin respuesta de la IA (error o límite): 215
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 126 | 7 | 18 | 8 | 101 |
-| 2026-09-03 | 96 | 5 | 16 | 12 | 115 |
+| 2026-09-02 | 124 | 6 | 18 | 8 | 100 |
+| 2026-09-03 | 99 | 5 | 17 | 12 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **51**
+- manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **46**
 - robustez ante casos límite: **44**
-- legibilidad y documentación: **41**
-- rendimiento: **40**
+- legibilidad y documentación: **42**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
@@ -36,16 +36,19 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
 - `safety.py`: **18**
-- `settings.py`: **17**
-- `duplicates.py`: **16**
-- `healthscore.py`: **16**
+- `settings.py`: **18**
+- `duplicates.py`: **15**
+- `healthscore.py`: **15**
+- `branding.py`: **12**
 - `diskreport.py`: **12**
 - `main.py`: **12**
-- `branding.py`: **11**
-- `startup.py`: **4**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T10:35:59` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las unidades de medida esperadas en las constantes globales y se añadió el tipo `HexColor` de forma explícita en las anotaciones de las diccionarios `PaletteDict` y `FontSizesDict`, mejorando la coherencia y mantenibilidad del sistema de tipado.
+- `2026-09-03T10:35:11` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar que filas con campos nulos o inesperados interrumpan el proceso, asegurando que solo se agreguen objetos `StartupEntry` con datos íntegros.
+- `2026-09-03T10:34:42` **settings.py** (manejo de errores y validación de entradas): Refactoricé el decorador `type_check` para mejorar la robustez al capturar errores de ejecución dentro de los validadores y añadí un manejo estricto de excepciones en `_Validators.int` para garantizar que valores malformados retornen `None` sin propagar errores hacia la lógica de carga.
 - `2026-09-03T10:27:32` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `Scanner.process_entry` y `scan_directory` validando explícitamente parámetros críticos (`entry.path`, `entry.name`) y manejando posibles valores `None` o rutas vacías que podrían causar errores durante la iteración en sistemas con permisos restrictivos.
 - `2026-09-03T10:26:51` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` capturando explícitamente posibles errores durante `p.is_file()` y `p.is_dir()` para evitar excepciones inesperadas al interactuar con el sistema de archivos, garantizando que el `UnsafePathError` sea la única interfaz de fallo esperada.
 - `2026-09-03T10:25:14` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de `None` y tipos en `_is_file_locked` y `_safe_unlink` para evitar excepciones imprevistas durante el chequeo de bloqueos o el borrado, asegurando que las operaciones sobre `Path` solo ocurran si el objeto es válido.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T08:32:48` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `_is_reparse_point` para garantizar que la resolución de rutas no sea manipulable mediante enlaces simbólicos o inconsistencias en los atributos de archivo, manteniendo el aislamiento estricto dentro de `base_root`.
 - `2026-09-03T08:23:50` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se pongan en cuarentena archivos que ya están en el directorio de cuarentena (evitando bucles de aislamiento) y se añadió una verificación de `resolve()` antes de cualquier operación para garantizar que estamos operando sobre la ruta canónica y no sobre un enlace lógico.
 - `2026-09-03T08:23:28` **organizer.py** (seguridad defensiva): Se ha restringido el alcance de `_is_safe_for_disk_op` para que solo valide atributos de seguridad y bloqueos, eliminando la dependencia de `is_safe_to_modify` (que es una función de validación de rutas y no de estado de disco) para evitar falsos negativos en el flujo de escaneo y cumplir con el patrón de diseño "safe-to-scan vs safe-to-modify".
-- `2026-09-03T08:22:57` **memory.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_protected_path` al PID antes de abrir el handle, previniendo posibles Race Conditions o intentos de manipulación sobre procesos cuyo ID podría haber sido reciclado o asignado a una tarea del sistema en el ínterin.
-- `2026-09-03T08:13:56` **healthscore.py** (seguridad defensiva): Mejoré la seguridad defensiva de `compute_score` asegurando que las métricas recibidas no solo sean del tipo correcto, sino que validen explícitamente su integridad mediante `is_finite()` antes de realizar cálculos, evitando propagar estados inválidos o calculos NaN a la interfaz.
-- `2026-09-03T08:13:43` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` y `_scan_recursive` implementando validaciones de rutas antes de cualquier operación de I/O, evitando el seguimiento de enlaces simbólicos mediante `is_file()` y `is_dir()` con `follow_symlinks=False` (ya presente) y asegurando que las excepciones de acceso no detengan el proceso.

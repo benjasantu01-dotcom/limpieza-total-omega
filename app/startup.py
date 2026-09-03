@@ -289,7 +289,7 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
         f_name, f_cmd = reader.fieldnames[0], reader.fieldnames[1]
             
         for row in reader:
-            if not isinstance(row, dict):
+            if not isinstance(row, dict) or None in (row.get(f_name), row.get(f_cmd)):
                 continue
             
             raw_n, raw_c = row.get(f_name), row.get(f_cmd)
