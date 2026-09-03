@@ -299,14 +299,16 @@ def parse_registry_csv(csv_text: str, source: str = "registro") -> List[StartupE
             name = "".join(c for c in raw_n if ord(c) >= 32).strip()
             cmd = "".join(c for c in raw_c if ord(c) >= 32).strip()
             
-            # Validación de integridad de entrada
-            if not name or not cmd:
+            # Validación estricta: evitar rutas vacías, UNC, o caracteres de shell maliciosos
+            if not name or not cmd or cmd.startswith(r"\\"):
                 continue
-            if name.upper().startswith("PS") or any(c in cmd for c in '<>|?*'):
+            if name.upper().startswith("PS") or any(c in cmd for c in '<>|?*&;'):
                 continue
             
             try:
-                if is_protected_path(Path(cmd)):
+                # Asegurar que sea una ruta potencialmente local válida antes de procesar
+                p_cmd = Path(cmd)
+                if is_protected_path(p_cmd):
                     continue
             except (ValueError, TypeError, OSError):
                 continue

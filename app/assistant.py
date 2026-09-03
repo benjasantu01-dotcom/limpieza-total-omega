@@ -550,6 +550,20 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
     except (TypeError, ValueError):
         return None
 
+def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
+    """Extrae la respuesta textual del payload JSON de la API."""
+    try:
+        if not isinstance(data, dict): return None
+        candidates = data.get("candidates")
+        if not isinstance(candidates, list) or not candidates: return None
+        content = candidates[0].get("content")
+        if not isinstance(content, dict): return None
+        parts = content.get("parts")
+        if not isinstance(parts, list) or not parts: return None
+        return str(parts[0].get("text", ""))
+    except (KeyError, AttributeError, TypeError):
+        return None
+
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
     if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
@@ -574,18 +588,8 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
                 data = json.loads(raw_res.decode("utf-8"))
             except (json.JSONDecodeError, UnicodeDecodeError):
                 return None
-            if not isinstance(data, dict): return None
-            candidates = data.get("candidates")
-            if not isinstance(candidates, list) or not candidates: return None
-            first_candidate = candidates[0]
-            if not isinstance(first_candidate, dict): return None
-            content = first_candidate.get("content")
-            if not isinstance(content, dict): return None
-            parts = content.get("parts")
-            if not isinstance(parts, list) or not parts: return None
-            text_part = parts[0]
-            if not isinstance(text_part, dict) or "text" not in text_part: return None
-            raw_text = str(text_part["text"])
+            raw_text = _extract_text_from_gemini_json(data)
+            if not raw_text: return None
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
             if not _ensure_safe_text(final) or is_protected_path(final):

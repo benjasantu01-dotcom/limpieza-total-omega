@@ -39,36 +39,38 @@ SeverityStyle: TypeAlias = Tuple[HexColor, str]
 RGBTuple: TypeAlias = Tuple[int, int, int]  
 
 class PaletteDict(TypedDict):
-    background: HexColor
-    surface: HexColor
-    surface_alt: HexColor
-    surface_hover: HexColor
-    card: HexColor
-    accent: HexColor
-    accent_hover: HexColor
-    accent_dim: HexColor
-    accent2: HexColor
-    accent2_hover: HexColor
-    accent3: HexColor
-    success: HexColor
-    info: HexColor
-    warning: HexColor
-    danger: HexColor
-    danger_hover: HexColor
-    text: HexColor
-    text_muted: HexColor
-    text_dim: HexColor
-    border: HexColor
-    glow: HexColor
+    """Mapeo de roles de UI a colores hexadecimales."""
+    background: HexColor       # Color principal de toda la ventana
+    surface: HexColor          # Color de contenedores, tarjetas y paneles
+    surface_alt: HexColor      # Variante para contraste en elementos internos
+    surface_hover: HexColor    # Estado visual cuando el cursor está sobre un elemento
+    card: HexColor             # Fondo específico para tarjetas de información
+    accent: HexColor           # Color primario de marca para acciones
+    accent_hover: HexColor     # Estado interactivo de la acción principal
+    accent_dim: HexColor       # Versión suavizada del color de acento
+    accent2: HexColor          # Color secundario para diferenciación visual
+    accent2_hover: HexColor    # Estado interactivo del color secundario
+    accent3: HexColor          # Color terciario para alertas o toques distintivos
+    success: HexColor          # Color para estados positivos o completados
+    info: HexColor             # Color para información neutra o sugerencias
+    warning: HexColor          # Color para advertencias que no requieren acción inmediata
+    danger: HexColor           # Color para riesgos críticos o acciones destructivas
+    danger_hover: HexColor     # Estado interactivo de la acción destructiva
+    text: HexColor             # Color principal del texto legible
+    text_muted: HexColor       # Color para texto secundario menos prominente
+    text_dim: HexColor         # Color para elementos de texto muy sutiles
+    border: HexColor           # Color para bordes y divisores
+    glow: HexColor             # Color utilizado para efectos de iluminación/sombra
 
 class FontSizesDict(TypedDict):
-    display: int
-    title: int
-    subtitle: int
-    heading: int
-    body: int
-    mono: int
-    caption: int
+    """Mapeo de jerarquía tipográfica a tamaños en puntos."""
+    display: int    # Encabezados de página o pantallas de inicio
+    title: int      # Títulos de secciones principales
+    subtitle: int   # Subtítulos de menor jerarquía
+    heading: int    # Encabezados de tarjetas o grupos
+    body: int       # Texto de contenido estándar
+    mono: int       # Texto para datos técnicos o logs
+    caption: int    # Etiquetas pequeñas o pies de nota
 
 APP_NAME: Final[str] = "Limpieza Total Omega"
 APP_SHORT_NAME: Final[str] = "Omega"

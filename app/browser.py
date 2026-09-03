@@ -186,7 +186,7 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Suma recursiva de bytes en un directorio con control de profundidad y memoización.
-    Requiere 'root_abs' como cadena absoluta resuelta.
+    Usa 'memo' para evitar ciclos o re-escaneo innecesario.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
