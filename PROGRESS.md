@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **230** (45.6% de aceptación)
+- Mejoras aceptadas: **227** (45.0% de aceptación)
 - Rechazadas por tests: 9
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 212
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 116 | 3 | 16 | 6 | 95 |
-| 2026-09-03 | 114 | 6 | 19 | 12 | 117 |
+| 2026-09-02 | 112 | 3 | 16 | 6 | 95 |
+| 2026-09-03 | 115 | 6 | 20 | 12 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **53**
-- seguridad defensiva: **46**
-- rendimiento: **40**
-- robustez ante casos límite: **38**
+- seguridad defensiva: **44**
+- rendimiento: **41**
+- robustez ante casos límite: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
 - `browser.py`: **21**
-- `assistant.py`: **19**
-- `organizer.py`: **19**
+- `organizer.py`: **20**
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `settings.py`: **17**
+- `assistant.py`: **18**
 - `safety.py`: **17**
 - `duplicates.py`: **17**
+- `settings.py`: **16**
 - `healthscore.py`: **16**
 - `main.py`: **14**
 - `diskreport.py`: **13**
-- `branding.py`: **12**
-- `startup.py`: **6**
+- `branding.py`: **11**
+- `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T11:36:00` **organizer.py** (rendimiento): Optimizamos `_process_directory` reemplazando la verificación repetida `entry.name.lower().endswith(tuple(JUNK_EXTENSIONS))` por una búsqueda constante en un `set`, y movimos la conversión de extensiones fuera del bucle para evitar la creación redundante de tuplas en cada iteración.
 - `2026-09-03T11:27:09` **main.py** (rendimiento): Optimicé el método `_compile_metrics` reemplazando llamadas múltiples a `self._get_cached` por un acceso directo y eficiente, y reduciendo la redundancia en los cálculos de los componentes del score de salud al evitar procesar listas vacías repetidamente.
 - `2026-09-03T11:25:47` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` utilizando un solo `os.stat()` por archivo para extraer tanto el tamaño como la identidad (inode) en una única llamada al sistema, reduciendo el overhead de I/O durante el escaneo recursivo.
 - `2026-09-03T11:16:26` **browser.py** (rendimiento): Mejoré el rendimiento del escaneo de directorios mediante la implementación de una caché de resolución de rutas (`Path.resolve()`) y evitando la inicialización redundante de recursos (kernel32.dll y funciones) dentro de la recursión profunda.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T10:45:38` **healthscore.py** (legibilidad y documentación): Mejora la documentación técnica mediante la inclusión de type hints precisos, la adición de un docstring explicativo en la función `compute_score` sobre su lógica de ponderación, y el uso de `Final` para definir constantes de configuración que antes estaban implícitas.
 - `2026-09-03T10:45:26` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la clarificación de tipos, asegurando que las funciones complejas de búsqueda sean más mantenibles sin alterar el comportamiento funcional.
 - `2026-09-03T10:45:01` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de alta fidelidad, corrigiendo la precisión técnica sobre el manejo de rutas UNC en `drive_usage` y aclarando las asunciones de seguridad en `walk_files`, asegurando que el código sea explicativo tanto para el dueño del proyecto como para el equipo.
-- `2026-09-03T10:44:33` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y tipeado explícito en funciones críticas para clarificar el flujo de seguridad y la lógica de recursión de disco.

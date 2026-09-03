@@ -270,7 +270,8 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                         if _should_scan_directory(entry):
                             _process_directory(Path(entry.path), found, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
-                        if entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
+                        # O(1) look-up usando set
+                        if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
                             stats = entry.stat()
                             if stats.st_size > 0:
                                 found.append(JunkFile(Path(entry.path), stats.st_size, datetime.fromtimestamp(stats.st_mtime)))
