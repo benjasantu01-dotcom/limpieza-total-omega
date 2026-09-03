@@ -51,19 +51,20 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización pre-calculados (inversos para evitar divisiones en tiempo de ejecución)
+# Factores de normalización: escalan valores crudos a un ratio [0.0, 1.0].
+# Son inversos multiplicativos para optimizar operaciones aritméticas en el bucle de cálculo.
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
 _INV_RAM: Final[float] = 1.0 / _LIMIT_RAM_PERCENT
 _INV_DISK: Final[float] = 1.0 / _LIMIT_DISK_PERCENT
 
-# Niveles de severidad definidos como rangos de normalización
+# Niveles de severidad definidos como rangos de normalización para reglas heurísticas.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
 
-# Pesos de importancia relativa para el cálculo del score final
+# Pesos de importancia relativa para el cálculo del score final (suma total = 100).
 WEIGHTS: Final[Dict[MetricKey, int]] = {
     "seguridad": 30,
     "disco": 20,
@@ -161,31 +162,34 @@ def _to_int(value: Any, default: int = 0) -> int:
     except (TypeError, ValueError): return default
 
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
-    """Calcula salud de basura: 1.0 es 0MB (óptimo), disminuye hacia 0.0 a 5GB."""
+    """Calcula el ratio de salud de archivos basura: 0MB es 1.0, escala hasta el límite."""
     return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
-    """Puntúa seguridad penalizando hallazgos y advertencias (5% y 25% c/u)."""
+    """
+    Calcula el ratio de salud de seguridad.
+    Penaliza hallazgos críticos (-5% c/u) y advertencias (-25% c/u).
+    """
     return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)), 0.0, 1.0)
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
-    """Puntúa RAM disponible: mayor disponibilidad (hasta el límite) resulta en mayor salud."""
+    """Calcula el ratio de salud de memoria RAM basado en el porcentaje disponible."""
     return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
-    """Puntúa espacio en disco: mayor porcentaje libre mejora la salud."""
+    """Calcula el ratio de salud de espacio en disco basado en porcentaje libre."""
     return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
-    """Puntúa duplicados: menor peso de archivos duplicados mejora la salud."""
+    """Calcula el ratio de salud basado en el peso total de archivos duplicados."""
     return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
 
 def score_startup(startup_count: int) -> NormalizedRatio:
-    """Puntúa programas en inicio: menor cantidad implica mejor rendimiento."""
+    """Calcula el ratio de salud basado en la cantidad de ítems en el inicio del sistema."""
     return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
 
 def grade_for_score(score: float | int) -> str:
-    """Mapea una calificación numérica (0-100) a una escala de letras (A-F)."""
+    """Mapea un puntaje final (0-100) a una calificación de letra (A-F)."""
     s = _to_float(score)
     if s >= 90: return "A"
     if s >= 80: return "B"
@@ -239,12 +243,12 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         return HealthResult(0, "F", {}, ["Error inesperado al calcular métricas."])
 
 def _render_bar(pts: int, maximo: int) -> str:
-    """Genera una cadena de texto representando el progreso de los puntos."""
+    """Genera una barra visual (strings) representando el puntaje obtenido sobre el máximo."""
     puntos = max(0, min(pts, maximo))
     return ('#' * puntos) + ('.' * (maximo - puntos))
 
 def summarize(result: HealthResult | None) -> List[str]:
-    """Genera una lista de strings lista para renderizarse en una interfaz gráfica."""
+    """Genera una representación textual del informe de salud para la interfaz."""
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     

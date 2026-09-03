@@ -77,8 +77,8 @@ TRIM_WARNING: Final[str] = (
 class MEMORYSTATUSEX(ctypes.Structure):
     """
     Estructura Win32 para GlobalMemoryStatusEx.
-    Campos definidos según la especificación oficial de Microsoft para 
-    identificar el estado de memoria global del sistema.
+    Campos alineados con la API 'MEMORYSTATUSEX' de Windows SDK; usada para
+    obtener estadísticas de uso de memoria física y virtual del sistema.
     """
     _fields_: List[Tuple[str, type]] = [
         ("dwLength", ctypes.c_ulong),
@@ -106,15 +106,17 @@ class MemorySnapshot:
 
     @property
     def used_percent(self) -> float:
-        """Calcula el porcentaje de RAM física ocupada."""
+        """Calcula el porcentaje de RAM física ocupada, normalizado a 0-100."""
         if self.total <= 0: return 0.0
-        return round((self.used / self.total) * 100, 1)
+        ratio: float = float(self.used) / float(self.total)
+        return round(ratio * 100, 1)
 
     @property
     def available_percent(self) -> float:
-        """Calcula el porcentaje de RAM física disponible."""
+        """Calcula el porcentaje de RAM física disponible, normalizado a 0-100."""
         if self.total <= 0: return 0.0
-        return round((self.available / self.total) * 100, 1)
+        ratio: float = float(self.available) / float(self.total)
+        return round(ratio * 100, 1)
 
 @dataclass
 class ProcessMemory:
