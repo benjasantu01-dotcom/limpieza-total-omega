@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Mejoras aceptadas: **238** (47.2% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 204
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 201
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 35 | 0 | 3 | 4 | 28 |
+| 2026-09-01 | 35 | 0 | 3 | 4 | 24 |
 | 2026-09-02 | 163 | 10 | 23 | 11 | 143 |
-| 2026-09-03 | 38 | 3 | 6 | 4 | 33 |
+| 2026-09-03 | 40 | 3 | 6 | 5 | 34 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,20 +26,20 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **55**
 - rendimiento: **44**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **40**
+- seguridad defensiva: **42**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **22**
 - `memory.py`: **21**
 - `assistant.py`: **19**
+- `healthscore.py`: **19**
 - `quarantine.py`: **19**
 - `settings.py`: **19**
 - `safety.py`: **19**
-- `healthscore.py`: **18**
+- `duplicates.py`: **18**
 - `organizer.py`: **18**
 - `diskreport.py`: **17**
-- `duplicates.py`: **17**
 - `scanner.py`: **17**
 - `main.py`: **12**
 - `branding.py`: **12**
@@ -47,6 +47,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T03:46:36` **healthscore.py** (seguridad defensiva): Se reforzó la integridad del sistema ante datos de entrada maliciosos o malformados introduciendo una validación estricta y defensiva en `SystemMetrics` mediante la eliminación de valores `NaN` (Not a Number) y la garantía de que cualquier valor numérico resultante sea finito y válido.
+- `2026-09-03T03:46:01` **duplicates.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_collect_candidates` integrando un chequeo explícito de puntos de reparse mediante `is_junction()` (basado en atributos de archivo de Windows) para garantizar que el recolector de archivos no abandone la jerarquía de directorios permitida ni siga enlaces inesperados hacia unidades externas o rutas de sistema.
 - `2026-09-03T03:36:00` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_path_inside_base` añadiendo una validación explícita mediante `pathlib.Path.parents` para evitar ataques de escalada de directorio (`..`), garantizando que la ruta resuelta esté jerárquicamente contenida bajo la base permitida de forma más robusta que una simple comparación de strings.
 - `2026-09-03T03:25:31` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save` frente a errores de concurrencia y fallos parciales de escritura mediante el uso de una verificación explícita de `temp_path` y un manejo de excepciones más granular que evita dejar archivos corruptos en disco si ocurre un fallo durante la escritura o sincronización.
 - `2026-09-03T03:24:53` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` agregando un manejo explícito de archivos inexistentes y una verificación de `PermissionError` más granular, evitando falsos negativos en el chequeo de integridad cuando el archivo ha desaparecido entre la validación inicial y el acceso a disco.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T02:46:01` **scanner.py** (rendimiento): Optimicé el método `_is_inside_base_root` convirtiendo la ruta a comparar una sola vez y evitando llamadas recurrentes a `resolve()` dentro del bucle, reduciendo significativamente la sobrecarga de I/O y CPU al procesar miles de archivos.
 - `2026-09-03T02:43:44` **quarantine.py** (rendimiento): Optimicé el cálculo del peso total de la cuarentena eliminando la deserialización innecesaria de objetos `QuarantineItem` en `total_quarantined_bytes` y mejoré la eficiencia de `purge_all` al pre-indexar los ítems en un diccionario para evitar búsquedas lineales O(N²) durante la depuración masiva.
 - `2026-09-03T02:35:32` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la serialización manual a CSV por una consulta de PowerShell que devuelve objetos estructurados, reduciendo drásticamente la carga de procesamiento de strings y el uso de memoria en el parseo.
-- `2026-09-03T02:33:25` **healthscore.py** (rendimiento): Optimicé el cálculo del score final reemplazando la validación recursiva de campos con `fields(self)` en `is_finite` por una verificación directa sobre los atributos, eliminando la sobrecarga de instanciar metadatos en cada iteración y reduciendo las llamadas a `getattr`.
-- `2026-09-03T02:23:58` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.exists()` y `is_protected_path` al consolidar las verificaciones dentro del mismo flujo de `os.scandir`, evitando múltiples accesos a disco por archivo.

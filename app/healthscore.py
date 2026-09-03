@@ -52,7 +52,6 @@ _LIMIT_RAM_PERCENT: Final[float] = 35.0
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
 # Factores de normalización: escalan valores crudos a un ratio [0.0, 1.0].
-# Son inversos multiplicativos para optimizar operaciones aritméticas en el bucle de cálculo.
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
@@ -112,22 +111,19 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Aplica límites físicos y sanitiza tipos de los campos de métrica."""
+        """Aplica límites físicos y sanitiza tipos de los campos de métrica evitando NaN o infinitos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb, 0.0))
         self.suspicious_count = max(0, _to_int(self.suspicious_count, 0))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings, 0))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 0.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 0.0), 0.0, 100.0)
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
         self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb, 0.0))
         self.startup_count = max(0, _to_int(self.startup_count, 0))
         self.quarantined_count = max(0, _to_int(self.quarantined_count, 0))
 
     def is_finite(self) -> bool:
         """Retorna True si todos los campos de datos contienen valores numéricos finitos."""
-        return (math.isfinite(self.junk_mb) and math.isfinite(self.suspicious_count) and 
-                math.isfinite(self.suspicious_warnings) and math.isfinite(self.memory_available_percent) and 
-                math.isfinite(self.disk_free_percent) and math.isfinite(self.duplicate_mb) and 
-                math.isfinite(self.startup_count) and math.isfinite(self.quarantined_count))
+        return all(math.isfinite(getattr(self, f)) for f in self.__dataclass_fields__ if isinstance(getattr(self, f), (int, float)))
 
 @dataclass
 class HealthResult:

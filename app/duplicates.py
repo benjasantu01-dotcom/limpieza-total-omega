@@ -15,6 +15,7 @@ Estrategia en tres pasos:
 from __future__ import annotations
 import hashlib
 import os
+import ctypes
 from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -42,6 +43,15 @@ PARTIAL_READ_BYTES: int = 64 * 1024
 
 # Constante para identificar puntos de reparse (Junctions/Symlinks) en Windows.
 FILE_ATTRIBUTE_REPARSE_POINT: int = 0x400
+
+
+def is_junction(path: Path) -> bool:
+    """Verifica si una ruta es un punto de reparse mediante atributos de sistema."""
+    try:
+        attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+        return bool(attrs != -1 and (attrs & FILE_ATTRIBUTE_REPARSE_POINT))
+    except (AttributeError, OSError):
+        return False
 
 
 @dataclass
@@ -184,7 +194,7 @@ def _collect_candidates(
         try:
             stat_root = current_dir.stat()
             inode = (stat_root.st_dev, stat_root.st_ino)
-            if inode in visited_inodes:
+            if inode in visited_inodes or is_junction(current_dir):
                 return
             visited_inodes.add(inode)
 
@@ -193,7 +203,7 @@ def _collect_candidates(
                     try:
                         if entry.is_dir(follow_symlinks=False):
                             entry_path = Path(entry.path)
-                            if not is_protected_path(entry_path):
+                            if not is_protected_path(entry_path) and not is_junction(entry_path):
                                 _scan_recursive(entry_path)
                         elif entry.is_file(follow_symlinks=False):
                             info = entry.stat()
