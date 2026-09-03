@@ -6,46 +6,47 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 139 | 8 | 20 | 8 | 101 |
-| 2026-09-03 | 89 | 4 | 15 | 12 | 108 |
+| 2026-09-02 | 136 | 8 | 19 | 8 | 101 |
+| 2026-09-03 | 90 | 4 | 15 | 12 | 111 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **51**
+- legibilidad y documentación: **48**
 - seguridad defensiva: **46**
+- manejo de errores y validación de entradas: **45**
 - robustez ante casos límite: **44**
-- manejo de errores y validación de entradas: **44**
 - rendimiento: **43**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
+- `assistant.py`: **20**
 - `browser.py`: **20**
 - `organizer.py`: **19**
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `assistant.py`: **19**
 - `safety.py`: **18**
 - `settings.py`: **18**
-- `duplicates.py`: **17**
-- `healthscore.py`: **16**
-- `diskreport.py`: **14**
+- `duplicates.py`: **16**
+- `healthscore.py`: **15**
+- `diskreport.py`: **13**
 - `branding.py`: **12**
 - `main.py`: **11**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T09:56:44` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_and_assign` mediante la validación explícita de `spec` y el manejo de excepciones localizadas, asegurando que cualquier fallo en la conversión o validación de una métrica individual no comprometa la ingesta del resto del objeto de contexto.
 - `2026-09-03T08:42:09` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_resolve_and_cache_path` añadiendo una validación explícita que impide el procesamiento de rutas que contengan caracteres de escape o secuencias de control potencialmente engañosas, reforzando la protección contra inyección de comandos o manipulación de rutas en el registro.
 - `2026-09-03T08:33:04` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita para asegurar que el archivo de configuración (`config.json`) no sea un enlace simbólico ni un punto de reparse antes de realizar la escritura, evitando así inyecciones de rutas o redirecciones maliciosas.
 - `2026-09-03T08:32:48` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `_is_reparse_point` para garantizar que la resolución de rutas no sea manipulable mediante enlaces simbólicos o inconsistencias en los atributos de archivo, manteniendo el aislamiento estricto dentro de `base_root`.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T07:52:55` **quarantine.py** (robustez ante casos límite): Se ha mejorado `_atomic_isolate_file` para asegurar la persistencia mediante `os.fsync` sobre el directorio padre (garantía de metadatos en sistemas de archivos), y se añadió una validación crítica contra archivos de tamaño cero para evitar estados inconsistentes en la cuarentena.
 - `2026-09-03T07:43:09` **organizer.py** (robustez ante casos límite): Se ha implementado un control de "profundidad máxima" y una validación de rutas no absolutas en `_process_directory` para prevenir la recursión infinita en casos de estructuras de directorios circularmente vinculadas o extremadamente profundas que podrían causar un `StackOverflow` o agotar los descriptores de archivo del sistema.
 - `2026-09-03T07:41:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `score_memory` y `score_disk` añadiendo un cálculo de ratio más seguro ante límites donde el divisor podría ser un valor configurado erróneamente, y consolidé la lógica de conversión `_clamp` dentro de `SystemMetrics` para asegurar que ningún campo numérico dependa de una llamada externa que pueda fallar.
-- `2026-09-03T07:31:08` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos de rutas no existentes o con permisos restringidos al añadir validaciones adicionales y manejo de excepciones en `_is_valid_cache_path` y `_sum_directory_recursive`, evitando que errores transitorios en el sistema de archivos interrumpan el escaneo de otras cachés válidas.

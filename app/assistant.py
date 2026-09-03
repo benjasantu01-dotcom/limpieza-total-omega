@@ -344,6 +344,9 @@ def _get_source_value(source: Any, key: str) -> Any:
         return None
 
 def _validate_and_assign(ctx: SystemContext, source: Any, key: str, spec: MetricSpec) -> bool:
+    """Valida y asigna una métrica específica de forma segura."""
+    if not isinstance(spec, MetricSpec):
+        return False
     try:
         val = _get_source_value(source, key)
         if val is None or not spec.is_valid_type(val):
