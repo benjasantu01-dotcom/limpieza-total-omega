@@ -371,7 +371,7 @@ def build_context(metrics: MetricSource = None, health: ScoreSource = None, **ex
         try:
             if ctx.ingest(src):
                 ctx.analyzed = True
-        except Exception:
+        except (AttributeError, TypeError, ValueError):
             continue
     return ctx
 

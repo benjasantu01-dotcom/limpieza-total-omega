@@ -131,7 +131,7 @@ def _is_path_inside_base(real_target: Path, real_base: Path, path_cache: Dict[st
         base_resolved = path_cache[b_str]
         
         return base_resolved in target_resolved.parents or target_resolved == base_resolved
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, ValueError):
         return False
 
 
@@ -166,11 +166,12 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
         path = entry.path
         if not path or len(path) >= MAX_PATH_LEN:
             return True
+        # Usar .is_symlink() de la entrada evita accesos extras al disco
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
         if __is_system_hidden(path, kernel32):
             return True
-    except (OSError, PermissionError, FileNotFoundError):
+    except (OSError, PermissionError, FileNotFoundError, UnicodeEncodeError):
         return True
     return False
 
@@ -183,7 +184,7 @@ def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path], path_c
         if base_check_path and not _is_path_inside_base(path_obj, base_check_path, path_cache):
             return False
         return True
-    except (OSError, RuntimeError):
+    except (OSError, RuntimeError, PermissionError):
         return False
 
 

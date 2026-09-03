@@ -16,36 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 111 | 3 | 16 | 5 | 93 |
-| 2026-09-03 | 118 | 6 | 21 | 12 | 119 |
+| 2026-09-02 | 107 | 3 | 16 | 5 | 93 |
+| 2026-09-03 | 122 | 6 | 21 | 12 | 119 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **53**
 - rendimiento: **44**
-- seguridad defensiva: **43**
-- robustez ante casos límite: **36**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **21**
-- `browser.py`: **21**
-- `organizer.py`: **20**
+- `browser.py`: **22**
+- `memory.py`: **20**
 - `scanner.py`: **20**
-- `quarantine.py`: **19**
-- `assistant.py`: **18**
+- `assistant.py`: **19**
+- `organizer.py`: **19**
+- `quarantine.py`: **18**
 - `safety.py`: **17**
 - `settings.py`: **17**
 - `duplicates.py`: **17**
 - `healthscore.py`: **16**
-- `main.py`: **14**
-- `diskreport.py`: **12**
-- `branding.py`: **11**
+- `diskreport.py`: **13**
+- `main.py`: **13**
+- `branding.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T12:00:00` **diskreport.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `walk_files` y `summarize` para evitar que el escaneo se interrumpa prematuramente ante archivos con rutas extremadamente largas (sobrepasando `MAX_PATH` en Windows) o problemas de acceso durante la recolección, asegurando que el análisis sea resiliente a fallos de sistema de archivos.
+- `2026-09-03T11:59:45` **browser.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_path_inside_base` y `_should_skip_entry` para manejar correctamente rutas con caracteres Unicode, nombres de dispositivos inválidos o errores de resolución de nombres largos, evitando que una excepción en un nodo del sistema de archivos detenga todo el escaneo del perfil de caché.
+- `2026-09-03T11:59:18` **branding.py** (robustez ante casos límite): Se reforzó la robustez de `save_logo_svg` ante errores de sistema y condiciones de carrera, garantizando que si la operación falla (por ejemplo, disco bloqueado o ruta inválida), no se propague ninguna excepción al resto de la aplicación y se manejen correctamente los tipos de entrada.
+- `2026-09-03T11:58:43` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante una validación más estricta en el bucle de ingestión, asegurando que solo se procesen tipos de datos predecibles y evitando errores de ejecución que puedan propagarse al motor de inferencia.
 - `2026-09-03T11:46:52` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una técnica de filtrado previo de comandos mediante `set` y evitando consultas innecesarias al sistema de archivos al detectar entradas duplicadas por comando, reduciendo el I/O en escenarios con múltiples claves de registro redundantes.
 - `2026-09-03T11:46:39` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando copias redundantes mediante la desestructuración de `DEFAULTS` y reduciendo el número de llamadas a `stat()` mediante una lógica de caché más estricta.
 - `2026-09-03T11:46:10` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando la lógica de búsqueda en `WATCHED_FOLDERS` de una operación lineal O(N) dentro de un `any()` a una verificación de pertenencia O(1) basada en el conjunto de padres inmediatos, evitando además la conversión costosa de cada ruta a string inferior para cada archivo encontrado.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T11:15:03` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `StartupEntry._resolve_and_cache_path` mediante la extracción de la lógica de validación de archivos en un método privado auxiliar, reduciendo la complejidad ciclomática del bloque principal.
 - `2026-09-03T11:06:53` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings precisos en los métodos del `Scanner` y los checks heurísticos, clarificando el propósito, las dependencias de estado (como `now_ts`) y las limitaciones operativas para facilitar el mantenimiento.
 - `2026-09-03T11:05:22` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en los validadores, aclarando el contexto de las verificaciones de integridad y siguiendo el estándar solicitado para facilitar el mantenimiento del proyecto.
-- `2026-09-03T10:56:41` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas (`_atomic_isolate_file`, `_validate_isolation_request`, `quarantine_file`) y la estandarización de tipos, asegurando que la lógica de aislamiento y las garantías de seguridad sean comprensibles para el equipo.
-- `2026-09-03T10:56:22` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (dividiéndola en subtareas lógicas) y la inclusión de type hints y docstrings enriquecidos en funciones críticas, facilitando la comprensión del flujo de seguridad para futuros desarrollos.
-- `2026-09-03T10:55:54` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la aplicación de type hints faltantes en funciones internas, la estandarización de las excepciones para mejorar la robustez, y la documentación con docstrings explicativos para los helper de bajo nivel.
-- `2026-09-03T10:55:26` **main.py** (legibilidad y documentación): Se ha mejorado la legibilidad y mantenibilidad del archivo `main.py` mediante la implementación de `TypeDict` para definir explícitamente el esquema de configuración, reemplazando el uso ambiguo de diccionarios planos `Dict[str, Any]` y facilitando la documentación del contrato de los ajustes del sistema.

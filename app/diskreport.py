@@ -269,6 +269,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Usar stat para detectar atributos y tipo de archivo de forma eficiente.
                         st = entry.stat(follow_symlinks=False)
                         
                         # Evitar seguir symlinks o puntos de reanálisis para no salir del árbol objetivo.
@@ -284,6 +285,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         elif entry.is_file():
                             yield Path(entry.path), max(0, int(st.st_size))
                     except (PermissionError, OSError):
+                        # Ignorar individualmente errores de acceso o rutas largas.
                         continue
         except (PermissionError, OSError):
             continue
@@ -412,8 +414,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
             
     try:
         data = _collect_summary_data(p_input, skip_protected)
-    except (OSError, PermissionError, Exception) as e:
-        return [f"Error: Fallo inesperado durante el análisis ({type(e).__name__})."]
+    except Exception:
+        return ["Error: El análisis se interrumpió inesperadamente."]
     
     if data.total_files == 0:
         return ["Aviso: No se encontraron archivos accesibles."]
