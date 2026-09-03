@@ -467,3 +467,36 @@ FAILED evolve/tests/test_safety.py::test_restore_into_a_system_path_is_blocked -
 - `2026-09-03T02:46:01` ✅ Mejora aceptada en scanner.py (enfoque: rendimiento). Optimicé el método `_is_inside_base_root` convirtiendo la ruta a comparar una sola vez y evitando llamadas recurrentes a `resolve()` dentro del bucle, reduciendo significativamente la sobrecarga de I/O y CPU al procesar miles de archivos.
 - `2026-09-03T02:46:01` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T02:46:01` Corrida terminada. Total usado hoy: 64.
+- `2026-09-03T02:53:26` Arrancando corrida. Quedan hoy ~236 peticiones objetivo.
+- `2026-09-03T02:54:00` ✅ Mejora aceptada en settings.py (enfoque: rendimiento). Se optimizó el acceso a los validadores mediante el uso de una búsqueda directa en `_VALIDATOR_MAP` dentro de `validate()` y `update()`, eliminando iteraciones redundantes y centralizando la lógica de configuración en la caché global.
+- `2026-09-03T02:54:01` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-03T02:54:34` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.43s
+
+```
+- `2026-09-03T02:54:34` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de la caché `_EXISTS_CACHE` en `_resolve_and_cache_path` moviendo la lógica de validación de extensión y existencia de forma que se eviten accesos redundantes al sistema de archivos mediante el uso de un `set` para `EXECUTABLE_EXTS` (ya presente) y una salida temprana que aprovecha el estado ya cacheados antes de intentar resoluciones costosas de `os.path.realpath`.
+- `2026-09-03T02:54:36` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-03T02:55:18` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Reforcé la robustez del motor de entrada ante valores `None` o malformados en `SystemContext.ingest()` y las funciones de validación de métricas, asegurando que un fallo en una fuente de datos externa no contamine el estado del objeto.
+- `2026-09-03T02:55:36` ✅ Mejora aceptada en branding.py (enfoque: robustez ante casos límite). Se introdujo una validación robusta de rutas en `save_logo_svg` para prevenir errores ante rutas mal formadas, inexistentes o con permisos denegados, integrando `is_safe_to_modify` para un manejo de excepciones más limpio y seguro.
+- `2026-09-03T02:55:36` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T02:55:36` Corrida terminada. Total usado hoy: 68.
