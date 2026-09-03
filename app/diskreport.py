@@ -85,11 +85,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
     """
     Normaliza y valida una ruta raíz antes de iniciar cualquier escaneo.
     
-    Args:
-        directory: Ruta a validar como directorio raíz.
-    
-    Returns:
-        Optional[Path]: Path absoluto y validado, o None si la ruta es inaccesible o prohibida.
+    Verifica que la ruta exista, sea un directorio y no esté marcada como
+    protegida en safety.py.
     """
     try:
         if directory is None:
@@ -200,15 +197,16 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
     """
     Consulta el estado de una unidad de disco mediante `shutil.disk_usage`.
     
-    Rechaza explícitamente rutas UNC, rutas relativas o directorios protegidos.
+    Nota: Se rechazan rutas UNC (ej. \\servidor\recurso) por políticas de 
+    seguridad y estabilidad de red, limitando el escaneo a unidades locales.
     """
     if mount is None:
         return None
         
     try:
         p = Path(os.fspath(mount)).resolve()
-        # Rechazar explícitamente rutas UNC o de red
-        if not p.is_absolute() or p.parts[0].startswith(("\\\\", "//")):
+        # Rechazar rutas UNC o de red explícitamente para evitar bloqueos por latencia.
+        if not p.is_absolute() or str(p).startswith(("\\\\", "//")):
             return None
         
         if not p.exists() or not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
@@ -249,8 +247,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
     """
     Recorrido profundo (DFS iterativo) del sistema de archivos.
 
-    Implementa medidas de seguridad y evita ciclos de enlaces simbólicos mediante
-    el registro de inodos visitados.
+    Implementa seguridad saltando reparse points (junctions/symlinks) y 
+    carpetas protegidas (si skip_protected=True). El uso de `visited_inodes` 
+    evita ciclos infinitos ante enlaces simbólicos.
     """
     root_path = _validate_root(directory)
     if not root_path:
@@ -272,6 +271,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                     try:
                         st = entry.stat(follow_symlinks=False)
                         
+                        # Evitar seguir symlinks o puntos de reanálisis para no salir del árbol objetivo.
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                             continue
                         

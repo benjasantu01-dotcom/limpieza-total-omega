@@ -147,7 +147,11 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
-    """Evalúa si una entrada debe omitirse según políticas de seguridad y tipo de ruta."""
+    """
+    Evalúa si una entrada del sistema de archivos debe omitirse.
+    Aplica filtros de nombre (NEVER_TOUCH), longitud de ruta (MAX_PATH_LEN),
+    puntos de reparse (junctions), y atributos de sistema u oculto (Win32 API).
+    """
     if _is_excluded_file(entry.name):
         return True
         
@@ -185,8 +189,11 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Suma recursiva de bytes en un directorio con control de profundidad y memoización.
-    Usa 'memo' para evitar ciclos o re-escaneo innecesario.
+    Calcula recursivamente el tamaño en bytes de un directorio.
+    Implementa:
+    1. Límite de profundidad (MAX_SCAN_DEPTH) para prevenir desbordamiento.
+    2. Memoización (memo) para eficiencia y detección de ciclos en junctions.
+    3. Validación de seguridad en cada nodo mediante 'is_safe_to_modify'.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
@@ -241,8 +248,10 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
     """
-    Verifica que la carpeta candidata exista, sea un directorio, no contenga elementos 
-    excluidos y sea una ruta segura según las políticas de la aplicación.
+    Verifica si una ruta candidata es una carpeta válida de caché.
+    Realiza comprobaciones de integridad: existencia, límite de longitud, 
+    tipo (directorio real), exclusión de rutas protegidas y validación 
+    de containment dentro de la base proporcionada.
     """
     try:
         if not candidate.exists() or len(str(candidate)) >= MAX_PATH_LEN:
@@ -262,7 +271,16 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """Escanea y reporta el peso de las cachés de los navegadores configurados."""
+    """
+    Escanea el sistema buscando perfiles de navegadores y calcula su ocupación.
+    
+    Args:
+        bases: Directorios raíz (por defecto LOCALAPPDATA) para buscar perfiles.
+        cache_paths: Mapeo (nombre del navegador -> ruta relativa).
+        
+    Returns:
+        Lista de objetos BrowserCache con la información de tamaño detectada.
+    """
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     

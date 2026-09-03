@@ -6,46 +6,50 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **223** (44.2% de aceptación)
+- Mejoras aceptadas: **226** (44.8% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 215
+- Sin respuesta de la IA (error o límite): 213
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 124 | 6 | 18 | 8 | 100 |
-| 2026-09-03 | 99 | 5 | 17 | 12 | 115 |
+| 2026-09-02 | 123 | 6 | 17 | 8 | 98 |
+| 2026-09-03 | 103 | 5 | 17 | 12 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - seguridad defensiva: **46**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **44**
-- legibilidad y documentación: **42**
-- rendimiento: **38**
+- rendimiento: **37**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **20**
+- `browser.py`: **21**
 - `memory.py`: **20**
 - `assistant.py`: **19**
 - `organizer.py`: **19**
 - `quarantine.py`: **19**
 - `scanner.py`: **19**
-- `safety.py`: **18**
 - `settings.py`: **18**
-- `duplicates.py`: **15**
-- `healthscore.py`: **15**
+- `safety.py`: **17**
+- `duplicates.py`: **16**
+- `healthscore.py`: **16**
+- `diskreport.py`: **13**
 - `branding.py`: **12**
-- `diskreport.py`: **12**
 - `main.py`: **12**
 - `startup.py`: **5**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T10:45:38` **healthscore.py** (legibilidad y documentación): Mejora la documentación técnica mediante la inclusión de type hints precisos, la adición de un docstring explicativo en la función `compute_score` sobre su lógica de ponderación, y el uso de `Final` para definir constantes de configuración que antes estaban implícitas.
+- `2026-09-03T10:45:26` **duplicates.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad mediante la adición de docstrings estructurados y la clarificación de tipos, asegurando que las funciones complejas de búsqueda sean más mantenibles sin alterar el comportamiento funcional.
+- `2026-09-03T10:45:01` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de alta fidelidad, corrigiendo la precisión técnica sobre el manejo de rutas UNC en `drive_usage` y aclarando las asunciones de seguridad en `walk_files`, asegurando que el código sea explicativo tanto para el dueño del proyecto como para el equipo.
+- `2026-09-03T10:44:33` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y tipeado explícito en funciones críticas para clarificar el flujo de seguridad y la lógica de recursión de disco.
 - `2026-09-03T10:35:59` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las unidades de medida esperadas en las constantes globales y se añadió el tipo `HexColor` de forma explícita en las anotaciones de las diccionarios `PaletteDict` y `FontSizesDict`, mejorando la coherencia y mantenibilidad del sistema de tipado.
 - `2026-09-03T10:35:11` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar que filas con campos nulos o inesperados interrumpan el proceso, asegurando que solo se agreguen objetos `StartupEntry` con datos íntegros.
 - `2026-09-03T10:34:42` **settings.py** (manejo de errores y validación de entradas): Refactoricé el decorador `type_check` para mejorar la robustez al capturar errores de ejecución dentro de los validadores y añadí un manejo estricto de excepciones en `_Validators.int` para garantizar que valores malformados retornen `None` sin propagar errores hacia la lógica de carga.
@@ -57,7 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T10:13:50` **healthscore.py** (manejo de errores y validación de entradas): Reforcé la robustez de `compute_score` validando explícitamente la integridad de los resultados intermedios y asegurando que `_RULES_BY_AREA` no devuelva None, protegiendo al motor de inferencia de posibles fallos ante datos de entrada malformados.
 - `2026-09-03T09:56:44` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `_validate_and_assign` mediante la validación explícita de `spec` y el manejo de excepciones localizadas, asegurando que cualquier fallo en la conversión o validación de una métrica individual no comprometa la ingesta del resto del objeto de contexto.
 - `2026-09-03T08:42:09` **startup.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `_resolve_and_cache_path` añadiendo una validación explícita que impide el procesamiento de rutas que contengan caracteres de escape o secuencias de control potencialmente engañosas, reforzando la protección contra inyección de comandos o manipulación de rutas en el registro.
-- `2026-09-03T08:33:04` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita para asegurar que el archivo de configuración (`config.json`) no sea un enlace simbólico ni un punto de reparse antes de realizar la escritura, evitando así inyecciones de rutas o redirecciones maliciosas.
-- `2026-09-03T08:32:48` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_safe_entry` y `_is_reparse_point` para garantizar que la resolución de rutas no sea manipulable mediante enlaces simbólicos o inconsistencias en los atributos de archivo, manteniendo el aislamiento estricto dentro de `base_root`.
-- `2026-09-03T08:23:50` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `quarantine_file` añadiendo una validación explícita para evitar que se pongan en cuarentena archivos que ya están en el directorio de cuarentena (evitando bucles de aislamiento) y se añadió una verificación de `resolve()` antes de cualquier operación para garantizar que estamos operando sobre la ruta canónica y no sobre un enlace lógico.
-- `2026-09-03T08:23:28` **organizer.py** (seguridad defensiva): Se ha restringido el alcance de `_is_safe_for_disk_op` para que solo valide atributos de seguridad y bloqueos, eliminando la dependencia de `is_safe_to_modify` (que es una función de validación de rutas y no de estado de disco) para evitar falsos negativos en el flujo de escaneo y cumplir con el patrón de diseño "safe-to-scan vs safe-to-modify".

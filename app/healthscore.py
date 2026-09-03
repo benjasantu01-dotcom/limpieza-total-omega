@@ -194,7 +194,13 @@ _SCORERS: Final[Dict[MetricKey, Callable[[SystemMetrics], NormalizedRatio]]] = {
 }
 
 def compute_score(metrics: SystemMetrics | None) -> HealthResult:
-    """Procesa métricas mediante la pipeline definida para generar un HealthResult final."""
+    """
+    Procesa métricas mediante una pipeline de normalización y ponderación.
+    
+    Aplica los pesos definidos en `WEIGHTS` a los ratios obtenidos por cada
+    módulo (`_SCORERS`) y genera recomendaciones dinámicas basadas en reglas
+    de umbrales predefinidas.
+    """
     if not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
@@ -206,18 +212,17 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         for area, weight in _WEIGHT_ITEMS_INT:
             scorer = _SCORERS.get(area)
             if not scorer: continue
-            ratio = scorer(metrics)
-            pts = int(round(ratio * weight))
+            ratio: NormalizedRatio = scorer(metrics)
+            pts: int = int(round(ratio * weight))
             metric_breakdown[area] = pts
             total_pts += float(pts)
             
-            # Chequeo defensivo: el acceso al dict nunca debe fallar por estructura
-            rules = _RULES_BY_AREA.get(area, [])
+            rules: List[RecommendationRule] = _RULES_BY_AREA.get(area, [])
             for rule in rules:
                 if rule.check(metrics, ratio):
                     recommendations.append(rule.message_factory(metrics))
         
-        final_score = int(_clamp(total_pts, 0.0, 100.0))
+        final_score: int = int(_clamp(total_pts, 0.0, 100.0))
         if metrics.quarantined_count > 0:
             recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
         
@@ -240,8 +245,8 @@ def summarize(result: HealthResult | None) -> List[str]:
     if not isinstance(result, HealthResult):
         return ["Error: Informe no disponible o formato inválido."]
     
-    lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    breakdown = result.breakdown if isinstance(result.breakdown, dict) else {}
+    lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    breakdown: Dict[MetricKey, int] = result.breakdown if isinstance(result.breakdown, dict) else {}
     
     for area, maximo in _WEIGHT_ITEMS_INT:
         puntos = breakdown.get(area, 0)
