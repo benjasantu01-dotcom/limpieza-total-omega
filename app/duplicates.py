@@ -203,10 +203,10 @@ def _collect_candidates(
                             if not is_protected_path(p_dir) and not is_junction(p_dir):
                                 _scan_recursive(p_dir)
                         elif entry.is_file(follow_symlinks=False):
-                            p = Path(entry.path)
-                            if not is_protected_path(p):
-                                info = p.stat()
-                                if info.st_size >= min_size:
+                            info = entry.stat(follow_symlinks=False)
+                            if info.st_size >= min_size:
+                                p = Path(entry.path)
+                                if not is_protected_path(p):
                                     temp_map[int(info.st_size)].append(p)
                     except (OSError, PermissionError):
                         continue

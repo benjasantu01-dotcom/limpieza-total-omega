@@ -1118,10 +1118,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _compile_metrics(self) -> Tuple[healthscore.SystemMetrics, memory_mod.Snapshot, diskreport.DriveInfo]:
         """Consolida las métricas del sistema para el cálculo del score de salud."""
-        junk = self._get_cached("junk") or []
-        hallazgos = self._get_cached("suspicions") or []
-        dups = self._get_cached("dups") or []
-        snapshot = self._get_cached("memory_snapshot") or memory_mod.read_snapshot()
+        junk = self._cache.get("junk", ([], 0))[0]
+        hallazgos = self._cache.get("suspicions", ([], 0))[0]
+        dups = self._cache.get("dups", ([], 0))[0]
+        snapshot = self._cache.get("memory_snapshot", (memory_mod.read_snapshot(), 0))[0]
         disk_info = self._get_home_disk_info()
             
         metrics = healthscore.SystemMetrics(
@@ -1131,7 +1131,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             memory_available_percent=snapshot.available_percent if snapshot else 100.0,
             disk_free_percent=(disk_info.free / disk_info.total * 100) if (disk_info and disk_info.total > 0) else 100.0,
             duplicate_mb=(duplicates_mod.reclaimable_bytes(dups) / 1048576) if dups else 0.0,
-            startup_count=len(self._get_cached("startup") or []),
+            startup_count=len(self._cache.get("startup", ([], 0))[0]),
             quarantined_count=len(quarantine.list_items()),
         )
         return metrics, snapshot, disk_info or diskreport.DriveInfo(0, 0, 0, "")
@@ -1158,7 +1158,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
             )
 
             lineas = healthscore.summarize(resultado)
-            if not self._get_cached("dups"):
+            if not self._cache.get("dups"):
                 lineas += ["", "Nota: los duplicados no se contaron todavía. "
                                "Corré la pestaña Duplicados para incluirlos."]
             self.log_lines(lineas, "Salud")
@@ -1280,7 +1280,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @safe_ui_operation
     def refresh_list(self) -> None:
         """Refresca la lista de archivos encontrados en la interfaz."""
-        junk = self._get_cached("junk") or []
+        junk = self._cache.get("junk", ([], 0))[0]
         ordered = sort_junk(junk, by=self.sort_by.get())
         lines = [f"{jf.size_mb:>8} MB  |  {jf.modified:%Y-%m-%d}  |  {jf.path}" for jf in ordered]
         self.report_data["limpieza"] = lines
@@ -1292,7 +1292,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_stage(self) -> None:
         """Mueve candidatos de limpieza a la carpeta de revisión."""
-        junk = self._get_cached("junk") or []
+        junk = self._cache.get("junk", ([], 0))[0]
         if not junk:
             messagebox.showinfo("Sin candidatos", "Primero usá 'Buscar basura'.")
             return
@@ -1392,7 +1392,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_quarantine_findings(self) -> None:
         """Aísla archivos sospechosos en cuarentena."""
-        suspicions = self._get_cached("suspicions") or []
+        suspicions = self._cache.get("suspicions", ([], 0))[0]
         if not suspicions:
             messagebox.showinfo("Sin hallazgos", "Primero corré un escaneo heurístico.")
             return
@@ -1650,7 +1650,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     @validated_ui_operation
     def on_quarantine_duplicates(self) -> None:
         """Aísla copias de archivos duplicados."""
-        dups = self._get_cached("dups") or []
+        dups = self._cache.get("dups", ([], 0))[0]
         if not dups:
             messagebox.showinfo("Sin duplicados", "Primero usá 'Buscar duplicados'.")
             return

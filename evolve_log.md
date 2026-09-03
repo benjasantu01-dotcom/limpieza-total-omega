@@ -1251,3 +1251,40 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-03T11:16:26` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Mejoré el rendimiento del escaneo de directorios mediante la implementación de una caché de resolución de rutas (`Path.resolve()`) y evitando la inicialización redundante de recursos (kernel32.dll y funciones) dentro de la recursión profunda.
 - `2026-09-03T11:16:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T11:16:26` Corrida terminada. Total usado hoy: 264.
+- `2026-09-03T11:24:51` Arrancando corrida. Quedan hoy ~36 peticiones objetivo.
+- `2026-09-03T11:25:22` Tests FALLARON:
+```
+edio", "chico"]
+                ^^^^^^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:586: AttributeError
+____________________ test_largest_folders_ranks_subfolders _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-1/test_largest_folders_ranks_sub0')
+
+    def test_largest_folders_ranks_subfolders(tmp_path):
+        for nombre, tamano in (("chica", 10), ("grande", 5000), ("media", 500)):
+            carpeta = tmp_path / nombre
+            carpeta.mkdir()
+            (carpeta / "archivo").write_bytes(b"a" * tamano)
+        ranking = diskreport.largest_folders(tmp_path)
+>       assert [f.path.name for f in ranking] == ["grande", "media", "chica"]
+                ^^^^^^^^^^^
+E       AttributeError: 'str' object has no attribute 'name'
+
+evolve/tests/test_modules.py:616: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_walk_files_finds_everything_recursively - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_walk_files_skips_system_folders - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_largest_files_sorted_descending - AttributeError: 'str' object has no attribute 'name'
+FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - AttributeError: 'str' object has no attribute 'name'
+4 failed, 295 passed in 1.49s
+
+```
+- `2026-09-03T11:25:22` ❌ Mejora descartada en diskreport.py (no pasó los tests), se revirtió. Intento: Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando la creación de objetos `Path` repetitivos dentro del bucle de iteración por cadenas de texto (`entry.path`), minimizando la sobrecarga de instanciación de objetos en árboles de directorios grandes.
+- `2026-09-03T11:25:47` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé `_collect_candidates` utilizando un solo `os.stat()` por archivo para extraer tanto el tamaño como la identidad (inode) en una única llamada al sistema, reduciendo el overhead de I/O durante el escaneo recursivo.
+- `2026-09-03T11:26:11` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-03T11:27:09` ✅ Mejora aceptada en main.py (enfoque: rendimiento). Optimicé el método `_compile_metrics` reemplazando llamadas múltiples a `self._get_cached` por un acceso directo y eficiente, y reduciendo la redundancia en los cálculos de los componentes del score de salud al evitar procesar listas vacías repetidamente.
+- `2026-09-03T11:27:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T11:27:09` Corrida terminada. Total usado hoy: 268.
