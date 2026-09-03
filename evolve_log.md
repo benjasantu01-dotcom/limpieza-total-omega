@@ -579,3 +579,4 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-03T15:00:40` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
 - `2026-09-03T15:00:40` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T15:00:40` Corrida terminada. Total usado hoy: 350.
+- `2026-09-03T15:09:54` Presupuesto diario agotado (350 usados). Corte hasta mañana.
