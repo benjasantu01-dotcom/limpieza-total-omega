@@ -80,7 +80,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     """
     try:
         path_obj = Path(path)
-        if not path_obj.exists() or not path_obj.is_file() or not os.access(path_obj, os.R_OK):
+        if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
             return None
         
         digest = hashlib.sha256()
@@ -108,7 +108,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     """
     try:
         path_obj = Path(path)
-        if not path_obj.exists() or not path_obj.is_file() or not os.access(path_obj, os.R_OK):
+        if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
             return None
         
         with open(path_obj, "rb") as f:
@@ -128,7 +128,6 @@ def _is_valid_candidate(path: Path) -> bool:
     try:
         return (
             isinstance(path, Path) and 
-            path.exists() and
             path.is_file() and 
             not is_protected_path(path) and 
             os.access(path, os.R_OK)
@@ -146,14 +145,14 @@ def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
     if paths is None or not isinstance(paths, Iterable): return groups
     
     for p in paths:
-        try:
-            path_obj = Path(p)
-            if _is_valid_candidate(path_obj):
+        path_obj = Path(p)
+        if _is_valid_candidate(path_obj):
+            try:
                 size = path_obj.stat().st_size
                 if size > 0:
                     groups[size].append(path_obj)
-        except (OSError, PermissionError, TypeError, ValueError):
-            continue
+            except (OSError, PermissionError):
+                continue
     return groups
 
 
@@ -162,7 +161,7 @@ def _resolve_and_verify_root(item: Union[str, Path]) -> Optional[Path]:
     try:
         if not item: return None
         root = Path(item).resolve(strict=False)
-        if root.exists() and root.is_dir() and not is_protected_path(root):
+        if root.is_dir() and not is_protected_path(root):
             return root
     except (OSError, ValueError, RuntimeError):
         pass
@@ -293,7 +292,6 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     for p in group.paths:
         if not isinstance(p, Path): continue
         try:
-            if not p.exists(): continue
             stat_info = p.stat()
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):

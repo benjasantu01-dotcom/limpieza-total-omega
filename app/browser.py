@@ -284,6 +284,7 @@ def detect_profiles(
                     
                 if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     c_path = candidate.resolve(strict=True)
+                    # Se mantiene el dict 'perf_cache' vivo durante todo el ciclo para evitar recalcular
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))

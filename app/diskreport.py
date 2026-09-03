@@ -375,19 +375,16 @@ def largest_folders(directory: Union[str, os.PathLike, None], limit: int = 10, s
     for path, size in walk_files(p_base, skip_protected):
         try:
             rel = path.relative_to(p_base)
-            top_part = rel.parts[0] if rel.parts else None
-            if not top_part:
+            if not rel.parts:
                 sums[p_base] += size
                 counts[p_base] += 1
-                continue
-                
-            top_folder = p_base / top_part
-            if skip_protected and is_protected_path(top_folder):
-                continue
-            
-            sums[top_folder] += size
-            counts[top_folder] += 1
-        except (ValueError, IndexError):
+            else:
+                top_folder = p_base / rel.parts[0]
+                if skip_protected and is_protected_path(top_folder):
+                    continue
+                sums[top_folder] += size
+                counts[top_folder] += 1
+        except ValueError:
             continue
 
     results: List[FolderUsage] = [FolderUsage(p, sums[p], counts[p]) for p in sums]

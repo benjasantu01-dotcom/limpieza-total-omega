@@ -419,3 +419,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T02:15:42` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
 - `2026-09-03T02:15:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T02:15:42` Corrida terminada. Total usado hoy: 52.
+- `2026-09-03T02:22:08` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-09-03T02:22:44` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-03T02:23:15` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Implementé la persistencia del diccionario `memo` en `detect_profiles` para evitar el recálculo redundante de tamaños en subdirectorios compartidos (como `User Data` en múltiples navegadores), mejorando drásticamente el rendimiento en escaneos profundos.
+- `2026-09-03T02:23:47` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimizé `largest_folders` para evitar la sobrecarga de crear un objeto `Path` completo por cada archivo procesado al verificar la pertenencia a subcarpetas, usando la comparación de cadenas o partes relativas de forma más directa y eliminando el `try-except` innecesario dentro del loop crítico.
+- `2026-09-03T02:23:58` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.exists()` y `is_protected_path` al consolidar las verificaciones dentro del mismo flujo de `os.scandir`, evitando múltiples accesos a disco por archivo.
+- `2026-09-03T02:23:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T02:23:58` Corrida terminada. Total usado hoy: 56.
