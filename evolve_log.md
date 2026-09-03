@@ -850,3 +850,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T06:30:30` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: legibilidad y documentación): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
 - `2026-09-03T06:30:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T06:30:30` Corrida terminada. Total usado hoy: 152.
+- `2026-09-03T06:38:47` Arrancando corrida. Quedan hoy ~148 peticiones objetivo.
+- `2026-09-03T06:39:20` ✅ Mejora aceptada en safety.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación técnica interna mediante la adición de docstrings específicos para los predicados de validación y la clarificación del flujo de control en las funciones principales, asegurando que la intención de las reglas de seguridad sea evidente para futuros desarrolladores.
+- `2026-09-03T06:39:45` ✅ Mejora aceptada en scanner.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación mediante la estandarización de docstrings y se han aclarado las responsabilidades de los chequeos heurísticos, eliminando redundancias en `scan_file` para asegurar que el flujo de análisis sea predecible y fácil de mantener.
+- `2026-09-03T06:40:13` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._run_safety_checks
+- `2026-09-03T06:40:21` 🛑 Propuesta bloqueada por la guardia en startup.py (enfoque: legibilidad y documentación): el archivo se encogió al 57% del original (posible pérdida de código)
+- `2026-09-03T06:40:21` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T06:40:21` Corrida terminada. Total usado hoy: 156.

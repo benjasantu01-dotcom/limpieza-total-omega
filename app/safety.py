@@ -250,17 +250,18 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 
 def _check_file_integrity(path: Path) -> None:
     """
-    Realiza un chequeo exhaustivo de integridad usando una lista de predicados.
+    Realiza un chequeo exhaustivo de integridad usando la lista _VALIDATORS.
+    
+    Itera sobre cada predicado registrado. Si alguno retorna True, se levanta
+    UnsafePathError, bloqueando la operación por razones de seguridad.
     
     Args:
         path: Ruta a verificar.
-        
-    Raises:
-        UnsafePathError: Si el archivo incumple cualquier regla de seguridad.
     """
     path_key = str(path)
     now = time.monotonic()
     
+    # Verificación de caché para evitar syscalls repetitivas
     if path_key in _INTEGRITY_CACHE:
         timestamp, is_safe = _INTEGRITY_CACHE[path_key]
         if now - timestamp < CACHE_TTL:
@@ -273,14 +274,10 @@ def _check_file_integrity(path: Path) -> None:
         raise UnsafePathError(f"Error de acceso: {e}")
 
     for rule in _VALIDATORS:
-        try:
-            if rule.predicate(path, file_stat):
-                _INTEGRITY_CACHE[path_key] = (now, False)
-                raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
-        except (OSError, AttributeError, TypeError, UnsafePathError):
-            raise
-        except Exception:
-            continue
+        # Si rule.predicate(path, file_stat) es True, significa que hay riesgo
+        if rule.predicate(path, file_stat):
+            _INTEGRITY_CACHE[path_key] = (now, False)
+            raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
             
     _INTEGRITY_CACHE[path_key] = (now, True)
 
@@ -372,12 +369,10 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
-    Valida la integridad técnica de la cadena de la ruta contra:
-    - Caracteres de control no permitidos (RTL/Unicode).
-    - Nombres reservados de dispositivos Windows (CON, PRN, etc).
-    - Rutas de red UNC (seguridad contra ejecución remota).
-    - Límites de longitud MAX_PATH de Windows.
-    - Ataques de inyección de carácter nulo (\0).
+    Valida la integridad técnica de la cadena de la ruta.
+    
+    Comprueba riesgos estructurales como inyección de nulos, caracteres de control,
+    nombres de dispositivos reservados, rutas UNC (red) y límites de longitud.
     """
     if "\0" in path_string:
         raise UnsafePathError("Inyección de carácter nulo detectada.")
@@ -397,6 +392,9 @@ def _validate_structural_safety(target_path: Path, path_string: str) -> None:
 def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | None) -> None:
     """
     Valida las restricciones lógicas y de alcance (scope) del sistema.
+    
+    Verifica que la ruta esté dentro del alcance definido por el usuario, 
+    fuera del directorio de la aplicación, y no sea una ruta de sistema protegida.
     """
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("La ruta objetivo está fuera del alcance definido por el usuario.")
@@ -412,7 +410,11 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
 
 def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base_dir: PathLike | None = None) -> Path:
     """
-    Valida si una ruta puede ser modificada, levantando excepciones ante riesgos.
+    Valida si una ruta es segura para ser modificada.
+    
+    Esta función es el punto de entrada crítico: normaliza, valida límites
+    estructurales, restricciones de alcance y realiza un chequeo profundo de integridad.
+    Si cualquier validación falla, lanza `UnsafePathError`.
     """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
