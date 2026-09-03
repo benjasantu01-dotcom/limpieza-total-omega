@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **236** (46.8% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 105 | 3 | 15 | 5 | 84 |
-| 2026-09-03 | 129 | 6 | 22 | 13 | 122 |
+| 2026-09-02 | 105 | 3 | 15 | 5 | 80 |
+| 2026-09-03 | 131 | 6 | 22 | 13 | 124 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,17 +25,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **53**
 - robustez ante casos límite: **46**
 - rendimiento: **44**
-- seguridad defensiva: **38**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **22**
+- `browser.py`: **23**
 - `assistant.py`: **20**
 - `memory.py`: **20**
 - `organizer.py`: **20**
 - `scanner.py`: **20**
 - `quarantine.py`: **19**
-- `duplicates.py`: **18**
+- `duplicates.py`: **19**
 - `safety.py`: **17**
 - `settings.py`: **17**
 - `healthscore.py`: **17**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T12:38:18` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` validando explícitamente que los archivos encontrados durante el escaneo recursivo no sean puntos de reparse (junctions/symlinks), utilizando `entry.is_file(follow_symlinks=False)` y verificando los atributos del sistema, previniendo así la recursión infinita o la salida accidental fuera de los directorios permitidos.
+- `2026-09-03T12:37:33` **browser.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de una validación explícita de `is_safe_to_modify` para cada subdirectorio antes de ingresar, asegurando que el escáner nunca acceda a rutas que violen los guardias de seguridad durante la recursión.
 - `2026-09-03T12:27:58` **assistant.py** (seguridad defensiva): Se endureció la validación de entrada en el motor remoto `_call_gemini` para prevenir la posibilidad de que una clave API maliciosa o un modelo inyectado pudieran ser utilizados para manipular la construcción de la URL o evadir las protecciones de red.
 - `2026-09-03T12:27:09` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una verificación explícita para evitar condiciones de carrera o escrituras fallidas si el proceso es interrumpido, usando `os.replace` (atómico) y verificando el estado del sistema de archivos antes de cada paso.
 - `2026-09-03T12:17:36` **safety.py** (robustez ante casos límite): Se ha añadido una validación explícita para evitar seguir puntos de reparse durante la normalización de rutas, previniendo la recursión infinita y posibles ataques de escalada de privilegios a través de enlaces simbólicos o junctions.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T11:58:43` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `build_context` ante entradas malformadas o tipos inesperados mediante una validación más estricta en el bucle de ingestión, asegurando que solo se procesen tipos de datos predecibles y evitando errores de ejecución que puedan propagarse al motor de inferencia.
 - `2026-09-03T11:46:52` **startup.py** (rendimiento): Optimicé el rendimiento de `list_startup_entries` y `entries_from_registry` implementando una técnica de filtrado previo de comandos mediante `set` y evitando consultas innecesarias al sistema de archivos al detectar entradas duplicadas por comando, reduciendo el I/O en escenarios con múltiples claves de registro redundantes.
 - `2026-09-03T11:46:39` **settings.py** (rendimiento): Optimicé el rendimiento de `load()` evitando copias redundantes mediante la desestructuración de `DEFAULTS` y reduciendo el número de llamadas a `stat()` mediante una lógica de caché más estricta.
-- `2026-09-03T11:46:10` **scanner.py** (rendimiento): Optimicé el rendimiento del escáner reemplazando la lógica de búsqueda en `WATCHED_FOLDERS` de una operación lineal O(N) dentro de un `any()` a una verificación de pertenencia O(1) basada en el conjunto de padres inmediatos, evitando además la conversión costosa de cada ruta a string inferior para cada archivo encontrado.
-- `2026-09-03T11:36:00` **organizer.py** (rendimiento): Optimizamos `_process_directory` reemplazando la verificación repetida `entry.name.lower().endswith(tuple(JUNK_EXTENSIONS))` por una búsqueda constante en un `set`, y movimos la conversión de extensiones fuera del bucle para evitar la creación redundante de tuplas en cada iteración.

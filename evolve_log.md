@@ -1333,3 +1333,10 @@ FAILED evolve/tests/test_modules.py::test_largest_folders_ranks_subfolders - Att
 - `2026-09-03T12:27:58` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Se endureció la validación de entrada en el motor remoto `_call_gemini` para prevenir la posibilidad de que una clave API maliciosa o un modelo inyectado pudieran ser utilizados para manipular la construcción de la URL o evadir las protecciones de red.
 - `2026-09-03T12:27:58` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T12:27:58` Corrida terminada. Total usado hoy: 292.
+- `2026-09-03T12:36:26` Arrancando corrida. Quedan hoy ~8 peticiones objetivo.
+- `2026-09-03T12:37:01` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-03T12:37:33` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_sum_directory_recursive` mediante la implementación de una validación explícita de `is_safe_to_modify` para cada subdirectorio antes de ingresar, asegurando que el escáner nunca acceda a rutas que violen los guardias de seguridad durante la recursión.
+- `2026-09-03T12:38:06` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: seguridad defensiva).
+- `2026-09-03T12:38:18` ✅ Mejora aceptada en duplicates.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_collect_candidates` validando explícitamente que los archivos encontrados durante el escaneo recursivo no sean puntos de reparse (junctions/symlinks), utilizando `entry.is_file(follow_symlinks=False)` y verificando los atributos del sistema, previniendo así la recursión infinita o la salida accidental fuera de los directorios permitidos.
+- `2026-09-03T12:38:18` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T12:38:18` Corrida terminada. Total usado hoy: 296.
