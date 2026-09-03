@@ -97,9 +97,6 @@ _RESERVED_NAMES_PATTERN: Final[re.Pattern] = re.compile(
     r'^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\..*)?$', re.IGNORECASE
 )
 
-_INTEGRITY_CACHE: dict[str, tuple[float, bool]] = {}
-CACHE_TTL: Final[float] = 2.0
-
 
 class _IntegrityCheck(NamedTuple):
     """
@@ -248,38 +245,31 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 ]
 
 
-def _check_file_integrity(path: Path) -> None:
+@lru_cache(maxsize=1024)
+def _check_file_integrity_cached(path_str: str) -> bool:
     """
-    Realiza un chequeo exhaustivo de integridad usando la lista _VALIDATORS.
-    
-    Itera sobre cada predicado registrado. Si alguno retorna True, se levanta
-    UnsafePathError, bloqueando la operación por razones de seguridad.
-    
-    Args:
-        path: Ruta a verificar.
+    Realiza un chequeo exhaustivo de integridad y cachea el resultado.
     """
-    path_key = str(path)
-    now = time.monotonic()
-    
-    # Verificación de caché para evitar syscalls repetitivas
-    if path_key in _INTEGRITY_CACHE:
-        timestamp, is_safe = _INTEGRITY_CACHE[path_key]
-        if now - timestamp < CACHE_TTL:
-            if not is_safe: raise UnsafePathError("Operación denegada (cache hit).")
-            return
-
+    path = Path(path_str)
     try:
         file_stat = path.lstat()
-    except (PermissionError, OSError) as e:
-        raise UnsafePathError(f"Error de acceso: {e}")
-
+    except (PermissionError, OSError):
+        return False
+        
     for rule in _VALIDATORS:
-        # Si rule.predicate(path, file_stat) es True, significa que hay riesgo
         if rule.predicate(path, file_stat):
-            _INTEGRITY_CACHE[path_key] = (now, False)
-            raise UnsafePathError(f"Operación denegada: {rule.reason.value}")
-            
-    _INTEGRITY_CACHE[path_key] = (now, True)
+            return False
+    return True
+
+
+def _check_file_integrity(path: Path) -> None:
+    """
+    Wrapper que utiliza el chequeo cacheado para evitar syscalls redundantes.
+    """
+    if not _check_file_integrity_cached(str(path)):
+        # Si falla, limpiamos la caché por si el estado del archivo cambió
+        _check_file_integrity_cached.cache_clear()
+        raise UnsafePathError("Operación denegada por reglas de integridad.")
 
 
 @lru_cache(maxsize=2048)
