@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **243** (48.2% de aceptación)
+- Mejoras aceptadas: **245** (48.6% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 38
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 196
+- Sin respuesta de la IA (error o límite): 194
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 105 | 3 | 15 | 5 | 72 |
-| 2026-09-03 | 138 | 6 | 23 | 13 | 124 |
+| 2026-09-02 | 105 | 3 | 15 | 5 | 68 |
+| 2026-09-03 | 140 | 6 | 23 | 13 | 126 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
 - legibilidad y documentación: **53**
-- seguridad defensiva: **47**
+- seguridad defensiva: **49**
 - robustez ante casos límite: **46**
 - rendimiento: **44**
 
@@ -37,15 +37,17 @@ Este archivo se regenera solo en cada corrida a partir de
 - `quarantine.py`: **20**
 - `duplicates.py`: **19**
 - `safety.py`: **18**
+- `settings.py`: **18**
 - `healthscore.py`: **18**
-- `settings.py`: **17**
 - `main.py`: **14**
 - `diskreport.py`: **13**
 - `branding.py`: **12**
-- `startup.py`: **6**
+- `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T13:08:09` **startup.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_resolve_and_cache_path` mediante la validación explícita de puntos de reparse (junctions) usando `os.path.islink()` y una verificación de volumen, evitando así el seguimiento accidental de rutas fuera del sistema de archivos local o hacia directorios protegidos mediante enlaces simbólicos.
+- `2026-09-03T13:07:41` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita con `is_protected_path` al directorio padre, previniendo que la configuración se escriba accidentalmente en rutas críticas del sistema incluso si la validación de ruta individual fallara.
 - `2026-09-03T12:58:44` **scanner.py** (seguridad defensiva): Se ha mejorado `Scanner._is_inside_base_root` para prevenir ataques de trayectoria (path traversal) mediante el uso de `pathlib.Path.parts`, evitando la comparación de cadenas que podría ser engañosa con nombres de carpetas similares, garantizando que el escaneo nunca escape del directorio base.
 - `2026-09-03T12:58:31` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra la manipulación de archivos bloqueados mediante la implementación de un chequeo preventivo de `sharing violation` en la función `_is_file_in_use`, asegurando que el intento de apertura de archivos solo requiera acceso de metadatos o lectura compartida, evitando así interferencias con procesos que tengan bloqueos exclusivos.
 - `2026-09-03T12:57:41` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `purge_all` añadiendo una comprobación explícita para evitar la eliminación de archivos que no pertenezcan al manifiesto, protegiendo contra posibles inyecciones de archivos arbitrarios en el directorio de cuarentena.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T12:27:09` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` implementando una verificación explícita para evitar condiciones de carrera o escrituras fallidas si el proceso es interrumpido, usando `os.replace` (atómico) y verificando el estado del sistema de archivos antes de cada paso.
 - `2026-09-03T12:17:36` **safety.py** (robustez ante casos límite): Se ha añadido una validación explícita para evitar seguir puntos de reparse durante la normalización de rutas, previniendo la recursión infinita y posibles ataques de escalada de privilegios a través de enlaces simbólicos o junctions.
 - `2026-09-03T12:16:59` **quarantine.py** (robustez ante casos límite): Mejoré la robustez de `quarantine.py` ante errores de concurrencia e inconsistencias en disco añadiendo una validación explícita de `OSError` y `PermissionError` en el bloque de limpieza de `purge_all`, asegurando que archivos bloqueados temporalmente no rompan el flujo completo de purga.
-- `2026-09-03T12:16:25` **organizer.py** (robustez ante casos límite): Se reforzó la robustez de `_is_safe_for_disk_op` y las funciones de escaneo ante la posibilidad de rutas de sistema largas (superiores a `MAX_PATH` de Windows) y fallos en la resolución de enlaces, asegurando que cualquier error en `stat()` o `resolve()` resulte en un rechazo seguro (Fail-Safe) en lugar de una propagación de excepción.
-- `2026-09-03T12:06:30` **healthscore.py** (robustez ante casos límite): Se mejoró la robustez de `score_disk` y `score_memory` ante divisiones por cero o valores de entrada que, aunque numéricos, podrían resultar en comportamientos inesperados (por ejemplo, límites definidos como 0 en futuras configuraciones de usuario), asegurando que el ratio retorne siempre un valor válido [0, 1].

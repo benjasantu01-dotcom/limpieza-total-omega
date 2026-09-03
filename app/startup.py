@@ -134,8 +134,7 @@ class StartupEntry:
         if not p.exists() or p.is_dir() or not os.access(p, os.R_OK):
             return False
         try:
-            # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT
-            return (p.lstat().st_file_attributes & 0x00000400) == 0
+            return not p.is_symlink() and (p.lstat().st_file_attributes & 0x00000400) == 0
         except (OSError, PermissionError):
             return False
 
@@ -164,7 +163,7 @@ class StartupEntry:
             abs_path: str = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            if not self._validate_file_access(p) or not p.is_absolute() or is_protected_path(p) or p.is_symlink():
+            if not self._validate_file_access(p) or not p.is_absolute() or is_protected_path(p) or os.path.islink(abs_path):
                 _EXISTS_CACHE[path_string] = False
                 return path_string
             

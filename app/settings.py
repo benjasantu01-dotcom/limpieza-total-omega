@@ -307,7 +307,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists(): 
             parent.mkdir(parents=True, exist_ok=True)
             
-        if not _Validators._is_safe_path(str(parent)) or not parent.is_dir():
+        # Refuerzo: impedir escritura si el padre es una ruta protegida del sistema
+        if is_protected_path(str(parent)) or not _Validators._is_safe_path(str(parent)) or not parent.is_dir():
             return None
         
         if ruta.exists():
