@@ -507,3 +507,14 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T03:05:05` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Mejoré la robustez de `SystemMetrics` ante valores `NaN` (Not a Number) o inconsistentes que podrían evadir `math.isfinite` en arquitecturas específicas, asegurando que `validate` realmente normalice cualquier entrada inesperada antes de que el cálculo de `compute_score` se vea afectado.
 - `2026-09-03T03:05:05` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T03:05:05` Corrida terminada. Total usado hoy: 72.
+- `2026-09-03T03:13:44` Arrancando corrida. Quedan hoy ~228 peticiones objetivo.
+- `2026-09-03T03:14:46` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-03T03:15:40` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-03T03:15:46` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-03T03:16:58` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-03T03:17:43` ✅ Mejora aceptada en memory.py (enfoque: robustez ante casos límite). Se ha robustecido el manejo de errores en `trim_working_set` y sus funciones auxiliares para evitar fugas de recursos (handles de procesos abiertos) ante excepciones inesperadas durante las verificaciones de seguridad.
+- `2026-09-03T03:17:53` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-03T03:18:23` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: robustez ante casos límite).
+- `2026-09-03T03:18:42` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `purge_all` ante archivos inesperados en la carpeta de cuarentena y posibles inconsistencias del sistema de archivos, asegurando que el proceso de purgado solo afecte archivos registrados en el manifiesto y que existan físicamente.
+- `2026-09-03T03:18:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T03:18:42` Corrida terminada. Total usado hoy: 76.

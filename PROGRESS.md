@@ -7,46 +7,48 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **233** (46.2% de aceptación)
-- Rechazadas por tests: 13
+- Rechazadas por tests: 12
 - Rechazadas por guardia de seguridad: 31
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 209
+- Sin respuesta de la IA (error o límite): 210
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 37 | 1 | 3 | 4 | 37 |
+| 2026-09-01 | 35 | 0 | 3 | 4 | 36 |
 | 2026-09-02 | 163 | 10 | 23 | 11 | 143 |
-| 2026-09-03 | 33 | 2 | 5 | 3 | 29 |
+| 2026-09-03 | 35 | 2 | 5 | 3 | 31 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **55**
 - rendimiento: **44**
-- seguridad defensiva: **41**
-- robustez ante casos límite: **38**
+- robustez ante casos límite: **40**
+- seguridad defensiva: **39**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
-- `memory.py`: **20**
-- `settings.py`: **19**
+- `memory.py`: **21**
 - `assistant.py`: **19**
-- `scanner.py`: **18**
+- `quarantine.py`: **19**
 - `healthscore.py`: **18**
 - `organizer.py`: **18**
-- `quarantine.py`: **18**
+- `settings.py`: **18**
 - `safety.py`: **18**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
+- `scanner.py`: **17**
 - `main.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T03:18:42` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante archivos inesperados en la carpeta de cuarentena y posibles inconsistencias del sistema de archivos, asegurando que el proceso de purgado solo afecte archivos registrados en el manifiesto y que existan físicamente.
+- `2026-09-03T03:17:43` **memory.py** (robustez ante casos límite): Se ha robustecido el manejo de errores en `trim_working_set` y sus funciones auxiliares para evitar fugas de recursos (handles de procesos abiertos) ante excepciones inesperadas durante las verificaciones de seguridad.
 - `2026-09-03T03:05:05` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante valores `NaN` (Not a Number) o inconsistentes que podrían evadir `math.isfinite` en arquitecturas específicas, asegurando que `validate` realmente normalice cualquier entrada inesperada antes de que el cálculo de `compute_score` se vea afectado.
 - `2026-09-03T03:04:04` **browser.py** (robustez ante casos límite): He mejorado la robustez de `_get_kernel32` y las funciones de escaneo ante la posibilidad de que la API de Windows retorne rutas inválidas o nombres de archivo que excedan los límites del sistema durante la iteración, añadiendo verificaciones explícitas de integridad de strings y tipos antes de realizar llamadas al kernel.
 - `2026-09-03T02:55:36` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de rutas en `save_logo_svg` para prevenir errores ante rutas mal formadas, inexistentes o con permisos denegados, integrando `is_safe_to_modify` para un manejo de excepciones más limpio y seguro.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T02:23:47` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la sobrecarga de crear un objeto `Path` completo por cada archivo procesado al verificar la pertenencia a subcarpetas, usando la comparación de cadenas o partes relativas de forma más directa y eliminando el `try-except` innecesario dentro del loop crítico.
 - `2026-09-03T02:23:15` **browser.py** (rendimiento): Implementé la persistencia del diccionario `memo` en `detect_profiles` para evitar el recálculo redundante de tamaños en subdirectorios compartidos (como `User Data` en múltiples navegadores), mejorando drásticamente el rendimiento en escaneos profundos.
 - `2026-09-03T02:12:20` **scanner.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el `Scanner` para aclarar el flujo de recursión (evitando confusiones sobre el uso del `stack`) y se añadió un `docstring` explicativo en `scan_file` para clarificar la distinción entre heurísticas de archivo único y reglas registradas, facilitando el mantenimiento a futuro.
-- `2026-09-03T02:02:45` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante la implementación de Type Hints explícitos, la clarificación de las precondiciones en docstrings críticos y la refactorización de `_ensure_disk_space` y `_safe_unlink` para mejorar su legibilidad y robustez ante errores de I/O.
-- `2026-09-03T02:02:11` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de módulo y función que explican el "porqué" de las validaciones de seguridad, además de normalizar el uso de type hints y añadir una clase base para el manejo de excepciones de validación en `organizer.py`, mejorando la mantenibilidad sin alterar la lógica de ejecución.

@@ -592,21 +592,22 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     if not items:
         return 0
     
-    # Pre-indexación para eficiencia en la validación masiva
     item_map = {item.stored_name: item for item in items}
     purged_count = 0
     kept_items = []
     
+    # Solo procesamos los archivos registrados en el manifiesto actual
     for stored_path in quarantine_root.iterdir():
         if stored_path.name in item_map:
             item = item_map[stored_path.name]
             if _is_item_purgable(stored_path, item, quarantine_root):
                 if _safe_unlink(stored_path):
                     purged_count += 1
-                else:
-                    kept_items.append(item)
-            else:
-                kept_items.append(item)
+                    continue
+            kept_items.append(item)
+        elif stored_path.name != MANIFEST_NAME and not stored_path.is_dir():
+            # Los archivos no registrados son ignorados (no deben borrarse automáticamente)
+            pass
                 
     if purged_count > 0:
         save_manifest(kept_items, base)
