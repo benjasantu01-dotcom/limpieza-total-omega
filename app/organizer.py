@@ -124,6 +124,7 @@ def _is_junk_path(path: Path) -> bool:
 
 def _is_unc_path(path: Path) -> bool:
     """Detecta si una ruta corresponde a una ruta UNC de red (formato \\servidor\recurso)."""
+    if path is None: return True
     try:
         p_str = str(path.absolute())
         return p_str.startswith(("\\\\", "//"))
@@ -136,7 +137,7 @@ def _generate_unique_target(target: Path) -> Path:
     Genera una ruta única para evitar sobreescritura en el directorio de revisión.
     Si el destino ya existe, aplica un sufijo numérico incremental (_1, _2...).
     """
-    if not target.exists():
+    if target is None or not target.exists():
         return target
         
     parent: Path = target.parent
@@ -152,7 +153,7 @@ def _generate_unique_target(target: Path) -> Path:
 
 def _is_allowed_directory(name: str) -> bool:
     """Valida si el nombre de una carpeta no está en la lista de carpetas críticas del sistema."""
-    return name.lower() not in SYSTEM_FOLDER_BLOCKLIST
+    return name is not None and name.lower() not in SYSTEM_FOLDER_BLOCKLIST
 
 
 def _is_file_locked(path: Path) -> bool:
@@ -160,6 +161,7 @@ def _is_file_locked(path: Path) -> bool:
     Verifica si un archivo está en uso exclusivo mediante intento de apertura.
     Se utiliza como medida defensiva para evitar errores de E/S al mover archivos activos.
     """
+    if path is None: return True
     try:
         with open(path, "rb"):
             return False
@@ -172,6 +174,7 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     Previene que el destino contenga a la fuente, protegiendo la integridad 
     del sistema de archivos al evitar movimientos recursivos auto-referenciados.
     """
+    if src is None or dest is None: return True
     try:
         s: Path = src.resolve()
         d: Path = dest.resolve()
@@ -186,7 +189,7 @@ def _passes_system_checks(src: Path) -> bool:
     Verifica atributos de bajo nivel de Windows (System, Hidden, ReadOnly).
     Los archivos con estos atributos se consideran protegidos y no deben ser movidos.
     """
-    if os.name != "nt": return True
+    if os.name != "nt" or src is None: return True
     try:
         stat = src.stat()
         # Máscara binaria: 0x4 (SYSTEM), 0x2 (HIDDEN), 0x1 (READONLY)
@@ -197,6 +200,7 @@ def _passes_system_checks(src: Path) -> bool:
 
 def _has_forbidden_chars(path: Path) -> bool:
     """Valida la ausencia de caracteres o nombres reservados en el sistema de archivos de Windows."""
+    if path is None: return True
     path_str = str(path).lower()
     reserved = {"con", "prn", "aux", "nul", "com1", "lpt1"}
     if any(path_str.startswith(r) for r in reserved): return True
@@ -205,6 +209,7 @@ def _has_forbidden_chars(path: Path) -> bool:
 
 def _validate_path_security(src: Path, dest: Path) -> bool:
     """Valida que ni fuente ni destino violen reglas de seguridad, UNC o nombres reservados."""
+    if src is None or dest is None: return False
     if _is_unc_path(src) or _is_unc_path(dest): return False
     if _has_forbidden_chars(src): return False
     if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
@@ -214,7 +219,7 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 def _validate_file_attributes(src: Path) -> bool:
     """Verifica que el archivo sea un archivo real, no esté bloqueado y tenga atributos seguros."""
     try:
-        if not src.exists() or not src.is_file(): return False
+        if src is None or not src.exists() or not src.is_file(): return False
         if _is_junction(src) or src.is_symlink(): return False
         if not _passes_system_checks(src) or _is_file_locked(src): return False
         return src.stat().st_size > 0
@@ -227,6 +232,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Realiza una validación exhaustiva (fail-fast) antes de operaciones de disco.
     Divide la validación en capas: formato de ruta, seguridad de sistema y estado del archivo.
     """
+    if src is None or dest is None: return False
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
     # Longitud de ruta máxima para evitar excepciones de sistema en Windows
@@ -250,12 +256,13 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Verifica si el archivo es un objeto válido y seguro para ser movido."""
-    return isinstance(junk_file, JunkFile) and junk_file.path is not None and junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
+    if junk_file is None or not isinstance(junk_file, JunkFile): return False
+    return junk_file.path is not None and junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 
 def _should_scan_directory(entry: os.DirEntry) -> bool:
     """Determina si una subcarpeta es apta para ser escaneada basándose en su nombre."""
-    return _is_allowed_directory(entry.name) and not _is_junction(entry)
+    return entry is not None and _is_allowed_directory(entry.name) and not _is_junction(entry)
 
 
 def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0) -> None:
@@ -320,6 +327,7 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Valida espacio en disco y seguridad antes de proponer una ruta de movimiento."""
+    if junk_file is None or dest_base is None: return None
     if not isinstance(junk_file, JunkFile) or junk_file.path is None or not isinstance(dest_base, Path): return None
     if _is_unc_path(dest_base) or is_protected_path(dest_base): return None
     try:
