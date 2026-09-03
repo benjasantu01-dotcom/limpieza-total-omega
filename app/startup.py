@@ -137,8 +137,8 @@ class StartupEntry:
         if not isinstance(path_string, str) or not path_string:
             return ""
         
-        # Filtros iniciales contra caracteres inválidos o rutas UNC (protección)
-        if any(c in path_string for c in '<>|?*\0&;') or path_string.startswith(r"\\"):
+        # Filtros iniciales contra caracteres inválidos, rutas UNC o escapes de shell
+        if any(c in path_string for c in '<>|?*\0&;%') or path_string.startswith(r"\\"):
             return ""
         
         try:
