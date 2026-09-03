@@ -88,6 +88,9 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Returns:
         String hexadecimal del hash o None si el acceso al archivo falla.
     """
+    if not path or chunk_size <= 0:
+        return None
+        
     try:
         path_obj = Path(path)
         if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
@@ -101,7 +104,7 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
                     break
                 digest.update(buffer)
         return digest.hexdigest()
-    except (OSError, PermissionError, IOError, ValueError, TypeError):
+    except (OSError, PermissionError, IOError):
         return None
 
 
@@ -116,6 +119,9 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
     Returns:
         String hexadecimal del hash calculado sobre el fragmento o None si falla.
     """
+    if not path or read_bytes <= 0:
+        return None
+
     try:
         path_obj = Path(path)
         if not path_obj.is_file() or not os.access(path_obj, os.R_OK):
@@ -126,7 +132,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
             if not content:
                 return None
             return hashlib.sha256(content).hexdigest()
-    except (OSError, PermissionError, IOError, ValueError, TypeError):
+    except (OSError, PermissionError, IOError):
         return None
 
 

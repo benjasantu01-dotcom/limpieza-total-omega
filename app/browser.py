@@ -191,7 +191,9 @@ def _sum_directory_recursive(
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
-    if not is_safe_to_modify(Path(root_abs)):
+    # Validar entrada antes de operar
+    p_obj = Path(root_abs)
+    if not p_obj.exists() or not is_safe_to_modify(p_obj):
         return 0
     
     if root_abs in memo:
@@ -261,7 +263,7 @@ def detect_profiles(
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
-    if not raw_bases or not isinstance(browser_map, dict):
+    if not isinstance(raw_bases, (list, tuple)) or not isinstance(browser_map, dict):
         return []
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
@@ -276,17 +278,18 @@ def detect_profiles(
             for browser_name, rel_str in browser_map.items():
                 if not isinstance(rel_str, str) or not rel_str:
                     continue
-                # Asegurar integridad de la ruta construida
-                candidate = real_base.joinpath(*rel_str.split("\\"))
                 
-                if not candidate.exists():
+                # Validar la construcción del path antes de intentar acceder
+                parts = rel_str.split("\\")
+                candidate = real_base.joinpath(*parts)
+                
+                if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     continue
                     
-                if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
-                    c_path = candidate.resolve(strict=True)
-                    size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
-                    if size > 0:
-                        found.append(BrowserCache(browser_name, c_path, size))
+                c_path = candidate.resolve(strict=True)
+                size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
+                if size > 0:
+                    found.append(BrowserCache(str(browser_name), c_path, size))
         except (OSError, PermissionError, TypeError, ValueError): 
             continue
                 
