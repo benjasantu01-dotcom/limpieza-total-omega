@@ -525,3 +525,34 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T03:25:31` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `save` frente a errores de concurrencia y fallos parciales de escritura mediante el uso de una verificación explícita de `temp_path` y un manejo de excepciones más granular que evita dejar archivos corruptos en disco si ocurre un fallo durante la escritura o sincronización.
 - `2026-09-03T03:25:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T03:25:31` Corrida terminada. Total usado hoy: 80.
+- `2026-09-03T03:34:13` Arrancando corrida. Quedan hoy ~220 peticiones objetivo.
+- `2026-09-03T03:34:43` Tests FALLARON:
+```
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+.........................................F.............................. [ 72%]
+........................................................................ [ 96%]
+...........                                                              [100%]
+=================================== FAILURES ===================================
+_______________ test_executable_extracted_from_unquoted_command ________________
+
+    def test_executable_extracted_from_unquoted_command():
+>       assert startup.StartupEntry("X", "/usr/bin/app --flag", "reg").executable == "/usr/bin/app"
+E       AssertionError: assert '' == '/usr/bin/app'
+E         
+E         - /usr/bin/app
+
+evolve/tests/test_modules.py:664: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_command - AssertionError: assert '' == '/usr/bin/app'
+  
+  - /usr/bin/app
+1 failed, 298 passed in 1.34s
+
+```
+- `2026-09-03T03:34:43` ❌ Mejora descartada en startup.py (no pasó los tests), se revirtió. Intento: Se ha robustecido el manejo de archivos en `startup.py` incorporando una verificación de "archivo en uso" (mediante `os.open` con modo exclusivo) y un mejor manejo de permisos en el método `_resolve_and_cache_path`, previniendo errores en casos donde el archivo existe pero no es accesible o está bloqueado por el sistema, lo cual es crítico para la estabilidad en entornos Windows con procesos en ejecución.
+- `2026-09-03T03:35:19` ➖ Sin cambios en assistant.py (enfoque: seguridad defensiva). Motivo: Reforcé la integridad del motor de comunicación reforzando la sanitización de la `api_key` y aplicando `is_protected_path` como barrera adicional al payload de red, asegurando que ninguna configuración de API sea utilizada como ruta de archivo accidental.
+- `2026-09-03T03:35:49` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-03T03:36:00` ✅ Mejora aceptada en browser.py (enfoque: seguridad defensiva). Se reforzó la seguridad defensiva en `_is_path_inside_base` añadiendo una validación explícita mediante `pathlib.Path.parents` para evitar ataques de escalada de directorio (`..`), garantizando que la ruta resuelta esté jerárquicamente contenida bajo la base permitida de forma más robusta que una simple comparación de strings.
+- `2026-09-03T03:36:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T03:36:00` Corrida terminada. Total usado hoy: 84.

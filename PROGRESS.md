@@ -6,19 +6,19 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **236** (46.8% de aceptación)
+- Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 207
+- Sin cambios (nada sustancial que mejorar): 19
+- Sin respuesta de la IA (error o límite): 204
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 35 | 0 | 3 | 4 | 32 |
+| 2026-09-01 | 35 | 0 | 3 | 4 | 28 |
 | 2026-09-02 | 163 | 10 | 23 | 11 | 143 |
-| 2026-09-03 | 37 | 2 | 6 | 3 | 32 |
+| 2026-09-03 | 38 | 3 | 6 | 4 | 33 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -26,11 +26,11 @@ Este archivo se regenera solo en cada corrida a partir de
 - legibilidad y documentación: **55**
 - rendimiento: **44**
 - robustez ante casos límite: **42**
-- seguridad defensiva: **39**
+- seguridad defensiva: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
+- `browser.py`: **22**
 - `memory.py`: **21**
 - `assistant.py`: **19**
 - `quarantine.py`: **19**
@@ -47,6 +47,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T03:36:00` **browser.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_path_inside_base` añadiendo una validación explícita mediante `pathlib.Path.parents` para evitar ataques de escalada de directorio (`..`), garantizando que la ruta resuelta esté jerárquicamente contenida bajo la base permitida de forma más robusta que una simple comparación de strings.
 - `2026-09-03T03:25:31` **settings.py** (robustez ante casos límite): Se mejoró la robustez de `save` frente a errores de concurrencia y fallos parciales de escritura mediante el uso de una verificación explícita de `temp_path` y un manejo de excepciones más granular que evita dejar archivos corruptos en disco si ocurre un fallo durante la escritura o sincronización.
 - `2026-09-03T03:24:53` **safety.py** (robustez ante casos límite): Se ha mejorado la robustez de `_is_file_in_use` agregando un manejo explícito de archivos inexistentes y una verificación de `PermissionError` más granular, evitando falsos negativos en el chequeo de integridad cuando el archivo ha desaparecido entre la validación inicial y el acceso a disco.
 - `2026-09-03T03:18:42` **quarantine.py** (robustez ante casos límite): Se reforzó la robustez de `purge_all` ante archivos inesperados en la carpeta de cuarentena y posibles inconsistencias del sistema de archivos, asegurando que el proceso de purgado solo afecte archivos registrados en el manifiesto y que existan físicamente.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T02:35:32` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la serialización manual a CSV por una consulta de PowerShell que devuelve objetos estructurados, reduciendo drásticamente la carga de procesamiento de strings y el uso de memoria en el parseo.
 - `2026-09-03T02:33:25` **healthscore.py** (rendimiento): Optimicé el cálculo del score final reemplazando la validación recursiva de campos con `fields(self)` en `is_finite` por una verificación directa sobre los atributos, eliminando la sobrecarga de instanciar metadatos en cada iteración y reduciendo las llamadas a `getattr`.
 - `2026-09-03T02:23:58` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` eliminando llamadas redundantes a `Path.exists()` y `is_protected_path` al consolidar las verificaciones dentro del mismo flujo de `os.scandir`, evitando múltiples accesos a disco por archivo.
-- `2026-09-03T02:23:47` **diskreport.py** (rendimiento): Optimizé `largest_folders` para evitar la sobrecarga de crear un objeto `Path` completo por cada archivo procesado al verificar la pertenencia a subcarpetas, usando la comparación de cadenas o partes relativas de forma más directa y eliminando el `try-except` innecesario dentro del loop crítico.
