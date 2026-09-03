@@ -205,30 +205,43 @@ def _has_forbidden_chars(path: Path) -> bool:
     return any(c in str(path) for c in ["<", ">", "|", "\0"])
 
 
+def _validate_path_security(src: Path, dest: Path) -> bool:
+    """Valida que ni fuente ni destino violen reglas de seguridad, UNC o nombres reservados."""
+    if _is_unc_path(src) or _is_unc_path(dest): return False
+    if _has_forbidden_chars(src): return False
+    if is_protected_path(src.resolve()) or is_protected_path(dest.resolve()): return False
+    return True
+
+
+def _validate_file_attributes(src: Path) -> bool:
+    """Verifica que el archivo sea un archivo real, no esté bloqueado y tenga atributos seguros."""
+    if not src.exists() or not src.is_file(): return False
+    if _is_junction(src) or src.is_symlink(): return False
+    if not _passes_system_checks(src) or _is_file_locked(src): return False
+    return src.stat().st_size > 0
+
+
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza una validación exhaustiva (fail-fast) antes de operaciones de disco.
-    Centraliza comprobaciones de integridad, bloqueos y atributos de sistema.
+    Divide la validación en capas: formato de ruta, seguridad de sistema y estado del archivo.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     if len(str(src)) >= 260 or len(str(dest)) >= 260: return False
-    if _is_unc_path(src) or _is_unc_path(dest) or _has_forbidden_chars(src): return False
+    
+    if not _validate_path_security(src, dest): return False
     
     try:
         s_res = src.resolve()
-        if not s_res.exists() or not s_res.is_file() or s_res.parent == s_res: return False
+        if s_res.parent == s_res: return False
         
-        if _is_junction(s_res) or s_res.is_symlink(): return False
         if dest.exists() and (_is_junction(dest) or dest.is_symlink()): return False
-        
-        if is_protected_path(s_res) or is_protected_path(dest.resolve()): return False
         if _is_recursive_violation(s_res, dest): return False
         
         target_dir = dest.parent if dest.is_file() else dest
-        if target_dir is None or not (os.access(s_res, os.W_OK) and os.access(target_dir, os.W_OK)): return False
+        if not (os.access(s_res, os.W_OK) and os.access(target_dir, os.W_OK)): return False
         
-        stat = s_res.stat()
-        return stat.st_size > 0 and _passes_system_checks(s_res) and not _is_file_locked(s_res)
+        return _validate_file_attributes(s_res)
     except (OSError, RuntimeError, AttributeError):
         return False
 

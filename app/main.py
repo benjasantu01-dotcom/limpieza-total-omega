@@ -53,7 +53,7 @@ from functools import lru_cache, wraps
 from collections import OrderedDict
 from tkinter import filedialog, messagebox
 from pathlib import Path
-from typing import Optional, List, Dict, Tuple, Any, Callable, Union
+from typing import Optional, List, Dict, Tuple, Any, Callable, Union, TypedDict
 
 import customtkinter as ctk
 
@@ -77,6 +77,18 @@ from organizer import (
     list_available_drives,
 )
 from scanner import scan_directory, run_windows_defender_quick_scan
+
+class AppSettings(TypedDict, total=False):
+    """Esquema de configuración de la aplicación para mayor legibilidad y tipado."""
+    tema: str
+    acento: str
+    mostrar_barras: bool
+    analisis_en_paralelo: bool
+    recordar_ultima_carpeta: bool
+    duplicados_tamano_minimo_kb: int
+    top_archivos: int
+    asistente_activado: bool
+    asistente_clave_api: str
 
 logging.basicConfig(
     level=logging.ERROR,
@@ -175,6 +187,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         self._active_buttons: List[ctk.CTkButton] = []
         self._tasks_running = 0
         self._last_card_values: Dict[str, str] = {}
+        self.settings: AppSettings = {}
         
         self._setup_application()
 
@@ -265,7 +278,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 logging.warning("Configuración inválida (no es dict), reseteando.")
                 self.settings = settings_mod.reset()
         except Exception as e:
-            logging.error("Fallo al cargar ajustes, reseteando: %e", e)
+            logging.error("Fallo al cargar ajustes, reseteando: %s", e)
             self.settings = settings_mod.reset()
             
         self.setting_vars: Dict[str, Any] = {}
@@ -1762,12 +1775,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
         except (ValueError, TypeError):
             return default
 
-    def _collect_settings(self) -> Dict[str, Any]:
+    def _collect_settings(self) -> AppSettings:
         """Recopila y valida ajustes configurados en la UI."""
-        valores = dict(self.settings)
+        valores: AppSettings = dict(self.settings)  # type: ignore
         for clave, variable in self.setting_vars.items():
             try:
-                valores[clave] = variable.get()
+                valores[clave] = variable.get() # type: ignore
             except (tk.TclError, Exception):
                 continue
         

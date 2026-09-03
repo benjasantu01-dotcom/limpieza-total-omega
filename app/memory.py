@@ -331,7 +331,8 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     try:
         if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
-    except (OSError, ctypes.ArgumentError, ValueError): pass
+    except (OSError, ctypes.ArgumentError, ValueError, BufferError): 
+        pass
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
@@ -351,7 +352,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         if not exec_path or is_protected_path(exec_path) or not is_safe_to_modify(exec_path):
             return False, "Operación denegada por política de seguridad."
         return True, None
-    except (OSError, ctypes.ArgumentError):
+    except (OSError, ctypes.ArgumentError, Exception):
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
@@ -383,7 +384,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
         if not psapi.EmptyWorkingSet(proc_handle): 
             return False, "El sistema denegó la operación (EmptyWorkingSet falló)."
         return True, f"Working set liberado. {TRIM_WARNING}"
-    except (OSError, ctypes.ArgumentError) as e:
-        return False, f"Error del sistema: {e}"
+    except (OSError, ctypes.ArgumentError, Exception) as e:
+        return False, f"Error del sistema: {type(e).__name__}"
     finally:
         kernel32.CloseHandle(proc_handle)

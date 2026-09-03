@@ -275,7 +275,11 @@ def _check_path_syntax_integrity(path: Path) -> None:
 
 
 def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
-    """Validación exhaustiva de las condiciones de seguridad antes de aislar un archivo."""
+    """
+    Validación exhaustiva de las condiciones de seguridad antes de aislar un archivo.
+    Verifica que el origen y el destino sean coherentes, no circulares y que el
+    archivo no esté siendo bloqueado por otro proceso del sistema.
+    """
     resolved_source = source_path.resolve(strict=True)
     resolved_dest_dir = dest_dir.resolve()
     
@@ -300,7 +304,10 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
 
 
 def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """Pre-validación crítica de sintaxis, atributos y seguridad de dispositivos."""
+    """
+    Pre-validación crítica de sintaxis, atributos y disponibilidad de espacio en disco.
+    Asegura que el archivo origen es apto para ser movido sin violar políticas de seguridad.
+    """
     _check_path_syntax_integrity(source_path)
     _check_windows_file_attributes(str(source_path))
     
@@ -405,11 +412,13 @@ def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
 
 
 def _atomic_isolate_file(source: Path, destination: Path, original_size: int) -> str:
-    """Realiza la copia física del archivo de manera atómica con verificación post-copia."""
+    """
+    Realiza la copia física del archivo de manera atómica, garantizando que el archivo
+    temporal es validado en integridad antes de ser movido a su destino final.
+    """
     if not source.exists():
         raise FileNotFoundError("El archivo de origen no existe.")
 
-    # Verificación estricta de que el destino esté bajo control
     if not _is_within_quarantine_sandbox(destination.resolve(), destination.parent.resolve()):
         raise UnsafePathError("Operación denegada: intento de escritura fuera del sandbox.")
     
@@ -440,7 +449,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
 
         os.replace(temp_path, destination)
         
-        # Asegurar metadatos del directorio contenedor tras crear nuevo archivo
         dir_fd = os.open(str(destination.parent), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
@@ -462,8 +470,8 @@ def quarantine_file(
     base: Union[str, Path] = DEFAULT_QUARANTINE_DIR,
 ) -> QuarantineItem:
     """
-    Ejecuta el ciclo de vida completo: validación, copia, registro e intento de borrado 
-    original solo si la integridad post-copia es confirmada.
+    Ejecuta el ciclo de vida completo de aislamiento: validación, copia atómica,
+    actualización del manifiesto y eliminación segura del original bajo condiciones de integridad.
     """
     if not source:
         raise ValueError("La ruta de origen no puede estar vacía.")
@@ -473,7 +481,6 @@ def quarantine_file(
     
     dest_dir = quarantine_dir(base)
     
-    # Prevenir que el archivo origen ya esté dentro del directorio de cuarentena
     if _is_within_quarantine_sandbox(source_path, dest_dir.resolve()):
         raise UnsafePathError("Operación denegada: el archivo ya está en el sandbox.")
 
