@@ -253,6 +253,7 @@ def validate(raw_values: Any) -> AppSettings:
     config = DEFAULTS.copy()
     if not _is_dict(raw_values): return config
     for key_str, val in raw_values.items():
+        if not isinstance(key_str, str): continue
         if (key_enum := _STR_TO_ENUM.get(key_str)) and (validator := _VALIDATOR_MAP.get(key_enum)):
             validated = validator(key_enum, val)
             if validated is not None or (key_enum == ConfigKey.ULTIMA_CARPETA and val == ""):

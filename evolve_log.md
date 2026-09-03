@@ -1455,3 +1455,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T01:25:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
 - `2026-09-03T01:25:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T01:25:51` Corrida terminada. Total usado hoy: 32.
+- `2026-09-03T01:31:02` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-03T01:31:35` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `is_safe_to_modify` y `filter_safe_paths` capturando explícitamente posibles errores durante la normalización de rutas y la validación de integridad, evitando que excepciones inesperadas (como `OSError` o problemas de permisos) interrumpan el flujo de procesamiento de archivos.
+- `2026-09-03T01:32:00` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `scanner.py` implementando validaciones defensivas de entrada y manejo de excepciones más preciso en `scan_file` y `process_entry`, asegurando que el flujo de escaneo no se interrumpa ante datos inesperados o estados de archivo volátiles.
+- `2026-09-03T01:32:28` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Reforcé la robustez del método `validate` para evitar errores de tipo al iterar sobre valores inesperados en el diccionario de entrada, asegurando que `AppSettings` siempre sea consistente incluso si el JSON contiene tipos de datos maliciosos o malformados.
+- `2026-09-03T01:32:38` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-03T01:32:38` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T01:32:38` Corrida terminada. Total usado hoy: 36.

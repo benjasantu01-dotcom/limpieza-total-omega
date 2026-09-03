@@ -119,7 +119,6 @@ class Scanner:
         """Valida si la ruta está contenida dentro del directorio base definido."""
         if not path: return False
         try:
-            # Asegurar resolución absoluta antes de comparar para evitar path traversal
             absolute_path = path.resolve(strict=False)
             return str(absolute_path).lower().startswith(self.base_root_str)
         except (OSError, PermissionError, RuntimeError):
@@ -130,7 +129,6 @@ class Scanner:
         if not entry or not entry.path:
             return False
         
-        # Filtros de longitud de ruta y rutas UNC
         if len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
@@ -170,6 +168,7 @@ class Scanner:
 
     def process_entry(self, entry: os.DirEntry, stack: List[Path]) -> None:
         """Determina si la entrada es un directorio a recorrer o un archivo a analizar."""
+        if entry is None: return
         try:
             if not self._is_safe_entry(entry):
                 return
@@ -179,14 +178,7 @@ class Scanner:
             elif entry.is_file(follow_symlinks=False):
                 ext_low = Path(entry.name).suffix.lower()
                 if ext_low in SUSPICIOUS_ALL_EXTS:
-                    try:
-                        file_stat = entry.stat(follow_symlinks=False)
-                        if file_stat.st_size == 0:
-                            self.results.append(Suspicion(Path(entry.path), "Archivo vacío sospechoso", "warning"))
-                        else:
-                            self._run_file_heuristics(Path(entry.path), entry, ext_low)
-                    except (OSError, PermissionError):
-                        return
+                    self._run_file_heuristics(Path(entry.path), entry, ext_low)
         except (OSError, PermissionError, TypeError, FileNotFoundError):
             logger.debug(f"Acceso denegado o archivo inaccesible: {entry.path}")
 
@@ -196,7 +188,7 @@ class Scanner:
             if path.name and RTL_CHAR_RE.search(path.name):
                 self.results.append(Suspicion(path, "Nombre contiene caracteres de ofuscación (RTL)", "critical"))
             self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
-        except (OSError, PermissionError):
+        except (OSError, PermissionError, AttributeError):
             pass
 
 def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ext: Optional[str] = None) -> ScanResult:
@@ -204,20 +196,27 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     if not isinstance(path, Path): return []
     
     findings: ScanResult = []
-    
     try:
         if (double_ext := check_double_extension(path, entry, now_ts)):
             findings.append(double_ext)
         
-        file_ext = ext or path.suffix.lower()
+        file_ext = (ext or path.suffix.lower())
         if file_ext in SUSPICIOUS_EXECUTABLE_EXT:
+            # Check empty file status specifically
+            try:
+                size = entry.stat(follow_symlinks=False).st_size if entry else path.stat().st_size
+                if size == 0:
+                    findings.append(Suspicion(path, "Archivo vacío sospechoso", "warning"))
+            except (OSError, PermissionError):
+                pass
+
             for check_fn in EXECUTABLE_CHECK_REGISTRY:
                 try:
                     if (result := check_fn(path, entry, now_ts)):
                         findings.append(result)
                 except Exception as e:
                     logger.debug(f"Fallo en regla {check_fn.__name__} para {path}: {e}")
-    except (OSError, PermissionError):
+    except (OSError, PermissionError, AttributeError):
         pass
         
     return findings

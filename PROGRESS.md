@@ -16,37 +16,40 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 64 | 1 | 8 | 6 | 43 |
+| 2026-09-01 | 61 | 1 | 8 | 6 | 42 |
 | 2026-09-02 | 163 | 10 | 23 | 11 | 143 |
-| 2026-09-03 | 8 | 0 | 1 | 0 | 23 |
+| 2026-09-03 | 11 | 0 | 1 | 0 | 24 |
 
 ## Mejoras aceptadas por enfoque
 
-- manejo de errores y validación de entradas: **52**
+- manejo de errores y validación de entradas: **55**
 - seguridad defensiva: **50**
 - robustez ante casos límite: **45**
 - legibilidad y documentación: **45**
-- rendimiento: **43**
+- rendimiento: **40**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **20**
 - `memory.py`: **20**
+- `settings.py`: **20**
+- `safety.py`: **20**
 - `quarantine.py`: **19**
-- `settings.py`: **19**
 - `assistant.py`: **19**
-- `safety.py`: **19**
+- `browser.py`: **19**
+- `scanner.py`: **18**
 - `organizer.py`: **18**
-- `diskreport.py`: **17**
-- `duplicates.py`: **17**
-- `scanner.py`: **17**
 - `healthscore.py`: **17**
+- `diskreport.py`: **16**
+- `duplicates.py`: **16**
 - `main.py`: **14**
 - `branding.py`: **12**
 - `startup.py`: **7**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T01:32:28` **settings.py** (manejo de errores y validación de entradas): Reforcé la robustez del método `validate` para evitar errores de tipo al iterar sobre valores inesperados en el diccionario de entrada, asegurando que `AppSettings` siempre sea consistente incluso si el JSON contiene tipos de datos maliciosos o malformados.
+- `2026-09-03T01:32:00` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `scanner.py` implementando validaciones defensivas de entrada y manejo de excepciones más preciso en `scan_file` y `process_entry`, asegurando que el flujo de escaneo no se interrumpa ante datos inesperados o estados de archivo volátiles.
+- `2026-09-03T01:31:35` **safety.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez de `is_safe_to_modify` y `filter_safe_paths` capturando explícitamente posibles errores durante la normalización de rutas y la validación de integridad, evitando que excepciones inesperadas (como `OSError` o problemas de permisos) interrumpan el flujo de procesamiento de archivos.
 - `2026-09-03T01:21:52` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` agregando validaciones de tipo explícitas y checks contra `None` para evitar `AttributeError` en rutas mal formadas, reforzando la integridad antes de cualquier operación de disco.
 - `2026-09-03T01:21:23` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita de `parts` antes de acceder a sus índices, evitando `IndexError` ante entradas mal formadas y fortaleciendo el manejo de errores en el bucle principal.
 - `2026-09-03T01:13:08` **main.py** (manejo de errores y validación de entradas): Mejoré la robustez de la validación de las entradas del usuario en `main.py`, específicamente en los métodos `_validate_numeric_setting` y `_collect_settings`, para evitar que caracteres inesperados o entradas vacías en los campos de texto corrompan la configuración, y añadí una validación explícita para evitar que la aplicación intente procesar rutas vacías en los métodos críticos de limpieza.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T14:28:34` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_inside_base_root` convirtiendo la ruta a absoluta antes de compararla, previniendo riesgos de "path traversal" donde rutas relativas maliciosas podrían eludir la validación al compararse con una base absoluta.
 - `2026-09-02T14:19:47` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` implementando una validación estricta de permisos de escritura y atributos de sistema en el archivo temporal antes de consolidar el movimiento, previniendo posibles ataques de *Time-of-Check to Time-of-Use* (TOCTOU).
 - `2026-09-02T14:19:25` **organizer.py** (seguridad defensiva): Se endureció la validación de seguridad en `stage_for_review` y `delete_reviewed` para asegurar que las operaciones de disco no se ejecuten si la ruta de destino reside accidentalmente dentro de una estructura jerárquica no permitida o si las restricciones de `is_protected_path` fallan en tiempo de ejecución.
-- `2026-09-02T14:18:57` **memory.py** (seguridad defensiva): Mejoré la seguridad de `_get_process_path` y `_is_safe_to_trim` para evitar el manejo inseguro de handles y asegurar que la ruta del ejecutable se valide con `is_safe_to_modify` antes de cualquier operación, aplicando el principio de mínima exposición a procesos del sistema.
-- `2026-09-02T14:18:27` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `on_stage` y `on_delete_reviewed` al centralizar la validación de seguridad de la ruta mediante el método `_is_safe_path` antes de ejecutar las operaciones de disco, evitando así posibles errores de lógica si el estado de la carpeta de revisión cambiara inesperadamente durante la ejecución asíncrona.
-- `2026-09-02T14:08:17` **duplicates.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_collect_candidates` agregando una verificación explícita de `is_protected_path` sobre los directorios antes de ingresar a ellos, evitando así el procesamiento de subárboles restringidos (como puntos de reparse o rutas protegidas a nivel de carpeta) mediante un filtrado preventivo.
