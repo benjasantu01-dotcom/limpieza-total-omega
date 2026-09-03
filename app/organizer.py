@@ -114,7 +114,7 @@ def _is_junction(entry: os.DirEntry | Path) -> bool:
             return entry.is_symlink() or (os.name == "nt" and bool(entry.stat().st_file_attributes & 0x400))
         return entry.is_symlink() or (os.name == "nt" and bool(entry.lstat().st_file_attributes & 0x400))
     except (OSError, AttributeError):
-        return False
+        return True # Asumir inseguro ante errores de lectura
 
 
 def _is_junk_path(path: Path) -> bool:
@@ -125,7 +125,8 @@ def _is_junk_path(path: Path) -> bool:
 def _is_unc_path(path: Path) -> bool:
     """Detecta si una ruta corresponde a una ruta UNC de red (formato \\servidor\recurso)."""
     try:
-        return str(path.absolute()).startswith(("\\\\", "//"))
+        p_str = str(path.absolute())
+        return p_str.startswith(("\\\\", "//"))
     except Exception:
         return True
 
@@ -175,11 +176,8 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
         s: Path = src.resolve()
         d: Path = dest.resolve()
         if s == d: return True
-        try:
-            return d.is_relative_to(s) or os.path.samefile(s, d)
-        except OSError:
-            return False
-    except (OSError, RuntimeError, ValueError):
+        return d.is_relative_to(s) or os.path.samefile(s, d)
+    except (OSError, ValueError):
         return True
 
 
@@ -215,10 +213,13 @@ def _validate_path_security(src: Path, dest: Path) -> bool:
 
 def _validate_file_attributes(src: Path) -> bool:
     """Verifica que el archivo sea un archivo real, no esté bloqueado y tenga atributos seguros."""
-    if not src.exists() or not src.is_file(): return False
-    if _is_junction(src) or src.is_symlink(): return False
-    if not _passes_system_checks(src) or _is_file_locked(src): return False
-    return src.stat().st_size > 0
+    try:
+        if not src.exists() or not src.is_file(): return False
+        if _is_junction(src) or src.is_symlink(): return False
+        if not _passes_system_checks(src) or _is_file_locked(src): return False
+        return src.stat().st_size > 0
+    except (OSError, PermissionError):
+        return False
 
 
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
@@ -227,13 +228,14 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Divide la validación en capas: formato de ruta, seguridad de sistema y estado del archivo.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
-    if len(str(src)) >= 260 or len(str(dest)) >= 260: return False
+    
+    # Longitud de ruta máxima para evitar excepciones de sistema en Windows
+    if len(str(src)) >= 255 or len(str(dest)) >= 255: return False
     
     if not _validate_path_security(src, dest): return False
     
     try:
         s_res = src.resolve()
-        if s_res.parent == s_res: return False
         
         if dest.exists() and (_is_junction(dest) or dest.is_symlink()): return False
         if _is_recursive_violation(s_res, dest): return False
@@ -270,7 +272,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                         if _should_scan_directory(entry):
                             _process_directory(Path(entry.path), found, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
-                        # O(1) look-up usando set
                         if Path(entry.name).suffix.lower() in JUNK_EXTENSIONS:
                             stats = entry.stat()
                             if stats.st_size > 0:
@@ -321,6 +322,7 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     try:
         if not dest_base.exists() or not dest_base.is_dir(): return None
         
+        # Validar espacio disponible + margen de seguridad (50MB)
         if shutil.disk_usage(dest_base.anchor).free < (junk_file.size_bytes + (50 * 1024 * 1024)): 
             return None
             

@@ -297,15 +297,15 @@ def normalize(path: PathLike) -> Path:
     try:
         p = Path(path_str)
         if ".." in p.parts: raise ValueError("Path traversal detectado.")
-        resolved = p.resolve()
         
-        current = p
-        while current != current.parent:
+        # Validar componentes durante la resolución para evitar seguir reparse points
+        current = Path(p.anchor)
+        for part in p.parts[1:]:
+            current = current / part
             if _is_reparse_point(current):
                 raise ValueError(f"Acceso restringido: componente {current} es un punto de reparse.")
-            current = current.parent
-            
-        return resolved
+                
+        return p.resolve()
     except (OSError, RuntimeError, TypeError) as e:
         raise ValueError(f"Error irrecuperable al normalizar {path_str}: {e}")
 

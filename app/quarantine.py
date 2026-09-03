@@ -625,10 +625,13 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     for stored_path in quarantine_root.iterdir():
         if stored_path.name in item_map:
             item = item_map[stored_path.name]
-            if _is_item_purgable(stored_path, item, quarantine_root):
-                if _safe_unlink(stored_path):
-                    purged_count += 1
-                    continue
+            try:
+                if _is_item_purgable(stored_path, item, quarantine_root):
+                    if _safe_unlink(stored_path):
+                        purged_count += 1
+                        continue
+            except (OSError, PermissionError):
+                pass
             kept_items.append(item)
         elif stored_path.name != MANIFEST_NAME and not stored_path.is_dir():
             pass
