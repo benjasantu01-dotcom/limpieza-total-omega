@@ -214,6 +214,8 @@ def _is_file_in_use(path_str: str) -> bool:
     """
     if os.name != 'nt' or not isinstance(path_str, str):
         return False
+    if not os.path.exists(path_str):
+        return False
     try:
         kernel32 = ctypes.windll.kernel32
         # GENERIC_READ (0x80000000), FILE_SHARE_READ (0x00000001), OPEN_EXISTING (3)

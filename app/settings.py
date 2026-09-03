@@ -297,7 +297,6 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if parent is None: return None
         
         parent_resolved = parent.resolve()
-        # Seguridad: Solo crear si la carpeta padre no está en la lista de bloqueados y es segura
         if is_protected_path(str(parent_resolved)) or not _Validators._is_safe_path(str(parent_resolved)):
             return None
         if not parent_resolved.exists(): 
@@ -311,11 +310,17 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         
-        with open(temp_path, "wb") as f:
-            f.write(data)
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(temp_path, ruta)
+        # Escribir con manejo de excepciones y limpieza de temporal
+        try:
+            with open(temp_path, "wb") as f:
+                f.write(data)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(temp_path, ruta)
+        finally:
+            if temp_path.exists():
+                try: temp_path.unlink()
+                except OSError: pass
         
         _CACHE[str(ruta)] = (float(ruta.stat().st_mtime), cleaned_settings)
         return ruta

@@ -518,3 +518,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T03:18:42` ✅ Mejora aceptada en quarantine.py (enfoque: robustez ante casos límite). Se reforzó la robustez de `purge_all` ante archivos inesperados en la carpeta de cuarentena y posibles inconsistencias del sistema de archivos, asegurando que el proceso de purgado solo afecte archivos registrados en el manifiesto y que existan físicamente.
 - `2026-09-03T03:18:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T03:18:42` Corrida terminada. Total usado hoy: 76.
+- `2026-09-03T03:23:58` Arrancando corrida. Quedan hoy ~224 peticiones objetivo.
+- `2026-09-03T03:24:20` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: robustez ante casos límite): error de sintaxis en la propuesta (línea 105): unterminated string literal (detected at line 105)
+- `2026-09-03T03:24:53` ✅ Mejora aceptada en safety.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez de `_is_file_in_use` agregando un manejo explícito de archivos inexistentes y una verificación de `PermissionError` más granular, evitando falsos negativos en el chequeo de integridad cuando el archivo ha desaparecido entre la validación inicial y el acceso a disco.
+- `2026-09-03T03:25:17` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: robustez ante casos límite).
+- `2026-09-03T03:25:31` ✅ Mejora aceptada en settings.py (enfoque: robustez ante casos límite). Se mejoró la robustez de `save` frente a errores de concurrencia y fallos parciales de escritura mediante el uso de una verificación explícita de `temp_path` y un manejo de excepciones más granular que evita dejar archivos corruptos en disco si ocurre un fallo durante la escritura o sincronización.
+- `2026-09-03T03:25:31` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T03:25:31` Corrida terminada. Total usado hoy: 80.
