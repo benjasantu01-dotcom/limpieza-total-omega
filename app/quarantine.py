@@ -272,27 +272,12 @@ def _check_path_syntax_integrity(path: Path) -> None:
         raise UnsafePathError("Operación denegada en enlace o punto de reparse.")
 
 
-def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
-    """
-    Pre-validación crítica: antes de aislar, verifica que origen y destino no estén
-    en conflicto y respete las restricciones de seguridad y dispositivos de disco.
-    """
-    _check_path_syntax_integrity(source_path)
-    _check_windows_file_attributes(str(source_path))
+def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
+    """Validación exhaustiva de las condiciones de seguridad antes de aislar un archivo."""
+    resolved_source = source_path.resolve(strict=True)
     
-    if source_path.is_symlink():
-        raise UnsafePathError("No se permite aislar enlaces simbólicos o puntos de reparse.")
-
-    try:
-        resolved_source = source_path.resolve(strict=True)
-    except (OSError, RuntimeError) as e:
-        raise UnsafePathError(f"Ruta origen inaccesible: {e}")
-
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")
-    
-    _ensure_disk_space(dest_dir, resolved_source.stat().st_size)
-    
     if resolved_source.parent == dest_dir.resolve():
         raise UnsafePathError("Operación circular: origen y destino en la misma carpeta.")
     if is_protected_path(resolved_source):
@@ -303,9 +288,28 @@ def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
         raise UnsafePathError("El archivo ya reside en el sandbox de cuarentena.")
     if resolved_source.stat().st_dev != dest_dir.resolve().stat().st_dev:
         raise UnsafePathError("Operación prohibida: origen y destino en dispositivos diferentes.")
+    
     ensure_safe_to_modify(resolved_source, allow_sensitive=True)
     if _is_file_locked(resolved_source):
         raise IOError("El archivo está en uso por otro proceso y no puede moverse.")
+
+
+def _validate_isolation_request(source_path: Path, dest_dir: Path) -> None:
+    """Pre-validación crítica de sintaxis, atributos y seguridad de dispositivos."""
+    _check_path_syntax_integrity(source_path)
+    _check_windows_file_attributes(str(source_path))
+    
+    if source_path.is_symlink():
+        raise UnsafePathError("No se permite aislar enlaces simbólicos o puntos de reparse.")
+
+    try:
+        resolved_source = source_path.resolve(strict=True)
+    except (OSError, RuntimeError) as e:
+        raise UnsafePathError(f"Ruta origen inaccesible: {e}")
+    
+    _ensure_disk_space(dest_dir, resolved_source.stat().st_size)
+    _check_isolation_safety(resolved_source, dest_dir)
+
 
 @lru_cache(maxsize=4)
 def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> List[Dict[str, Any]]:
@@ -380,11 +384,6 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
 def _ensure_disk_space(dest_dir: Path, required_size: int) -> None:
     """
     Verifica que el sistema destino tenga espacio libre suficiente (margen del 5% o 5MB).
-    
-    Raises:
-        FileNotFoundError: Si el directorio no existe.
-        PermissionError: Si no se puede escribir.
-        OSError: Si el espacio libre es insuficiente.
     """
     if not dest_dir.exists():
         raise FileNotFoundError(f"Directorio inexistente: {dest_dir}")
@@ -424,7 +423,6 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         if temp_path.stat().st_size != original_size:
             raise OSError("Error de integridad: el tamaño del archivo copiado no coincide.")
             
-        # Validación de seguridad defensiva final antes de consolidar la operación
         if not is_safe_to_modify(temp_path):
             raise UnsafePathError("Integridad comprometida: el archivo en área temporal no es seguro.")
         
@@ -596,7 +594,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     purged_count = 0
     kept_items = []
     
-    # Solo procesamos los archivos registrados en el manifiesto actual
     for stored_path in quarantine_root.iterdir():
         if stored_path.name in item_map:
             item = item_map[stored_path.name]
@@ -606,7 +603,6 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                     continue
             kept_items.append(item)
         elif stored_path.name != MANIFEST_NAME and not stored_path.is_dir():
-            # Los archivos no registrados son ignorados (no deben borrarse automáticamente)
             pass
                 
     if purged_count > 0:
@@ -620,7 +616,6 @@ def total_quarantined_bytes(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> 
     m_path = _manifest_path(base_path)
     mtime = m_path.stat().st_mtime if m_path.exists() else 0.0
     raw_data = _load_manifest_raw(str(base_path), mtime)
-    # Suma directa sin instanciar objetos, reduce uso de memoria y CPU
     return sum(int(d.get("size_bytes", 0)) for d in raw_data if isinstance(d, dict))
 
 

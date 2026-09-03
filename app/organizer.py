@@ -251,7 +251,8 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
 def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
     """
     Recorre recursivamente un directorio buscando archivos basura.
-    Usa `os.scandir` para mejorar el rendimiento mediante el cache de atributos.
+    Utiliza `os.scandir` para maximizar el rendimiento mediante el uso del 
+    caché de metadatos de las entradas del sistema de archivos.
     """
     if not isinstance(current_dir, Path) or not current_dir.exists():
         return
@@ -274,7 +275,10 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
 
 
 def scan_for_junk(directories: Optional[List[str]] = None) -> List[JunkFile]:
-    """Escanea los directorios especificados en busca de archivos basura."""
+    """
+    Escanea directorios en busca de archivos que coincidan con los criterios de basura.
+    Si no se provee una lista, utiliza los directorios temporales estándar del SO.
+    """
     if directories is not None and not isinstance(directories, list):
         return []
     
