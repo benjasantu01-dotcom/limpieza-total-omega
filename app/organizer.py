@@ -248,13 +248,13 @@ def _should_scan_directory(entry: os.DirEntry) -> bool:
     return _is_allowed_directory(entry.name) and not _is_junction(entry)
 
 
-def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
+def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0) -> None:
     """
     Recorre recursivamente un directorio buscando archivos basura.
     Utiliza `os.scandir` para maximizar el rendimiento mediante el uso del 
     caché de metadatos de las entradas del sistema de archivos.
     """
-    if not isinstance(current_dir, Path) or not current_dir.exists():
+    if not isinstance(current_dir, Path) or not current_dir.exists() or depth > 50:
         return
     try:
         with os.scandir(current_dir) as it:
@@ -262,7 +262,7 @@ def _process_directory(current_dir: Path, found: List[JunkFile]) -> None:
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         if _should_scan_directory(entry):
-                            _process_directory(Path(entry.path), found)
+                            _process_directory(Path(entry.path), found, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
                         if entry.name.lower().endswith(tuple(JUNK_EXTENSIONS)):
                             stats = entry.stat()

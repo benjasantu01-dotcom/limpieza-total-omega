@@ -56,8 +56,6 @@ _LIMIT_DISK_PERCENT: Final[float] = 25.0
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
-_INV_RAM: Final[float] = 1.0 / _LIMIT_RAM_PERCENT
-_INV_DISK: Final[float] = 1.0 / _LIMIT_DISK_PERCENT
 
 # Niveles de severidad para activar reglas de recomendación (heurística).
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
@@ -113,14 +111,14 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Aplica límites físicos y sanitiza tipos evitando NaN o infinitos."""
-        self.junk_mb = max(0.0, _to_float(self.junk_mb, 0.0))
-        self.suspicious_count = max(0, _to_int(self.suspicious_count, 0))
-        self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings, 0))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 100.0), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 100.0), 0.0, 100.0)
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb, 0.0))
-        self.startup_count = max(0, _to_int(self.startup_count, 0))
-        self.quarantined_count = max(0, _to_int(self.quarantined_count, 0))
+        self.junk_mb = _clamp(_to_float(self.junk_mb), 0.0, float('inf'))
+        self.suspicious_count = int(_clamp(_to_float(self.suspicious_count), 0.0, 10000.0))
+        self.suspicious_warnings = int(_clamp(_to_float(self.suspicious_warnings), 0.0, 10000.0))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
+        self.duplicate_mb = _clamp(_to_float(self.duplicate_mb), 0.0, float('inf'))
+        self.startup_count = int(_clamp(_to_float(self.startup_count), 0.0, 1000.0))
+        self.quarantined_count = int(_clamp(_to_float(self.quarantined_count), 0.0, 10000.0))
 
     def is_finite(self) -> bool:
         """Retorna True si todos los campos de datos contienen valores numéricos finitos."""
@@ -139,13 +137,9 @@ class HealthResult:
         """Considera un sistema saludable si el puntaje global es 80 o superior."""
         return 80 <= self.score <= 100
 
-def _clamp(value: Any, low: float = 0.0, high: float = 1.0) -> float:
+def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
     """Asegura que un valor numérico esté dentro de los límites [low, high]."""
-    try:
-        val = float(value)
-        return max(low, min(high, val)) if math.isfinite(val) else low
-    except (TypeError, ValueError):
-        return low
+    return max(low, min(high, value))
 
 def _to_float(value: Any, default: float = 0.0) -> float:
     """Conversión segura a float, descartando valores no numéricos o infinitos."""
@@ -154,39 +148,32 @@ def _to_float(value: Any, default: float = 0.0) -> float:
         return val if math.isfinite(val) else default
     except (TypeError, ValueError): return default
 
-def _to_int(value: Any, default: int = 0) -> int:
-    """Conversión segura a int, descartando valores no numéricos o infinitos."""
-    try:
-        val = float(value)
-        return int(val) if math.isfinite(val) else default
-    except (TypeError, ValueError): return default
-
 def score_junk(junk_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de archivos basura: 0MB es 1.0, escala hasta el límite."""
-    return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK), 0.0, 1.0)
+    return _clamp(1.0 - (_to_float(junk_mb) * _INV_JUNK))
 
 def score_security(suspicious_count: int, warnings: int = 0) -> NormalizedRatio:
     """
     Calcula el ratio de salud de seguridad.
     Penaliza hallazgos críticos (-5% c/u) y advertencias (-25% c/u).
     """
-    return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)), 0.0, 1.0)
+    return _clamp(1.0 - ((_to_float(suspicious_count) * 0.05) + (_to_float(warnings) * 0.25)))
 
 def score_memory(available_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de memoria RAM basado en el porcentaje disponible."""
-    return _clamp(_to_float(available_percent) * _INV_RAM, 0.0, 1.0)
+    return _clamp(_to_float(available_percent) / _LIMIT_RAM_PERCENT)
 
 def score_disk(free_percent: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud de espacio en disco basado en porcentaje libre."""
-    return _clamp(_to_float(free_percent) * _INV_DISK, 0.0, 1.0)
+    return _clamp(_to_float(free_percent) / _LIMIT_DISK_PERCENT)
 
 def score_duplicates(duplicate_mb: float | int) -> NormalizedRatio:
     """Calcula el ratio de salud basado en el peso total de archivos duplicados."""
-    return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP), 0.0, 1.0)
+    return _clamp(1.0 - (_to_float(duplicate_mb) * _INV_DUP))
 
 def score_startup(startup_count: int) -> NormalizedRatio:
     """Calcula el ratio de salud basado en la cantidad de ítems en el inicio del sistema."""
-    return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP), 0.0, 1.0)
+    return _clamp(1.0 - (_to_float(startup_count) * _INV_STARTUP))
 
 def grade_for_score(score: float | int) -> str:
     """Mapea un puntaje final (0-100) a una calificación de letra (A-F)."""

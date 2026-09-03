@@ -892,3 +892,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T07:31:44` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
 - `2026-09-03T07:31:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T07:31:44` Corrida terminada. Total usado hoy: 176.
+- `2026-09-03T07:40:39` Arrancando corrida. Quedan hoy ~124 peticiones objetivo.
+- `2026-09-03T07:41:12` ✅ Mejora aceptada en healthscore.py (enfoque: robustez ante casos límite). Reforcé la robustez de `score_memory` y `score_disk` añadiendo un cálculo de ratio más seguro ante límites donde el divisor podría ser un valor configurado erróneamente, y consolidé la lógica de conversión `_clamp` dentro de `SystemMetrics` para asegurar que ningún campo numérico dependa de una llamada externa que pueda fallar.
+- `2026-09-03T07:42:24` ➖ Sin cambios en main.py (enfoque: robustez ante casos límite). Motivo: Mejoré la resiliencia del bucle principal de la aplicación ante errores de estado de la interfaz (widgets inexistentes) durante el apagado de hilos, centralizando la lógica de cierre en un método que verifica explícitamente la integridad de los componentes antes de intentar manipularlos, evitando así excepciones de `TclError` en el log o la consola.
+- `2026-09-03T07:42:54` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: robustez ante casos límite).
+- `2026-09-03T07:43:09` ✅ Mejora aceptada en organizer.py (enfoque: robustez ante casos límite). Se ha implementado un control de "profundidad máxima" y una validación de rutas no absolutas en `_process_directory` para prevenir la recursión infinita en casos de estructuras de directorios circularmente vinculadas o extremadamente profundas que podrían causar un `StackOverflow` o agotar los descriptores de archivo del sistema.
+- `2026-09-03T07:43:09` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T07:43:09` Corrida terminada. Total usado hoy: 180.
