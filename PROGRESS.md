@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Mejoras aceptadas: **233** (46.2% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 32
-- Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 208
+- Rechazadas por guardia de seguridad: 31
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 209
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 40 | 1 | 4 | 4 | 37 |
+| 2026-09-01 | 37 | 1 | 3 | 4 | 37 |
 | 2026-09-02 | 163 | 10 | 23 | 11 | 143 |
-| 2026-09-03 | 31 | 2 | 5 | 2 | 28 |
+| 2026-09-03 | 33 | 2 | 5 | 3 | 29 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **55**
 - legibilidad y documentación: **55**
-- seguridad defensiva: **44**
 - rendimiento: **44**
-- robustez ante casos límite: **36**
+- seguridad defensiva: **41**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **20**
+- `browser.py`: **21**
 - `memory.py`: **20**
-- `organizer.py`: **19**
-- `quarantine.py`: **19**
-- `safety.py`: **19**
 - `settings.py`: **19**
 - `assistant.py`: **19**
 - `scanner.py`: **18**
+- `healthscore.py`: **18**
+- `organizer.py`: **18**
+- `quarantine.py`: **18**
+- `safety.py`: **18**
 - `diskreport.py`: **17**
 - `duplicates.py`: **17**
-- `healthscore.py`: **17**
 - `main.py`: **12**
 - `branding.py`: **12**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T03:05:05` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `SystemMetrics` ante valores `NaN` (Not a Number) o inconsistentes que podrían evadir `math.isfinite` en arquitecturas específicas, asegurando que `validate` realmente normalice cualquier entrada inesperada antes de que el cálculo de `compute_score` se vea afectado.
+- `2026-09-03T03:04:04` **browser.py** (robustez ante casos límite): He mejorado la robustez de `_get_kernel32` y las funciones de escaneo ante la posibilidad de que la API de Windows retorne rutas inválidas o nombres de archivo que excedan los límites del sistema durante la iteración, añadiendo verificaciones explícitas de integridad de strings y tipos antes de realizar llamadas al kernel.
 - `2026-09-03T02:55:36` **branding.py** (robustez ante casos límite): Se introdujo una validación robusta de rutas en `save_logo_svg` para prevenir errores ante rutas mal formadas, inexistentes o con permisos denegados, integrando `is_safe_to_modify` para un manejo de excepciones más limpio y seguro.
 - `2026-09-03T02:55:18` **assistant.py** (robustez ante casos límite): Reforcé la robustez del motor de entrada ante valores `None` o malformados en `SystemContext.ingest()` y las funciones de validación de métricas, asegurando que un fallo en una fuente de datos externa no contamine el estado del objeto.
 - `2026-09-03T02:54:00` **settings.py** (rendimiento): Se optimizó el acceso a los validadores mediante el uso de una búsqueda directa en `_VALIDATOR_MAP` dentro de `validate()` y `update()`, eliminando iteraciones redundantes y centralizando la lógica de configuración en la caché global.
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T02:12:20` **scanner.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el `Scanner` para aclarar el flujo de recursión (evitando confusiones sobre el uso del `stack`) y se añadió un `docstring` explicativo en `scan_file` para clarificar la distinción entre heurísticas de archivo único y reglas registradas, facilitando el mantenimiento a futuro.
 - `2026-09-03T02:02:45` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo `quarantine.py` mediante la implementación de Type Hints explícitos, la clarificación de las precondiciones en docstrings críticos y la refactorización de `_ensure_disk_space` y `_safe_unlink` para mejorar su legibilidad y robustez ante errores de I/O.
 - `2026-09-03T02:02:11` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings de nivel de módulo y función que explican el "porqué" de las validaciones de seguridad, además de normalizar el uso de type hints y añadir una clase base para el manejo de excepciones de validación en `organizer.py`, mejorando la mantenibilidad sin alterar la lógica de ejecución.
-- `2026-09-03T01:54:59` **memory.py** (legibilidad y documentación): Mejoré la documentación de la estructura `MEMORYSTATUSEX` añadiendo comentarios técnicos sobre la procedencia de los campos y corregí la ambigüedad en el cálculo de `available_percent` y `used_percent` mediante type hinting explícito, asegurando la robustez de las operaciones matemáticas en el reporte.
-- `2026-09-03T01:52:30` **healthscore.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo integrando docstrings descriptivos en las funciones de cálculo de métricas y aclarando el propósito de los factores de normalización (`_INV_*`) para facilitar el mantenimiento futuro.

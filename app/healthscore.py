@@ -113,14 +113,14 @@ class SystemMetrics:
 
     def validate(self) -> None:
         """Aplica límites físicos y sanitiza tipos de los campos de métrica."""
-        self.junk_mb = max(0.0, _to_float(self.junk_mb))
-        self.suspicious_count = max(0, _to_int(self.suspicious_count))
-        self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
-        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb))
-        self.startup_count = max(0, _to_int(self.startup_count))
-        self.quarantined_count = max(0, _to_int(self.quarantined_count))
+        self.junk_mb = max(0.0, _to_float(self.junk_mb, 0.0))
+        self.suspicious_count = max(0, _to_int(self.suspicious_count, 0))
+        self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings, 0))
+        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent, 0.0), 0.0, 100.0)
+        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent, 0.0), 0.0, 100.0)
+        self.duplicate_mb = max(0.0, _to_float(self.duplicate_mb, 0.0))
+        self.startup_count = max(0, _to_int(self.startup_count, 0))
+        self.quarantined_count = max(0, _to_int(self.quarantined_count, 0))
 
     def is_finite(self) -> bool:
         """Retorna True si todos los campos de datos contienen valores numéricos finitos."""

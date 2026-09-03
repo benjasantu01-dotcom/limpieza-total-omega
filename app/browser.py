@@ -95,6 +95,7 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt':
         return None
     try:
+        # Se verifica explícitamente la presencia de windll antes de intentar acceder
         if not hasattr(ctypes, 'windll'):
             return None
         return ctypes.WinDLL('kernel32.dll', use_last_error=True)
@@ -136,7 +137,7 @@ def _is_excluded_file(name: Optional[str]) -> bool:
 
 def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bool:
     """Verifica atributos de sistema u oculto mediante la API GetFileAttributesW de Windows."""
-    if kernel32 is None or not isinstance(entry_path, str):
+    if kernel32 is None or not isinstance(entry_path, str) or not entry_path:
         return False
     try:
         attrs: int = kernel32.GetFileAttributesW(entry_path)
@@ -277,6 +278,7 @@ def detect_profiles(
             for browser_name, rel_str in browser_map.items():
                 if not isinstance(rel_str, str) or not rel_str:
                     continue
+                # Asegurar integridad de la ruta construida
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 
                 if not candidate.exists():
@@ -284,7 +286,6 @@ def detect_profiles(
                     
                 if _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
                     c_path = candidate.resolve(strict=True)
-                    # Se mantiene el dict 'perf_cache' vivo durante todo el ciclo para evitar recalcular
                     size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
                     if size > 0:
                         found.append(BrowserCache(browser_name, c_path, size))
