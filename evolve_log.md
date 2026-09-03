@@ -1144,3 +1144,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T09:56:44` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez de `_validate_and_assign` mediante la validación explícita de `spec` y el manejo de excepciones localizadas, asegurando que cualquier fallo en la conversión o validación de una métrica individual no comprometa la ingesta del resto del objeto de contexto.
 - `2026-09-03T09:56:44` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T09:56:44` Corrida terminada. Total usado hoy: 232.
+- `2026-09-03T10:03:08` Arrancando corrida. Quedan hoy ~68 peticiones objetivo.
+- `2026-09-03T10:03:43` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-03T10:04:09` Gemini no devolvió un bloque de archivo válido para browser.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-03T10:04:44` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-03T10:04:53` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-03T10:04:53` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T10:04:53` Corrida terminada. Total usado hoy: 236.
