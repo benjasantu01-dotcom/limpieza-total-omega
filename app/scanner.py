@@ -130,7 +130,9 @@ class Scanner:
         try:
             if entry.is_symlink():
                 return True
-            return bool(entry.stat(follow_symlinks=False).st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
+            # Intentamos acceder al estado del archivo con seguridad, devolviendo True en caso de duda/error.
+            stats = entry.stat(follow_symlinks=False)
+            return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
             return True 
 

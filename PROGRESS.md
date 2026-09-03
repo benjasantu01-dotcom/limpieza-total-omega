@@ -6,38 +6,38 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **229** (45.4% de aceptación)
 - Rechazadas por tests: 13
-- Rechazadas por guardia de seguridad: 33
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 212
+- Rechazadas por guardia de seguridad: 34
+- Sin cambios (nada sustancial que mejorar): 20
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 150 | 9 | 21 | 9 | 135 |
-| 2026-09-03 | 77 | 4 | 12 | 10 | 77 |
+| 2026-09-02 | 150 | 9 | 21 | 9 | 131 |
+| 2026-09-03 | 79 | 4 | 13 | 11 | 77 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
+- robustez ante casos límite: **44**
 - rendimiento: **43**
-- robustez ante casos límite: **42**
 - seguridad defensiva: **36**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
 - `memory.py`: **21**
+- `quarantine.py`: **19**
 - `safety.py`: **19**
 - `assistant.py`: **19**
-- `quarantine.py`: **18**
 - `settings.py`: **18**
 - `organizer.py`: **18**
+- `scanner.py`: **18**
 - `duplicates.py`: **17**
-- `scanner.py`: **17**
 - `healthscore.py`: **16**
 - `diskreport.py`: **15**
 - `branding.py`: **13**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T07:53:57` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco en `Scanner._is_reparse_point` y `Scanner._is_safe_entry` centralizando la validación de estados de archivo para evitar excepciones no capturadas durante la recursión en sistemas con permisos restrictivos o entradas de sistema inconsistentes.
+- `2026-09-03T07:52:55` **quarantine.py** (robustez ante casos límite): Se ha mejorado `_atomic_isolate_file` para asegurar la persistencia mediante `os.fsync` sobre el directorio padre (garantía de metadatos en sistemas de archivos), y se añadió una validación crítica contra archivos de tamaño cero para evitar estados inconsistentes en la cuarentena.
 - `2026-09-03T07:43:09` **organizer.py** (robustez ante casos límite): Se ha implementado un control de "profundidad máxima" y una validación de rutas no absolutas en `_process_directory` para prevenir la recursión infinita en casos de estructuras de directorios circularmente vinculadas o extremadamente profundas que podrían causar un `StackOverflow` o agotar los descriptores de archivo del sistema.
 - `2026-09-03T07:41:12` **healthscore.py** (robustez ante casos límite): Reforcé la robustez de `score_memory` y `score_disk` añadiendo un cálculo de ratio más seguro ante límites donde el divisor podría ser un valor configurado erróneamente, y consolidé la lógica de conversión `_clamp` dentro de `SystemMetrics` para asegurar que ningún campo numérico dependa de una llamada externa que pueda fallar.
 - `2026-09-03T07:31:08` **browser.py** (robustez ante casos límite): Se reforzó la robustez ante casos de rutas no existentes o con permisos restringidos al añadir validaciones adicionales y manejo de excepciones en `_is_valid_cache_path` y `_sum_directory_recursive`, evitando que errores transitorios en el sistema de archivos interrumpan el escaneo de otras cachés válidas.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T06:50:49` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando llamadas redundantes a `Path.resolve()` y `path.suffix` por operaciones sobre el objeto `DirEntry` ya existente, evitando miles de llamadas innecesarias al sistema de archivos durante escaneos profundos.
 - `2026-09-03T06:49:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando el slicing innecesario de la lista completa (`[:3]`) y evitando cálculos redundantes, asegurando que solo se procesen los criterios necesarios.
 - `2026-09-03T06:39:45` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings y se han aclarado las responsabilidades de los chequeos heurísticos, eliminando redundancias en `scan_file` para asegurar que el flujo de análisis sea predecible y fácil de mantener.
-- `2026-09-03T06:39:20` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación técnica interna mediante la adición de docstrings específicos para los predicados de validación y la clarificación del flujo de control en las funciones principales, asegurando que la intención de las reglas de seguridad sea evidente para futuros desarrolladores.
-- `2026-09-03T06:30:24` **quarantine.py** (legibilidad y documentación): He refactorizado la validación de seguridad de `quarantine_file` extrayendo la lógica a un nuevo método privado `_check_isolation_safety` para mejorar la legibilidad y asegurar que el flujo crítico de validación sea auditable y cumpla con las reglas de seguridad.

@@ -278,6 +278,8 @@ def _check_isolation_safety(source_path: Path, dest_dir: Path) -> None:
     
     if not resolved_source.is_file():
         raise UnsafePathError("Solo se aceptan archivos regulares para aislamiento.")
+    if resolved_source.stat().st_size == 0:
+        raise UnsafePathError("Operación denegada: archivos vacíos no permitidos.")
     if resolved_source.parent == dest_dir.resolve():
         raise UnsafePathError("Operación circular: origen y destino en la misma carpeta.")
     if is_protected_path(resolved_source):
@@ -372,6 +374,10 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
             tf.flush()
             os.fsync(tf.fileno())
         os.replace(temp_path, target_path)
+        # Sincronización del directorio para asegurar visibilidad en disco de la nueva entrada
+        dir_fd = os.open(str(base_path), os.O_RDONLY)
+        try: os.fsync(dir_fd)
+        finally: os.close(dir_fd)
         _load_manifest_raw.cache_clear()
         return target_path
     except (OSError, TypeError, IOError) as e:
@@ -429,6 +435,12 @@ def _atomic_isolate_file(source: Path, destination: Path, original_size: int) ->
         _check_windows_file_attributes(str(temp_path))
 
         os.replace(temp_path, destination)
+        
+        # Asegurar metadatos del directorio contenedor tras crear nuevo archivo
+        dir_fd = os.open(str(destination.parent), os.O_RDONLY)
+        try: os.fsync(dir_fd)
+        finally: os.close(dir_fd)
+        
         file_hash = _get_sha256(destination)
         if not file_hash:
             raise OSError("Falla de integridad: no se pudo verificar el hash.")
