@@ -428,7 +428,8 @@ def _format_problem_message(problems: list[str], score: int | str) -> str:
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
     if not ctx.analyzed: return []
-    return _get_active_problems(ctx)[:3]
+    # Retornamos los problemas detectados, la UI limitará la visualización si es necesario
+    return _get_active_problems(ctx)
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
@@ -478,7 +479,7 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     grade = str(ctx.grade) if ctx.grade else ""
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade})' if grade else ''}."
     problemas = _identify_active_problems(ctx)
-    resumen = ("Lo que más te está restando: " + ", ".join(problemas) + ".") if problemas else "No hay nada urgente."
+    resumen = ("Lo que más te está restando: " + ", ".join(problemas[:3]) + ".") if problemas else "No hay nada urgente."
     explicacion = " El puntaje combina basura, seguridad, memoria, disco, duplicados y programas de inicio."
     return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
 

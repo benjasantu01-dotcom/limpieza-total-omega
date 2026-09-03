@@ -268,28 +268,9 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
 
         try:
             with os.scandir(current_dir) as iterator:
-                while True:
+                for entry in iterator:
                     try:
-                        entry = next(iterator)
-                    except (StopIteration, PermissionError, OSError):
-                        break
-                        
-                    try:
-                        if not entry or not entry.path:
-                            continue
-                        
-                        try:
-                            entry_path = Path(entry.path).resolve()
-                        except (OSError, PermissionError, RuntimeError):
-                            continue
-                            
-                        if not str(entry_path).startswith(str(root_path)):
-                            continue
-
-                        try:
-                            st = entry.stat(follow_symlinks=False)
-                        except (PermissionError, OSError):
-                            continue
+                        st = entry.stat(follow_symlinks=False)
                         
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                             continue
@@ -298,13 +279,13 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                             inode_key = (st.st_dev, st.st_ino)
                             if inode_key not in visited_inodes:
                                 visited_inodes.add(inode_key)
-                                stack.append(entry_path)
+                                stack.append(Path(entry.path))
                                     
                         elif entry.is_file():
-                            yield entry_path, max(0, int(st.st_size))
-                    except (PermissionError, OSError, FileNotFoundError):
+                            yield Path(entry.path), max(0, int(st.st_size))
+                    except (PermissionError, OSError):
                         continue
-        except (PermissionError, OSError, FileNotFoundError):
+        except (PermissionError, OSError):
             continue
 
 
@@ -398,19 +379,17 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not path:
-            continue
-        total_bytes += int(size)
+        total_bytes += size
         total_files += 1
         
         ext = path.suffix.lower() or "(sin extensión)"
-        ext_sizes[ext] += int(size)
+        ext_sizes[ext] += size
         ext_counts[ext] += 1
         
         if len(top_files_heap) < 8:
-            heapq.heappush(top_files_heap, (int(size), path))
-        elif int(size) > top_files_heap[0][0]:
-            heapq.heapreplace(top_files_heap, (int(size), path))
+            heapq.heappush(top_files_heap, (size, path))
+        elif size > top_files_heap[0][0]:
+            heapq.heapreplace(top_files_heap, (size, path))
             
     top_files = sorted(top_files_heap, key=lambda x: x[0], reverse=True)
     return SummaryData(total_bytes, total_files, dict(ext_sizes), dict(ext_counts), top_files)
