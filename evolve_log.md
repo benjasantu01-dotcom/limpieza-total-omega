@@ -1244,3 +1244,10 @@ FAILED evolve/tests/test_modules.py::test_parse_process_csv_skips_broken_lines -
 - `2026-09-03T11:07:08` 🛑 Propuesta bloqueada por la guardia en settings.py (enfoque: legibilidad y documentación): desaparecieron símbolos que existían antes: _Validators._validate_enum_str
 - `2026-09-03T11:07:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T11:07:08` Corrida terminada. Total usado hoy: 260.
+- `2026-09-03T11:14:31` Arrancando corrida. Quedan hoy ~40 peticiones objetivo.
+- `2026-09-03T11:15:03` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejora la legibilidad y mantenibilidad de `StartupEntry._resolve_and_cache_path` mediante la extracción de la lógica de validación de archivos en un método privado auxiliar, reduciendo la complejidad ciclomática del bloque principal.
+- `2026-09-03T11:15:41` ✅ Mejora aceptada en assistant.py (enfoque: rendimiento). Optimizé `_identify_active_problems` eliminando la recreación de listas y búsquedas repetitivas mediante la creación de una propiedad `@cached_property` o, en este caso (respetando la limitación de no importar `functools.cached_property` si no estuviera ya, aunque `lru_cache` ya está importado), ajustando la lógica para evitar regenerar la lista de problemas cada vez que se accede, aprovechando que el estado del sistema es inmutable (`frozen=False` pero con lógica de evaluación determinista).
+- `2026-09-03T11:16:14` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: rendimiento).
+- `2026-09-03T11:16:26` ✅ Mejora aceptada en browser.py (enfoque: rendimiento). Mejoré el rendimiento del escaneo de directorios mediante la implementación de una caché de resolución de rutas (`Path.resolve()`) y evitando la inicialización redundante de recursos (kernel32.dll y funciones) dentro de la recursión profunda.
+- `2026-09-03T11:16:26` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T11:16:26` Corrida terminada. Total usado hoy: 264.

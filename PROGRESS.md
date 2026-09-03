@@ -6,46 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **231** (45.8% de aceptación)
 - Rechazadas por tests: 8
 - Rechazadas por guardia de seguridad: 36
-- Sin cambios (nada sustancial que mejorar): 19
-- Sin respuesta de la IA (error o límite): 212
+- Sin cambios (nada sustancial que mejorar): 18
+- Sin respuesta de la IA (error o límite): 211
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 120 | 3 | 17 | 7 | 97 |
-| 2026-09-03 | 109 | 5 | 19 | 12 | 115 |
+| 2026-09-02 | 119 | 3 | 17 | 6 | 95 |
+| 2026-09-03 | 112 | 5 | 19 | 12 | 116 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
-- legibilidad y documentación: **52**
+- legibilidad y documentación: **53**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **42**
-- rendimiento: **36**
+- robustez ante casos límite: **41**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
 - `memory.py`: **21**
-- `organizer.py`: **20**
+- `browser.py`: **21**
 - `quarantine.py`: **20**
 - `scanner.py`: **20**
-- `browser.py`: **20**
+- `assistant.py`: **19**
+- `organizer.py`: **19**
 - `safety.py`: **18**
-- `assistant.py`: **18**
 - `settings.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
 - `diskreport.py`: **13**
 - `main.py`: **13**
 - `branding.py`: **12**
-- `startup.py`: **5**
+- `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T11:16:26` **browser.py** (rendimiento): Mejoré el rendimiento del escaneo de directorios mediante la implementación de una caché de resolución de rutas (`Path.resolve()`) y evitando la inicialización redundante de recursos (kernel32.dll y funciones) dentro de la recursión profunda.
+- `2026-09-03T11:15:41` **assistant.py** (rendimiento): Optimizé `_identify_active_problems` eliminando la recreación de listas y búsquedas repetitivas mediante la creación de una propiedad `@cached_property` o, en este caso (respetando la limitación de no importar `functools.cached_property` si no estuviera ya, aunque `lru_cache` ya está importado), ajustando la lógica para evitar regenerar la lista de problemas cada vez que se accede, aprovechando que el estado del sistema es inmutable (`frozen=False` pero con lógica de evaluación determinista).
+- `2026-09-03T11:15:03` **startup.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `StartupEntry._resolve_and_cache_path` mediante la extracción de la lógica de validación de archivos en un método privado auxiliar, reduciendo la complejidad ciclomática del bloque principal.
 - `2026-09-03T11:06:53` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings precisos en los métodos del `Scanner` y los checks heurísticos, clarificando el propósito, las dependencias de estado (como `now_ts`) y las limitaciones operativas para facilitar el mantenimiento.
 - `2026-09-03T11:05:22` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en los validadores, aclarando el contexto de las verificaciones de integridad y siguiendo el estándar solicitado para facilitar el mantenimiento del proyecto.
 - `2026-09-03T10:56:41` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas (`_atomic_isolate_file`, `_validate_isolation_request`, `quarantine_file`) y la estandarización de tipos, asegurando que la lógica de aislamiento y las garantías de seguridad sean comprensibles para el equipo.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T10:44:33` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica mediante la adición de docstrings estructurados y tipeado explícito en funciones críticas para clarificar el flujo de seguridad y la lógica de recursión de disco.
 - `2026-09-03T10:35:59` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos con las unidades de medida esperadas en las constantes globales y se añadió el tipo `HexColor` de forma explícita en las anotaciones de las diccionarios `PaletteDict` y `FontSizesDict`, mejorando la coherencia y mantenibilidad del sistema de tipado.
 - `2026-09-03T10:35:11` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo una validación explícita para evitar que filas con campos nulos o inesperados interrumpan el proceso, asegurando que solo se agreguen objetos `StartupEntry` con datos íntegros.
-- `2026-09-03T10:34:42` **settings.py** (manejo de errores y validación de entradas): Refactoricé el decorador `type_check` para mejorar la robustez al capturar errores de ejecución dentro de los validadores y añadí un manejo estricto de excepciones en `_Validators.int` para garantizar que valores malformados retornen `None` sin propagar errores hacia la lógica de carga.
-- `2026-09-03T10:27:32` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `Scanner.process_entry` y `scan_directory` validando explícitamente parámetros críticos (`entry.path`, `entry.name`) y manejando posibles valores `None` o rutas vacías que podrían causar errores durante la iteración en sistemas con permisos restrictivos.
-- `2026-09-03T10:26:51` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` capturando explícitamente posibles errores durante `p.is_file()` y `p.is_dir()` para evitar excepciones inesperadas al interactuar con el sistema de archivos, garantizando que el `UnsafePathError` sea la única interfaz de fallo esperada.

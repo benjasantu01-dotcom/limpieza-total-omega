@@ -95,7 +95,6 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt':
         return None
     try:
-        # Se verifica explícitamente la presencia de windll antes de intentar acceder
         if not hasattr(ctypes, 'windll'):
             return None
         return ctypes.WinDLL('kernel32.dll', use_last_error=True)
@@ -118,11 +117,19 @@ def base_directories() -> List[Path]:
         return []
 
 
-def _is_path_inside_base(real_target: Path, real_base: Path) -> bool:
+def _is_path_inside_base(real_target: Path, real_base: Path, path_cache: Dict[str, Path]) -> bool:
     """Confirma que 'real_target' se encuentre jerárquicamente dentro de 'real_base'."""
     try:
-        target_resolved = real_target.resolve(strict=True)
-        base_resolved = real_base.resolve(strict=True)
+        t_str = str(real_target)
+        if t_str not in path_cache:
+            path_cache[t_str] = real_target.resolve(strict=True)
+        target_resolved = path_cache[t_str]
+        
+        b_str = str(real_base)
+        if b_str not in path_cache:
+            path_cache[b_str] = real_base.resolve(strict=True)
+        base_resolved = path_cache[b_str]
+        
         return base_resolved in target_resolved.parents or target_resolved == base_resolved
     except (OSError, RuntimeError):
         return False
@@ -168,12 +175,12 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     return False
 
 
-def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path]) -> bool:
+def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path], path_cache: Dict[str, Path]) -> bool:
     """Valida que la ruta sea segura (no protegida) y opcionalmente descienda de la base permitida."""
     try:
         if not path_obj.exists() or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return False
-        if base_check_path and not _is_path_inside_base(path_obj, base_check_path):
+        if base_check_path and not _is_path_inside_base(path_obj, base_check_path, path_cache):
             return False
         return True
     except (OSError, RuntimeError):
@@ -186,19 +193,18 @@ def _sum_directory_recursive(
     kernel32: Optional[ctypes.WinDLL],
     memo: Dict[str, int],
     base_check_path: Optional[Path] = None,
+    path_cache: Optional[Dict[str, Path]] = None,
     depth: int = 0
 ) -> int:
     """
     Calcula recursivamente el tamaño en bytes de un directorio.
-    Implementa:
-    1. Límite de profundidad (MAX_SCAN_DEPTH) para prevenir desbordamiento.
-    2. Memoización (memo) para eficiencia y detección de ciclos en junctions.
-    3. Validación de seguridad en cada nodo mediante 'is_safe_to_modify'.
+    Implementa memoización y caché de resolución de rutas para eficiencia.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
     
-    # Validar entrada antes de operar
+    if path_cache is None: path_cache = {}
+    
     p_obj = Path(root_abs)
     try:
         if not p_obj.exists() or not is_safe_to_modify(p_obj):
@@ -219,7 +225,7 @@ def _sum_directory_recursive(
                 try:
                     if entry.is_dir(follow_symlinks=False):
                         total += _sum_directory_recursive(
-                            entry.path, is_junction_fn, kernel32, memo, base_check_path, depth + 1
+                            entry.path, is_junction_fn, kernel32, memo, base_check_path, path_cache, depth + 1
                         )
                     elif entry.is_file(follow_symlinks=False):
                         stats = entry.stat(follow_symlinks=False)
@@ -239,27 +245,22 @@ def directory_size(path: Union[str, Path, None]) -> int:
         return 0
     try:
         p_res = Path(path).resolve(strict=True)
-        if not p_res.is_dir() or not _is_safe_to_traverse(p_res, None):
+        if not p_res.is_dir() or not _is_safe_to_traverse(p_res, None, {}):
             return 0
-        return _sum_directory_recursive(str(p_res), _IS_JUNCTION_FN, _get_kernel32(), {})
+        return _sum_directory_recursive(str(p_res), _IS_JUNCTION_FN, _get_kernel32(), {}, None, {})
     except (OSError, PermissionError, RuntimeError, ValueError):
         return 0
 
 
-def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker) -> bool:
-    """
-    Verifica si una ruta candidata es una carpeta válida de caché.
-    Realiza comprobaciones de integridad: existencia, límite de longitud, 
-    tipo (directorio real), exclusión de rutas protegidas y validación 
-    de containment dentro de la base proporcionada.
-    """
+def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker, path_cache: Dict[str, Path]) -> bool:
+    """Verifica si una ruta candidata es una carpeta válida de caché."""
     try:
         if not candidate.exists() or len(str(candidate)) >= MAX_PATH_LEN:
             return False
         real_candidate = candidate.resolve(strict=True)
         if (real_candidate.is_symlink() or is_junction_fn(str(real_candidate)) or 
             os.path.ismount(str(real_candidate)) or not real_candidate.is_dir() or 
-            not _is_safe_to_traverse(real_candidate, base_path) or
+            not _is_safe_to_traverse(real_candidate, base_path, path_cache) or
             _is_excluded_file(real_candidate.name)):
             return False
         return True
@@ -271,16 +272,7 @@ def detect_profiles(
     bases: Optional[Sequence[Path]] = None, 
     cache_paths: Optional[Dict[str, str]] = None
 ) -> List[BrowserCache]:
-    """
-    Escanea el sistema buscando perfiles de navegadores y calcula su ocupación.
-    
-    Args:
-        bases: Directorios raíz (por defecto LOCALAPPDATA) para buscar perfiles.
-        cache_paths: Mapeo (nombre del navegador -> ruta relativa).
-        
-    Returns:
-        Lista de objetos BrowserCache con la información de tamaño detectada.
-    """
+    """Escanea el sistema buscando perfiles de navegadores y calcula su ocupación."""
     raw_bases = bases if bases is not None else base_directories()
     browser_map = cache_paths if cache_paths is not None else BROWSER_CACHE_PATHS
     
@@ -289,6 +281,7 @@ def detect_profiles(
     
     k32: Optional[ctypes.WinDLL] = _get_kernel32()
     perf_cache: Dict[str, int] = {}
+    path_cache: Dict[str, Path] = {}
     found: List[BrowserCache] = []
     
     for base in raw_bases:
@@ -300,14 +293,13 @@ def detect_profiles(
                 if not isinstance(rel_str, str) or not rel_str:
                     continue
                 
-                # Construcción segura y validada contra path traversal
                 candidate = real_base.joinpath(*rel_str.split("\\"))
                 
-                if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN):
+                if not _is_valid_cache_path(candidate, real_base, _IS_JUNCTION_FN, path_cache):
                     continue
                     
                 c_path = candidate.resolve(strict=True)
-                size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base)
+                size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base, path_cache)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), c_path, size))
         except (OSError, PermissionError, TypeError, ValueError): 

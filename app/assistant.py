@@ -432,9 +432,8 @@ def _format_problem_message(problems: list[str], score: int | str) -> str:
     return f"Con un puntaje de {score}/100, por orden de prioridad: {', '.join(problems)}."
 
 def _identify_active_problems(ctx: SystemContext) -> list[str]:
-    if not ctx.analyzed: return []
-    # Retornamos los problemas detectados, la UI limitará la visualización si es necesario
-    return _get_active_problems(ctx)
+    """Obtiene los problemas activos usando caché para evitar re-cálculos costosos."""
+    return _get_active_problems(ctx) if ctx.analyzed else []
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")

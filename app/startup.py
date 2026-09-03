@@ -129,6 +129,16 @@ class StartupEntry:
         except (OSError, ValueError, RuntimeError, TypeError):
             return ""
 
+    def _validate_file_access(self, p: Path) -> bool:
+        """Verifica existencia, permisos básicos y ausencia de reparse points."""
+        if not p.exists() or p.is_dir() or not os.access(p, os.R_OK):
+            return False
+        try:
+            # 0x400 corresponde a FILE_ATTRIBUTE_REPARSE_POINT
+            return (p.lstat().st_file_attributes & 0x00000400) == 0
+        except (OSError, PermissionError):
+            return False
+
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
         Normaliza, valida la existencia y seguridad de la ruta en disco, 
@@ -137,7 +147,6 @@ class StartupEntry:
         if not isinstance(path_string, str) or not path_string:
             return ""
         
-        # Filtros iniciales contra caracteres inválidos, rutas UNC o escapes de shell
         if any(c in path_string for c in '<>|?*\0&;%') or path_string.startswith(r"\\"):
             return ""
         
@@ -155,20 +164,7 @@ class StartupEntry:
             abs_path: str = os.path.abspath(norm)
             p: Path = Path(abs_path)
             
-            # Validación de existencia, permisos y detección de reparse points (0x400)
-            if p.exists():
-                if p.is_dir() or not os.access(p, os.R_OK):
-                    _EXISTS_CACHE[path_string] = False
-                    return ""
-                try:
-                    stat_info = p.lstat()
-                    if (stat_info.st_file_attributes & 0x00000400) != 0:
-                        _EXISTS_CACHE[path_string] = False
-                        return ""
-                except (OSError, PermissionError):
-                    pass
-
-            if not p.is_absolute() or is_protected_path(p) or p.is_symlink():
+            if not self._validate_file_access(p) or not p.is_absolute() or is_protected_path(p) or p.is_symlink():
                 _EXISTS_CACHE[path_string] = False
                 return path_string
             
