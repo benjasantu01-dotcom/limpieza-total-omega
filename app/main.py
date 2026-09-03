@@ -84,18 +84,18 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()],
 )
 
-def ensure_safety(func):
+def ensure_safety(func: Callable) -> Callable:
     """Decorador para asegurar que las operaciones de disco siempre validen la ruta raíz."""
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         safety.ensure_safe_to_modify(Path(".").resolve())
         return func(*args, **kwargs)
     return wrapper
 
-def safe_ui_operation(func):
+def safe_ui_operation(func: Callable) -> Callable:
     """Decorador para capturar errores de widgets que ocurren durante el cierre o redibujo."""
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Optional[Any]:
         try:
             return func(*args, **kwargs)
         except (tk.TclError, RuntimeError, AttributeError) as e:

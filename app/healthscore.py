@@ -44,21 +44,22 @@ __all__ = [
     "summarize",
 ]
 
-# Umbrales críticos que definen el punto de saturación o riesgo.
+# Umbrales críticos que definen el punto de saturación o riesgo por módulo.
 _LIMIT_JUNK_MB: Final[float] = 5000.0          
 _LIMIT_DUPLICATE_MB: Final[float] = 2000.0     
 _LIMIT_STARTUP_COUNT: Final[int] = 20          
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización: escalan valores crudos a un ratio [0.0, 1.0].
+# Factores de normalización: inversos de los límites para transformar valores 
+# brutos (MB, conteos, %) al rango [0.0, 1.0].
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT)
 _INV_RAM: Final[float] = 1.0 / _LIMIT_RAM_PERCENT
 _INV_DISK: Final[float] = 1.0 / _LIMIT_DISK_PERCENT
 
-# Niveles de severidad definidos como rangos de normalización para reglas heurísticas.
+# Niveles de severidad para activar reglas de recomendación (heurística).
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6
@@ -111,7 +112,7 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        """Aplica límites físicos y sanitiza tipos de los campos de métrica evitando NaN o infinitos."""
+        """Aplica límites físicos y sanitiza tipos evitando NaN o infinitos."""
         self.junk_mb = max(0.0, _to_float(self.junk_mb, 0.0))
         self.suspicious_count = max(0, _to_int(self.suspicious_count, 0))
         self.suspicious_warnings = max(0, _to_int(self.suspicious_warnings, 0))

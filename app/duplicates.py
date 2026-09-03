@@ -82,11 +82,11 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
     Calcula el hash SHA256 completo del archivo mediante bloques de memoria constante.
     
     Args:
-        path: Ruta al archivo objetivo.
-        chunk_size: Tamaño de buffer para lectura incremental (default 1MB).
+        path: Ruta (str o Path) al archivo.
+        chunk_size: Bytes por bloque para lectura incremental.
     
     Returns:
-        String hexadecimal del hash o None si el acceso al archivo falla.
+        Hex del hash o None si el archivo es inaccesible.
     """
     if not path or chunk_size <= 0:
         return None
@@ -110,14 +110,14 @@ def hash_file(path: Union[str, Path], chunk_size: int = 1024 * 1024) -> Optional
 
 def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -> Optional[str]:
     """
-    Genera una huella dactilar rápida leyendo solo el inicio del archivo.
+    Genera una huella rápida leyendo solo el inicio del archivo (eficiencia).
     
     Args:
-        path: Ruta al archivo.
-        read_bytes: Cantidad de bytes a leer (definido por PARTIAL_READ_BYTES).
+        path: Ruta al archivo objetivo.
+        read_bytes: Límite de lectura definido por PARTIAL_READ_BYTES.
         
     Returns:
-        String hexadecimal del hash calculado sobre el fragmento o None si falla.
+        Hex del hash del fragmento o None si el archivo es inaccesible.
     """
     if not path or read_bytes <= 0:
         return None
@@ -137,10 +137,7 @@ def partial_hash(path: Union[str, Path], read_bytes: int = PARTIAL_READ_BYTES) -
 
 
 def _is_valid_candidate(path: Path) -> bool:
-    """
-    Valida si el archivo es apto para análisis de duplicados.
-    Verifica existencia, tipo, permisos y ausencia de restricciones de seguridad.
-    """
+    """Valida que la ruta sea un archivo real, legible y no protegido."""
     try:
         return (
             isinstance(path, Path) and 
@@ -153,10 +150,7 @@ def _is_valid_candidate(path: Path) -> bool:
 
 
 def group_by_size(paths: Iterable[Path]) -> Dict[int, List[Path]]:
-    """
-    Agrupa una lista de rutas de archivo según su tamaño en bytes,
-    descartando archivos vacíos o inaccesibles.
-    """
+    """Agrupa una lista de rutas por su tamaño en bytes (Paso 1)."""
     groups: Dict[int, List[Path]] = defaultdict(list)
     if paths is None or not isinstance(paths, Iterable): return groups
     
@@ -189,10 +183,7 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """
-    Realiza un escaneo recursivo en disco para recolectar archivos candidatos.
-    Utiliza un set de inodos visitados para prevenir ciclos en enlaces simbólicos.
-    """
+    """Recorre directorios y retorna mapa {tamaño: lista_de_rutas}."""
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Set[Tuple[int, int]] = set()
 
@@ -231,9 +222,7 @@ def _collect_candidates(
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:
-    """
-    Agrupa rutas de archivos mediante una función de resumen (hash) aplicada a su contenido.
-    """
+    """Aplica función hash y agrupa rutas por digest resultante."""
     groups_by_digest: Dict[str, List[Path]] = defaultdict(list)
     for path in paths:
         if (digest := hash_func(path)):
@@ -242,10 +231,7 @@ def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Opti
 
 
 def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
-    """
-    Refina la lista de candidatos utilizando hashes completos para confirmar igualdad.
-    Se ejecuta como paso final tras la validación mediante hash parcial.
-    """
+    """Refina grupos mediante hashes completos tras filtrado parcial."""
     partial_results: Dict[str, List[Path]] = _group_paths_by_hash(candidates, partial_hash)
     final_groups: Dict[str, List[Path]] = {}
     
@@ -257,10 +243,7 @@ def _refine_by_deep_hash(candidates: List[Path]) -> Dict[str, List[Path]]:
 
 
 def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
-    """
-    Selecciona la estrategia de comparación basada en el tamaño del archivo:
-    los pequeños se validan con hash parcial, los grandes con hash completo.
-    """
+    """Selecciona estrategia (parcial vs profundo) según tamaño del archivo."""
     if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
         return []
     
@@ -273,9 +256,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
 
 
 def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 1024, skip_protected: bool = True) -> List[DuplicateGroup]:
-    """
-    Punto de entrada: identifica y ordena grupos de duplicados por impacto (wasted_bytes).
-    """
+    """Orquestador principal: escanea y agrupa duplicados por impacto."""
     if not isinstance(directories, Iterable) or isinstance(directories, (str, Path)): 
         return []
     if not isinstance(min_size, int) or min_size < 0: 
@@ -291,15 +272,14 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
 
 
 def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
-    """Suma total de bytes que se podrían recuperar de una lista de grupos."""
+    """Calcula suma total de bytes recuperables."""
     if not groups or not isinstance(groups, (list, tuple)): return 0
     return sum(g.wasted_bytes for g in groups if isinstance(g, DuplicateGroup))
 
 
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
-    Heurística para elegir el archivo original a conservar.
-    Selecciona el archivo con la fecha de modificación más antigua.
+    Selecciona el archivo candidato para conservar (heurística: más antiguo).
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
@@ -309,15 +289,18 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         if not isinstance(p, Path): continue
         try:
             stat_info = p.stat()
+            # Orden de prioridad: menor antigüedad, luego nombre más corto
             candidates.append((float(stat_info.st_mtime), len(str(p)), p))
         except (OSError, PermissionError):
             continue
-            
-    return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
+    
+    # Criterio de selección: min(mtime, len_path)
+    primary_criteria: Callable[[Tuple[float, int, Path]], Tuple[float, int]] = lambda x: (x[0], x[1])
+    return min(candidates, key=primary_criteria)[2] if candidates else None
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
-    """Transforma un objeto DuplicateGroup en líneas de texto descriptivas para la UI."""
+    """Transforma un objeto DuplicateGroup en líneas informativas para UI."""
     if not isinstance(group, DuplicateGroup) or not hasattr(group, 'paths') or group.paths is None:
         return []
         
