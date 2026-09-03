@@ -98,9 +98,10 @@ def _get_kernel32() -> Optional[ctypes.WinDLL]:
     if os.name != 'nt':
         return None
     try:
+        # Verificación explícita de existencia del atributo antes de acceder
         if not hasattr(ctypes, 'windll'):
             return None
-        return ctypes.windll.kernel32
+        return ctypes.WinDLL('kernel32.dll', use_last_error=True)
     except (AttributeError, OSError, RuntimeError):
         return None
 
@@ -148,9 +149,10 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
     Consulta los atributos de archivo mediante la API de Win32 para identificar
     elementos marcados como ocultos o de sistema, evitando el escaneo innecesario.
     """
-    if kernel32 is None:
+    if kernel32 is None or not isinstance(entry_path, str):
         return False
     try:
+        # GetFileAttributesW devuelve INVALID_FILE_ATTRIBUTES (0xFFFFFFFF) en caso de error
         attrs: int = kernel32.GetFileAttributesW(entry_path)
         if attrs == 0xFFFFFFFF:
             return False 

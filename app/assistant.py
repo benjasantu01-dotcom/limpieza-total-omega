@@ -644,7 +644,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     """Invoca la API de Gemini realizando validaciones de seguridad rigurosas."""
     if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
-    # Aseguramos que la clave no sea una ruta y no contenga caracteres sospechosos
     if _CONTROL_CHARS_REGEX.search(api_key) or is_protected_path(api_key): return None
     
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
@@ -655,7 +654,6 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
     if not payload or len(payload) > _MAX_PROMPT_LIMIT: return None
     
     try:
-        # La clave API se inyecta directamente aquí, se evita su persistencia en el log de objetos o logs de contexto
         req = urllib.request.Request(
             _ENDPOINT.format(model=model) + f"?key={api_key}", 
             data=payload, 

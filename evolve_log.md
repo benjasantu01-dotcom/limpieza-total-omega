@@ -1426,3 +1426,15 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T00:54:24` Se agotaron los reintentos por rate limit. Se salta esta iteración.
 - `2026-09-03T00:54:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T00:54:24` Corrida terminada. Total usado hoy: 20.
+- `2026-09-03T01:00:37` Arrancando corrida. Quedan hoy ~280 peticiones objetivo.
+- `2026-09-03T01:00:39` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-03T01:00:39` Rate limit de Gemini (intento 1/2). Esperando 20s...
+- `2026-09-03T01:00:59` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-03T01:00:59` Rate limit de Gemini (intento 2/2). Esperando 30s...
+- `2026-09-03T01:01:29` Detalle del 429 de Gemini: {   "error": {     "code": 429,     "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. ",     "stat
+- `2026-09-03T01:01:29` Se agotaron los reintentos por rate limit. Se salta esta iteración.
+- `2026-09-03T01:02:28` ✅ Mejora aceptada en assistant.py (enfoque: manejo de errores y validación de entradas). Se ha mejorado la robustez del manejo de errores en `ask` y `_call_gemini` mediante la captura explícita de `json.JSONDecodeError` y la validación estricta de la estructura del payload antes de enviarlo, evitando operaciones con objetos no inicializados o mal formados.
+- `2026-09-03T01:03:34` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-03T01:04:19` ✅ Mejora aceptada en browser.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_get_kernel32` y `__is_system_hidden` para evitar fallos catastróficos por valores de retorno inesperados de la API de Windows, asegurando que ante cualquier error de acceso o tipo, el escáner ignore el archivo de forma segura en lugar de propagar excepciones.
+- `2026-09-03T01:04:19` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T01:04:19` Corrida terminada. Total usado hoy: 24.

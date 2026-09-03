@@ -6,47 +6,49 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **235** (46.6% de aceptación)
-- Rechazadas por tests: 12
+- Mejoras aceptadas: **234** (46.4% de aceptación)
+- Rechazadas por tests: 11
 - Rechazadas por guardia de seguridad: 34
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 206
+- Sin respuesta de la IA (error o límite): 208
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-01 | 72 | 2 | 11 | 6 | 43 |
+| 2026-09-01 | 69 | 1 | 11 | 6 | 43 |
 | 2026-09-02 | 163 | 10 | 23 | 11 | 143 |
-| 2026-09-03 | 0 | 0 | 0 | 0 | 20 |
+| 2026-09-03 | 2 | 0 | 0 | 0 | 22 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **52**
 - seguridad defensiva: **50**
+- legibilidad y documentación: **49**
+- manejo de errores y validación de entradas: **46**
 - robustez ante casos límite: **45**
 - rendimiento: **44**
-- manejo de errores y validación de entradas: **44**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
 - `quarantine.py`: **20**
 - `settings.py`: **20**
-- `assistant.py`: **19**
-- `browser.py`: **19**
+- `assistant.py`: **20**
+- `browser.py`: **20**
+- `memory.py`: **19**
 - `safety.py`: **19**
-- `organizer.py`: **18**
 - `scanner.py`: **18**
+- `organizer.py`: **17**
 - `diskreport.py`: **16**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
-- `main.py`: **14**
+- `main.py`: **13**
 - `branding.py`: **12**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T01:04:19` **browser.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_get_kernel32` y `__is_system_hidden` para evitar fallos catastróficos por valores de retorno inesperados de la API de Windows, asegurando que ante cualquier error de acceso o tipo, el escáner ignore el archivo de forma segura en lugar de propagar excepciones.
+- `2026-09-03T01:02:28` **assistant.py** (manejo de errores y validación de entradas): Se ha mejorado la robustez del manejo de errores en `ask` y `_call_gemini` mediante la captura explícita de `json.JSONDecodeError` y la validación estricta de la estructura del payload antes de enviarlo, evitando operaciones con objetos no inicializados o mal formados.
 - `2026-09-02T14:28:48` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` al reemplazar la creación condicional de carpetas por una verificación estricta contra `is_protected_path` antes de cualquier llamada a `mkdir`, previniendo la creación de configuraciones en directorios críticos incluso si el usuario intenta una ruta maliciosa.
 - `2026-09-02T14:28:34` **scanner.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_is_inside_base_root` convirtiendo la ruta a absoluta antes de compararla, previniendo riesgos de "path traversal" donde rutas relativas maliciosas podrían eludir la validación al compararse con una base absoluta.
 - `2026-09-02T14:19:47` **quarantine.py** (seguridad defensiva): Se reforzó la seguridad de `_atomic_isolate_file` implementando una validación estricta de permisos de escritura y atributos de sistema en el archivo temporal antes de consolidar el movimiento, previniendo posibles ataques de *Time-of-Check to Time-of-Use* (TOCTOU).
@@ -60,5 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-02T13:58:22` **assistant.py** (seguridad defensiva): Reforcé la seguridad en `_call_gemini` añadiendo un chequeo explícito de la longitud del `payload` y validando que el `api_key` sea una cadena limpia antes de usarlo para construir la URL, evitando posibles errores de inyección o desbordamiento en la solicitud.
 - `2026-09-02T13:57:16` **settings.py** (robustez ante casos límite): Mejoré la robustez de `save()` ante condiciones de carrera y fallos de sistema al asegurar que la carpeta de destino sea un directorio real antes de proceder y verificando la atomicidad de la operación en entornos donde el sistema de archivos pueda estar bloqueado o inaccesible temporalmente.
 - `2026-09-02T13:48:05` **scanner.py** (robustez ante casos límite): Se ha añadido un robusto manejo de excepciones de lectura en `process_entry` y `scan_file`, asegurando que archivos bloqueados, con metadatos corruptos o nombres que exceden el buffer del sistema no interrumpan el flujo de escaneo, mejorando la resiliencia ante el entorno volátil del disco.
-- `2026-09-02T13:47:55` **safety.py** (robustez ante casos límite): Se ha añadido una verificación de "error de acceso" en `_is_file_in_use` y se ha robustecido `_is_system_or_hidden` para manejar correctamente archivos inexistentes o bloqueados, evitando que la validación falle silenciosamente con excepciones no capturadas al intentar obtener atributos de sistemas en archivos con permisos restringidos.
-- `2026-09-02T13:47:03` **quarantine.py** (robustez ante casos límite): Se mejora la robustez de `quarantine_file` ante condiciones de carrera y fallos de escritura mediante la verificación de la existencia de la carpeta destino, garantizando que el manifiesto solo se actualice tras la confirmación de persistencia exitosa y la integridad del archivo movido.
