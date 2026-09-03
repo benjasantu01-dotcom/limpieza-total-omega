@@ -908,3 +908,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T07:53:57` ✅ Mejora aceptada en scanner.py (enfoque: robustez ante casos límite). Se ha mejorado la robustez ante errores de acceso a disco en `Scanner._is_reparse_point` y `Scanner._is_safe_entry` centralizando la validación de estados de archivo para evitar excepciones no capturadas durante la recursión en sistemas con permisos restrictivos o entradas de sistema inconsistentes.
 - `2026-09-03T07:53:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T07:53:57` Corrida terminada. Total usado hoy: 184.
+- `2026-09-03T08:00:57` Arrancando corrida. Quedan hoy ~116 peticiones objetivo.
+- `2026-09-03T08:01:28` ➖ Sin cambios en settings.py (enfoque: robustez ante casos límite). Motivo: Se reforzó la robustez de `load` añadiendo una validación de integridad ante archivos JSON truncados o malformados, asegurando que la carga siempre retorne un esquema completo incluso si el archivo en disco contiene claves parciales o inválidas.
+- `2026-09-03T08:01:56` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: robustez ante casos límite).
+- `2026-09-03T08:02:37` ✅ Mejora aceptada en assistant.py (enfoque: seguridad defensiva). Reforcé la seguridad defensiva al validar estrictamente que la clave de API (proveniente de un archivo de configuración externo) no sea una ruta de sistema, evitando una posible inyección de archivos mediante `is_protected_path` antes de usarla en la construcción de la URL.
+- `2026-09-03T08:02:57` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: seguridad defensiva).
+- `2026-09-03T08:02:57` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T08:02:57` Corrida terminada. Total usado hoy: 188.

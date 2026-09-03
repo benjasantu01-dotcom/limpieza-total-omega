@@ -568,9 +568,13 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
+    # Validación defensiva extra sobre la clave de API antes de usarla en la URL
     if not isinstance(api_key, str) or not api_key or not _API_KEY_REGEX.match(api_key): return None
+    if is_protected_path(api_key): return None
+    
     if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
-    if _CONTROL_CHARS_REGEX.search(api_key) or is_protected_path(api_key): return None
+    if _CONTROL_CHARS_REGEX.search(api_key): return None
+    
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
     if not _ensure_safe_text(safe_c) or "Error" in safe_c:
         return None

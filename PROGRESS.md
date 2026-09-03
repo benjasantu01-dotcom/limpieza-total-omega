@@ -6,18 +6,18 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 13
 - Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 20
-- Sin respuesta de la IA (error o límite): 208
+- Sin cambios (nada sustancial que mejorar): 21
+- Sin respuesta de la IA (error o límite): 206
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 150 | 9 | 21 | 9 | 131 |
-| 2026-09-03 | 79 | 4 | 13 | 11 | 77 |
+| 2026-09-02 | 150 | 9 | 21 | 9 | 127 |
+| 2026-09-03 | 80 | 4 | 13 | 12 | 79 |
 
 ## Mejoras aceptadas por enfoque
 
@@ -25,15 +25,15 @@ Este archivo se regenera solo en cada corrida a partir de
 - manejo de errores y validación de entradas: **52**
 - robustez ante casos límite: **44**
 - rendimiento: **43**
-- seguridad defensiva: **36**
+- seguridad defensiva: **37**
 
 ## Mejoras aceptadas por archivo
 
 - `browser.py`: **21**
 - `memory.py`: **21**
+- `assistant.py`: **20**
 - `quarantine.py`: **19**
 - `safety.py`: **19**
-- `assistant.py`: **19**
 - `settings.py`: **18**
 - `organizer.py`: **18**
 - `scanner.py`: **18**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T08:02:37` **assistant.py** (seguridad defensiva): Reforcé la seguridad defensiva al validar estrictamente que la clave de API (proveniente de un archivo de configuración externo) no sea una ruta de sistema, evitando una posible inyección de archivos mediante `is_protected_path` antes de usarla en la construcción de la URL.
 - `2026-09-03T07:53:57` **scanner.py** (robustez ante casos límite): Se ha mejorado la robustez ante errores de acceso a disco en `Scanner._is_reparse_point` y `Scanner._is_safe_entry` centralizando la validación de estados de archivo para evitar excepciones no capturadas durante la recursión en sistemas con permisos restrictivos o entradas de sistema inconsistentes.
 - `2026-09-03T07:52:55` **quarantine.py** (robustez ante casos límite): Se ha mejorado `_atomic_isolate_file` para asegurar la persistencia mediante `os.fsync` sobre el directorio padre (garantía de metadatos en sistemas de archivos), y se añadió una validación crítica contra archivos de tamaño cero para evitar estados inconsistentes en la cuarentena.
 - `2026-09-03T07:43:09` **organizer.py** (robustez ante casos límite): Se ha implementado un control de "profundidad máxima" y una validación de rutas no absolutas en `_process_directory` para prevenir la recursión infinita en casos de estructuras de directorios circularmente vinculadas o extremadamente profundas que podrían causar un `StackOverflow` o agotar los descriptores de archivo del sistema.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T06:59:38` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_protected_path` al procesar archivos que ya fueron filtrados por tamaño, reduciendo drásticamente las syscalls innecesarias en recorridos de disco grandes.
 - `2026-09-03T06:50:49` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando llamadas redundantes a `Path.resolve()` y `path.suffix` por operaciones sobre el objeto `DirEntry` ya existente, evitando miles de llamadas innecesarias al sistema de archivos durante escaneos profundos.
 - `2026-09-03T06:49:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando el slicing innecesario de la lista completa (`[:3]`) y evitando cálculos redundantes, asegurando que solo se procesen los criterios necesarios.
-- `2026-09-03T06:39:45` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings y se han aclarado las responsabilidades de los chequeos heurísticos, eliminando redundancias en `scan_file` para asegurar que el flujo de análisis sea predecible y fácil de mantener.
