@@ -205,7 +205,8 @@ def _is_file_in_use(path_str: str) -> bool:
     Verifica si un archivo está bloqueado por otro proceso.
     
     Intenta abrir el archivo mediante `CreateFileW` con modo de compartición 
-    restringido. Si falla, el archivo está siendo usado exclusivamente.
+    restringido. Se utiliza lectura de atributos sin solicitar acceso a datos,
+    minimizando conflictos de compartición (sharing violations).
     """
     if os.name != 'nt' or not isinstance(path_str, str):
         return False
@@ -213,9 +214,9 @@ def _is_file_in_use(path_str: str) -> bool:
         return False
     try:
         kernel32 = ctypes.windll.kernel32
-        # GENERIC_READ (0x80000000), FILE_SHARE_READ (0x00000001), OPEN_EXISTING (3)
+        # FILE_READ_ATTRIBUTES (0x0080), FILE_SHARE_READ|WRITE|DELETE (0x00000007), OPEN_EXISTING (3)
         handle = kernel32.CreateFileW(
-            path_str, 0x80000000, 0x00000001, None, 3, 0x00000080, None
+            path_str, 0x0080, 0x00000007, None, 3, 0x00000080, None
         )
         if handle == -1 or handle == 0xFFFFFFFF: 
             return True

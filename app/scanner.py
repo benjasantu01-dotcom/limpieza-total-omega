@@ -103,7 +103,6 @@ class Scanner:
         self.results: ScanResult = []
         self.seen: set[str] = set()
         self.base_root = base_root.resolve(strict=False)
-        self.base_root_str = str(self.base_root).lower() + os.sep
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
@@ -112,7 +111,7 @@ class Scanner:
             return False
         try:
             target = Path(path_str).resolve(strict=False)
-            return str(target).lower().startswith(self.base_root_str)
+            return self.base_root in target.parents or target == self.base_root
         except (OSError, RuntimeError):
             return False
 

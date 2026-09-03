@@ -615,14 +615,13 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
     """Limpia el sandbox: elimina todos los archivos verificables."""
     quarantine_root = quarantine_dir(base)
     items = load_manifest(base)
-    if not items:
-        return 0
     
     item_map = {item.stored_name: item for item in items}
     purged_count = 0
     kept_items = []
     
     for stored_path in quarantine_root.iterdir():
+        # Seguridad: Solo procesar archivos presentes en el manifiesto
         if stored_path.name in item_map:
             item = item_map[stored_path.name]
             try:
@@ -634,6 +633,7 @@ def purge_all(base: Union[str, Path] = DEFAULT_QUARANTINE_DIR) -> int:
                 pass
             kept_items.append(item)
         elif stored_path.name != MANIFEST_NAME and not stored_path.is_dir():
+            # Archivo no listado en manifiesto; por seguridad, no se toca
             pass
                 
     if purged_count > 0:
