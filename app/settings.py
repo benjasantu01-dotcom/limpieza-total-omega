@@ -294,23 +294,21 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     try:
         ruta = settings_path(custom_base)
         parent = ruta.parent
-        if parent is None: return None
+        if not _Validators._is_safe_path(str(parent)): return None
         
-        parent_resolved = parent.resolve()
-        if is_protected_path(str(parent_resolved)) or not _Validators._is_safe_path(str(parent_resolved)):
-            return None
-        if not parent_resolved.exists(): 
-            parent_resolved.mkdir(parents=True, exist_ok=True)
-        if not parent_resolved.is_dir(): return None
+        if not parent.exists(): 
+            parent.mkdir(parents=True, exist_ok=True)
+        if not parent.is_dir(): return None
         
         if ruta.exists() and (ruta.is_symlink() or not ruta.is_file()):
             return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
+        if not str(temp_path.parent) == str(parent): return None
+        
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")
         if len(data) > MAX_SETTINGS_SIZE: return None
         
-        # Escribir con manejo de excepciones y limpieza de temporal
         try:
             with open(temp_path, "wb") as f:
                 f.write(data)

@@ -115,12 +115,17 @@ class Scanner:
     def __init__(self, base_root: Path) -> None:
         self.results: ScanResult = []
         self.seen: set[Path] = set()
-        self.base_root_str = str(base_root.resolve(strict=False)).lower() + os.sep
+        self.base_root = base_root.resolve(strict=False)
+        self.base_root_str = str(self.base_root).lower() + os.sep
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Valida si la ruta está contenida dentro del directorio base definido."""
-        return path_str.lower().startswith(self.base_root_str)
+        try:
+            target = Path(path_str).resolve(strict=False)
+            return str(target).lower().startswith(self.base_root_str)
+        except (OSError, RuntimeError):
+            return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
         """Valida que una entrada de directorio no viole políticas de seguridad o rutas bloqueadas."""
@@ -156,7 +161,7 @@ class Scanner:
     def _handle_directory(self, entry: os.DirEntry, stack: List[Path]) -> None:
         """Agrega un directorio al stack si no ha sido visitado previamente y es seguro."""
         try:
-            path = Path(entry.path)
+            path = Path(entry.path).resolve(strict=False)
             if path not in self.seen and not is_protected_path(path):
                 self.seen.add(path)
                 stack.append(path)
