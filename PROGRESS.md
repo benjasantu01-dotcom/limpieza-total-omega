@@ -7,45 +7,47 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **229** (45.4% de aceptación)
-- Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 211
+- Rechazadas por tests: 13
+- Rechazadas por guardia de seguridad: 33
+- Sin cambios (nada sustancial que mejorar): 17
+- Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 162 | 10 | 23 | 9 | 140 |
-| 2026-09-03 | 67 | 4 | 11 | 7 | 71 |
+| 2026-09-02 | 160 | 9 | 22 | 9 | 140 |
+| 2026-09-03 | 69 | 4 | 11 | 8 | 72 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **54**
 - manejo de errores y validación de entradas: **52**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **40**
-- rendimiento: **37**
+- rendimiento: **39**
+- robustez ante casos límite: **38**
 
 ## Mejoras aceptadas por archivo
 
+- `memory.py`: **22**
 - `browser.py`: **21**
-- `memory.py`: **21**
 - `assistant.py`: **19**
 - `quarantine.py`: **19**
 - `safety.py`: **19**
-- `settings.py`: **18**
-- `scanner.py`: **17**
-- `duplicates.py`: **17**
+- `duplicates.py`: **18**
+- `settings.py`: **17**
 - `diskreport.py`: **16**
 - `healthscore.py`: **16**
 - `organizer.py`: **16**
+- `scanner.py`: **16**
 - `branding.py`: **14**
 - `main.py`: **12**
 - `startup.py`: **4**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T07:01:35` **memory.py** (rendimiento): Se optimizó el rendimiento de `top_memory_processes` evitando el re-procesamiento innecesario de cadenas CSV mediante la persistencia del objeto `List[ProcessMemory]` ya parseado, eliminando la conversión redundante en cada llamado y mejorando la eficiencia de la caché de procesos.
+- `2026-09-03T06:59:38` **duplicates.py** (rendimiento): Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_protected_path` al procesar archivos que ya fueron filtrados por tamaño, reduciendo drásticamente las syscalls innecesarias en recorridos de disco grandes.
 - `2026-09-03T06:50:49` **diskreport.py** (rendimiento): Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando llamadas redundantes a `Path.resolve()` y `path.suffix` por operaciones sobre el objeto `DirEntry` ya existente, evitando miles de llamadas innecesarias al sistema de archivos durante escaneos profundos.
 - `2026-09-03T06:49:39` **assistant.py** (rendimiento): Optimicé el rendimiento de `_identify_active_problems` eliminando el slicing innecesario de la lista completa (`[:3]`) y evitando cálculos redundantes, asegurando que solo se procesen los criterios necesarios.
 - `2026-09-03T06:39:45` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings y se han aclarado las responsabilidades de los chequeos heurísticos, eliminando redundancias en `scan_file` para asegurar que el flujo de análisis sea predecible y fácil de mantener.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T06:18:57` **diskreport.py** (legibilidad y documentación): Se ha mejorado la documentación técnica del módulo mediante la adición de docstrings estructurados (usando formato tipo Google/NumPy) y la clarificación de tipos en funciones críticas, permitiendo que el mantenimiento futuro sea más seguro y menos propenso a errores al explicar explícitamente los contratos de datos de las funciones de alto nivel.
 - `2026-09-03T06:10:12` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de Type Hints en los argumentos de funciones internas y la clarificación de docstrings, asegurando que se explicite la naturaleza "solo lectura" y los límites de seguridad en las funciones críticas de recorrido de disco.
 - `2026-09-03T06:10:01` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación de los tipos de datos complejos (`PaletteDict` y `FontSizesDict`) mediante comentarios descriptivos que explican el propósito de cada clave, facilitando el mantenimiento y la extensibilidad del sistema de diseño.
-- `2026-09-03T06:09:24` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini`, extrayendo la lógica de extracción de respuesta JSON (anidada y propensa a errores) en una función dedicada, facilitando la comprensión del flujo de datos.
-- `2026-09-03T06:08:48` **startup.py** (manejo de errores y validación de entradas): Mejoré la robustez de `parse_registry_csv` añadiendo validaciones específicas para detectar si la entrada del registro es una ruta válida y eliminando el riesgo de procesar claves corruptas, asegurando que no se sigan rutas de red (UNC) que podrían colgar la interfaz.

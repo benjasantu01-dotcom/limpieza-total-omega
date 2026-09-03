@@ -257,7 +257,7 @@ def read_snapshot() -> MemorySnapshot:
     return _snap_cache_data or MemorySnapshot(BytesValue(0), BytesValue(0))
 
 _proc_cache_time: float = 0.0
-_proc_cache_data: str = ""
+_proc_cache_data: List[ProcessMemory] = []
 
 def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     """Consulta procesos pesados mediante PowerShell. Cachea resultados por 60s."""
@@ -273,12 +273,12 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
             if proc.returncode == 0 and proc.stdout:
-                _proc_cache_data = proc.stdout
+                _proc_cache_data = parse_windows_process_csv(proc.stdout)
                 _proc_cache_time = now
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
             pass
             
-    return parse_windows_process_csv(_proc_cache_data, limit=limit)
+    return _proc_cache_data[:limit]
 
 @lru_cache(maxsize=2)
 def pressure_level(snapshot: MemorySnapshot) -> str:

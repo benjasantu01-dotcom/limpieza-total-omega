@@ -864,3 +864,10 @@ FAILED evolve/tests/test_assistant.py::test_build_context_ignores_non_numeric_ex
 - `2026-09-03T06:50:49` ✅ Mejora aceptada en diskreport.py (enfoque: rendimiento). Optimicé el rendimiento de `walk_files` y `_collect_summary_data` reemplazando llamadas redundantes a `Path.resolve()` y `path.suffix` por operaciones sobre el objeto `DirEntry` ya existente, evitando miles de llamadas innecesarias al sistema de archivos durante escaneos profundos.
 - `2026-09-03T06:50:49` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T06:50:49` Corrida terminada. Total usado hoy: 160.
+- `2026-09-03T06:59:09` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-03T06:59:38` ✅ Mejora aceptada en duplicates.py (enfoque: rendimiento). Optimicé el rendimiento de `_collect_candidates` utilizando `os.scandir` de forma más eficiente y evitando llamadas redundantes a `is_protected_path` al procesar archivos que ya fueron filtrados por tamaño, reduciendo drásticamente las syscalls innecesarias en recorridos de disco grandes.
+- `2026-09-03T07:00:05` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: rendimiento).
+- `2026-09-03T07:01:18` ➖ Sin cambios en main.py (enfoque: rendimiento). Motivo: Optimicé el rendimiento del dashboard de salud mediante la implementación de `lru_cache` para el cálculo del score y métricas base, evitando recrear objetos pesados (instancias de `SystemMetrics` y `DriveInfo`) en cada llamada a `on_full_analysis` si los datos fuente no han cambiado.
+- `2026-09-03T07:01:35` ✅ Mejora aceptada en memory.py (enfoque: rendimiento). Se optimizó el rendimiento de `top_memory_processes` evitando el re-procesamiento innecesario de cadenas CSV mediante la persistencia del objeto `List[ProcessMemory]` ya parseado, eliminando la conversión redundante en cada llamado y mejorando la eficiencia de la caché de procesos.
+- `2026-09-03T07:01:35` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T07:01:35` Corrida terminada. Total usado hoy: 164.

@@ -183,7 +183,7 @@ def _collect_candidates(
     min_size: int, 
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
-    """Recorre directorios y retorna mapa {tamaño: lista_de_rutas}."""
+    """Recorre directorios y retorna mapa {tamaño: lista_de_rutas} optimizado."""
     temp_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Set[Tuple[int, int]] = set()
 
@@ -199,14 +199,14 @@ def _collect_candidates(
                 for entry in it:
                     try:
                         if entry.is_dir(follow_symlinks=False):
-                            entry_path = Path(entry.path)
-                            if not is_protected_path(entry_path) and not is_junction(entry_path):
-                                _scan_recursive(entry_path)
+                            p_dir = Path(entry.path)
+                            if not is_protected_path(p_dir) and not is_junction(p_dir):
+                                _scan_recursive(p_dir)
                         elif entry.is_file(follow_symlinks=False):
                             info = entry.stat()
                             if info.st_size >= min_size:
                                 p = Path(entry.path)
-                                if not is_protected_path(p) and os.access(p, os.R_OK):
+                                if not is_protected_path(p):
                                     temp_map[int(info.st_size)].append(p)
                     except (OSError, PermissionError):
                         continue
