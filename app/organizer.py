@@ -196,8 +196,6 @@ def _has_forbidden_chars(path: Path) -> bool:
 def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     """
     Realiza una validación exhaustiva de seguridad antes de mover o borrar un archivo.
-    Verifica: integridad de rutas, permisos de escritura, estado de bloqueo, 
-    ausencia de caracteres prohibidos y cumplimiento de reglas en safety.py.
     """
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     # Evitar desbordamiento de buffer en rutas largas
@@ -218,7 +216,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
         
         # Verificación de permisos de escritura y estado de bloqueo
         target_dir = dest.parent if dest.is_file() else dest
-        if not (os.access(s_res, os.W_OK) and os.access(target_dir, os.W_OK)): return False
+        if target_dir is None or not (os.access(s_res, os.W_OK) and os.access(target_dir, os.W_OK)): return False
         
         stat = s_res.stat()
         return stat.st_size > 0 and _passes_system_checks(s_res) and not _is_file_locked(s_res)
@@ -228,7 +226,7 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
 
 def _is_safe_to_move(junk_file: JunkFile, dest: Path) -> bool:
     """Verifica si un objeto JunkFile es seguro para la operación de movimiento."""
-    return isinstance(junk_file, JunkFile) and junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
+    return isinstance(junk_file, JunkFile) and junk_file.path is not None and junk_file.path.exists() and _is_safe_for_disk_op(junk_file.path, dest)
 
 
 def _should_scan_directory(entry: os.DirEntry) -> bool:
@@ -292,7 +290,8 @@ def sort_junk(files: List[JunkFile], by: str = "size", ascending: bool = True) -
 
 def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
     """Valida espacio en disco y seguridad de ruta antes de proponer una ruta de movimiento."""
-    if not isinstance(junk_file, JunkFile) or not isinstance(dest_base, Path): return None
+    if not isinstance(junk_file, JunkFile) or junk_file.path is None: return None
+    if not isinstance(dest_base, Path): return None
     if _is_unc_path(dest_base) or is_protected_path(dest_base): return None
     try:
         if not dest_base.exists() or not dest_base.is_dir(): return None
@@ -318,8 +317,6 @@ def _can_move_file(junk_file: JunkFile, dest_base: Path) -> Optional[Path]:
 def stage_for_review(files: List[JunkFile], review_dir: str = "~/LimpiezaTotalOmega/_Para_Revisar") -> Optional[Path]:
     """
     Traslada archivos basura a un área de cuarentena para revisión humana.
-    Realiza chequeos preventivos antes de cada operación individual de 'shutil.move' 
-    utilizando 'ensure_safe_to_modify' para garantizar la integridad.
     """
     if not files or not isinstance(review_dir, str): return None
 

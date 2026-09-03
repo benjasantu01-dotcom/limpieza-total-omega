@@ -202,6 +202,8 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             pid_val = int(parts[1])
             ws_val = int(parts[2])
             
+            if not name_val: continue
+            
             # Sanitización de seguridad: no procesar nombres o rutas protegidas
             if is_protected_path(name_val): continue
             

@@ -1445,3 +1445,13 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-03T01:13:08` ✅ Mejora aceptada en main.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de la validación de las entradas del usuario en `main.py`, específicamente en los métodos `_validate_numeric_setting` y `_collect_settings`, para evitar que caracteres inesperados o entradas vacías en los campos de texto corrompan la configuración, y añadí una validación explícita para evitar que la aplicación intente procesar rutas vacías en los métodos críticos de limpieza.
 - `2026-09-03T01:13:08` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T01:13:08` Corrida terminada. Total usado hoy: 28.
+- `2026-09-03T01:20:52` Arrancando corrida. Quedan hoy ~272 peticiones objetivo.
+- `2026-09-03T01:21:23` ✅ Mejora aceptada en memory.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `parse_windows_process_csv` añadiendo una validación explícita de `parts` antes de acceder a sus índices, evitando `IndexError` ante entradas mal formadas y fortaleciendo el manejo de errores en el bucle principal.
+- `2026-09-03T01:21:52` ✅ Mejora aceptada en organizer.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_is_safe_for_disk_op` y `_can_move_file` agregando validaciones de tipo explícitas y checks contra `None` para evitar `AttributeError` en rutas mal formadas, reforzando la integridad antes de cualquier operación de disco.
+- `2026-09-03T01:22:52` Problema de red hablando con Gemini (intento 1/3). Esperando 3s...
+- `2026-09-03T01:23:30` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-03T01:24:15` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-03T01:25:27` Red inestable tras 3 reintentos (HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=60)). Se salta esta iteración.
+- `2026-09-03T01:25:51` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 107): unterminated string literal (detected at line 107)
+- `2026-09-03T01:25:51` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T01:25:51` Corrida terminada. Total usado hoy: 32.
