@@ -573,3 +573,9 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-03T14:51:24` ✅ Mejora aceptada en safety.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `is_file_in_use` y `_is_junction` ante fallos de permisos o entornos no Windows, y optimicé el flujo de `_validate_structural_safety` para evitar que rutas inválidas avancen a chequeos más costosos, cumpliendo estrictamente con el enfoque de validación de entradas y manejo de excepciones.
 - `2026-09-03T14:51:24` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-03T14:51:24` Corrida terminada. Total usado hoy: 348.
+- `2026-09-03T14:59:43` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-03T15:00:10` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-03T15:00:40` ✅ Mejora aceptada en settings.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `_Validators.int` y `_Validators.str` implementando una validación estricta de tipos previo a la conversión y procesamiento, evitando que valores inesperados (como `None` o listas) causen comportamientos erráticos, además de asegurar que los límites numéricos sean manejados de forma defensiva dentro del decorador `type_check`.
+- `2026-09-03T15:00:40` Tope duro de presupuesto alcanzado en medio de la corrida. Freno.
+- `2026-09-03T15:00:40` Rotación — metrics: 2 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-03T15:00:40` Corrida terminada. Total usado hoy: 350.

@@ -186,10 +186,12 @@ class _Validators:
     @type_check
     def int(key: ConfigKey, val: Any) -> Optional[int]:
         """Convierte y acota valores numéricos según los límites de `_NUMERIC_LIMITS`."""
-        parsed_value = int(val)
-        limit = _NUMERIC_LIMITS.get(key)
-        if limit: return max(limit.min, min(limit.max, parsed_value))
-        return parsed_value
+        if isinstance(val, (bool, str, int, float)):
+            parsed_value = int(val)
+            limit = _NUMERIC_LIMITS.get(key)
+            if limit: return max(limit.min, min(limit.max, parsed_value))
+            return parsed_value
+        return None
 
     @staticmethod
     def path(key: ConfigKey, val: Any) -> Optional[str]:
