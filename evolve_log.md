@@ -592,3 +592,4 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-03T16:52:11` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-03T17:02:24` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-03T17:12:37` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-03T17:22:57` Presupuesto diario agotado (350 usados). Corte hasta mañana.
