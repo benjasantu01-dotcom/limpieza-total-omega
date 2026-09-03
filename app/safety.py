@@ -120,8 +120,8 @@ def is_running_as_admin() -> bool:
     """
     Verifica si el proceso actual tiene privilegios de administrador.
     
-    Returns:
-        bool: True si el proceso tiene privilegios elevados, False en caso contrario.
+    Usa ctypes para consultar la API de Windows en sistemas NT o
+    verifica el UID en entornos Unix-like.
     """
     if os.name != 'nt':
         try:
@@ -137,13 +137,10 @@ def is_running_as_admin() -> bool:
 
 def _has_invalid_chars(path_str: str | None) -> bool:
     """
-    Valida la ausencia de caracteres de control o marcas RTL en la ruta.
+    Detecta caracteres prohibidos en rutas de Windows o potencialmente maliciosos.
     
-    Args:
-        path_str: Cadena de la ruta a validar.
-        
-    Returns:
-        bool: True si detecta caracteres de riesgo (RTL, control, etc).
+    Busca caracteres de control y marcas RTL (Right-to-Left) que pueden
+    utilizarse para ofuscar nombres de archivos reales.
     """
     if not isinstance(path_str, str) or not path_str: 
         return True
@@ -166,10 +163,9 @@ def _has_alternate_data_stream(path_name: str) -> bool:
 def _is_system_or_hidden(path: Path) -> bool:
     """
     Verifica si el archivo tiene atributos de sistema u oculto.
-    Usa el campo `st_file_attributes` disponible en Windows.
+    Usa el campo `st_file_attributes` disponible en Windows (WinAPI).
     """
     try:
-        # Usamos lstat para no seguir enlaces simbólicos durante la verificación
         st = path.lstat()
         return bool(getattr(st, 'st_file_attributes', 0) & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_OFFLINE))
     except (AttributeError, OSError):
@@ -194,7 +190,7 @@ def _is_junction(path: Path) -> bool:
 def _is_reparse_point(path: Path) -> bool:
     """
     Determina si la ruta es un punto de reparse (Junction o Symlink).
-    Combina atributos nativos y validación por `pathlib`.
+    Combina atributos nativos del sistema de archivos y validación por `pathlib`.
     """
     try:
         st = path.lstat()
@@ -207,7 +203,9 @@ def _is_reparse_point(path: Path) -> bool:
 def _is_file_in_use(path_str: str) -> bool:
     """
     Verifica si un archivo está bloqueado por otro proceso.
-    Intenta abrir el archivo con acceso exclusivo de lectura/escritura controlado.
+    
+    Intenta abrir el archivo mediante `CreateFileW` con modo de compartición 
+    restringido. Si falla, el archivo está siendo usado exclusivamente.
     """
     if os.name != 'nt' or not isinstance(path_str, str):
         return False
@@ -249,6 +247,7 @@ _VALIDATORS: Final[list[_IntegrityCheck]] = [
 def _check_file_integrity_cached(path_str: str) -> bool:
     """
     Realiza un chequeo exhaustivo de integridad y cachea el resultado.
+    Valida contra todos los predicados definidos en _VALIDATORS.
     """
     path = Path(path_str)
     try:
@@ -265,6 +264,7 @@ def _check_file_integrity_cached(path_str: str) -> bool:
 def _check_file_integrity(path: Path) -> None:
     """
     Wrapper que utiliza el chequeo cacheado para evitar syscalls redundantes.
+    Lanza UnsafePathError si la validación de integridad falla.
     """
     if not _check_file_integrity_cached(str(path)):
         # Si falla, limpiamos la caché por si el estado del archivo cambió
@@ -283,7 +283,10 @@ def _is_readonly(path: Path) -> bool:
 
 @lru_cache(maxsize=4096)
 def normalize(path: PathLike) -> Path:
-    """Estandariza rutas, resuelve enlaces y aplica límites de seguridad de longitud."""
+    """
+    Estandariza rutas, resuelve enlaces y aplica límites de seguridad de longitud.
+    Bloquea explícitamente el uso de '..' para evitar Path Traversal.
+    """
     if path is None: raise ValueError("Ruta nula recibida.")
     try:
         path_str = str(path).strip()
@@ -319,6 +322,9 @@ def is_drive_root(path: PathLike) -> bool:
 def is_protected_path(path: PathLike) -> bool:
     """
     Verifica si la ruta reside dentro de directorios de sistema protegidos.
+    
+    Analiza tanto rutas de entorno del sistema como los nombres protegidos
+    definidos en `PROTECTED_DIR_NAMES`.
     """
     if not path: return True
     try:
@@ -359,10 +365,10 @@ def is_sensitive_file(path: PathLike) -> bool:
 
 def _validate_structural_safety(target_path: Path, path_string: str) -> None:
     """
-    Valida la integridad técnica de la cadena de la ruta.
+    Valida la integridad técnica de la cadena de la ruta antes del acceso al disco.
     
-    Comprueba riesgos estructurales como inyección de nulos, caracteres de control,
-    nombres de dispositivos reservados, rutas UNC (red) y límites de longitud.
+    Comprueba: inyección de nulos, caracteres prohibidos, dispositivos reservados,
+    rutas de red (UNC) y longitud máxima de ruta (260 chars).
     """
     if "\0" in path_string:
         raise UnsafePathError("Inyección de carácter nulo detectada.")
@@ -383,8 +389,8 @@ def _validate_boundary_conditions(target_path: Path, root_directory: PathLike | 
     """
     Valida las restricciones lógicas y de alcance (scope) del sistema.
     
-    Verifica que la ruta esté dentro del alcance definido por el usuario, 
-    fuera del directorio de la aplicación, y no sea una ruta de sistema protegida.
+    Verifica que la operación esté dentro del alcance configurado por el usuario,
+    evita el directorio de la aplicación, raíces de unidad y rutas protegidas.
     """
     if root_directory and not is_within_directory(target_path, root_directory, allow_equal=True):
         raise UnsafePathError("La ruta objetivo está fuera del alcance definido por el usuario.")
@@ -402,9 +408,9 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
     """
     Valida si una ruta es segura para ser modificada.
     
-    Esta función es el punto de entrada crítico: normaliza, valida límites
-    estructurales, restricciones de alcance y realiza un chequeo profundo de integridad.
-    Si cualquier validación falla, lanza `UnsafePathError`.
+    Es el punto de entrada principal para operaciones de escritura. Combina
+    validaciones estructurales, límites de scope, y chequeo de integridad profunda.
+    Lanza UnsafePathError ante cualquier irregularidad detectada.
     """
     if path is None: raise UnsafePathError("Ruta nula recibida para validación.")
 
@@ -443,8 +449,8 @@ def ensure_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False, base
 
 def is_safe_to_modify(path: PathLike, *, allow_sensitive: bool = False) -> TypeGuard[PathLike]:
     """
-    Retorna True si una ruta es segura para ser modificada; 
-    debe usarse en condiciones `if` dentro de los módulos de procesamiento.
+    Retorna True si una ruta es segura para ser modificada.
+    Debe usarse en condiciones `if` dentro de los módulos de procesamiento.
     """
     try:
         ensure_safe_to_modify(path, allow_sensitive=allow_sensitive)

@@ -6,36 +6,36 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **228** (45.2% de aceptación)
-- Rechazadas por tests: 10
-- Rechazadas por guardia de seguridad: 34
-- Sin cambios (nada sustancial que mejorar): 20
+- Mejoras aceptadas: **229** (45.4% de aceptación)
+- Rechazadas por tests: 8
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 19
 - Sin respuesta de la IA (error o límite): 212
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 121 | 5 | 17 | 8 | 97 |
-| 2026-09-03 | 107 | 5 | 17 | 12 | 115 |
+| 2026-09-02 | 120 | 3 | 17 | 7 | 97 |
+| 2026-09-03 | 109 | 5 | 19 | 12 | 115 |
 
 ## Mejoras aceptadas por enfoque
 
 - manejo de errores y validación de entradas: **53**
-- legibilidad y documentación: **50**
+- legibilidad y documentación: **52**
 - seguridad defensiva: **46**
-- robustez ante casos límite: **43**
+- robustez ante casos límite: **42**
 - rendimiento: **36**
 
 ## Mejoras aceptadas por archivo
 
-- `browser.py`: **21**
 - `memory.py`: **21**
 - `organizer.py`: **20**
 - `quarantine.py`: **20**
-- `scanner.py`: **19**
+- `scanner.py`: **20**
+- `browser.py`: **20**
+- `safety.py`: **18**
 - `assistant.py`: **18**
-- `safety.py`: **17**
 - `settings.py`: **17**
 - `duplicates.py`: **16**
 - `healthscore.py`: **16**
@@ -46,6 +46,8 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-03T11:06:53` **scanner.py** (legibilidad y documentación): Mejoré la documentación técnica mediante docstrings precisos en los métodos del `Scanner` y los checks heurísticos, clarificando el propósito, las dependencias de estado (como `now_ts`) y las limitaciones operativas para facilitar el mantenimiento.
+- `2026-09-03T11:05:22` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación interna y legibilidad de `safety.py` mediante la adición de docstrings técnicos detallados en los validadores, aclarando el contexto de las verificaciones de integridad y siguiendo el estándar solicitado para facilitar el mantenimiento del proyecto.
 - `2026-09-03T10:56:41` **quarantine.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en funciones críticas (`_atomic_isolate_file`, `_validate_isolation_request`, `quarantine_file`) y la estandarización de tipos, asegurando que la lógica de aislamiento y las garantías de seguridad sean comprensibles para el equipo.
 - `2026-09-03T10:56:22` **organizer.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `organizer.py` mediante la refactorización de `_is_safe_for_disk_op` (dividiéndola en subtareas lógicas) y la inclusión de type hints y docstrings enriquecidos en funciones críticas, facilitando la comprensión del flujo de seguridad para futuros desarrollos.
 - `2026-09-03T10:55:54` **memory.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `memory.py` mediante la aplicación de type hints faltantes en funciones internas, la estandarización de las excepciones para mejorar la robustez, y la documentación con docstrings explicativos para los helper de bajo nivel.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T10:34:42` **settings.py** (manejo de errores y validación de entradas): Refactoricé el decorador `type_check` para mejorar la robustez al capturar errores de ejecución dentro de los validadores y añadí un manejo estricto de excepciones en `_Validators.int` para garantizar que valores malformados retornen `None` sin propagar errores hacia la lógica de carga.
 - `2026-09-03T10:27:32` **scanner.py** (manejo de errores y validación de entradas): Reforcé la robustez de `Scanner.process_entry` y `scan_directory` validando explícitamente parámetros críticos (`entry.path`, `entry.name`) y manejando posibles valores `None` o rutas vacías que podrían causar errores durante la iteración en sistemas con permisos restrictivos.
 - `2026-09-03T10:26:51` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `ensure_safe_to_modify` capturando explícitamente posibles errores durante `p.is_file()` y `p.is_dir()` para evitar excepciones inesperadas al interactuar con el sistema de archivos, garantizando que el `UnsafePathError` sea la única interfaz de fallo esperada.
-- `2026-09-03T10:25:14` **quarantine.py** (manejo de errores y validación de entradas): Se introdujo una validación robusta de `None` y tipos en `_is_file_locked` y `_safe_unlink` para evitar excepciones imprevistas durante el chequeo de bloqueos o el borrado, asegurando que las operaciones sobre `Path` solo ocurran si el objeto es válido.
-- `2026-09-03T10:15:47` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez en la validación de parámetros de entrada en `scan_for_junk` y `delete_reviewed`, reemplazando chequeos laxos por validaciones de tipo explícitas y manejo defensivo de errores, evitando que valores inesperados causen excepciones no controladas.

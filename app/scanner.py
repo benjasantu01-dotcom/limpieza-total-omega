@@ -61,13 +61,13 @@ MAX_PATH_LENGTH: Final[int] = 260
 WIN_FILE_ATTR_REPARSE_POINT: Final[int] = 0x400
 
 def check_double_extension(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Analiza si el nombre del archivo contiene extensiones dobles engañosas."""
+    """Valida si el nombre del archivo sugiere una extensión oculta tras una extensión de documento."""
     if path.name and DOUBLE_EXTENSION_RE.search(path.name):
         return Suspicion(path, "Doble extensión disfrazando el tipo real de archivo", "warning")
     return None
 
 def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Verifica si un ejecutable fue modificado recientemente en carpetas monitoreadas."""
+    """Evalúa si un ejecutable ha sido modificado recientemente en directorios de usuario de alto riesgo."""
     path_str = str(path).lower()
     if not any(f"\\{folder}\\" in path_str for folder in WATCHED_FOLDERS):
         return None
@@ -81,7 +81,7 @@ def check_recent_executable_in_downloads(path: Path, entry: Optional[os.DirEntry
     return None
 
 def check_system_lookalike(path: Path, entry: Optional[os.DirEntry] = None, now_ts: float = 0.0) -> Optional[Suspicion]:
-    """Valida si un ejecutable con nombre crítico del sistema reside fuera de directorios protegidos."""
+    """Detecta ejecutables con nombres de servicios críticos del sistema fuera de system32."""
     if path.name and path.name.lower() in SYSTEM_LOOKALIKES:
         if not is_protected_path(path) and SYSTEM32_LOWER not in str(path).lower():
             return Suspicion(path, "Nombre de proceso de sistema fuera de System32", "warning")
@@ -96,6 +96,7 @@ EXECUTABLE_CHECK_REGISTRY: Final[List[SuspicionCheck]] = [
 class Scanner:
     """
     Controlador de estado para el escaneo recursivo del sistema de archivos.
+    Mantiene el registro de archivos visitados y la raíz base para evitar escapes.
     """
     
     def __init__(self, base_root: Path) -> None:
@@ -106,7 +107,7 @@ class Scanner:
         self.now_ts: float = datetime.now().timestamp()
 
     def _is_inside_base_root(self, path_str: str) -> bool:
-        """Verifica que la ruta resuelta pertenezca al árbol de directorios raíz."""
+        """Verifica que la ruta resuelta esté contenida en la jerarquía del directorio raíz."""
         if not path_str:
             return False
         try:
@@ -116,7 +117,10 @@ class Scanner:
             return False
 
     def _is_safe_entry(self, entry: os.DirEntry) -> bool:
-        """Valida que una entrada cumpla con las políticas de seguridad y restricciones de ruta."""
+        """
+        Valida criterios de seguridad antes de procesar una entrada.
+        Verifica: longitud de ruta, caracteres inválidos, puntos de reparse y zonas protegidas.
+        """
         if not entry or not entry.path or len(entry.path) > MAX_PATH_LENGTH or entry.path.startswith("\\\\"):
             return False
         
@@ -132,24 +136,24 @@ class Scanner:
             return False
 
     def _is_reparse_point(self, entry: os.DirEntry) -> bool:
-        """Determina si una entrada es un punto de reparse (junction/link)."""
+        """Determina si la entrada apunta a un junction o symlink usando atributos de archivo de Windows."""
         try:
             if entry.is_symlink():
                 return True
-            # Usar lstat para evitar seguir enlaces durante la verificación
+            # Usar lstat evita resolver el enlace; verificamos los atributos crudos de Windows
             stats = entry.stat(follow_symlinks=False)
             return bool(stats.st_file_attributes & WIN_FILE_ATTR_REPARSE_POINT)
         except (OSError, AttributeError, TypeError, FileNotFoundError, PermissionError):
             return True 
 
     def _handle_directory(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Agrega un directorio al stack de procesamiento si es nuevo."""
+        """Añade un directorio validado a la pila de búsqueda si no ha sido visitado previamente."""
         if entry.path and entry.path not in self.seen:
             self.seen.add(entry.path)
             stack.append(entry.path)
 
     def process_entry(self, entry: os.DirEntry, stack: List[str]) -> None:
-        """Distribuye la entrada a la lógica de carpetas o al motor de análisis de archivos."""
+        """Clasifica una entrada para su procesamiento: recursión de directorios o escaneo de archivos."""
         try:
             if not self._is_safe_entry(entry):
                 return
@@ -164,7 +168,7 @@ class Scanner:
             pass
 
     def _run_file_heuristics(self, path: Path, entry: os.DirEntry, ext: str) -> None:
-        """Ejecuta heurísticas específicas y registra hallazgos si se encuentran sospechas."""
+        """Ejecuta el conjunto de heurísticas registradas sobre un archivo sospechoso."""
         if path.name and RTL_CHAR_RE.search(path.name):
             self.results.append(Suspicion(path, "Nombre contiene caracteres de ofuscación (RTL)", "critical"))
         self.results.extend(scan_file(path, self.now_ts, entry=entry, ext=ext))
@@ -194,7 +198,7 @@ def scan_file(path: Path, now_ts: float, entry: Optional[os.DirEntry] = None, ex
     return findings
 
 def scan_directory(directory: Union[str, Path, None]) -> ScanResult:
-    """Punto de entrada principal para escaneo recursivo de una ruta."""
+    """Punto de entrada principal para escaneo recursivo de una ruta. Retorna lista de hallazgos."""
     if not directory:
         return []
         
