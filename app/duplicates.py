@@ -208,6 +208,7 @@ def _collect_candidates(
             pass
 
     if directories and isinstance(directories, Iterable):
+        # Filtrado defensivo para asegurar solo rutas válidas y procesables
         roots = {r for item in directories if item and (r := _resolve_and_verify_root(item))}
         for root in roots:
             _scan_recursive(root)
@@ -247,7 +248,7 @@ def _process_size_group(size: int, paths: List[Path]) -> List[DuplicateGroup]:
     Determina la estrategia de comparación según el tamaño del archivo:
     los archivos pequeños usan solo hash parcial, los grandes se refinan con hash completo.
     """
-    if len(paths) < 2: 
+    if not isinstance(size, int) or size <= 0 or not paths or len(paths) < 2: 
         return []
     
     if size <= PARTIAL_READ_BYTES:
@@ -268,8 +269,11 @@ def find_duplicates(directories: Iterable[Union[str, Path]], min_size: int = 102
         return []
         
     groups: List[DuplicateGroup] = []
-    for size, paths in _collect_candidates(directories, min_size, skip_protected).items():
+    # Usar dict temporal para consolidar resultados de tamaño
+    size_map = _collect_candidates(directories, min_size, skip_protected)
+    for size, paths in size_map.items():
         groups.extend(_process_size_group(size, paths))
+        
     groups.sort(key=lambda g: g.wasted_bytes, reverse=True)
     return groups
 

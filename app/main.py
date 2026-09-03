@@ -805,15 +805,12 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _safe_get_entry_value(self, entry_widget: ctk.CTkEntry, default: Any, numeric: bool = False) -> Any:
         """Extrae el valor de un widget de entrada de forma segura."""
+        if not entry_widget or not entry_widget.winfo_exists():
+            return default
         try:
-            if not entry_widget or not entry_widget.winfo_exists():
-                return default
             val = entry_widget.get().strip()
             if not val: return default
-            
-            # Limpieza de caracteres no imprimibles y validación
             val = "".join(c for c in val if c.isprintable())
-            
             if numeric:
                 val_int = int(val)
                 return val_int if val_int >= 0 else default
@@ -838,6 +835,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
 
     def _is_safe_path(self, path: Union[str, Path]) -> bool:
         """Verifica si una ruta es segura (no simbólica ni protegida)."""
+        if not path: return False
         try:
             p = Path(path).resolve(strict=True)
             if p.is_symlink():
@@ -1727,8 +1725,7 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
     def _validate_numeric_setting(self, value: Any, default: int) -> int:
         """Valida que una entrada numérica sea válida."""
         try:
-            if value is None:
-                return default
+            if value is None: return default
             val = int(str(value).strip())
             return val if val > 0 else default
         except (ValueError, TypeError):
@@ -1744,10 +1741,10 @@ class LimpiezaTotalOmegaApp(ctk.CTk):
                 continue
         
         valores["duplicados_tamano_minimo_kb"] = self._validate_numeric_setting(
-            self._safe_get_entry_value(getattr(self, 'min_dup_entry', None), 64, numeric=True), 64
+            self._safe_get_entry_value(getattr(self, 'min_dup_entry', None), None, numeric=True), 64
         )
         valores["top_archivos"] = self._validate_numeric_setting(
-            self._safe_get_entry_value(getattr(self, 'top_files_entry', None), 15, numeric=True), 15
+            self._safe_get_entry_value(getattr(self, 'top_files_entry', None), None, numeric=True), 15
         )
             
         clave_raw = self._safe_get_entry_value(getattr(self, 'api_key_entry', None), "")

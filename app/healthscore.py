@@ -207,33 +207,36 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
     if metrics is None or not isinstance(metrics, SystemMetrics) or not metrics.is_finite():
         return HealthResult(0, "F", {}, ["Error: Datos de sistema inválidos o corruptos."])
     
-    metrics.validate()
-    
-    metric_breakdown: Dict[MetricKey, int] = {}
-    total_pts: float = 0.0
-    recommendations: List[str] = []
-    
-    for area, weight in _WEIGHT_ITEMS_INT:
-        scorer = _SCORERS[area]
-        ratio = scorer(metrics)
-        pts = int(round(ratio * weight))
-        metric_breakdown[area] = pts
-        total_pts += float(pts)
+    try:
+        metrics.validate()
+        metric_breakdown: Dict[MetricKey, int] = {}
+        total_pts: float = 0.0
+        recommendations: List[str] = []
         
-        for rule in _RULES_BY_AREA.get(area, []):
-            if rule.check(metrics, ratio):
-                recommendations.append(rule.message_factory(metrics))
-    
-    final_score = int(_clamp(total_pts, 0.0, 100.0))
-    if metrics.quarantined_count > 0:
-        recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
-    
-    return HealthResult(
-        score=final_score, 
-        grade=grade_for_score(final_score), 
-        breakdown=metric_breakdown, 
-        recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
-    )
+        for area, weight in _WEIGHT_ITEMS_INT:
+            scorer = _SCORERS.get(area)
+            if not scorer: continue
+            ratio = scorer(metrics)
+            pts = int(round(ratio * weight))
+            metric_breakdown[area] = pts
+            total_pts += float(pts)
+            
+            for rule in _RULES_BY_AREA.get(area, []):
+                if rule.check(metrics, ratio):
+                    recommendations.append(rule.message_factory(metrics))
+        
+        final_score = int(_clamp(total_pts, 0.0, 100.0))
+        if metrics.quarantined_count > 0:
+            recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
+        
+        return HealthResult(
+            score=final_score, 
+            grade=grade_for_score(final_score), 
+            breakdown=metric_breakdown, 
+            recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+        )
+    except (AttributeError, ValueError, TypeError):
+        return HealthResult(0, "F", {}, ["Error inesperado al calcular métricas."])
 
 def _render_bar(pts: int, maximo: int) -> str:
     """Genera una cadena de texto representando el progreso de los puntos."""
@@ -246,8 +249,10 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe no disponible o formato inválido."]
     
     lines = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
+    breakdown = result.breakdown if isinstance(result.breakdown, dict) else {}
+    
     for area, maximo in _WEIGHT_ITEMS_INT:
-        puntos = result.breakdown.get(area, 0) if isinstance(result.breakdown, dict) else 0
+        puntos = breakdown.get(area, 0)
         bar = _render_bar(puntos, maximo)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
     

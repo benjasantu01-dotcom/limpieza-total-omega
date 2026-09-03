@@ -276,26 +276,22 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                         break
                         
                     try:
-                        if not entry.path:
+                        if not entry or not entry.path:
                             continue
                         
-                        # Capturar error de resolución de ruta en archivos inaccesibles
                         try:
                             entry_path = Path(entry.path).resolve()
-                        except (OSError, PermissionError):
+                        except (OSError, PermissionError, RuntimeError):
                             continue
                             
-                        # Impedir escape de ruta (Path Traversal)
                         if not str(entry_path).startswith(str(root_path)):
                             continue
 
-                        # Leer atributos del archivo: es un punto crítico de error
                         try:
                             st = entry.stat(follow_symlinks=False)
                         except (PermissionError, OSError):
                             continue
                         
-                        # Ignorar puntos de reparse (Junctions, Symlinks, etc)
                         if entry.is_symlink() or (os.name == 'nt' and (getattr(st, 'st_file_attributes', 0) & REPARSE_POINT_ATTR)):
                             continue
                         
@@ -306,8 +302,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                 stack.append(entry_path)
                                     
                         elif entry.is_file():
-                            size = max(0, st.st_size)
-                            yield entry_path, size
+                            yield entry_path, max(0, int(st.st_size))
                     except (PermissionError, OSError, FileNotFoundError):
                         continue
         except (PermissionError, OSError, FileNotFoundError):
@@ -420,7 +415,7 @@ def _collect_summary_data(directory: Path, skip_protected: bool) -> SummaryData:
     top_files_heap: List[Tuple[int, Path]] = []
     
     for path, size in walk_files(directory, skip_protected):
-        if not path or not isinstance(size, (int, float)):
+        if not path:
             continue
         total_bytes += int(size)
         total_files += 1
@@ -445,8 +440,8 @@ def summarize(directory: Union[str, os.PathLike, None], skip_protected: bool = T
         return ["Error: Ruta inaccesible o prohibida."]
             
     try:
-        data: SummaryData = _collect_summary_data(p_input, skip_protected)
-    except Exception as e:
+        data = _collect_summary_data(p_input, skip_protected)
+    except (OSError, PermissionError, Exception) as e:
         return [f"Error: Fallo inesperado durante el análisis ({type(e).__name__})."]
     
     if data.total_files == 0:
