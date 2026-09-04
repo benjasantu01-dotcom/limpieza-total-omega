@@ -298,8 +298,10 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     try:
         ruta = settings_path(custom_base)
+        # Validación final de seguridad antes de proceder a la escritura
+        if not is_safe_to_modify(str(ruta)): return None
+
         parent = ruta.parent
-        
         if not parent.exists(): parent.mkdir(parents=True, exist_ok=True)
         if not parent.is_dir() or is_protected_path(str(parent)) or not _Validators._is_safe_path(str(parent)):
             return None

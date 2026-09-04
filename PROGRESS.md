@@ -6,24 +6,24 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **226** (44.8% de aceptación)
-- Rechazadas por tests: 16
+- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Rechazadas por tests: 17
 - Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 18
-- Sin respuesta de la IA (error o límite): 207
+- Sin respuesta de la IA (error o límite): 205
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 148 | 7 | 24 | 13 | 148 |
-| 2026-09-04 | 78 | 9 | 13 | 5 | 59 |
+| 2026-09-03 | 148 | 7 | 24 | 13 | 144 |
+| 2026-09-04 | 79 | 10 | 13 | 5 | 61 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
+- seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **45**
-- seguridad defensiva: **45**
 - robustez ante casos límite: **41**
 - rendimiento: **39**
 
@@ -34,9 +34,9 @@ Este archivo se regenera solo en cada corrida a partir de
 - `duplicates.py`: **19**
 - `organizer.py`: **19**
 - `scanner.py`: **19**
+- `settings.py`: **19**
 - `browser.py`: **18**
 - `memory.py`: **18**
-- `settings.py`: **18**
 - `quarantine.py`: **18**
 - `safety.py`: **15**
 - `diskreport.py`: **11**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T07:02:05` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita mediante `is_safe_to_modify` sobre la ruta final del archivo de configuración antes de cualquier escritura, asegurando que el archivo no pueda ser redirigido accidentalmente fuera del directorio base permitido.
 - `2026-09-04T06:44:45` **organizer.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_process_directory` al reemplazar `os.path.splitext` (que no maneja correctamente nombres de archivo complejos) por `pathlib.Path.suffix`, asegurando consistencia con las reglas de `JUNK_EXTENSIONS` y añadiendo validaciones de seguridad de ruta antes de procesar cada entrada del sistema de archivos.
 - `2026-09-04T06:41:44` **healthscore.py** (seguridad defensiva): Se reforzó la robustez del sistema contra entradas inesperadas agregando validación de tipo y rango en las funciones de puntuación (`score_*`) y protegí la ejecución del pipeline ante posibles errores en los `message_factory` mediante un bloque `try-except` más granular.
 - `2026-09-04T06:32:46` **duplicates.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `_collect_candidates` para garantizar que, durante el recorrido recursivo, cada nueva subcarpeta sea validada explícitamente mediante `is_protected_path` antes de intentar acceder a su contenido, evitando seguir rutas que podrían haber sido movidas o alteradas durante el escaneo.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T06:02:45` **memory.py** (robustez ante casos límite): Se mejora la robustez de `parse_windows_process_csv` implementando una validación explícita para evitar que una línea con formato inesperado o valores numéricos corruptos (como un valor de `WorkingSet` negativo o extremadamente grande) cause inconsistencias, y se asegura que el filtrado de procesos protegidos sea resiliente ante errores de tipo durante la iteración.
 - `2026-09-04T06:02:28` **main.py** (robustez ante casos límite): Se ha mejorado la robustez de `on_target_choice_changed` al implementar una validación de seguridad proactiva mediante `path.exists()` y `safety.is_safe_to_modify` antes de aceptar la entrada del usuario, evitando el uso de rutas inexistentes o inaccesibles que podrían causar excepciones no controladas durante la fase de análisis.
 - `2026-09-04T06:01:16` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `compute_score` ante valores críticos en los límites de normalización (evitando divisiones por cero potenciales) y añadí un manejo de excepciones más granular en `summarize` para asegurar que la interfaz no colapse ante datos parcialmente corruptos.
-- `2026-09-04T05:52:07` **diskreport.py** (robustez ante casos límite): Se reforzó la robustez de `walk_files` y `drive_usage` ante condiciones inesperadas de I/O y rutas no válidas, añadiendo una validación explícita de `is_absolute()` y manejo de errores ante nombres de archivos o rutas con caracteres inválidos (Unicode/System) que podrían causar colapsos durante el escaneo recursivo.
