@@ -570,40 +570,34 @@ def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
         return None
 
 def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> Optional[str]:
-    if not isinstance(api_key, str) or not _API_KEY_REGEX.match(api_key): return None
-    if not isinstance(model, str) or not _MODEL_NAME_REGEX.match(model): return None
-    
+    """Gestiona la llamada remota a Gemini con validaciones estrictas de seguridad."""
+    # 1. Validación de credenciales y contexto
+    if not _API_KEY_REGEX.match(api_key) or not _MODEL_NAME_REGEX.match(model): return None
     safe_c = _CONTROL_CHARS_REGEX.sub(" ", context_text)
-    if not _ensure_safe_text(safe_c) or "Error" in safe_c:
-        return None
+    if not _ensure_safe_text(safe_c) or "Error" in safe_c: return None
     
+    # 2. Construcción de payload
     payload = _build_payload(question, safe_c)
     if not payload or len(payload) > _MAX_PROMPT_LIMIT: return None
     
+    # 3. Solicitud HTTP
     try:
         url = _ENDPOINT.format(model=model) + f"?key={api_key}"
-        req = urllib.request.Request(
-            url, 
-            data=payload, 
-            headers={"Content-Type": "application/json; charset=utf-8"}, 
-            method="POST"
-        )
+        req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json; charset=utf-8"}, method="POST")
         with urllib.request.urlopen(req, timeout=_TIMEOUT_SECONDS) as res:
             if res.status != 200: return None
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
-            try:
-                data = json.loads(raw_res.decode("utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
-                return None
+            
+            data = json.loads(raw_res.decode("utf-8"))
             raw_text = _extract_text_from_gemini_json(data)
             if not raw_text: return None
+            
+            # 4. Limpieza final de respuesta
             clean = _PATH_INJECTION_REGEX.sub(" ", _CONTROL_CHARS_REGEX.sub(" ", raw_text.strip()))
             final = _validate_response_length(clean)
-            if not _ensure_safe_text(final) or is_protected_path(final):
-                return None
-            return final
-    except (urllib.error.URLError, OSError, KeyError, TypeError):
+            return final if _ensure_safe_text(final) and not is_protected_path(final) else None
+    except (urllib.error.URLError, OSError, json.JSONDecodeError, UnicodeDecodeError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,

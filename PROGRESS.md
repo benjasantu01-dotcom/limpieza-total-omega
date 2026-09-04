@@ -5,47 +5,51 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Resumen general
 
-- Iteraciones totales: **502**
-- Mejoras aceptadas: **229** (45.6% de aceptación)
+- Iteraciones totales: **504**
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 9
 - Rechazadas por guardia de seguridad: 35
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 213
+- Sin respuesta de la IA (error o límite): 214
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 81 | 2 | 11 | 3 | 55 |
+| 2026-09-02 | 79 | 2 | 11 | 3 | 55 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
+| 2026-09-04 | 3 | 0 | 0 | 0 | 1 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **49**
+- legibilidad y documentación: **48**
 - robustez ante casos límite: **46**
-- legibilidad y documentación: **45**
-- rendimiento: **40**
+- rendimiento: **38**
 
 ## Mejoras aceptadas por archivo
 
-- `memory.py`: **20**
-- `organizer.py`: **20**
-- `browser.py`: **20**
+- `browser.py`: **21**
 - `scanner.py`: **20**
 - `quarantine.py`: **19**
+- `memory.py`: **19**
+- `organizer.py`: **19**
 - `settings.py`: **18**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
+- `assistant.py`: **18**
 - `safety.py`: **17**
-- `assistant.py`: **17**
 - `diskreport.py`: **13**
 - `main.py`: **13**
-- `branding.py`: **10**
+- `branding.py`: **11**
 - `startup.py`: **6**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T00:04:30` **browser.py** (legibilidad y documentación): Mejoré la documentación técnica y la precisión de los type hints en `browser.py` para explicitar el uso de `os.DirEntry` y las restricciones de las APIs de Windows, facilitando la comprensión del flujo de escaneo seguro.
+- `2026-09-04T00:04:14` **branding.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de manipulación de color y dibujo para clarificar la lógica de transformación geométrica y cromática, facilitando el mantenimiento técnico.
+- `2026-09-04T00:03:37` **assistant.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` hacia un diseño de "fallo rápido" (guard clauses) y la limpieza del flujo de ejecución del asistente en línea, clarificando la separación entre la validación de seguridad y la lógica de red.
 - `2026-09-03T15:00:40` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_Validators.int` y `_Validators.str` implementando una validación estricta de tipos previo a la conversión y procesamiento, evitando que valores inesperados (como `None` o listas) causen comportamientos erráticos, además de asegurar que los límites numéricos sean manejados de forma defensiva dentro del decorador `type_check`.
 - `2026-09-03T14:51:24` **safety.py** (manejo de errores y validación de entradas): Mejoré la robustez de `is_file_in_use` y `_is_junction` ante fallos de permisos o entornos no Windows, y optimicé el flujo de `_validate_structural_safety` para evitar que rutas inválidas avancen a chequeos más costosos, cumpliendo estrictamente con el enfoque de validación de entradas y manejo de excepciones.
 - `2026-09-03T14:50:02` **organizer.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `_is_safe_for_disk_op` y `_can_move_file` añadiendo chequeos explícitos para evitar el procesamiento de rutas vacías, nulas o malformadas mediante el uso de `None` y validaciones de tipo más estrictas, evitando así que excepciones en tiempo de ejecución interrumpan el flujo de escaneo.
@@ -58,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-03T13:07:41` **settings.py** (seguridad defensiva): Se reforzó la seguridad de `save()` añadiendo una validación explícita con `is_protected_path` al directorio padre, previniendo que la configuración se escriba accidentalmente en rutas críticas del sistema incluso si la validación de ruta individual fallara.
 - `2026-09-03T12:58:44` **scanner.py** (seguridad defensiva): Se ha mejorado `Scanner._is_inside_base_root` para prevenir ataques de trayectoria (path traversal) mediante el uso de `pathlib.Path.parts`, evitando la comparación de cadenas que podría ser engañosa con nombres de carpetas similares, garantizando que el escaneo nunca escape del directorio base.
 - `2026-09-03T12:58:31` **safety.py** (seguridad defensiva): Se ha mejorado la protección contra la manipulación de archivos bloqueados mediante la implementación de un chequeo preventivo de `sharing violation` en la función `_is_file_in_use`, asegurando que el intento de apertura de archivos solo requiera acceso de metadatos o lectura compartida, evitando así interferencias con procesos que tengan bloqueos exclusivos.
-- `2026-09-03T12:57:41` **quarantine.py** (seguridad defensiva): Se ha mejorado la seguridad defensiva en `purge_all` añadiendo una comprobación explícita para evitar la eliminación de archivos que no pertenezcan al manifiesto, protegiendo contra posibles inyecciones de archivos arbitrarios en el directorio de cuarentena.
-- `2026-09-03T12:50:38` **organizer.py** (seguridad defensiva): Reforcé la integridad del proceso de escaneo integrando `is_protected_path` directamente en `_process_directory`, garantizando que cada entrada sea validada contra las reglas de seguridad de `safety.py` antes de intentar procesarla, evitando así accesos indebidos a rutas sensibles.
-- `2026-09-03T12:50:23` **memory.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `trim_working_set` añadiendo una validación explícita mediante `is_safe_to_modify` para el `target_pid` antes de intentar abrir el proceso, asegurando que la operación de trimado no intente interactuar con procesos que no deberían ser manipulados por la aplicación, reforzando la integridad de los chequeos de seguridad.

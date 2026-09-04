@@ -631,3 +631,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-03T23:31:47` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-03T23:41:59` Presupuesto diario agotado (350 usados). Corte hasta mañana.
 - `2026-09-03T23:52:08` Presupuesto diario agotado (350 usados). Corte hasta mañana.
+- `2026-09-04T00:02:27` Arrancando corrida. Quedan hoy ~300 peticiones objetivo.
+- `2026-09-04T00:02:59` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-04T00:03:37` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Mejoré la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` hacia un diseño de "fallo rápido" (guard clauses) y la limpieza del flujo de ejecución del asistente en línea, clarificando la separación entre la validación de seguridad y la lógica de red.
+- `2026-09-04T00:04:14` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y type hints faltantes en las funciones de manipulación de color y dibujo para clarificar la lógica de transformación geométrica y cromática, facilitando el mantenimiento técnico.
+- `2026-09-04T00:04:30` ✅ Mejora aceptada en browser.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica y la precisión de los type hints en `browser.py` para explicitar el uso de `os.DirEntry` y las restricciones de las APIs de Windows, facilitando la comprensión del flujo de escaneo seguro.
+- `2026-09-04T00:04:30` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T00:04:30` Corrida terminada. Total usado hoy: 4.

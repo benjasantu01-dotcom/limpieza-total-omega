@@ -213,19 +213,19 @@ def _get_rgb_safe(val: float) -> int:
 
 @lru_cache(maxsize=64)
 def _hex_to_rgb(value: HexColor) -> RGBTuple:
-    """Convierte un color hexadecimal en una tupla (R, G, B)."""
+    """Convierte un color hexadecimal (#RRGGBB) en una tupla (R, G, B)."""
     if len(value) != 7 or not value.startswith("#"): return (0, 0, 0)
     try:
         return (int(value[1:3], 16), int(value[3:5], 16), int(value[5:7], 16))
     except (ValueError, IndexError): return (0, 0, 0)
 
 def _rgb_to_hex(rgb: RGBTuple) -> HexColor:
-    """Convierte una tupla (R, G, B) a su representación hexadecimal."""
+    """Convierte una tupla (R, G, B) a su representación hexadecimal #RRGGBB."""
     return "#{:02x}{:02x}{:02x}".format(*map(_get_rgb_safe, rgb))
 
 @lru_cache(maxsize=32)
 def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
-    """Mezcla linealmente dos colores hexadecimales basándose en un ratio [0.0, 1.0]."""
+    """Realiza interpolación lineal (lerp) entre dos colores basado en un factor [0.0, 1.0]."""
     if start == end: return start
     r1, g1, b1 = _hex_to_rgb(start)
     r2, g2, b2 = _hex_to_rgb(end)
@@ -238,7 +238,7 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
 
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
-    """Genera una secuencia de colores interpolados para crear efectos de gradiente."""
+    """Genera una secuencia de colores interpolados para crear efectos de gradiente continuo."""
     n = max(1, int(steps))
     if not stops: return (C_GLOW,) * n
     if len(stops) < 2: return (stops[0],) * n
@@ -260,7 +260,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
 
 @lru_cache(maxsize=16)
 def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, ...]:
-    """Agrupa colores consecutivos idénticos para optimizar operaciones de dibujo en Canvas."""
+    """Optimiza el dibujo en Canvas agrupando colores consecutivos para minimizar llamadas de estado."""
     if not colors: return ()
     segments = []
     current_color = colors[0]
@@ -275,13 +275,13 @@ def _get_grouped_segments(colors: Tuple[HexColor, ...]) -> Tuple[ColorSegment, .
 
 @lru_cache(maxsize=8)
 def _get_shield_coords(s: float) -> Tuple[float, ...]:
-    """Retorna las coordenadas escaladas del polígono del escudo."""
+    """Retorna las coordenadas escaladas del polígono del escudo para el escalado dinámico."""
     base: Final[Tuple[float, ...]] = (64, 18, 100, 31, 100, 67, 90, 90, 64, 110, 38, 90, 28, 67, 28, 31)
     return tuple(v * float(s) for v in base)
 
 @lru_cache(maxsize=4)
 def logo_svg(size: int = 128) -> str:
-    """Genera el código fuente SVG del logotipo principal de la aplicación."""
+    """Genera el código fuente SVG vectorial del logotipo principal de la aplicación."""
     s = max(1, min(4096, int(size)))
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
   <defs>
@@ -348,7 +348,7 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo del logo en un componente Canvas dado, manejando la escala y capas de brillo."""
+    """Dibuja el escudo del logo en un Canvas, gestionando capas de brillo y escalado vectorial."""
     try:
         scale = max(0.1, min(10.0, float(size) / 128.0))
         coords = _get_shield_coords(scale)
@@ -362,7 +362,7 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea decorativa con degradado sobre el Canvas."""
+    """Dibuja una línea horizontal decorativa utilizando un gradiente suavizado."""
     try:
         w_int = max(1, int(width))
         for segment in _get_grouped_segments(gradient_colors(w_int, stops)):
@@ -370,7 +370,7 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (ValueError, TypeError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
-    """Dibuja un indicador circular de progreso basado en el estado (score)."""
+    """Dibuja un anillo de progreso circular basado en el puntaje de salud actual."""
     try:
         if percent is None: return
         valor = float(percent)

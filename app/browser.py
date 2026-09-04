@@ -155,9 +155,8 @@ def __is_system_hidden(entry_path: str, kernel32: Optional[ctypes.WinDLL]) -> bo
 
 def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is_junction_fn: JunctionChecker) -> bool:
     """
-    Evalúa si una entrada del sistema de archivos debe omitirse.
-    Aplica filtros de nombre (NEVER_TOUCH), longitud de ruta (MAX_PATH_LEN),
-    puntos de reparse (junctions), y atributos de sistema u oculto (Win32 API).
+    Evalúa si una entrada (os.DirEntry) del sistema de archivos debe omitirse.
+    Usa la metadata del objeto DirEntry para evitar llamadas excesivas al disco.
     """
     if _is_excluded_file(entry.name):
         return True
@@ -198,8 +197,8 @@ def _sum_directory_recursive(
     depth: int = 0
 ) -> int:
     """
-    Calcula recursivamente el tamaño en bytes de un directorio.
-    Implementa memoización y caché de resolución de rutas para eficiencia.
+    Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
+    La memoización evita re-procesar subdirectorios en estructuras compartidas.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
