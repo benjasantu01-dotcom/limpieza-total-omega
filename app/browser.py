@@ -47,7 +47,6 @@ def _is_junction_default(path: str) -> bool:
 _IS_JUNCTION_FN: JunctionChecker = getattr(os.path, 'isjunction', _is_junction_default)
 
 # Mapeo de nombres descriptivos a rutas relativas dentro de LOCALAPPDATA.
-# Las rutas siguen la convención de Windows para perfiles de navegador.
 BROWSER_CACHE_PATHS: Dict[str, str] = {
     "Google Chrome": r"Google\Chrome\User Data\Default\Cache",
     "Microsoft Edge": r"Microsoft\Edge\User Data\Default\Cache",
@@ -59,7 +58,6 @@ BROWSER_CACHE_PATHS: Dict[str, str] = {
     "Chrome (GPU)": r"Microsoft\Edge\User Data\Default\GPUCache",
 }
 
-# Carpetas y archivos persistentes de usuario que NUNCA deben incluirse en escaneos.
 NEVER_TOUCH: frozenset[str] = frozenset({
     "login data", "cookies", "web data", "bookmarks", "history",
     "preferences", "local state", "extensions", "profile",
@@ -74,7 +72,6 @@ SAFETY_NOTE: str = (
 
 MAX_SCAN_DEPTH: int = 15
 MAX_PATH_LEN: int = 260
-# Atributos: FILE_ATTRIBUTE_HIDDEN (0x01) | FILE_ATTRIBUTE_SYSTEM (0x02) | FILE_ATTRIBUTE_REPARSE_POINT (0x400)
 SYSTEM_HIDDEN_FLAGS: int = 0x01 | 0x02 | 0x400
 
 @dataclass
@@ -158,18 +155,24 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
     Evalúa si una entrada (os.DirEntry) del sistema de archivos debe omitirse.
     Usa la metadata del objeto DirEntry para evitar llamadas excesivas al disco.
     """
+    # 1. Chequeos de nombre rápido (lista negra)
     if _is_excluded_file(entry.name):
         return True
         
+    # 2. Validación de longitud y tipos de enlace
     try:
         path = entry.path
         if not path or len(path) >= MAX_PATH_LEN:
             return True
-        # Usar .is_symlink() de la entrada evita accesos extras al disco
+        
+        # is_symlink() cubre enlaces simbólicos. is_junction_fn cubre puntos de unión.
         if entry.is_symlink() or is_junction_fn(path) or os.path.ismount(path):
             return True
+            
+        # 3. Chequeo de atributos de sistema (solo en Windows)
         if __is_system_hidden(path, kernel32):
             return True
+            
     except (OSError, PermissionError, FileNotFoundError, UnicodeEncodeError):
         return True
     return False
@@ -178,7 +181,6 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path], path_cache: Dict[str, Path]) -> bool:
     """Valida que la ruta sea segura (no protegida) y opcionalmente descienda de la base permitida."""
     try:
-        # Validación de longitud antes de resolve para evitar excepciones en rutas extremas
         if len(str(path_obj)) >= MAX_PATH_LEN:
             return False
         if not path_obj.exists() or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
@@ -201,7 +203,7 @@ def _sum_directory_recursive(
 ) -> int:
     """
     Calcula recursivamente el tamaño en bytes de un directorio mediante os.scandir.
-    La memoización evita re-procesar subdirectorios en estructuras compartidas.
+    'memo' almacena resultados de carpetas para evitar re-procesamiento innecesario.
     """
     if not isinstance(root_abs, str) or not root_abs or depth > MAX_SCAN_DEPTH or len(root_abs) >= MAX_PATH_LEN:
         return 0
@@ -223,7 +225,6 @@ def _sum_directory_recursive(
                     continue
                 
                 try:
-                    # Validar seguridad de la entrada antes de intentar acceder o recursar
                     entry_path_obj = Path(entry.path)
                     if not is_safe_to_modify(entry_path_obj):
                         continue
@@ -259,7 +260,7 @@ def directory_size(path: Union[str, Path, None]) -> int:
 
 
 def _is_valid_cache_path(candidate: Path, base_path: Path, is_junction_fn: JunctionChecker, path_cache: Dict[str, Path]) -> bool:
-    """Verifica si una ruta candidata es una carpeta válida de caché."""
+    """Verifica si una ruta candidata es una carpeta válida de caché antes de escanear."""
     try:
         if not candidate.exists() or len(str(candidate)) >= MAX_PATH_LEN:
             return False

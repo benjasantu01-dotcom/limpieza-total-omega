@@ -278,10 +278,12 @@ def reclaimable_bytes(groups: Sequence[DuplicateGroup]) -> int:
 def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
     """
     Selecciona el archivo candidato para conservar (heurística: más antiguo).
+    En caso de empate en fecha, se elige el de ruta más corta.
     """
     if not isinstance(group, DuplicateGroup) or not group.paths:
         return None
         
+    # Estructura de metadatos para ordenamiento: (mtime, longitud_ruta, objeto_path)
     candidates: List[Tuple[float, int, Path]] = []
     for p in group.paths:
         if not isinstance(p, Path): continue
@@ -292,7 +294,12 @@ def suggest_keeper(group: Optional[DuplicateGroup]) -> Optional[Path]:
         except (OSError, PermissionError):
             continue
     
-    return min(candidates, key=lambda x: (x[0], x[1]))[2] if candidates else None
+    if not candidates:
+        return None
+        
+    # Ordenar por fecha (primero) y longitud de cadena (segundo)
+    candidates.sort(key=lambda x: (x[0], x[1]))
+    return candidates[0][2]
 
 
 def format_group(group: DuplicateGroup) -> List[str]:
