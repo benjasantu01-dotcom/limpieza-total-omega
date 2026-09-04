@@ -6,40 +6,40 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **221** (43.8% de aceptación)
+- Mejoras aceptadas: **222** (44.0% de aceptación)
 - Rechazadas por tests: 12
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 33
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 219
+- Sin respuesta de la IA (error o límite): 220
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 36 | 1 | 5 | 0 | 16 |
+| 2026-09-02 | 34 | 1 | 3 | 0 | 16 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 37 | 4 | 6 | 4 | 45 |
+| 2026-09-04 | 40 | 4 | 6 | 4 | 46 |
 
 ## Mejoras aceptadas por enfoque
 
 - seguridad defensiva: **50**
-- legibilidad y documentación: **48**
+- legibilidad y documentación: **46**
 - robustez ante casos límite: **43**
+- manejo de errores y validación de entradas: **42**
 - rendimiento: **41**
-- manejo de errores y validación de entradas: **39**
 
 ## Mejoras aceptadas por archivo
 
-- `scanner.py`: **20**
+- `organizer.py`: **20**
 - `assistant.py`: **19**
 - `browser.py`: **19**
-- `organizer.py`: **19**
-- `healthscore.py`: **18**
+- `healthscore.py`: **19**
+- `scanner.py`: **19**
+- `memory.py`: **18**
 - `quarantine.py`: **18**
 - `settings.py`: **18**
 - `duplicates.py`: **18**
-- `memory.py`: **17**
-- `safety.py`: **15**
+- `safety.py`: **14**
 - `branding.py`: **11**
 - `main.py`: **11**
 - `diskreport.py`: **11**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T04:12:56` **organizer.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_file_locked` y `_is_recursive_violation` añadiendo manejo específico para excepciones `OSError` que pueden ocurrir durante el acceso al sistema de archivos, asegurando que el estado "bloqueado/inseguro" sea el comportamiento por defecto ante fallos de lectura, y eliminé redundancias lógicas en las validaciones.
+- `2026-09-04T04:11:39` **memory.py** (manejo de errores y validación de entradas): Mejoré la robustez de `trim_working_set` y sus ayudantes capturando errores de forma granular y validando explícitamente la integridad de los parámetros, asegurando que `EmptyWorkingSet` no se ejecute sobre contextos inesperados tras fallos en la apertura del proceso.
+- `2026-09-04T04:08:37` **healthscore.py** (manejo de errores y validación de entradas): Mejoré la robustez de `compute_score` y `summarize` implementando validaciones defensivas de tipos para los campos de datos, asegurando que el acceso a diccionarios y listas sea seguro ante estados inesperados de los objetos procesados.
 - `2026-09-04T03:59:33` **duplicates.py** (manejo de errores y validación de entradas): Mejoré la robustez de las funciones de hash y validación mediante la adición de chequeos de tipo explícitos y manejo de excepciones ante rutas inexistentes o inaccesibles, evitando que la aplicación falle silenciosamente cuando el sistema de archivos deniega el acceso a un archivo.
 - `2026-09-04T03:51:27` **assistant.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_extract_text_from_gemini_json` y `_call_gemini` mediante la adición de chequeos de tipo explícitos y manejo de errores más específico, evitando que el procesado de JSON externo pueda propagar excepciones o fallos de lógica al intentar acceder a estructuras anidadas potencialmente malformadas.
 - `2026-09-04T02:27:14` **settings.py** (seguridad defensiva): He mejorado la robustez de `save()` al verificar explícitamente que el directorio de configuración sea un directorio real antes de proceder, protegiendo contra posibles colisiones donde una ruta de configuración sea sobrescrita por un archivo malicioso, y reforzando la integridad de las operaciones de escritura mediante un chequeo de existencia más estricto.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T02:05:49` **browser.py** (seguridad defensiva): Se ha mejorado la robustez defensiva en `_sum_directory_recursive` mediante el uso de `os.scandir` de forma que la validación de seguridad de la ruta (`is_safe_to_modify`) se aplique sobre el resultado de `entry.path` antes de la recursión, garantizando que el escaneo no siga enlaces simbólicos o rutas peligrosas detectadas dinámicamente durante el recorrido.
 - `2026-09-04T01:57:08` **branding.py** (seguridad defensiva): Se ha restringido `save_logo_svg` para prevenir ataques de *path traversal* o escritura en ubicaciones prohibidas, asegurando que la ruta destino no solo pase el chequeo de seguridad, sino que también se valide que no se intente escribir en archivos existentes sensibles mediante `is_protected_path`.
 - `2026-09-04T01:56:49` **assistant.py** (seguridad defensiva): Mejoré la seguridad de la función `_call_gemini` añadiendo una validación explícita mediante `is_protected_path` sobre la respuesta final de la IA antes de retornarla, asegurando que el modelo no pueda inyectar accidentalmente rutas de archivos o directorios protegidos en el texto de la respuesta.
-- `2026-09-04T01:46:25` **safety.py** (robustez ante casos límite): Se ha robustecido `_is_file_in_use` para manejar correctamente rutas inexistentes sin lanzar excepciones innecesarias, y se ha añadido una validación temprana contra `PermissionError` en `normalize` para prevenir bloqueos en accesos a directorios restringidos del sistema operativo antes de intentar operaciones de resolución.
-- `2026-09-04T01:45:34` **quarantine.py** (robustez ante casos límite): Se introdujo una comprobación de integridad en `quarantine_file` que verifica el espacio libre tras la operación, asegurando que el archivo no haya sido truncado o dañado durante la transferencia antes de proceder con el borrado de la fuente, fortaleciendo la robustez ante interrupciones de sistema.
-- `2026-09-04T01:40:36` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que no confíe ciegamente en el modo de apertura, evitando falsos positivos al manejar excepciones de acceso de manera explícita y asegurando que los archivos no sean procesados si existen errores de E/S indeterminados.

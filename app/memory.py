@@ -344,9 +344,6 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
     """
     Validación de seguridad antes de modificar el working set.
-    
-    Verifica estado de ejecución del proceso, coincidencia de PID y que la ruta 
-    del ejecutable no esté protegida por las políticas de la aplicación.
     """
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
@@ -366,10 +363,6 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     """
     Intenta liberar páginas de memoria física del working set de un proceso.
-    
-    Esta operación requiere validaciones de seguridad estrictas, acceso de 
-    administrador y se realiza solo bajo demanda manual debido a su impacto 
-    potencialmente negativo en el rendimiento.
     """
     if os.name != "nt": return False, "Operación solo soportada en Windows."
     
@@ -388,7 +381,7 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         err = kernel32.GetLastError()
-        return False, f"Acceso denegado (código {err})." if err == ERROR_ACCESS_DENIED else "Acceso denegado."
+        return False, f"Acceso denegado (código {err})." if err == ERROR_ACCESS_DENIED else "Acceso denegado al proceso."
     
     try:
         is_safe, error_reason = _is_safe_to_trim(proc_handle, target_pid)
@@ -398,6 +391,6 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
             return False, "El sistema denegó la operación (EmptyWorkingSet falló)."
         return True, f"Working set liberado. {TRIM_WARNING}"
     except (OSError, ctypes.ArgumentError, Exception) as e:
-        return False, f"Error del sistema: {type(e).__name__}"
+        return False, f"Error sistémico: {e.__class__.__name__}"
     finally:
         kernel32.CloseHandle(proc_handle)

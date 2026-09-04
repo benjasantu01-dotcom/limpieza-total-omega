@@ -171,7 +171,7 @@ def _is_file_locked(path: Path) -> bool:
         # Intentamos abrir en modo lectura exclusiva
         with open(path, "rb") as f:
             return False
-    except (PermissionError, OSError):
+    except (PermissionError, OSError, IOError):
         return True # Asumir bloqueado/inseguro ante cualquier error de acceso
 
 
@@ -184,7 +184,6 @@ def _is_recursive_violation(src: Path, dest: Path) -> bool:
     try:
         s: Path = src.resolve()
         d: Path = dest.resolve()
-        if s == d: return True
         return d.is_relative_to(s) or os.path.samefile(s, d)
     except (OSError, ValueError):
         return True
@@ -238,7 +237,6 @@ def _is_safe_for_disk_op(src: Path, dest: Path) -> bool:
     Realiza una validación exhaustiva (fail-fast) antes de operaciones de disco.
     Divide la validación en capas: formato de ruta, seguridad de sistema y estado del archivo.
     """
-    if src is None or dest is None: return False
     if not isinstance(src, Path) or not isinstance(dest, Path): return False
     
     # Longitud de ruta máxima para evitar excepciones de sistema en Windows

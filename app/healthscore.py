@@ -217,7 +217,7 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
         
         for area, weight in _WEIGHT_ITEMS_INT:
             scorer = _SCORERS.get(area)
-            if not scorer: continue
+            if scorer is None: continue
             
             # Normalización y ponderación: el ratio [0,1] se escala al peso del área
             ratio: NormalizedRatio = scorer(metrics)
@@ -231,18 +231,18 @@ def compute_score(metrics: SystemMetrics | None) -> HealthResult:
                 if rule.check(metrics, ratio):
                     try:
                         recommendations.append(rule.message_factory(metrics))
-                    except Exception:
+                    except (AttributeError, TypeError, ValueError):
                         continue
         
         final_score: int = int(_clamp(total_pts, 0.0, 100.0))
-        if hasattr(metrics, 'quarantined_count') and metrics.quarantined_count > 0:
+        if hasattr(metrics, 'quarantined_count') and isinstance(metrics.quarantined_count, int) and metrics.quarantined_count > 0:
             recommendations.append(f"Tenés {metrics.quarantined_count} archivo(s) en cuarentena.")
         
         return HealthResult(
             score=final_score, 
             grade=grade_for_score(final_score), 
             breakdown=metric_breakdown, 
-            recommendations=recommendations or ["No hay nada urgente para hacer. El sistema está en buen estado."]
+            recommendations=recommendations if recommendations else ["No hay nada urgente para hacer. El sistema está en buen estado."]
         )
     except (AttributeError, ValueError, TypeError):
         return HealthResult(0, "F", {}, ["Error inesperado al calcular métricas."])
@@ -259,11 +259,11 @@ def summarize(result: HealthResult | None) -> List[str]:
         return ["Error: Informe no disponible o formato inválido."]
     
     lines: List[str] = [f"Salud del sistema: {result.score}/100  (nota {result.grade})", "", "Desglose por área:"]
-    breakdown: Dict[MetricKey, int] = result.breakdown if isinstance(result.breakdown, dict) else {}
+    breakdown = result.breakdown if isinstance(result.breakdown, dict) else {}
     
     for area, maximo in _WEIGHT_ITEMS_INT:
         puntos = breakdown.get(area, 0)
-        bar = _render_bar(puntos, maximo)
+        bar = _render_bar(int(puntos), maximo)
         lines.append(f"  {area.capitalize():<12} {puntos:>2}/{maximo:<2} [{bar}]")
     
     recs = result.recommendations if isinstance(result.recommendations, list) else []
