@@ -557,16 +557,24 @@ def _build_payload(question: str, context_text: str) -> Optional[bytes]:
         return None
 
 def _extract_text_from_gemini_json(data: Any) -> Optional[str]:
-    """Extrae la respuesta textual del payload JSON de la API."""
+    """Extrae la respuesta textual del payload JSON de la API con validación estricta."""
+    if not isinstance(data, dict):
+        return None
     try:
-        if not isinstance(data, dict): return None
         candidates = data.get("candidates")
         if not isinstance(candidates, list) or not candidates: return None
-        content = candidates[0].get("content")
+        
+        first_candidate = candidates[0]
+        if not isinstance(first_candidate, dict): return None
+        
+        content = first_candidate.get("content")
         if not isinstance(content, dict): return None
+        
         parts = content.get("parts")
         if not isinstance(parts, list) or not parts: return None
-        return str(parts[0].get("text", ""))
+        
+        text_val = parts[0].get("text")
+        return str(text_val) if isinstance(text_val, str) else None
     except (KeyError, AttributeError, TypeError):
         return None
 
@@ -590,7 +598,11 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             raw_res = res.read(_MAX_RESPONSE_BYTES + 1)
             if len(raw_res) > _MAX_RESPONSE_BYTES: return None
             
-            data = json.loads(raw_res.decode("utf-8"))
+            try:
+                data = json.loads(raw_res.decode("utf-8"))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                return None
+                
             raw_text = _extract_text_from_gemini_json(data)
             if not raw_text: return None
             
@@ -601,7 +613,7 @@ def _call_gemini(question: str, context_text: str, api_key: str, model: str) -> 
             if _ensure_safe_text(final) and not is_protected_path(final):
                 return final
             return None
-    except (urllib.error.URLError, OSError, json.JSONDecodeError, UnicodeDecodeError):
+    except (urllib.error.URLError, OSError):
         return None
 
 def ask(question: str, context: Optional[SystemContext] = None,
