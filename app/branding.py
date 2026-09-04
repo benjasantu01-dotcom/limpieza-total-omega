@@ -286,6 +286,7 @@ def save_logo_svg(destination: Union[str, Path, None]) -> Optional[Path]:
         ensure_safe_to_modify(path_obj)
         if is_protected_path(path_obj): return None
         target_dir = path_obj.parent
+        ensure_safe_to_modify(target_dir)
         if not target_dir.exists(): target_dir.mkdir(parents=True, exist_ok=True)
         path_obj.write_text(logo_svg(), encoding="utf-8")
         return path_obj

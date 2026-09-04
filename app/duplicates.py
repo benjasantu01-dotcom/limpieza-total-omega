@@ -195,6 +195,9 @@ def _collect_candidates(
 
     def _scan_recursive(current_dir: Path) -> None:
         try:
+            # Re-verificar seguridad al entrar en un directorio
+            if is_protected_path(current_dir):
+                return
             st = current_dir.stat()
             inode = (st.st_dev, st.st_ino)
             if inode in visited_inodes or is_junction(current_dir):
@@ -205,6 +208,7 @@ def _collect_candidates(
                 for entry in it:
                     if entry.is_dir(follow_symlinks=False):
                         p_dir = Path(entry.path)
+                        # Validar seguridad antes de recursión
                         if not is_protected_path(p_dir) and not is_junction(p_dir):
                             _scan_recursive(p_dir)
                     else:

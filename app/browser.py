@@ -211,7 +211,8 @@ def _sum_directory_recursive(
     if path_cache is None: path_cache = {}
     
     root_path = Path(root_abs)
-    if not is_safe_to_modify(root_path):
+    # Seguridad: no entrar si la ruta es protegida o no es segura de modificar
+    if is_protected_path(root_path) or not is_safe_to_modify(root_path):
         return 0
     
     if root_abs in memo:
@@ -226,7 +227,7 @@ def _sum_directory_recursive(
                 
                 try:
                     entry_path_obj = Path(entry.path)
-                    if not is_safe_to_modify(entry_path_obj):
+                    if is_protected_path(entry_path_obj) or not is_safe_to_modify(entry_path_obj):
                         continue
 
                     if entry.is_dir(follow_symlinks=False):
