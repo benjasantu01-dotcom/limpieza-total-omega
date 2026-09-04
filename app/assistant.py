@@ -437,10 +437,11 @@ def _identify_active_problems(ctx: SystemContext) -> list[str]:
     return _get_active_problems(ctx) if ctx.analyzed else []
 
 def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
+    """Explica el estado de la RAM y desaconseja el uso de optimizadores externos."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    mem_pct = ctx.get_metric("memory_available_percent", 50.0)
-    total_gb = ctx.get_metric("memory_total_gb", 0.0)
-    startup_count = int(ctx.get_metric("startup_count", 0.0))
+    mem_pct: float = ctx.get_metric("memory_available_percent", 50.0)
+    total_gb: float = ctx.get_metric("memory_total_gb", 0.0)
+    startup_count: int = int(ctx.get_metric("startup_count", 0.0))
     status_msg = f"Tenés {mem_pct:.0f}% de RAM disponible{f' de {total_gb:.0f} GB' if total_gb > 0 else ''}."
     performance_tip = (
         "Eso es poco: Windows está usando el disco como memoria y ahí se siente la lentitud. Cerrá lo que no uses."
@@ -453,12 +454,13 @@ def handle_ram(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE, suggestions=["¿Conviene desactivar programas de inicio?"])
 
 def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
+    """Calcula el espacio total recuperable y diagnostica niveles críticos de almacenamiento."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    junk = ctx.get_metric("junk_mb", 0.0)
-    dup = ctx.get_metric("duplicate_mb", 0.0)
-    cache = ctx.get_metric("browser_cache_mb", 0.0)
-    free = ctx.get_metric("disk_free_percent", 100.0)
-    recuperable = junk + dup + cache
+    junk: float = ctx.get_metric("junk_mb", 0.0)
+    dup: float = ctx.get_metric("duplicate_mb", 0.0)
+    cache: float = ctx.get_metric("browser_cache_mb", 0.0)
+    free: float = ctx.get_metric("disk_free_percent", 100.0)
+    recuperable: float = junk + dup + cache
     diagnostico = f"Tenés {free:.0f}% libre en disco. Podés recuperar cerca de {recuperable:.0f} MB."
     detalle = f"Esto incluye: {junk:.0f} MB de basura, {dup:.0f} MB de duplicados{f' y {cache:.0f} MB de caché' if cache > 0 else ''}."
     advertencia = " Estás por debajo del 10%: esto afecta la estabilidad. Es urgente." if free < 10 else ""
@@ -467,9 +469,10 @@ def handle_disk(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(full_text), notice=OFFLINE_NOTICE)
 
 def handle_security(ctx: SystemContext, user_query: str) -> Answer:
+    """Informa sobre el estado de archivos detectados y reafirma la política de no-borrado automático."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    count = int(ctx.get_metric("suspicious_count", 0.0))
-    warn = int(ctx.get_metric("suspicious_warnings", 0.0))
+    count: int = int(ctx.get_metric("suspicious_count", 0.0))
+    warn: int = int(ctx.get_metric("suspicious_warnings", 0.0))
     if count == 0:
         texto = "No hay archivos sospechosos en tus Descargas. La app nunca borra sola, todo va a revisión."
     else:
@@ -479,9 +482,10 @@ def handle_security(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(texto), notice=OFFLINE_NOTICE)
 
 def handle_score(ctx: SystemContext, user_query: str) -> Answer:
+    """Provee un resumen ejecutivo de la salud del sistema basado en las métricas actuales."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    score_val = str(ctx.score) if ctx.score is not None else "N/A"
-    grade = str(ctx.grade) if ctx.grade else ""
+    score_val: str = str(ctx.score) if ctx.score is not None else "N/A"
+    grade: str = str(ctx.grade) if ctx.grade else ""
     score_display = f"Tu puntaje es {score_val}/100{f' (nota {grade})' if grade else ''}."
     problemas = _identify_active_problems(ctx)
     resumen = ("Lo que más te está restando: " + ", ".join(problemas[:3]) + ".") if problemas else "No hay nada urgente."
@@ -489,8 +493,9 @@ def handle_score(ctx: SystemContext, user_query: str) -> Answer:
     return Answer(_validate_response_length(f"{score_display} {resumen}{explicacion}"), notice=OFFLINE_NOTICE)
 
 def handle_startup(ctx: SystemContext, user_query: str) -> Answer:
+    """Evalúa la cantidad de programas de inicio y su impacto en el rendimiento."""
     if not ctx.analyzed: return Answer("Primero analizá el sistema.")
-    count = int(ctx.get_metric("startup_count", 0.0))
+    count: int = int(ctx.get_metric("startup_count", 0.0))
     estado = f"Tenés {count} programas que arrancan con Windows."
     valoracion = "Son bastantes, y cada uno suma tiempo de encendido." if count > 15 else ("Es normal." if count > 8 else "Está bien.")
     cierre = " La app los lista, pero desactivalos desde el Administrador de tareas de Windows."

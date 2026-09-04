@@ -283,12 +283,13 @@ def _get_shield_coords(s: float) -> Tuple[float, ...]:
 def logo_svg(size: int = 128) -> str:
     """Genera el código fuente SVG vectorial del logotipo principal de la aplicación."""
     s = max(1, min(4096, int(size)))
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
-  <defs>
-    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">
+    stops_svg = f"""
       <stop offset="0%" stop-color="{GRADIENT_STOPS[0]}"/>
       <stop offset="55%" stop-color="{GRADIENT_STOPS[1]}"/>
-      <stop offset="100%" stop-color="{GRADIENT_STOPS[2]}"/>
+      <stop offset="100%" stop-color="{GRADIENT_STOPS[2]}"/>"""
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" width="{s}" height="{s}" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="omegaShield" x1="0" y1="0" x2="1" y2="1">{stops_svg}
     </linearGradient>
     <radialGradient id="omegaGlow" cx="0.5" cy="0.4" r="0.6">
       <stop offset="0%" stop-color="{C_GLOW}" stop-opacity="0.45"/>
@@ -327,7 +328,13 @@ def logo_ascii() -> str:
     return "\n   ___  __  __ ___ ___   _\n  / _ \\|  \\/  | __/ __| /_\\\n | (_) | |\\/| | _|| (_ // _ \\\n  \\___/|_|  |_|___\\___/_/ \\_\\\n      Limpieza Total Omega\n"
 
 def _draw_shield_stripes(canvas: CanvasElement, canvas_x: float, canvas_y: float, scale: float) -> None:
-    """Dibuja las franjas decorativas internas del escudo sobre un componente Canvas."""
+    """
+    Dibuja las franjas decorativas internas del escudo sobre un componente Canvas.
+    Args:
+        canvas: Objeto Canvas de customtkinter.
+        canvas_x, canvas_y: Coordenadas de origen para el dibujo.
+        scale: Factor de escala multiplicativo.
+    """
     try:
         scale_f = float(scale)
         franjas_count = max(6, int(28 * scale_f))
@@ -349,7 +356,13 @@ def _draw_shield_icon_decorations(canvas: CanvasElement, canvas_x: float, canvas
     canvas.create_text(canvas_x + 64 * scale, canvas_y + 96 * scale, text="\u03a9", fill=C_BACKGROUND, font=(UI_FONT_FAMILY, max(8, int(UI_FONT_HEADER_SIZE * scale)), UI_FONT_BOLD))
 
 def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, canvas_y: float = 0.0) -> None:
-    """Dibuja el escudo del logo en un Canvas, gestionando capas de brillo y escalado vectorial."""
+    """
+    Dibuja el escudo del logo en un Canvas, gestionando capas de brillo y escalado vectorial.
+    Args:
+        canvas: Objeto Canvas.
+        size: Tamaño base en píxeles.
+        canvas_x, canvas_y: Offset en el Canvas.
+    """
     try:
         scale = max(0.1, min(10.0, float(size) / 128.0))
         coords = _get_shield_coords(scale)
@@ -363,7 +376,13 @@ def draw_logo(canvas: CanvasElement, size: float = 56.0, canvas_x: float = 0.0, 
     except (ValueError, TypeError, AttributeError, ZeroDivisionError, OverflowError): pass
 
 def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas_x: float = 0.0, canvas_y: float = 0.0, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> None:
-    """Dibuja una línea horizontal decorativa utilizando un gradiente suavizado."""
+    """
+    Dibuja una línea horizontal decorativa utilizando un gradiente suavizado.
+    Args:
+        canvas: Objeto Canvas.
+        width: Longitud de la barra.
+        height: Grosor de la barra.
+    """
     try:
         w_int = max(1, int(width))
         for segment in _get_grouped_segments(gradient_colors(w_int, stops)):
@@ -371,7 +390,13 @@ def draw_gradient_bar(canvas: CanvasElement, width: int, height: int = 3, canvas
     except (ValueError, TypeError, AttributeError): pass
 
 def draw_ring(canvas: CanvasElement, percent: Union[float, int, None], size: int = 150, canvas_x: float = 0.0, canvas_y: float = 0.0, thickness: int = 14, track: Optional[HexColor] = None, fill: Optional[HexColor] = None) -> None:
-    """Dibuja un anillo de progreso circular basado en el puntaje de salud actual."""
+    """
+    Dibuja un anillo de progreso circular basado en el puntaje de salud actual.
+    Args:
+        percent: Valor 0-100.
+        size: Diámetro del anillo.
+        thickness: Grosor del trazo.
+    """
     try:
         if percent is None: return
         valor = float(percent)

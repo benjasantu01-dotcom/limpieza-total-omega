@@ -1103,3 +1103,39 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T04:19:54` ✅ Mejora aceptada en scanner.py (enfoque: manejo de errores y validación de entradas). Se reforzó la robustez de `scanner.py` validando la integridad de los parámetros en las funciones de escaneo y asegurando que las llamadas al sistema (como `stat`) no fallen silenciosamente ante estados inconsistentes de archivos.
 - `2026-09-04T04:19:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T04:19:54` Corrida terminada. Total usado hoy: 104.
+- `2026-09-04T04:28:29` Arrancando corrida. Quedan hoy ~196 peticiones objetivo.
+- `2026-09-04T04:29:03` Tests FALLARON:
+```
+sa})
+>       assert resultado["ultima_carpeta"] == ""
+E       AssertionError: assert '/tmp/pytest-...dows/System32' == ''
+E         
+E         + /tmp/pytest-of-runner/pytest-1/test_a_protected_folder_is_nev0/Windows/System32
+
+evolve/tests/test_assistant.py:119: AssertionError
+=============================== warnings summary ===============================
+evolve/tests/test_integrity.py::test_no_module_uses_package_style_imports
+evolve/tests/test_integrity.py::test_no_new_third_party_dependencies
+evolve/tests/test_integrity.py::test_boolean_misuse_of_ensure_is_not_present
+evolve/tests/test_integrity.py::test_read_only_modules_do_not_use_the_write_check
+evolve/tests/test_integrity.py::test_read_only_modules_never_delete_or_move
+evolve/tests/test_integrity.py::test_analysis_modules_never_write_files
+evolve/tests/test_integrity.py::test_every_module_compiles
+  /home/runner/work/limpieza-total-omega/limpieza-total-omega/app/startup.py:105: SyntaxWarning: invalid escape sequence '\P'
+    """Extrae rutas de comandos tipo "C:\Path\App.exe" validando seguridad."""
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED evolve/tests/test_assistant.py::test_a_protected_folder_is_never_remembered - AssertionError: assert '/tmp/pytest-...dows/System32' == ''
+  
+  + /tmp/pytest-of-runner/pytest-1/test_a_protected_folder_is_nev0/Windows/System32
+1 failed, 298 passed, 7 warnings in 0.92s
+
+```
+- `2026-09-04T04:29:03` ❌ Mejora descartada en settings.py (no pasó los tests), se revirtió. Intento: Reforcé la robustez del manejo de errores en `load` y `save` mediante el uso de `pathlib` de forma más segura y la centralización de la validación de directorios, asegurando que cualquier error de permisos o acceso a archivos sea capturado sin detener la aplicación.
+- `2026-09-04T04:29:12` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-04T04:29:42` Gemini no devolvió un bloque de archivo válido para startup.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-04T04:30:24` ✅ Mejora aceptada en assistant.py (enfoque: legibilidad y documentación). Se introdujeron docstrings descriptivos y `type hints` adicionales en las funciones de manejo de respuestas (`handle_*`) para clarificar el propósito de cada lógica de negocio y mejorar la legibilidad del código.
+- `2026-09-04T04:30:42` ✅ Mejora aceptada en branding.py (enfoque: legibilidad y documentación). Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros de las funciones complejas de dibujo y se ha refactorizado la función `logo_svg` para extraer la lógica del gradiente a una variable local más clara, mejorando la mantenibilidad técnica del diseño.
+- `2026-09-04T04:30:42` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T04:30:42` Corrida terminada. Total usado hoy: 108.
