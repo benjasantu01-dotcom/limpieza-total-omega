@@ -178,6 +178,9 @@ def _should_skip_entry(entry: os.DirEntry, kernel32: Optional[ctypes.WinDLL], is
 def _is_safe_to_traverse(path_obj: Path, base_check_path: Optional[Path], path_cache: Dict[str, Path]) -> bool:
     """Valida que la ruta sea segura (no protegida) y opcionalmente descienda de la base permitida."""
     try:
+        # Validación de longitud antes de resolve para evitar excepciones en rutas extremas
+        if len(str(path_obj)) >= MAX_PATH_LEN:
+            return False
         if not path_obj.exists() or is_protected_path(path_obj) or not is_safe_to_modify(path_obj):
             return False
         if base_check_path and not _is_path_inside_base(path_obj, base_check_path, path_cache):
@@ -224,8 +227,7 @@ def _sum_directory_recursive(
                 
                 try:
                     if entry.is_dir(follow_symlinks=False):
-                        # Validación defensiva extra antes de entrar al subdirectorio
-                        if is_safe_to_modify(Path(entry.path)):
+                        if len(entry.path) < MAX_PATH_LEN and is_safe_to_modify(Path(entry.path)):
                             total += _sum_directory_recursive(
                                 entry.path, is_junction_fn, kernel32, memo, base_check_path, path_cache, depth + 1
                             )
@@ -301,6 +303,9 @@ def detect_profiles(
                     continue
                     
                 c_path = candidate.resolve(strict=True)
+                if len(str(c_path)) >= MAX_PATH_LEN:
+                    continue
+                
                 size = _sum_directory_recursive(str(c_path), _IS_JUNCTION_FN, k32, perf_cache, real_base, path_cache)
                 if size > 0:
                     found.append(BrowserCache(str(browser_name), c_path, size))

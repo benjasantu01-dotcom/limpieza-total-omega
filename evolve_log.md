@@ -757,3 +757,10 @@ FAILED evolve/tests/test_modules.py::test_impact_scales_with_the_number_of_progr
 - `2026-09-04T01:16:14` ✅ Mejora aceptada en assistant.py (enfoque: robustez ante casos límite). Mejoré la robustez de `_get_source_value` para manejar objetos que implementen `__getitem__` de forma no estándar o que fallen ante accesos inesperados, asegurando que el asistente no aborte el análisis ante datos mal formados, un caso límite crítico en la ingesta de métricas.
 - `2026-09-04T01:16:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T01:16:14` Corrida terminada. Total usado hoy: 32.
+- `2026-09-04T01:24:30` Arrancando corrida. Quedan hoy ~268 peticiones objetivo.
+- `2026-09-04T01:25:06` Gemini no devolvió un bloque de archivo válido para branding.py (enfoque: robustez ante casos límite).
+- `2026-09-04T01:25:34` ✅ Mejora aceptada en browser.py (enfoque: robustez ante casos límite). Se ha añadido un chequeo de integridad en `_sum_directory_recursive` y `detect_profiles` para garantizar que la ruta absoluta resuelta no exceda `MAX_PATH_LEN` antes de interactuar con el sistema de archivos, previniendo errores de `OSError` o truncamientos silenciosos en casos límite de rutas profundas.
+- `2026-09-04T01:26:03` Gemini no devolvió un bloque de archivo válido para diskreport.py (enfoque: robustez ante casos límite).
+- `2026-09-04T01:26:14` Gemini no devolvió un bloque de archivo válido para duplicates.py (enfoque: robustez ante casos límite).
+- `2026-09-04T01:26:14` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T01:26:14` Corrida terminada. Total usado hoy: 36.
