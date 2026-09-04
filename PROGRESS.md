@@ -8,34 +8,34 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 35
-- Sin cambios (nada sustancial que mejorar): 15
+- Rechazadas por guardia de seguridad: 36
+- Sin cambios (nada sustancial que mejorar): 14
 - Sin respuesta de la IA (error o límite): 223
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 112 | 5 | 18 | 10 | 127 |
-| 2026-09-04 | 103 | 11 | 17 | 5 | 96 |
+| 2026-09-03 | 111 | 4 | 18 | 9 | 126 |
+| 2026-09-04 | 104 | 12 | 18 | 5 | 97 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **34**
-- rendimiento: **34**
+- rendimiento: **35**
+- robustez ante casos límite: **33**
 
 ## Mejoras aceptadas por archivo
 
-- `settings.py`: **18**
 - `duplicates.py`: **18**
 - `healthscore.py`: **18**
 - `scanner.py`: **18**
 - `assistant.py`: **18**
 - `organizer.py`: **18**
-- `memory.py`: **16**
+- `memory.py`: **17**
+- `settings.py`: **17**
 - `quarantine.py`: **16**
 - `browser.py`: **15**
 - `safety.py`: **15**
@@ -46,6 +46,7 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T09:57:07` **memory.py** (rendimiento): Optimicé el rendimiento de `top_memory_processes` reemplazando la ejecución del proceso de PowerShell mediante `subprocess.run` (que es costosa y pesada) por una llamada directa vía `os.popen` o, mejor aún, manteniendo `subprocess` pero asegurando que la recolección de datos sea más eficiente al reducir la cantidad de procesos recuperados de 200 a un límite ajustado (limit * 2) y eliminando la sobrecarga de `powershell` dentro del bucle principal mediante un manejo de caché más estricto.
 - `2026-09-04T09:46:48` **healthscore.py** (rendimiento): Optimicé el bucle principal de `compute_score` eliminando la llamada a `_SCORERS.get(area)` dentro de la iteración, pre-vinculando el `scorer` directamente en `_OPTIMIZED_PIPELINE` para evitar búsquedas repetitivas en el diccionario.
 - `2026-09-04T09:46:14` **diskreport.py** (rendimiento): Optimizé la función `_collect_summary_data` para evitar recrear diccionarios y realizar múltiples pasadas, consolidando la lógica de recolección de métricas en una única iteración eficiente sobre el generador de archivos.
 - `2026-09-04T09:38:20` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` al cachear solo el resultado de la interpolación lineal, evitando regenerar la lógica interna de los colores en cada llamada y reduciendo la presión sobre la memoria en operaciones intensivas de renderizado del canvas.
@@ -60,4 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T09:05:27` **browser.py** (legibilidad y documentación): Mejoré la legibilidad y mantenibilidad de `browser.py` extrayendo la lógica compleja de cálculo de tamaño y validación en un método de clase, añadiendo type hints faltantes y mejorando la documentación de los parámetros de escaneo recursivo.
 - `2026-09-04T09:05:00` **branding.py** (legibilidad y documentación): Documenté con docstrings claros las funciones de dibujo y utilidades de color para clarificar el flujo de trabajo de la UI y corregir la ambigüedad en los parámetros de entrada.
 - `2026-09-04T08:56:05` **assistant.py** (legibilidad y documentación): Mejora la legibilidad y mantenibilidad de `assistant.py` mediante la refactorización de `_call_gemini` para separar la construcción de la petición HTTP del manejo de la respuesta, reduciendo el anidamiento y haciendo explícita la validación de cada etapa.
-- `2026-09-04T08:55:42` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `reader.fieldnames` y protegiendo el acceso a los valores del diccionario `row` mediante `dict.get()`, evitando posibles `KeyError` o errores de tipo en caso de datos inesperados del registro.

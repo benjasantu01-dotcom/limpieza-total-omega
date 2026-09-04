@@ -187,9 +187,6 @@ def parse_linux_meminfo(meminfo_text: str) -> MemorySnapshot:
 def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[ProcessMemory]:
     """
     Analiza la salida CSV de PowerShell y filtra procesos según políticas de seguridad.
-    
-    Se descartan automáticamente procesos con nombres en la lista protegida,
-    PID cero, o errores de formato en el CSV.
     """
     if not isinstance(raw_csv_text, str) or not raw_csv_text.strip():
         return []
@@ -207,11 +204,9 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             pid_val = int(parts[1])
             ws_val = int(parts[2])
             
-            # Validación robusta de límites de sistema y tipo
             if not name_val or pid_val <= 0 or ws_val < 0:
                 continue
             
-            # Chequeo de seguridad: verificamos si el nombre o el PID son protegidos
             if is_protected_path(name_val) or pid_val in SYSTEM_CRITICAL_PIDS:
                 continue
                 
@@ -220,7 +215,7 @@ def parse_windows_process_csv(raw_csv_text: str, limit: int = 10) -> List[Proces
             continue
     
     proc_list.sort(key=lambda p: p.working_set, reverse=True)
-    return proc_list[:max(0, int(limit))]
+    return proc_list[:limit]
 
 def _read_windows_snapshot() -> MemorySnapshot:
     """Invoca la API de Windows GlobalMemoryStatusEx mediante ctypes."""
@@ -240,10 +235,7 @@ _snap_cache_time: float = 0.0
 _snap_cache_data: Optional[MemorySnapshot] = None
 
 def read_snapshot() -> MemorySnapshot:
-    """
-    Lee el estado actual de la memoria. 
-    Cachea el resultado durante 5 segundos para reducir el overhead en llamadas al sistema.
-    """
+    """Lee el estado actual de la memoria. Cachea resultado por 5 segundos."""
     global _snap_cache_time, _snap_cache_data
     now = time.time()
     if (now - _snap_cache_time) < 5 and _snap_cache_data:
@@ -275,13 +267,14 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
-        # Optimizamos filtrando los N procesos superiores directamente en PowerShell
+        # Optimizamos recuperando solo un conjunto manejable de procesos
+        fetch_limit = limit + 5
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit * 2} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
+            f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {fetch_limit} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
         ]
         try:
-            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=3, check=False)
             if proc.returncode == 0 and proc.stdout:
                 _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
                 _proc_cache_time = now
@@ -331,10 +324,7 @@ def _is_system_process(pid: int) -> bool:
     return isinstance(pid, int) and (pid in SYSTEM_CRITICAL_PIDS or pid == os.getpid())
 
 def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
-    """
-    Recupera la ruta absoluta del ejecutable usando QueryFullProcessImageNameW.
-    Requiere un handle con permisos PROCESS_QUERY_LIMITED_INFORMATION.
-    """
+    """Recupera la ruta absoluta del ejecutable usando QueryFullProcessImageNameW."""
     if not proc_handle: return None
     kernel32 = ctypes.windll.kernel32
     if not hasattr(kernel32, "QueryFullProcessImageNameW"): return None
@@ -349,14 +339,7 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     return None
 
 def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Optional[str]]:
-    """
-    Valida la integridad y seguridad del proceso antes de solicitar un Trim.
-    
-    Comprueba:
-    1. Coherencia entre handle y PID.
-    2. Estado activo mediante exit code (STILL_ACTIVE).
-    3. Política de seguridad de la ruta mediante `safety.py`.
-    """
+    """Valida la integridad y seguridad del proceso antes de solicitar un Trim."""
     if not proc_handle: return False, "Handle inválido."
     kernel32 = ctypes.windll.kernel32
     
@@ -377,10 +360,7 @@ def _is_safe_to_trim(proc_handle: wintypes.HANDLE, pid: int) -> Tuple[bool, Opti
         return False, "Error interno durante la verificación de integridad."
 
 def trim_working_set(pid: int | str) -> Tuple[bool, str]:
-    """
-    Intenta liberar páginas de memoria física del working set de un proceso mediante la API PSAPI.
-    Requiere que el proceso no esté protegido y esté activo.
-    """
+    """Intenta liberar páginas de memoria física del working set de un proceso."""
     if os.name != "nt": return False, "Operación solo soportada en Windows."
     
     try:
