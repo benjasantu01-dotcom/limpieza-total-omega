@@ -1326,3 +1326,47 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T06:44:45` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `_process_directory` al reemplazar `os.path.splitext` (que no maneja correctamente nombres de archivo complejos) por `pathlib.Path.suffix`, asegurando consistencia con las reglas de `JUNK_EXTENSIONS` y añadiendo validaciones de seguridad de ruta antes de procesar cada entrada del sistema de archivos.
 - `2026-09-04T06:44:45` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T06:44:45` Corrida terminada. Total usado hoy: 160.
+- `2026-09-04T06:51:22` Arrancando corrida. Quedan hoy ~140 peticiones objetivo.
+- `2026-09-04T06:52:03` Tests FALLARON:
+```
+tena) == []
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+evolve/tests/test_safety.py:299: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+app/quarantine.py:357: in load_manifest
+    raw_data = _load_manifest_raw(str(base_path), mtime)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+base_str = '/tmp/pytest-of-runner/pytest-1/test_corrupt_manifest_does_not0/_Cuarentena'
+_mtime = 1788504723.7127116
+
+    @lru_cache(maxsize=4)
+    def _load_manifest_raw(base_str: str, _mtime: float = 0.0) -> List[Dict[str, Any]]:
+        """Carga de bajo nivel (cacheada) del manifiesto."""
+        path = _manifest_path(Path(base_str))
+        if not path.is_file():
+            return []
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                return data if isinstance(data, list) else []
+>       except (json.DecodeError, OSError, PermissionError):
+                ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+
+app/quarantine.py:345: AttributeError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_safety.py::test_corrupt_manifest_does_not_break_the_app - AttributeError: module 'json' has no attribute 'DecodeError'. Did you mean: 'JSONDecodeError'?
+1 failed, 298 passed in 1.32s
+
+```
+- `2026-09-04T06:52:03` ❌ Mejora descartada en quarantine.py (no pasó los tests), se revirtió. Intento: Se reforzó la seguridad de `quarantine.py` mediante la implementación de `os.fsync` en el directorio padre tras la eliminación de archivos en `_safe_unlink` y `purge_all`, garantizando que el sistema de archivos aplique el cambio de forma persistente y atómica, mitigando riesgos de inconsistencia ante fallos del sistema o bloqueos.
+- `2026-09-04T06:52:09` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-04T06:52:31` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: seguridad defensiva): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-04T06:52:34` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-04T06:53:05` Gemini no devolvió un bloque de archivo válido para safety.py (enfoque: seguridad defensiva).
+- `2026-09-04T06:53:12` Gemini no devolvió un bloque de archivo válido para scanner.py (enfoque: seguridad defensiva).
+- `2026-09-04T06:53:12` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T06:53:12` Corrida terminada. Total usado hoy: 164.
