@@ -151,17 +151,22 @@ class SystemMetrics:
         self.validate()
 
     def validate(self) -> None:
-        self.junk_mb = _clamp(_to_float(self.junk_mb), 0.0, float('inf'))
-        self.suspicious_count = int(_clamp(_to_float(self.suspicious_count), 0.0, 10000.0))
-        self.suspicious_warnings = int(_clamp(_to_float(self.suspicious_warnings), 0.0, 10000.0))
-        self.memory_available_percent = _clamp(_to_float(self.memory_available_percent), 0.0, 100.0)
-        self.disk_free_percent = _clamp(_to_float(self.disk_free_percent), 0.0, 100.0)
-        self.duplicate_mb = _clamp(_to_float(self.duplicate_mb), 0.0, float('inf'))
-        self.startup_count = int(_clamp(_to_float(self.startup_count), 0.0, 1000.0))
-        self.quarantined_count = int(_clamp(_to_float(self.quarantined_count), 0.0, 10000.0))
+        for field_name in self._NUMERIC_FIELDS:
+            val = getattr(self, field_name)
+            if not math.isfinite(float(val)):
+                setattr(self, field_name, 0.0)
+        
+        self.junk_mb = _clamp(float(self.junk_mb), 0.0, float('inf'))
+        self.suspicious_count = int(_clamp(float(self.suspicious_count), 0.0, 10000.0))
+        self.suspicious_warnings = int(_clamp(float(self.suspicious_warnings), 0.0, 10000.0))
+        self.memory_available_percent = _clamp(float(self.memory_available_percent), 0.0, 100.0)
+        self.disk_free_percent = _clamp(float(self.disk_free_percent), 0.0, 100.0)
+        self.duplicate_mb = _clamp(float(self.duplicate_mb), 0.0, float('inf'))
+        self.startup_count = int(_clamp(float(self.startup_count), 0.0, 1000.0))
+        self.quarantined_count = int(_clamp(float(self.quarantined_count), 0.0, 10000.0))
 
     def is_finite(self) -> bool:
-        return all(math.isfinite(getattr(self, f, 0.0)) for f in self._NUMERIC_FIELDS)
+        return all(math.isfinite(float(getattr(self, f, 0.0))) for f in self._NUMERIC_FIELDS)
 
 @dataclass
 class HealthResult:
