@@ -196,44 +196,46 @@ def _collect_candidates(
     skip_protected: bool
 ) -> Dict[int, List[Path]]:
     """
-    Realiza un recorrido recursivo del disco para mapear archivos 
-    por tamaño, evitando bucles infinitos vía inodos visitados.
+    Realiza un recorrido recursivo del sistema de archivos para identificar archivos candidatos.
+    
+    Para evitar el procesamiento redundante y bucles infinitos en sistemas con 
+    puntos de reparse o montajes cíclicos, utiliza un conjunto de inodos (`visited_inodes`) 
+    que almacena la tupla (dispositivo, número de inodo). Cada directorio visitado 
+    se valida primero contra `is_protected_path` e `is_junction`.
     """
-    temp_map: Dict[int, List[Path]] = defaultdict(list)
+    size_map: Dict[int, List[Path]] = defaultdict(list)
     visited_inodes: Set[Tuple[int, int]] = set()
 
-    def _scan_recursive(current_dir: Path) -> None:
+    def _scan_directory_recursive(current_dir: Path) -> None:
         try:
-            # Chequeos de seguridad defensiva previos al acceso
             if is_protected_path(current_dir) or is_junction(current_dir):
                 return
             
             st = current_dir.stat()
-            inode = (st.st_dev, st.st_ino)
-            if inode in visited_inodes:
+            inode_key = (st.st_dev, st.st_ino)
+            if inode_key in visited_inodes:
                 return
-            visited_inodes.add(inode)
+            visited_inodes.add(inode_key)
 
-            with os.scandir(current_dir) as it:
-                for entry in it:
+            with os.scandir(current_dir) as iterator:
+                for entry in iterator:
                     if entry.is_dir(follow_symlinks=False):
-                        p_dir = Path(entry.path)
-                        # Filtrado estricto antes de recursión
-                        if not is_protected_path(p_dir) and not is_junction(p_dir):
-                            _scan_recursive(p_dir)
+                        subdir_path = Path(entry.path)
+                        if not is_protected_path(subdir_path) and not is_junction(subdir_path):
+                            _scan_directory_recursive(subdir_path)
                     else:
-                        size = _get_file_stat_if_valid(entry, min_size)
-                        if size is not None:
-                            temp_map[size].append(Path(entry.path))
+                        file_size = _get_file_stat_if_valid(entry, min_size)
+                        if file_size is not None:
+                            size_map[file_size].append(Path(entry.path))
         except (OSError, PermissionError):
             pass
 
     if directories and isinstance(directories, Iterable):
         roots = {r for item in directories if item and (r := _resolve_and_verify_root(item))}
         for root in roots:
-            _scan_recursive(root)
+            _scan_directory_recursive(root)
             
-    return {size: files for size, files in temp_map.items() if len(files) > 1}
+    return {size: files for size, files in size_map.items() if len(files) > 1}
 
 
 def _group_paths_by_hash(paths: Iterable[Path], hash_func: Callable[[Path], Optional[str]]) -> Dict[str, List[Path]]:

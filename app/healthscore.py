@@ -51,13 +51,14 @@ _LIMIT_STARTUP_COUNT: Final[int] = 20
 _LIMIT_RAM_PERCENT: Final[float] = 35.0        
 _LIMIT_DISK_PERCENT: Final[float] = 25.0       
 
-# Factores de normalización: inversos de los límites para transformar valores 
-# brutos (MB, conteos, %) al rango [0.0, 1.0].
+# Factores de normalización: escalan valores brutos a un ratio [0.0, 1.0].
+# Se calculan como el inverso del límite superior aceptable (donde el ratio llega a 0).
 _INV_JUNK: Final[float] = 1.0 / _LIMIT_JUNK_MB if _LIMIT_JUNK_MB > 0 else 0.0
 _INV_DUP: Final[float] = 1.0 / _LIMIT_DUPLICATE_MB if _LIMIT_DUPLICATE_MB > 0 else 0.0
 _INV_STARTUP: Final[float] = 1.0 / float(_LIMIT_STARTUP_COUNT) if _LIMIT_STARTUP_COUNT > 0 else 0.0
 
 # Niveles de severidad para activar reglas de recomendación (heurística).
+# Representan el ratio (0-1) debajo del cual se dispara la advertencia.
 WARN_THRESHOLD_HIGH: Final[float] = 0.9
 WARN_THRESHOLD_MED: Final[float] = 0.8
 WARN_THRESHOLD_LOW: Final[float] = 0.6

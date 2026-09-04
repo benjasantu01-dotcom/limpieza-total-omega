@@ -120,7 +120,7 @@ class MemorySnapshot:
 
 @dataclass
 class ProcessMemory:
-    """Metadatos básicos de consumo de memoria de un proceso individual."""
+    """Metadatos de consumo de memoria de un proceso individual con tipado estricto."""
     name: str
     pid: int
     working_set: BytesValue
@@ -128,7 +128,7 @@ class ProcessMemory:
 
     @property
     def working_set_mb(self) -> MegabytesValue:
-        """Calcula la conversión de bytes a MiB para reportes de usuario."""
+        """Convierte bytes de working set a Megabytes (MiB) para reportes."""
         return MegabytesValue(round(self.working_set / BYTES_IN_MB, 1))
 
 def format_bytes(num: Optional[int | float]) -> str:
@@ -332,7 +332,7 @@ def _get_process_path(proc_handle: wintypes.HANDLE) -> Optional[str]:
     buf = ctypes.create_unicode_buffer(4096)
     size = ctypes.c_ulong(4096)
     try:
-        if kernel32.QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
+        if kernel32(ctypes.windll.kernel32).QueryFullProcessImageNameW(proc_handle, 0, buf, ctypes.byref(size)) > 0:
             return str(buf.value)
     except (OSError, ctypes.ArgumentError, ValueError, BufferError): 
         pass

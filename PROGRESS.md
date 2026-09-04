@@ -16,29 +16,29 @@ Este archivo se regenera solo en cada corrida a partir de
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 78 | 3 | 13 | 5 | 85 |
-| 2026-09-04 | 138 | 16 | 23 | 7 | 136 |
+| 2026-09-03 | 75 | 3 | 12 | 5 | 85 |
+| 2026-09-04 | 141 | 16 | 24 | 7 | 136 |
 
 ## Mejoras aceptadas por enfoque
 
+- legibilidad y documentación: **52**
 - seguridad defensiva: **49**
-- legibilidad y documentación: **49**
 - robustez ante casos límite: **43**
 - manejo de errores y validación de entradas: **43**
-- rendimiento: **32**
+- rendimiento: **29**
 
 ## Mejoras aceptadas por archivo
 
 - `assistant.py`: **20**
-- `settings.py`: **19**
-- `healthscore.py`: **19**
-- `scanner.py`: **18**
+- `healthscore.py`: **20**
 - `organizer.py`: **18**
+- `settings.py`: **18**
+- `scanner.py`: **17**
 - `quarantine.py`: **16**
-- `safety.py`: **15**
-- `duplicates.py`: **15**
+- `duplicates.py`: **16**
+- `memory.py`: **15**
 - `browser.py`: **14**
-- `memory.py`: **14**
+- `safety.py`: **14**
 - `diskreport.py`: **13**
 - `startup.py`: **12**
 - `branding.py`: **12**
@@ -46,6 +46,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T13:45:38` **memory.py** (legibilidad y documentación): Mejoré la documentación técnica y la tipificación de `MemorySnapshot` y `ProcessMemory` para asegurar que el comportamiento del módulo sea predecible y auto-explicativo, reforzando la seguridad semántica mediante el uso consistente de los tipos `BytesValue` y `MegabytesValue`.
+- `2026-09-04T13:41:35` **healthscore.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando docstrings descriptivos a los factores de normalización y umbrales globales, clarificando el propósito de cada constante dentro del cálculo de salud.
+- `2026-09-04T13:41:09` **duplicates.py** (legibilidad y documentación): Se introdujo documentación técnica detallada en el docstring de `_collect_candidates` para explicar la lógica de recursión segura (prevención de bucles mediante inodos) y se clarificaron los nombres de variables internas en el proceso de escaneo para mejorar la mantenibilidad del motor de búsqueda de duplicados.
 - `2026-09-04T13:32:39` **diskreport.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante la adición de docstrings detallados en las funciones críticas de recorrido y análisis, clarificando los mecanismos de exclusión de rutas protegidas y la gestión de puntos de reanálisis (reparse points).
 - `2026-09-04T13:32:22` **browser.py** (legibilidad y documentación): Documenté con docstrings claros y tipado los argumentos de las funciones de recursión y filtrado, clarificando los roles de `memo` y las dependencias de bajo nivel (`kernel32`, `is_junction_fn`) para facilitar el mantenimiento.
 - `2026-09-04T13:31:45` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación interna agregando descripciones detalladas a las funciones de manipulación de color y dibujo, clarificando los parámetros y el propósito de cada una para facilitar el mantenimiento futuro.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T13:00:27` **diskreport.py** (manejo de errores y validación de entradas): Mejoré la robustez de `walk_files` y `drive_usage` capturando posibles `AttributeError` o `OSError` al acceder a metadatos de archivos (como `st_dev` o `st_file_attributes`) y añadí validaciones de tipo explícitas para asegurar que las entradas de disco se procesen solo si tienen atributos legibles, evitando fallos en sistemas de archivos heterogéneos o dispositivos desconectados.
 - `2026-09-04T12:51:56` **branding.py** (manejo de errores y validación de entradas): Mejoré la robustez de `save_logo_svg` y `_hex_to_rgb` implementando una validación de parámetros más estricta y un manejo de errores más específico para evitar comportamientos inesperados ante entradas malformadas.
 - `2026-09-04T12:51:22` **assistant.py** (manejo de errores y validación de entradas): Mejora la robustez de `_extract_text_from_gemini_json` al implementar una validación defensiva basada en excepciones específicas, asegurando que la estructura esperada de la respuesta de la API sea verificada en cada nivel de profundidad sin riesgo de errores de ejecución (`IndexError`, `KeyError` o `AttributeError`).
-- `2026-09-04T11:29:25` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_file_access` y `_resolve_and_cache_path` añadiendo una comprobación explícita para evitar que `os.path.realpath` o `Path.exists()` sigan rutas que atraviesan puntos de reparseo (junctions), previniendo así posibles ataques de "escapado" de directorios durante el escaneo de inicio.
-- `2026-09-04T11:28:56` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `_Validators` para evitar inyecciones de rutas maliciosas, asegurando que `Path.resolve()` sea siempre llamado antes de `is_safe_to_modify` para prevenir ataques por bypass de enlaces simbólicos o rutas relativas ambiguas.
-- `2026-09-04T11:28:25` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_inside_base_root` convirtiendo ambas rutas a su forma absoluta y normalizada mediante `Path.resolve()` antes de la comparación, evitando así posibles técnicas de evasión mediante rutas relativas (`..`) o diferencias de nomenclatura de caso en sistemas de archivos.
