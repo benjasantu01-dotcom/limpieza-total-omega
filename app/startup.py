@@ -82,7 +82,7 @@ class StartupEntry:
 
     def _is_reserved_device_name(self, path_str: str) -> bool:
         """Determina si el nombre de archivo es reservado por el kernel de Windows."""
-        reserved = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
+        reserved: Set[str] = {"CON", "PRN", "AUX", "NUL", "COM1", "LPT1", "COM2", "COM3", "COM4", "LPT2", "LPT3"}
         try:
             return Path(path_str).stem.upper() in reserved
         except (ValueError, TypeError):
@@ -102,7 +102,11 @@ class StartupEntry:
         return "".join(c for c in raw_command.strip() if ord(c) >= 32)
 
     def _extract_quoted_path(self, raw_command: str) -> str:
-        """Extrae rutas de comandos tipo "C:\Path\App.exe" validando seguridad."""
+        """
+        Extrae la ruta contenida entre comillas dobles.
+        Validación: descarta rutas con caracteres especiales prohibidos por Windows
+        o rutas que apunten a directorios protegidos del sistema.
+        """
         if not isinstance(raw_command, str) or len(raw_command) < 2:
             return ""
         end_quote: int = raw_command.find('"', 1)
@@ -122,7 +126,10 @@ class StartupEntry:
             return ""
 
     def _validate_file_access(self, p: Path) -> bool:
-        """Verifica existencia, legibilidad y ausencia de reparse points."""
+        """
+        Confirma que el archivo existe, es accesible y no es un punto de reanálisis.
+        Usa st_file_attributes para detectar junctions/reparse points a nivel FS.
+        """
         if not p.exists() or p.is_dir() or not os.access(p, os.R_OK):
             return False
         try:
@@ -133,8 +140,11 @@ class StartupEntry:
 
     def _resolve_and_cache_path(self, path_string: str) -> str:
         """
-        Normaliza rutas y valida integridad para evitar exposición de archivos protegidos.
-        Usa caché de resultados para minimizar llamadas síncronas al disco.
+        Normaliza, valida la integridad de la ruta y verifica su existencia.
+        Aplica técnicas de defensa en profundidad contra path traversal:
+        - Bloqueo de rutas UNC.
+        - Verificación contra límites MAX_PATH.
+        - Resolución mediante os.path.realpath para evitar bypasses por aliases.
         """
         if not isinstance(path_string, str) or not path_string:
             return ""
@@ -182,7 +192,7 @@ class StartupEntry:
             return path_string
 
     def _resolve_path_from_command(self, command_line: str) -> str:
-        """Aísla el binario principal de una línea de comando compleja."""
+        """Aísla el binario principal de una línea de comando compleja eliminando shells."""
         if not command_line or not isinstance(command_line, str):
             return ""
         if any(char in command_line for char in ('&', '|', ';', '>', '<', '$', '`', '(', ')')):
@@ -201,7 +211,7 @@ class StartupEntry:
         
     @property
     def executable(self) -> str:
-        """Ruta validada del ejecutable calculada mediante resolución diferida."""
+        """Ruta validada del ejecutable calculada mediante resolución diferida (lazy evaluation)."""
         if self._checked_exists:
             return self._exec_cache or ""
             

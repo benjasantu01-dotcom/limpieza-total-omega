@@ -1186,3 +1186,54 @@ assert not True
 - `2026-09-04T05:00:40` ✅ Mejora aceptada en settings.py (enfoque: legibilidad y documentación). He mejorado la documentación del módulo añadiendo type hints faltantes en funciones clave y enriqueciendo los docstrings con detalles técnicos sobre el flujo de seguridad, facilitando la comprensión de las restricciones de `safety.py` aplicadas.
 - `2026-09-04T05:00:40` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T05:00:40` Corrida terminada. Total usado hoy: 120.
+- `2026-09-04T05:09:17` Arrancando corrida. Quedan hoy ~180 peticiones objetivo.
+- `2026-09-04T05:09:39` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-04T05:10:14` ✅ Mejora aceptada en startup.py (enfoque: legibilidad y documentación). Mejoré la documentación técnica del módulo `startup.py` mediante docstrings detallados en los métodos de `StartupEntry` que aclaran la lógica de resolución y validación de rutas, y añadí type hints descriptivos en variables internas para facilitar la auditoría de seguridad.
+- `2026-09-04T05:10:30` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-04T05:10:59` Gemini devolvió 503 (falla temporal del servidor, intento 2/3). Esperando 6s...
+- `2026-09-04T05:11:28` Gemini devolvió 503 (falla temporal del servidor, intento 3/3). Esperando 12s...
+- `2026-09-04T05:12:00` Gemini sigue devolviendo 503 tras 3 reintentos. Se salta esta iteración.
+- `2026-09-04T05:12:33` Gemini devolvió 503 (falla temporal del servidor, intento 1/3). Esperando 3s...
+- `2026-09-04T05:13:40` ✅ Mejora aceptada en branding.py (enfoque: rendimiento). Se optimizó el acceso a valores constantes y cálculos repetitivos en `branding.py` utilizando `MappingProxyType` para las colecciones y pre-calculando valores escalares, además de evitar la creación innecesaria de objetos intermedios en los loops de dibujo.
+- `2026-09-04T05:13:54` Tests FALLARON:
+```
+eligrosa.mkdir(parents=True)
+        (peligrosa / "x").write_text("secreto")
+>       assert browser.detect_profiles(
+            bases=[tmp_path], cache_paths={"Chrome": r"Perfil\Cookies"}
+        ) == []
+E       AssertionError: assert [BrowserCache...size_bytes=7)] == []
+E         
+E         Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+E         
+E         Full diff:
+E         - []
+E         + [
+E         +     BrowserCache(
+E         +         browser='Chrome',
+E         +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+E         +         size_bytes=7,
+E         +     ),
+E         + ]
+
+evolve/tests/test_modules.py:755: AssertionError
+=========================== short test summary info ============================
+FAILED evolve/tests/test_modules.py::test_detect_profiles_never_reports_user_data_folders - AssertionError: assert [BrowserCache...size_bytes=7)] == []
+  
+  Left contains one more item: BrowserCache(browser='Chrome', path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'), size_bytes=7)
+  
+  Full diff:
+  - []
+  + [
+  +     BrowserCache(
+  +         browser='Chrome',
+  +         path=PosixPath('/tmp/pytest-of-runner/pytest-3/test_detect_profiles_never_rep0/Perfil/Cookies'),
+  +         size_bytes=7,
+  +     ),
+  + ]
+1 failed, 298 passed in 1.31s
+
+```
+- `2026-09-04T05:13:54` ❌ Mejora descartada en browser.py (no pasó los tests), se revirtió. Intento: Se implementó un mecanismo de caché persistente de estados de archivo (`entry.is_dir()` y `entry.stat()`) y se optimizó la resolución de rutas mediante la eliminación de llamadas redundantes a `resolve(strict=True)` dentro de los bucles críticos, mejorando el rendimiento en directorios profundos.
+- `2026-09-04T05:13:54` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T05:13:54` Corrida terminada. Total usado hoy: 124.
