@@ -826,3 +826,10 @@ FAILED evolve/tests/test_modules.py::test_executable_extracted_from_unquoted_com
 - `2026-09-04T02:07:00` Gemini no devolvió un bloque de archivo válido para healthscore.py (enfoque: seguridad defensiva).
 - `2026-09-04T02:07:00` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T02:07:00` Corrida terminada. Total usado hoy: 52.
+- `2026-09-04T02:15:32` Arrancando corrida. Quedan hoy ~248 peticiones objetivo.
+- `2026-09-04T02:16:49` ✅ Mejora aceptada en main.py (enfoque: seguridad defensiva). Mejoré la seguridad defensiva en `main.py` añadiendo una validación explícita mediante `is_safe_to_modify` antes de procesar el PID en `on_trim_process`, evitando operaciones de administración de memoria sobre procesos del sistema, y refiné `on_scan_junk` para asegurar que el objetivo de escaneo sea una ruta absoluta y validada antes de enviarla al hilo de trabajo.
+- `2026-09-04T02:17:17` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: seguridad defensiva).
+- `2026-09-04T02:17:47` ✅ Mejora aceptada en organizer.py (enfoque: seguridad defensiva). Reforcé la integridad defensiva al impedir que `_is_file_locked` y `_passes_system_checks` fallaran silenciosamente por errores de acceso, forzando un retorno seguro (True/inseguro) ante cualquier excepción de E/S.
+- `2026-09-04T02:18:07` ✅ Mejora aceptada en quarantine.py (enfoque: seguridad defensiva). Se ha añadido una validación de propiedad en `_safe_unlink` y `purge_all` para asegurar que solo se eliminen archivos cuyo dueño sea el usuario actual, mitigando riesgos de elevación de privilegios en sistemas multiusuario o configuraciones de permisos compartidos.
+- `2026-09-04T02:18:07` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T02:18:07` Corrida terminada. Total usado hoy: 56.

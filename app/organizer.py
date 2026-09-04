@@ -170,11 +170,9 @@ def _is_file_locked(path: Path) -> bool:
     try:
         # Intentamos abrir en modo lectura exclusiva
         with open(path, "rb") as f:
-            # Si el archivo está vacío o bloqueado, esto puede fallar
             return False
     except (PermissionError, OSError):
-        # Si el acceso es denegado o el sistema lo reporta bloqueado, asumimos inseguro
-        return True
+        return True # Asumir bloqueado/inseguro ante cualquier error de acceso
 
 
 def _is_recursive_violation(src: Path, dest: Path) -> bool:
@@ -203,7 +201,7 @@ def _passes_system_checks(src: Path) -> bool:
         # Máscara binaria: 0x4 (SYSTEM), 0x2 (HIDDEN), 0x1 (READONLY)
         return not (stat.st_file_attributes & 0x407)
     except OSError:
-        return False
+        return False # Asumir protegido/inseguro si no se pueden leer atributos
 
 
 def _has_forbidden_chars(path: Path) -> bool:
@@ -287,7 +285,6 @@ def _process_directory(current_dir: Path, found: List[JunkFile], depth: int = 0)
                         if _should_scan_directory(entry):
                             _process_directory(Path(entry.path), found, depth + 1)
                     elif entry.is_file(follow_symlinks=False):
-                        # Optimizacion: acceso directo a extension y validacion contra set pre-calculado
                         if os.path.splitext(entry.name)[1].lower() in JUNK_EXTENSIONS:
                             stats: os.stat_result = entry.stat()
                             if stats.st_size > 0:
