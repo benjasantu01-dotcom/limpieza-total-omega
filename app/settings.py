@@ -158,6 +158,7 @@ class _Validators:
             resolved = path_obj.resolve(strict=False)
             if resolved.is_symlink(): return False
             if hasattr(resolved, 'is_junction') and resolved.is_junction(): return False
+            # La validación ocurre siempre sobre la ruta resuelta para evitar ataques de path traversal
             return not is_protected_path(str(resolved)) and is_safe_to_modify(str(resolved))
         except (OSError, PermissionError):
             return False
@@ -168,7 +169,8 @@ class _Validators:
         if not path_str or len(path_str) > 2048: return False
         try:
             p = Path(path_str).expanduser()
-            return p.is_absolute() and _Validators._run_safety_checks(p)
+            if not p.is_absolute(): return False
+            return _Validators._run_safety_checks(p)
         except (OSError, RuntimeError, PermissionError, AttributeError):
             return False
 
@@ -297,7 +299,8 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
     
     try:
         ruta = settings_path(custom_base)
-        if not is_safe_to_modify(str(ruta)): return None
+        # Verificación final de seguridad antes de escritura
+        if not is_safe_to_modify(str(ruta.resolve(strict=False))): return None
 
         parent = ruta.parent
         try:
@@ -305,7 +308,7 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         except OSError:
             return None
 
-        if not parent.is_dir() or is_protected_path(str(parent)) or not _Validators._is_safe_path(str(parent)):
+        if not parent.is_dir() or is_protected_path(str(parent.resolve(strict=False))) or not _Validators._is_safe_path(str(parent)):
             return None
             
         if shutil.disk_usage(parent).free < MAX_SETTINGS_SIZE:

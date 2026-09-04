@@ -6,23 +6,23 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **227** (45.0% de aceptación)
+- Mejoras aceptadas: **230** (45.6% de aceptación)
 - Rechazadas por tests: 19
 - Rechazadas por guardia de seguridad: 39
 - Sin cambios (nada sustancial que mejorar): 14
-- Sin respuesta de la IA (error o límite): 205
+- Sin respuesta de la IA (error o límite): 202
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 104 | 4 | 17 | 8 | 103 |
-| 2026-09-04 | 123 | 15 | 22 | 6 | 102 |
+| 2026-09-03 | 104 | 4 | 17 | 8 | 99 |
+| 2026-09-04 | 126 | 15 | 22 | 6 | 103 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
-- seguridad defensiva: **46**
+- seguridad defensiva: **49**
 - manejo de errores y validación de entradas: **44**
 - robustez ante casos límite: **43**
 - rendimiento: **37**
@@ -31,10 +31,10 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `assistant.py`: **20**
 - `organizer.py`: **20**
+- `scanner.py`: **19**
+- `settings.py`: **19**
 - `healthscore.py`: **19**
 - `duplicates.py`: **18**
-- `scanner.py`: **18**
-- `settings.py`: **18**
 - `memory.py`: **17**
 - `safety.py`: **17**
 - `quarantine.py`: **16**
@@ -42,10 +42,13 @@ Este archivo se regenera solo en cada corrida a partir de
 - `main.py`: **13**
 - `diskreport.py`: **13**
 - `branding.py`: **12**
-- `startup.py`: **11**
+- `startup.py`: **12**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T11:29:25` **startup.py** (seguridad defensiva): Mejoré la seguridad defensiva en `_validate_file_access` y `_resolve_and_cache_path` añadiendo una comprobación explícita para evitar que `os.path.realpath` o `Path.exists()` sigan rutas que atraviesan puntos de reparseo (junctions), previniendo así posibles ataques de "escapado" de directorios durante el escaneo de inicio.
+- `2026-09-04T11:28:56` **settings.py** (seguridad defensiva): Se ha mejorado la robustez de las validaciones en `_Validators` para evitar inyecciones de rutas maliciosas, asegurando que `Path.resolve()` sea siempre llamado antes de `is_safe_to_modify` para prevenir ataques por bypass de enlaces simbólicos o rutas relativas ambiguas.
+- `2026-09-04T11:28:25` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez de `_is_inside_base_root` convirtiendo ambas rutas a su forma absoluta y normalizada mediante `Path.resolve()` antes de la comparación, evitando así posibles técnicas de evasión mediante rutas relativas (`..`) o diferencias de nomenclatura de caso en sistemas de archivos.
 - `2026-09-04T11:19:25` **safety.py** (seguridad defensiva): Se ha mejorado la robustez de `is_protected_path` integrando `os.path.commonpath` para detectar si una ruta reside jerárquicamente dentro de directorios de sistema, evitando el uso de comparaciones frágiles de prefijos de cadena que podían ser eludidas con rutas relativas o mal formadas.
 - `2026-09-04T11:18:13` **organizer.py** (seguridad defensiva): Se reforzó `stage_for_review` para prevenir ataques de manipulación de rutas (`path traversal`) al verificar que la ruta destino resuelta esté efectivamente contenida dentro del directorio de revisión (`review_dir`), asegurando que no se escape de la zona de cuarentena antes de realizar la operación de movimiento.
 - `2026-09-04T11:09:39` **main.py** (seguridad defensiva): Se reforzó la seguridad defensiva en `on_trim_process` añadiendo una validación explícita mediante `safety.ensure_safe_to_modify` antes de intentar ejecutar cualquier operación de memoria potencialmente arriesgada, protegiendo contra posibles manipulaciones de PIDs críticos del sistema.
@@ -58,6 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T10:38:31` **quarantine.py** (robustez ante casos límite): Se ha mejorado `_check_windows_file_attributes` para prevenir condiciones de carrera y fallos de acceso mediante el uso de `pathlib.Path.exists()` antes de la llamada nativa a `ctypes`, asegurando mayor robustez ante archivos inexistentes o bloqueados transitoriamente por el sistema operativo.
 - `2026-09-04T10:37:53` **organizer.py** (robustez ante casos límite): Mejora la robustez ante estados inconsistentes del sistema de archivos al añadir validaciones de existencia física y de tipo (archivo vs directorio) en las iteraciones de `stage_for_review` y `delete_reviewed`, evitando que `Path.stat()` o `shutil.move` fallen al encontrar entradas borradas o modificadas por otros procesos durante la ejecución del bucle.
 - `2026-09-04T10:37:23` **memory.py** (robustez ante casos límite): Mejoré la robustez de `trim_working_set` añadiendo una validación explícita mediante `PROCESS_QUERY_LIMITED_INFORMATION` para abrir el handle, evitando el uso de privilegios innecesarios y garantizando que el acceso al proceso no sea bloqueado por falta de permisos administrativos, siguiendo el principio de menor privilegio al manipular handles.
-- `2026-09-04T10:27:57` **healthscore.py** (robustez ante casos límite): Mejoré la resiliencia de `SystemMetrics` ante valores `NaN` o `inf` introducidos externamente, añadiendo una validación explícita mediante `math.isfinite` en `__post_init__` para garantizar la integridad de los cálculos numéricos antes de que lleguen al pipeline de puntuación.
-- `2026-09-04T10:27:06` **diskreport.py** (robustez ante casos límite): Se ha mejorado `walk_files` para manejar de forma robusta la posibilidad de que `os.scandir` encuentre archivos o carpetas que desaparecen o cambian de estado inmediatamente después de ser listados (condición de carrera típica de sistemas de archivos en uso), evitando que excepciones de E/S innecesarias interrumpan el escaneo de todo el árbol.
-- `2026-09-04T10:18:19` **browser.py** (robustez ante casos límite): Se ha robustecido el manejo de rutas en `browser.py` implementando una validación estricta de la jerarquía de directorios durante el escaneo para prevenir el acceso no autorizado a rutas fuera del scope (traversal), y se ha mejorado la tolerancia a fallos mediante la normalización de las rutas resultantes antes de compararlas, garantizando que el escáner no sea engañado por enlaces simbólicos o inconsistencias en el sistema de archivos.

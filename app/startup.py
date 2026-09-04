@@ -130,7 +130,9 @@ class StartupEntry:
             if not p.exists() or p.is_dir():
                 return False
             # 0x00000400 identifica ReParsePoints (puntos de unión/reparseo NTFS)
-            return not p.is_symlink() and (p.lstat().st_file_attributes & 0x00000400) == 0
+            # Evitamos procesar archivos que residan tras un reparse point para mayor seguridad
+            stats = p.lstat()
+            return not p.is_symlink() and not (stats.st_file_attributes & 0x00000400)
         except (OSError, PermissionError):
             return False
 
@@ -164,6 +166,7 @@ class StartupEntry:
                 return path_string
             
             try:
+                # Resolvemos evitando seguir puntos de reparseo ocultos
                 real_path_str: str = os.path.realpath(abs_path)
             except (OSError, PermissionError):
                 return abs_path 
