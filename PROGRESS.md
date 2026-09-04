@@ -6,47 +6,48 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **218** (43.3% de aceptación)
+- Mejoras aceptadas: **216** (42.9% de aceptación)
 - Rechazadas por tests: 14
-- Rechazadas por guardia de seguridad: 35
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 17
-- Sin respuesta de la IA (error o límite): 220
+- Sin respuesta de la IA (error o límite): 221
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 12 | 0 | 1 | 0 | 13 |
+| 2026-09-02 | 9 | 0 | 1 | 0 | 12 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 58 | 7 | 10 | 4 | 49 |
+| 2026-09-04 | 59 | 7 | 11 | 4 | 51 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **56**
-- seguridad defensiva: **50**
+- seguridad defensiva: **48**
 - manejo de errores y validación de entradas: **45**
-- rendimiento: **35**
-- robustez ante casos límite: **32**
+- rendimiento: **36**
+- robustez ante casos límite: **31**
 
 ## Mejoras aceptadas por archivo
 
 - `duplicates.py`: **19**
 - `scanner.py`: **19**
 - `healthscore.py`: **19**
-- `settings.py`: **18**
-- `assistant.py`: **18**
 - `browser.py`: **18**
+- `memory.py`: **18**
 - `organizer.py`: **18**
 - `quarantine.py`: **18**
-- `memory.py`: **17**
+- `settings.py`: **17**
+- `assistant.py`: **17**
 - `safety.py`: **13**
-- `branding.py`: **11**
 - `diskreport.py`: **11**
 - `main.py`: **11**
+- `branding.py`: **10**
 - `startup.py`: **8**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T05:30:13` **memory.py** (rendimiento): Se optimizó el proceso de recolección de métricas mediante PowerShell en `top_memory_processes` añadiendo un parámetro de limitación a nivel de comando para reducir drásticamente el volumen de datos procesados, ahorrando ciclos de CPU y memoria innecesaria.
 - `2026-09-04T05:21:55` **main.py** (rendimiento): Optimicé el sistema de caché implementando un diccionario de `_cache_access_times` para permitir una invalidación de caché basada en expiración de tiempo (TTL) real por entrada, reemplazando el comportamiento global del diccionario para evitar lecturas redundantes de datos poco volátiles sin sacrificar la frescura de los resultados.
 - `2026-09-04T05:20:58` **healthscore.py** (rendimiento): Se precomputó la lista de tuplas `(area, weight, rules)` para evitar búsquedas repetitivas por diccionario (`_RULES_BY_AREA.get(area)`) dentro del bucle principal de `compute_score`, mejorando la eficiencia en la ejecución del pipeline.
 - `2026-09-04T05:20:29` **duplicates.py** (rendimiento): Optimicé `_collect_candidates` para evitar llamadas redundantes a `entry.stat()` reutilizando el valor obtenido durante la verificación inicial del archivo, lo cual reduce significativamente las operaciones de I/O en discos HDD/red durante el escaneo recursivo.
@@ -61,4 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T04:40:19` **duplicates.py** (legibilidad y documentación): Se introdujeron type hints más precisos y se reemplazaron los `tuple` de comparación en `suggest_keeper` por un método `sort` explícito, mejorando la legibilidad y la robustez del manejo de fechas de modificación.
 - `2026-09-04T04:39:11` **browser.py** (legibilidad y documentación): Se introdujeron type hints en funciones críticas, se documentaron parámetros complejos y se reorganizó la lógica de `_should_skip_entry` para mejorar la mantenibilidad y claridad del flujo de trabajo sin alterar la funcionalidad.
 - `2026-09-04T04:30:42` **branding.py** (legibilidad y documentación): Se ha mejorado la documentación del módulo añadiendo docstrings descriptivos a los parámetros de las funciones complejas de dibujo y se ha refactorizado la función `logo_svg` para extraer la lógica del gradiente a una variable local más clara, mejorando la mantenibilidad técnica del diseño.
-- `2026-09-04T04:30:24` **assistant.py** (legibilidad y documentación): Se introdujeron docstrings descriptivos y `type hints` adicionales en las funciones de manejo de respuestas (`handle_*`) para clarificar el propósito de cada lógica de negocio y mejorar la legibilidad del código.

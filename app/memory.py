@@ -272,14 +272,15 @@ def top_memory_processes(limit: int = 10) -> List[ProcessMemory]:
     
     now = time.time()
     if (now - _proc_cache_time) > 60:
+        # Optimizamos filtrando los N procesos superiores directamente en PowerShell
         cmd = [
             'powershell', '-NoProfile', '-NonInteractive', '-Command', 
-            "Get-Process | Select-Object Name, Id, WorkingSet | ForEach-Object { \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }"
+            f"Get-Process | Sort-Object WorkingSet -Descending | Select-Object -First {limit * 2} | ForEach-Object {{ \"$($_.Name),$($_.Id),$($_.WorkingSet)\" }}"
         ]
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=5, check=False)
             if proc.returncode == 0 and proc.stdout:
-                _proc_cache_data = parse_windows_process_csv(proc.stdout)
+                _proc_cache_data = parse_windows_process_csv(proc.stdout, limit=limit)
                 _proc_cache_time = now
         except (OSError, subprocess.SubprocessError, subprocess.TimeoutExpired): 
             pass
