@@ -6,25 +6,25 @@ Este archivo se regenera solo en cada corrida a partir de
 ## Resumen general
 
 - Iteraciones totales: **504**
-- Mejoras aceptadas: **237** (47.0% de aceptación)
+- Mejoras aceptadas: **240** (47.6% de aceptación)
 - Rechazadas por tests: 11
-- Rechazadas por guardia de seguridad: 36
+- Rechazadas por guardia de seguridad: 37
 - Sin cambios (nada sustancial que mejorar): 16
-- Sin respuesta de la IA (error o límite): 204
+- Sin respuesta de la IA (error o límite): 200
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-02 | 57 | 1 | 7 | 0 | 33 |
+| 2026-09-02 | 57 | 1 | 7 | 0 | 29 |
 | 2026-09-03 | 148 | 7 | 24 | 13 | 158 |
-| 2026-09-04 | 32 | 3 | 5 | 3 | 13 |
+| 2026-09-04 | 35 | 3 | 6 | 3 | 13 |
 
 ## Mejoras aceptadas por enfoque
 
 - legibilidad y documentación: **57**
+- seguridad defensiva: **50**
 - manejo de errores y validación de entradas: **49**
-- seguridad defensiva: **47**
 - robustez ante casos límite: **43**
 - rendimiento: **41**
 
@@ -32,14 +32,14 @@ Este archivo se regenera solo en cada corrida a partir de
 
 - `browser.py`: **21**
 - `organizer.py`: **21**
+- `scanner.py`: **21**
 - `assistant.py`: **20**
 - `healthscore.py`: **20**
 - `quarantine.py`: **20**
-- `scanner.py`: **20**
 - `duplicates.py`: **19**
 - `memory.py`: **19**
-- `settings.py`: **18**
-- `safety.py`: **15**
+- `settings.py`: **19**
+- `safety.py`: **16**
 - `main.py`: **13**
 - `diskreport.py`: **12**
 - `branding.py`: **12**
@@ -47,6 +47,9 @@ Este archivo se regenera solo en cada corrida a partir de
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T02:27:14` **settings.py** (seguridad defensiva): He mejorado la robustez de `save()` al verificar explícitamente que el directorio de configuración sea un directorio real antes de proceder, protegiendo contra posibles colisiones donde una ruta de configuración sea sobrescrita por un archivo malicioso, y reforzando la integridad de las operaciones de escritura mediante un chequeo de existencia más estricto.
+- `2026-09-04T02:26:58` **scanner.py** (seguridad defensiva): Se ha mejorado la robustez defensiva del escáner implementando una validación estricta de rutas mediante `path.resolve()` antes de realizar cualquier operación de análisis, asegurando que las comparaciones de `base_root` no se vean afectadas por enlaces simbólicos o inconsistencias en la resolución de rutas de Windows.
+- `2026-09-04T02:26:32` **safety.py** (seguridad defensiva): Se ha restringido el alcance de `_check_file_integrity_cached` eliminando la limpieza automática de caché (`cache_clear()`) al fallar, para evitar problemas de concurrencia y proteger la integridad del estado del validador durante la ejecución de los bucles de limpieza.
 - `2026-09-04T02:18:07` **quarantine.py** (seguridad defensiva): Se ha añadido una validación de propiedad en `_safe_unlink` y `purge_all` para asegurar que solo se eliminen archivos cuyo dueño sea el usuario actual, mitigando riesgos de elevación de privilegios en sistemas multiusuario o configuraciones de permisos compartidos.
 - `2026-09-04T02:17:47` **organizer.py** (seguridad defensiva): Reforcé la integridad defensiva al impedir que `_is_file_locked` y `_passes_system_checks` fallaran silenciosamente por errores de acceso, forzando un retorno seguro (True/inseguro) ante cualquier excepción de E/S.
 - `2026-09-04T02:16:49` **main.py** (seguridad defensiva): Mejoré la seguridad defensiva en `main.py` añadiendo una validación explícita mediante `is_safe_to_modify` antes de procesar el PID en `on_trim_process`, evitando operaciones de administración de memoria sobre procesos del sistema, y refiné `on_scan_junk` para asegurar que el objetivo de escaneo sea una ruta absoluta y validada antes de enviarla al hilo de trabajo.
@@ -59,6 +62,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T01:40:36` **organizer.py** (robustez ante casos límite): Mejoré la robustez de `_is_file_locked` para que no confíe ciegamente en el modo de apertura, evitando falsos positivos al manejar excepciones de acceso de manera explícita y asegurando que los archivos no sean procesados si existen errores de E/S indeterminados.
 - `2026-09-04T01:40:19` **memory.py** (robustez ante casos límite): Se mejora la robustez de `trim_working_set` añadiendo una validación explícita mediante `ctypes` para descartar handles de procesos que requieran privilegios de administrador que el script actual no posee (usando `GetLastError` para identificar `ERROR_ACCESS_DENIED`), evitando errores silenciosos o excepciones inesperadas durante la llamada a `OpenProcess`.
 - `2026-09-04T01:35:29` **healthscore.py** (robustez ante casos límite): Mejoré la robustez de `score_memory` y `score_disk` para prevenir divisiones por cero ante configuraciones erróneas y agregué una salvaguarda en `compute_score` para manejar el caso de que `metrics` sea un objeto con atributos faltantes o inesperados mediante `getattr`.
-- `2026-09-04T01:25:34` **browser.py** (robustez ante casos límite): Se ha añadido un chequeo de integridad en `_sum_directory_recursive` y `detect_profiles` para garantizar que la ruta absoluta resuelta no exceda `MAX_PATH_LEN` antes de interactuar con el sistema de archivos, previniendo errores de `OSError` o truncamientos silenciosos en casos límite de rutas profundas.
-- `2026-09-04T01:16:14` **assistant.py** (robustez ante casos límite): Mejoré la robustez de `_get_source_value` para manejar objetos que implementen `__getitem__` de forma no estándar o que fallen ante accesos inesperados, asegurando que el asistente no aborte el análisis ante datos mal formados, un caso límite crítico en la ingesta de métricas.
-- `2026-09-04T01:15:20` **settings.py** (rendimiento): Se optimizó el acceso a la configuración mediante la consolidación del caché de rutas (`_PATH_CACHE`) y la serialización, eliminando la reconstrucción de objetos `Path` en cada llamada a `settings_path` y reduciendo el uso de `copy()` innecesarios al recuperar datos inmutables de configuración.

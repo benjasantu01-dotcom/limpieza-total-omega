@@ -309,14 +309,14 @@ def save(values: Any, custom_base: PathLike | None = None) -> Optional[Path]:
         if not parent.exists(): 
             parent.mkdir(parents=True, exist_ok=True)
             
-        if is_protected_path(str(parent)) or not _Validators._is_safe_path(str(parent)) or not parent.is_dir():
+        if not parent.is_dir() or is_protected_path(str(parent)) or not _Validators._is_safe_path(str(parent)):
             return None
         
         if ruta.exists():
+            if not ruta.is_file(): return None
             resolved = ruta.resolve(strict=False)
             if resolved.is_symlink() or (hasattr(resolved, 'is_junction') and resolved.is_junction()):
                 return None
-            if not ruta.is_file(): return None
         
         temp_path = ruta.with_suffix(f"{ruta.suffix}.tmp")
         data = json.dumps(cleaned_settings, indent=2, ensure_ascii=False).encode("utf-8")

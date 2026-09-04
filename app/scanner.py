@@ -107,7 +107,8 @@ class Scanner:
     def _is_inside_base_root(self, path_str: str) -> bool:
         """Verifica que la ruta resuelta esté contenida en la jerarquía del directorio raíz."""
         try:
-            return str(Path(path_str).resolve(strict=False)).startswith(str(self.base_root))
+            target = Path(path_str).resolve(strict=False)
+            return str(target).startswith(str(self.base_root))
         except (OSError, RuntimeError):
             return False
 

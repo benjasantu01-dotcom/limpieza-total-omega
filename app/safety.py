@@ -245,9 +245,8 @@ def _check_file_integrity_cached(path_str: str) -> bool:
 
 
 def _check_file_integrity(path: Path) -> None:
-    """Wrapper que utiliza el chequeo cacheado para evitar syscalls redundantes."""
+    """Wrapper que utiliza el chequeo cacheado para verificar integridad."""
     if not _check_file_integrity_cached(str(path)):
-        _check_file_integrity_cached.cache_clear()
         raise UnsafePathError("Operación denegada por reglas de integridad.")
 
 
