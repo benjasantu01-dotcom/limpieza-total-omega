@@ -368,13 +368,14 @@ def trim_working_set(pid: int | str) -> Tuple[bool, str]:
     except (ValueError, TypeError):
         return False, "PID no válido."
 
-    if _is_system_process(target_pid) or not is_safe_to_modify(str(target_pid)): 
-        return False, "Proceso protegido o inválido."
+    if _is_system_process(target_pid): 
+        return False, "Proceso protegido."
 
     kernel32 = ctypes.windll.kernel32
     psapi = getattr(ctypes.windll, "psapi", None)
     if not psapi or not hasattr(psapi, "EmptyWorkingSet"): return False, "APIs no disponibles."
     
+    # Primero abrimos con acceso limitado para evitar bloqueos por permisos
     proc_handle = kernel32.OpenProcess(SAFE_ACCESS_MASK, False, target_pid)
     if not proc_handle: 
         return False, f"Acceso denegado (código {kernel32.GetLastError()})."

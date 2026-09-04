@@ -254,6 +254,8 @@ def _check_windows_file_attributes(path_str: str) -> None:
     if os.name != 'nt':
         return
     path_obj = Path(path_str)
+    if not path_obj.exists():
+        return
     if len(path_obj.parts) > 64:
         raise UnsafePathError("Profundidad de ruta excesiva en sistema Windows.")
     import ctypes
