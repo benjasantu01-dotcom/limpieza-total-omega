@@ -315,8 +315,8 @@ def is_within_directory(child: PathLike, parent: PathLike, allow_equal: bool = F
         if is_drive_root(c_path) or is_protected_path(c_path):
             return False
             
-        return os.path.commonpath([str(c_path), str(p_path)]) == str(p_path) if allow_equal else \
-               (c_path != p_path and os.path.commonpath([str(c_path), str(p_path)]) == str(p_path))
+        common = os.path.commonpath([str(c_path), str(p_path)])
+        return common == str(p_path) if allow_equal else (c_path != p_path and common == str(p_path))
     except (ValueError, TypeError, OSError, RuntimeError): return False
 
 

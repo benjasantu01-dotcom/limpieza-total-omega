@@ -373,16 +373,27 @@ def save_manifest(items: List[QuarantineItem], base: Union[str, Path] = DEFAULT_
     base_path = quarantine_dir(base)
     target_path = _manifest_path(base_path)
     temp_path: Optional[Path] = None
+    
     try:
+        # Serializar antes de abrir el temporal para validar estructura
+        content = json.dumps([item.to_dict() for item in items], indent=2, ensure_ascii=False)
+        
         with tempfile.NamedTemporaryFile("w", dir=base_path, encoding="utf-8", delete=False) as tf:
             temp_path = Path(tf.name)
-            json.dump([item.to_dict() for item in items], tf, indent=2, ensure_ascii=False)
+            tf.write(content)
             tf.flush()
             os.fsync(tf.fileno())
+            
+        # Validación post-escritura: verificar que el archivo temporal no esté corrupto
+        if temp_path.stat().st_size != len(content.encode('utf-8')):
+             raise OSError("Integridad del archivo temporal fallida.")
+
         os.replace(temp_path, target_path)
+        
         dir_fd = os.open(str(base_path), os.O_RDONLY)
         try: os.fsync(dir_fd)
         finally: os.close(dir_fd)
+        
         _load_manifest_raw.cache_clear()
         return target_path
     except (OSError, TypeError, IOError) as e:
