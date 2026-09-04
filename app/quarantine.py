@@ -495,6 +495,9 @@ def quarantine_file(
         raise ValueError("La ruta de origen no puede estar vacía.")
     
     source_path = Path(source).expanduser().resolve(strict=True)
+    if source_path.is_dir():
+        raise UnsafePathError("Solo se pueden aislar archivos individuales, no directorios.")
+        
     original_size = source_path.stat().st_size
     
     dest_dir = quarantine_dir(base)

@@ -848,3 +848,10 @@ FAILED evolve/tests/test_safety.py::test_purge_item_cannot_delete_outside_the_qu
 - `2026-09-04T13:02:47` ➖ Sin cambios en main.py (enfoque: manejo de errores y validación de entradas). Motivo: Mejoré la robustez de `on_target_choice_changed` añadiendo una validación explícita mediante `_is_safe_target_dir` antes de actualizar el estado de `self.scan_target`, asegurando que ninguna ruta arbitraria del sistema pueda ser seleccionada inadvertidamente como objetivo de escaneo.
 - `2026-09-04T13:02:47` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
 - `2026-09-04T13:02:47` Corrida terminada. Total usado hoy: 308.
+- `2026-09-04T13:09:57` Arrancando corrida. Quedan hoy ~0 peticiones objetivo.
+- `2026-09-04T13:10:31` Gemini no devolvió un bloque de archivo válido para memory.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-04T13:11:05` Gemini no devolvió un bloque de archivo válido para organizer.py (enfoque: manejo de errores y validación de entradas).
+- `2026-09-04T13:11:41` ✅ Mejora aceptada en quarantine.py (enfoque: manejo de errores y validación de entradas). Mejoré la robustez de `quarantine_file` añadiendo una validación explícita para evitar que `source_path` sea un directorio, garantizando que el aislamiento solo procese archivos individuales como lo exige la lógica de seguridad del módulo.
+- `2026-09-04T13:11:46` 🛑 Propuesta bloqueada por la guardia en reporting.py (enfoque: manejo de errores y validación de entradas): error de sintaxis en la propuesta (línea 106): unterminated string literal (detected at line 106)
+- `2026-09-04T13:11:46` Rotación — metrics: 4 registros archivados; 1 archivo(s) histórico(s) descartado(s)
+- `2026-09-04T13:11:46` Corrida terminada. Total usado hoy: 312.
