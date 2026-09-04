@@ -231,6 +231,15 @@ def blend(start: HexColor, end: HexColor, ratio: float) -> HexColor:
         int(b1 + (b2 - b1) * ratio)
     ))
 
+@lru_cache(maxsize=32)
+def _interpolate_color(s1: RGBTuple, s2: RGBTuple, delta: float) -> HexColor:
+    """Interpolación interna cacheable."""
+    return _rgb_to_hex((
+        int(s1[0] + (s2[0] - s1[0]) * delta),
+        int(s1[1] + (s2[1] - s1[1]) * delta),
+        int(s1[2] + (s2[2] - s1[2]) * delta)
+    ))
+
 @lru_cache(maxsize=16)
 def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) -> Tuple[HexColor, ...]:
     """Genera una lista de colores interpolados para crear un degradado lineal."""
@@ -243,12 +252,7 @@ def gradient_colors(steps: int, stops: Tuple[HexColor, ...] = GRADIENT_STOPS) ->
         pos = (i / (n - 1) * tramos) if n > 1 else 0
         idx = min(int(pos), tramos - 1)
         delta = pos - idx
-        s1, s2 = rgb_stops[idx], rgb_stops[idx + 1]
-        out.append(_rgb_to_hex((
-            int(s1[0] + (s2[0] - s1[0]) * delta),
-            int(s1[1] + (s2[1] - s1[1]) * delta),
-            int(s1[2] + (s2[2] - s1[2]) * delta)
-        )))
+        out.append(_interpolate_color(rgb_stops[idx], rgb_stops[idx + 1], delta))
     return tuple(out)
 
 @lru_cache(maxsize=16)

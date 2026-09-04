@@ -8,44 +8,46 @@ Este archivo se regenera solo en cada corrida a partir de
 - Iteraciones totales: **504**
 - Mejoras aceptadas: **215** (42.7% de aceptación)
 - Rechazadas por tests: 16
-- Rechazadas por guardia de seguridad: 34
+- Rechazadas por guardia de seguridad: 36
 - Sin cambios (nada sustancial que mejorar): 15
-- Sin respuesta de la IA (error o límite): 224
+- Sin respuesta de la IA (error o límite): 222
 
 ## Por día
 
 | Día | Aceptadas | Rechazadas (tests) | Rechazadas (guardia) | Sin cambios | Sin respuesta |
 |---|---|---|---|---|---|
-| 2026-09-03 | 116 | 5 | 19 | 10 | 130 |
-| 2026-09-04 | 99 | 11 | 15 | 5 | 94 |
+| 2026-09-03 | 114 | 5 | 19 | 10 | 128 |
+| 2026-09-04 | 101 | 11 | 17 | 5 | 94 |
 
 ## Mejoras aceptadas por enfoque
 
-- legibilidad y documentación: **56**
+- legibilidad y documentación: **57**
 - seguridad defensiva: **46**
 - manejo de errores y validación de entradas: **44**
-- robustez ante casos límite: **38**
-- rendimiento: **31**
+- robustez ante casos límite: **36**
+- rendimiento: **32**
 
 ## Mejoras aceptadas por archivo
 
-- `healthscore.py`: **18**
 - `settings.py`: **18**
 - `duplicates.py`: **18**
 - `scanner.py`: **18**
 - `assistant.py`: **18**
 - `organizer.py`: **18**
-- `memory.py`: **17**
 - `quarantine.py`: **17**
+- `healthscore.py`: **17**
 - `safety.py`: **16**
+- `memory.py`: **16**
 - `browser.py`: **15**
 - `main.py`: **12**
-- `branding.py`: **10**
-- `startup.py`: **10**
+- `branding.py`: **11**
+- `startup.py`: **11**
 - `diskreport.py`: **10**
 
 ## Últimas 15 mejoras aceptadas
 
+- `2026-09-04T09:38:20` **branding.py** (rendimiento): Optimicé el cálculo de `gradient_colors` al cachear solo el resultado de la interpolación lineal, evitando regenerar la lógica interna de los colores en cada llamada y reduciendo la presión sobre la memoria en operaciones intensivas de renderizado del canvas.
+- `2026-09-04T09:36:06` **startup.py** (legibilidad y documentación): Mejoré la documentación técnica del módulo mediante docstrings más precisos en los métodos de `StartupEntry` y agregué `type hints` adicionales en `parse_registry_csv`, clarificando el propósito de la validación de seguridad de cada etapa.
 - `2026-09-04T09:26:56` **scanner.py** (legibilidad y documentación): Se ha mejorado la documentación mediante la estandarización de docstrings y se refinó la semántica de los tipos (`TypeAlias`) para aclarar el flujo de datos en el motor heurístico, facilitando la comprensión del mantenimiento del código a largo plazo.
 - `2026-09-04T09:26:44` **safety.py** (legibilidad y documentación): Se ha mejorado la documentación y legibilidad de `safety.py` mediante la adición de Type Hints en los argumentos, la estandarización de los docstrings siguiendo el estilo Google/NumPy para mayor claridad, y la estructuración más explícita de las constantes de seguridad para que su propósito sea evidente.
 - `2026-09-04T09:17:19` **organizer.py** (legibilidad y documentación): Se ha mejorado la documentación mediante docstrings detallados en funciones críticas de validación y se han normalizado los type hints para mejorar la legibilidad y mantenibilidad del flujo de trabajo de seguridad.
@@ -59,5 +61,3 @@ Este archivo se regenera solo en cada corrida a partir de
 - `2026-09-04T08:55:42` **startup.py** (manejo de errores y validación de entradas): Se reforzó la robustez de `parse_registry_csv` añadiendo una validación explícita de `reader.fieldnames` y protegiendo el acceso a los valores del diccionario `row` mediante `dict.get()`, evitando posibles `KeyError` o errores de tipo en caso de datos inesperados del registro.
 - `2026-09-04T08:55:14` **settings.py** (manejo de errores y validación de entradas): Mejoré la robustez de la carga de archivos `load` al separar explícitamente la lectura del contenido de la validación del JSON, asegurando que cualquier error de formato en el disco sea capturado y manejado de forma segura sin abortar la ejecución, cumpliendo con la regla de tolerancia a fallos.
 - `2026-09-04T08:54:44` **scanner.py** (manejo de errores y validación de entradas): Mejoré la robustez de `_is_safe_entry` y `process_entry` al agregar validaciones de tipo `None` y asegurar que `os.scandir` se gestione con mayor resiliencia ante entradas inaccesibles, evitando que `Path(entry.path)` reciba valores inválidos.
-- `2026-09-04T08:45:46` **safety.py** (manejo de errores y validación de entradas): Se refactorizó la lógica de chequeo de integridad para evitar el uso de `os.access(path, os.W_OK)` en `_check_file_integrity_cached`, ya que dicha función es poco fiable en Windows (especialmente en contextos de red o ACLs complejas), reemplazándola por una validación directa del estado de los metadatos y captura de excepciones específicas para evitar fallos silenciosos.
-- `2026-09-04T08:45:10` **quarantine.py** (manejo de errores y validación de entradas): Mejoré la robustez de `purge_all` y la carga de manifiestos mediante una validación estricta de rutas y tipos, evitando posibles excepciones por archivos inesperados en el directorio de cuarentena y asegurando que `_is_item_purgable` maneje correctamente rutas fuera del sandbox o nombres de archivos protegidos.
