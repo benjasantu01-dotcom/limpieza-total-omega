@@ -92,7 +92,8 @@ def _validate_root(directory: Union[str, os.PathLike, None]) -> Optional[Path]:
         if directory is None:
             return None
         p = Path(os.fspath(directory)).resolve(strict=True)
-        if p.is_dir() and not is_protected_path(p):
+        # Refuerzo: verificar que la ruta sea absoluta para evitar contextos ambiguos.
+        if p.is_dir() and p.is_absolute() and not is_protected_path(p):
             return p
     except (OSError, RuntimeError, PermissionError, TypeError, ValueError):
         pass
@@ -209,6 +210,7 @@ def drive_usage(mount: Union[str, os.PathLike, None]) -> Optional[DriveUsage]:
         if not p.is_absolute() or str(p).startswith(("\\\\", "//")):
             return None
         
+        # Validar existencia y permisos básicos.
         if not p.exists() or not p.is_dir() or is_protected_path(p) or not os.access(p, os.R_OK):
             return None
             
@@ -269,6 +271,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
             with os.scandir(current_dir) as iterator:
                 for entry in iterator:
                     try:
+                        # Recuperar atributos ignorando errores de acceso parcial
                         st = entry.stat(follow_symlinks=False)
                         
                         # Evitar seguir symlinks o puntos de reanálisis para no salir del árbol objetivo.
@@ -283,7 +286,7 @@ def walk_files(directory: Union[str, os.PathLike, None], skip_protected: bool = 
                                     
                         elif entry.is_file():
                             yield Path(entry.path), max(0, int(st.st_size))
-                    except (PermissionError, OSError):
+                    except (PermissionError, OSError, UnicodeDecodeError):
                         continue
         except (PermissionError, OSError):
             continue

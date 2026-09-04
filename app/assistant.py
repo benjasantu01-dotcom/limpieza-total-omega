@@ -304,7 +304,7 @@ class SystemContext:
                 clean_grade = _CONTROL_CHARS_REGEX.sub(" ", grade_val)[:10].strip()
                 if _is_safe_text_structure(clean_grade):
                     self.grade = clean_grade
-        except Exception:
+        except (AttributeError, ValueError, TypeError):
             pass
         return found_data
 
